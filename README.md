@@ -1,6 +1,6 @@
 # Project Messiah
 A project to create clients, assistants and bots on the online browser game Territorial.io
-Github Page: https://github.com/Teinc3/Project-Messiah.git
+- Github Page: https://github.com/Teinc3/Project-Messiah.git
 
 ## Development Diary
 
@@ -16,8 +16,6 @@ Github Page: https://github.com/Teinc3/Project-Messiah.git
 
 - Fix Variable Names (We need to reach some kind of consensus though)
 - Enable troubleshooting of variables within the game function through accessing them within console?
-- Decide on where to start writing the script, or maybe we can load edit the script externally and load its into the client
-
-We don't have to experience lag when editing our script, it also makes analysing the code easier
-https://linuxhint.com/add-javascript-file-html/
-- Debate on Cancelling, and whether to limit attacking under poor density/troops
+- Decide on where to start writing the script, or maybe we can edit the script externally and load it into the client. This prevents lag
+when editing the script and we can also load multiple scripts (such as 1v1, BR, boosting etc. within the same client.)
+- Debate on whether cancelling should be implemented, as well as whether we should limit attacking under poor density/troop conditions
