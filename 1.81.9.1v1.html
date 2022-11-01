@@ -1671,11 +1671,11 @@
                         singleplayer ? dS(myid, E, ak(eF.lB() * troops[myid], 1E3)) : multi.attack(eF.lB(), E === maxentities ? myid : E);
                         return 1
                     }
+                    //Which one of these depicts random spawn?
                     if (4 === M) return x[0] ? fQ ? (this.kx(), singleplayer ? (fR.cI(0, ax.g3(H), ax.c7(H)), fR.d7()) : multi.choosespawn(1E3, ax.g3(H), ax.c7(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!ix || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
                     if (5 === M) return x[1] ? (this.kx(), dx.lA(), singleplayer ? single.fA(myid, eF.lB(), ax.g3(H), ax.c7(H)) : multi.choosespawn(eF.lB(), ax.g3(H), ax.c7(H)), 1) : 0;
                     if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
-                    if (8 === M) return x[5] ?
-                        (eE.l6(0, [E], !0) && (dx.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
+                    if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (dx.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
                     this.kx();
                     return 2
                 };
