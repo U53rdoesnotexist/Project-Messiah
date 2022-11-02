@@ -42,7 +42,7 @@
     <div id="preroll"></div>
 
     <script>
-		//merge was successful
+		//merge was successful 2
         var tick, cycle, latency, rating, opponentid;
         var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
         var nickname, land, troops, borderpixels, offset, timingbot, attacks;
@@ -55,7 +55,7 @@
                 if (playercount == 2) opponentid = myid === 0 ? 1 : 0
                 latency = singleplayer ? 0 : 8
 
-                console.clear();
+                //console.clear();
                 console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
             }
 
@@ -1365,7 +1365,7 @@
                             (k = g === myid) ? dx.fZ(g, 2) : dx.fZ(1 - myid, 3);
                             iT.hu(g)
                         } else teamgame ? (g = eH.iU(), k = dO.dP[myid] === g, 9 === gamemode ? t = k ? ea[0] : 512 : (g = dO.iV(dO.iW[g]), t = g[0], 512 !== t && dx.iX(g[1])), dx.iY(k)) : (t = ea[0], k = t === myid, dx.iZ(t));
-                        singleplayer || multi.ib(ic(), t);
+                        singleplayer || multi.result_1v1(ic(), t);
                         eK.show(k, !1);
                         dx.ii(!0);
                         eA.eP(!0);
@@ -1401,9 +1401,9 @@
 
                 entitycount = 512
 
-            function systemgameinit(g, k, t, l, x) {
+            function systemgameinit(g, k, t, gamemode, x) {
                 it = gW = !1;
-                gamemode = l;
+                gamemode = gamemode;
                 iz = x;
                 teamgame = 7 > gamemode || 9 === gamemode;
                 ih = playercount = t.length;
@@ -1659,7 +1659,7 @@
                     if (2 === M) {
                         if (x[7]) {
                             for (M = L.length - 1; 0 <= M; M--) 0 === isalive[L[M]] && L.splice(M, 1);
-                            0 < L.length && (eE.l6(1, L, !0) && (dx.l7(L, E), multi.l8(L, E)), L = []);
+                            0 < L.length && (eE.l6(1, L, !0) && (dx.l7(L, E), multi.ask_to_attack(L, E)), L = []);
                             this.kx();
                             return 1
                         }
@@ -2412,7 +2412,7 @@
                     for (var l = this.lM - 1; 0 <= l; l--)
                         if (g >= this.nU[l] && k >= this.nV[l]) {
                             if (39 === this.nX[l]) return this.nj(), this.show(g, k), !0;
-                            singleplayer ? dy.mk(myid, 0, this.nX[l]) : t === myid ? multi.nn(this.nX[l]) : multi.no(this.nX[l], t);
+                            singleplayer ? dy.mk(myid, 0, this.nX[l]) : t === myid ? multi.emojis(this.nX[l]) : multi.message_emojis(this.nX[l], t);
                             this.ni();
                             break
                         } return !1
@@ -4296,7 +4296,7 @@
                 };
                 this.bn = function () {
                     bw.gQ -
-                        12E4 >= t[this.tY] && (t[this.tY] = bw.gQ, this.tn = [0, 0], e1.rG(0, 1 + this.tY) && multi.to(0, this.tY))
+                        12E4 >= t[this.tY] && (t[this.tY] = bw.gQ, this.tn = [0, 0], e1.rG(0, 1 + this.tY) && multi.open_leaderboard(0, this.tY))
                 };
                 this.le = function () {
                     var l;
@@ -4380,7 +4380,7 @@
                     this.tn[this.tY] = l < this.bt / 2 ? -n : n;
                     if (t[this.tY] + 50 > bw.gQ) return !0;
                     t[this.tY] = bw.gQ;
-                    e1.rG(0, 1 + this.tY) && multi.to(0, this.tY);
+                    e1.rG(0, 1 + this.tY) && multi.open_leaderboard(0, this.tY);
                     return !0
                 };
                 this.c8 = function () {
@@ -5385,7 +5385,7 @@
                     for (X = 0; X < y[1]; X++) {
                         var ba = A;
                         for (W = 0; W < y[0]; W++) {
-                            if (P > ba && P < ba + n && U > pa && U < pa + n) return multi.wh(E[V].wS), K = E[V].wS !== K ? E[V].wS : -1, bw.bx = !0;
+                            if (P > ba && P < ba + n && U > pa && U < pa + n) return multi.gameID(E[V].wS), K = E[V].wS !== K ? E[V].wS : -1, bw.bx = !0;
                             V++;
                             if (V >= E.length) return !1;
                             ba += n + c2
@@ -5668,7 +5668,7 @@
                 };
                 this.ws = function () {
                     e1.jM = 0;
-                    e1.rG(0, 3) && multi.wt(0);
+                    e1.rG(0, 3) && multi.join_sp(0);
                     jT.vC();
                     var t = this.dm.length - 2;
                     t = 0 > t ? 7 : t;
@@ -5889,7 +5889,7 @@
                     if (2 !== n.length) return !1;
                     jO.x7 = n[1];
                     k();
-                    e1.rG(0, 7) && multi.xI(0);
+                    e1.rG(0, 7) && multi.vote(0);
                     jU.v3(3252);
                     return !0
                 }
@@ -7107,7 +7107,7 @@
                     }
                 };
                 this.d7 = function () {
-                    for (var x = this.uw - 1; 0 <= x; x--) this.us(x) && bw.gQ > l[x].gQ + 15E3 && multi.a0W(x, l[x].a0V)
+                    for (var x = this.uw - 1; 0 <= x; x--) this.us(x) && bw.gQ > l[x].gQ + 15E3 && multi.time15s(x, l[x].a0V)
                 };
                 this.rG = function (x, n) {
                     if (!l[x].a0U) return this.a0Y(x, n),
@@ -7128,7 +7128,7 @@
                     g(x) && k[x].a0a(n)
                 };
                 this.a0d = function (x, n) {
-                    0 === n ? jQ.rI() : 3 > n ? multi.to(x, n - 1) : 3 === n ? multi.wt(x) : 4 === n ? jS.rI(x) : 5 === n ? x === this.jM && multi.a0e() : 6 === n ? multi.a0f(x) : 7 === n && multi.xI(x)
+                    0 === n ? jQ.rI() : 3 > n ? multi.open_leaderboard(x, n - 1) : 3 === n ? multi.join_sp(x) : 4 === n ? jS.rI(x) : 5 === n ? x === this.jM && multi.join_MP() : 6 === n ? multi.a0f(x) : 7 === n && multi.vote(x)
                 };
                 this.us = function (x) {
                     return l[x].a0U && k[x].us()
@@ -7229,10 +7229,10 @@
                     window.event.returnValue = !1
                 });
                 a0y();
-                document.addEventListener("keyup", a0z);
-                document.addEventListener("keydown", a10);
-                document.addEventListener("visibilitychange", a11);
-                window.addEventListener("error", a12, !0);
+                document.addEventListener("keyup", keyUp);
+                document.addEventListener("keydown", keyDown);
+                document.addEventListener("visibilitychange", visibilitychange);
+                window.addEventListener("error", error, !0);
                 sL = 10;
                 we = new a13;
                 gm = new a14;
@@ -7279,7 +7279,7 @@
                 }
             }
 
-            function a12(g) {
+            function error(g) {
                 a0p || (a0p = !0, g.message ? (a0u = g.lineno, a0v = g.message, e1.rG(0, 6) && multi.a0f(0), g = "[A_ERROR " + a0u + "][" + a0v + "]", a1A(g)) : (g = "[B_ERROR " + g.type + "][" + (g.srcelement || g.target) + "]", console.log(g)))
             }
 
@@ -7287,15 +7287,15 @@
                 e ? e.showToast(g) : alert(g)
             }
 
-            function a10(g) {
+            function keyDown(g) {
                 "ArrowLeft" === g.key ? gb.va(3) : "ArrowUp" === g.key ? gb.va(0) : "ArrowRight" === g.key ? gb.va(1) : "ArrowDown" === g.key ? gb.va(2) : "a" === g.key ? eF.qb(.96875) : "d" === g.key ? eF.qb(32 / 31) : "s" === g.key ? eF.qb(.875) : "w" === g.key ? eF.qb(8 / 7) : "1" === g.key ? eF.qb(5 / 6) : "2" === g.key && eF.qb(1.2)
             }
 
-            function a11() {
+            function visibilitychange() {
                 "hidden" === document.visibilityState ? bw.a1B() : bw.xB()
             }
 
-            function a0z(g) {
+            function keyUp(g) {
                 400 > bw.gQ || (8 !== jT.rc() && jT.uG(g) ? bw.bx = !0 : "Escape" === g.key ? 1 <= fN ? gW ? (gW = !gW, bw.bx = !0) : hf.ku ? hf.kx() : fe.lj() : 7 === jT.rc() ? (jc.tG(), e1.vU(3240), jO.bh(), bw.bx = !0) : 2 === jT.rc() ? dl.vV() : 3 === jT.rc() && jU.vV(0, 0) : "ArrowLeft" === g.key ? gb.a1C(3) : "ArrowUp" === g.key ? gb.a1C(0) : "ArrowRight" === g.key ? gb.a1C(1) : "ArrowDown" === g.key ? gb.a1C(2) : "h" === g.key && 1 <= fN && (gW = !gW, bw.bx = !0))
             }
 
@@ -9509,7 +9509,7 @@
                     e1.jM = z;
                     eM.vd = k(x, 10);
                     eM.ve = k(x, 2 === n ? 9 : 1);
-                    e1.rG(z, 5) && multi.a0e();
+                    e1.rG(z, 5) && multi.join_MP();
                     return !0
                 };
                 this.a5O = function (x, n) {
@@ -9658,6 +9658,10 @@
                     l(n, 3, 0);
                     l(n, 14, a0n);
                     e1.send(0, n)
+                    /*const key = new KeyboardEvent('keydown', {
+			        key:"Enter"
+                    });
+		            keyUP(key);*/
                 };
                 this.joinlobby = function (n) {
                     var z = m.iD(jO.wu()),
@@ -9677,7 +9681,7 @@
                     e1.mi = n;
                     e1.send(n, A)
                 };
-                this.to = function (n, z) {
+                this.open_leaderboard = function (n, z) {
                     var y = new Uint8Array(5);
                     x = 0;
                     l(y, 1, 0);
@@ -9689,6 +9693,7 @@
                     e1.send(n, y)
                 };
                 this.a0f = function (n) {
+                    //password when saved cookies?
                     var z, y = new Uint8Array(100);
                     x = 0;
                     l(y, 1, 0);
@@ -9701,7 +9706,7 @@
                     for (z = 0; z < B; z++) l(y, 10, A[z]);
                     e1.send(n, y)
                 };
-                this.xI = function (n) {
+                this.vote = function (voteID) {
                     var z;
                     if (!(jO.x8 + 7E3 > bw.gQ)) {
                         jO.x8 = bw.gQ;
@@ -9713,10 +9718,11 @@
                         g(y);
                         var A = mI(jO.x7.length - 20, 0);
                         for (z = jO.x7.length - 1; z >= A; z--) l(y, 4, Math.abs(jO.x7.charCodeAt(z) - 48) % 10);
-                        e1.send(n, y)
+                        e1.send(voteID, y)
                     }
                 };
-                this.a0W = function (n, z) {
+                this.time15s = function (n, z) {
+                    //is called every 15s in lobby
                     var y = new Uint8Array(1);
                     x = 0;
                     l(y, 1, 0);
@@ -9724,15 +9730,16 @@
                     l(y, 1, z ? 1 : 0);
                     e1.send(n, y)
                 };
-                this.wh = function (n) {
+                this.gameID = function (gameID) {
+                    //gameID from 0 to 15
                     var z = new Uint8Array(1);
                     x = 0;
                     l(z, 1, 0);
                     l(z, 3, 2);
-                    l(z, 4, n);
+                    l(z, 4, gameID);
                     e1.send(e1.mi, z)
                 };
-                this.a0e = function () {
+                this.join_MP = function () {
                     var n = new Uint8Array(7);
                     x = 0;
                     l(n, 1, 0);
@@ -9744,23 +9751,24 @@
                     l(n, 14, a0n);
                     e1.send(e1.jM, n)
                 };
-                this.attack = function (n, z) {
+                this.attack = function (amount, target) {
                     var y = new Uint8Array(3);
                     x = 0;
                     l(y, 1, 1);
                     l(y, 3, 0);
-                    l(y, 10, n);
-                    l(y, 9, z);
+                    l(y, 10, amount);
+                    l(y, 9, target);
                     e1.send(e1.jM, y)
                 };
-                this.choosespawn = function (n, z, y) {
+                this.choosespawn = function (n, y_cord, x_cord) {
+                    //n = 1000  
                     var A = new Uint8Array(5);
                     x = 0;
                     l(A, 1, 1);
                     l(A, 3, 1);
                     l(A, 10, n);
-                    l(A, 11, z);
-                    l(A, 11, y);
+                    l(A, 11, y_cord);
+                    l(A, 11, x_cord);
                     e1.send(e1.jM, A)
                 };
                 this.cancel = function (n) {
@@ -9781,14 +9789,16 @@
                     l(z, 11, n - 1);
                     e1.send(e1.jM, z)
                 };
-                this.ib =
-                    function (n, z) {
+                this.result_1v1 = function (n, result) {
+                        //result = 0 if you loose
+                        //result = 1 if you win
+                        //n is the rest of the division of all troops in the game by a number :)
                         var y = new Uint8Array(4);
                         x = 0;
                         l(y, 1, 1);
                         l(y, 3, 3);
                         l(y, 12, n);
-                        l(y, 10, z);
+                        l(y, 10, result);
                         e1.send(e1.jM, y)
                     };
                 this.lm = function () {
@@ -9798,23 +9808,23 @@
                     l(n, 3, 4);
                     e1.send(e1.jM, n)
                 };
-                this.nn = function (n) {
+                this.emojis = function (emojiID) {
                     var z = new Uint8Array(2);
                     x = 0;
                     l(z, 1, 1);
                     l(z, 3, 5);
-                    l(z, 7, n);
+                    l(z, 7, emojiID);
                     e1.send(e1.jM, z)
                 };
-                this.no = function (n, z) {
-                    dx.mW(myid, z, n);
+                this.message_emojis = function (emojiID, playerID) {
+                    dx.mW(myid, playerID, emojiID);
                     var y = new Uint8Array(3);
                     x = 0;
                     l(y, 1, 1);
                     l(y, 3, 6);
                     l(y, 2, 0);
-                    l(y, 9, z);
-                    l(y, 7, n);
+                    l(y, 9, playerID);
+                    l(y, 7, emojiID);
                     e1.send(e1.jM, y)
                 };
                 this.lH = function (n) {
@@ -9826,15 +9836,15 @@
                     l(z, 9, n);
                     e1.send(e1.jM, z)
                 };
-                this.l8 = function (n, z) {
-                    var y, A = n.length,
+                this.ask_to_attack = function (targetID, friendID) {
+                    var y, A = targetID.length,
                         B = new Uint8Array(t(15 + 9 * A));
                     x = 0;
                     l(B, 1, 1);
                     l(B, 3, 6);
                     l(B, 2, 2);
-                    l(B, 9, z);
-                    for (y = 0; y < A; y++) l(B, 9, n[y]);
+                    l(B, 9, friendID);
+                    for (y = 0; y < A; y++) l(B, 9, targetID[y]);
                     e1.send(e1.jM, B)
                 };
                 this.qE = function (n) {
@@ -9845,7 +9855,7 @@
                     l(z, 1, n ? 1 : 0);
                     e1.send(e1.jM, z)
                 };
-                this.wt = function (n) {
+                this.join_sp = function (n) {//n = 0
                     var z = new Uint8Array(4);
                     x = 0;
                     l(z, 1, 0);
