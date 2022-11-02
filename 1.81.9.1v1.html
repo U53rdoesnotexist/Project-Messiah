@@ -42,10 +42,11 @@
     <div id="preroll"></div>
 
     <script>
-		//12345678910
+		//merge was successful
         var tick, cycle, latency, rating, opponentid;
         var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
         var nickname, land, troops, borderpixels, offset, timingbot, attacks;
+        var mapwidth, mapheight;
 
         function game() {
 
@@ -53,6 +54,7 @@
                 tick = 0, cycle = 1;
                 if (playercount == 2) opponentid = myid === 0 ? 1 : 0
                 latency = singleplayer ? 0 : 8
+
                 console.clear();
                 console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
             }
@@ -63,7 +65,7 @@
                 if (tick >= 100) {
                     tick -= 100;
                     cycle += 1;
-
+                    
                     console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
                 }
                 
@@ -174,11 +176,11 @@
                 aL = 0;
                 aM = new Uint32Array(aJ);
                 offset = new Int32Array(4);
-                offset[0] = -4 * aR;
+                offset[0] = -4 * mapwidth;
                 offset[1] = 4;
                 offset[2] = -offset[0];
                 offset[3] = -offset[1];
-                aO = new Uint8Array(aR * aS)
+                aO = new Uint8Array(mapwidth * mapheight)
             }
 
             function aT(g) {
@@ -775,7 +777,7 @@
                 function t(y, A) {
                     for (var B, C, F, E, H, K, J, D = y; D < y + 50 * A; D += A)
                         if (B = cs[z] - D, B = 1 > B ? 1 : B, C = cv[z] - D, C = 1 >
-                            C ? 1 : C, F = cr[z] + D, F = F >= aR - 1 ? aR - 2 : F, E = cu[z] + D, E = E >= aS - 1 ? aS - 2 : E, J = ak(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(ax.ep(x, n)), 1 !== B) return B;
+                            C ? 1 : C, F = cr[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = cu[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = ak(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(ax.ep(x, n)), 1 !== B) return B;
                     return 1
                 }
                 var l, x, n, z;
@@ -995,7 +997,7 @@
                 };
                 this.gS = function () {
                     g(1);
-                    this.gT(0, 0, aR - 1, aS - 1);
+                    this.gT(0, 0, mapwidth - 1, mapheight - 1);
                     fQ || this.gU(myid, 3E3, !0, .3)
                 };
                 this.gU = function (I, N, G, M) {
@@ -1021,7 +1023,7 @@
                     gX.gY = !1;
                     L = !0;
                     g(I);
-                    t(0, 0, aR - 1, aS - 1);
+                    t(0, 0, mapwidth - 1, mapheight - 1);
                     k(.875);
                     D = !0;
                     gb.gc()
@@ -1132,10 +1134,10 @@
                     H = Array(12);
                     F = 6;
                     A = 10;
-                    z = ak(aR, A);
-                    y = ak(aS, A);
-                    B = ak(aR - A * z, 2);
-                    C = ak(aS - A * y, 2);
+                    z = ak(mapwidth, A);
+                    y = ak(mapheight, A);
+                    B = ak(mapwidth - A * z, 2);
+                    C = ak(mapheight - A * y, 2);
                     if (fQ)
                         for (K = 0; K < playercount; K++) E = K, t(), isalive[E] = 1;
                     for (E = 0; E < maxentities; E++)
@@ -1156,7 +1158,7 @@
                         for (K = J + L; K >= J - L; K--)
                             for (I = D + L; I >= D - L; I--)
                                 if ((K ===
-                                    J + L || K === J - L || I === D + L || I === D - L) && 3 < K && K < aR - 5 && 3 < I && I < aS - 5) {
+                                    J + L || K === J - L || I === D + L || I === D - L) && 3 < K && K < mapwidth - 5 && 3 < I && I < mapheight - 5) {
                                     var N;
                                     if (N = ax.ay(ax.ep(K, I))) a: {
                                         var G, M = K + 3,
@@ -1174,7 +1176,7 @@
                                     if (N) {
                                         if (0 < land[E]) {
                                             for (D = cr[E]; D >= cs[E]; D--)
-                                                for (J = cu[E]; J >= cv[E]; J--) L = 4 * (J * aR + D), ax.hW(E, L) && (ax.hX(L), land[E]--);
+                                                for (J = cu[E]; J >= cv[E]; J--) L = 4 * (J * mapwidth + D), ax.hW(E, L) && (ax.hX(L), land[E]--);
                                             t()
                                         }
                                         l(K - 1, I - 1);
@@ -1685,8 +1687,8 @@
                     if (Math.abs(N - B) > M || Math.abs(G - C) > M || (new Date).getTime() > F + 425) return !1;
                     M = Math.floor((N + g0) / fv);
                     var Q = Math.floor((G + g1) / fv);
-                    if (1 > M || 1 > Q || M >= aR - 1 || Q >= aS - 1) return !1;
-                    var S = Q * aR * 4 + 4 * M;
+                    if (1 > M || 1 > Q || M >= mapwidth - 1 || Q >= mapheight - 1) return !1;
+                    var S = Q * mapwidth * 4 + 4 * M;
                     if (!ax.ay(S)) return !1;
                     if (2 === fN) return 1 <= a5.lM && (E = ax.b7(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
                     H = ax.ep(M, Q);
@@ -3233,10 +3235,9 @@
                         B = s / 16,
                         C = 0;
                     g0 < -r + y && (A = -r + y - g0);
-                    g0 > fv * aR - y && (A = fv * aR - y -
-                        g0);
+                    g0 > fv * mapwidth - y && (A = fv * mapwidth - y - g0);
                     g1 < -s + B && (C = -s + B - g1);
-                    g1 > fv * aS - B && (C = fv * aS - B - g1);
+                    g1 > fv * mapheight - B && (C = fv * mapheight - B - g1);
                     g0 += A;
                     g1 += C;
                     gm.gn();
@@ -4227,31 +4228,31 @@
                 this.bh = function () {
                     var g;
                     this.iq = this.gx = this.tS = !1;
-                    this.tT[0] = aR;
-                    this.tT[1] = aS;
+                    this.tT[0] = mapwidth;
+                    this.tT[1] = mapheight;
                     this.tT[2] = this.tT[3] = 0;
                     var k = 1;
-                    a: for (; k < aR - 1; k++)
-                        for (g = aS - 2; 1 < g; g--)
+                    a: for (; k < mapwidth - 1; k++)
+                        for (g = mapheight - 2; 1 < g; g--)
                             if (1 === tW[ax.ep(k, g) + 2]) {
                                 this.tT[0] = k;
                                 break a
                             } g = 1;
-                    a: for (; g < aS -
+                    a: for (; g < mapheight -
                         1; g++)
-                        for (k = aR - 2; 1 < k; k--)
+                        for (k = mapwidth - 2; 1 < k; k--)
                             if (1 === tW[ax.ep(k, g) + 2]) {
                                 this.tT[1] = g;
                                 break a
-                            } k = aR - 2;
+                            } k = mapwidth - 2;
                     a: for (; 0 < k; k--)
-                        for (g = aS - 2; 1 < g; g--)
+                        for (g = mapheight - 2; 1 < g; g--)
                             if (1 === tW[ax.ep(k, g) + 2]) {
                                 this.tT[2] = k;
                                 break a
-                            } g = aS - 2;
+                            } g = mapheight - 2;
                     a: for (; 0 < g; g--)
-                        for (k = aR - 2; 1 < k; k--)
+                        for (k = mapwidth - 2; 1 < k; k--)
                             if (1 === tW[ax.ep(k, g) + 2]) {
                                 this.tT[3] = g;
                                 break a
@@ -5057,10 +5058,10 @@
                 };
                 this.hb = function () {
                     if (vD) {
-                        var k = r / aR,
-                            t = s / aS;
+                        var k = r / mapwidth,
+                            t = s / mapheight;
                         k = k > t ? k : t;
-                        c9.setTransform(k, 0, 0, k, Math.floor((r - k * aR) / 2), Math.floor((s - k * aS) / 2));
+                        c9.setTransform(k, 0, 0, k, Math.floor((r - k * mapwidth) / 2), Math.floor((s - k * mapheight) / 2));
                         c9.drawImage(hc, 0, 0);
                         c9.setTransform(1, 0, 0, 1, 0, 0);
                         c9.fillStyle = nt
@@ -5333,8 +5334,8 @@
                                 U = l(E[P].wU, E[P].wV);
                                 if (null !== U) E[P].lZ = U;
                                 else {
-                                    U = aR;
-                                    var W = aS,
+                                    U = mapwidth;
+                                    var W = mapheight,
                                         X = hc,
                                         V = pH,
                                         pa = wb,
@@ -5349,14 +5350,14 @@
                                     var O = R.getContext("2d", {
                                         alpha: !1
                                     }),
-                                        T = 128 / aR,
-                                        Y = 128 / aS;
+                                        T = 128 / mapwidth,
+                                        Y = 128 / mapheight;
                                     Y > T && (T = Y);
                                     O.imageSmoothingEnabled = !0;
-                                    O.setTransform(T, 0, 0, T, (128 - T * aR) / 2, (128 - T * aS) / 2);
+                                    O.setTransform(T, 0, 0, T, (128 - T * mapwidth) / 2, (128 - T * mapheight) / 2);
                                     O.drawImage(hc, 0, 0);
-                                    aR = U;
-                                    aS = W;
+                                    mapwidth = U;
+                                    mapheight = W;
                                     hc = X;
                                     pH = V;
                                     wb = pa;
@@ -6120,7 +6121,7 @@
                     K = new Uint8Array(maxentities);
                     this.qT = new Uint8Array(maxentities);
                     J = new Int32Array(4);
-                    J[0] = -4 * aR;
+                    J[0] = -4 * mapwidth;
                     J[1] = 4;
                     J[2] = -J[0];
                     J[3] = -J[1];
@@ -6142,13 +6143,13 @@
                     for (var D = maxentities - 1; 0 <= D; D--) this.qT[D] = 280 > n[D] + z[D] + y[D] ? 0 : 1
                 };
                 this.g3 = function (D) {
-                    return ak(D, 4) % aR
+                    return ak(D, 4) % mapwidth
                 };
                 this.c7 = function (D) {
-                    return ak(D, 4 * aR)
+                    return ak(D, 4 * mapwidth)
                 };
                 this.ep = function (D, L) {
-                    return Math.floor(4 * (L * aR + D))
+                    return Math.floor(4 * (L * mapwidth + D))
                 };
                 this.hQ = function (D) {
                     return this.y0(D + J[0]) || this.y0(D + J[1]) || this.y0(D + J[2]) || this.y0(D + J[3])
@@ -6424,7 +6425,7 @@
                 var k, t;
                 for (k = cr[g]; k >= cs[g]; k--)
                     for (t = cu[g]; t >= cv[g]; t--) {
-                        var l = 4 * (t * aR + k);
+                        var l = 4 * (t * mapwidth + k);
                         ax.hW(g, l) && (ax.hX(l), land[g]--)
                     }
             }
@@ -6766,12 +6767,12 @@
                 }
 
                 function y(O, T, Y, Z) {
-                    return ax.hW(O, 4 * (Y * aR + T)) && ax.hW(O, 4 * ((Y + Z - 1) * aR + T))
+                    return ax.hW(O, 4 * (Y * mapwidth + T)) && ax.hW(O, 4 * ((Y + Z - 1) * mapwidth + T))
                 }
 
                 function A(O, T, Y, Z) {
-                    return ax.hW(O, 4 * (Y * aR + T)) && ax.hW(O, 4 * (Y *
-                        aR + T + Z - 1))
+                    return ax.hW(O, 4 * (Y * mapwidth + T)) && ax.hW(O, 4 * (Y *
+                        mapwidth + T + Z - 1))
                 }
                 var B, C, F, E, H, K, J, D, L, I, N, G, M, Q, S, P, U, W, X, V, pa, ba, da, qa, R;
                 this.bh = function () {
@@ -7337,7 +7338,7 @@
                     }
                 }
             }
-            var aR, aS, hc, pH, wb, wc, mt, wR, vD, a1J = 14,
+            var hc, pH, wb, wc, mt, wR, vD, a1J = 14,
                 we;
 
             function wd(g, k) {
@@ -7353,10 +7354,10 @@
                     if (a1N(mt)) a1O(t);
                     else {
                         var l = jX.br(mt);
-                        aR = l.bt;
-                        aS = l.co;
+                        mapwidth = l.bt;
+                        mapheight = l.co;
                         cW.j7(l.a0T);
-                        jY.jD([aR, aS, l.gC, l.g9]);
+                        jY.jD([mapwidth, mapheight, l.gC, l.g9]);
                         a1P();
                         jA.a1Q();
                         jY.a1R();
@@ -7429,7 +7430,7 @@
                         if (0 === this.aA) {
                             var l = cW.a0B();
                             cW.j7(jX.br(mt).a1i[2]);
-                            jY.jD([aR, aS, jX.br(mt).a1i[0], jX.br(mt).a1i[1]]);
+                            jY.jD([mapwidth, mapheight, jX.br(mt).a1i[0], jX.br(mt).a1i[1]]);
                             cW.j7(l);
                             this.a1d = jY.a1k();
                             this.aA++;
@@ -7440,18 +7441,18 @@
                         }
                         l = this.a1e ? 10 : 1E6;
                         l =
-                            aS - this.a1X - 1 < l ? aS - this.a1X - 1 : l;
+                            mapheight - this.a1X - 1 < l ? mapheight - this.a1X - 1 : l;
                         l = this.a1X + l;
                         for (var x, n, z = this.a1X; z < l; z++)
-                            for (var y = 1; y < aR - 1; y++)
-                                if (n = y + z * aR, x = 4 * n, t(x)) this.a1m(x, n, 1);
+                            for (var y = 1; y < mapwidth - 1; y++)
+                                if (n = y + z * mapwidth, x = 4 * n, t(x)) this.a1m(x, n, 1);
                                 else {
                                     this.a1m(x, n, 0);
                                     n = y;
                                     var A = z;
-                                    (1 < n && t(x - 4) || n < aR - 2 && t(x + 4) || 1 < A && t(x - 4 * aR) || A < aS - 2 && t(x + 4 * aR)) && this.a1n(y, z)
+                                    (1 < n && t(x - 4) || n < mapwidth - 2 && t(x + 4) || 1 < A && t(x - 4 * mapwidth) || A < mapheight - 2 && t(x + 4 * mapwidth)) && this.a1n(y, z)
                                 } this.a1X = l;
-                        this.a1X >= aS - 1 ? (pH.putImageData(wb, 0, 0, 1, 1, aR - 2, aS - 2), bw.bx = !0, this.wf()) : this.a1e && (this.rB = setTimeout(g, 16))
+                        this.a1X >= mapheight - 1 ? (pH.putImageData(wb, 0, 0, 1, 1, mapwidth - 2, mapheight - 2), bw.bx = !0, this.wf()) : this.a1e && (this.rB = setTimeout(g, 16))
                     }
                 };
                 this.a1m = function (l, x, n) {
@@ -7467,17 +7468,17 @@
                     var y = l + this.a1Z,
                         A = x + this.a1Z;
                     n = 1 > n ? 1 : n;
-                    y = y > aR - 2 ? aR - 2 : y;
-                    A = A > aS - 2 ? aS - 2 : A;
+                    y = y > mapwidth - 2 ? mapwidth - 2 : y;
+                    A = A > mapheight - 2 ? mapheight - 2 : A;
                     for (var B = 1 > z ? 1 : z; B <= A; B++)
                         for (var C = n; C <= y; C++)
-                            if (z = 4 * (C + B * aR), t(z)) {
-                                var F = this.a1Y + (this.a1Z - this.a1Y) * this.a1d[C + aR * B] / 1E4;
+                            if (z = 4 * (C + B * mapwidth), t(z)) {
+                                var F = this.a1Y + (this.a1Z - this.a1Y) * this.a1d[C + mapwidth * B] / 1E4;
                                 if (!(Math.abs(l - C) > F || Math.abs(x - B) > F)) {
                                     var E = Math.sqrt((l - C) * (l - C) + (x - B) * (x - B));
                                     E >= F || this.a1r(z, E, F, 1, this.qT[3])
                                 }
-                            } else F = this.a1a + (this.a1b - this.a1a) * this.a1d[C + aR * B] / 1E4, Math.abs(l - C) > F || Math.abs(x - B) > F || (E = Math.sqrt((l - C) *
+                            } else F = this.a1a + (this.a1b - this.a1a) * this.a1d[C + mapwidth * B] / 1E4, Math.abs(l - C) > F || Math.abs(x - B) > F || (E = Math.sqrt((l - C) *
                                 (l - C) + (x - B) * (x - B)), E >= F || this.a1r(z, E, F, 0, this.qT[2]))
                 }
             }
@@ -7488,7 +7489,7 @@
 
             function a1t(g, k, t, l, x) {
                 var n, z, y, A = g.length - 1,
-                    B = aR + aS;
+                    B = mapwidth + mapheight;
                 B *= B;
                 var C = t.length;
                 for (n = C - 1; 0 <= n; n--) t[n] *= t[n];
@@ -7499,8 +7500,8 @@
                 if (void 0 === x)
                     for (x = Array(C), n = C - 1; 0 <= n; n--) x[n] = 0;
                 for (n = 1; n < C; n++) F[n] = t[n] - t[n - 1], E[n] = l[n] - l[n - 1], H[n] = x[n] - x[n - 1];
-                for (z = aR - 1; 0 <= z; z--)
-                    for (y = aS - 1; 0 <= y; y--) {
+                for (z = mapwidth - 1; 0 <= z; z--)
+                    for (y = mapheight - 1; 0 <= y; y--) {
                         var J = B;
                         for (n = A; 0 <= n; n--) {
                             var D = (z - g[n]) * (z - g[n]) + (y - k[n]) * (y - k[n]);
@@ -7514,7 +7515,7 @@
                                 L = x[n - 1] + xz((J - t[n - 1]) * H[n],
                                     F[n]);
                                 break
-                            } a27(aR * y + z, D, L, K)
+                            } a27(mapwidth * y + z, D, L, K)
                     }
             }
 
@@ -7595,12 +7596,12 @@
                 };
                 this.a1Q = function () {
                     hc = document.createElement("canvas");
-                    hc.width = aR;
-                    hc.height = aS;
+                    hc.width = mapwidth;
+                    hc.height = mapheight;
                     pH = hc.getContext("2d", {
                         alpha: !1
                     });
-                    var k = pH.getImageData(0, 0, aR, aS);
+                    var k = pH.getImageData(0, 0, mapwidth, mapheight);
                     wc = k.data;
                     var t = g[mt].bt,
                         l = g[mt].ez,
@@ -7613,7 +7614,7 @@
                         E = Array(B + 1),
                         H = Array(B + 1);
                     for (y = B; 0 <= y; y--) C[y] = t[y + 1] - t[y], F[y] = l[y + 1] - l[y], E[y] = x[y + 1] - x[y], H[y] = n[y + 1] - n[y];
-                    for (z = aR * aS - 1; 0 <= z; z--)
+                    for (z = mapwidth * mapheight - 1; 0 <= z; z--)
                         for (y = B; 0 <= y; y--)
                             if (A[z] >= t[y]) {
                                 var K = A[z] -
@@ -7624,28 +7625,26 @@
                                 wc[4 * z + 3] = 255;
                                 break
                             } pH.putImageData(k, 0, 0);
-                    jX.a2B() && bo.bp() && jX.a2B() && (t = bo.kr("arena"), pH.save(), pH.globalAlpha = 1 === mt ? .1 : 1, pH.imageSmoothingEnabled = !0, k = 2.8, pH.scale(k, k), pH.drawImage(t, Math.floor((aR / k - t.width) / 2), Math.floor(.5 * aS / k - t.height / 2)), pH.restore(), t = bo.kr("territorial.io"), pH.save(), pH.globalAlpha = 1 === mt ? .1 : 1, pH.imageSmoothingEnabled = !0, k = .87, pH.scale(k, k), pH.drawImage(t, Math.floor(.745 *
-                        (aR / k - t.width)), Math.floor(.422 * aS / k - t.height / 2)), pH.restore());
+                    jX.a2B() && bo.bp() && jX.a2B() && (t = bo.kr("arena"), pH.save(), pH.globalAlpha = 1 === mt ? .1 : 1, pH.imageSmoothingEnabled = !0, k = 2.8, pH.scale(k, k), pH.drawImage(t, Math.floor((mapwidth / k - t.width) / 2), Math.floor(.5 * mapheight / k - t.height / 2)), pH.restore(), t = bo.kr("territorial.io"), pH.save(), pH.globalAlpha = 1 === mt ? .1 : 1, pH.imageSmoothingEnabled = !0, k = .87, pH.scale(k, k), pH.drawImage(t, Math.floor(.745 *
+                        (mapwidth / k - t.width)), Math.floor(.422 * mapheight / k - t.height / 2)), pH.restore());
                     vD = !0;
                     bw.bx = !0
                 };
                 this.jB = function () {
                     var k, t = 0;
-                    var l = aS * aR * 4;
-                    var x = tW,
-                        n = wc;
-                    for (k = aR - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
-                    l = 4 * aR;
-                    for (k = aS - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
-                    for (k = aR * aS - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (n[l + 2] > n[l + 1] && n[l + 2] > n[l] ? x[l + 2] = 2 : (x[l + 2] = 1, t++));
-                    this.mu = (aR - 2) * (aS - 2);
+                    var l = mapheight * mapwidth * 4;
+                    for (k = mapwidth - 1; 0 <= k; k--) tW[4 * k + 2] = 3, tW[l - 4 * k - 2] = 3;
+                    l = 4 * mapwidth;
+                    for (k = mapheight - 1; 0 <= k; k--) tW[k * l + 2] = 3, tW[k * l + l - 2] = 3;
+                    for (k = mapwidth * mapheight - 1; 0 <= k; k--) l = 4 * k, 3 !== tW[l + 2] && (wc[l + 2] > wc[l + 1] && wc[l + 2] > wc[l] ? tW[l + 2] = 2 : (tW[l + 2] = 1, t++));
+                    this.mu = (mapwidth - 2) * (mapheight - 2);
                     this.my = 0;
                     if (a1V(mt)) {
-                        n = 0;
+                        wc = 0;
                         l = tW;
                         var z = wc;
-                        for (x = aR * aS - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (n++, l[k + 2] = 3);
-                        jA.my = n
+                        for (tW = mapwidth * mapheight - 1; 0 <= tW; tW--) k = 4 * tW, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (wc++, l[k + 2] = 3);
+                        jA.my = wc
                     }
                     this.mv = iu = t - this.my;
                     this.mx = this.mu - this.mv - this.my
@@ -7661,15 +7660,15 @@
                 k = m.iI(k);
                 var t = jX.br(mt).a1g,
                     l = jX.br(mt).a1h;
-                aR = 1E3 * k[0] + k[1];
-                aS = 1E3 * k[2] + k[3];
+                mapwidth = 1E3 * k[0] + k[1];
+                mapheight = 1E3 * k[2] + k[3];
                 hc = document.createElement("canvas");
-                hc.width = aR;
-                hc.height = aS;
+                hc.width = mapwidth;
+                hc.height = mapheight;
                 pH = hc.getContext("2d", {
                     alpha: !1
                 });
-                wb = pH.getImageData(0, 0, aR, aS);
+                wb = pH.getImageData(0, 0, mapwidth, mapheight);
                 wc = wb.data;
                 for (var x = k.length, n = !0, z = 0, y = 4; y < x; y++)
                     if (n) {
@@ -7821,12 +7820,12 @@
 
             function j9() {
                 void 0 === hd && (hd = document.createElement("canvas"));
-                hd.width = aR;
-                hd.height = aS;
+                hd.width = mapwidth;
+                hd.height = mapheight;
                 jG = hd.getContext("2d", {
                     alpha: !0
                 });
-                jH = jG.getImageData(0, 0, aR, aS);
+                jH = jG.getImageData(0, 0, mapwidth, mapheight);
                 tW = jH.data
             }
 
@@ -8533,8 +8532,8 @@
                         k = Array(4);
                         for (y = 3; 0 <= y; y--) {
                             k[y] = document.createElement("canvas");
-                            var C = 0 === y % 2 ? aR : g;
-                            var F = 0 === y % 2 ? g : aS + 2 * g;
+                            var C = 0 === y % 2 ? mapwidth : g;
+                            var F = 0 === y % 2 ? g : mapheight + 2 * g;
                             k[y].width = C;
                             k[y].height = F;
                             var E = k[y].getContext("2d", {
@@ -8563,19 +8562,19 @@
                             E.putImageData(H, 0, 0)
                         }
                         pH.fillStyle = "rgb(" + B + "," + B + "," + B + ")";
-                        pH.fillRect(0, 0, aR, 1);
-                        pH.fillRect(0, aS - 1, aR, 1);
-                        pH.fillRect(0, 0, 1, aS);
-                        pH.fillRect(aR - 1, 0, 1, aS)
+                        pH.fillRect(0, 0, mapwidth, 1);
+                        pH.fillRect(0, mapheight - 1, mapwidth, 1);
+                        pH.fillRect(0, 0, 1, mapheight);
+                        pH.fillRect(mapwidth - 1, 0, 1, mapheight)
                     }
                 };
                 this.hb = function () {
                     var x = t ? 0 : -g;
-                    a31(x, x, aR - 2 * x, aS - 2 * x, gm.a3u, gm.a3v, gm.a3w, gm.a3x) || (c9.fillStyle = l, c9.fillRect(0, 0, g2, c3))
+                    a31(x, x, mapwidth - 2 * x, mapheight - 2 * x, gm.a3u, gm.a3v, gm.a3w, gm.a3x) || (c9.fillStyle = l, c9.fillRect(0, 0, g2, c3))
                 };
                 this.c8 = function () {
-                    t || (a30(0, -g, aR, g, gm.a3u, gm.a3v, gm.a3w, gm.a3x) && c9.drawImage(k[0], gm.a3y, gm.a3z - g), a30(aR, -g, g, aS + 2 * g, gm.a3u, gm.a3v, gm.a3w, gm.a3x) && c9.drawImage(k[1], gm.a3y + aR, gm.a3z - g), a30(0, aS, aR, g, gm.a3u, gm.a3v, gm.a3w, gm.a3x) && c9.drawImage(k[2], gm.a3y, gm.a3z + aS), a30(-g, -g, g,
-                        aS + 2 * g, gm.a3u, gm.a3v, gm.a3w, gm.a3x) && c9.drawImage(k[3], gm.a3y - g, gm.a3z - g))
+                    t || (a30(0, -g, mapwidth, g, gm.a3u, gm.a3v, gm.a3w, gm.a3x) && c9.drawImage(k[0], gm.a3y, gm.a3z - g), a30(mapwidth, -g, g, mapheight + 2 * g, gm.a3u, gm.a3v, gm.a3w, gm.a3x) && c9.drawImage(k[1], gm.a3y + mapwidth, gm.a3z - g), a30(0, mapheight, mapwidth, g, gm.a3u, gm.a3v, gm.a3w, gm.a3x) && c9.drawImage(k[2], gm.a3y, gm.a3z + mapheight), a30(-g, -g, g,
+                        mapheight + 2 * g, gm.a3u, gm.a3v, gm.a3w, gm.a3x) && c9.drawImage(k[3], gm.a3y - g, gm.a3z - g))
                 }
             }
 
@@ -9083,7 +9082,7 @@
             }
 
             function bN() {
-                for (var g, k, t = aI - 1; 0 <= t; t--) g = ak(aK[t], 4) % aR, k = ak(aK[t], 4 * aR), cs[aE] = cs[aE] > g ? g : cs[aE], cv[aE] = cv[aE] > k ? k : cv[aE], cr[aE] = cr[aE] < g ? g : cr[aE], cu[aE] = cu[aE] < k ? k : cu[aE]
+                for (var g, k, t = aI - 1; 0 <= t; t--) g = ak(aK[t], 4) % mapwidth, k = ak(aK[t], 4 * mapwidth), cs[aE] = cs[aE] > g ? g : cs[aE], cv[aE] = cv[aE] > k ? k : cv[aE], cr[aE] = cr[aE] < g ? g : cr[aE], cu[aE] = cu[aE] < k ? k : cu[aE]
             }
 
             function ab() {
@@ -9155,22 +9154,22 @@
                 var g;
                 a: for (; cv[aH] < cu[aH];) {
                     for (g = cr[aH]; g >= cs[aH]; g--)
-                        if (ax.hW(aH, 4 * (cv[aH] * aR + g))) break a;
+                        if (ax.hW(aH, 4 * (cv[aH] * mapwidth + g))) break a;
                     cv[aH]++
                 }
                 a: for (; cv[aH] < cu[aH];) {
                     for (g = cr[aH]; g >= cs[aH]; g--)
-                        if (ax.hW(aH, 4 * (cu[aH] * aR + g))) break a;
+                        if (ax.hW(aH, 4 * (cu[aH] * mapwidth + g))) break a;
                     cu[aH]--
                 }
                 a: for (; cs[aH] < cr[aH];) {
                     for (g = cu[aH]; g >= cv[aH]; g--)
-                        if (ax.hW(aH, 4 * (g * aR + cs[aH]))) break a;
+                        if (ax.hW(aH, 4 * (g * mapwidth + cs[aH]))) break a;
                     cs[aH]++
                 }
                 a: for (; cs[aH] < cr[aH];) {
                     for (g = cu[aH]; g >= cv[aH]; g--)
-                        if (ax.hW(aH, 4 * (g * aR + cr[aH]))) break a;
+                        if (ax.hW(aH, 4 * (g * mapwidth + cr[aH]))) break a;
                     cr[aH]--
                 }
             }
@@ -9860,7 +9859,7 @@
 
         game();
 
-        //Another one.
+        //Test!
 
     </script>
 
