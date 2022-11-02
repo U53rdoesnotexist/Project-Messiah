@@ -6,12 +6,12 @@ var mapwidth, mapheight;
 function game() {
 
     function gameinit() {
-        tick = 0, cycle = 1;
+        tick = 0, cycle = 0;
         if (playercount == 2) opponentid = myid === 0 ? 1 : 0
         latency = singleplayer ? 0 : 8
 
         console.clear();
-        console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
+        console.log(`Cycle: 0, ID: ${myid}, Players: ${playercount}`);
     }
 
     function tickincrement() {
@@ -20,10 +20,45 @@ function game() {
         if (tick >= 100) {
             tick -= 100;
             cycle += 1;
-            
+
             console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
         }
-        
+
+        if (cycle <= 4) opening()
+
+
+    }
+
+    function opening() {
+
+        var targetland = 0, expandnow = false;
+
+        switch (cycle) {
+
+            //Stay this way because we will add more conditions
+            case 0:
+                if (tick + latency == 70) targetland = 112
+                break;
+            case 1:
+                if (tick + latency == 70) targetland = 312
+                break;
+            case 2:
+                if (tick + latency == 70) targetland = 684
+                break;
+            case 3:
+                if (tick + latency == 70) targetland = 1300
+                break;
+            case 4:
+                if (tick + latency == 70) targetland = 2244
+                break;
+
+        }
+
+        if (!targetland) {
+            let ratio = 2 * targetland / troops[myid] * 1000;
+            singleplayer ? singleattack(myid, 512, ratio) : multi.attack(ratio, myid)
+        }
+
     }
 
     function a() {
