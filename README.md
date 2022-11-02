@@ -11,13 +11,14 @@ A project to create clients, assistants and bots on the online browser game Terr
 ### November 2022
 
 - 1/11: Reorganization of files, variables and functions
+- 2/11: Opening
 
 ## Development Plans
 
 - Smart Openings
-- Dynamic latency?
+- Dynamic latency
 - Rating/Priority system, Flanking and bot attacks
 - Cancelling? Density/Troop Checks?
 - Attack Opponents
-- Spawn algorithm
-- Bot Automation
+- Spawn algorithm and choosing
+- 100% Bot Automation
