@@ -54,7 +54,7 @@ function game() {
 
         }
 
-        if (!targetland) {
+        if (targetland) {
             let ratio = 2 * targetland / troops[myid] * 1000;
             singleplayer ? singleattack(myid, 512, ratio) : multi.attack(ratio, myid)
         }
