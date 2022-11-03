@@ -24,40 +24,82 @@ function game() {
             console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
         }
 
-        if (cycle <= 4) opening()
+        for (let i = 0; i < attacks.length; i++) {
+            if (attacks[i].target == 512) {
+                if ((singleplayer && tick + latency == 3 && ![7,8].includes(cycle)) || !singleplayer && tick + latency == 103 && ![6,7].includes(cycle)) cancel(myid)
+            }
+        }
 
+        if (cycle <= 4) opening1()
+        else if (cycle <= 8) opening2()
 
     }
 
-    function opening() {
+    function opening1() {
 
-        var targetland = 0, expandnow = false;
+        var targetland = 0;
 
         switch (cycle) {
-
             //Stay this way because we will add more conditions
             case 0:
-                if (tick + latency == 70) targetland = 112
+                if (tick + latency == 70) targetland = 126
                 break;
             case 1:
-                if (tick + latency == 70) targetland = 312
+                if (tick + latency == 70) targetland = 336
                 break;
             case 2:
-                if (tick + latency == 70) targetland = 684
+                if (tick + latency == 70) targetland = 720
                 break;
             case 3:
-                if (tick + latency == 70) targetland = 1300
+                if (tick + latency == 70) targetland = 1350
                 break;
             case 4:
-                if (tick + latency == 70) targetland = 2244
+                if (tick + latency == 70) targetland = 2310
                 break;
-
         }
 
-        if (targetland) {
-            let ratio = 2 * targetland / troops[myid] * 1000;
-            singleplayer ? singleattack(myid, 512, ratio) : multi.attack(ratio, myid)
+        if (targetland) attack(2 * (targetland - land[myid]), myid, type = 'Opening1') 
+    }
+
+    function opening2() {
+
+        var amount = 0;
+
+        if (cycle == 5 && tick + latency == 30 || cycle == 6 && tick + latency == 25) {
+
+            amount = 2500;
+
+        } else if ((cycle == 5 && tick + latency > 30 && tick + latency < 90) || (cycle == 6 && tick + latency > 25 && tick + latency < 90) || cycle >= 7) {
+
+            let exist = false;
+
+            for (let i = 0; i < attacks.length; i++) {
+
+                if (attacks[i].target == 512) {
+
+                    if (attacks[i].remaining <= 500) {
+                        amount = 2500;
+                        break;
+                    }
+                    exist = true;
+                }
+            }
+            if (!exist) amount = 2500
         }
+        if (amount) attack(amount, myid, type = 'Opening2')
+    }
+
+    function attack(amount, target, type = 'Normal') {
+        let ratio = amount * 1000 / troops[myid];
+        if (ratio < 10) return 0
+        else if (ratio > 700 && type != 'Opening2') ratio = 700
+        singleplayer ? singleattack(myid, 512, ratio) : multi.attack(ratio, myid)
+    }
+
+    function cancel(id) {
+
+        let target = (id == myid) ? 512 : id
+        singleplayer ? single.cancel(myid, target) : multi.cancel(target)
 
     }
 
