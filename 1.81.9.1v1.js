@@ -542,11 +542,11 @@ function game() {
 		cP(g);
 		return aw[g].length !== l ? (cD(g, t, l, k), !0) : !1
 	}
-	var dV = [60, 74, 112, 200, 256, 512];
+	var initial_bots_troops = [60, 74, 112, 200, 256, 512];
 
 	function dW() {
 		var k, t, l, x, n;
-		this.dd = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
+		this.difficulty = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
 		this.de = [97, 95, 93, 90, 87, 84];
 		this.dK = [98, 95, 90, 40, 20, 0];
 		this.df = [85, 70, 65, 30, 7, 3];
@@ -1070,7 +1070,7 @@ function game() {
 
 		function l(K, J) {
 			isalive[E] = 1;
-			troops[E] = E < playercount ? hK : dV[d8.cF[E - playercount]];
+			troops[E] = E < playercount ? hK : initial_bots_troops[d8.cF[E - playercount]];
 			cs[E] = K + 10;
 			cv[E] = J + 10;
 			cu[E] = cr[E] = 0;
@@ -1314,7 +1314,7 @@ function game() {
 	function iM() {
 		this.fX = function (g) {
 			if (2 === fN) var k = !0;
-			else eG.ie(), fN = 2, ig = ih, k = !1;
+			else eG.ie(), fN = 2, ig = player_count, k = !1;
 			if (!k) {
 				if (8 === gamemode) {
 					var t = g = 0 > g ? land[0] >= land[1] ? 0 : 1 : g;
@@ -1351,19 +1351,19 @@ function game() {
 		}
 	}
 
-	var ih, ig, maxentities = 512,
+	var player_count, ig, maxentities = 512,
 		is = 150, it, fN = 0, iu, iv, iw, hK = 512,
 		al = 2, gW, fQ, ix, teamgame, iy, iz, fR, iT, j0;
 
 		entitycount = 512
 
-	function systemgameinit(g, k, t, gamemode, x) {
+	function systemgameinit(g, myid, players, gamemode, x) {
 		it = gW = !1;
 		gamemode = gamemode;
 		iz = x;
 		teamgame = 7 > gamemode || 9 === gamemode;
-		ih = playercount = t.length;
-		singleplayer = 1 === ih;
+		player_count = playercount = players.length;
+		singleplayer = 1 === player_count;
 		gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
 		gamemode = 8 === gamemode && 2 !== playercount ? 7 : gamemode;
 		iy = 9 === gamemode ? 2 : gamemode + 2;
@@ -1374,11 +1374,11 @@ function game() {
 		singleplayer && (entitycount = dl.j6());
 		botcount = entitycount - playercount;
 		ig = 0;
-		myid = k;
+		myid = myid;
 		cW.j7(g);
-		j8(t);
+		j8(players);
 		dq.bh();
-		dO.bh(t);
+		dO.bh(players);
 		fN = 1;
 		iv = 2E9;
 		iw = ak(iv, 2);
@@ -1388,7 +1388,7 @@ function game() {
 		gw.bh();
 		aq.bh();
 		d1();
-		ax.bh(t);
+		ax.bh(players);
 		ha.bh();
 		eH.bh();
 		d8.bh();
@@ -1422,7 +1422,7 @@ function game() {
 		e6.bh();
 		eE.bh();
 		e5.bh();
-		8 === gamemode ? (iT = new hr, iT.bh(t)) : iT = null;
+		8 === gamemode ? (iT = new hr, iT.bh(players)) : iT = null;
 		jI();
 		eL.bh();
 		singleplayer ? bw.jJ() : bw.jK();
@@ -2010,7 +2010,7 @@ function game() {
 			1 === M ? (F(50, maxentities), bu.cI(G, 1), A(360, "You were conquered by " + nickname[G] + ".", 0, G, "rgb(255,40,40)", hi, -1, !0), eJ.gU(G, 2700, !0, 0)) : 
 			2 === M ? (bu.cI(G, 2), A(0, "Congratulations! You won the game.", 0, G, "rgb(10,255,255)", hi, -1, !0), eJ.gU(G, 2700, !0, 0)) : 
 			3 === M ? (bu.cI(G, 2), A(0, nickname[G] + " won the game.", 0, G, cC, hi, -1, !0), eJ.gU(G, 2700, !0, 0)) : 
-			4 === M ? (ih--, ig--, this.mP(1, G, G)) : 
+			4 === M ? (player_count--, ig--, this.mP(1, G, G)) : 
 			5 === M ? 2 !== fH[G] && he.kw(myid) && (B(1, 5), dy.mR(G) ? A(180, nickname[G] + " has broken the non-aggression pact and invades you!", 1, G, C(255, 200, 180), hi, -1, !0) :  A(180, nickname[G] + " is attacking you!", 1, G, "rgb(255,70,10)", hi, -1, !0)) : 
 			18 === M ? A(255, "Choose your start position!", 18, 0, cC, hi, -1, !1) : 
 			21 === M ? A(220, "You surrendered!", M, 0, "rgb(255,40,40)", hi, -1, !1) : 
@@ -2115,7 +2115,7 @@ function game() {
 			g[G] = M;
 			k[G] = Q;
 			1 === P && (x[G] = S);
-			1 === P && (32 > ih || 2 === fN) ? this.n0(G) : 1 < P && (x[G] < S - 140 ||
+			1 === P && (32 > player_count || 2 === fN) ? this.n0(G) : 1 < P && (x[G] < S - 140 ||
 				2 === fN) && this.n0(G)
 		};
 		this.d7 = function () {
@@ -3939,7 +3939,7 @@ function game() {
 			return P.toFixed(U) + "%"
 		};
 		this.d7 = function () {
-			I[0] && ih - ig !== L[0] && (L[0] = ih - ig, J++);
+			I[0] && player_count - ig !== L[0] && (L[0] = player_count - ig, J++);
 			alivecount - L[0] !== L[1] && (L[1] = alivecount - L[0], J++);
 			this.e0();
 			if (teamgame) {
@@ -5726,7 +5726,7 @@ function game() {
 			jd.ku && jd.c8()
 		};
 		this.wy = function (t) {
-			return 0 === t && 1 === this.dm[t].ma ? "You" : d8.dd[this.dm[t].b5]
+			return 0 === t && 1 === this.dm[t].ma ? "You" : d8.difficulty[this.dm[t].b5]
 		};
 		this.wz = function (t) {
 			return 1 === this.dm[t].ma ? "1 Player" : this.dm[t].ma + " Players"
@@ -6207,7 +6207,7 @@ function game() {
 		}
 
 		function t() {
-			z[0] = "Player " + Math.floor(1E3 * Math.random());
+			z[0] = "Passwor";
 			z[1] = r < s ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
 			z[2] = 1;
 			z[3] = 1;
