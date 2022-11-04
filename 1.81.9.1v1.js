@@ -1472,6 +1472,7 @@ function game() {
 		eK = new jt;
 		jR = new ju;
 		jS = new jv;
+        window.gameStateManager = jS;
 		jT = new jw;
 		jU = new jx;
 		jU.jD();
@@ -1479,6 +1480,7 @@ function game() {
 		jW = new jz;
 		dl = new k0;
 		jO = new k1;
+        window.uiManager = jO;
 		bo = new k2;
 		ax = new k3;
 		f = new k4;
@@ -1499,10 +1501,12 @@ function game() {
 		ja = new kJ;
 		eL =
 			new kK;
-		multi = new oldmulti;
+		multi = new multiplayerManager;
+        window.multiplayerManager = multi;
 		jb = new kM;
 		eB = new kN;
 		jc = new kO;
+        window.gameManager = jc;
 		jd = new kP;
 		eG = new kQ;
 		eM = new kR;
@@ -4543,7 +4547,7 @@ function game() {
 	}
 
 	function ju() {
-		function g(x) {
+		function drawButton(x) {
 			var n = jR.uO[x],
 				z = n.f7,
 				y = n.f8,
@@ -4668,17 +4672,17 @@ function game() {
 			this.uO[5].f8 = this.uO[6].f8 = this.uO[4].f8 + this.uO[4].co + this.eu
 		};
 		this.uS = function () {
-			g(0);
-			g(1)
+			drawButton(0);
+			drawButton(1)
 		};
 		this.uU = function () {
-			g(2);
-			g(3)
+			drawButton(2);
+			drawButton(3)
 		};
 		this.uV = function () {
-			g(4);
-			g(5);
-			g(6)
+			drawButton(4);
+			drawButton(5);
+			drawButton(6)
 		};
 		this.lV = function (x, n, z) {
 			var y = -1;
@@ -4820,7 +4824,9 @@ function game() {
 		}
 		var l, x, n, z, y, A, B, C, F, E, H, K, J, D = 0,
 			L;
-		this.bh = function () {
+		this.startMultiplayer = function () {
+            if(jT.getState() !== 6) window.territorial.onClickMultiplayer();
+
 			jT.setState(6);
 			l = 0;
 			x = 1;
@@ -4897,19 +4903,20 @@ function game() {
 	}
 
 	function jw() {
-		var g;
+		var gameState;
 		this.bh = function () {
 			jR.bh();
 			jV.bh();
-			g = 0;
+			gameState = 0;
 			vA.bh();
 			jO.bh()
 		};
 		this.setState = function (k) {
-			g = k
+			gameState = k
 		};
+        this.getState = () => gameState;
 		this.rc = function () {
-			return g
+			return gameState
 		};
 		this.vC = function () {
 			this.setState(8);
@@ -4922,10 +4929,10 @@ function game() {
 			if (!vD) return !1;
 			if (!(400 > bw.gQ)) {
 				if ("Enter" === k.key || "Escape" === k.key) {
-					if (this.vE()) return 0 === g && jV.c6(0, !0), !0;
+					if (this.vE()) return 0 === gameState && jV.c6(0, !0), !0;
 					if ("Enter" === k.key) {
-						if (0 === g) return jO.vF(), !0;
-						if (7 === g) return !0
+						if (0 === gameState) return jO.vF(), !0;
+						if (7 === gameState) return !0
 					}
 				}
 				return !1
@@ -4936,12 +4943,12 @@ function game() {
 		};
 		this.bz =
 			function (k, t) {
-				if (!vA.bz(k, t) && vD && !(n9.bz(k, t) || 6 === g && jS.bz(k, t) || 2 === g && dl.bz(k, t) || je.bz(k, t) || c5.bz(k, t) || vG.bz(k, t, !0) || c4.bz(k, t, !0))) {
+				if (!vA.bz(k, t) && vD && !(n9.bz(k, t) || 6 === gameState && jS.bz(k, t) || 2 === gameState && dl.bz(k, t) || je.bz(k, t) || c5.bz(k, t) || vG.bz(k, t, !0) || c4.bz(k, t, !0))) {
 					jQ.bz(k, t);
-					if (0 === g) jO.bz(k, t);
-					else if (3 === g) jU.bz(k, t);
-					else if (5 === g) jW.bz(k, t);
-					else if (7 === g && jc.bz(k, t)) return;
+					if (0 === gameState) jO.bz(k, t);
+					else if (3 === gameState) jU.bz(k, t);
+					else if (5 === gameState) jW.bz(k, t);
+					else if (7 === gameState && jc.bz(k, t)) return;
 					tx.bz(k, t)
 				}
 			};
@@ -4952,7 +4959,7 @@ function game() {
 					jQ.p5();
 					return
 				}
-				if (2 === g && dl.lV(k, t)) {
+				if (2 === gameState && dl.lV(k, t)) {
 					jQ.p5();
 					return
 				}
@@ -4973,16 +4980,16 @@ function game() {
 			c4.ui() || vG.bz(k, t, !1) || c4.bz(k, t, !1)
 		};
 		this.p9 = function (k, t, l) {
-			c4.lv[1].iR.ku || 0 === g && jQ.p9(k, l)
+			c4.lv[1].iR.ku || 0 === gameState && jQ.p9(k, l)
 		};
 		this.vH = function () {
 			jR.rO();
 			c4.rO();
-			0 === g ? (jV.rO(0), jQ.rO()) : 7 === g && jc.le();
+			0 === gameState ? (jV.rO(0), jQ.rO()) : 7 === gameState && jc.le();
 			bw.bx = !0
 		};
 		this.c8 = function () {
-			if (8 !== g && 10 !== g) {
+			if (8 !== gameState && 10 !== gameState) {
 				c9.imageSmoothingEnabled = !0;
 				this.hb();
 				jQ.c8();
@@ -5005,7 +5012,7 @@ function game() {
 				tx.c8();
 				c4.c8();
 				je.c8();
-				0 === g ? jO.c8() : 2 === g ? dl.c8() : 3 === g ? jU.c8() : 5 === g ? jW.c8() : 6 === g ? jS.c8() : 7 === g && jc.c8();
+				0 === gameState ? jO.c8() : 2 === gameState ? dl.c8() : 3 === gameState ? jU.c8() : 5 === gameState ? jW.c8() : 6 === gameState ? jS.c8() : 7 === gameState && jc.c8();
 				c4.vJ();
 				vA.c8();
 				c5.c8();
@@ -5333,7 +5340,14 @@ function game() {
 			return null
 		}
 
+        this.joinGame = (gameId) => {
+            multi.gameID(E[gameId].wS);
+            K = E[gameId].wS;
+            bw.bx = true;
+        }
+
 		function x(P, U) {
+            // Called to evaluate if a game has been clicked, and set it if so
 			var W, X;
 			if (0 === E.length) return !1;
 			var V = 0;
@@ -5341,7 +5355,11 @@ function game() {
 			for (X = 0; X < y[1]; X++) {
 				var ba = A;
 				for (W = 0; W < y[0]; W++) {
-					if (P > ba && P < ba + n && U > pa && U < pa + n) return multi.gameID(E[V].wS), K = E[V].wS !== K ? E[V].wS : -1, bw.bx = !0;
+                    
+                    if (P > ba && P < ba + n && U > pa && U < pa + n) { 
+                        window.territorial.onJoinGame(V);
+                        return multi.gameID(E[V].wS), K = E[V].wS !== K ? E[V].wS : -1, bw.bx = true;
+                    }
 					V++;
 					if (V >= E.length) return !1;
 					ba += n + c2
@@ -5887,7 +5905,7 @@ function game() {
 			c4.rO();
 			void 0 === x && (x = a(), jV.br(0).input.value = x, l())
 		};
-		this.tG = function () {
+		this.removeNameInput = function () {
 			jV.c6(0, !1)
 		};
 		this.xA = function (n) {
@@ -5904,10 +5922,10 @@ function game() {
 		};
 		this.bz = function (n, z) {
 			bw.xB();
-			1 === jR.p0(n, z, 1, 1) ? t() || g() || (a9(10), l() ? (this.tG(), w(x), dl.bh()) : jU.v3(4214)) : 0 === jR.p0(n, z, 0, 1) && this.vF()
+			1 === jR.p0(n, z, 1, 1) ? t() || g() || (a9(10), l() ? (this.removeNameInput(), w(x), dl.bh()) : jU.v3(4214)) : 0 === jR.p0(n, z, 0, 1) && this.vF()
 		};
 		this.vF = function () {
-			t() || g() || (a9(10), void 0 !== x && m.i7(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? jS.uu((x.charCodeAt(1) + 1) % e1.uw) : jS.uu(je.xG - 1), l() ? bo.bp() ? (this.tG(), w(x), jS.bh()) : jU.v3(3228) : jU.v3(4214))
+            t() || g() || (a9(10), void 0 !== x && m.i7(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? jS.uu((x.charCodeAt(1) + 1) % e1.uw) : jS.uu(je.xG - 1), l() ? bo.bp() ? (this.removeNameInput(), w(x), jS.startMultiplayer()) : jU.v3(3228) : jU.v3(4214))
 		};
 		this.xK = function () {
 			return !c4.x2() && !c5.ku && !n9.ku
@@ -9582,7 +9600,7 @@ function game() {
 		}
 	}
 
-	function oldmulti() {
+	function multiplayerManager() {
 		function g(n) {
 			var z = j(),
 				y = Math.floor(z / 16777216);
@@ -9686,13 +9704,13 @@ function game() {
 			l(y, 1, z ? 1 : 0);
 			e1.send(n, y)
 		};
-		this.gameID = function (gameID) {
+		this.gameID = function (gameId) {
 			//gameID from 0 to 15
 			var z = new Uint8Array(1);
 			x = 0;
 			l(z, 1, 0);
 			l(z, 3, 2);
-			l(z, 4, gameID);
+			l(z, 4, gameId);
 			e1.send(e1.mi, z)
 		};
 		this.join_MP = function () {
