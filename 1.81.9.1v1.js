@@ -1,7 +1,7 @@
 //merge was successful 2
 var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
-var nickname, land, troops, borderpixels, offset, timingbot, attacks;
+var nickname, land, troops, borderingpixels, offset, timingbot, attacks;
 var mapwidth, mapheight;
 
 function game() {
@@ -24,7 +24,6 @@ function game() {
 			
 			console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
 		}
-		
 	}
 
 	function a() {
@@ -123,7 +122,7 @@ function game() {
 	function aC() {
 		b ? location.reload() : 7 <= d ? e.setState(5) : location.reload()
 	}
-	var aD, aE, troops_returned, aG, aH, last_border_land, aJ, aK, aL, aM, aO, aP;
+	var aD, last_action_id, troops_returned, aG, aH, last_border_land, aJ, aK, aL, aM, aO, aP;
 
 	function aQ() {
 		last_border_land = 0;
@@ -140,11 +139,11 @@ function game() {
 	}
 
 	function aT(g) {
-		aE = g;
+		last_action_id = g;
 		aP = !1;
 		aU();
 		aV();
-		for (g = aW.aX(aE) - 1; 0 <= g; g--) 0 === aW.aY(aE, g) && (aD = g, aZ());
+		for (g = aW.aX(last_action_id) - 1; 0 <= g; g--) 0 === aW.aY(last_action_id, g) && (aD = g, aZ());
 		aP && aa()
 	}
 
@@ -154,8 +153,8 @@ function game() {
 	}
 
 	function aZ() {
-		aH = aW.ad(aE, aD);
-		troops_returned = aW.ae(aE, aD);
+		aH = aW.ad(last_action_id, aD);
+		troops_returned = aW.ae(last_action_id, aD);
 		af();
 		0 === last_border_land ? refund() : (ah(), canproceed() ? aj() : refund())
 	}
@@ -171,28 +170,28 @@ function game() {
 	}
 
 	function refund() {
-		1 === aW.aX(aE) && am.an(aE);
-		if (aE !== myid) troops[aE] += troops_returned, aq.ar(aE);
+		1 === aW.aX(last_action_id) && am.an(last_action_id);
+		if (last_action_id !== myid) troops[last_action_id] += troops_returned, aq.ar(last_action_id);
 		else {
-			var g = troops[aE];
-			troops[aE] += troops_returned;
-			aq.ar(aE);
-			as.at[13] -= troops[aE] - g
+			var g = troops[last_action_id];
+			troops[last_action_id] += troops_returned;
+			aq.ar(last_action_id);
+			as.at[13] -= troops[last_action_id] - g
 		}
-		aW.au(aE, aD)
+		aW.au(last_action_id, aD)
 	}
 
 	function aU() {
-		var g = aw[aE].length;
+		var g = borderpixels[last_action_id].length;
 		g = g > aJ ? aJ : g;
 		aL = 0;
-		for (--g; 0 <= g; g--) aM[aL++] = aw[aE][g]
+		for (--g; 0 <= g; g--) aM[aL++] = borderpixels[last_action_id][g]
 	}
 
 	function aV() {
 		var g;
-		for (g = aw[aE].length - 1; 0 <= g; g--) ax.ay(aw[aE][g]) && ax.az(aw[aE][g], aE);
-		aw[aE] = []
+		for (g = borderpixels[last_action_id].length - 1; 0 <= g; g--) ax.ay(borderpixels[last_action_id][g]) && ax.az(borderpixels[last_action_id][g], last_action_id);
+		borderpixels[last_action_id] = []
 	}
 
 	function af() {
@@ -201,41 +200,41 @@ function game() {
 	}
 
 	function bN() {
-		for (var g, k, t = last_border_land - 1; 0 <= t; t--) g = ak(aK[t], 4) % mapwidth, k = ak(aK[t], 4 * mapwidth), cs[aE] = cs[aE] > g ? g : cs[aE], cv[aE] = cv[aE] > k ? k : cv[aE], cr[aE] = cr[aE] < g ? g : cr[aE], cu[aE] = cu[aE] < k ? k : cu[aE]
+		for (var g, k, t = last_border_land - 1; 0 <= t; t--) g = ak(aK[t], 4) % mapwidth, k = ak(aK[t], 4 * mapwidth), cs[last_action_id] = cs[last_action_id] > g ? g : cs[last_action_id], cv[last_action_id] = cv[last_action_id] > k ? k : cv[last_action_id], cr[last_action_id] = cr[last_action_id] < g ? g : cr[last_action_id], cu[last_action_id] = cu[last_action_id] < k ? k : cu[last_action_id]
 	}
 
 	function ab() {
-		var g = aw[aE].length,
+		var g = borderpixels[last_action_id].length,
 			k;
 		var t = g - 1;
 		a: for (; 0 <= t; t--) {
 			for (k = 3; 0 <= k; k--) {
-				var l = aw[aE][t] + offset[k];
-				if (ax.b8(l) || ax.b6(l) && ax.b7(l) !== aE) {
-					ax.cO(aw[aE][t], aE);
+				var l = borderpixels[last_action_id][t] + offset[k];
+				if (ax.b8(l) || ax.b6(l) && ax.b7(l) !== last_action_id) {
+					ax.cO(borderpixels[last_action_id][t], last_action_id);
 					continue a
 				}
 			}
-			aw[aE][t] = aw[aE][g - 1];
-			aw[aE].pop();
+			borderpixels[last_action_id][t] = borderpixels[last_action_id][g - 1];
+			borderpixels[last_action_id].pop();
 			g--
 		}
 	}
 
 	function ac() {
-		var g = borderpixels[aE].length,
+		var g = borderingpixels[last_action_id].length,
 			k, t, l = g - 1;
 		a: for (; 0 <= l; l--) {
 			var x = t = !1;
 			for (k = 3; 0 <= k; k--) {
-				var n = borderpixels[aE][l] + offset[k];
-				if (ax.y1(n, aE)) continue a;
+				var n = borderingpixels[last_action_id][l] + offset[k];
+				if (ax.y1(n, last_action_id)) continue a;
 				x = x || ax.y4(n);
 				t = t || ax.y0(n)
 			}
-			x ? bF[aE].push(borderpixels[aE][l]) : t ? bI[aE].push(borderpixels[aE][l]) : ax.hN(borderpixels[aE][l], aE);
-			borderpixels[aE][l] = borderpixels[aE][g - 1];
-			borderpixels[aE].pop();
+			x ? bF[last_action_id].push(borderingpixels[last_action_id][l]) : t ? bI[last_action_id].push(borderingpixels[last_action_id][l]) : ax.hN(borderingpixels[last_action_id][l], last_action_id);
+			borderingpixels[last_action_id][l] = borderingpixels[last_action_id][g - 1];
+			borderingpixels[last_action_id].pop();
 			g--
 		}
 	}
@@ -256,7 +255,7 @@ function game() {
 		for (var k = g.length, t, l, x = k - 1; 0 <= x; x--)
 			for (t = 3; 0 <= t; t--)
 				if (l = g[x] + offset[t], ax.y1(l, aH)) {
-					borderpixels[aH].push(g[x]);
+					borderingpixels[aH].push(g[x]);
 					g[x] = g[k - 1];
 					g.pop();
 					k--;
@@ -266,7 +265,7 @@ function game() {
 
 	function bJ() {
 		for (var g, k, t = last_border_land - 1; 0 <= t; t--)
-			for (g = 3; 0 <= g; g--) k = aK[t] + offset[g], ax.y2(aH, k) && ax.y3(k) && (borderpixels[aH].push(k), ax.az(k, aH))
+			for (g = 3; 0 <= g; g--) k = aK[t] + offset[g], ax.y2(aH, k) && ax.y3(k) && (borderingpixels[aH].push(k), ax.az(k, aH))
 	}
 
 	function bK() {
@@ -319,9 +318,9 @@ function game() {
 
 	function bB() {
 		bC();
-		bD(borderpixels[aH]);
+		bD(borderingpixels[aH]);
 		bD(bF[aH]);
-		bG(aw[aH]);
+		bG(borderpixels[aH]);
 		bH(bF[aH]);
 		bH(bI[aH]);
 		bJ();
@@ -330,8 +329,8 @@ function game() {
 
 	function bA() {
 		aP = !0;
-		aW.bL(aE, aD, troops_returned);
-		land[aE] += last_border_land;
+		aW.bL(last_action_id, aD, troops_returned);
+		land[last_action_id] += last_border_land;
 		bN();
 		bO()
 	}
@@ -354,16 +353,16 @@ function game() {
 
 	function bY(g, k) {
 		if (0 < k)
-			if (g >= k) aW.bZ(aH, aE, 0), g -= k;
+			if (g >= k) aW.bZ(aH, last_action_id, 0), g -= k;
 			else {
-				aW.bZ(aH, aE, k - g);
+				aW.bZ(aH, last_action_id, k - g);
 				return
 			} g = ak(g, 2);
 		troops[aH] = troops[aH] >= g ? troops[aH] - g : 0
 	}
 
 	function bV() {
-		return aW.ba(aH, aE)
+		return aW.ba(aH, last_action_id)
 	}
 
 	function bT() {
@@ -375,7 +374,7 @@ function game() {
 	}
 
 	function bc() {
-		return borderpixels[aH].length + ak(bF[aH].length + bI[aH].length, 50)
+		return borderingpixels[aH].length + ak(bF[aH].length + bI[aH].length, 50)
 	}
 
 	function bP() {
@@ -384,7 +383,7 @@ function game() {
 	}
 
 	function bO() {
-		for (var g = last_border_land - 1; 0 <= g; g--) aw[aE].push(aK[g]), borderpixels[aE].push(aK[g]), ax.az(aK[g], aE)
+		for (var g = last_border_land - 1; 0 <= g; g--) borderpixels[last_action_id].push(aK[g]), borderingpixels[last_action_id].push(aK[g]), ax.az(aK[g], last_action_id)
 	}
 
 	function be() {
@@ -451,39 +450,39 @@ function game() {
 
 	function cK(g, k) {
 		var t, l;
-		for (t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (ax.cM(borderpixels[g][t]))
+		for (t = borderingpixels[g].length - 1; 0 <= t; t--)
+			if (ax.cM(borderingpixels[g][t]))
 				for (l = 3; 0 <= l; l--)
-					if (ax.b6(borderpixels[g][t] + offset[l]) && ax.b7(borderpixels[g][t] + offset[l]) === k) {
-						aw[g].push(borderpixels[g][t]);
+					if (ax.b6(borderingpixels[g][t] + offset[l]) && ax.b7(borderingpixels[g][t] + offset[l]) === k) {
+						borderpixels[g].push(borderingpixels[g][t]);
 						break
 					}
 	}
 
 	function cH(g, k) {
-		for (var t = aw[k].length - 1; t >= g; t--) ax.cO(aw[k][t], k)
+		for (var t = borderpixels[k].length - 1; t >= g; t--) ax.cO(borderpixels[k][t], k)
 	}
 
 	function cP(g) {
-		for (var k, t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (ax.cM(borderpixels[g][t]))
+		for (var k, t = borderingpixels[g].length - 1; 0 <= t; t--)
+			if (ax.cM(borderingpixels[g][t]))
 				for (k = 3; 0 <= k; k--)
-					if (ax.b8(borderpixels[g][t] + offset[k])) {
-						aw[g].push(borderpixels[g][t]);
+					if (ax.b8(borderingpixels[g][t] + offset[k])) {
+						borderpixels[g].push(borderingpixels[g][t]);
 						break
 					}
 	}
 
 	function cQ(g, k) {
 		var t, l;
-		var x = borderpixels[g].length;
+		var x = borderingpixels[g].length;
 		var n = 256 <= x ? 12 : 32 <= x ? 6 : 1;
 		x = x - 1 - cW.cX(n);
 		cY = 0;
 		a: for (; 0 <= x; x -= n)
 			for (l = 3; 0 <= l; l--) {
-				var z = ax.b8(borderpixels[g][x] + offset[l]) ? maxentities : ax.b7(borderpixels[g][x] + offset[l]);
-				if (z === maxentities || ax.b6(borderpixels[g][x] + offset[l]) && z !== g && (k || cZ(g, z))) {
+				var z = ax.b8(borderingpixels[g][x] + offset[l]) ? maxentities : ax.b7(borderingpixels[g][x] + offset[l]);
+				if (z === maxentities || ax.b6(borderingpixels[g][x] + offset[l]) && z !== g && (k || cZ(g, z))) {
 					for (t = cY - 1; 0 <= t; t--)
 						if (ca[t] === z) continue a;
 					ca[cY] = z;
@@ -496,10 +495,10 @@ function game() {
 	function cc(g, k) {
 		var t, l;
 		cY = 0;
-		for (t = borderpixels[g].length - 1; 0 <= t; t--)
+		for (t = borderingpixels[g].length - 1; 0 <= t; t--)
 			for (l = 3; 0 <= l; l--) {
-				var x = ax.b8(borderpixels[g][t] + offset[l]) ? maxentities : ax.b7(borderpixels[g][t] + offset[l]);
-				if (x === maxentities || ax.b6(borderpixels[g][t] + offset[l]) && x !== g && (k || cZ(g, x))) {
+				var x = ax.b8(borderingpixels[g][t] + offset[l]) ? maxentities : ax.b7(borderingpixels[g][t] + offset[l]);
+				if (x === maxentities || ax.b6(borderingpixels[g][t] + offset[l]) && x !== g && (k || cZ(g, x))) {
 					ca[cY++] = x;
 					return
 				}
@@ -584,8 +583,8 @@ function game() {
 	function d3(g, k) {
 		teamgame && (cz[g] = 0);
 		if (aW.d5(g) && !(60 > k))
-			if (0 === borderpixels[g].length) d6.d7(g, d8.cF[g - playercount]) || (d8.d9(g - playercount, 200), dA(g, k, d8.cF[g - playercount], aq.dB(g)));
-			else if (!(0 < bF[g].length && cW.random() < cW.value(bF[g].length > borderpixels[g].length ? 7 : 3) && d6.d7(g, d8.cF[g - playercount]))) {
+			if (0 === borderingpixels[g].length) d6.d7(g, d8.cF[g - playercount]) || (d8.d9(g - playercount, 200), dA(g, k, d8.cF[g - playercount], aq.dB(g)));
+			else if (!(0 < bF[g].length && cW.random() < cW.value(bF[g].length > borderingpixels[g].length ? 7 : 3) && d6.d7(g, d8.cF[g - playercount]))) {
 				var t = aq.dB(g);
 				troops[g] > t && k < troops[g] - t && (k = troops[g] - t);
 				teamgame ? dC(g, k, d8.cF[g - playercount], t) : dD(g, k, d8.cF[g - playercount])
@@ -629,16 +628,16 @@ function game() {
 			var l = ak(11 * troops[t], 5);
 			k = k > l ? k : l
 		}
-		l = aw[g].length;
+		l = borderpixels[g].length;
 		cK(g, t);
 		cD(g, t, l, k)
 	}
 
 	function dF(g, k) {
 		var t = maxentities,
-			l = aw[g].length;
+			l = borderpixels[g].length;
 		cP(g);
-		return aw[g].length !== l ? (cD(g, t, l, k), !0) : !1
+		return borderpixels[g].length !== l ? (cD(g, t, l, k), !0) : !1
 	}
 	var dV = [60, 74, 112, 200, 256, 512];
 
@@ -1159,8 +1158,8 @@ function game() {
 			isalive[E] = 0;
 			troops[E] = 0;
 			land[E] = hJ[E] = 0;
-			aw[E] = [];
 			borderpixels[E] = [];
+			borderingpixels[E] = [];
 			bF[E] = [];
 			bI[E] = [];
 			cs[E] = cv[E] = cr[E] = cu[E] = 0
@@ -1180,7 +1179,7 @@ function game() {
 						ax.ay(I) && (cs[E] = D < cs[E] ? D : cs[E], cr[E] = D > cr[E] ? D : cr[E], cv[E] = L < cv[E] ? L : cv[E], cu[E] = L > cu[E] ? L : cu[E], H[land[E]] = I, land[E]++, ax.hN(I, E))
 					} 
 					hJ[E] = land[E];
-			for (I = land[E] - 1; 0 <= I; I--) ax.hO(H[I], E) ? (ax.az(H[I], E), borderpixels[E].push(H[I])) : ax.hP(H[I]) ? (ax.az(H[I], E), bF[E].push(H[I])) : ax.hQ(H[I]) && (ax.az(H[I], E), bI[E].push(H[I]))
+			for (I = land[E] - 1; 0 <= I; I--) ax.hO(H[I], E) ? (ax.az(H[I], E), borderingpixels[E].push(H[I])) : ax.hP(H[I]) ? (ax.az(H[I], E), bF[E].push(H[I])) : ax.hQ(H[I]) && (ax.az(H[I], E), bI[E].push(H[I]))
 		}
 		var x, n, z, y, A, B, C, F, E, H;
 		this.bh = function () {
@@ -1595,8 +1594,7 @@ function game() {
 		ha = new kH;
 		jZ = new kI;
 		ja = new kJ;
-		eL =
-			new kK;
+		eL = new kK;
 		multi = new oldmulti;
 		jb = new kM;
 		eB = new kN;
@@ -3948,7 +3946,7 @@ function game() {
 
 		function l() {
 			for (var P = alivecount - 1; 0 <= P; P--)
-				if (0 < aw[entitiesalive[P]].length) return !1;
+				if (0 < borderpixels[entitiesalive[P]].length) return !1;
 			return !0
 		}
 
@@ -4222,9 +4220,9 @@ function game() {
 				var x = ak(3 * troops[g], 256);
 				l -= 500 <= t ? x : 0;
 				if (!(l <= al) && aW.d5(g)) {
-					var n = aw[g].length;
+					var n = borderpixels[g].length;
 					k === maxentities ? cP(g) : cK(g, k);
-					if (0 !== n || 0 !== aw[g].length) teamgame && (cz[g] = 1), g === myid && (as.at[0] += 500 <= t ? t - 12 : t, as.at[1]++, as.at[12] += x, as.at[13] += l), cH(n, g), aW.cI(g, l, k), troops[g] -= l + x, am.cJ(g, !1)
+					if (0 !== n || 0 !== borderpixels[g].length) teamgame && (cz[g] = 1), g === myid && (as.at[0] += 500 <= t ? t - 12 : t, as.at[1]++, as.at[12] += x, as.at[13] += l), cH(n, g), aW.cI(g, l, k), troops[g] -= l + x, am.cJ(g, !1)
 				}
 			}
 		}
@@ -6468,8 +6466,8 @@ function game() {
 
 	function yY(g) {
 		isalive[g] = troops[g] = 0;
-		aw[g] = null;
 		borderpixels[g] = null;
+		borderingpixels[g] = null;
 		bF[g] = null;
 		bI[g] = null;
 		e6.fV(g)
@@ -7074,7 +7072,7 @@ function game() {
 		}
 	}
 
-	var a0A, cs, cv, cr, cu, hJ, aw, bF, bI, fH;
+	var a0A, cs, cv, cr, cu, hJ, borderpixels, bF, bI, fH;
 
 	function j8(g) {
 		a0A = nickname = Array(maxentities);
@@ -7086,8 +7084,8 @@ function game() {
 		land = new Uint32Array(maxentities);
 		hJ = new Uint32Array(maxentities);
 		troops = new Uint32Array(maxentities);
-		aw = Array(maxentities);
 		borderpixels = Array(maxentities);
+		borderingpixels = Array(maxentities);
 		bF = Array(maxentities);
 		bI = Array(maxentities);
 		fH = new Uint8Array(maxentities);
@@ -7130,7 +7128,7 @@ function game() {
 				if (aW.d5(t)) {
 					var l = ak(40 * troops[t], 100);
 					60 > l ||
-						(0 === borderpixels[t].length ? !d6.d7(t, 2) && teamgame && dA(t, l, 0, 0) : teamgame ? dL(t, l) : dT(t, l))
+						(0 === borderingpixels[t].length ? !d6.d7(t, 2) && teamgame && dA(t, l, 0, 0) : teamgame ? dL(t, l) : dT(t, l))
 				}
 			}
 		}
@@ -7684,25 +7682,29 @@ function game() {
 			vD = !0;
 			bw.bx = !0
 		};
-		this.jB = function () {
+
+		this.jB = function() {
 			var k, t = 0;
 			var l = mapheight * mapwidth * 4;
-			for (k = mapwidth - 1; 0 <= k; k--) tW[4 * k + 2] = 3, tW[l - 4 * k - 2] = 3;
+			var x = tW,
+				n = wc;
+			for (k = mapwidth - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
 			l = 4 * mapwidth;
-			for (k = mapheight - 1; 0 <= k; k--) tW[k * l + 2] = 3, tW[k * l + l - 2] = 3;
-			for (k = mapwidth * mapheight - 1; 0 <= k; k--) l = 4 * k, 3 !== tW[l + 2] && (wc[l + 2] > wc[l + 1] && wc[l + 2] > wc[l] ? tW[l + 2] = 2 : (tW[l + 2] = 1, t++));
+			for (k = mapheight - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
+			for (k = mapwidth * mapheight - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (n[l + 2] > n[l + 1] && n[l + 2] > n[l] ? x[l + 2] = 2 : (x[l + 2] = 1, t++));
 			this.mu = (mapwidth - 2) * (mapheight - 2);
 			this.my = 0;
 			if (a1V(mt)) {
-				wc = 0;
+				n = 0;
 				l = tW;
 				var z = wc;
-				for (tW = mapwidth * mapheight - 1; 0 <= tW; tW--) k = 4 * tW, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (wc++, l[k + 2] = 3);
-				jA.my = wc
+				for (x = mapwidth * mapheight - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (n++, l[k + 2] = 3);
+				jA.my = n
 			}
 			this.mv = iu = t - this.my;
 			this.mx = this.mu - this.mv - this.my
 		}
+
 	}
 
 	function a1O(g) {
@@ -8558,7 +8560,7 @@ function game() {
 							break a
 						}
 					}
-					t === myid && (as.at[13] += l); e8.an(t, E); aW.au(t, F); aw[t].push(n); aW.cI(t, l, H); am.cJ(t, !0)
+					t === myid && (as.at[13] += l); e8.an(t, E); aW.au(t, F); borderpixels[t].push(n); aW.cI(t, l, H); am.cJ(t, !0)
 				}
 		};
 		this.fs = function (H, K) {
@@ -9150,24 +9152,24 @@ function game() {
 	}
 
 	function lO(g) {
-		var k, t, l = borderpixels[g].length;
+		var k, t, l = borderingpixels[g].length;
 		for (k = 3; 0 <= k; k--) {
 			var x = offset[k];
 			for (t = 0; t < l; t++)
-				if (ax.b8(borderpixels[g][t] + x)) return !0
+				if (ax.b8(borderingpixels[g][t] + x)) return !0
 		}
 		return !1
 	}
 
 	function lT(g, k) {
 		var t;
-		var l = borderpixels[g].length;
-		var x = borderpixels[k].length;
+		var l = borderingpixels[g].length;
+		var x = borderingpixels[k].length;
 		x < l && (l = g, g = k, k = l, l = x);
 		for (t = 3; 0 <= t; t--) {
 			var n = offset[t];
 			for (x = 0; x < l; x++) {
-				var z = borderpixels[g][x] + n;
+				var z = borderingpixels[g][x] + n;
 				if (ax.b6(z) && ax.b7(z) === k) return !0
 			}
 		}
