@@ -1,4 +1,4 @@
-var tick, cycle, latency, rating, opponentid, last_tick_attacks, pendingattacks;
+var tick, cycle, latency, rating, opponentid, last_tick_attacks, pending;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, borderpixels, offset, timingbot, attacks;
 var mapwidth, mapheight;
@@ -7,7 +7,7 @@ var latencycap = 12;
 function game() {
 
     function gameinit() {
-        tick = cycle = 0, pendingattacks = last_tick_attacks = [];
+        tick = cycle = 0, pending = last_tick_attacks = [];
         if (playercount == 2) opponentid = myid === 0 ? 1 : 0
         latency = singleplayer ? 0 : 8
 
@@ -22,7 +22,8 @@ function game() {
             tick -= 100;
             cycle += 1;
 
-            console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
+            if (pending.includes(512) && (cycle == 9 || cycle == 8 && land[myid] < 8E3)) pending.splice(pending.findIndex(id => id === 512), 1) //Temp solution to spammed 512s after opening finished, need check border to solve
+            console.log(`Cycle: ${cycle}, Latency: ${latency}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
         }
 
         let neut = false;
@@ -30,27 +31,37 @@ function game() {
 
             if (attacks[x].target == 512) neut = true
 
-            if (pendingattacks.includes(attacks[x].target)) {
+            if (pending.includes(attacks[x].target)) {
 
-                let index = NaN;
-                for (let y = 0; y < last_tick_attacks.length; y++) {
-                    if (last_tick_attacks[y].target == attacks[x].target) index = y
-                    break;
-                }
+                const obj = last_tick_attacks.find(element => element.target === attacks[x].target);
 
-                if (attacks[x].remaining >= 0.98 * attacks[x].sent || (!Number.isNaN(index) && last_tick_attacks[index].remaining < attacks[x].sent)) {
-                    pendingattacks.splice(pendingattacks.findIndex(id => id === attacks[x].target), 1);
+                if (attacks[x].remaining >= 0.95 * attacks[x].sent || (obj != undefined && obj.remaining < attacks[x].remaining)) {
+                    pending.splice(pending.findIndex(id => id === attacks[x].target), 1);
                     i--;
                 }
 
             }
         }
-        if (!neut && pendingattacks.includes(512) && !singleplayer && cycle <= 4 && latency < latencycap) latency++
+        if (!neut && pending.includes(512) && !singleplayer && cycle <= 4 && latency < latencycap) latency++
+
+        for (let x = 0; x < pending.length; x++) {
+            if (pending[x] >= 0) continue
+            const obj = last_tick_attacks.find(element => element.target === -pending[x]);
+            if (obj === undefined) continue
+            const obj2 = attacks.find(element => element.target === obj.target);
+            if (obj2 === undefined) {
+                pending.splice(x,1);
+                x--;
+            }
+        }
 
         for (let i = 0; i < attacks.length; i++) {
             if (attacks[i].target == 512) {
-                if ((singleplayer && tick + latency == 3 && ![7,8].includes(cycle)) || !singleplayer && tick + latency == 103 && ![6,7].includes(cycle)) cancel(myid)
-            }
+                if ((singleplayer && tick + latency == 3 && ![7,8].includes(cycle)) || !singleplayer && tick + latency == 103 && ![6,7].includes(cycle)) {
+                    cancel(myid);
+                    if (!pending.includes(-512)) pending.push(-512);
+                }
+            } 
         }
 
         if (cycle <= 4) opening1()
@@ -63,7 +74,7 @@ function game() {
 
     function opening1() {
 
-        if (pendingattacks.includes(512)) return 0
+        if (pending.includes(512)) return 0
         else {
             for (let i = 0; i < attacks.length; i++) {
                 if (attacks[i].target == 512) return 0
@@ -93,7 +104,7 @@ function game() {
 
         if (targetland) {
             attack(2 * (targetland - land[myid]), myid, type = 'Opening1');
-            if (!singleplayer) latency = 0
+            if (!singleplayer) latency = 2
         }
     }
 
@@ -105,16 +116,13 @@ function game() {
 
         if ((cycle == 5 && tick + latency >= 30 && tick + latency < 90) || (cycle == 6 && tick + latency >= 20 && tick + latency < 90) || cycle >= 7) {
 
-            const obj = attacks.find(element => element.target === 512);
+            const obj = attacks.find(element => element.target == 512);
 
             if (obj === undefined) amount = 2500
 
-            else if (attacks[i].remaining <= singleplayer ? 400 : 800) {
-                amount = 2500;
-                break;
-            }
+            else if (obj.remaining <= (singleplayer ? 400 : 800)) amount = 2500;
         }
-        if (amount && !pendingattacks.includes(512)) attack(amount, myid, type = 'Opening2')
+        if (amount && !pending.includes(512)) attack(amount, myid, type = 'Opening2')
     }
 
     function attack(amount, target, type = 'Normal') {
@@ -122,7 +130,7 @@ function game() {
         if (ratio < 10) return 0
         else if (ratio > 700 && type != 'Opening2') ratio = 700
         singleplayer ? singleattack(myid, 512, ratio) : multi.attack(ratio, myid)
-        pendingattacks.push(target == myid ? 512 : target);
+        pending.push(target == myid ? 512 : target);
     }
 
     function cancel(id) {
