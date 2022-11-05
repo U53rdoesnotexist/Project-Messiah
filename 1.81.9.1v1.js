@@ -1,12 +1,13 @@
-var tick, cycle, latency, rating, opponentid;
+var tick, cycle, latency, rating, opponentid, last_tick_attacks, pendingattacks;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, borderpixels, offset, timingbot, attacks;
 var mapwidth, mapheight;
+var latencycap = 12;
 
 function game() {
 
     function gameinit() {
-        tick = 0, cycle = 0;
+        tick = cycle = 0, pendingattacks = last_tick_attacks = [];
         if (playercount == 2) opponentid = myid === 0 ? 1 : 0
         latency = singleplayer ? 0 : 8
 
@@ -24,6 +25,28 @@ function game() {
             console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
         }
 
+        let neut = false;
+        for (let x = 0; x < attacks.length; x++) {
+
+            if (attacks[x].target == 512) neut = true
+
+            if (pendingattacks.includes(attacks[x].target)) {
+
+                let index = NaN;
+                for (let y = 0; y < last_tick_attacks.length; y++) {
+                    if (last_tick_attacks[y].target == attacks[x].target) index = y
+                    break;
+                }
+
+                if (attacks[x].remaining >= 0.98 * attacks[x].sent || (!Number.isNaN(index) && last_tick_attacks[index].remaining < attacks[x].sent)) {
+                    pendingattacks.splice(pendingattacks.findIndex(id => id === attacks[x].target), 1);
+                    i--;
+                }
+
+            }
+        }
+        if (!neut && pendingattacks.includes(512) && !singleplayer && cycle <= 4 && latency < latencycap) latency++
+
         for (let i = 0; i < attacks.length; i++) {
             if (attacks[i].target == 512) {
                 if ((singleplayer && tick + latency == 3 && ![7,8].includes(cycle)) || !singleplayer && tick + latency == 103 && ![6,7].includes(cycle)) cancel(myid)
@@ -33,14 +56,24 @@ function game() {
         if (cycle <= 4) opening1()
         else if (cycle <= 8) opening2()
 
+        last_tick_attacks = [];
+        for (let i = 0; i < attacks.length; i++) last_tick_attacks.push(JSON.parse(JSON.stringify(attacks[i])))
+
     }
 
     function opening1() {
 
+        if (pendingattacks.includes(512)) return 0
+        else {
+            for (let i = 0; i < attacks.length; i++) {
+                if (attacks[i].target == 512) return 0
+            }
+        }
+
         var targetland = 0;
 
         switch (cycle) {
-            //Stay this way because we will add more conditions
+
             case 0:
                 if (tick + latency == 70) targetland = 126
                 break;
@@ -58,35 +91,30 @@ function game() {
                 break;
         }
 
-        if (targetland) attack(2 * (targetland - land[myid]), myid, type = 'Opening1') 
+        if (targetland) {
+            attack(2 * (targetland - land[myid]), myid, type = 'Opening1');
+            if (!singleplayer) latency = 0
+        }
     }
 
     function opening2() {
 
         var amount = 0;
 
-        if (cycle == 5 && tick + latency == 30 || cycle == 6 && tick + latency == 25) {
+        //if (cycle == 5 && tick + latency == 30 || cycle == 6 && tick + latency == 20) amount = 2500
 
-            amount = 2500;
+        if ((cycle == 5 && tick + latency >= 30 && tick + latency < 90) || (cycle == 6 && tick + latency >= 20 && tick + latency < 90) || cycle >= 7) {
 
-        } else if ((cycle == 5 && tick + latency > 30 && tick + latency < 90) || (cycle == 6 && tick + latency > 25 && tick + latency < 90) || cycle >= 7) {
+            const obj = attacks.find(element => element.target === 512);
 
-            let exist = false;
+            if (obj === undefined) amount = 2500
 
-            for (let i = 0; i < attacks.length; i++) {
-
-                if (attacks[i].target == 512) {
-
-                    if (attacks[i].remaining <= 500) {
-                        amount = 2500;
-                        break;
-                    }
-                    exist = true;
-                }
+            else if (attacks[i].remaining <= singleplayer ? 400 : 800) {
+                amount = 2500;
+                break;
             }
-            if (!exist) amount = 2500
         }
-        if (amount) attack(amount, myid, type = 'Opening2')
+        if (amount && !pendingattacks.includes(512)) attack(amount, myid, type = 'Opening2')
     }
 
     function attack(amount, target, type = 'Normal') {
@@ -94,6 +122,7 @@ function game() {
         if (ratio < 10) return 0
         else if (ratio > 700 && type != 'Opening2') ratio = 700
         singleplayer ? singleattack(myid, 512, ratio) : multi.attack(ratio, myid)
+        pendingattacks.push(target == myid ? 512 : target);
     }
 
     function cancel(id) {
