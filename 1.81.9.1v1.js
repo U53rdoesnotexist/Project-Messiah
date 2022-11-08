@@ -1,8 +1,7 @@
-//merge was successful 2
 var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, borderingpixels, offset, timingbot, attacks;
-var mapwidth, mapheight;
+var mapwidth, mapheight, lobbygames;
 
 function game() {
 
@@ -1252,7 +1251,7 @@ function game() {
 		ha.hb();
 		c9.setTransform(fv, 0, 0, fv, 0, 0);
 		c9.imageSmoothingEnabled = 3 > fv;
-		c9.drawImage(hc, gX.g3(), gX.c7());
+		c9.drawImage(map, gX.g3(), gX.c7());
 		eB.c8();
 		c9.drawImage(hd, gX.g3(), gX.c7());
 		c9.imageSmoothingEnabled = !1;
@@ -5114,7 +5113,7 @@ function game() {
 					t = s / mapheight;
 				k = k > t ? k : t;
 				c9.setTransform(k, 0, 0, k, Math.floor((r - k * mapwidth) / 2), Math.floor((s - k * mapheight) / 2));
-				c9.drawImage(hc, 0, 0);
+				c9.drawImage(map, 0, 0);
 				c9.setTransform(1, 0, 0, 1, 0, 0);
 				c9.fillStyle = nt
 			} else c9.fillStyle = g5;
@@ -5378,23 +5377,23 @@ function game() {
 
 		function t() {
 			if (7 === jT.rc()) {
-				for (var P = -1, U = E.length - 1; 0 <= U; U--)
-					if (null === E[U].lZ) {
+				for (var P = -1, U = lobbygames.length - 1; 0 <= U; U--)
+					if (null === lobbygames[U].lZ) {
 						P = U;
 						break
 					} if (-1 !== P) {
-						U = l(E[P].wU, E[P].wV);
-						if (null !== U) E[P].lZ = U;
+						U = l(lobbygames[P].mapid, lobbygames[P].wV);
+						if (null !== U) lobbygames[P].lZ = U;
 						else {
 							U = mapwidth;
 							var W = mapheight,
-								X = hc,
+								X = map,
 								V = pH,
 								pa = wb,
 								ba = wc,
 								da = mt,
 								qa = wR;
-							wd(E[P].wU, E[P].wV);
+							wd(lobbygames[P].mapid, lobbygames[P].wV);
 							we.wf();
 							var R = document.createElement("canvas");
 							R.width = 128;
@@ -5407,16 +5406,16 @@ function game() {
 							Y > T && (T = Y);
 							O.imageSmoothingEnabled = !0;
 							O.setTransform(T, 0, 0, T, (128 - T * mapwidth) / 2, (128 - T * mapheight) / 2);
-							O.drawImage(hc, 0, 0);
+							O.drawImage(map, 0, 0);
 							mapwidth = U;
 							mapheight = W;
-							hc = X;
+							map = X;
 							pH = V;
 							wb = pa;
 							wc = ba;
 							mt = da;
 							wR = qa;
-							E[P].lZ = R
+							lobbygames[P].lZ = R
 						}
 						bw.bx = !0
 					}
@@ -5424,36 +5423,36 @@ function game() {
 		}
 
 		function l(P, U) {
-			for (var W = E.length - 1; 0 <= W; W--)
-				if (null !== E[W].lZ && E[W].wU === P && E[W].wV === U) return E[W].lZ;
+			for (var W = lobbygames.length - 1; 0 <= W; W--)
+				if (null !== lobbygames[W].lZ && lobbygames[W].mapid === P && lobbygames[W].wV === U) return lobbygames[W].lZ;
 			return null
 		}
 
 		function x(P, U) {
 			var W, X;
-			if (0 === E.length) return !1;
+			if (0 === lobbygames.length) return !1;
 			var V = 0;
 			var pa = B;
 			for (X = 0; X < y[1]; X++) {
 				var ba = A;
 				for (W = 0; W < y[0]; W++) {
-					if (P > ba && P < ba + n && U > pa && U < pa + n) return multi.gameID(E[V].wS), K = E[V].wS !== K ? E[V].wS : -1, bw.bx = !0;
+					if (P > ba && P < ba + n && U > pa && U < pa + n) return multi.gameID(lobbygames[V].gameID), K = lobbygames[V].gameID !== K ? lobbygames[V].gameID : -1, bw.bx = !0;
 					V++;
-					if (V >= E.length) return !1;
+					if (V >= lobbygames.length) return !1;
 					ba += n + c2
 				}
 				pa += n + c2
 			}
 			return !1
 		}
-		var n, z, y, A, B, C, F, E, H, K, J, D, L = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
+		var n, z, y, A, B, C, F, H, K, J, D, L = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
 			I = [0, 0, 0, 0],
 			N, G, M, Q, S;
 		this.bh = function () {
 			S = 0;
 			K = -1;
 			jT.setState(7);
-			E = [];
+			lobbygames = [];
 			this.le();
 			var P;
 			F = Array(11);
@@ -5493,7 +5492,7 @@ function game() {
 			bw.bx = !0
 		};
 		this.tG = function () {
-			E = [];
+			lobbygames = [];
 			F = []
 		};
 		this.le = function () {
@@ -5503,7 +5502,7 @@ function game() {
 			q ? (J = Math.floor(.8 * .4 * bi), D = Math.floor(.56 * J), H[0] = c2, r < s ? (H[1] = D + 2 * c2, H[2] = r - 3 * H[0], H[3] = tx.c7() - 3 * c2 - D, G = Math.floor(.95 * D), M = Math.floor((r - J - c2) / 2), Q = Math.floor(c2 + D / 2)) : (H[1] = c2, H[2] = r - 3 * c2 - J, H[3] = tx.c7() - 2 * c2, G = Math.floor(.8 * J), H[3] - D < J && (G = Math.floor(.8 * (H[3] - D)), G = mI(D, G)), M = Math.floor(r - J / 2 - c2), Q = Math.floor(c2 + D + (H[3] - D) / 2), Q = mI(Q, Math.floor(D + 2 * c2 + G / 2)))) : (J = Math.floor(.2016 * bi), D = Math.floor(.56 * J), H[2] = Math.floor(.5 * r), H[3] = Math.floor(.5 * s),
 				H[1] = Math.floor(.45 * (s - H[3])), H[0] = Math.floor((r - H[2]) / 2), G = Math.floor(.75 * D), M = Math.floor(r / 2), Q = Math.floor(H[1] + H[3] + (s - H[3] - H[1]) / 2));
 			N = bl + Math.floor(.65 * D / 4) + bm;
-			for (P = U = 1; P * U < E.length;) H[2] / (P + 1) > H[3] / (U + 1) ? P++ : U++;
+			for (P = U = 1; P * U < lobbygames.length;) H[2] / (P + 1) > H[3] / (U + 1) ? P++ : U++;
 			var W = (H[2] - (P - 1) * c2) / P;
 			var X = (H[3] - (U - 1) * c2) / U;
 			n = W < X ? W : X;
@@ -5515,35 +5514,35 @@ function game() {
 			B = H[1] + Math.floor((H[3] - y[1] * n - (y[1] - 1) * c2) / 2)
 		};
 		this.ty = function (P, U) {
-			var W, X = E.length;
+			var W, X = lobbygames.length;
 			I = P;
 			for (W = 0; W < U.length; W++) {
-				var V =
-					l(U[W].mt, U[W].wR);
-				E.push({
-					wS: U[W].id,
-					j4: U[W].j4,
-					j5: U[W].wT,
-					wU: U[W].mt,
+				var V = l(U[W].mt, U[W].wR);
+
+				lobbygames.push({
+					gameID: U[W].id,
+					lobbygamemode: U[W].lobbygamemode,
+					contest: U[W].contest,
+					mapid: U[W].mt,
 					wV: U[W].wR,
 					joined: U[W].wW,
 					nI: U[W].v6,
-					wX: U[W].wX,
+					wX: U[W].maxplayers,
 					lZ: V
 				})
 			}
-			for (W = X - 1; 0 <= W; W--) E.shift();
+			for (W = X - 1; 0 <= W; W--) lobbygames.shift();
 			if (-1 !== K)
-				for (V = K, K = -1, W = E.length - 1; 0 <= W; W--)
-					if (E[W].wS === V) {
+				for (V = K, K = -1, W = lobbygames.length - 1; 0 <= W; W--)
+					if (lobbygames[W].gameID === V) {
 						K = V;
 						break
-					} if (E.length > S || E.length < S) S = E.length, this.le();
+					} if (lobbygames.length > S || lobbygames.length < S) S = lobbygames.length, this.le();
 			this.wY();
 			bw.bx = !0
 		};
 		this.wY = function () {
-			for (var P = E.length - 1; 0 <= P; P--) null === E[P].lZ && setTimeout(t, 0)
+			for (var P = lobbygames.length - 1; 0 <= P; P--) null === lobbygames[P].lZ && setTimeout(t, 0)
 		};
 		this.bz = function (P, U) {
 			return 4 * ((P - M) * (P - M) + (U - Q) * (U - Q)) <= G * G ? (this.tG(), e1.vU(3240), jO.bh(), jR.lV(P, U, !1), bw.bx = !0) : x(P, U)
@@ -5586,22 +5585,22 @@ function game() {
 					c9.textAlign = oO;
 					c9.fillText(eD.g7(I[V]), r - c2 - W, pa)
 				}
-				if (0 !== E.length)
+				if (0 !== lobbygames.length)
 					for (X = 0; X < y[1]; X++) {
 						pa = A;
 						for (W = 0; W < y[0]; W++) {
 							V = P;
 							var ba = Math.floor(pa),
 								da = Math.floor(U);
-							if (null === E[V].lZ) c9.fillStyle =
+							if (null === lobbygames[V].lZ) c9.fillStyle =
 								nt, c9.fillRect(ba, da, z, z);
 							else {
 								var qa = z / 128;
 								c9.setTransform(qa, 0, 0, qa, ba, da);
-								c9.drawImage(E[V].lZ, 0, 0);
+								c9.drawImage(lobbygames[V].lZ, 0, 0);
 								c9.setTransform(1, 0, 0, 1, 0, 0)
 							}
-							if (K === E[V].wS) {
+							if (K === lobbygames[V].gameID) {
 								qa = ba;
 								var R = da,
 									O = Math.floor(.2 * z),
@@ -5628,22 +5627,22 @@ function game() {
 							c9.textBaseline = cA;
 							c9.textAlign = mN;
 							c9.fillStyle = oG;
-							c9.fillText(E[V].joined.toString(), Math.floor(ba + .07 * n), Math.floor(da + .9 * n));
-							256 >= E[V].wX && (c9.textAlign = cB, c9.fillStyle = nz, c9.fillText(E[V].wX.toString(), Math.floor(ba + .5 * n), Math.floor(da + .9 * n)));
+							c9.fillText(lobbygames[V].joined.toString(), Math.floor(ba + .07 * n), Math.floor(da + .9 * n));
+							256 >= lobbygames[V].maxplayers && (c9.textAlign = cB, c9.fillStyle = nz, c9.fillText(lobbygames[V].maxplayers.toString(), Math.floor(ba + .5 * n), Math.floor(da + .9 * n)));
 							c9.textAlign = oO;
 							c9.fillStyle = oB;
-							c9.fillText(E[V].nI.toString(), Math.floor(ba + .93 * n), Math.floor(da + .9 * n));
+							c9.fillText(lobbygames[V].nI.toString(), Math.floor(ba + .93 * n), Math.floor(da + .9 * n));
 							c9.strokeStyle = oH;
 							c9.strokeRect(ba,
 								da, z, z);
 							O = Math.floor(.16 * n);
 							qa = O / 48;
 							c9.setTransform(qa, 0, 0, qa, Math.floor(ba + (R - O) / 2), Math.floor(da + (R - O) / 2));
-							F.length > E[V].j4 && c9.drawImage(F[E[V].j4], 0, 0);
+							F.length > lobbygames[V].lobbygamemode && c9.drawImage(F[lobbygames[V].lobbygamemode], 0, 0);
 							c9.setTransform(1, 0, 0, 1, 0, 0);
-							E[V].j5 && (V = bo.br(4), qa = .5 * n / V.width, c9.setTransform(qa, 0, 0, qa, Math.floor(ba + (n - qa * V.width) / 2), Math.floor(da + (n - qa * V.height) / 2)), c9.globalAlpha = .6, c9.drawImage(V, 0, 0), c9.globalAlpha = 1, c9.setTransform(1, 0, 0, 1, 0, 0));
+							lobbygames[V].contest && (V = bo.br(4), qa = .5 * n / V.width, c9.setTransform(qa, 0, 0, qa, Math.floor(ba + (n - qa * V.width) / 2), Math.floor(da + (n - qa * V.height) / 2)), c9.globalAlpha = .6, c9.drawImage(V, 0, 0), c9.globalAlpha = 1, c9.setTransform(1, 0, 0, 1, 0, 0));
 							P++;
-							if (P >= E.length) return;
+							if (P >= lobbygames.length) return;
 							pa += n + c2
 						}
 						U += n + c2
@@ -7390,7 +7389,7 @@ function game() {
 			}
 		}
 	}
-	var hc, pH, wb, wc, mt, wR, vD, a1J = 14,
+	var map, pH, wb, wc, mt, wR, vD, a1J = 14,
 		we;
 
 	function wd(g, k) {
@@ -7647,10 +7646,10 @@ function game() {
 			}
 		};
 		this.a1Q = function () {
-			hc = document.createElement("canvas");
-			hc.width = mapwidth;
-			hc.height = mapheight;
-			pH = hc.getContext("2d", {
+			map = document.createElement("canvas");
+			map.width = mapwidth;
+			map.height = mapheight;
+			pH = map.getContext("2d", {
 				alpha: !1
 			});
 			var k = pH.getImageData(0, 0, mapwidth, mapheight);
@@ -7718,10 +7717,10 @@ function game() {
 			l = jX.br(mt).a1h;
 		mapwidth = 1E3 * k[0] + k[1];
 		mapheight = 1E3 * k[2] + k[3];
-		hc = document.createElement("canvas");
-		hc.width = mapwidth;
-		hc.height = mapheight;
-		pH = hc.getContext("2d", {
+		map = document.createElement("canvas");
+		map.width = mapwidth;
+		map.height = mapheight;
+		pH = map.getContext("2d", {
 			alpha: !1
 		});
 		wb = pH.getImageData(0, 0, mapwidth, mapheight);
@@ -9409,8 +9408,8 @@ function game() {
 							C = [];
 							for (z = 0; z < B; z++) C.push({
 								id: k(n, 5),
-								j4: k(n, 4),
-								wT: 1 === k(n, 1),
+								lobbygamemode: k(n, 4),
+								contest: 1 === k(n, 1),
 								mt: k(n, 6),
 								wR: k(n, 14),
 								wW: k(n, A),
