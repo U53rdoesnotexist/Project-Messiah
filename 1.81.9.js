@@ -1,7 +1,7 @@
 var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderpixels, borderingpixels, offset, timingbot, attacks;
-var mapwidth, mapheight, lobbygames;
+var mapwidth, mapheight, lobbygames, spawning_time;
 
 function game() {
 
@@ -17,9 +17,6 @@ function game() {
 	function tickincrement() {
 		tick++;
 
-		if (tick % 5 == 0) {
-
-        }
 		if (tick >= 100) {
 			tick -= 100;
 			cycle += 1;
@@ -27,7 +24,13 @@ function game() {
 			console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
 
 		}
+
+		if (tick % 5 == 0) {
+
+		}
 	}
+
+	function check_spawn() { /*if (spawning_time >= 0.95) multi.choosespawn(1E3, mapheight/2, mapwidth/2)*/} //Checks if it is time to spawn
 
 	function a() {
 		if (b) return c.username;
@@ -3918,7 +3921,7 @@ function game() {
 			z.fillStyle = hi;
 			z.fillRect(0, 0, dz.bt, dz.co);
 			z.fillStyle = o0;
-			z.fillRect(0, dz.co - B - 1, Math.floor((0 < G ? G : Math.sqrt(L[4] / L[3])) * dz.bt), B);
+			z.fillRect(0, dz.co - B - 1, Math.floor((0 < spawning_time ? spawning_time : Math.sqrt(L[4] / L[3])) * dz.bt), B);
 			z.fillStyle = cC;
 			z.fillRect(0, 0, dz.bt, 1);
 			z.fillRect(0, 0, 1, dz.co);
@@ -3957,9 +3960,9 @@ function game() {
 			land[myid] !== L[6] && (L[6] = land[myid],
 				J++)
 		}
-		var n, z, y, A, B, C, F, E, H, K, J, D, L, I, N, G, M, Q, S;
+		var n, z, y, A, B, C, F, E, H, K, J, D, L, I, N, M, Q, S;
 		this.bh = function () {
-			G = M = 0;
+			spawning_time = M = 0;
 			D = Array(8);
 			D[0] = "Humans";
 			D[1] = singleplayer ? "Players" : "Bots";
@@ -4020,8 +4023,7 @@ function game() {
 			A = lo
 		};
 		this.im = function () {
-			A = lo + (eC.pl() && 0 !== isalive[myid] && !spawning ? eC.co +
-				lo : 0)
+			A = lo + (eC.pl() && 0 !== isalive[myid] && !spawning ? eC.co + lo : 0)
 		};
 		this.eP = function (P) {
 			0 < J && (P || 12 > sL && 100 <= J || 12 <= sL) && (J = 0, g())
@@ -4048,8 +4050,7 @@ function game() {
 			P = aq.t3(myid);
 			P !== L[5] && (L[5] = P, J++);
 			x();
-			L[7] +=
-				bw.t4();
+			L[7] += bw.t4();
 			P = k(7);
 			N !== P && (N = P, J += 100)
 		};
@@ -4057,18 +4058,18 @@ function game() {
 			I[2] && ig !== L[2] && (L[2] = ig, J++)
 		};
 		this.t5 = function (P) {
-			if (P === j0) return G = 0, g(), !1;
+			if (P === j0) return spawning_time = 0, g(), !1;
 			if (-1 === P && 0 === M) return !1;
-			var U = G,
-				W = performance.now();
+			var U = spawning_time, W = performance.now();
 			if (0 <= P) {
 				var X = W - 392 * P;
 				M = 0 === P || X < M ? X : M
 			}
-			G = (W - M) / (392 * j0);
-			G = 1 < G ? 1 : G;
+			spawning_time = (W - M) / (392 * j0);
+			spawning_time = 1 < spawning_time ? 1 : spawning_time;
+			check_spawn();
 			g();
-			return G !== U
+			return spawning_time !== U
 		};
 		this.c8 = function () {
 			c9.drawImage(n, y, A)
