@@ -1,6 +1,6 @@
 var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
-var nickname, land, troops, borderingpixels, offset, timingbot, attacks;
+var nickname, land, troops, x_min, y_min, x_max, y_max, borderpixels, borderingpixels, offset, timingbot, attacks;
 var mapwidth, mapheight, lobbygames;
 
 function game() {
@@ -17,11 +17,15 @@ function game() {
 	function tickincrement() {
 		tick++;
 
+		if (tick % 5 == 0) {
+
+        }
 		if (tick >= 100) {
 			tick -= 100;
 			cycle += 1;
 			
 			console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
+
 		}
 	}
 
@@ -199,7 +203,7 @@ function game() {
 	}
 
 	function bN() {
-		for (var g, k, t = last_border_land - 1; 0 <= t; t--) g = ak(aK[t], 4) % mapwidth, k = ak(aK[t], 4 * mapwidth), cs[last_action_id] = cs[last_action_id] > g ? g : cs[last_action_id], cv[last_action_id] = cv[last_action_id] > k ? k : cv[last_action_id], cr[last_action_id] = cr[last_action_id] < g ? g : cr[last_action_id], cu[last_action_id] = cu[last_action_id] < k ? k : cu[last_action_id]
+		for (var g, k, t = last_border_land - 1; 0 <= t; t--) g = ak(aK[t], 4) % mapwidth, k = ak(aK[t], 4 * mapwidth), x_min[last_action_id] = x_min[last_action_id] > g ? g : x_min[last_action_id], y_min[last_action_id] = y_min[last_action_id] > k ? k : y_min[last_action_id], x_max[last_action_id] = x_max[last_action_id] < g ? g : x_max[last_action_id], y_max[last_action_id] = y_max[last_action_id] < k ? k : y_max[last_action_id]
 	}
 
 	function ab() {
@@ -269,25 +273,25 @@ function game() {
 
 	function bK() {
 		var g;
-		a: for (; cv[aH] < cu[aH];) {
-			for (g = cr[aH]; g >= cs[aH]; g--)
-				if (ax.hW(aH, 4 * (cv[aH] * mapwidth + g))) break a;
-			cv[aH]++
+		a: for (; y_min[aH] < y_max[aH];) {
+			for (g = x_max[aH]; g >= x_min[aH]; g--)
+				if (ax.hW(aH, 4 * (y_min[aH] * mapwidth + g))) break a;
+			y_min[aH]++
 		}
-		a: for (; cv[aH] < cu[aH];) {
-			for (g = cr[aH]; g >= cs[aH]; g--)
-				if (ax.hW(aH, 4 * (cu[aH] * mapwidth + g))) break a;
-			cu[aH]--
+		a: for (; y_min[aH] < y_max[aH];) {
+			for (g = x_max[aH]; g >= x_min[aH]; g--)
+				if (ax.hW(aH, 4 * (y_max[aH] * mapwidth + g))) break a;
+			y_max[aH]--
 		}
-		a: for (; cs[aH] < cr[aH];) {
-			for (g = cu[aH]; g >= cv[aH]; g--)
-				if (ax.hW(aH, 4 * (g * mapwidth + cs[aH]))) break a;
-			cs[aH]++
+		a: for (; x_min[aH] < x_max[aH];) {
+			for (g = y_max[aH]; g >= y_min[aH]; g--)
+				if (ax.hW(aH, 4 * (g * mapwidth + x_min[aH]))) break a;
+			x_min[aH]++
 		}
-		a: for (; cs[aH] < cr[aH];) {
-			for (g = cu[aH]; g >= cv[aH]; g--)
-				if (ax.hW(aH, 4 * (g * mapwidth + cr[aH]))) break a;
-			cr[aH]--
+		a: for (; x_min[aH] < x_max[aH];) {
+			for (g = y_max[aH]; g >= y_min[aH]; g--)
+				if (ax.hW(aH, 4 * (g * mapwidth + x_max[aH]))) break a;
+			x_max[aH]--
 		}
 	}
 
@@ -549,11 +553,11 @@ function game() {
 	function cn(g) {
 		var k = ca[0];
 		if (1 === cY) return k;
-		var t = ak(cr[g] + cs[g], 2),
-			l = ak(cu[g] + cv[g], 2),
-			x = cx(t - ak(cr[k] + cs[k], 2)) + cx(l - ak(cu[k] + cv[k], 2));
+		var t = ak(x_max[g] + x_min[g], 2),
+			l = ak(y_max[g] + y_min[g], 2),
+			x = cx(t - ak(x_max[k] + x_min[k], 2)) + cx(l - ak(y_max[k] + y_min[k], 2));
 		for (g = cY - 1; 1 <= g; g--) {
-			var n = cx(t - ak(cr[ca[g]] + cs[ca[g]], 2)) + cx(l - ak(cu[ca[g]] + cv[ca[g]], 2));
+			var n = cx(t - ak(x_max[ca[g]] + x_min[ca[g]], 2)) + cx(l - ak(y_max[ca[g]] + y_min[ca[g]], 2));
 			n < x && (x = n, k = ca[g])
 		}
 		return k
@@ -805,8 +809,8 @@ function game() {
 			l = 3;
 			a: {
 				for (var y = 40; 1 <= y; y--) {
-					x = cs[z] + ak(cW.random() * (cr[z] - cs[z] + 1), cW.value(100));
-					n = cv[z] + ak(cW.random() * (cu[z] - cv[z] + 1), cW.value(100));
+					x = x_min[z] + ak(cW.random() * (x_max[z] - x_min[z] + 1), cW.value(100));
+					n = y_min[z] + ak(cW.random() * (y_max[z] - y_min[z] + 1), cW.value(100));
 					var A = k(ax.ep(x, n));
 					if (1 !== A) break a
 				}
@@ -828,8 +832,8 @@ function game() {
 
 		function t(y, A) {
 			for (var B, C, F, E, H, K, J, D = y; D < y + 50 * A; D += A)
-				if (B = cs[z] - D, B = 1 > B ? 1 : B, C = cv[z] - D, C = 1 >
-					C ? 1 : C, F = cr[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = cu[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = ak(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(ax.ep(x, n)), 1 !== B) return B;
+				if (B = x_min[z] - D, B = 1 > B ? 1 : B, C = y_min[z] - D, C = 1 >
+					C ? 1 : C, F = x_max[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = y_max[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = ak(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(ax.ep(x, n)), 1 !== B) return B;
 			return 1
 		}
 		var l, x, n, z;
@@ -918,7 +922,7 @@ function game() {
 			1 === fN && g(y, 0, A, B, 0, 0)
 		};
 		this.fP = function (y, A, B, C) {
-			1 === fN && (fQ ?
+			1 === fN && (spawning ?
 				fR.cI(y, B, C) : g(y, 1, A, 0, B, C))
 		};
 		this.fS = function (y, A) {
@@ -935,10 +939,10 @@ function game() {
 			dx.fZ(y, 4)
 		};
 		this.fY = function (y) {
-			fQ ? (fa(y), fb()) : e6.fc(y)
+			spawning ? (fa(y), fb()) : e6.fc(y)
 		};
 		this.fd = function (y) {
-			0 !== isalive[y] && 2 !== fH[y] && fe.ff(y) && (1 === alivecount ? fW.fX(y) : (dx.fZ(y, y === myid ? 21 : 22), 8 === gamemode ? fW.fX(1 - y) : singleplayer ? (fa(y), fb(), fQ && fR.d7()) : this.fY(y)))
+			0 !== isalive[y] && 2 !== fH[y] && fe.ff(y) && (1 === alivecount ? fW.fX(y) : (dx.fZ(y, y === myid ? 21 : 22), 8 === gamemode ? fW.fX(1 - y) : singleplayer ? (fa(y), fb(), spawning && fR.d7()) : this.fY(y)))
 		}
 	}
 
@@ -1050,18 +1054,18 @@ function game() {
 		this.gS = function () {
 			g(1);
 			this.gT(0, 0, mapwidth - 1, mapheight - 1);
-			fQ || this.gU(myid, 3E3, !0, .3)
+			spawning || this.gU(myid, 3E3, !0, .3)
 		};
 		this.gU = function (I, N, G, M) {
 			if (!(gW || D && !G && L || 0 === land[I])) {
 				gX.gY = !1;
 				L = G;
 				g(N);
-				F = (cs[I] + cr[I] + 1) / 2;
-				E = (cv[I] + cu[I] + 1) / 2;
-				N = cr[I] -
-					cs[I] + 1;
-				I = cu[I] - cv[I] + 1;
+				F = (x_min[I] + x_max[I] + 1) / 2;
+				E = (y_min[I] + y_max[I] + 1) / 2;
+				N = x_max[I] -
+					x_min[I] + 1;
+				I = y_max[I] - y_min[I] + 1;
 				G = g2 / N;
 				var Q = c3 / I;
 				H = G < Q ? G : Q;
@@ -1161,21 +1165,21 @@ function game() {
 			borderingpixels[E] = [];
 			bF[E] = [];
 			bI[E] = [];
-			cs[E] = cv[E] = cr[E] = cu[E] = 0
+			x_min[E] = y_min[E] = x_max[E] = y_max[E] = 0
 		}
 
 		function l(K, J) {
 			isalive[E] = 1;
 			troops[E] = E < playercount ? hK : dV[d8.cF[E - playercount]];
-			cs[E] = K + 10;
-			cv[E] = J + 10;
-			cu[E] = cr[E] = 0;
+			x_min[E] = K + 10;
+			y_min[E] = J + 10;
+			y_max[E] = x_max[E] = 0;
 			var D, L;
 			for (D = K; D < K + 4; D++)
 				for (L = J; L < J + 4; L++)
 					if (D > K && D < K + 3 || L > J && L < J + 3) {
 						var I = ax.ep(D, L);
-						ax.ay(I) && (cs[E] = D < cs[E] ? D : cs[E], cr[E] = D > cr[E] ? D : cr[E], cv[E] = L < cv[E] ? L : cv[E], cu[E] = L > cu[E] ? L : cu[E], H[land[E]] = I, land[E]++, ax.hN(I, E))
+						ax.ay(I) && (x_min[E] = D < x_min[E] ? D : x_min[E], x_max[E] = D > x_max[E] ? D : x_max[E], y_min[E] = L < y_min[E] ? L : y_min[E], y_max[E] = L > y_max[E] ? L : y_max[E], H[land[E]] = I, land[E]++, ax.hN(I, E))
 					} 
 					hJ[E] = land[E];
 			for (I = land[E] - 1; 0 <= I; I--) ax.hO(H[I], E) ? (ax.az(H[I], E), borderingpixels[E].push(H[I])) : ax.hP(H[I]) ? (ax.az(H[I], E), bF[E].push(H[I])) : ax.hQ(H[I]) && (ax.az(H[I], E), bI[E].push(H[I]))
@@ -1190,7 +1194,7 @@ function game() {
 			y = ak(mapheight, A);
 			B = ak(mapwidth - A * z, 2);
 			C = ak(mapheight - A * y, 2);
-			if (fQ)
+			if (spawning)
 				for (K = 0; K < playercount; K++) E = K, t(), isalive[E] = 1;
 			for (E = 0; E < maxentities; E++)
 				if (1 !== isalive[E])
@@ -1227,8 +1231,8 @@ function game() {
 							}
 							if (N) {
 								if (0 < land[E]) {
-									for (D = cr[E]; D >= cs[E]; D--)
-										for (J = cu[E]; J >= cv[E]; J--) L = 4 * (J * mapwidth + D), ax.hW(E, L) && (ax.hX(L), land[E]--);
+									for (D = x_max[E]; D >= x_min[E]; D--)
+										for (J = y_max[E]; J >= y_min[E]; J--) L = 4 * (J * mapwidth + D), ax.hW(E, L) && (ax.hX(L), land[E]--);
 									t()
 								}
 								l(K - 1, I - 1);
@@ -1434,9 +1438,9 @@ function game() {
 			0 !== isalive[g] && il.hR(g, k, t) && (bw.bx = !0)
 		};
 		this.d7 = function () {
-			fQ = !1;
+			spawning = !1;
 			for (var g = 0; g < playercount; g++) 0 !== isalive[g] && 0 === land[g] && il.hY(g);
-			0 !== isalive[myid] ? (as.at[7] = land[myid], as.at[8] = troops[myid], eF.c6(), dz.im(), eJ.gT(cs[myid] - 5, cv[myid] - 5, cr[myid] + 5, cu[myid] + 5), eL.bh()) : eK.show(!1, !1);
+			0 !== isalive[myid] ? (as.at[7] = land[myid], as.at[8] = troops[myid], eF.c6(), dz.im(), eJ.gT(x_min[myid] - 5, y_min[myid] - 5, x_max[myid] + 5, y_max[myid] + 5), eL.bh()) : eK.show(!1, !1);
 			dx.io(18);
 			dy.ip();
 			dy.eP();
@@ -1449,22 +1453,22 @@ function game() {
 
 	var ih, ig, maxentities = 512,
 		is = 150, it, fN = 0, iu, iv, iw, hK = 512,
-		al = 2, gW, fQ, ix, teamgame, iy, iz, fR, iT, j0;
+		al = 2, gW, spawning, ix, teamgame, iy, iz, fR, iT, j0;
 
 		entitycount = 512
 
-	function systemgameinit(g, k, t, gamemode, x) {
+	function systemgameinit(g, k, playernames, game_mode, x) {
 		it = gW = !1;
-		gamemode = gamemode;
 		iz = x;
+		gamemode = game_mode;
 		teamgame = 7 > gamemode || 9 === gamemode;
-		ih = playercount = t.length;
+		ih = playercount = playernames.length;
 		singleplayer = 1 === ih;
 		gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
 		gamemode = 8 === gamemode && 2 !== playercount ? 7 : gamemode;
 		iy = 9 === gamemode ? 2 : gamemode + 2;
 		j0 = 2 >= playercount ? 30 : 50 >= playercount ? 40 : 50;
-		fR = (ix = fQ = teamgame || 100 > playercount) ? new ik : null;
+		fR = (ix = spawning = teamgame || 100 > playercount) ? new ik : null;
 		hK = 512;
 		entitycount = maxentities;
 		singleplayer && (entitycount = dl.j6());
@@ -1472,9 +1476,9 @@ function game() {
 		ig = 0;
 		myid = k;
 		cW.j7(g);
-		j8(t);
+		j8(playernames);
 		dq.bh();
-		dO.bh(t);
+		dO.bh(playernames);
 		fN = 1;
 		iv = 2E9;
 		iw = ak(iv, 2);
@@ -1484,7 +1488,7 @@ function game() {
 		gw.bh();
 		aq.bh();
 		d1();
-		ax.bh(t);
+		ax.bh(playernames);
 		ha.bh();
 		eH.bh();
 		d8.bh();
@@ -1518,12 +1522,12 @@ function game() {
 		e6.bh();
 		eE.bh();
 		e5.bh();
-		8 === gamemode ? (iT = new hr, iT.bh(t)) : iT = null;
+		8 === gamemode ? (iT = new hr, iT.bh(playernames)) : iT = null;
 		jI();
 		eL.bh();
 		singleplayer ? bw.jJ() : bw.jK();
 		bw.bx = !0;
-		singleplayer && fQ || a9(1)
+		singleplayer && spawning || a9(1)
 
 		gameinit();
 	}
@@ -1685,7 +1689,7 @@ function game() {
 		};
 		this.bz = function (N, G) {
 			C = B = -1E3;
-			if (2 === fH[myid] || 0 === isalive[myid] && !fQ) return this.kx(), 1;
+			if (2 === fH[myid] || 0 === isalive[myid] && !spawning) return this.kx(), 1;
 			if (n) {
 				this.kx();
 				if (a5.ky(N, G)) a5.kz(N, G, E) && (n = !0);
@@ -1694,7 +1698,7 @@ function game() {
 			}
 			var M = l(N, G);
 			if (!t(M) || 0 === M || 6 === M || !x[2] && 3 === M) return this.kx(), 2;
-			if (1 === M) {
+			if (1 === M) { //Ask friend to attack
 				if (x[6]) {
 					M = (new Date).getTime();
 					M > I + 4E3 && (L = []);
@@ -1707,7 +1711,7 @@ function game() {
 				}
 				return 0
 			}
-			if (2 === M) {
+			if (2 === M) { //Ask to attack target
 				if (x[7]) {
 					for (M = L.length - 1; 0 <= M; M--) 0 === isalive[L[M]] && L.splice(M, 1);
 					0 < L.length && (eE.l6(1, L, !0) && (dx.l7(L, E), multi.ask_to_attack(L, E)), L = []);
@@ -1716,7 +1720,7 @@ function game() {
 				}
 				return 0
 			}
-			if (3 === M) {
+			if (3 === M) { //Donations
 				this.kx();
 				if (this.kw(E) && 7 > gamemode && 1071 > bw.dM()) return dx.l9(),
 					1;
@@ -1724,8 +1728,8 @@ function game() {
 				singleplayer ? dS(myid, E, ak(eF.lB() * troops[myid], 1E3)) : multi.attack(eF.lB(), E === maxentities ? myid : E);
 				return 1
 			}
-			//Which one of these depicts random spawn?
-			if (4 === M) return x[0] ? fQ ? (this.kx(), singleplayer ? (fR.cI(0, ax.g3(H), ax.c7(H)), fR.d7()) : multi.choosespawn(1E3, ax.g3(H), ax.c7(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!ix || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+			//4: Attack/Spawn 5: Boat 7: Emoji
+			if (4 === M) return x[0] ? spawning ? (this.kx(), singleplayer ? (fR.cI(0, ax.g3(H), ax.c7(H)), fR.d7()) : multi.choosespawn(1E3, ax.g3(H), ax.c7(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!ix || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
 			if (5 === M) return x[1] ? (this.kx(), dx.lA(), singleplayer ? single.fA(myid, eF.lB(), ax.g3(H), ax.c7(H)) : multi.choosespawn(eF.lB(), ax.g3(H), ax.c7(H)), 1) : 0;
 			if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
 			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (dx.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
@@ -1733,7 +1737,7 @@ function game() {
 			return 2
 		};
 		this.lI = function (N, G) {
-			if (this.ku() || 2 === fH[myid] || 0 === isalive[myid] && !fQ) return !1;
+			if (this.ku() || 2 === fH[myid] || 0 === isalive[myid] && !spawning) return !1;
 			var M = (q ? .0288 : .0144) * bi;
 			if (Math.abs(N - B) > M || Math.abs(G - C) > M || (new Date).getTime() > F + 425) return !1;
 			M = Math.floor((N + g0) / fv);
@@ -1743,7 +1747,7 @@ function game() {
 			if (!ax.ay(S)) return !1;
 			if (2 === fN) return 1 <= a5.lM && (E = ax.b7(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
 			H = ax.ep(M, Q);
-			if (fQ) return x[0] = !0, this.lN(N, G);
+			if (spawning) return x[0] = !0, this.lN(N, G);
 			x[1] = en.cg(myid, H);
 			if (ax.b8(S)) return E = maxentities, lO(myid) ? x[0] = !0 : lP(myid, E) && (x[8] = !0), this.lN(N, G);
 			E = ax.b7(S);
@@ -1825,7 +1829,7 @@ function game() {
 				var N = (A + K) / D;
 				c9.imageSmoothingEnabled = !0;
 				c9.setTransform(D, 0, 0, D, z, y);
-				x[0] ? fQ ? c9.drawImage(this.kk[3], 0, 0) : c9.drawImage(this.kk[0], 0, 0) : x[8] ? c9.drawImage(this.ki[0], 0, 0) : c9.drawImage(J[0], 0, 0);
+				x[0] ? spawning ? c9.drawImage(this.kk[3], 0, 0) : c9.drawImage(this.kk[0], 0, 0) : x[8] ? c9.drawImage(this.ki[0], 0, 0) : c9.drawImage(J[0], 0, 0);
 				x[1] && c9.drawImage(this.kk[1], N, 0);
 				x[2] && c9.drawImage(this.kk[2], -N, 0);
 				x[4] && c9.drawImage(this.kk[4], 0, N);
@@ -1900,7 +1904,7 @@ function game() {
 			g()
 		};
 		this.lj = function () {
-			(this.ld = !this.ld) ? (gW = !1, singleplayer && 1 === fN && !fQ && (setTimeout(function () {
+			(this.ld = !this.ld) ? (gW = !1, singleplayer && 1 === fN && !spawning && (setTimeout(function () {
 				gw.ij()
 			}, 0), a9(0))) : (y = -1, g(), singleplayer && a9(1));
 			bw.bx = !0
@@ -1908,7 +1912,7 @@ function game() {
 		this.bz = function (B, C) {
 			var F = k(B, C);
 			return this.ld ? 0 === F ? (jL(), aB(), 2) : 1 === F ? (this.lj(), 2) : 2 === F ? (this.ff(myid) && (singleplayer ? single.fd(myid) : multi.lm(), this.lj()), 2) : 3 === F && 2 <= as.ln ? (hf.lj(), bw.bx = !0, 2) :
-				hf.ku || singleplayer && !fQ ? 1 : (this.lj(), 2) : 0 === F ? (this.lj(), 2) : 0
+				hf.ku || singleplayer && !spawning ? 1 : (this.lj(), 2) : 0 === F ? (this.lj(), 2) : 0
 		};
 		this.lV = function (B, C) {
 			var F = k(B, C);
@@ -2041,7 +2045,7 @@ function game() {
 			z = [" was conquered by ", " left the game.", " surrendered."];
 			E = [];
 			this.le();
-			fQ && this.fZ(0, 18);
+			spawning && this.fZ(0, 18);
 			var G = "Map: " + jX.br(mt).mf + "   Pixels: " + eD.g7(jA.mu) + "   Land: " + eD.g7(jA.mv) + " (" + dz.mw(100 * jA.mv / jA.mu, 1) + ")";
 			0 < jA.mx && (G += "   Water: " + eD.g7(jA.mx) + " (" + dz.mw(100 * jA.mx / jA.mu, 1) + ")");
 			0 < jA.my && (G += "   Mountains: " + eD.g7(jA.my) + " (" + dz.mw(100 * jA.my / jA.mu, 1) + ")");
@@ -3131,7 +3135,7 @@ function game() {
 		}
 		var x, n, z, y, A, B, C, F, E, H, K = 11 / 12;
 		this.bh = function () {
-			B = !fQ;
+			B = !spawning;
 			H = !1;
 			C = .5;
 			F = 0;
@@ -3698,7 +3702,7 @@ function game() {
 			0 !== isalive[myid] && 2 !== fH[myid] && A !== troops[myid] && (x = mI(troops[myid], x), B = troops[myid] > A && 10 <= troops[myid], A = troops[myid], y = !0)
 		};
 		this.c8 = function () {
-			0 === isalive[myid] || fQ || 2 === fH[myid] || c9.drawImage(n, this.f7, t)
+			0 === isalive[myid] || spawning || 2 === fH[myid] || c9.drawImage(n, this.f7, t)
 		}
 	}
 	var rp, q0, rq, rr, rs, ea, rt;
@@ -4016,7 +4020,7 @@ function game() {
 			A = lo
 		};
 		this.im = function () {
-			A = lo + (eC.pl() && 0 !== isalive[myid] && !fQ ? eC.co +
+			A = lo + (eC.pl() && 0 !== isalive[myid] && !spawning ? eC.co +
 				lo : 0)
 		};
 		this.eP = function (P) {
@@ -4145,14 +4149,14 @@ function game() {
 
 	function kN() {
 		function g(n, z, y, A, B, C, F) {
-			0 !== isalive[n] && 0 !== land[n] && (y = g2 * ((cs[n] + cr[n] + 1) / 2 - y) / (B - y) - .5 * z, A = c3 * ((cv[n] + cu[n] + 1) / 2 - A) / (C - A) - .5 * z, y > g2 || A > c3 || y < -z || A < -z || (c9.setTransform(fv * F, 0, 0, fv * F, y, A), c9.drawImage(t[teamgame ? dO.dP[n] : n < playercount ? 1 : 0], 0, 0)))
+			0 !== isalive[n] && 0 !== land[n] && (y = g2 * ((x_min[n] + x_max[n] + 1) / 2 - y) / (B - y) - .5 * z, A = c3 * ((y_min[n] + y_max[n] + 1) / 2 - A) / (C - A) - .5 * z, y > g2 || A > c3 || y < -z || A < -z || (c9.setTransform(fv * F, 0, 0, fv * F, y, A), c9.drawImage(t[teamgame ? dO.dP[n] : n < playercount ? 1 : 0], 0, 0)))
 		}
 		var k, t, l, x;
 		this.bh = function () {
 			var n;
 			t = [];
 			k = !1;
-			if (fQ)
+			if (spawning)
 				if (x = 0, l = 63, k = !0, teamgame)
 					for (n = 0; n <= iy; n++) t.push(this.tH(dO.tI[dO.iW[n]], l));
 				else t.push(this.tH(dO.tI[0], l)), t.push(this.tH(dO.tI[4], l))
@@ -6474,8 +6478,8 @@ function game() {
 
 	function yX(g) {
 		var k, t;
-		for (k = cr[g]; k >= cs[g]; k--)
-			for (t = cu[g]; t >= cv[g]; t--) {
+		for (k = x_max[g]; k >= x_min[g]; k--)
+			for (t = y_max[g]; t >= y_min[g]; t--) {
 				var l = 4 * (t * mapwidth + k);
 				ax.hW(g, l) && (ax.hX(l), land[g]--)
 			}
@@ -6781,24 +6785,24 @@ function game() {
 
 		function n(O) {
 			var T, Y = F[O];
-			for (T = F[O] - cs[O] - 1; 0 <= T; T--)
+			for (T = F[O] - x_min[O] - 1; 0 <= T; T--)
 				if (Y--, !y(O, Y, E[O], K[O])) {
 					Y++;
 					break
 				} var Z = F[O];
-			for (T = cr[O] - F[O] - H[O]; 0 <= T; T--)
+			for (T = x_max[O] - F[O] - H[O]; 0 <= T; T--)
 				if (Z++, !y(O, Z + H[O] - 1, E[O], K[O])) {
 					Z--;
 					break
 				} Y = Math.floor((Y + Z) / 2);
 			Z = E[O];
-			for (T = E[O] - cv[O] - 1; 0 <=
+			for (T = E[O] - y_min[O] - 1; 0 <=
 				T; T--)
 				if (Z--, !A(O, Y, Z, H[O])) {
 					Z++;
 					break
 				} var ma = E[O];
-			for (T = cu[O] - E[O] - K[O]; 0 <= T; T--)
+			for (T = y_max[O] - E[O] - K[O]; 0 <= T; T--)
 				if (ma++, !A(O, Y, ma + K[O] - 1, H[O])) {
 					ma--;
 					break
@@ -6855,8 +6859,8 @@ function game() {
 				for (O = maxentities - 1; 0 <= O; O--) D[O] = J[O] = T
 			} else
 				for (V.font = bl + Math.floor(100 * N) + bm, T = 80 / Math.floor(V.measureText(eD.g7(iv)).width), V.font = bl + 100 + bm, O = maxentities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), J[O] = T < D[O] ? T : D[O];
-			for (O = maxentities - 1; 0 <= O; O--) 12 > land[O] ? (F[O] = cs[O] + 1, E[O] = cv[O] + 1, H[O] = 1, K[O] = 1) : (F[O] = cs[O], E[O] = cv[O] + 1, H[O] = 4, K[O] = 2);
-			if (fQ)
+			for (O = maxentities - 1; 0 <= O; O--) 12 > land[O] ? (F[O] = x_min[O] + 1, E[O] = y_min[O] + 1, H[O] = 1, K[O] = 1) : (F[O] = x_min[O], E[O] = y_min[O] + 1, H[O] = 4, K[O] = 2);
+			if (spawning)
 				for (O = 0; O < playercount; O++) H[O] = 0;
 			qa = bo.br(4).width;
 			R = bo.br(4).height
@@ -6866,8 +6870,8 @@ function game() {
 			k()
 		};
 		this.ip = function () {
-			for (var O = pa = 0; O < playercount; O++) 3 !== cr[O] - cs[O] || 3 !== cu[O] - cv[O] ?
-				(F[O] = cs[O] + (cr[O] !== cs[O] ? 1 : 0), E[O] = cv[O], H[O] = 1, K[O] = 1) : (F[O] = cs[O], E[O] = cv[O] + 1, H[O] = 4, K[O] = 2)
+			for (var O = pa = 0; O < playercount; O++) 3 !== x_max[O] - x_min[O] || 3 !== y_max[O] - y_min[O] ?
+				(F[O] = x_min[O] + (x_max[O] !== x_min[O] ? 1 : 0), E[O] = y_min[O], H[O] = 1, K[O] = 1) : (F[O] = x_min[O], E[O] = y_min[O] + 1, H[O] = 4, K[O] = 2)
 		};
 		this.mk = function (O, T, Y) {
 			0 === isalive[O] || 4 !== T && 2 === fH[O] || (O += T * maxentities, 0 === T ? ba[O] === Y && 0 < da[O] ? da[O] = 0 : (ba[O] = Y, da[O] = a5.nq(Y) ? 255 : 64) : 1 === T ? (da[O] = 64, ba[O] = Y) : da[O] = Y)
@@ -6915,7 +6919,7 @@ function game() {
 						T, ra = !1, va = 0; 8 > va; va++) {
 						ma = H[ka] + 2;
 						Z = K[ka] + 2;
-						if (ma > cr[ka] - cs[ka] + 1 || Z > cu[ka] - cv[ka] + 1) break;
+						if (ma > x_max[ka] - x_min[ka] + 1 || Z > y_max[ka] - y_min[ka] + 1) break;
 						la = F[ka] - 1;
 						na = E[ka] - 1;
 						if (z(ka, la, na, ma, Z)) F[ka] = la, E[ka] = na, H[ka] = ma, K[ka] = Z, ra = !0;
@@ -6927,11 +6931,11 @@ function game() {
 						va = H[ka];
 						for (var Aa = 1 + Math.floor(.02 * va), sa = 1; 5 > sa; sa++) {
 							ma = va + sa * Aa;
-							if (ma > cr[ka] - cs[ka] + 1) break;
+							if (ma > x_max[ka] - x_min[ka] + 1) break;
 							Z = 1 + Math.floor(G * J[ka] * ma);
-							if (Z > cu[ka] - cv[ka] + 1) break;
-							la = cs[ka] + Math.floor(Math.random() * (cr[ka] - cs[ka] + 2 - ma));
-							na = cv[ka] + Math.floor(Math.random() * (cu[ka] - cv[ka] + 2 - Z));
+							if (Z > y_max[ka] - y_min[ka] + 1) break;
+							la = x_min[ka] + Math.floor(Math.random() * (x_max[ka] - x_min[ka] + 2 - ma));
+							na = y_min[ka] + Math.floor(Math.random() * (y_max[ka] - y_min[ka] + 2 - Z));
 							z(ka, la, na, ma, Z) && (F[ka] = la, E[ka] =
 								na, H[ka] = ma, K[ka] = Z, ra = !0)
 						}
@@ -6963,8 +6967,8 @@ function game() {
 					}
 					if (Z) n(T);
 					else
-						for (Z = T, na = cr[Z] - cs[Z] + 1, ma = Math.floor(.02 * na), ma = 1 > ma ? 1 : ma, T = -6 * ma; na >= T; na -= ma)
-							if (ka = 0 < na ? na : 1, la = 1 + Math.floor(G * J[Z] * ka), va = cs[Z] + Math.floor(Math.random() * (cr[Z] - cs[Z] + 2 - ka)), ra = cv[Z] + Math.floor(Math.random() * (cu[Z] - cv[Z] + 2 - la)), z(Z, va, ra, ka, la)) {
+						for (Z = T, na = x_max[Z] - x_min[Z] + 1, ma = Math.floor(.02 * na), ma = 1 > ma ? 1 : ma, T = -6 * ma; na >= T; na -= ma)
+							if (ka = 0 < na ? na : 1, la = 1 + Math.floor(G * J[Z] * ka), va = x_min[Z] + Math.floor(Math.random() * (x_max[Z] - x_min[Z] + 2 - ka)), ra = y_min[Z] + Math.floor(Math.random() * (y_max[Z] - y_min[Z] + 2 - la)), z(Z, va, ra, ka, la)) {
 								F[Z] =
 									va;
 								E[Z] = ra;
@@ -6990,8 +6994,7 @@ function game() {
 		this.bh = function () {
 			var t, l;
 			g = "Abbasid Caliphate;Aceh s;Achaemenid Z;Afsharid z;Aghlabid Emirate;Ahom z;Akkadian Z;Aksumite Z;Akwamu;Alaouite z;Almohad Caliphate;Almoravid z;Angevin Z;Aq Qoyunlu;Armenian Z;Assyria;Ashanti Z;Austrian Z;Austria-Hungary;Ayyubid z;Aztec Z;Aulikara Z;Babylonian Z;Balhae;Banten s;S Banjar;Bamana Z;Bengal s;Benin Z;Kadamba z;Bornu Z;E Brazil;Britannic Z;British Z;British Raj;Bruneian Z;Bukhara Z;Burgundian State;Buyid z;Byzantine Z;Caliphate of C\u00f3rdoba;Cao Wei;Carthaginian Z;Cebu Rajahnate;Chagatai Khanate;Chalukya z;Chauhan z;Chav\u00edn Z;Chenla;Chera z;Chola z;Comanche Z;Congo Free State;Crimean Khanate;Dacian Z;Delhi s;Demak s;Durrani Z;Dutch Z;Egyptian Z;Elamite Z;Exarchate of Africa;Abyssinia;Fatimid Caliphate;First French Z;Frankish Z;Funan;Gallic Z;Gaza Z;Republic of Genoa;German Z;Ghana Z;Ghaznavid z;Ghurid z;Goguryeo;Goryeo;Gorkha Z;G\u00f6kt\u00fcrk Khaganate;Golden Horde;S Gowa;Seljuq Z;Gupta Z;Hafsid Y;Han z;Hanseatic League;E Harsha;Hephthalite Z;Hittite Z;Holy Roman Z;Hotak z;Hoysala Z;Hunnic Z;Husainid z;Idrisid z;Ilkhanate;K Israel;K Judah;Inca Z;Italian Z;E Japan;Jin z;Johor Z;Jolof Z;Joseon;Kaabu Z;Kachari Y;Kalmar Union;Kanem Z;Kanva z;Kara-Khanid Khanate;Kazakh Khanate;Khazar Khaganate;Khmer Z;Khilji z;Khwarazmian z;Kievan Rus';Konbaung z;Kong Z;Korean Z;Kushan Z;K Kush;Lakota;Latin Z;Later L\u00ea z;Liao z;Lodi s;Khmer Z;Macedonian Z;Majapahit Z;Mali Z;Malacca Z;Mamluk s;Manchukuo;Maratha Z;Marinid z;Massina Z;Mataram s;Mauretania;Mauryan Z;Median Z;Mlechchha z;Ming z;Mitanni Z;Mongol Z;Mughal Z;Nanda Z;Nguy\u1ec5n z;North Sea Z;E Nicaea;Numidia;Omani Z;Ottoman Z;Oyo Z;Pagan Z;Pahlavi z;Pala Z;Palmyrene Z;Parthian Z;Pontic Z;Portuguese Z;K Prussia;Ptolemaic Z;Qajar z;Qara Qoyunlu;Qin z;Qing z;Ramnad Sethupathis;Rashidun Caliphate;Rashtrakuta z;Roman Z;Rouran Khaganate;Rozwi Z;Rustamid z;Russian Z;Tsardom of Russia;Saadi z;Safavid z;Saffarid z;Sassanid z;Satavahana z;Samanid Z;Soviet Union;Saudeleur z;Duchy of Savoy;Seleucid Z;Serbian Z;Shu Han;Shang z;Siam Z;Sikh Z;Singhasari;Sokoto Caliphate;Song z;Songhai Z;Spanish Z;Srivijaya Z;Sui z;K Mysore;Shunga Z;S Sulu;Sumer;Sur Z;Swedish Z;Tahirid z;Tang z;T\u00e2y S\u01a1n z;S Ternate;E Thessalonica;German Reich;Tibetan Z;Tondo z;S Tidore;Timurid Z;K Tlemcen;E Trebizond;Toltec Z;Toungoo z;Toucouleur Z;Tu'i Tonga Z;Turgesh Khaganate;Umayyad Caliphate;Uyunid Emirate;Uyghur Khaganate;Uzbek Khanate;Vandal Y;Vijayanagara Z;Republic of Venice;Wari Z;Wassoulou Z;Wattasids;Western Roman Z;Eastern Wu;Western Xia z;Xin z;Yuan z;Zand z;Zhou z;Zulu Z;Yugoslavia;Kosovo;Sikkim;Kanem\u2013Bornu Z;Wadai Z;Ethiopian Z;Rozvi Z;Sasanian Z;E Vietnam;Shilluk Y;K Aksum;Gwiriko Y;Toro Y;Malindi Y;K Loango;K Mapungubwe;Ryukyu Y;K Cyprus;K Jerusalem;Garhwal Y;K Nepal;K Cambodia;Champa Y;Hanthawaddy Y;Phayao Y;K Sardinia;K Sicily;K Gwynedd;K Scotland;K Desmond;K Poland;K Hungary;K Croatia;K Bohemia;Albanian Y;K Georgia;K Portugal;Khanate of Sibir;K Romania;Cossack Hetmanate;Duchy of Bouillon;K Ireland;Lordship of Ireland;K Italy;Republic of Pisa;Idrisid z;Almoravid z;Almohad Caliphate;Marinid z;Wattasid z;Saadian z;Republic of Sal\u00e9;Rif Republic;K Kush;Makuria;Alodia;Ayyubid z;Mamluk s;Egypt Eyalet;K Fazughli;S Sennar;S Darfur;Mahdist State;S Egypt;K Egypt;Emirate of Cyrenaica;K Libya;Republic of Egypt;Republic of the Sudan;United Arab Republic;Libyan Arab Republic;Zirid z;Hafsid z;K Kuku;Regency of Algiers;Gurunsi;Liptako;Tenkodogo;Wogodogo;Yatenga;Bilanga;Bilayanga;Bongandini;Con;Macakoali;Piela;Nungu;K Sine;K Saloum;K Baol;K Cayor;K Waalo;Bundu;Bonoman;Gyaaman;Denkyira;Mankessim Y;K Dahomey;Oyo Z;K Nri;Aro Confederacy;Kwararafa;Biafra;Buganda;Bunyoro;Ankole;Busoga;Tanganyika;Kuba Y;K Luba;K Lunda;Yeke Y;K Ndongo;Kasanje Y;K Matamba;Mbunda Y;Chokwe Y;Kazembe Y;K Butua;Ndebele Y;Mthethwa Z;Bophuthatswana;Ciskei;Transkei;Venda;Rhodesia;Kart z;Nogai Horde;Khanate of Bukhara;Khanate of Khiva;Khamag Mongol;Northern Fujiwara;Kamakura Shogunate;Ashikaga Shogunate;Jaxa;Republic of Ezo;Jiangxi Soviet;Hunan Soviet;Guangzhou Commune;Gojoseon;Alaiye;Beylik of Bafra;Kara Koyunlu;Kars Republic;K Iraq;Arab Federation;Kar-Kiya z;Baduspanids;Marashiyan z;Afrasiyab z;Mihrabanid z;Safavid Iran;Sheikhdom of Kuwait;Bani Khalid Emirate;Emirate of Diriyah;Emirate of Najd;Muscat and Oman;Emirate of Riyadh;S Najd;K Hejaz;Fadhli s;Emirate of Beihan;Emirate of Dhala;S Lahej;Republic of Kuwait;K Cochin;Jaffna Y;Laur Y;Pandya z;Jaunpur s;Jaintia Y;Hyderabad State;Travancore;Udaipur State;Manikya z;Lan Xang;K Vientiane;K Champasak;Lao Issara;K Laos;Pyu States;Ava;Mon Ys;Pegu;K Mrauk U;Taungoo z;Shan States;Arakan;Raktamaritika;Singhanavati;Dvaravati;Ngoenyang;Hariphunchai;Tambralinga;Lavo Y;Langkasuka;Sukhothai Y;S Singora;Ayutthaya Y;Thonburi Y;Lan Na;Pattani Y;Jambi s;Palembang s;S Deli;S Langkat;S Serdang;S Cirebon;K Pajang;K Bali;Bima s;K Larantuka;K Banggai;Luwu;S Bone;Caucasian Albania;Kabardia;Circassia;K Abkhazia;Elisu s;Avar Khanate;Caucasian Imamate;K Imereti;K Kartli;K Kakheti;Crown of Aragon;Emirate of Granada;K Majorca;Crown of Castile;K Haiti;Cocoll\u00e1n;Zapotec Civilization;Mosquito Y;Somoza Regime;Iroquois Confederacy;Cherokee Nation;Vermont Republic;State of Muskogee;K Alo;K Sigave;K Fiji;K Nauru;K Chile;Muisca Confederation;El Stronato;K Chimor;Jungle Republic;Liga Federal;Supreme Junta;Weimar Republic;K Bavaria;Bremen;Frankfurt;Hamburg;K Hanover;Holstein;Lippe;Nassau;Oldenburg;Pomerania;Reuss;Saxe-Altenburg;Saxony;Schleswig;Waldeck;W\u00fcrttemberg;Helvetic Republic;Republic of Florence;Duchy of Urbino;Republic of Cospaia;Duchy of Lucca;Duchy of Mantua;Duchy of Milan;Papal States".split(";");
-			k =
-				"Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
+			k = "Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
 			var x = "K ; Y;E ; Z; z; s;S ".split(";"),
 				n = "Kingdom of ; Kingdom;Empire of ; Empire; Dynasty; Sultanate;Sultanate of ".split(";");
 			for (t = g.length - 1; 0 <= t; t--)
@@ -7006,19 +7009,17 @@ function game() {
 				for (t = n; t < maxentities; t++) nickname[t] = "[Zombie] " + k[(t + l) % x]
 			} else if (singleplayer)
 				for (l = cW.random(), t = playercount; t < maxentities; t++) nickname[t] = g[(t + l) % maxentities];
-			else
-				for (l = k.length, x = cW.random(), t = playercount; t < maxentities; t++) nickname[t] = "[Bot] " + k[(t +
-					x) % l]
+			else for (l = k.length, x = cW.random(), t = playercount; t < maxentities; t++) nickname[t] = "[Bot] " + k[(t + x) % l]
 		};
 		this.jE = function () {
 			var t;
 			if (je.a09 && !singleplayer) {
-				a0A = Array(playercount);
+				temp_nickname = Array(playercount);
 				var l = playercount;
 				var x = k.length;
 				var n = cW.a0B();
-				for (t = 0; t < l; t++) a0A[t] = nickname[t], nickname[t] = k[(t + n) % x];
-				nickname[myid] = a0A[myid]
+				for (t = 0; t < l; t++) temp_nickname[t] = nickname[t], nickname[t] = k[(t + n) % x];
+				nickname[myid] = temp_nickname[myid]
 			}
 		}
 	}
@@ -7071,15 +7072,15 @@ function game() {
 		}
 	}
 
-	var a0A, cs, cv, cr, cu, hJ, borderpixels, bF, bI, fH;
+	var temp_nickname, hJ, bF, bI, fH;
 
 	function j8(g) {
-		a0A = nickname = Array(maxentities);
+		temp_nickname = nickname = Array(maxentities);
 		isalive = new Uint8Array(maxentities);
-		cs = new Uint16Array(maxentities);
-		cv = new Uint16Array(maxentities);
-		cr = new Uint16Array(maxentities);
-		cu = new Uint16Array(maxentities);
+		x_min = new Uint16Array(maxentities);
+		y_min = new Uint16Array(maxentities);
+		x_max = new Uint16Array(maxentities);
+		y_max = new Uint16Array(maxentities);
 		land = new Uint32Array(maxentities);
 		hJ = new Uint32Array(maxentities);
 		troops = new Uint32Array(maxentities);
@@ -9056,11 +9057,11 @@ function game() {
 			var B = playercount - 1;
 			a: for (; 0 <= B; B--) {
 				var C = B;
-				var F = a0A[C].indexOf("[");
+				var F = temp_nickname[C].indexOf("[");
 				if (0 > F) F = null;
 				else {
-					var E = a0A[C].indexOf("]");
-					F = 1 < E - F && 8 >= E - F ? a0A[C].substring(F + 1, E).toUpperCase().trim() : null
+					var E = temp_nickname[C].indexOf("]");
+					F = 1 < E - F && 8 >= E - F ? temp_nickname[C].substring(F + 1, E).toUpperCase().trim() : null
 				}
 				if (null !== F) {
 					for (E = k.length - 1; 0 <= E; E--)
@@ -9195,7 +9196,7 @@ function game() {
 			this.gQ = performance.now()
 		};
 		this.a1B = function () {
-			1 !== fN || !singleplayer || fe.ld || fQ || fe.lj(); - 1 === this.a5D && (this.a5D = setInterval(k, 2E3))
+			1 !== fN || !singleplayer || fe.ld || spawning || fe.lj(); - 1 === this.a5D && (this.a5D = setInterval(k, 2E3))
 		};
 		this.xB = function () {
 			this.bx = !0; - 1 !== this.a5D && (clearInterval(this.a5D), this.a5D = -1)
@@ -9245,7 +9246,7 @@ function game() {
 		this.a5L = !1;
 		this.d7 = function () {
 			jb.d7();
-			fQ ? eQ() : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN || fe.ld ? dw() : (gametickincrement(), this.vm++, gw.tU()), this.bk++) : (fe.ld ? eQ() : (bw.bx = !0, eO()), this.bk = 0);
+			spawning ? eQ() : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN || fe.ld ? dw() : (gametickincrement(), this.vm++, gw.tU()), this.bk++) : (fe.ld ? eQ() : (bw.bx = !0, eO()), this.bk = 0);
 			eI();
 			bw.bx && (bw.bx = !1, hZ())
 		}
@@ -9264,7 +9265,7 @@ function game() {
 			g = this.vm = this.bk = 0
 		};
 		this.a5N = function (k) {
-			if (fQ) this.t5(k);
+			if (spawning) this.t5(k);
 			else if (this.a5M.push(k), 2 === fN) {
 				for (k = 0; k < this.a5M.length; k++) ja.a5O(this.a5M[k], g), g = (g + 1) % 8;
 				this.a5M = []
@@ -9278,7 +9279,7 @@ function game() {
 		};
 		this.d7 = function () {
 			jb.d7();
-			fQ ? (bw.bx = dz.t5(-1) ||
+			spawning ? (bw.bx = dz.t5(-1) ||
 				bw.bx, eQ()) : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN ? dw() : this.a5P(), this.bk++) : (bw.bx = !0, eO(), this.bk = 0);
 			eI();
 			bw.bx && (bw.bx = !1, hZ())
@@ -9301,7 +9302,7 @@ function game() {
 
 	function kV() {
 		function g(k, t) {
-			8 !== jT.rc() || 0 !== t && t !== gamemode || singleplayer && fQ || (dx.mg(k), k += " - Territorial.io");
+			8 !== jT.rc() || 0 !== t && t !== gamemode || singleplayer && spawning || (dx.mg(k), k += " - Territorial.io");
 			0 === t && (document.title = k)
 		}
 		this.gK = 0;
