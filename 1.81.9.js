@@ -1,6 +1,7 @@
 var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
-var nickname, land, troops, x_min, y_min, x_max, y_max, borderpixels, borderingpixels, offset, timingbot, attacks;
+var nickname, land, troops, x_min, y_min, x_max, y_max, borderpixels, borderwaterpixels, bordermountainpixel, offset;
+var timingbot, attacks;
 var mapwidth, mapheight, lobbygames, spawning_time;
 
 function game() {
@@ -10,7 +11,7 @@ function game() {
 		if (playercount == 2) opponentid = myid === 0 ? 1 : 0
 		latency = singleplayer ? 0 : 8
 
-		//console.clear();
+		console.clear();
 		console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
 	}
 
@@ -27,10 +28,20 @@ function game() {
 
 		if (tick % 5 == 0) {
 
+			//console.log(pixel.hW(myid,3204), pixel.b7(3204))
+			var t = [], x = 1;
+			for (let i = 0; i < aW.aX(1); i++) t.push(aW.ad(1, i))
+			console.log(aW.aY(1,0),t);
 		}
 	}
 
-	function check_spawn() { /*if (spawning_time >= 0.95) multi.choosespawn(1E3, mapheight/2, mapwidth/2)*/} //Checks if it is time to spawn
+	function check_spawn() {
+		if (Math.round(spawning_time * 1000) % 50 == 0) {
+			multi.message_emojis(Math.floor(Math.random()*106), Math.floor(Math.random() * playercount))
+			count--;
+		}
+	/*if (spawning_time >= 0.95) multi.choosespawn(1E3, mapheight/2, mapwidth/2)*/ //Checks if it is time to spawn
+	}
 
 	function a() {
 		if (b) return c.username;
@@ -162,12 +173,13 @@ function game() {
 		aH = aW.ad(last_action_id, aD);
 		troops_returned = aW.ae(last_action_id, aD);
 		af();
-		0 === last_border_land ? refund() : (ah(), canproceed() ? aj() : refund())
+		0 === last_border_land ? refund() : (ah(), canattackproceed() ? aj() : refund())
 	}
 
-	function canproceed() {
+	function canattackproceed() {
 		aG = ak(troops_returned, last_border_land);
-		return aG > al
+		//console.log(aG, landcost);
+		return aG > landcost
 	}
 
 	function ah() {
@@ -188,16 +200,16 @@ function game() {
 	}
 
 	function aU() {
-		var g = borderpixels[last_action_id].length;
+		var g = temp_borderpixels[last_action_id].length;
 		g = g > aJ ? aJ : g;
 		aL = 0;
-		for (--g; 0 <= g; g--) aM[aL++] = borderpixels[last_action_id][g]
+		for (--g; 0 <= g; g--) aM[aL++] = temp_borderpixels[last_action_id][g]
 	}
 
 	function aV() {
 		var g;
-		for (g = borderpixels[last_action_id].length - 1; 0 <= g; g--) ax.ay(borderpixels[last_action_id][g]) && ax.az(borderpixels[last_action_id][g], last_action_id);
-		borderpixels[last_action_id] = []
+		for (g = temp_borderpixels[last_action_id].length - 1; 0 <= g; g--) pixel.ay(temp_borderpixels[last_action_id][g]) && pixel.az(temp_borderpixels[last_action_id][g], last_action_id);
+		temp_borderpixels[last_action_id] = []
 	}
 
 	function af() {
@@ -210,38 +222,38 @@ function game() {
 	}
 
 	function ab() {
-		var g = borderpixels[last_action_id].length,
+		var g = temp_borderpixels[last_action_id].length,
 			k;
 		var t = g - 1;
 		a: for (; 0 <= t; t--) {
 			for (k = 3; 0 <= k; k--) {
-				var l = borderpixels[last_action_id][t] + offset[k];
-				if (ax.b8(l) || ax.b6(l) && ax.b7(l) !== last_action_id) {
-					ax.cO(borderpixels[last_action_id][t], last_action_id);
+				var l = temp_borderpixels[last_action_id][t] + offset[k];
+				if (pixel.b8(l) || pixel.b6(l) && pixel.b7(l) !== last_action_id) {
+					pixel.cO(temp_borderpixels[last_action_id][t], last_action_id);
 					continue a
 				}
 			}
-			borderpixels[last_action_id][t] = borderpixels[last_action_id][g - 1];
-			borderpixels[last_action_id].pop();
+			temp_borderpixels[last_action_id][t] = temp_borderpixels[last_action_id][g - 1];
+			temp_borderpixels[last_action_id].pop();
 			g--
 		}
 	}
 
 	function ac() {
-		var g = borderingpixels[last_action_id].length,
+		var g = borderpixels[last_action_id].length,
 			k, t, l = g - 1;
 		a: for (; 0 <= l; l--) {
 			var x = t = !1;
 			for (k = 3; 0 <= k; k--) {
-				var n = borderingpixels[last_action_id][l] + offset[k];
-				if (ax.y1(n, last_action_id)) continue a;
-				x = x || ax.y4(n);
-				t = t || ax.y0(n)
+				var n = borderpixels[last_action_id][l] + offset[k];
+				if (pixel.y1(n, last_action_id)) continue a;
+				x = x || pixel.y4(n);
+				t = t || pixel.y0(n)
 			}
-			x ? bF[last_action_id].push(borderingpixels[last_action_id][l]) : t ? bI[last_action_id].push(borderingpixels[last_action_id][l]) : ax.hN(borderingpixels[last_action_id][l], last_action_id);
-			borderingpixels[last_action_id][l] = borderingpixels[last_action_id][g - 1];
-			borderingpixels[last_action_id].pop();
-			g--
+			x ? borderwaterpixels[last_action_id].push(borderpixels[last_action_id][l]) : t ? bordermountainpixel[last_action_id].push(borderpixels[last_action_id][l]) : pixel.hN(borderpixels[last_action_id][l], last_action_id);
+			borderpixels[last_action_id][l] = borderpixels[last_action_id][g - 1];
+			borderpixels[last_action_id].pop();
+			g--;
 		}
 	}
 
@@ -250,18 +262,18 @@ function game() {
 	}
 
 	function bD(g) {
-		for (var k = g.length, t = k - 1; 0 <= t; t--) ax.hW(aH, g[t]) || (g[t] = g[k - 1], g.pop(), k--)
+		for (var k = g.length, t = k - 1; 0 <= t; t--) pixel.hW(aH, g[t]) || (g[t] = g[k - 1], g.pop(), k--)
 	}
 
 	function bG(g) {
-		for (var k = g.length, t = k - 1; 0 <= t; t--) !ax.hW(aH, g[t]) && ax.ay(g[t]) && (g[t] = g[k - 1], g.pop(), k--)
+		for (var k = g.length, t = k - 1; 0 <= t; t--) !pixel.hW(aH, g[t]) && pixel.ay(g[t]) && (g[t] = g[k - 1], g.pop(), k--)
 	}
 
 	function bH(g) {
 		for (var k = g.length, t, l, x = k - 1; 0 <= x; x--)
 			for (t = 3; 0 <= t; t--)
-				if (l = g[x] + offset[t], ax.y1(l, aH)) {
-					borderingpixels[aH].push(g[x]);
+				if (l = g[x] + offset[t], pixel.y1(l, aH)) {
+					borderpixels[aH].push(g[x]);
 					g[x] = g[k - 1];
 					g.pop();
 					k--;
@@ -271,29 +283,29 @@ function game() {
 
 	function bJ() {
 		for (var g, k, t = last_border_land - 1; 0 <= t; t--)
-			for (g = 3; 0 <= g; g--) k = aK[t] + offset[g], ax.y2(aH, k) && ax.y3(k) && (borderingpixels[aH].push(k), ax.az(k, aH))
+			for (g = 3; 0 <= g; g--) k = aK[t] + offset[g], pixel.y2(aH, k) && pixel.y3(k) && (borderpixels[aH].push(k), pixel.az(k, aH))
 	}
 
-	function bK() {
+	function update_minmax() {
 		var g;
 		a: for (; y_min[aH] < y_max[aH];) {
 			for (g = x_max[aH]; g >= x_min[aH]; g--)
-				if (ax.hW(aH, 4 * (y_min[aH] * mapwidth + g))) break a;
+				if (pixel.hW(aH, 4 * (y_min[aH] * mapwidth + g))) break a;
 			y_min[aH]++
 		}
 		a: for (; y_min[aH] < y_max[aH];) {
 			for (g = x_max[aH]; g >= x_min[aH]; g--)
-				if (ax.hW(aH, 4 * (y_max[aH] * mapwidth + g))) break a;
+				if (pixel.hW(aH, 4 * (y_max[aH] * mapwidth + g))) break a;
 			y_max[aH]--
 		}
 		a: for (; x_min[aH] < x_max[aH];) {
 			for (g = y_max[aH]; g >= y_min[aH]; g--)
-				if (ax.hW(aH, 4 * (g * mapwidth + x_min[aH]))) break a;
+				if (pixel.hW(aH, 4 * (g * mapwidth + x_min[aH]))) break a;
 			x_min[aH]++
 		}
 		a: for (; x_min[aH] < x_max[aH];) {
 			for (g = y_max[aH]; g >= y_min[aH]; g--)
-				if (ax.hW(aH, 4 * (g * mapwidth + x_max[aH]))) break a;
+				if (pixel.hW(aH, 4 * (g * mapwidth + x_max[aH]))) break a;
 			x_max[aH]--
 		}
 	}
@@ -304,7 +316,7 @@ function game() {
 			for (k = aL - 1; 0 <= k; k--) {
 				var t = aM[k] + offset[g];
 				var l = ak(t, 4);
-				0 === aO[l] && ax.b6(t) && ax.b7(t) === aH && (aO[l] = 1, aK[last_border_land++] = t)
+				0 === aO[l] && pixel.b6(t) && pixel.b7(t) === aH && (aO[l] = 1, aK[last_border_land++] = t)
 			}
 	}
 
@@ -314,7 +326,7 @@ function game() {
 			for (k = aL - 1; 0 <= k; k--) {
 				var t = aM[k] + offset[g];
 				var l = ak(t, 4);
-				0 === aO[l] && ax.b8(t) && (aO[l] = 1, aK[last_border_land++] = t)
+				0 === aO[l] && pixel.b8(t) && (aO[l] = 1, aK[last_border_land++] = t)
 			}
 	}
 
@@ -324,13 +336,13 @@ function game() {
 
 	function bB() {
 		bC();
-		bD(borderingpixels[aH]);
-		bD(bF[aH]);
-		bG(borderpixels[aH]);
-		bH(bF[aH]);
-		bH(bI[aH]);
+		bD(borderpixels[aH]);
+		bD(borderwaterpixels[aH]);
+		bG(temp_borderpixels[aH]);
+		bH(borderwaterpixels[aH]);
+		bH(bordermountainpixel[aH]);
 		bJ();
-		bK()
+		update_minmax()
 	}
 
 	function bA() {
@@ -346,7 +358,7 @@ function game() {
 	}
 
 	function bQ() {
-		var g = last_border_land * al,
+		var g = last_border_land * landcost,
 			k = bT(),
 			t = bV();
 		k = g + 2 * k + t;
@@ -380,16 +392,16 @@ function game() {
 	}
 
 	function bc() {
-		return borderingpixels[aH].length + ak(bF[aH].length + bI[aH].length, 50)
+		return borderpixels[aH].length + ak(borderwaterpixels[aH].length + bordermountainpixel[aH].length, 50)
 	}
 
 	function bP() {
-		troops_returned -= last_border_land * al;
+		troops_returned -= last_border_land * landcost;
 		return !0
 	}
 
 	function bO() {
-		for (var g = last_border_land - 1; 0 <= g; g--) borderpixels[last_action_id].push(aK[g]), borderingpixels[last_action_id].push(aK[g]), ax.az(aK[g], last_action_id)
+		for (var g = last_border_land - 1; 0 <= g; g--) temp_borderpixels[last_action_id].push(aK[g]), borderpixels[last_action_id].push(aK[g]), pixel.az(aK[g], last_action_id)
 	}
 
 	function be() {
@@ -456,39 +468,39 @@ function game() {
 
 	function cK(g, k) {
 		var t, l;
-		for (t = borderingpixels[g].length - 1; 0 <= t; t--)
-			if (ax.cM(borderingpixels[g][t]))
+		for (t = borderpixels[g].length - 1; 0 <= t; t--)
+			if (pixel.cM(borderpixels[g][t]))
 				for (l = 3; 0 <= l; l--)
-					if (ax.b6(borderingpixels[g][t] + offset[l]) && ax.b7(borderingpixels[g][t] + offset[l]) === k) {
-						borderpixels[g].push(borderingpixels[g][t]);
+					if (pixel.b6(borderpixels[g][t] + offset[l]) && pixel.b7(borderpixels[g][t] + offset[l]) === k) {
+						temp_borderpixels[g].push(borderpixels[g][t]);
 						break
 					}
 	}
 
 	function cH(g, k) {
-		for (var t = borderpixels[k].length - 1; t >= g; t--) ax.cO(borderpixels[k][t], k)
+		for (var t = temp_borderpixels[k].length - 1; t >= g; t--) pixel.cO(temp_borderpixels[k][t], k)
 	}
 
 	function cP(g) {
-		for (var k, t = borderingpixels[g].length - 1; 0 <= t; t--)
-			if (ax.cM(borderingpixels[g][t]))
+		for (var k, t = borderpixels[g].length - 1; 0 <= t; t--)
+			if (pixel.cM(borderpixels[g][t]))
 				for (k = 3; 0 <= k; k--)
-					if (ax.b8(borderingpixels[g][t] + offset[k])) {
-						borderpixels[g].push(borderingpixels[g][t]);
+					if (pixel.b8(borderpixels[g][t] + offset[k])) {
+						temp_borderpixels[g].push(borderpixels[g][t]);
 						break
 					}
 	}
 
 	function cQ(g, k) {
 		var t, l;
-		var x = borderingpixels[g].length;
+		var x = borderpixels[g].length;
 		var n = 256 <= x ? 12 : 32 <= x ? 6 : 1;
 		x = x - 1 - cW.cX(n);
 		cY = 0;
 		a: for (; 0 <= x; x -= n)
 			for (l = 3; 0 <= l; l--) {
-				var z = ax.b8(borderingpixels[g][x] + offset[l]) ? maxentities : ax.b7(borderingpixels[g][x] + offset[l]);
-				if (z === maxentities || ax.b6(borderingpixels[g][x] + offset[l]) && z !== g && (k || cZ(g, z))) {
+				var z = pixel.b8(borderpixels[g][x] + offset[l]) ? maxentities : pixel.b7(borderpixels[g][x] + offset[l]);
+				if (z === maxentities || pixel.b6(borderpixels[g][x] + offset[l]) && z !== g && (k || cZ(g, z))) {
 					for (t = cY - 1; 0 <= t; t--)
 						if (ca[t] === z) continue a;
 					ca[cY] = z;
@@ -501,10 +513,10 @@ function game() {
 	function cc(g, k) {
 		var t, l;
 		cY = 0;
-		for (t = borderingpixels[g].length - 1; 0 <= t; t--)
+		for (t = borderpixels[g].length - 1; 0 <= t; t--)
 			for (l = 3; 0 <= l; l--) {
-				var x = ax.b8(borderingpixels[g][t] + offset[l]) ? maxentities : ax.b7(borderingpixels[g][t] + offset[l]);
-				if (x === maxentities || ax.b6(borderingpixels[g][t] + offset[l]) && x !== g && (k || cZ(g, x))) {
+				var x = pixel.b8(borderpixels[g][t] + offset[l]) ? maxentities : pixel.b7(borderpixels[g][t] + offset[l]);
+				if (x === maxentities || pixel.b6(borderpixels[g][t] + offset[l]) && x !== g && (k || cZ(g, x))) {
 					ca[cY++] = x;
 					return
 				}
@@ -589,8 +601,8 @@ function game() {
 	function d3(g, k) {
 		teamgame && (cz[g] = 0);
 		if (aW.d5(g) && !(60 > k))
-			if (0 === borderingpixels[g].length) d6.d7(g, d8.cF[g - playercount]) || (d8.d9(g - playercount, 200), dA(g, k, d8.cF[g - playercount], aq.dB(g)));
-			else if (!(0 < bF[g].length && cW.random() < cW.value(bF[g].length > borderingpixels[g].length ? 7 : 3) && d6.d7(g, d8.cF[g - playercount]))) {
+			if (0 === borderpixels[g].length) d6.d7(g, d8.cF[g - playercount]) || (d8.d9(g - playercount, 200), dA(g, k, d8.cF[g - playercount], aq.dB(g)));
+			else if (!(0 < borderwaterpixels[g].length && cW.random() < cW.value(borderwaterpixels[g].length > borderpixels[g].length ? 7 : 3) && d6.d7(g, d8.cF[g - playercount]))) {
 				var t = aq.dB(g);
 				troops[g] > t && k < troops[g] - t && (k = troops[g] - t);
 				teamgame ? dC(g, k, d8.cF[g - playercount], t) : dD(g, k, d8.cF[g - playercount])
@@ -598,7 +610,7 @@ function game() {
 	}
 
 	function dC(g, k, t, l) {
-		cQ(g, !1) || cc(g, !1) ? (cz[g] = 1, cf(g) || (cd() ? (dF(g, k), dG(g, maxentities, t)) : (cW.dH(d8.dI[t]) ? l = ck(g) : (ch() && cW.dH(d8.dK[t]) && cj(), l = cn(g)), dJ(g, k, l), dG(g, l, t)))) : 0 < bF[g].length && cW.random() < cW.value(60) && d6.d7(g, t) || (d8.d9(g - playercount, 200), dA(g, k, t, l))
+		cQ(g, !1) || cc(g, !1) ? (cz[g] = 1, cf(g) || (cd() ? (dF(g, k), dG(g, maxentities, t)) : (cW.dH(d8.dI[t]) ? l = ck(g) : (ch() && cW.dH(d8.dK[t]) && cj(), l = cn(g)), dJ(g, k, l), dG(g, l, t)))) : 0 < borderwaterpixels[g].length && cW.random() < cW.value(60) && d6.d7(g, t) || (d8.d9(g - playercount, 200), dA(g, k, t, l))
 	}
 
 	function dL(g, k) {
@@ -634,16 +646,16 @@ function game() {
 			var l = ak(11 * troops[t], 5);
 			k = k > l ? k : l
 		}
-		l = borderpixels[g].length;
+		l = temp_borderpixels[g].length;
 		cK(g, t);
 		cD(g, t, l, k)
 	}
 
 	function dF(g, k) {
 		var t = maxentities,
-			l = borderpixels[g].length;
+			l = temp_borderpixels[g].length;
 		cP(g);
-		return borderpixels[g].length !== l ? (cD(g, t, l, k), !0) : !1
+		return temp_borderpixels[g].length !== l ? (cD(g, t, l, k), !0) : !1
 	}
 	var dV = [60, 74, 112, 200, 256, 512];
 
@@ -814,7 +826,7 @@ function game() {
 				for (var y = 40; 1 <= y; y--) {
 					x = x_min[z] + ak(cW.random() * (x_max[z] - x_min[z] + 1), cW.value(100));
 					n = y_min[z] + ak(cW.random() * (y_max[z] - y_min[z] + 1), cW.value(100));
-					var A = k(ax.ep(x, n));
+					var A = k(pixel.ep(x, n));
 					if (1 !== A) break a
 				}
 				A = 1
@@ -826,7 +838,7 @@ function game() {
 		}
 
 		function k(y) {
-			if (ax.ay(y) && (ax.b8(y) || ax.b7(y) !== z && cZ(z, ax.b7(y)))) {
+			if (pixel.ay(y) && (pixel.b8(y) || pixel.b7(y) !== z && cZ(z, pixel.b7(y)))) {
 				if (en.cg(z, y)) return 2;
 				if (0 === l--) return 0
 			}
@@ -836,17 +848,17 @@ function game() {
 		function t(y, A) {
 			for (var B, C, F, E, H, K, J, D = y; D < y + 50 * A; D += A)
 				if (B = x_min[z] - D, B = 1 > B ? 1 : B, C = y_min[z] - D, C = 1 >
-					C ? 1 : C, F = x_max[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = y_max[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = ak(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(ax.ep(x, n)), 1 !== B) return B;
+					C ? 1 : C, F = x_max[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = y_max[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = ak(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(pixel.ep(x, n)), 1 !== B) return B;
 			return 1
 		}
 		var l, x, n, z;
 		this.d7 = function (y, A) {
 			z = y;
-			if (0 === bF[z].length) return !1;
+			if (0 === borderwaterpixels[z].length) return !1;
 			if (g()) {
 				var B = ak(d8.df[A] * troops[z], 100);
 				100 > B && 100 <= troops[z] && (B = 100);
-				if (100 <= B) return em(z, en.eo(), ax.ep(x, n), B)
+				if (100 <= B) return em(z, en.eo(), pixel.ep(x, n), B)
 			}
 			return !1
 		}
@@ -894,8 +906,7 @@ function game() {
 			0 < A && this.bh()
 		};
 		this.fA = function (y, A, B, C) {
-			0 !== isalive[y] && 2 !==
-				fH[k] && en.cg(y, ax.ep(B, C)) && em(y, en.eo(), ax.ep(B, C), ak(A * troops[y], 1E3)) && y === myid && (as.at[0] += A, as.at[1]++, as.at[2]++)
+			0 !== isalive[y] && 2 !== fH[k] && en.cg(y, pixel.ep(B, C)) && em(y, en.eo(), pixel.ep(B, C), ak(A * troops[y], 1E3)) && y === myid && (as.at[0] += A, as.at[1]++, as.at[2]++)
 		};
 		this.cancel = function (y, A) {
 			if (0 !== isalive[y] && 2 !== fH[k] && aW.cg(y, A)) {
@@ -925,7 +936,7 @@ function game() {
 			1 === fN && g(y, 0, A, B, 0, 0)
 		};
 		this.fP = function (y, A, B, C) {
-			1 === fN && (spawning ?
+			1 === fN && (in_spawn ?
 				fR.cI(y, B, C) : g(y, 1, A, 0, B, C))
 		};
 		this.fS = function (y, A) {
@@ -942,10 +953,10 @@ function game() {
 			dx.fZ(y, 4)
 		};
 		this.fY = function (y) {
-			spawning ? (fa(y), fb()) : e6.fc(y)
+			in_spawn ? (fa(y), fb()) : e6.fc(y)
 		};
 		this.fd = function (y) {
-			0 !== isalive[y] && 2 !== fH[y] && fe.ff(y) && (1 === alivecount ? fW.fX(y) : (dx.fZ(y, y === myid ? 21 : 22), 8 === gamemode ? fW.fX(1 - y) : singleplayer ? (fa(y), fb(), spawning && fR.d7()) : this.fY(y)))
+			0 !== isalive[y] && 2 !== fH[y] && fe.ff(y) && (1 === alivecount ? fW.fX(y) : (dx.fZ(y, y === myid ? 21 : 22), 8 === gamemode ? fW.fX(1 - y) : singleplayer ? (fa(y), fb(), in_spawn && fR.d7()) : this.fY(y)))
 		}
 	}
 
@@ -1005,8 +1016,8 @@ function game() {
 				c9.textAlign = cB;
 				c9.textBaseline = cA;
 				for (B = l - 1; 0 <= B; B--) {
-					var K = ax.g3(y[B]);
-					var J = ax.c7(y[B]);
+					var K = pixel.g3(y[B]);
+					var J = pixel.c7(y[B]);
 					var D = x[B];
 					if (K > C - 1 && K < E && J > F - 1 && J < H && 0 !== isalive[D]) {
 						var L = Math.floor(.94 * fv * dy.g4(D));
@@ -1057,7 +1068,7 @@ function game() {
 		this.gS = function () {
 			g(1);
 			this.gT(0, 0, mapwidth - 1, mapheight - 1);
-			spawning || this.gU(myid, 3E3, !0, .3)
+			in_spawn || this.gU(myid, 3E3, !0, .3)
 		};
 		this.gU = function (I, N, G, M) {
 			if (!(gW || D && !G && L || 0 === land[I])) {
@@ -1155,8 +1166,8 @@ function game() {
 				I = B + x * A + D;
 			for (K = L + F - 1; K >= L; K--)
 				for (J = I + F - 1; J >= I; J--)
-					if (D = ax.ep(J, K), !ax.ay(D) ||
-						ax.cM(D)) return !1;
+					if (D = pixel.ep(J, K), !pixel.ay(D) ||
+						pixel.cM(D)) return !1;
 			return !0
 		}
 
@@ -1164,16 +1175,16 @@ function game() {
 			isalive[E] = 0;
 			troops[E] = 0;
 			land[E] = hJ[E] = 0;
+			temp_borderpixels[E] = [];
 			borderpixels[E] = [];
-			borderingpixels[E] = [];
-			bF[E] = [];
-			bI[E] = [];
+			borderwaterpixels[E] = [];
+			bordermountainpixel[E] = [];
 			x_min[E] = y_min[E] = x_max[E] = y_max[E] = 0
 		}
 
 		function l(K, J) {
 			isalive[E] = 1;
-			troops[E] = E < playercount ? hK : dV[d8.cF[E - playercount]];
+			troops[E] = E < playercount ? startingtroops : dV[d8.cF[E - playercount]];
 			x_min[E] = K + 10;
 			y_min[E] = J + 10;
 			y_max[E] = x_max[E] = 0;
@@ -1181,11 +1192,11 @@ function game() {
 			for (D = K; D < K + 4; D++)
 				for (L = J; L < J + 4; L++)
 					if (D > K && D < K + 3 || L > J && L < J + 3) {
-						var I = ax.ep(D, L);
-						ax.ay(I) && (x_min[E] = D < x_min[E] ? D : x_min[E], x_max[E] = D > x_max[E] ? D : x_max[E], y_min[E] = L < y_min[E] ? L : y_min[E], y_max[E] = L > y_max[E] ? L : y_max[E], H[land[E]] = I, land[E]++, ax.hN(I, E))
+						var I = pixel.ep(D, L);
+						pixel.ay(I) && (x_min[E] = D < x_min[E] ? D : x_min[E], x_max[E] = D > x_max[E] ? D : x_max[E], y_min[E] = L < y_min[E] ? L : y_min[E], y_max[E] = L > y_max[E] ? L : y_max[E], H[land[E]] = I, land[E]++, pixel.hN(I, E))
 					} 
 					hJ[E] = land[E];
-			for (I = land[E] - 1; 0 <= I; I--) ax.hO(H[I], E) ? (ax.az(H[I], E), borderingpixels[E].push(H[I])) : ax.hP(H[I]) ? (ax.az(H[I], E), bF[E].push(H[I])) : ax.hQ(H[I]) && (ax.az(H[I], E), bI[E].push(H[I]))
+			for (I = land[E] - 1; 0 <= I; I--) pixel.hO(H[I], E) ? (pixel.az(H[I], E), borderpixels[E].push(H[I])) : pixel.hP(H[I]) ? (pixel.az(H[I], E), borderwaterpixels[E].push(H[I])) : pixel.hQ(H[I]) && (pixel.az(H[I], E), bordermountainpixel[E].push(H[I]))
 		}
 		var x, n, z, y, A, B, C, F, E, H;
 		this.bh = function () {
@@ -1197,7 +1208,7 @@ function game() {
 			y = ak(mapheight, A);
 			B = ak(mapwidth - A * z, 2);
 			C = ak(mapheight - A * y, 2);
-			if (spawning)
+			if (in_spawn)
 				for (K = 0; K < playercount; K++) E = K, t(), isalive[E] = 1;
 			for (E = 0; E < maxentities; E++)
 				if (1 !== isalive[E])
@@ -1219,13 +1230,13 @@ function game() {
 						if ((K ===
 							J + L || K === J - L || I === D + L || I === D - L) && 3 < K && K < mapwidth - 5 && 3 < I && I < mapheight - 5) {
 							var N;
-							if (N = ax.ay(ax.ep(K, I))) a: {
+							if (N = pixel.ay(pixel.ep(K, I))) a: {
 								var G, M = K + 3,
 									Q = I + 3;
 								for (N = Q; N > Q - 6; N--)
 									for (G = M; G > M - 6; G--) {
-										var S = ax.ep(G, N);
-										if (ax.cM(S)) {
+										var S = pixel.ep(G, N);
+										if (pixel.cM(S)) {
 											N = !1;
 											break a
 										}
@@ -1235,7 +1246,7 @@ function game() {
 							if (N) {
 								if (0 < land[E]) {
 									for (D = x_max[E]; D >= x_min[E]; D--)
-										for (J = y_max[E]; J >= y_min[E]; J--) L = 4 * (J * mapwidth + D), ax.hW(E, L) && (ax.hX(L), land[E]--);
+										for (J = y_max[E]; J >= y_min[E]; J--) L = 4 * (J * mapwidth + D), pixel.hW(E, L) && (pixel.hX(L), land[E]--);
 									t()
 								}
 								l(K - 1, I - 1);
@@ -1441,7 +1452,7 @@ function game() {
 			0 !== isalive[g] && il.hR(g, k, t) && (bw.bx = !0)
 		};
 		this.d7 = function () {
-			spawning = !1;
+			in_spawn = !1;
 			for (var g = 0; g < playercount; g++) 0 !== isalive[g] && 0 === land[g] && il.hY(g);
 			0 !== isalive[myid] ? (as.at[7] = land[myid], as.at[8] = troops[myid], eF.c6(), dz.im(), eJ.gT(x_min[myid] - 5, y_min[myid] - 5, x_max[myid] + 5, y_max[myid] + 5), eL.bh()) : eK.show(!1, !1);
 			dx.io(18);
@@ -1455,14 +1466,14 @@ function game() {
 	}
 
 	var ih, ig, maxentities = 512,
-		is = 150, it, fN = 0, iu, iv, iw, hK = 512,
-		al = 2, gW, spawning, ix, teamgame, iy, iz, fR, iT, j0;
+		is = 150, it, fN = 0, iu, iv, iw, startingtroops = 512,
+		landcost = 2, gW, in_spawn, ix, teamgame, iy, contest, fR, iT, j0;
 
 		entitycount = 512
 
-	function systemgameinit(g, k, playernames, game_mode, x) {
+	function systemgameinit(g, k, playernames, game_mode, is_contest) {
 		it = gW = !1;
-		iz = x;
+		contest = is_contest;
 		gamemode = game_mode;
 		teamgame = 7 > gamemode || 9 === gamemode;
 		ih = playercount = playernames.length;
@@ -1471,8 +1482,8 @@ function game() {
 		gamemode = 8 === gamemode && 2 !== playercount ? 7 : gamemode;
 		iy = 9 === gamemode ? 2 : gamemode + 2;
 		j0 = 2 >= playercount ? 30 : 50 >= playercount ? 40 : 50;
-		fR = (ix = spawning = teamgame || 100 > playercount) ? new ik : null;
-		hK = 512;
+		fR = (ix = in_spawn = teamgame || 100 > playercount) ? new ik : null;
+		startingtroops = 512;
 		entitycount = maxentities;
 		singleplayer && (entitycount = dl.j6());
 		botcount = entitycount - playercount;
@@ -1491,7 +1502,7 @@ function game() {
 		gw.bh();
 		aq.bh();
 		d1();
-		ax.bh(playernames);
+		pixel.bh(playernames);
 		ha.bh();
 		eH.bh();
 		d8.bh();
@@ -1530,7 +1541,7 @@ function game() {
 		eL.bh();
 		singleplayer ? bw.jJ() : bw.jK();
 		bw.bx = !0;
-		singleplayer && spawning || a9(1)
+		singleplayer && in_spawn || a9(1)
 
 		gameinit();
 	}
@@ -1548,7 +1559,7 @@ function game() {
 		jO.bh();
 		a9(0)
 	}
-	var d8, am, d6, e7, single, e8, eJ, il, m, he, fe, dx, jP, eD, bu, eF, gX, jQ, eC, eA, dz, eK, jR, jS, jT, jU, jV, jW, dl, jO, bo, ax, f, aW, aq, dy, jC, dq, jA, jX, jY, gb, en, cW, fp, ha, jZ, ja, eL, multi, jb, eB, jc, jd, eG, eM, e1, e5, je, jf, e6, e3, eE;
+	var d8, am, d6, e7, single, e8, eJ, il, m, he, fe, dx, jP, eD, bu, eF, gX, jQ, eC, eA, dz, eK, jR, jS, jT, jU, jV, jW, dl, jO, bo, pixel, f, aW, aq, dy, jC, dq, jA, jX, jY, gb, en, cW, fp, ha, jZ, ja, eL, multi, jb, eB, jc, jd, eG, eM, e1, e5, je, jf, e6, e3, eE;
 
 	function jg() {
 		d8 = new dW;
@@ -1583,7 +1594,7 @@ function game() {
 		dl = new k0;
 		jO = new k1;
 		bo = new k2;
-		ax = new k3;
+		pixel = new oldpixel;
 		f = new k4;
 		aW = new k5;
 		aq = new k6;
@@ -1692,7 +1703,7 @@ function game() {
 		};
 		this.bz = function (N, G) {
 			C = B = -1E3;
-			if (2 === fH[myid] || 0 === isalive[myid] && !spawning) return this.kx(), 1;
+			if (2 === fH[myid] || 0 === isalive[myid] && !in_spawn) return this.kx(), 1;
 			if (n) {
 				this.kx();
 				if (a5.ky(N, G)) a5.kz(N, G, E) && (n = !0);
@@ -1725,35 +1736,34 @@ function game() {
 			}
 			if (3 === M) { //Donations
 				this.kx();
-				if (this.kw(E) && 7 > gamemode && 1071 > bw.dM()) return dx.l9(),
-					1;
+				if (this.kw(E) && 7 > gamemode && 1071 > bw.dM()) return dx.l9(), 1;
 				dx.lA();
 				singleplayer ? dS(myid, E, ak(eF.lB() * troops[myid], 1E3)) : multi.attack(eF.lB(), E === maxentities ? myid : E);
 				return 1
 			}
 			//4: Attack/Spawn 5: Boat 7: Emoji
-			if (4 === M) return x[0] ? spawning ? (this.kx(), singleplayer ? (fR.cI(0, ax.g3(H), ax.c7(H)), fR.d7()) : multi.choosespawn(1E3, ax.g3(H), ax.c7(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!ix || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
-			if (5 === M) return x[1] ? (this.kx(), dx.lA(), singleplayer ? single.fA(myid, eF.lB(), ax.g3(H), ax.c7(H)) : multi.choosespawn(eF.lB(), ax.g3(H), ax.c7(H)), 1) : 0;
+			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (fR.cI(0, pixel.g3(H), pixel.c7(H)), fR.d7()) : multi.choosespawn(1E3, pixel.g3(H), pixel.c7(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!ix || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+			if (5 === M) return x[1] ? (this.kx(), dx.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.g3(H), pixel.c7(H)) : multi.choosespawn(eF.lB(), pixel.g3(H), pixel.c7(H)), 1) : 0;
 			if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
 			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (dx.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
 			this.kx();
 			return 2
 		};
 		this.lI = function (N, G) {
-			if (this.ku() || 2 === fH[myid] || 0 === isalive[myid] && !spawning) return !1;
+			if (this.ku() || 2 === fH[myid] || 0 === isalive[myid] && !in_spawn) return !1;
 			var M = (q ? .0288 : .0144) * bi;
 			if (Math.abs(N - B) > M || Math.abs(G - C) > M || (new Date).getTime() > F + 425) return !1;
 			M = Math.floor((N + g0) / fv);
 			var Q = Math.floor((G + g1) / fv);
 			if (1 > M || 1 > Q || M >= mapwidth - 1 || Q >= mapheight - 1) return !1;
 			var S = Q * mapwidth * 4 + 4 * M;
-			if (!ax.ay(S)) return !1;
-			if (2 === fN) return 1 <= a5.lM && (E = ax.b7(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
-			H = ax.ep(M, Q);
-			if (spawning) return x[0] = !0, this.lN(N, G);
+			if (!pixel.ay(S)) return !1;
+			if (2 === fN) return 1 <= a5.lM && (E = pixel.b7(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
+			H = pixel.ep(M, Q);
+			if (in_spawn) return x[0] = !0, this.lN(N, G);
 			x[1] = en.cg(myid, H);
-			if (ax.b8(S)) return E = maxentities, lO(myid) ? x[0] = !0 : lP(myid, E) && (x[8] = !0), this.lN(N, G);
-			E = ax.b7(S);
+			if (pixel.b8(S)) return E = maxentities, lO(myid) ? x[0] = !0 : lP(myid, E) && (x[8] = !0), this.lN(N, G);
+			E = pixel.b7(S);
 			if (E === myid) {
 				this.kx();
 				if (0 === a5.lM) return !1;
@@ -1832,7 +1842,7 @@ function game() {
 				var N = (A + K) / D;
 				c9.imageSmoothingEnabled = !0;
 				c9.setTransform(D, 0, 0, D, z, y);
-				x[0] ? spawning ? c9.drawImage(this.kk[3], 0, 0) : c9.drawImage(this.kk[0], 0, 0) : x[8] ? c9.drawImage(this.ki[0], 0, 0) : c9.drawImage(J[0], 0, 0);
+				x[0] ? in_spawn ? c9.drawImage(this.kk[3], 0, 0) : c9.drawImage(this.kk[0], 0, 0) : x[8] ? c9.drawImage(this.ki[0], 0, 0) : c9.drawImage(J[0], 0, 0);
 				x[1] && c9.drawImage(this.kk[1], N, 0);
 				x[2] && c9.drawImage(this.kk[2], -N, 0);
 				x[4] && c9.drawImage(this.kk[4], 0, N);
@@ -1907,7 +1917,7 @@ function game() {
 			g()
 		};
 		this.lj = function () {
-			(this.ld = !this.ld) ? (gW = !1, singleplayer && 1 === fN && !spawning && (setTimeout(function () {
+			(this.ld = !this.ld) ? (gW = !1, singleplayer && 1 === fN && !in_spawn && (setTimeout(function () {
 				gw.ij()
 			}, 0), a9(0))) : (y = -1, g(), singleplayer && a9(1));
 			bw.bx = !0
@@ -1915,7 +1925,7 @@ function game() {
 		this.bz = function (B, C) {
 			var F = k(B, C);
 			return this.ld ? 0 === F ? (jL(), aB(), 2) : 1 === F ? (this.lj(), 2) : 2 === F ? (this.ff(myid) && (singleplayer ? single.fd(myid) : multi.lm(), this.lj()), 2) : 3 === F && 2 <= as.ln ? (hf.lj(), bw.bx = !0, 2) :
-				hf.ku || singleplayer && !spawning ? 1 : (this.lj(), 2) : 0 === F ? (this.lj(), 2) : 0
+				hf.ku || singleplayer && !in_spawn ? 1 : (this.lj(), 2) : 0 === F ? (this.lj(), 2) : 0
 		};
 		this.lV = function (B, C) {
 			var F = k(B, C);
@@ -2048,7 +2058,7 @@ function game() {
 			z = [" was conquered by ", " left the game.", " surrendered."];
 			E = [];
 			this.le();
-			spawning && this.fZ(0, 18);
+			in_spawn && this.fZ(0, 18);
 			var G = "Map: " + jX.br(mt).mf + "   Pixels: " + eD.g7(jA.mu) + "   Land: " + eD.g7(jA.mv) + " (" + dz.mw(100 * jA.mv / jA.mu, 1) + ")";
 			0 < jA.mx && (G += "   Water: " + eD.g7(jA.mx) + " (" + dz.mw(100 * jA.mx / jA.mu, 1) + ")");
 			0 < jA.my && (G += "   Mountains: " + eD.g7(jA.my) + " (" + dz.mw(100 * jA.my / jA.mu, 1) + ")");
@@ -2157,7 +2167,7 @@ function game() {
 		};
 		this.iX = function (G) {
 			1 === e1.mi && A(0,
-				"[" + G + "] has won " + playercount + (iz ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hi, -1, !1)
+				"[" + G + "] has won " + playercount + (contest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hi, -1, !1)
 		};
 		this.lG = function (G, M) {
 			0 === M ? F(50, G) ? (A(128, "You signed a non-aggression pact with " + nickname[G] + ".", 52, G, C(180, 255, 180), hi, -1, !0), dy.mk(G, 2, 255)) : A(384, "You asked " + nickname[G] + " to sign a non-aggression pact.", 51, G, C(210, 210, 255), hi, -1, !0) : F(51, G) ? (A(128, nickname[G] + " accepted the non-aggression pact.", 52, G, cC, "rgba(60,120,10,0.9)", -1, !0), dy.mk(G, 2, 255)) : (A(384, nickname[G] + " requests a non-aggression pact.", 50, G, cC, "rgba(90,90,90,0.9)", -1,
@@ -2766,10 +2776,10 @@ function game() {
 
 		this.d7 = function () {
 			if (2 !== fN && 0 !== isalive[myid] && !it && he.kw(myid)) {
-				var C = aW.aX(myid);
-				b: if (attacks.length !== C) var F = !0;
+				var attackingcount = aW.aX(myid);
+				b: if (attacks.length !== attackingcount) var F = !0;
 				else {
-					for (F = C - 1; 0 <= F; F--)
+					for (F = attackingcount - 1; 0 <= F; F--)
 						if (attacks[F].id !== aW.aY(myid, F) || attacks[F].target !== aW.ad(myid, F)) {
 							F = !0;
 							break b
@@ -2778,7 +2788,7 @@ function game() {
 				if (F) {
 					var E, H = [];
 					F = 0;
-					b: for (; F < C; F++) {
+					b: for (; F < attackingcount; F++) {
 						var K = aW.aY(myid, F);
 						var J = aW.ad(myid, F);
 						for (E = 0; E < attacks.length; E++)
@@ -2801,12 +2811,12 @@ function game() {
 					}
 					attacks = H
 				}
-				for (--C; 0 <= C; C--) {
-					F = aW.ae(myid, C);
-					if (attacks[C].remaining !== F) {
-						attacks[C].remaining = F;
-						if (F > attacks[C].sent) attacks[C].sent = F;
-						else attacks[C].gained = !0
+				for (--attackingcount; 0 <= attackingcount; attackingcount--) {
+					F = aW.ae(myid, attackingcount);
+					if (attacks[attackingcount].remaining !== F) {
+						attacks[attackingcount].remaining = F;
+						if (F > attacks[attackingcount].sent) attacks[attackingcount].sent = F;
+						else attacks[attackingcount].gained = !0
 					}
 				}
 			}
@@ -3138,7 +3148,7 @@ function game() {
 		}
 		var x, n, z, y, A, B, C, F, E, H, K = 11 / 12;
 		this.bh = function () {
-			B = !spawning;
+			B = !in_spawn;
 			H = !1;
 			C = .5;
 			F = 0;
@@ -3639,7 +3649,7 @@ function game() {
 		this.co = this.f7 = 0;
 		var g, k, t, l, x, n, z, y, A, B, C, F, E;
 		this.bh = function () {
-			x = hK;
+			x = startingtroops;
 			C = "rgba(0,100,0,0.8)";
 			F = "rgba(150,0,0,0.8)";
 			B = !0;
@@ -3705,7 +3715,7 @@ function game() {
 			0 !== isalive[myid] && 2 !== fH[myid] && A !== troops[myid] && (x = mI(troops[myid], x), B = troops[myid] > A && 10 <= troops[myid], A = troops[myid], y = !0)
 		};
 		this.c8 = function () {
-			0 === isalive[myid] || spawning || 2 === fH[myid] || c9.drawImage(n, this.f7, t)
+			0 === isalive[myid] || in_spawn || 2 === fH[myid] || c9.drawImage(n, this.f7, t)
 		}
 	}
 	var rp, q0, rq, rr, rs, ea, rt;
@@ -3952,7 +3962,7 @@ function game() {
 
 		function l() {
 			for (var P = alivecount - 1; 0 <= P; P--)
-				if (0 < borderpixels[entitiesalive[P]].length) return !1;
+				if (0 < temp_borderpixels[entitiesalive[P]].length) return !1;
 			return !0
 		}
 
@@ -4023,7 +4033,7 @@ function game() {
 			A = lo
 		};
 		this.im = function () {
-			A = lo + (eC.pl() && 0 !== isalive[myid] && !spawning ? eC.co + lo : 0)
+			A = lo + (eC.pl() && 0 !== isalive[myid] && !in_spawn ? eC.co + lo : 0)
 		};
 		this.eP = function (P) {
 			0 < J && (P || 12 > sL && 100 <= J || 12 <= sL) && (J = 0, g())
@@ -4157,7 +4167,7 @@ function game() {
 			var n;
 			t = [];
 			k = !1;
-			if (spawning)
+			if (in_spawn)
 				if (x = 0, l = 63, k = !0, teamgame)
 					for (n = 0; n <= iy; n++) t.push(this.tH(dO.tI[dO.iW[n]], l));
 				else t.push(this.tH(dO.tI[0], l)), t.push(this.tH(dO.tI[4], l))
@@ -4223,10 +4233,10 @@ function game() {
 				k < maxentities && 0 === isalive[k] && (k = maxentities);
 				var x = ak(3 * troops[g], 256);
 				l -= 500 <= t ? x : 0;
-				if (!(l <= al) && aW.d5(g)) {
-					var n = borderpixels[g].length;
+				if (!(l <= landcost) && aW.d5(g)) {
+					var n = temp_borderpixels[g].length;
 					k === maxentities ? cP(g) : cK(g, k);
-					if (0 !== n || 0 !== borderpixels[g].length) teamgame && (cz[g] = 1), g === myid && (as.at[0] += 500 <= t ? t - 12 : t, as.at[1]++, as.at[12] += x, as.at[13] += l), cH(n, g), aW.cI(g, l, k), troops[g] -= l + x, am.cJ(g, !1)
+					if (0 !== n || 0 !== temp_borderpixels[g].length) teamgame && (cz[g] = 1), g === myid && (as.at[0] += 500 <= t ? t - 12 : t, as.at[1]++, as.at[12] += x, as.at[13] += l), cH(n, g), aW.cI(g, l, k), troops[g] -= l + x, am.cJ(g, !1)
 				}
 			}
 		}
@@ -4234,7 +4244,7 @@ function game() {
 
 	function em(g, k, t, l) {
 		10 === gamemode && g < playercount && (l = e3.tP(g, l));
-		if (l <= al || !aW.d5(g)) return !1;
+		if (l <= landcost || !aW.d5(g)) return !1;
 		k = e8.cJ(g, k, t);
 		if (0 === k) return !1;
 		t = ak(3 * troops[g], 128);
@@ -4290,26 +4300,26 @@ function game() {
 			var k = 1;
 			a: for (; k < mapwidth - 1; k++)
 				for (g = mapheight - 2; 1 < g; g--)
-					if (1 === tW[ax.ep(k, g) + 2]) {
+					if (1 === tW[pixel.ep(k, g) + 2]) {
 						this.tT[0] = k;
 						break a
 					} g = 1;
 			a: for (; g < mapheight -
 				1; g++)
 				for (k = mapwidth - 2; 1 < k; k--)
-					if (1 === tW[ax.ep(k, g) + 2]) {
+					if (1 === tW[pixel.ep(k, g) + 2]) {
 						this.tT[1] = g;
 						break a
 					} k = mapwidth - 2;
 			a: for (; 0 < k; k--)
 				for (g = mapheight - 2; 1 < g; g--)
-					if (1 === tW[ax.ep(k, g) + 2]) {
+					if (1 === tW[pixel.ep(k, g) + 2]) {
 						this.tT[2] = k;
 						break a
 					} g = mapheight - 2;
 			a: for (; 0 < g; g--)
 				for (k = mapwidth - 2; 1 < k; k--)
-					if (1 === tW[ax.ep(k, g) + 2]) {
+					if (1 === tW[pixel.ep(k, g) + 2]) {
 						this.tT[3] = g;
 						break a
 					}
@@ -6124,7 +6134,7 @@ function game() {
 		}
 	}
 
-	function k3() {
+	function oldpixel() {
 		function g(D, L) {
 			tW[D] = 0;
 			tW[D + 1] = 0;
@@ -6135,8 +6145,8 @@ function game() {
 
 		function k(D) {
 			if (!gw.gx) {
-				var L = ax.g3(D);
-				D = ax.c7(D);
+				var L = pixel.g3(D);
+				D = pixel.c7(D);
 				gw.gx = L >= gm.tV[0] && L <= gm.tV[2] && D >= gm.tV[1] && D <= gm.tV[3]
 			}
 		}
@@ -6214,8 +6224,7 @@ function game() {
 			return this.y1(D + J[0], L) || this.y1(D + J[1], L) || this.y1(D + J[2], L) || this.y1(D + J[3], L)
 		};
 		this.b6 = function (D) {
-			return 208 <=
-				tW[D + 3]
+			return 208 <= tW[D + 3]
 		};
 		this.hW = function (D, L) {
 			return this.b6(L) && this.y2(D, L)
@@ -6470,10 +6479,10 @@ function game() {
 
 	function yY(g) {
 		isalive[g] = troops[g] = 0;
+		temp_borderpixels[g] = null;
 		borderpixels[g] = null;
-		borderingpixels[g] = null;
-		bF[g] = null;
-		bI[g] = null;
+		borderwaterpixels[g] = null;
+		bordermountainpixel[g] = null;
 		e6.fV(g)
 	}
 
@@ -6482,7 +6491,7 @@ function game() {
 		for (k = x_max[g]; k >= x_min[g]; k--)
 			for (t = y_max[g]; t >= y_min[g]; t--) {
 				var l = 4 * (t * mapwidth + k);
-				ax.hW(g, l) && (ax.hX(l), land[g]--)
+				pixel.hW(g, l) && (pixel.hX(l), land[g]--)
 			}
 	}
 
@@ -6720,7 +6729,7 @@ function game() {
 					V.font = oR[fH[la]] + ka + bm;
 					ra = V;
 					var sa = la;
-					sa = ka >= I && ka < L ? dO.zn[ax.qT[sa]] + x(ka).toFixed(3) + ")" : dO.zo[ax.qT[sa]];
+					sa = ka >= I && ka < L ? dO.zn[pixel.qT[sa]] + x(ka).toFixed(3) + ")" : dO.zo[pixel.qT[sa]];
 					ra.fillStyle = sa;
 					V.fillText(8 === gamemode ? eD.g7(troops[la]) : nickname[la], ma, na);
 					W = !0;
@@ -6823,11 +6832,11 @@ function game() {
 		}
 
 		function y(O, T, Y, Z) {
-			return ax.hW(O, 4 * (Y * mapwidth + T)) && ax.hW(O, 4 * ((Y + Z - 1) * mapwidth + T))
+			return pixel.hW(O, 4 * (Y * mapwidth + T)) && pixel.hW(O, 4 * ((Y + Z - 1) * mapwidth + T))
 		}
 
 		function A(O, T, Y, Z) {
-			return ax.hW(O, 4 * (Y * mapwidth + T)) && ax.hW(O, 4 * (Y *
+			return pixel.hW(O, 4 * (Y * mapwidth + T)) && pixel.hW(O, 4 * (Y *
 				mapwidth + T + Z - 1))
 		}
 		var B, C, F, E, H, K, J, D, L, I, N, G, M, Q, S, P, U, W, X, V, pa, ba, da, qa, R;
@@ -6861,7 +6870,7 @@ function game() {
 			} else
 				for (V.font = bl + Math.floor(100 * N) + bm, T = 80 / Math.floor(V.measureText(eD.g7(iv)).width), V.font = bl + 100 + bm, O = maxentities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), J[O] = T < D[O] ? T : D[O];
 			for (O = maxentities - 1; 0 <= O; O--) 12 > land[O] ? (F[O] = x_min[O] + 1, E[O] = y_min[O] + 1, H[O] = 1, K[O] = 1) : (F[O] = x_min[O], E[O] = y_min[O] + 1, H[O] = 4, K[O] = 2);
-			if (spawning)
+			if (in_spawn)
 				for (O = 0; O < playercount; O++) H[O] = 0;
 			qa = bo.br(4).width;
 			R = bo.br(4).height
@@ -7073,7 +7082,7 @@ function game() {
 		}
 	}
 
-	var temp_nickname, hJ, bF, bI, fH;
+	var temp_nickname, hJ, temp_borderpixels, fH;
 
 	function j8(g) {
 		temp_nickname = nickname = Array(maxentities);
@@ -7085,10 +7094,10 @@ function game() {
 		land = new Uint32Array(maxentities);
 		hJ = new Uint32Array(maxentities);
 		troops = new Uint32Array(maxentities);
+		temp_borderpixels = Array(maxentities);
 		borderpixels = Array(maxentities);
-		borderingpixels = Array(maxentities);
-		bF = Array(maxentities);
-		bI = Array(maxentities);
+		borderwaterpixels = Array(maxentities);
+		bordermountainpixel = Array(maxentities);
 		fH = new Uint8Array(maxentities);
 		for (var k = g.length - 1; 0 <= k; k--) nickname[k] = g[k].mf, fH[k] = g[k].ww
 	}
@@ -7104,7 +7113,7 @@ function game() {
 			this.hs.push(g);
 			ig++;
 			fH[g] = 2;
-			ax.qT[g] = (ax.qT[g] + 2) % 4;
+			pixel.qT[g] = (pixel.qT[g] + 2) % 4;
 			g === myid && (eK.show(!1, !1), dz.sr());
 			dy.mR(g)
 		};
@@ -7129,7 +7138,7 @@ function game() {
 				if (aW.d5(t)) {
 					var l = ak(40 * troops[t], 100);
 					60 > l ||
-						(0 === borderingpixels[t].length ? !d6.d7(t, 2) && teamgame && dA(t, l, 0, 0) : teamgame ? dL(t, l) : dT(t, l))
+						(0 === borderpixels[t].length ? !d6.d7(t, 2) && teamgame && dA(t, l, 0, 0) : teamgame ? dL(t, l) : dT(t, l))
 				}
 			}
 		}
@@ -8283,31 +8292,31 @@ function game() {
 			return g
 		};
 		this.cg = function (k, t) {
-			if (0 === bF[k].length || !ax.ay(t) || !ax.b8(t) && ax.b7(t) === k) return !1;
+			if (0 === borderwaterpixels[k].length || !pixel.ay(t) || !pixel.b8(t) && pixel.b7(t) === k) return !1;
 			for (var l = 21; 0 <= l; l--) {
 				if (21 === l) {
-					var x = bF[k],
+					var x = borderwaterpixels[k],
 						n = t,
-						z = ax.g3(n);
-					n = ax.c7(n);
+						z = pixel.g3(n);
+					n = pixel.c7(n);
 					var y = 0;
-					var A = ax.g3(x[0]);
-					var B = ax.c7(x[0]);
+					var A = pixel.g3(x[0]);
+					var B = pixel.c7(x[0]);
 					A = Math.abs(A - z) + Math.abs(B - n);
 					for (B = x.length - 1; 1 <= B; B--) {
-						var C = ax.g3(x[B]);
-						var F = ax.c7(x[B]);
+						var C = pixel.g3(x[B]);
+						var F = pixel.c7(x[B]);
 						C = Math.abs(C - z) + Math.abs(F - n);
 						C < A && (A = C, y = B)
 					}
 					g = x[y]
-				} else g = bF[k][ak(l * bF[k].length, 21)];
+				} else g = borderwaterpixels[k][ak(l * borderwaterpixels[k].length, 21)];
 				a: {
-					B = g; y = t; x = ax.g3(B); z = ax.c7(B); n = ax.g3(y); y = ax.c7(y); A = Math.abs(n -
+					B = g; y = t; x = pixel.g3(B); z = pixel.c7(B); n = pixel.g3(y); y = pixel.c7(y); A = Math.abs(n -
 						x) + Math.abs(y - z);
 					if (!(2 > A))
 						for (C = 0; C < A; C++)
-							if (B = Math.abs(n - ax.g3(B)) >= Math.abs(y - ax.c7(B)) ? B + offset[n > x ? 1 : 3] : B + offset[y > z ? 2 : 0], ax.ay(B)) {
+							if (B = Math.abs(n - pixel.g3(B)) >= Math.abs(y - pixel.c7(B)) ? B + offset[n > x ? 1 : 3] : B + offset[y > z ? 2 : 0], pixel.ay(B)) {
 								if (0 === C || C + 20 < A) break;
 								x = !0;
 								break a
@@ -8530,26 +8539,26 @@ function game() {
 		}
 
 		function k() {
-			ax.y6(x, t) && ax.y8(x)
+			pixel.y6(x, t) && pixel.y8(x)
 		}
 		var t, l, x, n, z, y, A, B, C, F, E;
 		this.d7 = function (H, K, J, D, L) {
 			C = H;
 			E = K;
 			t = J;
-			z = ax.g3(D);
-			y = ax.c7(D);
-			A = ax.g3(L);
-			B = ax.c7(L);
-			n = x = ax.ep(z, y);
+			z = pixel.g3(D);
+			y = pixel.c7(D);
+			A = pixel.g3(L);
+			B = pixel.c7(L);
+			n = x = pixel.ep(z, y);
 			F = aW.fJ(t, E); - 1 === F ? (k(), e8.an(t, E), H = !1) : (l = aW.ae(t, F), H = !0);
-			if (H && (k(), H = ak(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (as.at[15] += H), l <= al ? (t === myid && (as.at[15] += l), g(!1), H = !1) : (aW.bL(t, F, l), H = !0), H))
-				if (H = ax.ep(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? H + offset[A > z ? 1 : 3] : H + offset[B > y ? 2 : 0], z = ax.g3(x), y = ax.c7(x),
-					e8.fo(C, x), H = ax.ay(x) ? !1 : !0, H) ax.y4(x) && ax.yB(x, t);
+			if (H && (k(), H = ak(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (as.at[15] += H), l <= landcost ? (t === myid && (as.at[15] += l), g(!1), H = !1) : (aW.bL(t, F, l), H = !0), H))
+				if (H = pixel.ep(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? H + offset[A > z ? 1 : 3] : H + offset[B > y ? 2 : 0], z = pixel.g3(x), y = pixel.c7(x),
+					e8.fo(C, x), H = pixel.ay(x) ? !1 : !0, H) pixel.y4(x) && pixel.yB(x, t);
 				else a: {
-					if (ax.b8(x)) H = maxentities;
+					if (pixel.b8(x)) H = maxentities;
 					else {
-						H = ax.b7(x);
+						H = pixel.b7(x);
 						if (H === t) {
 							g(!0);
 							break a
@@ -8561,12 +8570,12 @@ function game() {
 							break a
 						}
 					}
-					t === myid && (as.at[13] += l); e8.an(t, E); aW.au(t, F); borderpixels[t].push(n); aW.cI(t, l, H); am.cJ(t, !0)
+					t === myid && (as.at[13] += l); e8.an(t, E); aW.au(t, F); temp_borderpixels[t].push(n); aW.cI(t, l, H); am.cJ(t, !0)
 				}
 		};
 		this.fs = function (H, K) {
 			t = H;
-			x = ax.ep(ax.g3(K), ax.c7(K));
+			x = pixel.ep(pixel.g3(K), pixel.c7(K));
 			k()
 		}
 	}
@@ -9153,25 +9162,25 @@ function game() {
 	}
 
 	function lO(g) {
-		var k, t, l = borderingpixels[g].length;
+		var k, t, l = borderpixels[g].length;
 		for (k = 3; 0 <= k; k--) {
 			var x = offset[k];
 			for (t = 0; t < l; t++)
-				if (ax.b8(borderingpixels[g][t] + x)) return !0
+				if (pixel.b8(borderpixels[g][t] + x)) return !0
 		}
 		return !1
 	}
 
 	function lT(g, k) {
 		var t;
-		var l = borderingpixels[g].length;
-		var x = borderingpixels[k].length;
+		var l = borderpixels[g].length;
+		var x = borderpixels[k].length;
 		x < l && (l = g, g = k, k = l, l = x);
 		for (t = 3; 0 <= t; t--) {
 			var n = offset[t];
 			for (x = 0; x < l; x++) {
-				var z = borderingpixels[g][x] + n;
-				if (ax.b6(z) && ax.b7(z) === k) return !0
+				var z = borderpixels[g][x] + n;
+				if (pixel.b6(z) && pixel.b7(z) === k) return !0
 			}
 		}
 		return !1
@@ -9197,7 +9206,7 @@ function game() {
 			this.gQ = performance.now()
 		};
 		this.a1B = function () {
-			1 !== fN || !singleplayer || fe.ld || spawning || fe.lj(); - 1 === this.a5D && (this.a5D = setInterval(k, 2E3))
+			1 !== fN || !singleplayer || fe.ld || in_spawn || fe.lj(); - 1 === this.a5D && (this.a5D = setInterval(k, 2E3))
 		};
 		this.xB = function () {
 			this.bx = !0; - 1 !== this.a5D && (clearInterval(this.a5D), this.a5D = -1)
@@ -9247,7 +9256,7 @@ function game() {
 		this.a5L = !1;
 		this.d7 = function () {
 			jb.d7();
-			spawning ? eQ() : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN || fe.ld ? dw() : (gametickincrement(), this.vm++, gw.tU()), this.bk++) : (fe.ld ? eQ() : (bw.bx = !0, eO()), this.bk = 0);
+			in_spawn ? eQ() : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN || fe.ld ? dw() : (gametickincrement(), this.vm++, gw.tU()), this.bk++) : (fe.ld ? eQ() : (bw.bx = !0, eO()), this.bk = 0);
 			eI();
 			bw.bx && (bw.bx = !1, hZ())
 		}
@@ -9266,7 +9275,7 @@ function game() {
 			g = this.vm = this.bk = 0
 		};
 		this.a5N = function (k) {
-			if (spawning) this.t5(k);
+			if (in_spawn) this.t5(k);
 			else if (this.a5M.push(k), 2 === fN) {
 				for (k = 0; k < this.a5M.length; k++) ja.a5O(this.a5M[k], g), g = (g + 1) % 8;
 				this.a5M = []
@@ -9280,7 +9289,7 @@ function game() {
 		};
 		this.d7 = function () {
 			jb.d7();
-			spawning ? (bw.bx = dz.t5(-1) ||
+			in_spawn ? (bw.bx = dz.t5(-1) ||
 				bw.bx, eQ()) : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN ? dw() : this.a5P(), this.bk++) : (bw.bx = !0, eO(), this.bk = 0);
 			eI();
 			bw.bx && (bw.bx = !1, hZ())
@@ -9303,7 +9312,7 @@ function game() {
 
 	function kV() {
 		function g(k, t) {
-			8 !== jT.rc() || 0 !== t && t !== gamemode || singleplayer && spawning || (dx.mg(k), k += " - Territorial.io");
+			8 !== jT.rc() || 0 !== t && t !== gamemode || singleplayer && in_spawn || (dx.mg(k), k += " - Territorial.io");
 			0 === t && (document.title = k)
 		}
 		this.gK = 0;
@@ -9825,5 +9834,4 @@ function game() {
 	}
 	a0w();
 }
-
 game();
