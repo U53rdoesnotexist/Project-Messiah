@@ -31,16 +31,21 @@ function game() {
 			//console.log(pixel.hW(myid,3204), pixel.b7(3204))
 			var t = [], x = 1;
 			for (let i = 0; i < aW.aX(1); i++) t.push(aW.ad(1, i))
-			console.log(aW.aY(1,0),t);
+			//console.log(aW.aY(1,0),t);
+			
 		}
+
+		emoji_spam();
 	}
 
 	function check_spawn() {
-		if (Math.round(spawning_time * 1000) % 50 == 0) {
-			multi.message_emojis(Math.floor(Math.random()*106), Math.floor(Math.random() * playercount))
-			count--;
-		}
-	/*if (spawning_time >= 0.95) multi.choosespawn(1E3, mapheight/2, mapwidth/2)*/ //Checks if it is time to spawn
+		emoji_spam();
+		if (spawning_time >= 0.95) multi.choosespawn(1E3, Math.random()*mapheight, Math.random()*mapwidth) //Checks if it is time to spawn
+	}
+
+	function emoji_spam() {
+		const nerds = nickname.filter(nick => nick.includes('[') && !nick.includes('[Bot]') && !nick.includes('[Ez]')), ok = Math.random()*nerds.length;
+		multi.message_emojis([0,43,44][Math.floor(Math.random()*3)], nickname.findIndex(nick => nick === nerds[Math.floor(Math.random()*nerds.length)]));
 	}
 
 	function a() {
@@ -6316,7 +6321,7 @@ function game() {
 		}
 
 		function t() {
-			z[0] = "Player " + Math.floor(1E3 * Math.random());
+			z[0] = "[Ez] Is Peaceful " + Math.floor(1E3 * Math.random());
 			z[1] = r < s ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
 			z[2] = 1;
 			z[3] = 1;
