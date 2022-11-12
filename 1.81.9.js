@@ -3,8 +3,9 @@ var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderpixels, borderwaterpixels, bordermountainpixel, offset;
 var timingbot, attacks;
 var mapwidth, mapheight, lobbygames, spawning_time;
+var siemblitz = []
 
-function game() {
+//function game() {
 
 	function gameinit() {
 		tick = 0, cycle = 1;
@@ -28,18 +29,14 @@ function game() {
 
 		if (tick % 5 == 0) {
 
-			//console.log(pixel.hW(myid,3204), pixel.b7(3204))
 			var t = [], x = 1;
 			for (let i = 0; i < aW.aX(1); i++) t.push(aW.ad(1, i))
 			//console.log(aW.aY(1,0),t);
-			
 		}
 
-		emoji_spam();
 	}
 
 	function check_spawn() {
-		emoji_spam();
 		if (spawning_time >= 0.95) multi.choosespawn(1E3, Math.random()*mapheight, Math.random()*mapwidth) //Checks if it is time to spawn
 	}
 
@@ -213,7 +210,7 @@ function game() {
 
 	function aV() {
 		var g;
-		for (g = temp_borderpixels[last_action_id].length - 1; 0 <= g; g--) pixel.ay(temp_borderpixels[last_action_id][g]) && pixel.az(temp_borderpixels[last_action_id][g], last_action_id);
+		for (g = temp_borderpixels[last_action_id].length - 1; 0 <= g; g--) pixel.canownpixel(temp_borderpixels[last_action_id][g]) && pixel.az(temp_borderpixels[last_action_id][g], last_action_id);
 		temp_borderpixels[last_action_id] = []
 	}
 
@@ -233,7 +230,7 @@ function game() {
 		a: for (; 0 <= t; t--) {
 			for (k = 3; 0 <= k; k--) {
 				var l = temp_borderpixels[last_action_id][t] + offset[k];
-				if (pixel.b8(l) || pixel.b6(l) && pixel.b7(l) !== last_action_id) {
+				if (pixel.isneutral(l) || pixel.isentitypixel(l) && pixel.pixelowner(l) !== last_action_id) {
 					pixel.cO(temp_borderpixels[last_action_id][t], last_action_id);
 					continue a
 				}
@@ -245,15 +242,14 @@ function game() {
 	}
 
 	function ac() {
-		var g = borderpixels[last_action_id].length,
-			k, t, l = g - 1;
+		var g = borderpixels[last_action_id].length, k, t, l = g - 1;
 		a: for (; 0 <= l; l--) {
 			var x = t = !1;
 			for (k = 3; 0 <= k; k--) {
 				var n = borderpixels[last_action_id][l] + offset[k];
-				if (pixel.y1(n, last_action_id)) continue a;
-				x = x || pixel.y4(n);
-				t = t || pixel.y0(n)
+				if (pixel.canattackpixel(n, last_action_id)) continue a;
+				x = x || pixel.iswater(n);
+				t = t || pixel.ismountain(n)
 			}
 			x ? borderwaterpixels[last_action_id].push(borderpixels[last_action_id][l]) : t ? bordermountainpixel[last_action_id].push(borderpixels[last_action_id][l]) : pixel.hN(borderpixels[last_action_id][l], last_action_id);
 			borderpixels[last_action_id][l] = borderpixels[last_action_id][g - 1];
@@ -271,13 +267,13 @@ function game() {
 	}
 
 	function bG(g) {
-		for (var k = g.length, t = k - 1; 0 <= t; t--) !pixel.hW(aH, g[t]) && pixel.ay(g[t]) && (g[t] = g[k - 1], g.pop(), k--)
+		for (var k = g.length, t = k - 1; 0 <= t; t--) !pixel.hW(aH, g[t]) && pixel.canownpixel(g[t]) && (g[t] = g[k - 1], g.pop(), k--)
 	}
 
 	function bH(g) {
 		for (var k = g.length, t, l, x = k - 1; 0 <= x; x--)
 			for (t = 3; 0 <= t; t--)
-				if (l = g[x] + offset[t], pixel.y1(l, aH)) {
+				if (l = g[x] + offset[t], pixel.canattackpixel(l, aH)) {
 					borderpixels[aH].push(g[x]);
 					g[x] = g[k - 1];
 					g.pop();
@@ -286,7 +282,7 @@ function game() {
 				}
 	}
 
-	function bJ() {
+	function bJ() { //runs when you attack a nerd
 		for (var g, k, t = last_border_land - 1; 0 <= t; t--)
 			for (g = 3; 0 <= g; g--) k = aK[t] + offset[g], pixel.y2(aH, k) && pixel.y3(k) && (borderpixels[aH].push(k), pixel.az(k, aH))
 	}
@@ -321,7 +317,7 @@ function game() {
 			for (k = aL - 1; 0 <= k; k--) {
 				var t = aM[k] + offset[g];
 				var l = ak(t, 4);
-				0 === aO[l] && pixel.b6(t) && pixel.b7(t) === aH && (aO[l] = 1, aK[last_border_land++] = t)
+				0 === aO[l] && pixel.isentitypixel(t) && pixel.pixelowner(t) === aH && (aO[l] = 1, aK[last_border_land++] = t)
 			}
 	}
 
@@ -331,7 +327,7 @@ function game() {
 			for (k = aL - 1; 0 <= k; k--) {
 				var t = aM[k] + offset[g];
 				var l = ak(t, 4);
-				0 === aO[l] && pixel.b8(t) && (aO[l] = 1, aK[last_border_land++] = t)
+				0 === aO[l] && pixel.isneutral(t) && (aO[l] = 1, aK[last_border_land++] = t)
 			}
 	}
 
@@ -474,9 +470,9 @@ function game() {
 	function cK(g, k) {
 		var t, l;
 		for (t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (pixel.cM(borderpixels[g][t]))
+			if (pixel.nearentity(borderpixels[g][t]))
 				for (l = 3; 0 <= l; l--)
-					if (pixel.b6(borderpixels[g][t] + offset[l]) && pixel.b7(borderpixels[g][t] + offset[l]) === k) {
+					if (pixel.isentitypixel(borderpixels[g][t] + offset[l]) && pixel.pixelowner(borderpixels[g][t] + offset[l]) === k) {
 						temp_borderpixels[g].push(borderpixels[g][t]);
 						break
 					}
@@ -488,9 +484,9 @@ function game() {
 
 	function cP(g) {
 		for (var k, t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (pixel.cM(borderpixels[g][t]))
+			if (pixel.nearentity(borderpixels[g][t]))
 				for (k = 3; 0 <= k; k--)
-					if (pixel.b8(borderpixels[g][t] + offset[k])) {
+					if (pixel.isneutral(borderpixels[g][t] + offset[k])) {
 						temp_borderpixels[g].push(borderpixels[g][t]);
 						break
 					}
@@ -504,8 +500,8 @@ function game() {
 		cY = 0;
 		a: for (; 0 <= x; x -= n)
 			for (l = 3; 0 <= l; l--) {
-				var z = pixel.b8(borderpixels[g][x] + offset[l]) ? maxentities : pixel.b7(borderpixels[g][x] + offset[l]);
-				if (z === maxentities || pixel.b6(borderpixels[g][x] + offset[l]) && z !== g && (k || cZ(g, z))) {
+				var z = pixel.isneutral(borderpixels[g][x] + offset[l]) ? maxentities : pixel.pixelowner(borderpixels[g][x] + offset[l]);
+				if (z === maxentities || pixel.isentitypixel(borderpixels[g][x] + offset[l]) && z !== g && (k || cZ(g, z))) {
 					for (t = cY - 1; 0 <= t; t--)
 						if (ca[t] === z) continue a;
 					ca[cY] = z;
@@ -520,8 +516,8 @@ function game() {
 		cY = 0;
 		for (t = borderpixels[g].length - 1; 0 <= t; t--)
 			for (l = 3; 0 <= l; l--) {
-				var x = pixel.b8(borderpixels[g][t] + offset[l]) ? maxentities : pixel.b7(borderpixels[g][t] + offset[l]);
-				if (x === maxentities || pixel.b6(borderpixels[g][t] + offset[l]) && x !== g && (k || cZ(g, x))) {
+				var x = pixel.isneutral(borderpixels[g][t] + offset[l]) ? maxentities : pixel.pixelowner(borderpixels[g][t] + offset[l]);
+				if (x === maxentities || pixel.isentitypixel(borderpixels[g][t] + offset[l]) && x !== g && (k || cZ(g, x))) {
 					ca[cY++] = x;
 					return
 				}
@@ -843,7 +839,7 @@ function game() {
 		}
 
 		function k(y) {
-			if (pixel.ay(y) && (pixel.b8(y) || pixel.b7(y) !== z && cZ(z, pixel.b7(y)))) {
+			if (pixel.canownpixel(y) && (pixel.isneutral(y) || pixel.pixelowner(y) !== z && cZ(z, pixel.pixelowner(y)))) {
 				if (en.cg(z, y)) return 2;
 				if (0 === l--) return 0
 			}
@@ -1021,8 +1017,8 @@ function game() {
 				c9.textAlign = cB;
 				c9.textBaseline = cA;
 				for (B = l - 1; 0 <= B; B--) {
-					var K = pixel.g3(y[B]);
-					var J = pixel.c7(y[B]);
+					var K = pixel.click_x(y[B]);
+					var J = pixel.click_y(y[B]);
 					var D = x[B];
 					if (K > C - 1 && K < E && J > F - 1 && J < H && 0 !== isalive[D]) {
 						var L = Math.floor(.94 * fv * dy.g4(D));
@@ -1171,8 +1167,8 @@ function game() {
 				I = B + x * A + D;
 			for (K = L + F - 1; K >= L; K--)
 				for (J = I + F - 1; J >= I; J--)
-					if (D = pixel.ep(J, K), !pixel.ay(D) ||
-						pixel.cM(D)) return !1;
+					if (D = pixel.ep(J, K), !pixel.canownpixel(D) ||
+						pixel.nearentity(D)) return !1;
 			return !0
 		}
 
@@ -1198,10 +1194,10 @@ function game() {
 				for (L = J; L < J + 4; L++)
 					if (D > K && D < K + 3 || L > J && L < J + 3) {
 						var I = pixel.ep(D, L);
-						pixel.ay(I) && (x_min[E] = D < x_min[E] ? D : x_min[E], x_max[E] = D > x_max[E] ? D : x_max[E], y_min[E] = L < y_min[E] ? L : y_min[E], y_max[E] = L > y_max[E] ? L : y_max[E], H[land[E]] = I, land[E]++, pixel.hN(I, E))
+						pixel.canownpixel(I) && (x_min[E] = D < x_min[E] ? D : x_min[E], x_max[E] = D > x_max[E] ? D : x_max[E], y_min[E] = L < y_min[E] ? L : y_min[E], y_max[E] = L > y_max[E] ? L : y_max[E], H[land[E]] = I, land[E]++, pixel.hN(I, E))
 					} 
 					hJ[E] = land[E];
-			for (I = land[E] - 1; 0 <= I; I--) pixel.hO(H[I], E) ? (pixel.az(H[I], E), borderpixels[E].push(H[I])) : pixel.hP(H[I]) ? (pixel.az(H[I], E), borderwaterpixels[E].push(H[I])) : pixel.hQ(H[I]) && (pixel.az(H[I], E), bordermountainpixel[E].push(H[I]))
+			for (I = land[E] - 1; 0 <= I; I--) pixel.canexpandfromthispixel(H[I], E) ? (pixel.az(H[I], E), borderpixels[E].push(H[I])) : pixel.borderswater(H[I]) ? (pixel.az(H[I], E), borderwaterpixels[E].push(H[I])) : pixel.bordersmountain(H[I]) && (pixel.az(H[I], E), bordermountainpixel[E].push(H[I]))
 		}
 		var x, n, z, y, A, B, C, F, E, H;
 		this.bh = function () {
@@ -1235,13 +1231,13 @@ function game() {
 						if ((K ===
 							J + L || K === J - L || I === D + L || I === D - L) && 3 < K && K < mapwidth - 5 && 3 < I && I < mapheight - 5) {
 							var N;
-							if (N = pixel.ay(pixel.ep(K, I))) a: {
+							if (N = pixel.canownpixel(pixel.ep(K, I))) a: {
 								var G, M = K + 3,
 									Q = I + 3;
 								for (N = Q; N > Q - 6; N--)
 									for (G = M; G > M - 6; G--) {
 										var S = pixel.ep(G, N);
-										if (pixel.cM(S)) {
+										if (pixel.nearentity(S)) {
 											N = !1;
 											break a
 										}
@@ -1747,8 +1743,8 @@ function game() {
 				return 1
 			}
 			//4: Attack/Spawn 5: Boat 7: Emoji
-			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (fR.cI(0, pixel.g3(H), pixel.c7(H)), fR.d7()) : multi.choosespawn(1E3, pixel.g3(H), pixel.c7(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!ix || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
-			if (5 === M) return x[1] ? (this.kx(), dx.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.g3(H), pixel.c7(H)) : multi.choosespawn(eF.lB(), pixel.g3(H), pixel.c7(H)), 1) : 0;
+			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (fR.cI(0, pixel.click_x(H), pixel.click_y(H)), fR.d7()) : multi.choosespawn(1E3, pixel.click_x(H), pixel.click_y(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!ix || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+			if (5 === M) return x[1] ? (this.kx(), dx.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.click_x(H), pixel.click_y(H)) : multi.choosespawn(eF.lB(), pixel.click_x(H), pixel.click_y(H)), 1) : 0;
 			if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
 			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (dx.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
 			this.kx();
@@ -1762,13 +1758,13 @@ function game() {
 			var Q = Math.floor((G + g1) / fv);
 			if (1 > M || 1 > Q || M >= mapwidth - 1 || Q >= mapheight - 1) return !1;
 			var S = Q * mapwidth * 4 + 4 * M;
-			if (!pixel.ay(S)) return !1;
-			if (2 === fN) return 1 <= a5.lM && (E = pixel.b7(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
+			if (!pixel.canownpixel(S)) return !1;
+			if (2 === fN) return 1 <= a5.lM && (E = pixel.pixelowner(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
 			H = pixel.ep(M, Q);
 			if (in_spawn) return x[0] = !0, this.lN(N, G);
 			x[1] = en.cg(myid, H);
-			if (pixel.b8(S)) return E = maxentities, lO(myid) ? x[0] = !0 : lP(myid, E) && (x[8] = !0), this.lN(N, G);
-			E = pixel.b7(S);
+			if (pixel.isneutral(S)) return E = maxentities, lO(myid) ? x[0] = !0 : lP(myid, E) && (x[8] = !0), this.lN(N, G);
+			E = pixel.pixelowner(S);
 			if (E === myid) {
 				this.kx();
 				if (0 === a5.lM) return !1;
@@ -4305,26 +4301,25 @@ function game() {
 			var k = 1;
 			a: for (; k < mapwidth - 1; k++)
 				for (g = mapheight - 2; 1 < g; g--)
-					if (1 === tW[pixel.ep(k, g) + 2]) {
+					if (1 === pixel_rgba[pixel.ep(k, g) + 2]) {
 						this.tT[0] = k;
 						break a
 					} g = 1;
-			a: for (; g < mapheight -
-				1; g++)
+			a: for (; g < mapheight - 1; g++)
 				for (k = mapwidth - 2; 1 < k; k--)
-					if (1 === tW[pixel.ep(k, g) + 2]) {
+					if (1 === pixel_rgba[pixel.ep(k, g) + 2]) {
 						this.tT[1] = g;
 						break a
 					} k = mapwidth - 2;
 			a: for (; 0 < k; k--)
 				for (g = mapheight - 2; 1 < g; g--)
-					if (1 === tW[pixel.ep(k, g) + 2]) {
+					if (1 === pixel_rgba[pixel.ep(k, g) + 2]) {
 						this.tT[2] = k;
 						break a
 					} g = mapheight - 2;
 			a: for (; 0 < g; g--)
 				for (k = mapwidth - 2; 1 < k; k--)
-					if (1 === tW[pixel.ep(k, g) + 2]) {
+					if (1 === pixel_rgba[pixel.ep(k, g) + 2]) {
 						this.tT[3] = g;
 						break a
 					}
@@ -6141,17 +6136,17 @@ function game() {
 
 	function oldpixel() {
 		function g(D, L) {
-			tW[D] = 0;
-			tW[D + 1] = 0;
-			tW[D + 2] = L;
-			tW[D + 3] = 0;
+			pixel_rgba[D] = 0;
+			pixel_rgba[D + 1] = 0;
+			pixel_rgba[D + 2] = L;
+			pixel_rgba[D + 3] = 0;
 			k(D)
 		}
-
+	
 		function k(D) {
 			if (!gw.gx) {
-				var L = pixel.g3(D);
-				D = pixel.c7(D);
+				var L = pixel.click_x(D);
+				D = pixel.click_y(D);
 				gw.gx = L >= gm.tV[0] && L <= gm.tV[2] && D >= gm.tV[1] && D <= gm.tV[3]
 			}
 		}
@@ -6178,11 +6173,11 @@ function game() {
 				[4, 4, 4, 14],
 				[4, 4, 4, 13]
 			],
-			n, z, y, A, B, C, F, E, H, K, J;
+			border_Rgb, border_rGb, border_rgB, A, B, C, F, E, H, K;
 		this.bh = function (D) {
-			n = new Uint8Array(maxentities);
-			z = new Uint8Array(maxentities);
-			y = new Uint8Array(maxentities);
+			border_Rgb = new Uint8Array(maxentities);
+			border_rGb = new Uint8Array(maxentities);
+			border_rgB = new Uint8Array(maxentities);
 			A = new Uint8Array(maxentities);
 			B = new Uint8Array(maxentities);
 			C = new Uint8Array(maxentities);
@@ -6190,88 +6185,80 @@ function game() {
 			E = new Uint8Array(maxentities);
 			H = new Uint8Array(maxentities);
 			K = new Uint8Array(maxentities);
-			this.qT = new Uint8Array(maxentities);
-			J = new Int32Array(4);
-			J[0] = -4 * mapwidth;
-			J[1] = 4;
-			J[2] = -J[0];
-			J[3] = -J[1];
+			this.lightness = new Uint8Array(maxentities);
+			aQ();
 			if (teamgame)
-				for (var L, I = maxentities - 1; 0 <= I; I--) L = dO.iW[dO.dP[I]], D = ak((x[L][3] + 1) * cW.random(), cW.value(100)), n[I] = l[L][0] + D * x[L][0], z[I] = l[L][1] + D * x[L][1], y[I] = l[L][2] + D * x[L][2];
+				for (var L, I = maxentities - 1; 0 <= I; I--) L = dO.iW[dO.dP[I]], D = ak((x[L][3] + 1) * cW.random(), cW.value(100)), border_Rgb[I] = l[L][0] + D * x[L][0], border_rGb[I] = l[L][1] + D * x[L][1], border_rgB[I] = l[L][2] + D * x[L][2];
 			else {
-				for (L = maxentities - 1; L >= playercount; L--) n[L] = 4 * ak(64 * cW.random(), cW.value(100)), z[L] = 4 * ak(64 * cW.random(), cW.value(100)),
-					y[L] = 4 * ak(64 * cW.random(), cW.value(100));
-				for (L = playercount - 1; 0 <= L; L--) n[L] = 4 * D[L].wv[0], z[L] = 4 * D[L].wv[1], y[L] = 4 * D[L].wv[2]
+				for (L = maxentities - 1; L >= playercount; L--) border_Rgb[L] = 4 * ak(64 * cW.random(), cW.value(100)), border_rGb[L] = 4 * ak(64 * cW.random(), cW.value(100)),
+					border_rgB[L] = 4 * ak(64 * cW.random(), cW.value(100));
+				for (L = playercount - 1; 0 <= L; L--) border_Rgb[L] = 4 * D[L].wv[0], border_rGb[L] = 4 * D[L].wv[1], border_rgB[L] = 4 * D[L].wv[2]
 			}
-			for (D = maxentities - 1; 0 <= D; D--) L = ak(n[D] + z[D] + y[D], 3), n[D] += xz(L - n[D], 2), z[D] += xz(L - z[D], 2), y[D] += xz(L - y[D], 2), n[D] -= n[D] % 4, z[D] -= z[D] % 4, y[D] -= y[D] % 4;
-			for (D = maxentities - 1; 0 <= D; D--) n[D] += ak(D, 128), z[D] += ak(D % 128, 32), y[D] += ak(D % 32, 8), A[D] = D % 8;
-			this.xw();
-			for (D = maxentities - 1; 0 <= D; D--) B[D] = 32 > n[D] ? n[D] + 32 : n[D] - 32, C[D] = 32 > z[D] ? z[D] + 32 : z[D] - 32, F[D] = 32 > y[D] ? y[D] + 32 : y[D] - 32;
-			for (D = maxentities - 1; 0 <= D; D--) E[D] = 235 < n[D] ? n[D] - 20 : n[D] + 20,
-				H[D] = 235 < z[D] ? z[D] - 20 : z[D] + 20, K[D] = 235 < y[D] ? y[D] - 20 : y[D] + 20
+			for (D = maxentities - 1; 0 <= D; D--) L = ak(border_Rgb[D] + border_rGb[D] + border_rgB[D], 3), border_Rgb[D] += xz(L - border_Rgb[D], 2), border_rGb[D] += xz(L - border_rGb[D], 2), border_rgB[D] += xz(L - border_rgB[D], 2), border_Rgb[D] -= border_Rgb[D] % 4, border_rGb[D] -= border_rGb[D] % 4, border_rgB[D] -= border_rgB[D] % 4;
+			for (D = maxentities - 1; 0 <= D; D--) border_Rgb[D] += ak(D, 128), border_rGb[D] += ak(D % 128, 32), border_rgB[D] += ak(D % 32, 8), A[D] = D % 8;
+			for (D = maxentities - 1; 0 <= D; D--) this.lightness[D] = 280 > border_Rgb[D] + border_rGb[D] + border_rgB[D] ? 0 : 1
+			for (D = maxentities - 1; 0 <= D; D--) B[D] = 32 > border_Rgb[D] ? border_Rgb[D] + 32 : border_Rgb[D] - 32, C[D] = 32 > border_rGb[D] ? border_rGb[D] + 32 : border_rGb[D] - 32, F[D] = 32 > border_rgB[D] ? border_rgB[D] + 32 : border_rgB[D] - 32;
+			for (D = maxentities - 1; 0 <= D; D--) E[D] = 235 < border_Rgb[D] ? border_Rgb[D] - 20 : border_Rgb[D] + 20,
+				H[D] = 235 < border_rGb[D] ? border_rGb[D] - 20 : border_rGb[D] + 20, K[D] = 235 < border_rgB[D] ? border_rgB[D] - 20 : border_rgB[D] + 20
 		};
-		this.xw = function () {
-			for (var D = maxentities - 1; 0 <= D; D--) this.qT[D] = 280 > n[D] + z[D] + y[D] ? 0 : 1
-		};
-		this.g3 = function (D) {
+		this.click_x = function (D) {
 			return ak(D, 4) % mapwidth
 		};
-		this.c7 = function (D) {
+		this.click_y = function (D) {
 			return ak(D, 4 * mapwidth)
 		};
 		this.ep = function (D, L) {
 			return Math.floor(4 * (L * mapwidth + D))
 		};
-		this.hQ = function (D) {
-			return this.y0(D + J[0]) || this.y0(D + J[1]) || this.y0(D + J[2]) || this.y0(D + J[3])
+		this.bordersmountain = function (D) {
+			return this.ismountain(D + offset[0]) || this.ismountain(D + offset[1]) || this.ismountain(D + offset[2]) || this.ismountain(D + offset[3])
 		};
-		this.hO = function (D, L) {
-			return this.y1(D + J[0], L) || this.y1(D + J[1], L) || this.y1(D + J[2], L) || this.y1(D + J[3], L)
+		this.canexpandfromthispixel = function (pixelcoords, id) {
+			return this.canattackpixel(pixelcoords + offset[0], id) || this.canattackpixel(pixelcoords + offset[1], id) || this.canattackpixel(pixelcoords + offset[2], id) || this.canattackpixel(pixelcoords + offset[3], id)
 		};
-		this.b6 = function (D) {
-			return 208 <= tW[D + 3]
+		this.isentitypixel = function (D) {
+			return 208 <= pixel_rgba[D + 3]
 		};
-		this.hW = function (D, L) {
-			return this.b6(L) && this.y2(D, L)
+		this.hW = function (pixelowner, pixelcoords) {
+			return this.isentitypixel(pixelcoords) && this.y2(pixelowner, pixelcoords)
 		};
-		this.y2 = function (D, L) {
-			return D === this.b7(L)
+		this.y2 = function (pixelowner, pixelcoords) {
+			return pixelowner === this.pixelowner(pixelcoords)
 		};
-		this.y3 = function (D) {
-			return 208 <= tW[D + 3] && 224 > tW[D + 3]
+		this.y3 = function (pixelcoords) {
+			return 208 <= pixel_rgba[pixelcoords + 3] && 224 > pixel_rgba[pixelcoords + 3]
 		};
-		this.cM = function (D) {
-			return 224 <= tW[D + 3] && 248 > tW[D + 3]
+		this.nearentity = function (pixelcoords) {
+			return 224 <= pixel_rgba[pixelcoords + 3] && 248 > pixel_rgba[pixelcoords + 3]
 		};
-		this.hP = function (D) {
+		this.borderswater = function (pixelcoords) {
 			for (var L = 3; 0 <= L; L--)
-				if (this.y4(D + J[L])) return !0;
-			return !1
+				if (this.iswater(pixelcoords + offset[L])) return 1;
+			return 0;
 		};
-		this.y5 = function (D) {
-			return 192 <= tW[D + 3] && 208 > tW[D + 3]
+		this.y5 = function (pixelcoords) {
+			return 192 <= pixel_rgba[pixelcoords + 3] && 208 > pixel_rgba[pixelcoords + 3]
 		};
-		this.y6 = function (D, L) {
-			return this.y5(D) && L === this.b7(D)
+		this.y6 = function (pixelcoords, L) {
+			return this.y5(pixelcoords) && L === this.pixelowner(pixelcoords)
 		};
-		this.ay = function (D) {
-			return this.b6(D) || this.b8(D)
+		this.canownpixel = function (pixelcoords) {
+			return this.isentitypixel(pixelcoords) || this.isneutral(pixelcoords)
 		};
-		this.y4 = function (D) {
-			return 0 === tW[D + 3] && 2 ===
-				tW[D + 2] || this.y5(D)
+		this.iswater = function (pixelcoords) {
+			return 0 === pixel_rgba[pixelcoords + 3] && 2 === pixel_rgba[pixelcoords + 2] || this.y5(pixelcoords)
 		};
-		this.b8 = function (D) {
-			return 0 === tW[D + 3] && 1 === tW[D + 2]
+		this.isneutral = function (pixelcoords) {
+			return 0 === pixel_rgba[pixelcoords + 3] && 1 === pixel_rgba[pixelcoords + 2]
 		};
-		this.y0 = function (D) {
-			return 0 === tW[D + 3] && 3 === tW[D + 2]
+		this.ismountain = function (pixelcoords) {
+			return 0 === pixel_rgba[pixelcoords + 3] && 3 === pixel_rgba[pixelcoords + 2]
 		};
-		this.y1 = function (D, L) {
-			return this.b8(D) || this.b6(D) && L !== this.b7(D)
+		this.canattackpixel = function (pixelcoords, id) {
+			return this.isneutral(pixelcoords) || this.isentitypixel(pixelcoords) && id !== this.pixelowner(pixelcoords)
 		};
-		this.b7 = function (D) {
-			return tW[D] % 4 * 128 + tW[D + 1] % 4 * 32 + tW[D + 2] % 4 * 8 + tW[D + 3] % 8
+		this.pixelowner = function (pixelcoords) {
+			return pixel_rgba[pixelcoords] % 4 * 128 + pixel_rgba[pixelcoords + 1] % 4 * 32 + pixel_rgba[pixelcoords + 2] % 4 * 8 + pixel_rgba[pixelcoords + 3] % 8
 		};
 		this.hX = function (D) {
 			g(D, 1)
@@ -6279,33 +6266,32 @@ function game() {
 		this.y8 = function (D) {
 			g(D, 2)
 		};
-		this.hN = function (D, L) {
-			tW[D] = n[L];
-			tW[D + 1] = z[L];
-			tW[D + 2] = y[L];
-			tW[D + 3] = 208 + A[L];
-			k(D)
+		this.hN = function (pixelcoords, L) {
+			pixel_rgba[pixelcoords] = border_Rgb[L];
+			pixel_rgba[pixelcoords + 1] = border_rGb[L];
+			pixel_rgba[pixelcoords + 2] = border_rgB[L];
+			pixel_rgba[pixelcoords + 3] = 208 + A[L];
+			k(pixelcoords)
 		};
 		this.az = function (D, L) {
-			tW[D] = B[L];
-			tW[D + 1] = C[L];
-			tW[D + 2] = F[L];
-			tW[D + 3] = 224 + A[L];
+			pixel_rgba[D] = B[L];
+			pixel_rgba[D + 1] = C[L];
+			pixel_rgba[D + 2] = F[L];
+			pixel_rgba[D + 3] = 224 + A[L];
 			k(D)
 		};
-		this.cO = function (D,
-			L) {
-			tW[D] = E[L];
-			tW[D + 1] = H[L];
-			tW[D + 2] = K[L];
-			tW[D + 3] = 248 + A[L];
+		this.cO = function (D, L) {
+			pixel_rgba[D] = E[L];
+			pixel_rgba[D + 1] = H[L];
+			pixel_rgba[D + 2] = K[L];
+			pixel_rgba[D + 3] = 248 + A[L];
 			k(D)
 		};
 		this.yB = function (D, L) {
-			tW[D] = t[0] + n[L] % 4;
-			tW[D + 1] = t[1] + z[L] % 4;
-			tW[D + 2] = t[2] + y[L] % 4;
-			tW[D + 3] = 192 + A[L];
+			pixel_rgba[D] = t[0] + border_Rgb[L] % 4;
+			pixel_rgba[D + 1] = t[1] + border_rGb[L] % 4;
+			pixel_rgba[D + 2] = t[2] + border_rgB[L] % 4;
+			pixel_rgba[D + 3] = 192 + A[L];
 			k(D)
 		}
 	}
@@ -6321,7 +6307,7 @@ function game() {
 		}
 
 		function t() {
-			z[0] = "[Ez] Is Peaceful " + Math.floor(1E3 * Math.random());
+			z[0] = "Player " + Math.floor(1E3 * Math.random());
 			z[1] = r < s ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
 			z[2] = 1;
 			z[3] = 1;
@@ -6734,7 +6720,7 @@ function game() {
 					V.font = oR[fH[la]] + ka + bm;
 					ra = V;
 					var sa = la;
-					sa = ka >= I && ka < L ? dO.zn[pixel.qT[sa]] + x(ka).toFixed(3) + ")" : dO.zo[pixel.qT[sa]];
+					sa = ka >= I && ka < L ? dO.zn[pixel.lightness[sa]] + x(ka).toFixed(3) + ")" : dO.zo[pixel.lightness[sa]];
 					ra.fillStyle = sa;
 					V.fillText(8 === gamemode ? eD.g7(troops[la]) : nickname[la], ma, na);
 					W = !0;
@@ -7118,7 +7104,7 @@ function game() {
 			this.hs.push(g);
 			ig++;
 			fH[g] = 2;
-			pixel.qT[g] = (pixel.qT[g] + 2) % 4;
+			pixel.lightness[g] = (pixel.lightness[g] + 2) % 4;
 			g === myid && (eK.show(!1, !1), dz.sr());
 			dy.mR(g)
 		};
@@ -7701,7 +7687,7 @@ function game() {
 		this.jB = function() {
 			var k, t = 0;
 			var l = mapheight * mapwidth * 4;
-			var x = tW,
+			var x = pixel_rgba,
 				n = wc;
 			for (k = mapwidth - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
 			l = 4 * mapwidth;
@@ -7711,7 +7697,7 @@ function game() {
 			this.my = 0;
 			if (a1V(mt)) {
 				n = 0;
-				l = tW;
+				l = pixel_rgba;
 				var z = wc;
 				for (x = mapwidth * mapheight - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (n++, l[k + 2] = 3);
 				jA.my = n
@@ -7887,7 +7873,7 @@ function game() {
 			return g[k]
 		}
 	}
-	var hd, tW, jG, jH;
+	var hd, pixel_rgba, jG, jH;
 
 	function j9() {
 		void 0 === hd && (hd = document.createElement("canvas"));
@@ -7897,7 +7883,7 @@ function game() {
 			alpha: !0
 		});
 		jH = jG.getImageData(0, 0, mapwidth, mapheight);
-		tW = jH.data
+		pixel_rgba = jH.data
 	}
 
 	function kC() {
@@ -8297,31 +8283,31 @@ function game() {
 			return g
 		};
 		this.cg = function (k, t) {
-			if (0 === borderwaterpixels[k].length || !pixel.ay(t) || !pixel.b8(t) && pixel.b7(t) === k) return !1;
+			if (0 === borderwaterpixels[k].length || !pixel.canownpixel(t) || !pixel.isneutral(t) && pixel.pixelowner(t) === k) return !1;
 			for (var l = 21; 0 <= l; l--) {
 				if (21 === l) {
 					var x = borderwaterpixels[k],
 						n = t,
-						z = pixel.g3(n);
-					n = pixel.c7(n);
+						z = pixel.click_x(n);
+					n = pixel.click_y(n);
 					var y = 0;
-					var A = pixel.g3(x[0]);
-					var B = pixel.c7(x[0]);
+					var A = pixel.click_x(x[0]);
+					var B = pixel.click_y(x[0]);
 					A = Math.abs(A - z) + Math.abs(B - n);
 					for (B = x.length - 1; 1 <= B; B--) {
-						var C = pixel.g3(x[B]);
-						var F = pixel.c7(x[B]);
+						var C = pixel.click_x(x[B]);
+						var F = pixel.click_y(x[B]);
 						C = Math.abs(C - z) + Math.abs(F - n);
 						C < A && (A = C, y = B)
 					}
 					g = x[y]
 				} else g = borderwaterpixels[k][ak(l * borderwaterpixels[k].length, 21)];
 				a: {
-					B = g; y = t; x = pixel.g3(B); z = pixel.c7(B); n = pixel.g3(y); y = pixel.c7(y); A = Math.abs(n -
+					B = g; y = t; x = pixel.click_x(B); z = pixel.click_y(B); n = pixel.click_x(y); y = pixel.click_y(y); A = Math.abs(n -
 						x) + Math.abs(y - z);
 					if (!(2 > A))
 						for (C = 0; C < A; C++)
-							if (B = Math.abs(n - pixel.g3(B)) >= Math.abs(y - pixel.c7(B)) ? B + offset[n > x ? 1 : 3] : B + offset[y > z ? 2 : 0], pixel.ay(B)) {
+							if (B = Math.abs(n - pixel.click_x(B)) >= Math.abs(y - pixel.click_y(B)) ? B + offset[n > x ? 1 : 3] : B + offset[y > z ? 2 : 0], pixel.canownpixel(B)) {
 								if (0 === C || C + 20 < A) break;
 								x = !0;
 								break a
@@ -8439,8 +8425,7 @@ function game() {
 			teamgame && t && g()
 		};
 		this.c8 = function () {
-			teamgame && c9.drawImage(z,
-				lo, q0 + 2 * lo)
+			teamgame && c9.drawImage(z, lo, q0 + 2 * lo)
 		}
 	}
 
@@ -8551,19 +8536,19 @@ function game() {
 			C = H;
 			E = K;
 			t = J;
-			z = pixel.g3(D);
-			y = pixel.c7(D);
-			A = pixel.g3(L);
-			B = pixel.c7(L);
+			z = pixel.click_x(D);
+			y = pixel.click_y(D);
+			A = pixel.click_x(L);
+			B = pixel.click_y(L);
 			n = x = pixel.ep(z, y);
 			F = aW.fJ(t, E); - 1 === F ? (k(), e8.an(t, E), H = !1) : (l = aW.ae(t, F), H = !0);
 			if (H && (k(), H = ak(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (as.at[15] += H), l <= landcost ? (t === myid && (as.at[15] += l), g(!1), H = !1) : (aW.bL(t, F, l), H = !0), H))
-				if (H = pixel.ep(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? H + offset[A > z ? 1 : 3] : H + offset[B > y ? 2 : 0], z = pixel.g3(x), y = pixel.c7(x),
-					e8.fo(C, x), H = pixel.ay(x) ? !1 : !0, H) pixel.y4(x) && pixel.yB(x, t);
+				if (H = pixel.ep(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? H + offset[A > z ? 1 : 3] : H + offset[B > y ? 2 : 0], z = pixel.click_x(x), y = pixel.click_y(x),
+					e8.fo(C, x), H = pixel.canownpixel(x) ? !1 : !0, H) pixel.iswater(x) && pixel.yB(x, t);
 				else a: {
-					if (pixel.b8(x)) H = maxentities;
+					if (pixel.isneutral(x)) H = maxentities;
 					else {
-						H = pixel.b7(x);
+						H = pixel.pixelowner(x);
 						if (H === t) {
 							g(!0);
 							break a
@@ -8580,7 +8565,7 @@ function game() {
 		};
 		this.fs = function (H, K) {
 			t = H;
-			x = pixel.ep(pixel.g3(K), pixel.c7(K));
+			x = pixel.ep(pixel.click_x(K), pixel.click_y(K));
 			k()
 		}
 	}
@@ -9171,7 +9156,7 @@ function game() {
 		for (k = 3; 0 <= k; k--) {
 			var x = offset[k];
 			for (t = 0; t < l; t++)
-				if (pixel.b8(borderpixels[g][t] + x)) return !0
+				if (pixel.isneutral(borderpixels[g][t] + x)) return !0
 		}
 		return !1
 	}
@@ -9185,7 +9170,7 @@ function game() {
 			var n = offset[t];
 			for (x = 0; x < l; x++) {
 				var z = borderpixels[g][x] + n;
-				if (pixel.b6(z) && pixel.b7(z) === k) return !0
+				if (pixel.isentitypixel(z) && pixel.pixelowner(z) === k) return !0
 			}
 		}
 		return !1
@@ -9838,5 +9823,4 @@ function game() {
 		}
 	}
 	a0w();
-}
-game();
+// } game();
