@@ -470,7 +470,7 @@ var siemblitz = []
 	function cK(g, k) {
 		var t, l;
 		for (t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (pixel.nearentity(borderpixels[g][t]))
+			if (pixel.inspawningradius(borderpixels[g][t]))
 				for (l = 3; 0 <= l; l--)
 					if (pixel.isentitypixel(borderpixels[g][t] + offset[l]) && pixel.pixelowner(borderpixels[g][t] + offset[l]) === k) {
 						temp_borderpixels[g].push(borderpixels[g][t]);
@@ -484,7 +484,7 @@ var siemblitz = []
 
 	function cP(g) {
 		for (var k, t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (pixel.nearentity(borderpixels[g][t]))
+			if (pixel.inspawningradius(borderpixels[g][t]))
 				for (k = 3; 0 <= k; k--)
 					if (pixel.isneutral(borderpixels[g][t] + offset[k])) {
 						temp_borderpixels[g].push(borderpixels[g][t]);
@@ -1168,7 +1168,7 @@ var siemblitz = []
 			for (K = L + F - 1; K >= L; K--)
 				for (J = I + F - 1; J >= I; J--)
 					if (D = pixel.ep(J, K), !pixel.canownpixel(D) ||
-						pixel.nearentity(D)) return !1;
+						pixel.inspawningradius(D)) return !1;
 			return !0
 		}
 
@@ -1237,7 +1237,7 @@ var siemblitz = []
 								for (N = Q; N > Q - 6; N--)
 									for (G = M; G > M - 6; G--) {
 										var S = pixel.ep(G, N);
-										if (pixel.nearentity(S)) {
+										if (pixel.inspawningradius(S)) {
 											N = !1;
 											break a
 										}
@@ -6228,7 +6228,7 @@ var siemblitz = []
 		this.y3 = function (pixelcoords) {
 			return 208 <= pixel_rgba[pixelcoords + 3] && 224 > pixel_rgba[pixelcoords + 3]
 		};
-		this.nearentity = function (pixelcoords) {
+		this.inspawningradius = function (pixelcoords) {
 			return 224 <= pixel_rgba[pixelcoords + 3] && 248 > pixel_rgba[pixelcoords + 3]
 		};
 		this.borderswater = function (pixelcoords) {
