@@ -10,15 +10,8 @@ A project to create clients, assistants and bots on the online browser game Terr
 
 ### November 2022
 
-- 1/11: Reorganization of files, variables and functions
-- 2/11: Opening
+- 13/11: Reorganizing branches and game files
 
-## Development Plans
-
-- Smart Openings
-- Dynamic latency
-- Rating/Priority system, Flanking and bot attacks
-- Cancelling? Density/Troop Checks?
-- Attack Opponents
-- Spawn algorithm and choosing
-- 100% Bot Automation
+## Notes
+- This is the master branch of the bot. All code should be completed first in their respective branches.
+- Only merge when branches are confirmed to not conflict. Resolve all errors before continuing.
