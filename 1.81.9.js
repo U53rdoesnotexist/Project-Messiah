@@ -37,7 +37,7 @@ var siemblitz = []
 	}
 
 	function check_spawn() {
-		if (spawning_time >= 0.95) multi.choosespawn(1E3, Math.random()*mapheight, Math.random()*mapwidth) //Checks if it is time to spawn
+		if (spawning_time >= 0.99 && land[myid] === 0) multi.choosespawn(1E3, Math.random()*mapheight, Math.random()*mapwidth) //Checks if it is time to spawn
 	}
 
 	function emoji_spam() {
@@ -179,14 +179,14 @@ var siemblitz = []
 	}
 
 	function canattackproceed() {
-		aG = ak(troops_returned, last_border_land);
+		aG = divideandfloor(troops_returned, last_border_land);
 		//console.log(aG, landcost);
 		return aG > landcost
 	}
 
 	function ah() {
 		var g;
-		for (g = last_border_land - 1; 0 <= g; g--) aO[ak(aK[g], 4)] = 0
+		for (g = last_border_land - 1; 0 <= g; g--) aO[divideandfloor(aK[g], 4)] = 0
 	}
 
 	function refund() {
@@ -210,7 +210,7 @@ var siemblitz = []
 
 	function aV() {
 		var g;
-		for (g = temp_borderpixels[last_action_id].length - 1; 0 <= g; g--) pixel.canownpixel(temp_borderpixels[last_action_id][g]) && pixel.az(temp_borderpixels[last_action_id][g], last_action_id);
+		for (g = temp_borderpixels[last_action_id].length - 1; 0 <= g; g--) pixel.canownpixel(temp_borderpixels[last_action_id][g]) && pixel.changetoborder(temp_borderpixels[last_action_id][g], last_action_id);
 		temp_borderpixels[last_action_id] = []
 	}
 
@@ -220,7 +220,7 @@ var siemblitz = []
 	}
 
 	function bN() {
-		for (var g, k, t = last_border_land - 1; 0 <= t; t--) g = ak(aK[t], 4) % mapwidth, k = ak(aK[t], 4 * mapwidth), x_min[last_action_id] = x_min[last_action_id] > g ? g : x_min[last_action_id], y_min[last_action_id] = y_min[last_action_id] > k ? k : y_min[last_action_id], x_max[last_action_id] = x_max[last_action_id] < g ? g : x_max[last_action_id], y_max[last_action_id] = y_max[last_action_id] < k ? k : y_max[last_action_id]
+		for (var g, k, t = last_border_land - 1; 0 <= t; t--) g = divideandfloor(aK[t], 4) % mapwidth, k = divideandfloor(aK[t], 4 * mapwidth), x_min[last_action_id] = x_min[last_action_id] > g ? g : x_min[last_action_id], y_min[last_action_id] = y_min[last_action_id] > k ? k : y_min[last_action_id], x_max[last_action_id] = x_max[last_action_id] < g ? g : x_max[last_action_id], y_max[last_action_id] = y_max[last_action_id] < k ? k : y_max[last_action_id]
 	}
 
 	function ab() {
@@ -231,7 +231,7 @@ var siemblitz = []
 			for (k = 3; 0 <= k; k--) {
 				var l = temp_borderpixels[last_action_id][t] + offset[k];
 				if (pixel.isneutral(l) || pixel.isentitypixel(l) && pixel.pixelowner(l) !== last_action_id) {
-					pixel.cO(temp_borderpixels[last_action_id][t], last_action_id);
+					pixel.changetoattacking(temp_borderpixels[last_action_id][t], last_action_id);
 					continue a
 				}
 			}
@@ -251,7 +251,7 @@ var siemblitz = []
 				x = x || pixel.iswater(n);
 				t = t || pixel.ismountain(n)
 			}
-			x ? borderwaterpixels[last_action_id].push(borderpixels[last_action_id][l]) : t ? bordermountainpixel[last_action_id].push(borderpixels[last_action_id][l]) : pixel.hN(borderpixels[last_action_id][l], last_action_id);
+			x ? borderwaterpixels[last_action_id].push(borderpixels[last_action_id][l]) : t ? bordermountainpixel[last_action_id].push(borderpixels[last_action_id][l]) : pixel.changetoinner(borderpixels[last_action_id][l], last_action_id);
 			borderpixels[last_action_id][l] = borderpixels[last_action_id][g - 1];
 			borderpixels[last_action_id].pop();
 			g--;
@@ -263,11 +263,11 @@ var siemblitz = []
 	}
 
 	function bD(g) {
-		for (var k = g.length, t = k - 1; 0 <= t; t--) pixel.hW(aH, g[t]) || (g[t] = g[k - 1], g.pop(), k--)
+		for (var k = g.length, t = k - 1; 0 <= t; t--) pixel.strong_isowner(aH, g[t]) || (g[t] = g[k - 1], g.pop(), k--)
 	}
 
 	function bG(g) {
-		for (var k = g.length, t = k - 1; 0 <= t; t--) !pixel.hW(aH, g[t]) && pixel.canownpixel(g[t]) && (g[t] = g[k - 1], g.pop(), k--)
+		for (var k = g.length, t = k - 1; 0 <= t; t--) !pixel.strong_isowner(aH, g[t]) && pixel.canownpixel(g[t]) && (g[t] = g[k - 1], g.pop(), k--)
 	}
 
 	function bH(g) {
@@ -282,31 +282,31 @@ var siemblitz = []
 				}
 	}
 
-	function bJ() { //runs when you attack a nerd
-		for (var g, k, t = last_border_land - 1; 0 <= t; t--)
-			for (g = 3; 0 <= g; g--) k = aK[t] + offset[g], pixel.y2(aH, k) && pixel.y3(k) && (borderpixels[aH].push(k), pixel.az(k, aH))
+	function bJ() { 
+		for (var g, pixelcoords, t = last_border_land - 1; 0 <= t; t--)
+			for (g = 3; 0 <= g; g--) pixelcoords = aK[t] + offset[g], pixel.isowner(aH, pixelcoords) && pixel.innerpixel(pixelcoords) && (borderpixels[aH].push(pixelcoords), pixel.changetoborder(pixelcoords, aH))
 	}
 
 	function update_minmax() {
 		var g;
 		a: for (; y_min[aH] < y_max[aH];) {
 			for (g = x_max[aH]; g >= x_min[aH]; g--)
-				if (pixel.hW(aH, 4 * (y_min[aH] * mapwidth + g))) break a;
+				if (pixel.strong_isowner(aH, 4 * (y_min[aH] * mapwidth + g))) break a;
 			y_min[aH]++
 		}
 		a: for (; y_min[aH] < y_max[aH];) {
 			for (g = x_max[aH]; g >= x_min[aH]; g--)
-				if (pixel.hW(aH, 4 * (y_max[aH] * mapwidth + g))) break a;
+				if (pixel.strong_isowner(aH, 4 * (y_max[aH] * mapwidth + g))) break a;
 			y_max[aH]--
 		}
 		a: for (; x_min[aH] < x_max[aH];) {
 			for (g = y_max[aH]; g >= y_min[aH]; g--)
-				if (pixel.hW(aH, 4 * (g * mapwidth + x_min[aH]))) break a;
+				if (pixel.strong_isowner(aH, 4 * (g * mapwidth + x_min[aH]))) break a;
 			x_min[aH]++
 		}
 		a: for (; x_min[aH] < x_max[aH];) {
 			for (g = y_max[aH]; g >= y_min[aH]; g--)
-				if (pixel.hW(aH, 4 * (g * mapwidth + x_max[aH]))) break a;
+				if (pixel.strong_isowner(aH, 4 * (g * mapwidth + x_max[aH]))) break a;
 			x_max[aH]--
 		}
 	}
@@ -316,7 +316,7 @@ var siemblitz = []
 		for (g = 3; 0 <= g; g--)
 			for (k = aL - 1; 0 <= k; k--) {
 				var t = aM[k] + offset[g];
-				var l = ak(t, 4);
+				var l = divideandfloor(t, 4);
 				0 === aO[l] && pixel.isentitypixel(t) && pixel.pixelowner(t) === aH && (aO[l] = 1, aK[last_border_land++] = t)
 			}
 	}
@@ -326,7 +326,7 @@ var siemblitz = []
 		for (g = 3; 0 <= g; g--)
 			for (k = aL - 1; 0 <= k; k--) {
 				var t = aM[k] + offset[g];
-				var l = ak(t, 4);
+				var l = divideandfloor(t, 4);
 				0 === aO[l] && pixel.isneutral(t) && (aO[l] = 1, aK[last_border_land++] = t)
 			}
 	}
@@ -376,7 +376,7 @@ var siemblitz = []
 			else {
 				aW.bZ(aH, last_action_id, k - g);
 				return
-			} g = ak(g, 2);
+			} g = divideandfloor(g, 2);
 		troops[aH] = troops[aH] >= g ? troops[aH] - g : 0
 	}
 
@@ -385,15 +385,15 @@ var siemblitz = []
 	}
 
 	function bT() {
-		return ak(last_border_land * troops[aH], 1 + bb() * bc())
+		return divideandfloor(last_border_land * troops[aH], 1 + bb() * bc())
 	}
 
 	function bb() {
-		return Math.floor(2 + bd(ak(land[aH], 100), 8))
+		return Math.floor(2 + bd(divideandfloor(land[aH], 100), 8))
 	}
 
 	function bc() {
-		return borderpixels[aH].length + ak(borderwaterpixels[aH].length + bordermountainpixel[aH].length, 50)
+		return borderpixels[aH].length + divideandfloor(borderwaterpixels[aH].length + bordermountainpixel[aH].length, 50)
 	}
 
 	function bP() {
@@ -402,7 +402,7 @@ var siemblitz = []
 	}
 
 	function bO() {
-		for (var g = last_border_land - 1; 0 <= g; g--) temp_borderpixels[last_action_id].push(aK[g]), borderpixels[last_action_id].push(aK[g]), pixel.az(aK[g], last_action_id)
+		for (var g = last_border_land - 1; 0 <= g; g--) temp_borderpixels[last_action_id].push(aK[g]), borderpixels[last_action_id].push(aK[g]), pixel.changetoborder(aK[g], last_action_id)
 	}
 
 	function be() {
@@ -459,8 +459,8 @@ var siemblitz = []
 	}
 
 	function cD(g, k, t, l) {
-		var x = ak(3 * troops[g], 256);
-		l -= l >= ak(troops[g], 2) ? x : 0;
+		var x = divideandfloor(3 * troops[g], 256);
+		l -= l >= divideandfloor(troops[g], 2) ? x : 0;
 		cH(t, g);
 		aW.cI(g, l, k);
 		troops[g] -= l + x;
@@ -470,7 +470,7 @@ var siemblitz = []
 	function cK(g, k) {
 		var t, l;
 		for (t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (pixel.inspawningradius(borderpixels[g][t]))
+			if (pixel.stationaryborderpixel(borderpixels[g][t]))
 				for (l = 3; 0 <= l; l--)
 					if (pixel.isentitypixel(borderpixels[g][t] + offset[l]) && pixel.pixelowner(borderpixels[g][t] + offset[l]) === k) {
 						temp_borderpixels[g].push(borderpixels[g][t]);
@@ -479,12 +479,12 @@ var siemblitz = []
 	}
 
 	function cH(g, k) {
-		for (var t = temp_borderpixels[k].length - 1; t >= g; t--) pixel.cO(temp_borderpixels[k][t], k)
+		for (var t = temp_borderpixels[k].length - 1; t >= g; t--) pixel.changetoattacking(temp_borderpixels[k][t], k)
 	}
 
 	function cP(g) {
 		for (var k, t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (pixel.inspawningradius(borderpixels[g][t]))
+			if (pixel.stationaryborderpixel(borderpixels[g][t]))
 				for (k = 3; 0 <= k; k--)
 					if (pixel.isneutral(borderpixels[g][t] + offset[k])) {
 						temp_borderpixels[g].push(borderpixels[g][t]);
@@ -569,11 +569,11 @@ var siemblitz = []
 	function cn(g) {
 		var k = ca[0];
 		if (1 === cY) return k;
-		var t = ak(x_max[g] + x_min[g], 2),
-			l = ak(y_max[g] + y_min[g], 2),
-			x = cx(t - ak(x_max[k] + x_min[k], 2)) + cx(l - ak(y_max[k] + y_min[k], 2));
+		var t = divideandfloor(x_max[g] + x_min[g], 2),
+			l = divideandfloor(y_max[g] + y_min[g], 2),
+			x = cx(t - divideandfloor(x_max[k] + x_min[k], 2)) + cx(l - divideandfloor(y_max[k] + y_min[k], 2));
 		for (g = cY - 1; 1 <= g; g--) {
-			var n = cx(t - ak(x_max[ca[g]] + x_min[ca[g]], 2)) + cx(l - ak(y_max[ca[g]] + y_min[ca[g]], 2));
+			var n = cx(t - divideandfloor(x_max[ca[g]] + x_min[ca[g]], 2)) + cx(l - divideandfloor(y_max[ca[g]] + y_min[ca[g]], 2));
 			n < x && (x = n, k = ca[g])
 		}
 		return k
@@ -619,11 +619,11 @@ var siemblitz = []
 	}
 
 	function dG(g, k, t) {
-		3 <= t && 2142 < bw.dM() && (k === maxentities || troops[k] < ak(troops[g], 20)) && d8.d9(g - playercount, 25)
+		3 <= t && 2142 < bw.dM() && (k === maxentities || troops[k] < divideandfloor(troops[g], 20)) && d8.d9(g - playercount, 25)
 	}
 
 	function dA(g, k, t, l) {
-		if (0 !== dO.dP[g] && !(5 === t && troops[g] < l || 4 === t && troops[g] < ak(l, 2)))
+		if (0 !== dO.dP[g] && !(5 === t && troops[g] < l || 4 === t && troops[g] < divideandfloor(l, 2)))
 			for (t = cW.cX(alivecount), l = 0; l < alivecount; l++) {
 				var x = entitiesalive[(l + t) % alivecount];
 				if (dO.dP[x] === dO.dP[g] && 1 === cz[x]) {
@@ -643,8 +643,8 @@ var siemblitz = []
 	}
 
 	function dJ(g, k, t) {
-		if (ak(troops[g], 8) > troops[t]) {
-			var l = ak(11 * troops[t], 5);
+		if (divideandfloor(troops[g], 8) > troops[t]) {
+			var l = divideandfloor(11 * troops[t], 5);
 			k = k > l ? k : l
 		}
 		l = temp_borderpixels[g].length;
@@ -688,7 +688,7 @@ var siemblitz = []
 				for (z = botcount - 1; 0 <= z; z--) this.cF[z] = y
 			}
 			for (z = botcount - 1; 0 <= z; z--) {
-				2 >= this.cF[z] ? (l[z] = 5, x[z] = n[z] = 1040, 0 === this.cF[z] ? (k[z] = 1E3, t[z] = 1E3) : 1 === this.cF[z] ? (k[z] = 1E3, t[z] = 920, x[z] = n[z] = 1100) : (k[z] = 1E3, t[z] = 870)) : 4 >= this.cF[z] ? (l[z] = 1 + cW.cX(20), n[z] = 250 + cW.cX(1501), x[z] = 500 + cW.cX(501), 3 === this.cF[z] ? (k[z] = 600 + cW.cX(101), t[z] = 300 + cW.cX(401)) : (k[z] = 300 + cW.cX(201), t[z] = 100 + cW.cX(201))) : (x[z] = 1E3, n[z] = 1E3, l[z] = 35 + cW.cX(16), k[z] = 400 + cW.cX(101), t[z] = 50 + cW.cX(101)), timingbot[z] = 1 + ak(x[z] * cW.random(),
+				2 >= this.cF[z] ? (l[z] = 5, x[z] = n[z] = 1040, 0 === this.cF[z] ? (k[z] = 1E3, t[z] = 1E3) : 1 === this.cF[z] ? (k[z] = 1E3, t[z] = 920, x[z] = n[z] = 1100) : (k[z] = 1E3, t[z] = 870)) : 4 >= this.cF[z] ? (l[z] = 1 + cW.cX(20), n[z] = 250 + cW.cX(1501), x[z] = 500 + cW.cX(501), 3 === this.cF[z] ? (k[z] = 600 + cW.cX(101), t[z] = 300 + cW.cX(401)) : (k[z] = 300 + cW.cX(201), t[z] = 100 + cW.cX(201))) : (x[z] = 1E3, n[z] = 1E3, l[z] = 35 + cW.cX(16), k[z] = 400 + cW.cX(101), t[z] = 50 + cW.cX(101)), timingbot[z] = 1 + divideandfloor(x[z] * cW.random(),
 				10 * cW.value(100))
 			}
 
@@ -710,9 +710,9 @@ var siemblitz = []
 			if (0 === --timingbot[z]) {
 				x[z] !== n[z] && (x[z] += x[z] < n[z] ? 3 : -3);
 				k[z] !== t[z] && (k[z] += k[z] < t[z] ? l[z] : -l[z], k[z] = Math.abs(k[z] - t[z]) <= l[z] ? t[z] : k[z]);
-				timingbot[z] = ak(x[z], 10);
+				timingbot[z] = divideandfloor(x[z], 10);
 				var y = z + playercount;
-				d3(y, ak(k[z] * troops[y], 1E3))
+				d3(y, divideandfloor(k[z] * troops[y], 1E3))
 			}
 		}
 	}
@@ -825,8 +825,8 @@ var siemblitz = []
 			l = 3;
 			a: {
 				for (var y = 40; 1 <= y; y--) {
-					x = x_min[z] + ak(cW.random() * (x_max[z] - x_min[z] + 1), cW.value(100));
-					n = y_min[z] + ak(cW.random() * (y_max[z] - y_min[z] + 1), cW.value(100));
+					x = x_min[z] + divideandfloor(cW.random() * (x_max[z] - x_min[z] + 1), cW.value(100));
+					n = y_min[z] + divideandfloor(cW.random() * (y_max[z] - y_min[z] + 1), cW.value(100));
 					var A = k(pixel.ep(x, n));
 					if (1 !== A) break a
 				}
@@ -849,7 +849,7 @@ var siemblitz = []
 		function t(y, A) {
 			for (var B, C, F, E, H, K, J, D = y; D < y + 50 * A; D += A)
 				if (B = x_min[z] - D, B = 1 > B ? 1 : B, C = y_min[z] - D, C = 1 >
-					C ? 1 : C, F = x_max[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = y_max[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = ak(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(pixel.ep(x, n)), 1 !== B) return B;
+					C ? 1 : C, F = x_max[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = y_max[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = divideandfloor(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(pixel.ep(x, n)), 1 !== B) return B;
 			return 1
 		}
 		var l, x, n, z;
@@ -857,7 +857,7 @@ var siemblitz = []
 			z = y;
 			if (0 === borderwaterpixels[z].length) return !1;
 			if (g()) {
-				var B = ak(d8.df[A] * troops[z], 100);
+				var B = divideandfloor(d8.df[A] * troops[z], 100);
 				100 > B && 100 <= troops[z] && (B = 100);
 				if (100 <= B) return em(z, en.eo(), pixel.ep(x, n), B)
 			}
@@ -907,7 +907,7 @@ var siemblitz = []
 			0 < A && this.bh()
 		};
 		this.fA = function (y, A, B, C) {
-			0 !== isalive[y] && 2 !== fH[k] && en.cg(y, pixel.ep(B, C)) && em(y, en.eo(), pixel.ep(B, C), ak(A * troops[y], 1E3)) && y === myid && (as.at[0] += A, as.at[1]++, as.at[2]++)
+			0 !== isalive[y] && 2 !== fH[k] && en.cg(y, pixel.ep(B, C)) && em(y, en.eo(), pixel.ep(B, C), divideandfloor(A * troops[y], 1E3)) && y === myid && (as.at[0] += A, as.at[1]++, as.at[2]++)
 		};
 		this.cancel = function (y, A) {
 			if (0 !== isalive[y] && 2 !== fH[k] && aW.cg(y, A)) {
@@ -1140,14 +1140,14 @@ var siemblitz = []
 			var K;
 			a: {
 				for (K = 0; 8 > K; K++)
-					if (x = ak(z * cW.random(), cW.value(100)), n = ak(y * cW.random(), cW.value(100)), k()) {
+					if (x = divideandfloor(z * cW.random(), cW.value(100)), n = divideandfloor(y * cW.random(), cW.value(100)), k()) {
 						K = !0;
 						break a
 					} K = !1
 			}
 			if (!K) a: {
-				var J, D, L, I; K = ak(z * cW.random(), cW.value(100));
-				var N = ak(y * cW.random(), cW.value(100));
+				var J, D, L, I; K = divideandfloor(z * cW.random(), cW.value(100));
+				var N = divideandfloor(y * cW.random(), cW.value(100));
 				for (J = 40; 1 <= J; J--)
 					for (D = y - J; 0 <= D; D -= 40)
 						for (n = (D + N) % y, L = 40; 1 <= L; L--)
@@ -1162,13 +1162,13 @@ var siemblitz = []
 
 		function k() {
 			var K, J;
-			var D = ak(A - F, 2);
+			var D = divideandfloor(A - F, 2);
 			var L = C + n * A + D,
 				I = B + x * A + D;
 			for (K = L + F - 1; K >= L; K--)
 				for (J = I + F - 1; J >= I; J--)
 					if (D = pixel.ep(J, K), !pixel.canownpixel(D) ||
-						pixel.inspawningradius(D)) return !1;
+						pixel.stationaryborderpixel(D)) return !1;
 			return !0
 		}
 
@@ -1194,10 +1194,10 @@ var siemblitz = []
 				for (L = J; L < J + 4; L++)
 					if (D > K && D < K + 3 || L > J && L < J + 3) {
 						var I = pixel.ep(D, L);
-						pixel.canownpixel(I) && (x_min[E] = D < x_min[E] ? D : x_min[E], x_max[E] = D > x_max[E] ? D : x_max[E], y_min[E] = L < y_min[E] ? L : y_min[E], y_max[E] = L > y_max[E] ? L : y_max[E], H[land[E]] = I, land[E]++, pixel.hN(I, E))
+						pixel.canownpixel(I) && (x_min[E] = D < x_min[E] ? D : x_min[E], x_max[E] = D > x_max[E] ? D : x_max[E], y_min[E] = L < y_min[E] ? L : y_min[E], y_max[E] = L > y_max[E] ? L : y_max[E], H[land[E]] = I, land[E]++, pixel.changetoinner(I, E))
 					} 
 					hJ[E] = land[E];
-			for (I = land[E] - 1; 0 <= I; I--) pixel.canexpandfromthispixel(H[I], E) ? (pixel.az(H[I], E), borderpixels[E].push(H[I])) : pixel.borderswater(H[I]) ? (pixel.az(H[I], E), borderwaterpixels[E].push(H[I])) : pixel.bordersmountain(H[I]) && (pixel.az(H[I], E), bordermountainpixel[E].push(H[I]))
+			for (I = land[E] - 1; 0 <= I; I--) pixel.canexpandfromthispixel(H[I], E) ? (pixel.changetoborder(H[I], E), borderpixels[E].push(H[I])) : pixel.borderswater(H[I]) ? (pixel.changetoborder(H[I], E), borderwaterpixels[E].push(H[I])) : pixel.bordersmountain(H[I]) && (pixel.changetoborder(H[I], E), bordermountainpixel[E].push(H[I]))
 		}
 		var x, n, z, y, A, B, C, F, E, H;
 		this.bh = function () {
@@ -1205,17 +1205,17 @@ var siemblitz = []
 			H = Array(12);
 			F = 6;
 			A = 10;
-			z = ak(mapwidth, A);
-			y = ak(mapheight, A);
-			B = ak(mapwidth - A * z, 2);
-			C = ak(mapheight - A * y, 2);
+			z = divideandfloor(mapwidth, A);
+			y = divideandfloor(mapheight, A);
+			B = divideandfloor(mapwidth - A * z, 2);
+			C = divideandfloor(mapheight - A * y, 2);
 			if (in_spawn)
 				for (K = 0; K < playercount; K++) E = K, t(), isalive[E] = 1;
 			for (E = 0; E < maxentities; E++)
 				if (1 !== isalive[E])
 					if (E < entitycount && g()) {
-						var J = B + x * A + ak(A, 2);
-						K = C + n * A + ak(A, 2);
+						var J = B + x * A + divideandfloor(A, 2);
+						K = C + n * A + divideandfloor(A, 2);
 						t();
 						l(J - 2, K - 2)
 					} else t();
@@ -1237,7 +1237,7 @@ var siemblitz = []
 								for (N = Q; N > Q - 6; N--)
 									for (G = M; G > M - 6; G--) {
 										var S = pixel.ep(G, N);
-										if (pixel.inspawningradius(S)) {
+										if (pixel.stationaryborderpixel(S)) {
 											N = !1;
 											break a
 										}
@@ -1247,7 +1247,7 @@ var siemblitz = []
 							if (N) {
 								if (0 < land[E]) {
 									for (D = x_max[E]; D >= x_min[E]; D--)
-										for (J = y_max[E]; J >= y_min[E]; J--) L = 4 * (J * mapwidth + D), pixel.hW(E, L) && (pixel.hX(L), land[E]--);
+										for (J = y_max[E]; J >= y_min[E]; J--) L = 4 * (J * mapwidth + D), pixel.strong_isowner(E, L) && (pixel.hX(L), land[E]--);
 									t()
 								}
 								l(K - 1, I - 1);
@@ -1258,8 +1258,8 @@ var siemblitz = []
 		this.hY = function (K) {
 			E = K;
 			if (g()) {
-				K = B + x * A + ak(A, 2);
-				var J = C + n * A + ak(A, 2);
+				K = B + x * A + divideandfloor(A, 2);
+				var J = C + n * A + divideandfloor(A, 2);
 				t();
 				l(K - 2, J - 2)
 			} else t()
@@ -1407,7 +1407,7 @@ var siemblitz = []
 				z, y = [];
 			for (z = 0; z < n; z++) {
 				var A = x.charCodeAt(z);
-				58 > A ? y.push(x[z]) : (A = 91 > A ? A - 65 : A - 71, y.push(String(ak(A, 10))), y.push(String(A - 10 * ak(A, 10))))
+				58 > A ? y.push(x[z]) : (A = 91 > A ? A - 65 : A - 71, y.push(String(divideandfloor(A, 10))), y.push(String(A - 10 * divideandfloor(A, 10))))
 			}
 			n = y.length - 2;
 			A = 0;
@@ -1496,7 +1496,7 @@ var siemblitz = []
 		dO.bh(playernames);
 		fN = 1;
 		iv = 2E9;
-		iw = ak(iv, 2);
+		iw = divideandfloor(iv, 2);
 		as.bh();
 		j9();
 		jA.jB();
@@ -1739,7 +1739,7 @@ var siemblitz = []
 				this.kx();
 				if (this.kw(E) && 7 > gamemode && 1071 > bw.dM()) return dx.l9(), 1;
 				dx.lA();
-				singleplayer ? dS(myid, E, ak(eF.lB() * troops[myid], 1E3)) : multi.attack(eF.lB(), E === maxentities ? myid : E);
+				singleplayer ? dS(myid, E, divideandfloor(eF.lB() * troops[myid], 1E3)) : multi.attack(eF.lB(), E === maxentities ? myid : E);
 				return 1
 			}
 			//4: Attack/Spawn 5: Boat 7: Emoji
@@ -2398,7 +2398,7 @@ var siemblitz = []
 				alpha: !0
 			});
 			x.clearRect(0, 0, this.bt, this.bt);
-			23 === k ? x.drawImage(he.kl[2], 0, 0) : 36 === k ? x.drawImage(he.kl[0], 0, 0) : 49 === k ? x.drawImage(he.kl[1], 0, 0) : x.drawImage(t, this.bt * g % (g === k ? this.nM * this.bt : 4E3), g === k ? ak(g, this.nM) * this.bt : 0, this.bt, this.bt, 0, 0, this.bt, this.bt);
+			23 === k ? x.drawImage(he.kl[2], 0, 0) : 36 === k ? x.drawImage(he.kl[0], 0, 0) : 49 === k ? x.drawImage(he.kl[1], 0, 0) : x.drawImage(t, this.bt * g % (g === k ? this.nM * this.bt : 4E3), g === k ? divideandfloor(g, this.nM) * this.bt : 0, this.bt, this.bt, 0, 0, this.bt, this.bt);
 			this.kn[k] = l
 		};
 		this.nd = function () {
@@ -2459,7 +2459,7 @@ var siemblitz = []
 			var t = Math.floor(g2 / this.nS);
 			t = 3 > t ? 3 : t > this.nT ? this.nT : t;
 			t = this.lM > t ? t : this.lM;
-			var l = 1 + ak(this.lM - 1, t),
+			var l = 1 + divideandfloor(this.lM - 1, t),
 				x = Math.floor(t * this.nS),
 				n = Math.floor(g - x / 2);
 			n = n + x > g2 ? g2 - x : n;
@@ -2470,7 +2470,7 @@ var siemblitz = []
 			z = 0 > z ? 0 : z;
 			this.ex = n + x;
 			this.ey = z + l;
-			for (x = 0; x < this.lM; x++) this.nU[x] = Math.floor(n + x % t * this.nS), this.nV[x] = Math.floor(z + ak(x, t) * this.nS);
+			for (x = 0; x < this.lM; x++) this.nU[x] = Math.floor(n + x % t * this.nS), this.nV[x] = Math.floor(z + divideandfloor(x, t) * this.nS);
 			return !0
 		};
 		this.ky = function (g, k) {
@@ -3063,9 +3063,9 @@ var siemblitz = []
 					E = 360;
 					var L = 0;
 					for (D = alivecount - 1; 0 <= D; D--) he.kw(entitiesalive[D]) && (L += land[entitiesalive[D]]);
-					B[0] = mI(ak(3 * L, 5), 1);
+					B[0] = mI(divideandfloor(3 * L, 5), 1);
 					teamgame && 9 !== gamemode && (B[0] =
-						qJ(mI(ak(L * (100 - ak(100 * eH.qK(), iu)), 100), 1), B[0]));
+						qJ(mI(divideandfloor(L * (100 - divideandfloor(100 * eH.qK(), iu)), 100), 1), B[0]));
 					B[1] = mI(L - B[0], 1);
 					K++
 				}
@@ -3955,7 +3955,7 @@ var siemblitz = []
 		}
 
 		function t(P) {
-			P = ak(1E4 * P, iu);
+			P = divideandfloor(1E4 * P, iu);
 			8 === gamemode && (0 === isalive[0] ? fW.fX(1) : 0 === isalive[1] && fW.fX(0));
 			P >= L[3] && (fW.fX(-1), L[4] = -1);
 			L[4] !== P && (J++, L[4] = P)
@@ -3983,13 +3983,13 @@ var siemblitz = []
 			D[5] = "Interest";
 			D[6] = "Income";
 			D[7] = "Time";
-			S = iu - ak(iu, 100);
+			S = iu - divideandfloor(iu, 100);
 			L = Array(D.length);
 			L[0] = singleplayer ? 0 : playercount;
 			L[1] = singleplayer ? alivecount : botcount;
 			L[2] = ig;
 			L[3] = 1E4;
-			L[4] = ak(1E4 * land[0], iu);
+			L[4] = divideandfloor(1E4 * land[0], iu);
 			L[5] = 700;
 			L[6] = 0;
 			x();
@@ -4227,12 +4227,12 @@ var siemblitz = []
 
 	function singleattack(g, k, t) {
 		if (!(0 === isalive[g] || 0 > t || 1E3 < t || 2 === fH[g])) {
-			var l = ak(t * troops[g], 1E3);
+			var l = divideandfloor(t * troops[g], 1E3);
 			10 === gamemode && k < playercount && 2 !== fH[k] && (l = e3.tP(g, l));
 			if (teamgame && k < maxentities && !cZ(g, k)) dS(g, k, l);
 			else {
 				k < maxentities && 0 === isalive[k] && (k = maxentities);
-				var x = ak(3 * troops[g], 256);
+				var x = divideandfloor(3 * troops[g], 256);
 				l -= 500 <= t ? x : 0;
 				if (!(l <= landcost) && aW.d5(g)) {
 					var n = temp_borderpixels[g].length;
@@ -4248,8 +4248,8 @@ var siemblitz = []
 		if (l <= landcost || !aW.d5(g)) return !1;
 		k = e8.cJ(g, k, t);
 		if (0 === k) return !1;
-		t = ak(3 * troops[g], 128);
-		l >= ak(troops[g], 2) && (l -= t);
+		t = divideandfloor(3 * troops[g], 128);
+		l >= divideandfloor(troops[g], 2) && (l -= t);
 		g === myid && (as.at[12] += t);
 		aW.tQ(g, l, k);
 		troops[g] -= l + t;
@@ -4258,8 +4258,8 @@ var siemblitz = []
 
 	function dS(g, k, t) {
 		if (!(!teamgame || 0 === isalive[g] || 0 === isalive[k] || 0 > t || t > troops[g] || g === k || cZ(g, k) || g < playercount && k < playercount && 7 > gamemode && 1071 > bw.dM())) {
-			var l = ak(troops[g], 16);
-			t -= t >= ak(troops[g], 2) ? l : 0;
+			var l = divideandfloor(troops[g], 16);
+			t -= t >= divideandfloor(troops[g], 2) ? l : 0;
 			var x = land[k] * is - troops[k];
 			0 >= x || (t = t > x ? x : t, g === myid && (dx.mq(t, k), as.at[12] += l, as.at[16] += t), k === myid && (dx.ms(t, g), as.at[10] += t), troops[g] -= t + l, troops[k] += t)
 		}
@@ -4301,25 +4301,25 @@ var siemblitz = []
 			var k = 1;
 			a: for (; k < mapwidth - 1; k++)
 				for (g = mapheight - 2; 1 < g; g--)
-					if (1 === pixel_rgba[pixel.ep(k, g) + 2]) {
+					if (1 === pixel_rgbv[pixel.ep(k, g) + 2]) {
 						this.tT[0] = k;
 						break a
 					} g = 1;
 			a: for (; g < mapheight - 1; g++)
 				for (k = mapwidth - 2; 1 < k; k--)
-					if (1 === pixel_rgba[pixel.ep(k, g) + 2]) {
+					if (1 === pixel_rgbv[pixel.ep(k, g) + 2]) {
 						this.tT[1] = g;
 						break a
 					} k = mapwidth - 2;
 			a: for (; 0 < k; k--)
 				for (g = mapheight - 2; 1 < g; g--)
-					if (1 === pixel_rgba[pixel.ep(k, g) + 2]) {
+					if (1 === pixel_rgbv[pixel.ep(k, g) + 2]) {
 						this.tT[2] = k;
 						break a
 					} g = mapheight - 2;
 			a: for (; 0 < g; g--)
 				for (k = mapwidth - 2; 1 < k; k--)
-					if (1 === pixel_rgba[pixel.ep(k, g) + 2]) {
+					if (1 === pixel_rgbv[pixel.ep(k, g) + 2]) {
 						this.tT[3] = g;
 						break a
 					}
@@ -4835,7 +4835,7 @@ var siemblitz = []
 			this.uf()
 		};
 		this.ug = function () {
-			return [ak(this.colors[0][0], 4), ak(this.colors[0][1], 4), ak(this.colors[0][2], 4)]
+			return [divideandfloor(this.colors[0][0], 4), divideandfloor(this.colors[0][1], 4), divideandfloor(this.colors[0][2], 4)]
 		};
 		this.bz = function (k, t) {
 			this.uZ = 0;
@@ -4858,7 +4858,7 @@ var siemblitz = []
 				g(this.colors[0][k])
 		};
 		this.uh = function () {
-			for (var k = "", t, l = 0; 3 > l; l++) t = ak(this.colors[0][l], 4), 10 > t && (k += "0"), k += t.toString();
+			for (var k = "", t, l = 0; 3 > l; l++) t = divideandfloor(this.colors[0][l], 4), 10 > t && (k += "0"), k += t.toString();
 			a8(k)
 		};
 		this.lV = function (k) {
@@ -5155,7 +5155,7 @@ var siemblitz = []
 			k -= l;
 			if (0 > g || 0 > k || g >= this.bt - 1 || k >= this.co - 1) return 0 === t && (this.ku = !1, 0 === jT.rc() && jV.c6(0, !0), bw.bx = !0), !1;
 			l = Math.floor(this.bt / this.nM);
-			g = ak(g, l) + this.nM * ak(k, l);
+			g = divideandfloor(g, l) + this.nM * divideandfloor(k, l);
 			g = 0 > g ? 0 : g >= a5.nQ ? a5.nQ - 1 : g;
 			if (0 ===
 				t || 1 === t && !a5.a7[g] || 2 === t && a5.a7[g]) this.vN = !a5.a7[g], this.vO = this.uZ = !0, a5.a7[g] = !a5.a7[g], a5.ni(), bw.bx = !0;
@@ -5179,7 +5179,7 @@ var siemblitz = []
 			c9.strokeStyle = cC;
 			c9.strokeRect(-1, -1, this.bt + 2, this.co + 2);
 			for (var t = Math.floor(this.bt /
-				this.nM), l = (t - 2 * this.b3 * t) / a5.bt, x = a5.nQ - 1; 0 <= x; x--) c9.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nM * t), Math.floor(k + ak(x, this.nM) * t)), a5.a7[x] && (c9.fillStyle = o1, c9.fillRect(0, 0, t, t)), c9.setTransform(l, 0, 0, l, Math.floor(g + x % this.nM * t + this.b3 * t), Math.floor(k + ak(x, this.nM) * t + this.b3 * t)), c9.drawImage(a5.kn[x], 0, 0);
+				this.nM), l = (t - 2 * this.b3 * t) / a5.bt, x = a5.nQ - 1; 0 <= x; x--) c9.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nM * t), Math.floor(k + divideandfloor(x, this.nM) * t)), a5.a7[x] && (c9.fillStyle = o1, c9.fillRect(0, 0, t, t)), c9.setTransform(l, 0, 0, l, Math.floor(g + x % this.nM * t + this.b3 * t), Math.floor(k + divideandfloor(x, this.nM) * t + this.b3 * t)), c9.drawImage(a5.kn[x], 0, 0);
 			c9.setTransform(1, 0, 0, 1, 0, 0);
 			c9.imageSmoothingEnabled = !1
 		}
@@ -6136,10 +6136,10 @@ var siemblitz = []
 
 	function oldpixel() {
 		function g(D, L) {
-			pixel_rgba[D] = 0;
-			pixel_rgba[D + 1] = 0;
-			pixel_rgba[D + 2] = L;
-			pixel_rgba[D + 3] = 0;
+			pixel_rgbv[D] = 0;
+			pixel_rgbv[D + 1] = 0;
+			pixel_rgbv[D + 2] = L;
+			pixel_rgbv[D + 3] = 0;
 			k(D)
 		}
 	
@@ -6188,24 +6188,24 @@ var siemblitz = []
 			this.lightness = new Uint8Array(maxentities);
 			aQ();
 			if (teamgame)
-				for (var L, I = maxentities - 1; 0 <= I; I--) L = dO.iW[dO.dP[I]], D = ak((x[L][3] + 1) * cW.random(), cW.value(100)), border_Rgb[I] = l[L][0] + D * x[L][0], border_rGb[I] = l[L][1] + D * x[L][1], border_rgB[I] = l[L][2] + D * x[L][2];
+				for (var L, I = maxentities - 1; 0 <= I; I--) L = dO.iW[dO.dP[I]], D = divideandfloor((x[L][3] + 1) * cW.random(), cW.value(100)), border_Rgb[I] = l[L][0] + D * x[L][0], border_rGb[I] = l[L][1] + D * x[L][1], border_rgB[I] = l[L][2] + D * x[L][2];
 			else {
-				for (L = maxentities - 1; L >= playercount; L--) border_Rgb[L] = 4 * ak(64 * cW.random(), cW.value(100)), border_rGb[L] = 4 * ak(64 * cW.random(), cW.value(100)),
-					border_rgB[L] = 4 * ak(64 * cW.random(), cW.value(100));
+				for (L = maxentities - 1; L >= playercount; L--) border_Rgb[L] = 4 * divideandfloor(64 * cW.random(), cW.value(100)), border_rGb[L] = 4 * divideandfloor(64 * cW.random(), cW.value(100)),
+					border_rgB[L] = 4 * divideandfloor(64 * cW.random(), cW.value(100));
 				for (L = playercount - 1; 0 <= L; L--) border_Rgb[L] = 4 * D[L].wv[0], border_rGb[L] = 4 * D[L].wv[1], border_rgB[L] = 4 * D[L].wv[2]
 			}
-			for (D = maxentities - 1; 0 <= D; D--) L = ak(border_Rgb[D] + border_rGb[D] + border_rgB[D], 3), border_Rgb[D] += xz(L - border_Rgb[D], 2), border_rGb[D] += xz(L - border_rGb[D], 2), border_rgB[D] += xz(L - border_rgB[D], 2), border_Rgb[D] -= border_Rgb[D] % 4, border_rGb[D] -= border_rGb[D] % 4, border_rgB[D] -= border_rgB[D] % 4;
-			for (D = maxentities - 1; 0 <= D; D--) border_Rgb[D] += ak(D, 128), border_rGb[D] += ak(D % 128, 32), border_rgB[D] += ak(D % 32, 8), A[D] = D % 8;
+			for (D = maxentities - 1; 0 <= D; D--) L = divideandfloor(border_Rgb[D] + border_rGb[D] + border_rgB[D], 3), border_Rgb[D] += xz(L - border_Rgb[D], 2), border_rGb[D] += xz(L - border_rGb[D], 2), border_rgB[D] += xz(L - border_rgB[D], 2), border_Rgb[D] -= border_Rgb[D] % 4, border_rGb[D] -= border_rGb[D] % 4, border_rgB[D] -= border_rgB[D] % 4;
+			for (D = maxentities - 1; 0 <= D; D--) border_Rgb[D] += divideandfloor(D, 128), border_rGb[D] += divideandfloor(D % 128, 32), border_rgB[D] += divideandfloor(D % 32, 8), A[D] = D % 8;
 			for (D = maxentities - 1; 0 <= D; D--) this.lightness[D] = 280 > border_Rgb[D] + border_rGb[D] + border_rgB[D] ? 0 : 1
 			for (D = maxentities - 1; 0 <= D; D--) B[D] = 32 > border_Rgb[D] ? border_Rgb[D] + 32 : border_Rgb[D] - 32, C[D] = 32 > border_rGb[D] ? border_rGb[D] + 32 : border_rGb[D] - 32, F[D] = 32 > border_rgB[D] ? border_rgB[D] + 32 : border_rgB[D] - 32;
 			for (D = maxentities - 1; 0 <= D; D--) E[D] = 235 < border_Rgb[D] ? border_Rgb[D] - 20 : border_Rgb[D] + 20,
 				H[D] = 235 < border_rGb[D] ? border_rGb[D] - 20 : border_rGb[D] + 20, K[D] = 235 < border_rgB[D] ? border_rgB[D] - 20 : border_rgB[D] + 20
 		};
-		this.click_x = function (D) {
-			return ak(D, 4) % mapwidth
+		this.click_x = function (pixelcoords) {
+			return divideandfloor(pixelcoords, 4) % mapwidth
 		};
-		this.click_y = function (D) {
-			return ak(D, 4 * mapwidth)
+		this.click_y = function (pixelcoords) {
+			return divideandfloor(pixelcoords, 4 * mapwidth)
 		};
 		this.ep = function (D, L) {
 			return Math.floor(4 * (L * mapwidth + D))
@@ -6216,49 +6216,49 @@ var siemblitz = []
 		this.canexpandfromthispixel = function (pixelcoords, id) {
 			return this.canattackpixel(pixelcoords + offset[0], id) || this.canattackpixel(pixelcoords + offset[1], id) || this.canattackpixel(pixelcoords + offset[2], id) || this.canattackpixel(pixelcoords + offset[3], id)
 		};
-		this.isentitypixel = function (D) {
-			return 208 <= pixel_rgba[D + 3]
+		this.isentitypixel = function (pixelcoords) {
+			return 208 <= pixel_rgbv[pixelcoords + 3]
 		};
-		this.hW = function (pixelowner, pixelcoords) {
-			return this.isentitypixel(pixelcoords) && this.y2(pixelowner, pixelcoords)
+		this.strong_isowner = function (pixelowner, pixelcoords) {
+			return this.isentitypixel(pixelcoords) && this.isowner(pixelowner, pixelcoords)
 		};
-		this.y2 = function (pixelowner, pixelcoords) {
+		this.isowner = function (pixelowner, pixelcoords) {
 			return pixelowner === this.pixelowner(pixelcoords)
 		};
-		this.y3 = function (pixelcoords) {
-			return 208 <= pixel_rgba[pixelcoords + 3] && 224 > pixel_rgba[pixelcoords + 3]
+		this.innerpixel = function (pixelcoords) {
+			return 208 <= pixel_rgbv[pixelcoords + 3] && 224 > pixel_rgbv[pixelcoords + 3]
 		};
-		this.inspawningradius = function (pixelcoords) {
-			return 224 <= pixel_rgba[pixelcoords + 3] && 248 > pixel_rgba[pixelcoords + 3]
+		this.stationaryborderpixel = function (pixelcoords) {
+			return 224 <= pixel_rgbv[pixelcoords + 3] && 248 > pixel_rgbv[pixelcoords + 3]
 		};
 		this.borderswater = function (pixelcoords) {
-			for (var L = 3; 0 <= L; L--)
-				if (this.iswater(pixelcoords + offset[L])) return 1;
+			for (var side = 3; 0 <= side; side--)
+				if (this.iswater(pixelcoords + offset[side])) return 1;
 			return 0;
 		};
-		this.y5 = function (pixelcoords) {
-			return 192 <= pixel_rgba[pixelcoords + 3] && 208 > pixel_rgba[pixelcoords + 3]
+		this.isboat = function (pixelcoords) {
+			return 192 <= pixel_rgbv[pixelcoords + 3] && 208 > pixel_rgbv[pixelcoords + 3]
 		};
-		this.y6 = function (pixelcoords, L) {
-			return this.y5(pixelcoords) && L === this.pixelowner(pixelcoords)
+		this.strong_isboat = function (pixelcoords, L) {
+			return this.isboat(pixelcoords) && L === this.pixelowner(pixelcoords)
 		};
 		this.canownpixel = function (pixelcoords) {
 			return this.isentitypixel(pixelcoords) || this.isneutral(pixelcoords)
 		};
 		this.iswater = function (pixelcoords) {
-			return 0 === pixel_rgba[pixelcoords + 3] && 2 === pixel_rgba[pixelcoords + 2] || this.y5(pixelcoords)
+			return 0 === pixel_rgbv[pixelcoords + 3] && 2 === pixel_rgbv[pixelcoords + 2] || this.isboat(pixelcoords)
 		};
 		this.isneutral = function (pixelcoords) {
-			return 0 === pixel_rgba[pixelcoords + 3] && 1 === pixel_rgba[pixelcoords + 2]
+			return 0 === pixel_rgbv[pixelcoords + 3] && 1 === pixel_rgbv[pixelcoords + 2]
 		};
 		this.ismountain = function (pixelcoords) {
-			return 0 === pixel_rgba[pixelcoords + 3] && 3 === pixel_rgba[pixelcoords + 2]
+			return 0 === pixel_rgbv[pixelcoords + 3] && 3 === pixel_rgbv[pixelcoords + 2]
 		};
 		this.canattackpixel = function (pixelcoords, id) {
 			return this.isneutral(pixelcoords) || this.isentitypixel(pixelcoords) && id !== this.pixelowner(pixelcoords)
 		};
 		this.pixelowner = function (pixelcoords) {
-			return pixel_rgba[pixelcoords] % 4 * 128 + pixel_rgba[pixelcoords + 1] % 4 * 32 + pixel_rgba[pixelcoords + 2] % 4 * 8 + pixel_rgba[pixelcoords + 3] % 8
+			return pixel_rgbv[pixelcoords] % 4 * 128 + pixel_rgbv[pixelcoords + 1] % 4 * 32 + pixel_rgbv[pixelcoords + 2] % 4 * 8 + pixel_rgbv[pixelcoords + 3] % 8
 		};
 		this.hX = function (D) {
 			g(D, 1)
@@ -6266,33 +6266,34 @@ var siemblitz = []
 		this.y8 = function (D) {
 			g(D, 2)
 		};
-		this.hN = function (pixelcoords, L) {
-			pixel_rgba[pixelcoords] = border_Rgb[L];
-			pixel_rgba[pixelcoords + 1] = border_rGb[L];
-			pixel_rgba[pixelcoords + 2] = border_rgB[L];
-			pixel_rgba[pixelcoords + 3] = 208 + A[L];
+		this.changetoinner = function (pixelcoords, L) {
+			pixel_rgbv[pixelcoords] = border_Rgb[L];
+			pixel_rgbv[pixelcoords + 1] = border_rGb[L];
+			pixel_rgbv[pixelcoords + 2] = border_rgB[L];
+			pixel_rgbv[pixelcoords + 3] = 208 + A[L];
 			k(pixelcoords)
 		};
-		this.az = function (D, L) {
-			pixel_rgba[D] = B[L];
-			pixel_rgba[D + 1] = C[L];
-			pixel_rgba[D + 2] = F[L];
-			pixel_rgba[D + 3] = 224 + A[L];
-			k(D)
+		this.changetoborder = function (pixelcoords, L) {
+			pixel_rgbv[pixelcoords] = B[L];
+			pixel_rgbv[pixelcoords + 1] = C[L];
+			pixel_rgbv[pixelcoords + 2] = F[L];
+			pixel_rgbv[pixelcoords + 3] = 224 + A[L];
+			k(pixelcoords)
 		};
-		this.cO = function (D, L) {
-			pixel_rgba[D] = E[L];
-			pixel_rgba[D + 1] = H[L];
-			pixel_rgba[D + 2] = K[L];
-			pixel_rgba[D + 3] = 248 + A[L];
-			k(D)
+		this.changetoattacking = function (pixelcoords, L) {
+			pixel_rgbv[pixelcoords] = E[L];
+			pixel_rgbv[pixelcoords + 1] = H[L];
+			pixel_rgbv[pixelcoords + 2] = K[L];
+			pixel_rgbv[pixelcoords + 3] = 248 + A[L];
+			k(pixelcoords)
 		};
-		this.yB = function (D, L) {
-			pixel_rgba[D] = t[0] + border_Rgb[L] % 4;
-			pixel_rgba[D + 1] = t[1] + border_rGb[L] % 4;
-			pixel_rgba[D + 2] = t[2] + border_rgB[L] % 4;
-			pixel_rgba[D + 3] = 192 + A[L];
-			k(D)
+		this.changetoboat = function (pixelcoords, L) {
+			console.log('yes')
+			pixel_rgbv[pixelcoords] = t[0] + border_Rgb[L] % 4;
+			pixel_rgbv[pixelcoords + 1] = t[1] + border_rGb[L] % 4;
+			pixel_rgbv[pixelcoords + 2] = t[2] + border_rgB[L] % 4;
+			pixel_rgbv[pixelcoords + 3] = 192 + A[L];
+			k(pixelcoords)
 		}
 	}
 
@@ -6482,7 +6483,7 @@ var siemblitz = []
 		for (k = x_max[g]; k >= x_min[g]; k--)
 			for (t = y_max[g]; t >= y_min[g]; t--) {
 				var l = 4 * (t * mapwidth + k);
-				pixel.hW(g, l) && (pixel.hX(l), land[g]--)
+				pixel.strong_isowner(g, l) && (pixel.hX(l), land[g]--)
 			}
 	}
 
@@ -6501,9 +6502,9 @@ var siemblitz = []
 			for (g = alivecount - 1; 0 <= g; g--) {
 				var x = t[g];
 				if (!(x >= playercount)) {
-					var n = Math.max(ak(l[x], 4), 2048);
+					var n = Math.max(divideandfloor(l[x], 4), 2048);
 					var z = Math.max(aq.t3(x), 100);
-					k[x] += ak(z * n, 1E4);
+					k[x] += divideandfloor(z * n, 1E4);
 					k[x] > n && (k[x] = n)
 				}
 			}
@@ -6652,7 +6653,7 @@ var siemblitz = []
 		this.yx = function () {
 			n = 512;
 			x = new Uint16Array(n);
-			for (var z = 0; z < n; z++) x[z] = 100 + bd(ak(25600 * z, n - 4), 9)
+			for (var z = 0; z < n; z++) x[z] = 100 + bd(divideandfloor(25600 * z, n - 4), 9)
 		};
 		this.ro = function () {
 			return l
@@ -6661,9 +6662,9 @@ var siemblitz = []
 			if (0 >= --t) {
 				t = g;
 				var z, y = troops[myid];
-				singleplayer && !teamgame && 0 !== isalive[0] && 0 === dl.dm[0].b5 && (troops[0] += ak(land[0], 6));
+				singleplayer && !teamgame && 0 !== isalive[0] && 0 === dl.dm[0].b5 && (troops[0] += divideandfloor(land[0], 6));
 				for (z = alivecount - 1; 0 <= z; z--) {
-					var A = ak(aq.t3(entitiesalive[z]) * troops[entitiesalive[z]], 1E4);
+					var A = divideandfloor(aq.t3(entitiesalive[z]) * troops[entitiesalive[z]], 1E4);
 					troops[entitiesalive[z]] += 1 > A ? 1 : A;
 					aq.ar(entitiesalive[z])
 				}
@@ -6677,13 +6678,13 @@ var siemblitz = []
 			}
 		};
 		this.t3 = function (z) {
-			var y = x[ak((n - 1) * land[z], iu)];
+			var y = x[divideandfloor((n - 1) * land[z], iu)];
 			if (1920 > bw.dM()) {
-				var A = ak(100 * (13440 - 6 * bw.dM()), 1920);
+				var A = divideandfloor(100 * (13440 - 6 * bw.dM()), 1920);
 				y = A > y ? A : y
 			}
 			A = this.dB(z);
-			troops[z] > A && (y -= ak(2 * y * (troops[z] - A), A));
+			troops[z] > A && (y -= divideandfloor(2 * y * (troops[z] - A), A));
 			return 0 > y ? 0 : 700 < y ? 700 : y
 		};
 		this.dB = function (z) {
@@ -6823,11 +6824,11 @@ var siemblitz = []
 		}
 
 		function y(O, T, Y, Z) {
-			return pixel.hW(O, 4 * (Y * mapwidth + T)) && pixel.hW(O, 4 * ((Y + Z - 1) * mapwidth + T))
+			return pixel.strong_isowner(O, 4 * (Y * mapwidth + T)) && pixel.strong_isowner(O, 4 * ((Y + Z - 1) * mapwidth + T))
 		}
 
 		function A(O, T, Y, Z) {
-			return pixel.hW(O, 4 * (Y * mapwidth + T)) && pixel.hW(O, 4 * (Y *
+			return pixel.strong_isowner(O, 4 * (Y * mapwidth + T)) && pixel.strong_isowner(O, 4 * (Y *
 				mapwidth + T + Z - 1))
 		}
 		var B, C, F, E, H, K, J, D, L, I, N, G, M, Q, S, P, U, W, X, V, pa, ba, da, qa, R;
@@ -7127,7 +7128,7 @@ var siemblitz = []
 			for (g = k.length - 1; 0 <= g; g--) {
 				var t = k[g];
 				if (aW.d5(t)) {
-					var l = ak(40 * troops[t], 100);
+					var l = divideandfloor(40 * troops[t], 100);
 					60 > l ||
 						(0 === borderpixels[t].length ? !d6.d7(t, 2) && teamgame && dA(t, l, 0, 0) : teamgame ? dL(t, l) : dT(t, l))
 				}
@@ -7237,7 +7238,7 @@ var siemblitz = []
 	}
 
 	function a0k() {
-		for (var g, k = alivecount - 1; 0 <= k; k--) land[entitiesalive[k]] <= ak(hJ[entitiesalive[k]], 4) ? 1E3 >= land[entitiesalive[k]] && (2 !== isalive[entitiesalive[k]] || 0 === land[entitiesalive[k]]) && fa(entitiesalive[k]) : land[entitiesalive[k]] >= hJ[entitiesalive[k]] ? hJ[entitiesalive[k]] = land[entitiesalive[k]] : (g = ak(hJ[entitiesalive[k]] - land[entitiesalive[k]], 1E3), hJ[entitiesalive[k]] -= 1 > g ? 1 : g)
+		for (var g, k = alivecount - 1; 0 <= k; k--) land[entitiesalive[k]] <= divideandfloor(hJ[entitiesalive[k]], 4) ? 1E3 >= land[entitiesalive[k]] && (2 !== isalive[entitiesalive[k]] || 0 === land[entitiesalive[k]]) && fa(entitiesalive[k]) : land[entitiesalive[k]] >= hJ[entitiesalive[k]] ? hJ[entitiesalive[k]] = land[entitiesalive[k]] : (g = divideandfloor(hJ[entitiesalive[k]] - land[entitiesalive[k]], 1E3), hJ[entitiesalive[k]] -= 1 > g ? 1 : g)
 	}
 
 	function ic() {
@@ -7368,8 +7369,8 @@ var siemblitz = []
 			var t = [35, 330];
 			this.dr = 0;
 			this.ds = [0, 0, 0, 0, 0, 0];
-			playercount <= k[0] ? (this.dr = t[0] - playercount, this.ds[1] = t[1] - ak(t[1] * playercount, k[0]), this.ds[0] = 512 - this.ds[1] - t[0]) : playercount <= k[1] ? (this.dr = t[0] - k[0] - ak((t[0] - k[0]) * (playercount - k[0]), k[1] - k[0]), this.ds[0] = 512 - this.dr - playercount) : playercount <= k[2] ? (this.ds[0] = 512 - k[1] - ak((512 - k[1]) * (playercount - k[1]), k[2] - k[1]), this.ds[1] = 512 - playercount - this.ds[0]) : playercount <= k[3] ? (this.ds[1] = 512 - k[2] - ak((512 - k[2]) * (playercount - k[2]), k[3] - k[2]),
-				this.ds[2] = 512 - playercount - this.ds[1]) : playercount <= k[4] ? (this.ds[2] = 512 - k[3] - ak((512 - k[3]) * (playercount - k[3]), k[4] - k[3]), this.ds[3] = 512 - playercount - this.ds[2]) : playercount <= k[5] ? (this.ds[3] = 512 - k[4] - ak((512 - k[4]) * (playercount - k[4]), k[5] - k[4]), this.ds[4] = 512 - playercount - this.ds[3]) : playercount <= k[6] ? (this.ds[4] = 512 - k[5] - ak((512 - k[5]) * (playercount - k[5]), k[6] - k[5]), this.ds[5] = 512 - playercount - this.ds[4]) : this.ds[5] = 512 - playercount;
+			playercount <= k[0] ? (this.dr = t[0] - playercount, this.ds[1] = t[1] - divideandfloor(t[1] * playercount, k[0]), this.ds[0] = 512 - this.ds[1] - t[0]) : playercount <= k[1] ? (this.dr = t[0] - k[0] - divideandfloor((t[0] - k[0]) * (playercount - k[0]), k[1] - k[0]), this.ds[0] = 512 - this.dr - playercount) : playercount <= k[2] ? (this.ds[0] = 512 - k[1] - divideandfloor((512 - k[1]) * (playercount - k[1]), k[2] - k[1]), this.ds[1] = 512 - playercount - this.ds[0]) : playercount <= k[3] ? (this.ds[1] = 512 - k[2] - divideandfloor((512 - k[2]) * (playercount - k[2]), k[3] - k[2]),
+				this.ds[2] = 512 - playercount - this.ds[1]) : playercount <= k[4] ? (this.ds[2] = 512 - k[3] - divideandfloor((512 - k[3]) * (playercount - k[3]), k[4] - k[3]), this.ds[3] = 512 - playercount - this.ds[2]) : playercount <= k[5] ? (this.ds[3] = 512 - k[4] - divideandfloor((512 - k[4]) * (playercount - k[4]), k[5] - k[4]), this.ds[4] = 512 - playercount - this.ds[3]) : playercount <= k[6] ? (this.ds[4] = 512 - k[5] - divideandfloor((512 - k[5]) * (playercount - k[5]), k[6] - k[5]), this.ds[5] = 512 - playercount - this.ds[4]) : this.ds[5] = 512 - playercount;
 			t = this.dr;
 			for (k = 0; 6 > k; k++) t += this.ds[k];
 			if (t > botcount) {
@@ -7573,8 +7574,8 @@ var siemblitz = []
 	}
 
 	function a27(g, k, t, l) {
-		500 > k ? l[g] = ak(l[g] * k * 2, 1E3) : 500 < k && (l[g] += ak(2 * (1E4 - l[g]) * (k - 500), 1E3));
-		l[g] += ak(t * (10 * k - l[g]), 1E3)
+		500 > k ? l[g] = divideandfloor(l[g] * k * 2, 1E3) : 500 < k && (l[g] += divideandfloor(2 * (1E4 - l[g]) * (k - 500), 1E3));
+		l[g] += divideandfloor(t * (10 * k - l[g]), 1E3)
 	}
 
 	function kA() {
@@ -7687,7 +7688,7 @@ var siemblitz = []
 		this.jB = function() {
 			var k, t = 0;
 			var l = mapheight * mapwidth * 4;
-			var x = pixel_rgba,
+			var x = pixel_rgbv,
 				n = wc;
 			for (k = mapwidth - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
 			l = 4 * mapwidth;
@@ -7697,7 +7698,7 @@ var siemblitz = []
 			this.my = 0;
 			if (a1V(mt)) {
 				n = 0;
-				l = pixel_rgba;
+				l = pixel_rgbv;
 				var z = wc;
 				for (x = mapwidth * mapheight - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (n++, l[k + 2] = 3);
 				jA.my = n
@@ -7873,7 +7874,7 @@ var siemblitz = []
 			return g[k]
 		}
 	}
-	var hd, pixel_rgba, jG, jH;
+	var hd, pixel_rgbv, jG, jH;
 
 	function j9() {
 		void 0 === hd && (hd = document.createElement("canvas"));
@@ -7883,7 +7884,7 @@ var siemblitz = []
 			alpha: !0
 		});
 		jH = jG.getImageData(0, 0, mapwidth, mapheight);
-		pixel_rgba = jH.data
+		pixel_rgbv = jH.data
 	}
 
 	function kC() {
@@ -7902,10 +7903,10 @@ var siemblitz = []
 		function t(I, N) {
 			var G = I - C[N - 1];
 			if (0 !== G) {
-				var M = 1 + ak(Math.abs(G), N - 1);
+				var M = 1 + divideandfloor(Math.abs(G), N - 1);
 				M = 0 > G ? -M : M;
 				C[N - 1] = I;
-				var Q = N - 1 - ak(Math.abs(G), Math.abs(M));
+				var Q = N - 1 - divideandfloor(Math.abs(G), Math.abs(M));
 				Q = 1 > Q ? 1 : Q > N - 2 ? N - 2 : Q;
 				for (var S = N - 2; S >= Q; S--) C[S] += G - (N - 1 - S) * M;
 				if (0 > G)
@@ -7978,7 +7979,7 @@ var siemblitz = []
 				I = F.length - 1;
 				for (N = I - 1; 0 <= N; N--) E[N] > E[I] && (I = N);
 				if (5 > E[I]) break a;
-				N = F[I] + ak(E[I], 2);
+				N = F[I] + divideandfloor(E[I], 2);
 				if (H[I]) {
 					G = void 0;
 					var Q;
@@ -8023,7 +8024,7 @@ var siemblitz = []
 			}
 			for (I = 0; I < n; I++)
 				if (!K[I])
-					for (N = 0; N < z; N++) J[N] || (G = x[N * n + I - 1] + x[(N - 1) * n + I], M = 2, K[I + 1] && (M++, G += x[N * n + I + 1]), J[N + 1] && (M++, G += x[(N + 1) * n + I]), x[N * n + I] = ak(G, M))
+					for (N = 0; N < z; N++) J[N] || (G = x[N * n + I - 1] + x[(N - 1) * n + I], M = 2, K[I + 1] && (M++, G += x[N * n + I + 1]), J[N + 1] && (M++, G += x[(N + 1) * n + I]), x[N * n + I] = divideandfloor(G, M))
 		};
 		this.a1k = function () {
 			return x
@@ -8033,12 +8034,12 @@ var siemblitz = []
 		}
 	}
 
-	function ak(g, k) {
+	function divideandfloor(g, k) {
 		return Math.floor(g / k + 1 / (2 * k))
 	}
 
 	function xz(g, k) {
-		return 0 <= g ? ak(g, k) : -ak(-g, k)
+		return 0 <= g ? divideandfloor(g, k) : -divideandfloor(-g, k)
 	}
 
 	function cx(g) {
@@ -8058,7 +8059,7 @@ var siemblitz = []
 	}
 
 	function a2z(g, k) {
-		for (var t = ak(g + 1, 2), l = 0; l < k; l++) t = ak(t + ak(g, t), 2);
+		for (var t = divideandfloor(g + 1, 2), l = 0; l < k; l++) t = divideandfloor(t + divideandfloor(g, t), 2);
 		return t
 	}
 
@@ -8301,7 +8302,7 @@ var siemblitz = []
 						C < A && (A = C, y = B)
 					}
 					g = x[y]
-				} else g = borderwaterpixels[k][ak(l * borderwaterpixels[k].length, 21)];
+				} else g = borderwaterpixels[k][divideandfloor(l * borderwaterpixels[k].length, 21)];
 				a: {
 					B = g; y = t; x = pixel.click_x(B); z = pixel.click_y(B); n = pixel.click_x(y); y = pixel.click_y(y); A = Math.abs(n -
 						x) + Math.abs(y - z);
@@ -8433,14 +8434,14 @@ var siemblitz = []
 		var g, k;
 		this.bh = function () {
 			k = Array(101);
-			for (var t = k.length - 1; 0 <= t; t--) k[t] = ak(32768 * t, 100);
+			for (var t = k.length - 1; 0 <= t; t--) k[t] = divideandfloor(32768 * t, 100);
 			this.j7(0)
 		};
 		this.value = function (t) {
 			return k[t]
 		};
 		this.a0B = function () {
-			return ak(g - 1, 2)
+			return divideandfloor(g - 1, 2)
 		};
 		this.j7 = function (t) {
 			g = 2 * t % 32768 + 1
@@ -8449,7 +8450,7 @@ var siemblitz = []
 			return g = 167 * g % 32768
 		};
 		this.cX = function (t) {
-			return ak(t * this.random(), 32768)
+			return divideandfloor(t * this.random(), 32768)
 		};
 		this.dH = function (t) {
 			return 0 !== t && this.random() < this.value(t)
@@ -8480,7 +8481,7 @@ var siemblitz = []
 				r = g2;
 				s = c3;
 				ou = qJ(r, s);
-				bi = ak(s + r, 2);
+				bi = divideandfloor(s + r, 2);
 				if (5 <= d) {
 					var B = e.loadNumber(23);
 					var C = e.loadNumber(24);
@@ -8529,7 +8530,7 @@ var siemblitz = []
 		}
 
 		function k() {
-			pixel.y6(x, t) && pixel.y8(x)
+			pixel.strong_isboat(x, t) && pixel.y8(x)
 		}
 		var t, l, x, n, z, y, A, B, C, F, E;
 		this.d7 = function (H, K, J, D, L) {
@@ -8542,9 +8543,9 @@ var siemblitz = []
 			B = pixel.click_y(L);
 			n = x = pixel.ep(z, y);
 			F = aW.fJ(t, E); - 1 === F ? (k(), e8.an(t, E), H = !1) : (l = aW.ae(t, F), H = !0);
-			if (H && (k(), H = ak(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (as.at[15] += H), l <= landcost ? (t === myid && (as.at[15] += l), g(!1), H = !1) : (aW.bL(t, F, l), H = !0), H))
+			if (H && (k(), H = divideandfloor(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (as.at[15] += H), l <= landcost ? (t === myid && (as.at[15] += l), g(!1), H = !1) : (aW.bL(t, F, l), H = !0), H))
 				if (H = pixel.ep(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? H + offset[A > z ? 1 : 3] : H + offset[B > y ? 2 : 0], z = pixel.click_x(x), y = pixel.click_y(x),
-					e8.fo(C, x), H = pixel.canownpixel(x) ? !1 : !0, H) pixel.iswater(x) && pixel.yB(x, t);
+					e8.fo(C, x), H = pixel.canownpixel(x) ? !1 : !0, H) pixel.iswater(x) && pixel.changetoboat(x, t);
 				else a: {
 					if (pixel.isneutral(x)) H = maxentities;
 					else {
@@ -8579,7 +8580,7 @@ var siemblitz = []
 			var y = a1W(mt) ? !0 : t = !1;
 			if (y) k = null;
 			else {
-				g = ak(96, 4);
+				g = divideandfloor(96, 4);
 				if (1 === mt) {
 					var A = 0;
 					var B = 160
@@ -8725,7 +8726,7 @@ var siemblitz = []
 		this.a4J = function () {
 			this.a4F();
 			this.a4I(0);
-			this.ln = 1 + ak(this.cN, 2);
+			this.ln = 1 + divideandfloor(this.cN, 2);
 			for (var g = 1; g < this.ln; g++) this.a4C[g] = this.a4C[2 * g], this.rf[g] = this.rf[2 * g], this.t2[g] = this.t2[2 * g], this.a4I(g);
 			this.a4D *=
 				2
@@ -8776,8 +8777,8 @@ var siemblitz = []
 			if (!this.ku) return !1;
 			var t = g,
 				l = k;
-			g -= ak(g2 - this.bt, 2);
-			k -= ak(c3 - this.co, 2);
+			g -= divideandfloor(g2 - this.bt, 2);
+			k -= divideandfloor(c3 - this.co, 2);
 			if (0 > g || 0 > k || g >= this.bt || k >= this.co) {
 				if (1 < fe.bz(t, l)) return !0;
 				this.kx();
@@ -8792,7 +8793,7 @@ var siemblitz = []
 		};
 		this.lV = function (g) {
 			if (this.ku && this.a4N) {
-				g -= ak(g2 - this.bt, 2);
+				g -= divideandfloor(g2 - this.bt, 2);
 				var k = this.a4M;
 				this.a4M = (g - 2 * this.ho - this.u1) / this.u2;
 				if (0 <= this.a4M && 1 >= this.a4M || 0 <= k && 1 >= k) bw.bx = !0;
@@ -8824,8 +8825,8 @@ var siemblitz = []
 			this.ku && this.nB()
 		};
 		this.nB = function () {
-			var g = ak(g2 - this.bt, 2),
-				k = ak(c3 - this.co, 2);
+			var g = divideandfloor(g2 - this.bt, 2),
+				k = divideandfloor(c3 - this.co, 2);
 			c9.setTransform(1, 0, 0, 1, g, k);
 			c9.fillStyle = hi;
 			c9.fillRect(0, 0, this.bt, this.co);
@@ -9105,7 +9106,7 @@ var siemblitz = []
 			var z;
 			var y = this.iW.length - 1;
 			var A =
-				ak(playercount, iy);
+				divideandfloor(playercount, iy);
 			0 < playercount % iy && A++;
 			var B = new Uint8Array(y + 1);
 			for (z = y; 1 <= z; z--) B[this.iW[z]] = z;
@@ -9354,7 +9355,7 @@ var siemblitz = []
 		}
 
 		function k(x, n) {
-			for (var z = 0, y, A, B = l; B < l + n; B++) y = ak(B, 8), A = 7 - B % 8, z |= (x[y] >> A & 1) << l + n - B - 1;
+			for (var z = 0, y, A, B = l; B < l + n; B++) y = divideandfloor(B, 8), A = 7 - B % 8, z |= (x[y] >> A & 1) << l + n - B - 1;
 			l += n;
 			return z
 		}
@@ -9601,11 +9602,11 @@ var siemblitz = []
 		}
 
 		function t(n) {
-			return ak(n, 8) + (0 < n % 8 ? 1 : 0)
+			return divideandfloor(n, 8) + (0 < n % 8 ? 1 : 0)
 		}
 
 		function l(n, z, y) {
-			for (var A, B, C = x; C < x + z; C++) A = ak(C, 8), B = 7 - C % 8, n[A] |= (y >> z - (C - x + 1) & 1) << B;
+			for (var A, B, C = x; C < x + z; C++) A = divideandfloor(C, 8), B = 7 - C % 8, n[A] |= (y >> z - (C - x + 1) & 1) << B;
 			x += z
 		}
 		var x;
