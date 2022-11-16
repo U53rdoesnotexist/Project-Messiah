@@ -702,7 +702,6 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 				fullsend_percentage[relative_id] !== t[relative_id] && (fullsend_percentage[relative_id] += fullsend_percentage[relative_id] < t[relative_id] ? l[relative_id] : -l[relative_id], fullsend_percentage[relative_id] = Math.abs(fullsend_percentage[relative_id] - t[relative_id]) <= l[relative_id] ? t[relative_id] : fullsend_percentage[relative_id]);
 				bot_timing[relative_id] = strange_divide_floor(x[relative_id], 10);
 				var id = relative_id + playercount;
-				console.log('yo')
 				d3(id, strange_divide_floor(fullsend_percentage[relative_id] * troops[id], 1E3))
 			}
 		}
@@ -5961,8 +5960,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			if (0 >= n || n >= z) return k(), jU.v3(3266), !0;
 			if (o(n)) return k(), jU.v3(3231), !0;
 			k();
-			5 <= d ? jU.v3(3232) : (jU.v3(3265), vA.ku = !0,
-				vA.bk = -1);
+			5 <= d ? jU.v3(3232) : (jU.v3(3265), vA.ku = !0, vA.bk = -1);
 			return !0
 		}
 
@@ -6300,9 +6298,9 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			z[4] = r < s ? 0 : 1;
 			z[5] = 0;
 			z[6] = "000";
-			z[7] = "0";
-			z[8] = "0";
-			z[9] = "0";
+			z[7] = "0"; // "333333333333333333333333333333333333333333333333330000" for all emojis
+			z[8] = "000000"; //000000 - 646464 Black - White
+			z[9] = "463736"; // account ulk, add 1-10 behind, zor: 514043
 			f.y()
 		}
 
