@@ -1,17 +1,17 @@
-//merge was successful 2
 var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
-var nickname, land, troops, borderpixels, offset, timingbot, attacks;
-var mapwidth, mapheight;
+var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
+var bot_timing, myattacks;
+var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 
-function game() {
+//function game() {
 
 	function gameinit() {
 		tick = 0, cycle = 1;
 		if (playercount == 2) opponentid = myid === 0 ? 1 : 0
 		latency = singleplayer ? 0 : 8
 
-		//console.clear();
+		console.clear();
 		console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
 	}
 
@@ -23,8 +23,18 @@ function game() {
 			cycle += 1;
 			
 			console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
+
 		}
-		
+
+	}
+
+	function check_spawn() {
+		if (spawning_percentage_left >= 0.99 && land[myid] === 0) multi.chooselocation(1E3, Math.random()*mapheight, Math.random()*mapwidth) //Checks if it is time to spawn
+	}
+
+	function emoji_spam() {
+		const nerds = nickname.filter(nick => nick.includes('[') && !nick.includes('[Bot]')), ok = Math.random()*nerds.length;
+		multi.message_emojis([0,43,44][Math.floor(Math.random()*3)], nickname.findIndex(nick => nick === nerds[Math.floor(Math.random()*nerds.length)]));
 	}
 
 	function a() {
@@ -123,28 +133,28 @@ function game() {
 	function aC() {
 		b ? location.reload() : 7 <= d ? e.setState(5) : location.reload()
 	}
-	var aD, aE, aF, aG, aH, aI, aJ, aK, aL, aM, aO, aP;
+	var aD, last_action_owner, last_remaining_troops, last_remaining_troops_per_border_length, last_action_target, last_border_length, aJ, last_border_land_pixels, last_gained_land, last_inner_pixels, occupiable_pixels, aP;
 
 	function aQ() {
-		aI = 0;
+		last_border_length = 0;
 		aJ = 2048;
-		aK = new Uint32Array(4 * aJ);
-		aL = 0;
-		aM = new Uint32Array(aJ);
+		last_border_land_pixels = new Uint32Array(4 * aJ);
+		last_gained_land = 0;
+		last_inner_pixels = new Uint32Array(aJ);
 		offset = new Int32Array(4);
 		offset[0] = -4 * mapwidth;
 		offset[1] = 4;
 		offset[2] = -offset[0];
 		offset[3] = -offset[1];
-		aO = new Uint8Array(mapwidth * mapheight)
+		occupiable_pixels = new Uint8Array(mapwidth * mapheight)
 	}
 
 	function aT(g) {
-		aE = g;
+		last_action_owner = g;
 		aP = !1;
 		aU();
 		aV();
-		for (g = aW.aX(aE) - 1; 0 <= g; g--) 0 === aW.aY(aE, g) && (aD = g, aZ());
+		for (g = attacks.currentattackcount(last_action_owner) - 1; 0 <= g; g--) 0 === attacks.boatid(last_action_owner, g) && (aD = g, aZ())
 		aP && aa()
 	}
 
@@ -154,144 +164,236 @@ function game() {
 	}
 
 	function aZ() {
-		aH = aW.ad(aE, aD);
-		aF = aW.ae(aE, aD);
+		last_action_target = attacks.target(last_action_owner, aD);
+		last_remaining_troops = attacks.remaining(last_action_owner, aD);
 		af();
-		0 === aI ? ag() : (ah(), ai() ? aj() : ag())
+		0 === last_border_length ? refund() : (ah(), canattackproceed() ? aj() : refund())
 	}
 
-	function ai() {
-		aG = ak(aF, aI);
-		return aG > al
+	function canattackproceed() {
+		last_remaining_troops_per_border_length = strange_divide_floor(last_remaining_troops, last_border_length);
+		return last_remaining_troops_per_border_length > neutral_landcost
 	}
 
 	function ah() {
-		var g;
-		for (g = aI - 1; 0 <= g; g--) aO[ak(aK[g], 4)] = 0
+		var index;
+		for (index = last_border_length - 1; 0 <= index; index--) occupiable_pixels[strange_divide_floor(last_border_land_pixels[index], 4)] = 0
 	}
 
-	function ag() {
-		1 === aW.aX(aE) && am.an(aE);
-		if (aE !== myid) troops[aE] += aF, aq.ar(aE);
+	function refund() {
+		1 === attacks.currentattackcount(last_action_owner) && am.an(last_action_owner);
+		if (last_action_owner !== myid) troops[last_action_owner] += last_remaining_troops, aq.ar(last_action_owner);
 		else {
-			var g = troops[aE];
-			troops[aE] += aF;
-			aq.ar(aE);
-			as.at[13] -= troops[aE] - g
+			var g = troops[last_action_owner];
+			troops[last_action_owner] += last_remaining_troops;
+			aq.ar(last_action_owner);
+			as.at[13] -= troops[last_action_owner] - g
 		}
-		aW.au(aE, aD)
+		attacks.au(last_action_owner, aD)
 	}
 
 	function aU() {
-		var g = aw[aE].length;
+		var g = temp_borderpixels[last_action_owner].length;
 		g = g > aJ ? aJ : g;
-		aL = 0;
-		for (--g; 0 <= g; g--) aM[aL++] = aw[aE][g]
+		last_gained_land = 0;
+		for (--g; 0 <= g; g--) last_inner_pixels[last_gained_land++] = temp_borderpixels[last_action_owner][g]
 	}
 
 	function aV() {
 		var g;
-		for (g = aw[aE].length - 1; 0 <= g; g--) ax.ay(aw[aE][g]) && ax.az(aw[aE][g], aE);
-		aw[aE] = []
+		for (g = temp_borderpixels[last_action_owner].length - 1; 0 <= g; g--) pixel.canownpixel(temp_borderpixels[last_action_owner][g]) && pixel.changetoborder(temp_borderpixels[last_action_owner][g], last_action_owner);
+		temp_borderpixels[last_action_owner] = []
 	}
 
 	function af() {
-		aI = 0;
-		aH === maxentities ? b1() : b2()
+		last_border_length = 0;
+		last_action_target === maxentities ? b1() : b2()
+	}
+
+	function bN() {
+		for (var g, k, t = last_border_length - 1; 0 <= t; t--) g = strange_divide_floor(last_border_land_pixels[t], 4) % mapwidth, k = strange_divide_floor(last_border_land_pixels[t], 4 * mapwidth), x_min[last_action_owner] = x_min[last_action_owner] > g ? g : x_min[last_action_owner], y_min[last_action_owner] = y_min[last_action_owner] > k ? k : y_min[last_action_owner], x_max[last_action_owner] = x_max[last_action_owner] < g ? g : x_max[last_action_owner], y_max[last_action_owner] = y_max[last_action_owner] < k ? k : y_max[last_action_owner]
+	}
+
+	function ab() {
+		var g = temp_borderpixels[last_action_owner].length,
+			k;
+		var t = g - 1;
+		a: for (; 0 <= t; t--) {
+			for (k = 3; 0 <= k; k--) {
+				var l = temp_borderpixels[last_action_owner][t] + offset[k];
+				if (pixel.isneutral(l) || pixel.isentitypixel(l) && pixel.pixelowner(l) !== last_action_owner) {
+					pixel.changetoattacking(temp_borderpixels[last_action_owner][t], last_action_owner);
+					continue a
+				}
+			}
+			temp_borderpixels[last_action_owner][t] = temp_borderpixels[last_action_owner][g - 1];
+			temp_borderpixels[last_action_owner].pop();
+			g--
+		}
+	}
+
+	function ac() {
+		var g = borderlandpixels[last_action_owner].length, k, t, l = g - 1;
+		a: for (; 0 <= l; l--) {
+			var x = t = !1;
+			for (k = 3; 0 <= k; k--) {
+				var n = borderlandpixels[last_action_owner][l] + offset[k];
+				if (pixel.canattackpixel(n, last_action_owner)) continue a;
+				x = x || pixel.iswater(n);
+				t = t || pixel.ismountain(n)
+			}
+			x ? borderwaterpixels[last_action_owner].push(borderlandpixels[last_action_owner][l]) : t ? bordermountainpixel[last_action_owner].push(borderlandpixels[last_action_owner][l]) : pixel.changetoinner(borderlandpixels[last_action_owner][l], last_action_owner);
+			borderlandpixels[last_action_owner][l] = borderlandpixels[last_action_owner][g - 1];
+			borderlandpixels[last_action_owner].pop();
+			g--;
+		}
+	}
+
+	function bC() {
+		land[last_action_target] -= last_border_length
+	}
+
+	function bD(g) {
+		for (var k = g.length, t = k - 1; 0 <= t; t--) pixel.strong_isowner(last_action_target, g[t]) || (g[t] = g[k - 1], g.pop(), k--)
+	}
+
+	function bG(g) {
+		for (var k = g.length, t = k - 1; 0 <= t; t--) !pixel.strong_isowner(last_action_target, g[t]) && pixel.canownpixel(g[t]) && (g[t] = g[k - 1], g.pop(), k--)
+	}
+
+	function bH(g) {
+		for (var k = g.length, t, l, x = k - 1; 0 <= x; x--)
+			for (t = 3; 0 <= t; t--)
+				if (l = g[x] + offset[t], pixel.canattackpixel(l, last_action_target)) {
+					borderlandpixels[last_action_target].push(g[x]);
+					g[x] = g[k - 1];
+					g.pop();
+					k--;
+					break
+				}
+	}
+
+	function bJ() { 
+		for (var g, pixelcoords, t = last_border_length - 1; 0 <= t; t--)
+			for (g = 3; 0 <= g; g--) pixelcoords = last_border_land_pixels[t] + offset[g], pixel.isowner(last_action_target, pixelcoords) && pixel.innerpixel(pixelcoords) && (borderlandpixels[last_action_target].push(pixelcoords), pixel.changetoborder(pixelcoords, last_action_target))
+	}
+
+	function update_minmax() {
+		var g;
+		a: for (; y_min[last_action_target] < y_max[last_action_target];) {
+			for (g = x_max[last_action_target]; g >= x_min[last_action_target]; g--)
+				if (pixel.strong_isowner(last_action_target, 4 * (y_min[last_action_target] * mapwidth + g))) break a;
+			y_min[last_action_target]++
+		}
+		a: for (; y_min[last_action_target] < y_max[last_action_target];) {
+			for (g = x_max[last_action_target]; g >= x_min[last_action_target]; g--)
+				if (pixel.strong_isowner(last_action_target, 4 * (y_max[last_action_target] * mapwidth + g))) break a;
+			y_max[last_action_target]--
+		}
+		a: for (; x_min[last_action_target] < x_max[last_action_target];) {
+			for (g = y_max[last_action_target]; g >= y_min[last_action_target]; g--)
+				if (pixel.strong_isowner(last_action_target, 4 * (g * mapwidth + x_min[last_action_target]))) break a;
+			x_min[last_action_target]++
+		}
+		a: for (; x_min[last_action_target] < x_max[last_action_target];) {
+			for (g = y_max[last_action_target]; g >= y_min[last_action_target]; g--)
+				if (pixel.strong_isowner(last_action_target, 4 * (g * mapwidth + x_max[last_action_target]))) break a;
+			x_max[last_action_target]--
+		}
 	}
 
 	function b2() {
 		var g, k;
 		for (g = 3; 0 <= g; g--)
-			for (k = aL - 1; 0 <= k; k--) {
-				var t = aM[k] + offset[g];
-				var l = ak(t, 4);
-				0 === aO[l] && ax.b6(t) && ax.b7(t) === aH && (aO[l] = 1, aK[aI++] = t)
+			for (k = last_gained_land - 1; 0 <= k; k--) {
+				var t = last_inner_pixels[k] + offset[g];
+				var l = strange_divide_floor(t, 4);
+				0 === occupiable_pixels[l] && pixel.isentitypixel(t) && pixel.pixelowner(t) === last_action_target && (occupiable_pixels[l] = 1, last_border_land_pixels[last_border_length++] = t)
 			}
 	}
 
 	function b1() {
 		var g, k;
 		for (g = 3; 0 <= g; g--)
-			for (k = aL - 1; 0 <= k; k--) {
-				var t = aM[k] + offset[g];
-				var l = ak(t, 4);
-				0 === aO[l] && ax.b8(t) && (aO[l] = 1, aK[aI++] = t)
+			for (k = last_gained_land - 1; 0 <= k; k--) {
+				var t = last_inner_pixels[k] + offset[g];
+				var l = strange_divide_floor(t, 4);
+				0 === occupiable_pixels[l] && pixel.isneutral(t) && (occupiable_pixels[l] = 1, last_border_land_pixels[last_border_length++] = t)
 			}
 	}
 
 	function aj() {
-		b9() ? (bA(), aH !== maxentities && bB()) : ag()
+		b9() ? (bA(), last_action_target !== maxentities && bB()) : refund()
 	}
 
 	function bB() {
 		bC();
-		bD(borderpixels[aH]);
-		bD(bF[aH]);
-		bG(aw[aH]);
-		bH(bF[aH]);
-		bH(bI[aH]);
+		bD(borderlandpixels[last_action_target]);
+		bD(borderwaterpixels[last_action_target]);
+		bG(temp_borderpixels[last_action_target]);
+		bH(borderwaterpixels[last_action_target]);
+		bH(bordermountainpixel[last_action_target]);
 		bJ();
-		bK()
+		update_minmax()
 	}
 
 	function bA() {
 		aP = !0;
-		aW.bL(aE, aD, aF);
-		land[aE] += aI;
+		attacks.bL(last_action_owner, aD, last_remaining_troops);
+		land[last_action_owner] += last_border_length;
 		bN();
 		bO()
 	}
 
 	function b9() {
-		return aH === maxentities ? bP() : bQ()
+		return last_action_target === maxentities ? bP() : bQ()
 	}
 
 	function bQ() {
-		var g = aI * al,
+		var g = last_border_length * neutral_landcost,
 			k = bT(),
 			t = bV();
 		k = g + 2 * k + t;
-		var l = aG * aI;
-		if (l > k) return aF -= k, bY(k - g, t), !0;
-		aF -= l;
+		var l = last_remaining_troops_per_border_length * last_border_length;
+		if (l > k) return last_remaining_troops -= k, bY(k - g, t), !0;
+		last_remaining_troops -= l;
 		bY(l - g, t);
 		return !1
 	}
 
 	function bY(g, k) {
 		if (0 < k)
-			if (g >= k) aW.bZ(aH, aE, 0), g -= k;
+			if (g >= k) attacks.bZ(last_action_target, last_action_owner, 0), g -= k;
 			else {
-				aW.bZ(aH, aE, k - g);
+				attacks.bZ(last_action_target, last_action_owner, k - g);
 				return
-			} g = ak(g, 2);
-		troops[aH] = troops[aH] >= g ? troops[aH] - g : 0
+			} g = strange_divide_floor(g, 2);
+		troops[last_action_target] = troops[last_action_target] >= g ? troops[last_action_target] - g : 0
 	}
 
 	function bV() {
-		return aW.ba(aH, aE)
+		return attacks.ba(last_action_target, last_action_owner)
 	}
 
 	function bT() {
-		return ak(aI * troops[aH], 1 + bb() * bc())
+		return strange_divide_floor(last_border_length * troops[last_action_target], 1 + bb() * bc())
 	}
 
 	function bb() {
-		return Math.floor(2 + bd(ak(land[aH], 100), 8))
+		return Math.floor(2 + bd(strange_divide_floor(land[last_action_target], 100), 8))
 	}
 
 	function bc() {
-		return borderpixels[aH].length + ak(bF[aH].length + bI[aH].length, 50)
+		return borderlandpixels[last_action_target].length + strange_divide_floor(borderwaterpixels[last_action_target].length + bordermountainpixel[last_action_target].length, 50)
 	}
 
 	function bP() {
-		aF -= aI * al;
+		last_remaining_troops -= last_border_length * neutral_landcost;
 		return !0
 	}
 
 	function bO() {
-		for (var g = aI - 1; 0 <= g; g--) aw[aE].push(aK[g]), borderpixels[aE].push(aK[g]), ax.az(aK[g], aE)
+		for (var g = last_border_length - 1; 0 <= g; g--) temp_borderpixels[last_action_owner].push(last_border_land_pixels[g]), borderlandpixels[last_action_owner].push(last_border_land_pixels[g]), pixel.changetoborder(last_border_land_pixels[g], last_action_owner)
 	}
 
 	function be() {
@@ -348,49 +450,49 @@ function game() {
 	}
 
 	function cD(g, k, t, l) {
-		var x = ak(3 * troops[g], 256);
-		l -= l >= ak(troops[g], 2) ? x : 0;
-		cH(t, g);
-		aW.cI(g, l, k);
+		var x = strange_divide_floor(3 * troops[g], 256);
+		l -= l >= strange_divide_floor(troops[g], 2) ? x : 0;
+		border_changetoattacking(t, g);
+		attacks.cI(g, l, k);
 		troops[g] -= l + x;
 		am.cJ(g, !1)
 	}
 
-	function cK(g, k) {
-		var t, l;
-		for (t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (ax.cM(borderpixels[g][t]))
-				for (l = 3; 0 <= l; l--)
-					if (ax.b6(borderpixels[g][t] + offset[l]) && ax.b7(borderpixels[g][t] + offset[l]) === k) {
-						aw[g].push(borderpixels[g][t]);
+	function cK(id, pixelowner) {
+		var index, side;
+		for (index = borderlandpixels[id].length - 1; 0 <= index; index--)
+			if (pixel.stationaryborderpixel(borderlandpixels[id][index]))
+				for (side = 3; 0 <= side; side--)
+					if (pixel.isentitypixel(borderlandpixels[id][index] + offset[side]) && pixel.pixelowner(borderlandpixels[id][index] + offset[side]) === pixelowner) {
+						temp_borderpixels[id].push(borderlandpixels[id][index]);
 						break
 					}
 	}
 
-	function cH(g, k) {
-		for (var t = aw[k].length - 1; t >= g; t--) ax.cO(aw[k][t], k)
+	function border_changetoattacking(g, id) {
+		for (var index = temp_borderpixels[id].length - 1; index >= g; index--) pixel.changetoattacking(temp_borderpixels[id][index], id)
 	}
 
 	function cP(g) {
-		for (var k, t = borderpixels[g].length - 1; 0 <= t; t--)
-			if (ax.cM(borderpixels[g][t]))
+		for (var k, t = borderlandpixels[g].length - 1; 0 <= t; t--)
+			if (pixel.stationaryborderpixel(borderlandpixels[g][t]))
 				for (k = 3; 0 <= k; k--)
-					if (ax.b8(borderpixels[g][t] + offset[k])) {
-						aw[g].push(borderpixels[g][t]);
+					if (pixel.isneutral(borderlandpixels[g][t] + offset[k])) {
+						temp_borderpixels[g].push(borderlandpixels[g][t]);
 						break
 					}
 	}
 
 	function cQ(g, k) {
 		var t, l;
-		var x = borderpixels[g].length;
+		var x = borderlandpixels[g].length;
 		var n = 256 <= x ? 12 : 32 <= x ? 6 : 1;
 		x = x - 1 - cW.cX(n);
 		cY = 0;
 		a: for (; 0 <= x; x -= n)
 			for (l = 3; 0 <= l; l--) {
-				var z = ax.b8(borderpixels[g][x] + offset[l]) ? maxentities : ax.b7(borderpixels[g][x] + offset[l]);
-				if (z === maxentities || ax.b6(borderpixels[g][x] + offset[l]) && z !== g && (k || cZ(g, z))) {
+				var z = pixel.isneutral(borderlandpixels[g][x] + offset[l]) ? maxentities : pixel.pixelowner(borderlandpixels[g][x] + offset[l]);
+				if (z === maxentities || pixel.isentitypixel(borderlandpixels[g][x] + offset[l]) && z !== g && (k || cZ(g, z))) {
 					for (t = cY - 1; 0 <= t; t--)
 						if (ca[t] === z) continue a;
 					ca[cY] = z;
@@ -403,10 +505,10 @@ function game() {
 	function cc(g, k) {
 		var t, l;
 		cY = 0;
-		for (t = borderpixels[g].length - 1; 0 <= t; t--)
+		for (t = borderlandpixels[g].length - 1; 0 <= t; t--)
 			for (l = 3; 0 <= l; l--) {
-				var x = ax.b8(borderpixels[g][t] + offset[l]) ? maxentities : ax.b7(borderpixels[g][t] + offset[l]);
-				if (x === maxentities || ax.b6(borderpixels[g][t] + offset[l]) && x !== g && (k || cZ(g, x))) {
+				var x = pixel.isneutral(borderlandpixels[g][t] + offset[l]) ? maxentities : pixel.pixelowner(borderlandpixels[g][t] + offset[l]);
+				if (x === maxentities || pixel.isentitypixel(borderlandpixels[g][t] + offset[l]) && x !== g && (k || cZ(g, x))) {
 					ca[cY++] = x;
 					return
 				}
@@ -425,7 +527,7 @@ function game() {
 	function cf(g) {
 		var k, t;
 		for (k = cY - 1; 0 <= k; k--)
-			if (aW.cg(g, ca[k]))
+			if (attacks.cg(g, ca[k]))
 				for (cY--, t = k; t < cY; t++) ca[t] = ca[t + 1];
 		return 0 === cY
 	}
@@ -447,9 +549,9 @@ function game() {
 
 	function ck(g) {
 		var k, t = ca[0],
-			l = troops[t] + aW.ba(t, g);
+			l = troops[t] + attacks.ba(t, g);
 		for (k = cY - 1; 1 <= k; k--) {
-			var x = troops[ca[k]] + aW.ba(ca[k], g);
+			var x = troops[ca[k]] + attacks.ba(ca[k], g);
 			x < l && (t = ca[k], l = x)
 		}
 		return t
@@ -458,11 +560,11 @@ function game() {
 	function cn(g) {
 		var k = ca[0];
 		if (1 === cY) return k;
-		var t = ak(cr[g] + cs[g], 2),
-			l = ak(cu[g] + cv[g], 2),
-			x = cx(t - ak(cr[k] + cs[k], 2)) + cx(l - ak(cu[k] + cv[k], 2));
+		var t = strange_divide_floor(x_max[g] + x_min[g], 2),
+			l = strange_divide_floor(y_max[g] + y_min[g], 2),
+			x = cx(t - strange_divide_floor(x_max[k] + x_min[k], 2)) + cx(l - strange_divide_floor(y_max[k] + y_min[k], 2));
 		for (g = cY - 1; 1 <= g; g--) {
-			var n = cx(t - ak(cr[ca[g]] + cs[ca[g]], 2)) + cx(l - ak(cu[ca[g]] + cv[ca[g]], 2));
+			var n = cx(t - strange_divide_floor(x_max[ca[g]] + x_min[ca[g]], 2)) + cx(l - strange_divide_floor(y_max[ca[g]] + y_min[ca[g]], 2));
 			n < x && (x = n, k = ca[g])
 		}
 		return k
@@ -471,8 +573,13 @@ function game() {
 	function cy() {
 		return ca[cW.cX(cY)]
 	}
+
 	var cb, cY, ca, cz;
 
+	function cZ(g, k) {
+		return 0 === dO.dP[g] || dO.dP[g] !== dO.dP[k]
+	}
+	
 	function d0() {
 		cb = 8;
 		cY = 0;
@@ -483,19 +590,19 @@ function game() {
 		cz = teamgame ? new Uint8Array(maxentities) : null
 	}
 
-	function d3(g, k) {
-		teamgame && (cz[g] = 0);
-		if (aW.d5(g) && !(60 > k))
-			if (0 === borderpixels[g].length) d6.d7(g, d8.cF[g - playercount]) || (d8.d9(g - playercount, 200), dA(g, k, d8.cF[g - playercount], aq.dB(g)));
-			else if (!(0 < bF[g].length && cW.random() < cW.value(bF[g].length > borderpixels[g].length ? 7 : 3) && d6.d7(g, d8.cF[g - playercount]))) {
-				var t = aq.dB(g);
-				troops[g] > t && k < troops[g] - t && (k = troops[g] - t);
-				teamgame ? dC(g, k, d8.cF[g - playercount], t) : dD(g, k, d8.cF[g - playercount])
+	function d3(id, attackamount) {
+		teamgame && (cz[id] = 0);
+		if (attacks.notatmaxconcurrentattacks(id) && !(60 > attackamount))
+			if (0 === borderlandpixels[id].length) d6.d7(id, d8.cF[id - playercount]) || (d8.d9(id - playercount, 200), dA(id, attackamount, d8.cF[id - playercount], aq.dB(id)));
+			else if (!(0 < borderwaterpixels[id].length && cW.random() < cW.value(borderwaterpixels[id].length > borderlandpixels[id].length ? 7 : 3) && d6.d7(id, d8.cF[id - playercount]))) {
+				var t = aq.dB(id);
+				troops[id] > t && attackamount < troops[id] - t && (attackamount = troops[id] - t);
+				teamgame ? dC(id, attackamount, d8.cF[id - playercount], t) : dD(id, attackamount, d8.cF[id - playercount])
 			}
 	}
 
 	function dC(g, k, t, l) {
-		cQ(g, !1) || cc(g, !1) ? (cz[g] = 1, cf(g) || (cd() ? (dF(g, k), dG(g, maxentities, t)) : (cW.dH(d8.dI[t]) ? l = ck(g) : (ch() && cW.dH(d8.dK[t]) && cj(), l = cn(g)), dJ(g, k, l), dG(g, l, t)))) : 0 < bF[g].length && cW.random() < cW.value(60) && d6.d7(g, t) || (d8.d9(g - playercount, 200), dA(g, k, t, l))
+		cQ(g, !1) || cc(g, !1) ? (cz[g] = 1, cf(g) || (cd() ? (dF(g, k), dG(g, maxentities, t)) : (cW.dH(d8.dI[t]) ? l = ck(g) : (ch() && cW.dH(d8.dK[t]) && cj(), l = cn(g)), dJ(g, k, l), dG(g, l, t)))) : 0 < borderwaterpixels[g].length && cW.random() < cW.value(60) && d6.d7(g, t) || (d8.d9(g - playercount, 200), dA(g, k, t, l))
 	}
 
 	function dL(g, k) {
@@ -503,11 +610,11 @@ function game() {
 	}
 
 	function dG(g, k, t) {
-		3 <= t && 2142 < bw.dM() && (k === maxentities || troops[k] < ak(troops[g], 20)) && d8.d9(g - playercount, 25)
+		3 <= t && 2142 < bw.dM() && (k === maxentities || troops[k] < strange_divide_floor(troops[g], 20)) && d8.d9(g - playercount, 25)
 	}
 
 	function dA(g, k, t, l) {
-		if (0 !== dO.dP[g] && !(5 === t && troops[g] < l || 4 === t && troops[g] < ak(l, 2)))
+		if (0 !== dO.dP[g] && !(5 === t && troops[g] < l || 4 === t && troops[g] < strange_divide_floor(l, 2)))
 			for (t = cW.cX(alivecount), l = 0; l < alivecount; l++) {
 				var x = entitiesalive[(l + t) % alivecount];
 				if (dO.dP[x] === dO.dP[g] && 1 === cz[x]) {
@@ -527,34 +634,34 @@ function game() {
 	}
 
 	function dJ(g, k, t) {
-		if (ak(troops[g], 8) > troops[t]) {
-			var l = ak(11 * troops[t], 5);
+		if (strange_divide_floor(troops[g], 8) > troops[t]) {
+			var l = strange_divide_floor(11 * troops[t], 5);
 			k = k > l ? k : l
 		}
-		l = aw[g].length;
+		l = temp_borderpixels[g].length;
 		cK(g, t);
 		cD(g, t, l, k)
 	}
 
 	function dF(g, k) {
 		var t = maxentities,
-			l = aw[g].length;
+			l = temp_borderpixels[g].length;
 		cP(g);
-		return aw[g].length !== l ? (cD(g, t, l, k), !0) : !1
+		return temp_borderpixels[g].length !== l ? (cD(g, t, l, k), !0) : !1
 	}
-	var initial_bots_troops = [60, 74, 112, 200, 256, 512];
+	var dV = [60, 74, 112, 200, 256, 512];
 
 	function dW() {
-		var k, t, l, x, n;
-		this.difficulty = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
+		var fullsend_percentage, t, l, x, n;
+		this.dd = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
 		this.de = [97, 95, 93, 90, 87, 84];
 		this.dK = [98, 95, 90, 40, 20, 0];
 		this.df = [85, 70, 65, 30, 7, 3];
 		this.dI = [0, 0, 0, 0, 50, 90];
 		this.bh = function () {
 			var z;
-			timingbot = new Uint8Array(botcount);
-			k = new Uint16Array(botcount);
+			bot_timing = new Uint8Array(botcount);
+			fullsend_percentage = new Uint16Array(botcount);
 			t = new Uint16Array(botcount);
 			l = new Uint8Array(botcount);
 			this.cF = new Uint8Array(botcount);
@@ -572,8 +679,7 @@ function game() {
 				for (z = botcount - 1; 0 <= z; z--) this.cF[z] = y
 			}
 			for (z = botcount - 1; 0 <= z; z--) {
-				2 >= this.cF[z] ? (l[z] = 5, x[z] = n[z] = 1040, 0 === this.cF[z] ? (k[z] = 1E3, t[z] = 1E3) : 1 === this.cF[z] ? (k[z] = 1E3, t[z] = 920, x[z] = n[z] = 1100) : (k[z] = 1E3, t[z] = 870)) : 4 >= this.cF[z] ? (l[z] = 1 + cW.cX(20), n[z] = 250 + cW.cX(1501), x[z] = 500 + cW.cX(501), 3 === this.cF[z] ? (k[z] = 600 + cW.cX(101), t[z] = 300 + cW.cX(401)) : (k[z] = 300 + cW.cX(201), t[z] = 100 + cW.cX(201))) : (x[z] = 1E3, n[z] = 1E3, l[z] = 35 + cW.cX(16), k[z] = 400 + cW.cX(101), t[z] = 50 + cW.cX(101)), timingbot[z] = 1 + ak(x[z] * cW.random(),
-				10 * cW.value(100))
+				2 >= this.cF[z] ? (l[z] = 5, x[z] = n[z] = 1040, 0 === this.cF[z] ? (fullsend_percentage[z] = 1E3, t[z] = 1E3) : 1 === this.cF[z] ? (fullsend_percentage[z] = 1E3, t[z] = 920, x[z] = n[z] = 1100) : (fullsend_percentage[z] = 1E3, t[z] = 870)) : 4 >= this.cF[z] ? (l[z] = 1 + cW.cX(20), n[z] = 250 + cW.cX(1501), x[z] = 500 + cW.cX(501), 3 === this.cF[z] ? (fullsend_percentage[z] = 600 + cW.cX(101), t[z] = 300 + cW.cX(401)) : (fullsend_percentage[z] = 300 + cW.cX(201), t[z] = 100 + cW.cX(201))) : (x[z] = 1E3, n[z] = 1E3, l[z] = 35 + cW.cX(16), fullsend_percentage[z] = 400 + cW.cX(101), t[z] = 50 + cW.cX(101)), bot_timing[z] = 1 + strange_divide_floor(x[z] * cW.random(), 10 * cW.value(100))
 			}
 
 		};
@@ -588,21 +694,22 @@ function game() {
 				}
 		};
 		this.d9 = function (z, y) {
-			0 <= z && (timingbot[z] = y)
+			0 <= z && (bot_timing[z] = y)
 		};
-		this.d7 = function (z) {
-			if (0 === --timingbot[z]) {
-				x[z] !== n[z] && (x[z] += x[z] < n[z] ? 3 : -3);
-				k[z] !== t[z] && (k[z] += k[z] < t[z] ? l[z] : -l[z], k[z] = Math.abs(k[z] - t[z]) <= l[z] ? t[z] : k[z]);
-				timingbot[z] = ak(x[z], 10);
-				var y = z + playercount;
-				d3(y, ak(k[z] * troops[y], 1E3))
+		this.d7 = function (relative_id) {
+			if (0 === --bot_timing[relative_id]) {
+				x[relative_id] !== n[relative_id] && (x[relative_id] += x[relative_id] < n[relative_id] ? 3 : -3);
+				fullsend_percentage[relative_id] !== t[relative_id] && (fullsend_percentage[relative_id] += fullsend_percentage[relative_id] < t[relative_id] ? l[relative_id] : -l[relative_id], fullsend_percentage[relative_id] = Math.abs(fullsend_percentage[relative_id] - t[relative_id]) <= l[relative_id] ? t[relative_id] : fullsend_percentage[relative_id]);
+				bot_timing[relative_id] = strange_divide_floor(x[relative_id], 10);
+				var id = relative_id + playercount;
+				console.log('yo')
+				d3(id, strange_divide_floor(fullsend_percentage[relative_id] * troops[id], 1E3))
 			}
 		}
 	}
 
 	function dw() {
-		dx.d7();
+		newannouncements.d7();
 		dy.d7();
 		dz.e0();
 		e1.d7()
@@ -625,7 +732,7 @@ function game() {
 		eB.d7();
 		eC.d7();
 		eD.d7();
-		dx.d7();
+		newannouncements.d7();
 		eE.d7();
 		eF.d7();
 		eG.d7();
@@ -709,9 +816,9 @@ function game() {
 			l = 3;
 			a: {
 				for (var y = 40; 1 <= y; y--) {
-					x = cs[z] + ak(cW.random() * (cr[z] - cs[z] + 1), cW.value(100));
-					n = cv[z] + ak(cW.random() * (cu[z] - cv[z] + 1), cW.value(100));
-					var A = k(ax.ep(x, n));
+					x = x_min[z] + strange_divide_floor(cW.random() * (x_max[z] - x_min[z] + 1), cW.value(100));
+					n = y_min[z] + strange_divide_floor(cW.random() * (y_max[z] - y_min[z] + 1), cW.value(100));
+					var A = k(pixel.coordstopixel(x, n));
 					if (1 !== A) break a
 				}
 				A = 1
@@ -723,7 +830,7 @@ function game() {
 		}
 
 		function k(y) {
-			if (ax.ay(y) && (ax.b8(y) || ax.b7(y) !== z && cZ(z, ax.b7(y)))) {
+			if (pixel.canownpixel(y) && (pixel.isneutral(y) || pixel.pixelowner(y) !== z && cZ(z, pixel.pixelowner(y)))) {
 				if (en.cg(z, y)) return 2;
 				if (0 === l--) return 0
 			}
@@ -732,18 +839,18 @@ function game() {
 
 		function t(y, A) {
 			for (var B, C, F, E, H, K, J, D = y; D < y + 50 * A; D += A)
-				if (B = cs[z] - D, B = 1 > B ? 1 : B, C = cv[z] - D, C = 1 >
-					C ? 1 : C, F = cr[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = cu[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = ak(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(ax.ep(x, n)), 1 !== B) return B;
+				if (B = x_min[z] - D, B = 1 > B ? 1 : B, C = y_min[z] - D, C = 1 >
+					C ? 1 : C, F = x_max[z] + D, F = F >= mapwidth - 1 ? mapwidth - 2 : F, E = y_max[z] + D, E = E >= mapheight - 1 ? mapheight - 2 : E, J = strange_divide_floor(2 * cW.random() * (F - B + E - C), cW.value(100)), H = F - B, K = E - C, J <= H ? (x = B + J, n = C) : J <= H + K ? (x = F, n = C + J - H) : J <= 2 * H + K ? (x = B + J - H - K, n = E) : (x = B, n = C + J - 2 * H - K), B = k(pixel.coordstopixel(x, n)), 1 !== B) return B;
 			return 1
 		}
 		var l, x, n, z;
 		this.d7 = function (y, A) {
 			z = y;
-			if (0 === bF[z].length) return !1;
+			if (0 === borderwaterpixels[z].length) return !1;
 			if (g()) {
-				var B = ak(d8.df[A] * troops[z], 100);
+				var B = strange_divide_floor(d8.df[A] * troops[z], 100);
 				100 > B && 100 <= troops[z] && (B = 100);
-				if (100 <= B) return em(z, en.eo(), ax.ep(x, n), B)
+				if (100 <= B) return em(z, en.eo(), pixel.coordstopixel(x, n), B)
 			}
 			return !1
 		}
@@ -791,13 +898,12 @@ function game() {
 			0 < A && this.bh()
 		};
 		this.fA = function (y, A, B, C) {
-			0 !== isalive[y] && 2 !==
-				fH[k] && en.cg(y, ax.ep(B, C)) && em(y, en.eo(), ax.ep(B, C), ak(A * troops[y], 1E3)) && y === myid && (as.at[0] += A, as.at[1]++, as.at[2]++)
+			0 !== isalive[y] && 2 !== fH[k] && en.cg(y, pixel.coordstopixel(B, C)) && em(y, en.eo(), pixel.coordstopixel(B, C), strange_divide_floor(A * troops[y], 1E3)) && y === myid && (as.at[0] += A, as.at[1]++, as.at[2]++)
 		};
 		this.cancel = function (y, A) {
-			if (0 !== isalive[y] && 2 !== fH[k] && aW.cg(y, A)) {
-				var B = aW.ba(y, A);
-				aW.bZ(y, A, 0);
+			if (0 !== isalive[y] && 2 !== fH[k] && attacks.cg(y, A)) {
+				var B = attacks.ba(y, A);
+				attacks.bZ(y, A, 0);
 				if (y !== myid) troops[y] += B, aq.ar(y);
 				else {
 					var C = troops[y];
@@ -809,10 +915,10 @@ function game() {
 		};
 		this.boatcancel = function (y, A) {
 			if (0 !== isalive[y] && 2 !== fH[k]) {
-				var B = aW.fJ(y, A);
+				var B = attacks.fJ(y, A);
 				if (-1 !== B) {
-					var C = aW.ae(y, B);
-					aW.bL(y, B, 0);
+					var C = attacks.remaining(y, B);
+					attacks.bL(y, B, 0);
 					troops[y] += C;
 					aq.ar(y)
 				}
@@ -822,8 +928,7 @@ function game() {
 			1 === fN && g(y, 0, A, B, 0, 0)
 		};
 		this.fP = function (y, A, B, C) {
-			1 === fN && (fQ ?
-				fR.cI(y, B, C) : g(y, 1, A, 0, B, C))
+			1 === fN && (in_spawn ? spawn.cI(y, B, C) : g(y, 1, A, 0, B, C))
 		};
 		this.fS = function (y, A) {
 			1 === fN && g(y, 2, 1, A, 0, 0)
@@ -836,13 +941,13 @@ function game() {
 		};
 		this.fV = function (y) {
 			1 === fN && 0 !== isalive[y] && 2 !== fH[y] && (8 === gamemode ? fW.fX(1 - y) : this.fY(y));
-			dx.fZ(y, 4)
+			newannouncements.fZ(y, 4)
 		};
 		this.fY = function (y) {
-			fQ ? (fa(y), fb()) : e6.fc(y)
+			in_spawn ? (fa(y), fb()) : e6.fc(y)
 		};
 		this.fd = function (y) {
-			0 !== isalive[y] && 2 !== fH[y] && fe.ff(y) && (1 === alivecount ? fW.fX(y) : (dx.fZ(y, y === myid ? 21 : 22), 8 === gamemode ? fW.fX(1 - y) : singleplayer ? (fa(y), fb(), fQ && fR.d7()) : this.fY(y)))
+			0 !== isalive[y] && 2 !== fH[y] && fe.ff(y) && (1 === alivecount ? fW.fX(y) : (newannouncements.fZ(y, y === myid ? 21 : 22), 8 === gamemode ? fW.fX(1 - y) : singleplayer ? (fa(y), fb(), in_spawn && spawn.exit()) : this.fY(y)))
 		}
 	}
 
@@ -902,8 +1007,8 @@ function game() {
 				c9.textAlign = cB;
 				c9.textBaseline = cA;
 				for (B = l - 1; 0 <= B; B--) {
-					var K = ax.g3(y[B]);
-					var J = ax.c7(y[B]);
+					var K = pixel.pixeltox(y[B]);
+					var J = pixel.pixeltoy(y[B]);
 					var D = x[B];
 					if (K > C - 1 && K < E && J > F - 1 && J < H && 0 !== isalive[D]) {
 						var L = Math.floor(.94 * fv * dy.g4(D));
@@ -915,7 +1020,7 @@ function game() {
 							c9.fillStyle = g5;
 							c9.fillText(nickname[D], K, J);
 							var I = Math.floor(.57 * L);
-							6 > I || (D = aW.ae(D, aW.fJ(D, z[B])), c9.font = bl + I + bm, c9.fillText(eD.g7(D), K, J + Math.floor(.82 * L)))
+							6 > I || (D = attacks.remaining(D, attacks.fJ(D, z[B])), c9.font = bl + I + bm, c9.fillText(eD.g7(D), K, J + Math.floor(.82 * L)))
 						}
 					}
 				}
@@ -954,18 +1059,18 @@ function game() {
 		this.gS = function () {
 			g(1);
 			this.gT(0, 0, mapwidth - 1, mapheight - 1);
-			fQ || this.gU(myid, 3E3, !0, .3)
+			in_spawn || this.gU(myid, 3E3, !0, .3)
 		};
 		this.gU = function (I, N, G, M) {
 			if (!(gW || D && !G && L || 0 === land[I])) {
 				gX.gY = !1;
 				L = G;
 				g(N);
-				F = (cs[I] + cr[I] + 1) / 2;
-				E = (cv[I] + cu[I] + 1) / 2;
-				N = cr[I] -
-					cs[I] + 1;
-				I = cu[I] - cv[I] + 1;
+				F = (x_min[I] + x_max[I] + 1) / 2;
+				E = (y_min[I] + y_max[I] + 1) / 2;
+				N = x_max[I] -
+					x_min[I] + 1;
+				I = y_max[I] - y_min[I] + 1;
 				G = g2 / N;
 				var Q = c3 / I;
 				H = G < Q ? G : Q;
@@ -1006,8 +1111,7 @@ function game() {
 				var N = fv;
 				I = g0;
 				var G = g1;
-				fv = C * Math.pow(H /
-					C, x);
+				fv = C * Math.pow(H / C, x);
 				N = fv / N;
 				var M = 1 - (C * Math.pow(H / C, 1 - x) - C) / (H - C);
 				gX.gk(A + M * (F - A), g2 / 2);
@@ -1025,14 +1129,14 @@ function game() {
 			var K;
 			a: {
 				for (K = 0; 8 > K; K++)
-					if (x = ak(z * cW.random(), cW.value(100)), n = ak(y * cW.random(), cW.value(100)), k()) {
+					if (x = strange_divide_floor(z * cW.random(), cW.value(100)), n = strange_divide_floor(y * cW.random(), cW.value(100)), k()) {
 						K = !0;
 						break a
 					} K = !1
 			}
 			if (!K) a: {
-				var J, D, L, I; K = ak(z * cW.random(), cW.value(100));
-				var N = ak(y * cW.random(), cW.value(100));
+				var J, D, L, I; K = strange_divide_floor(z * cW.random(), cW.value(100));
+				var N = strange_divide_floor(y * cW.random(), cW.value(100));
 				for (J = 40; 1 <= J; J--)
 					for (D = y - J; 0 <= D; D -= 40)
 						for (n = (D + N) % y, L = 40; 1 <= L; L--)
@@ -1047,13 +1151,13 @@ function game() {
 
 		function k() {
 			var K, J;
-			var D = ak(A - F, 2);
+			var D = strange_divide_floor(A - F, 2);
 			var L = C + n * A + D,
 				I = B + x * A + D;
 			for (K = L + F - 1; K >= L; K--)
 				for (J = I + F - 1; J >= I; J--)
-					if (D = ax.ep(J, K), !ax.ay(D) ||
-						ax.cM(D)) return !1;
+					if (D = pixel.coordstopixel(J, K), !pixel.canownpixel(D) ||
+						pixel.stationaryborderpixel(D)) return !1;
 			return !0
 		}
 
@@ -1061,28 +1165,28 @@ function game() {
 			isalive[E] = 0;
 			troops[E] = 0;
 			land[E] = hJ[E] = 0;
-			aw[E] = [];
-			borderpixels[E] = [];
-			bF[E] = [];
-			bI[E] = [];
-			cs[E] = cv[E] = cr[E] = cu[E] = 0
+			temp_borderpixels[E] = [];
+			borderlandpixels[E] = [];
+			borderwaterpixels[E] = [];
+			bordermountainpixel[E] = [];
+			x_min[E] = y_min[E] = x_max[E] = y_max[E] = 0
 		}
 
 		function l(K, J) {
 			isalive[E] = 1;
-			troops[E] = E < playercount ? hK : initial_bots_troops[d8.cF[E - playercount]];
-			cs[E] = K + 10;
-			cv[E] = J + 10;
-			cu[E] = cr[E] = 0;
+			troops[E] = E < playercount ? startingtroops : dV[d8.cF[E - playercount]];
+			x_min[E] = K + 10;
+			y_min[E] = J + 10;
+			y_max[E] = x_max[E] = 0;
 			var D, L;
 			for (D = K; D < K + 4; D++)
 				for (L = J; L < J + 4; L++)
 					if (D > K && D < K + 3 || L > J && L < J + 3) {
-						var I = ax.ep(D, L);
-						ax.ay(I) && (cs[E] = D < cs[E] ? D : cs[E], cr[E] = D > cr[E] ? D : cr[E], cv[E] = L < cv[E] ? L : cv[E], cu[E] = L > cu[E] ? L : cu[E], H[land[E]] = I, land[E]++, ax.hN(I, E))
+						var I = pixel.coordstopixel(D, L);
+						pixel.canownpixel(I) && (x_min[E] = D < x_min[E] ? D : x_min[E], x_max[E] = D > x_max[E] ? D : x_max[E], y_min[E] = L < y_min[E] ? L : y_min[E], y_max[E] = L > y_max[E] ? L : y_max[E], H[land[E]] = I, land[E]++, pixel.changetoinner(I, E))
 					} 
 					hJ[E] = land[E];
-			for (I = land[E] - 1; 0 <= I; I--) ax.hO(H[I], E) ? (ax.az(H[I], E), borderpixels[E].push(H[I])) : ax.hP(H[I]) ? (ax.az(H[I], E), bF[E].push(H[I])) : ax.hQ(H[I]) && (ax.az(H[I], E), bI[E].push(H[I]))
+			for (I = land[E] - 1; 0 <= I; I--) pixel.canexpandfromthispixel(H[I], E) ? (pixel.changetoborder(H[I], E), borderlandpixels[E].push(H[I])) : pixel.borderswater(H[I]) ? (pixel.changetoborder(H[I], E), borderwaterpixels[E].push(H[I])) : pixel.bordersmountain(H[I]) && (pixel.changetoborder(H[I], E), bordermountainpixel[E].push(H[I]))
 		}
 		var x, n, z, y, A, B, C, F, E, H;
 		this.bh = function () {
@@ -1090,17 +1194,17 @@ function game() {
 			H = Array(12);
 			F = 6;
 			A = 10;
-			z = ak(mapwidth, A);
-			y = ak(mapheight, A);
-			B = ak(mapwidth - A * z, 2);
-			C = ak(mapheight - A * y, 2);
-			if (fQ)
+			z = strange_divide_floor(mapwidth, A);
+			y = strange_divide_floor(mapheight, A);
+			B = strange_divide_floor(mapwidth - A * z, 2);
+			C = strange_divide_floor(mapheight - A * y, 2);
+			if (in_spawn)
 				for (K = 0; K < playercount; K++) E = K, t(), isalive[E] = 1;
 			for (E = 0; E < maxentities; E++)
 				if (1 !== isalive[E])
 					if (E < entitycount && g()) {
-						var J = B + x * A + ak(A, 2);
-						K = C + n * A + ak(A, 2);
+						var J = B + x * A + strange_divide_floor(A, 2);
+						K = C + n * A + strange_divide_floor(A, 2);
 						t();
 						l(J - 2, K - 2)
 					} else t();
@@ -1116,13 +1220,13 @@ function game() {
 						if ((K ===
 							J + L || K === J - L || I === D + L || I === D - L) && 3 < K && K < mapwidth - 5 && 3 < I && I < mapheight - 5) {
 							var N;
-							if (N = ax.ay(ax.ep(K, I))) a: {
+							if (N = pixel.canownpixel(pixel.coordstopixel(K, I))) a: {
 								var G, M = K + 3,
 									Q = I + 3;
 								for (N = Q; N > Q - 6; N--)
 									for (G = M; G > M - 6; G--) {
-										var S = ax.ep(G, N);
-										if (ax.cM(S)) {
+										var S = pixel.coordstopixel(G, N);
+										if (pixel.stationaryborderpixel(S)) {
 											N = !1;
 											break a
 										}
@@ -1131,8 +1235,8 @@ function game() {
 							}
 							if (N) {
 								if (0 < land[E]) {
-									for (D = cr[E]; D >= cs[E]; D--)
-										for (J = cu[E]; J >= cv[E]; J--) L = 4 * (J * mapwidth + D), ax.hW(E, L) && (ax.hX(L), land[E]--);
+									for (D = x_max[E]; D >= x_min[E]; D--)
+										for (J = y_max[E]; J >= y_min[E]; J--) L = 4 * (J * mapwidth + D), pixel.strong_isowner(E, L) && (pixel.revertland(L), land[E]--);
 									t()
 								}
 								l(K - 1, I - 1);
@@ -1143,8 +1247,8 @@ function game() {
 		this.hY = function (K) {
 			E = K;
 			if (g()) {
-				K = B + x * A + ak(A, 2);
-				var J = C + n * A + ak(A, 2);
+				K = B + x * A + strange_divide_floor(A, 2);
+				var J = C + n * A + strange_divide_floor(A, 2);
 				t();
 				l(K - 2, J - 2)
 			} else t()
@@ -1155,7 +1259,7 @@ function game() {
 		ha.hb();
 		c9.setTransform(fv, 0, 0, fv, 0, 0);
 		c9.imageSmoothingEnabled = 3 > fv;
-		c9.drawImage(hc, gX.g3(), gX.c7());
+		c9.drawImage(map, gX.g3(), gX.c7());
 		eB.c8();
 		c9.drawImage(hd, gX.g3(), gX.c7());
 		c9.imageSmoothingEnabled = !1;
@@ -1163,7 +1267,7 @@ function game() {
 		c9.setTransform(1, 0, 0, 1, 0, 0);
 		dy.c8();
 		e8.c8();
-		gW || (c9.imageSmoothingEnabled = !1, dx.c8(), eA.c8(), eF.c8(), eG.c8(), dz.c8(), gX.c8(), bu.c8(), eH.c8(), eC.c8(), eD.c8(), fe.c8(), eK.c8(), he.c8(), hf.c8(), eL.c8())
+		gW || (c9.imageSmoothingEnabled = !1, newannouncements.c8(), eA.c8(), eF.c8(), eG.c8(), dz.c8(), gX.c8(), bu.c8(), eH.c8(), eC.c8(), eD.c8(), fe.c8(), eK.c8(), he.c8(), hf.c8(), eL.c8())
 	}
 
 	function hg(g, k, t) {
@@ -1190,18 +1294,18 @@ function game() {
 		z && g.fillRect(k + l + y, t + l, x, n)
 	}
 
-	function hr() {
-		this.hs = null;
+	function old1v1points() {
+		this.players = null;
 		this.bh = function (g) {
-			this.hs = g;
-			dx.ht(this.hs)
+			this.players = g;
+			newannouncements.start_1v1(this.players);
 		};
 		this.hu = function (g) {
-			var k = 8 / (1 + Math.pow(2, (this.hs[g].hw - this.hs[1 - g].hw) / 10 / 32));
+			var k = 8 / (1 + Math.pow(2, (this.players[g].hw - this.players[1 - g].hw) / 10 / 32));
 			k = Math.floor(10 * k + .5);
-			var t = this.hz(this.hs[g].hw + k);
-			k = this.hz(this.hs[1 - g].hw - k);
-			0 === g ? dx.i1(this.hs, t, k, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : dx.i1(this.hs, k, t, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
+			var t = this.hz(this.players[g].hw + k);
+			k = this.hz(this.players[1 - g].hw - k);
+			0 === g ? newannouncements.i1(this.players, t, k, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : newannouncements.i1(this.players, k, t, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
 		};
 		this.hz = function (g) {
 			g = 0 > g ? 0 : 16E3 < g ? 16E3 : g;
@@ -1292,7 +1396,7 @@ function game() {
 				z, y = [];
 			for (z = 0; z < n; z++) {
 				var A = x.charCodeAt(z);
-				58 > A ? y.push(x[z]) : (A = 91 > A ? A - 65 : A - 71, y.push(String(ak(A, 10))), y.push(String(A - 10 * ak(A, 10))))
+				58 > A ? y.push(x[z]) : (A = 91 > A ? A - 65 : A - 71, y.push(String(strange_divide_floor(A, 10))), y.push(String(A - 10 * strange_divide_floor(A, 10))))
 			}
 			n = y.length - 2;
 			A = 0;
@@ -1314,16 +1418,16 @@ function game() {
 	function iM() {
 		this.fX = function (g) {
 			if (2 === fN) var k = !0;
-			else eG.ie(), fN = 2, ig = player_count, k = !1;
+			else eG.ie(), fN = 2, spectators = playersingame, k = !1;
 			if (!k) {
 				if (8 === gamemode) {
 					var t = g = 0 > g ? land[0] >= land[1] ? 0 : 1 : g;
-					(k = g === myid) ? dx.fZ(g, 2) : dx.fZ(1 - myid, 3);
-					iT.hu(g)
-				} else teamgame ? (g = eH.iU(), k = dO.dP[myid] === g, 9 === gamemode ? t = k ? ea[0] : 512 : (g = dO.iV(dO.iW[g]), t = g[0], 512 !== t && dx.iX(g[1])), dx.iY(k)) : (t = ea[0], k = t === myid, dx.iZ(t));
+					(k = g === myid) ? newannouncements.fZ(g, 2) : newannouncements.fZ(1 - myid, 3);
+					new1v1points.hu(g)
+				} else teamgame ? (g = eH.iU(), k = dO.dP[myid] === g, 9 === gamemode ? t = k ? ea[0] : 512 : (g = dO.iV(dO.iW[g]), t = g[0], 512 !== t && newannouncements.iX(g[1])), newannouncements.iY(k)) : (t = ea[0], k = t === myid, newannouncements.iZ(t));
 				singleplayer || multi.result_1v1(ic(), t);
 				eK.show(k, !1);
-				dx.ii(!0);
+				newannouncements.ii(!0);
 				eA.eP(!0);
 				dz.eP(!0);
 				bw.bx = !0;
@@ -1333,62 +1437,61 @@ function game() {
 		}
 	}
 
-	function ik() {
+	function oldspawn() {
 		this.cI = function (g, k, t) {
 			0 !== isalive[g] && il.hR(g, k, t) && (bw.bx = !0)
 		};
-		this.d7 = function () {
-			fQ = !1;
+		this.exit = function () {
+			in_spawn = !1;
 			for (var g = 0; g < playercount; g++) 0 !== isalive[g] && 0 === land[g] && il.hY(g);
-			0 !== isalive[myid] ? (as.at[7] = land[myid], as.at[8] = troops[myid], eF.c6(), dz.im(), eJ.gT(cs[myid] - 5, cv[myid] - 5, cr[myid] + 5, cu[myid] + 5), eL.bh()) : eK.show(!1, !1);
-			dx.io(18);
+			0 !== isalive[myid] ? (as.at[7] = land[myid], as.at[8] = troops[myid], eF.c6(), dz.im(), eJ.gT(x_min[myid] - 5, y_min[myid] - 5, x_max[myid] + 5, y_max[myid] + 5), eL.bh()) : eK.show(!1, !1);
+			newannouncements.io(18);
 			dy.ip();
 			dy.eP();
-			fR = null;
+			spawn = null;
 			gw.iq = !0;
 			gw.ir();
 			singleplayer && a9(1)
 		}
 	}
 
-	var player_count, ig, maxentities = 512,
-		is = 150, it, fN = 0, iu, iv, iw, hK = 512,
-		al = 2, gW, fQ, ix, teamgame, iy, iz, fR, iT, j0;
-
+	var playersingame, spectators, maxentities = 512,
+		is = 150, it, fN = 0, iu, troopcap, iw, startingtroops = 512,
+		neutral_landcost = 2, gW, in_spawn, freespawn, teamgame, numberofteams, contest, spawn, new1v1points, spawntimeallowed;
 		entitycount = 512
 
-	function systemgameinit(g, myid, players, gamemode, x) {
+	function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
 		it = gW = !1;
-		gamemode = gamemode;
-		iz = x;
+		contest = is_contest;
+		gamemode = game_mode;
 		teamgame = 7 > gamemode || 9 === gamemode;
-		player_count = playercount = players.length;
-		singleplayer = 1 === player_count;
+		playersingame = playercount = playernames.length;
+		singleplayer = 1 === playersingame;
 		gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
 		gamemode = 8 === gamemode && 2 !== playercount ? 7 : gamemode;
-		iy = 9 === gamemode ? 2 : gamemode + 2;
-		j0 = 2 >= playercount ? 30 : 50 >= playercount ? 40 : 50;
-		fR = (ix = fQ = teamgame || 100 > playercount) ? new ik : null;
-		hK = 512;
+		numberofteams = 9 === gamemode ? 2 : gamemode + 2;
+		spawntimeallowed = 2 >= playercount ? 30 : 50 >= playercount ? 40 : 50;
+		spawn = (freespawn = in_spawn = teamgame || 100 > playercount) ? new oldspawn : null;
+		startingtroops = 512;
 		entitycount = maxentities;
 		singleplayer && (entitycount = dl.j6());
 		botcount = entitycount - playercount;
-		ig = 0;
-		myid = myid;
+		spectators = 0;
+		myid = my_id;
 		cW.j7(g);
-		j8(players);
+		j8(playernames);
 		dq.bh();
-		dO.bh(players);
+		dO.bh(playernames);
 		fN = 1;
-		iv = 2E9;
-		iw = ak(iv, 2);
+		troopcap = 2E9;
+		iw = strange_divide_floor(troopcap, 2);
 		as.bh();
 		j9();
 		jA.jB();
 		gw.bh();
 		aq.bh();
 		d1();
-		ax.bh(players);
+		pixel.color_init(playernames);
 		ha.bh();
 		eH.bh();
 		d8.bh();
@@ -1407,7 +1510,7 @@ function game() {
 		dz.bh();
 		fe.bh();
 		bu.bh();
-		dx.bh();
+		newannouncements.bh();
 		eD.bh();
 		he.bh();
 		eK.bh();
@@ -1416,18 +1519,18 @@ function game() {
 		am.bh();
 		e7.bh();
 		aQ();
-		aW.bh();
+		attacks.bh();
 		dy.bh();
 		e3.bh();
 		e6.bh();
 		eE.bh();
 		e5.bh();
-		8 === gamemode ? (iT = new hr, iT.bh(players)) : iT = null;
+		8 === gamemode ? (new1v1points = new old1v1points, new1v1points.bh(playernames)) : new1v1points = null;
 		jI();
 		eL.bh();
 		singleplayer ? bw.jJ() : bw.jK();
 		bw.bx = !0;
-		singleplayer && fQ || a9(1)
+		singleplayer && in_spawn || a9(1)
 
 		gameinit();
 	}
@@ -1445,7 +1548,7 @@ function game() {
 		jO.bh();
 		a9(0)
 	}
-	var d8, am, d6, e7, single, e8, eJ, il, m, he, fe, dx, jP, eD, bu, eF, gX, jQ, eC, eA, dz, eK, jR, jS, jT, jU, jV, jW, dl, jO, bo, ax, f, aW, aq, dy, jC, dq, jA, jX, jY, gb, en, cW, fp, ha, jZ, ja, eL, multi, jb, eB, jc, jd, eG, eM, e1, e5, je, jf, e6, e3, eE;
+	var d8, am, d6, e7, single, e8, eJ, il, m, he, fe, newannouncements, jP, eD, bu, eF, gX, jQ, eC, eA, dz, eK, jR, jS, jT, jU, jV, jW, dl, jO, bo, pixel, f, attacks, aq, dy, jC, dq, jA, jX, jY, gb, en, cW, fp, ha, jZ, ja, eL, multi, jb, eB, jc, jd, eG, eM, e1, e5, je, jf, e6, e3, eE;
 
 	function jg() {
 		d8 = new dW;
@@ -1459,7 +1562,7 @@ function game() {
 		m = new i2;
 		he = new jh;
 		fe = new ji;
-		dx = new jj;
+		newannouncements = new oldannouncements;
 		jP = new jk;
 		eD = new jl;
 		bu = new jm;
@@ -1480,9 +1583,9 @@ function game() {
 		dl = new k0;
 		jO = new k1;
 		bo = new k2;
-		ax = new k3;
+		pixel = new oldpixel;
 		f = new k4;
-		aW = new k5;
+		attacks = new oldattacks;
 		aq = new k6;
 		dy = new k7;
 		jC = new k8;
@@ -1497,8 +1600,7 @@ function game() {
 		ha = new kH;
 		jZ = new kI;
 		ja = new kJ;
-		eL =
-			new kK;
+		eL = new kK;
 		multi = new oldmulti;
 		jb = new kM;
 		eB = new kN;
@@ -1590,7 +1692,7 @@ function game() {
 		};
 		this.bz = function (N, G) {
 			C = B = -1E3;
-			if (2 === fH[myid] || 0 === isalive[myid] && !fQ) return this.kx(), 1;
+			if (2 === fH[myid] || 0 === isalive[myid] && !in_spawn) return this.kx(), 1;
 			if (n) {
 				this.kx();
 				if (a5.ky(N, G)) a5.kz(N, G, E) && (n = !0);
@@ -1599,7 +1701,7 @@ function game() {
 			}
 			var M = l(N, G);
 			if (!t(M) || 0 === M || 6 === M || !x[2] && 3 === M) return this.kx(), 2;
-			if (1 === M) {
+			if (1 === M) { //Ask friend to attack
 				if (x[6]) {
 					M = (new Date).getTime();
 					M > I + 4E3 && (L = []);
@@ -1612,46 +1714,45 @@ function game() {
 				}
 				return 0
 			}
-			if (2 === M) {
+			if (2 === M) { //Ask to attack target
 				if (x[7]) {
 					for (M = L.length - 1; 0 <= M; M--) 0 === isalive[L[M]] && L.splice(M, 1);
-					0 < L.length && (eE.l6(1, L, !0) && (dx.l7(L, E), multi.ask_to_attack(L, E)), L = []);
+					0 < L.length && (eE.l6(1, L, !0) && (newannouncements.l7(L, E), multi.ask_to_attack(L, E)), L = []);
 					this.kx();
 					return 1
 				}
 				return 0
 			}
-			if (3 === M) {
+			if (3 === M) { //Donations
 				this.kx();
-				if (this.kw(E) && 7 > gamemode && 1071 > bw.dM()) return dx.l9(),
-					1;
-				dx.lA();
-				singleplayer ? dS(myid, E, ak(eF.lB() * troops[myid], 1E3)) : multi.attack(eF.lB(), E === maxentities ? myid : E);
+				if (this.kw(E) && 7 > gamemode && 1071 > bw.dM()) return newannouncements.l9(), 1;
+				newannouncements.lA();
+				singleplayer ? dS(myid, E, strange_divide_floor(eF.lB() * troops[myid], 1E3)) : multi.attack(eF.lB(), E === maxentities ? myid : E);
 				return 1
 			}
-			//Which one of these depicts random spawn?
-			if (4 === M) return x[0] ? fQ ? (this.kx(), singleplayer ? (fR.cI(0, ax.g3(H), ax.c7(H)), fR.d7()) : multi.choosespawn(1E3, ax.g3(H), ax.c7(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!ix || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
-			if (5 === M) return x[1] ? (this.kx(), dx.lA(), singleplayer ? single.fA(myid, eF.lB(), ax.g3(H), ax.c7(H)) : multi.choosespawn(eF.lB(), ax.g3(H), ax.c7(H)), 1) : 0;
+			//4: Attack/Spawn 5: Boat 7: Emoji
+			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (spawn.cI(0, pixel.pixeltox(H), pixel.pixeltoy(H)), spawn.exit()) : multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H))) : (this.kx(), newannouncements.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+			if (5 === M) return x[1] ? (this.kx(), newannouncements.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
 			if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
-			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (dx.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
+			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (newannouncements.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
 			this.kx();
 			return 2
 		};
 		this.lI = function (N, G) {
-			if (this.ku() || 2 === fH[myid] || 0 === isalive[myid] && !fQ) return !1;
+			if (this.ku() || 2 === fH[myid] || 0 === isalive[myid] && !in_spawn) return !1;
 			var M = (q ? .0288 : .0144) * bi;
 			if (Math.abs(N - B) > M || Math.abs(G - C) > M || (new Date).getTime() > F + 425) return !1;
 			M = Math.floor((N + g0) / fv);
 			var Q = Math.floor((G + g1) / fv);
 			if (1 > M || 1 > Q || M >= mapwidth - 1 || Q >= mapheight - 1) return !1;
 			var S = Q * mapwidth * 4 + 4 * M;
-			if (!ax.ay(S)) return !1;
-			if (2 === fN) return 1 <= a5.lM && (E = ax.b7(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
-			H = ax.ep(M, Q);
-			if (fQ) return x[0] = !0, this.lN(N, G);
+			if (!pixel.canownpixel(S)) return !1;
+			if (2 === fN) return 1 <= a5.lM && (E = pixel.pixelowner(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
+			H = pixel.coordstopixel(M, Q);
+			if (in_spawn) return x[0] = !0, this.lN(N, G);
 			x[1] = en.cg(myid, H);
-			if (ax.b8(S)) return E = maxentities, lO(myid) ? x[0] = !0 : lP(myid, E) && (x[8] = !0), this.lN(N, G);
-			E = ax.b7(S);
+			if (pixel.isneutral(S)) return E = maxentities, lO(myid) ? x[0] = !0 : lP(myid, E) && (x[8] = !0), this.lN(N, G);
+			E = pixel.pixelowner(S);
 			if (E === myid) {
 				this.kx();
 				if (0 === a5.lM) return !1;
@@ -1730,7 +1831,7 @@ function game() {
 				var N = (A + K) / D;
 				c9.imageSmoothingEnabled = !0;
 				c9.setTransform(D, 0, 0, D, z, y);
-				x[0] ? fQ ? c9.drawImage(this.kk[3], 0, 0) : c9.drawImage(this.kk[0], 0, 0) : x[8] ? c9.drawImage(this.ki[0], 0, 0) : c9.drawImage(J[0], 0, 0);
+				x[0] ? in_spawn ? c9.drawImage(this.kk[3], 0, 0) : c9.drawImage(this.kk[0], 0, 0) : x[8] ? c9.drawImage(this.ki[0], 0, 0) : c9.drawImage(J[0], 0, 0);
 				x[1] && c9.drawImage(this.kk[1], N, 0);
 				x[2] && c9.drawImage(this.kk[2], -N, 0);
 				x[4] && c9.drawImage(this.kk[4], 0, N);
@@ -1805,7 +1906,7 @@ function game() {
 			g()
 		};
 		this.lj = function () {
-			(this.ld = !this.ld) ? (gW = !1, singleplayer && 1 === fN && !fQ && (setTimeout(function () {
+			(this.ld = !this.ld) ? (gW = !1, singleplayer && 1 === fN && !in_spawn && (setTimeout(function () {
 				gw.ij()
 			}, 0), a9(0))) : (y = -1, g(), singleplayer && a9(1));
 			bw.bx = !0
@@ -1813,7 +1914,7 @@ function game() {
 		this.bz = function (B, C) {
 			var F = k(B, C);
 			return this.ld ? 0 === F ? (jL(), aB(), 2) : 1 === F ? (this.lj(), 2) : 2 === F ? (this.ff(myid) && (singleplayer ? single.fd(myid) : multi.lm(), this.lj()), 2) : 3 === F && 2 <= as.ln ? (hf.lj(), bw.bx = !0, 2) :
-				hf.ku || singleplayer && !fQ ? 1 : (this.lj(), 2) : 0 === F ? (this.lj(), 2) : 0
+				hf.ku || singleplayer && !in_spawn ? 1 : (this.lj(), 2) : 0 === F ? (this.lj(), 2) : 0
 		};
 		this.lV = function (B, C) {
 			var F = k(B, C);
@@ -1864,16 +1965,16 @@ function game() {
 		}
 	}
 
-	function jj() {
+	function oldannouncements() {
 		var g, k, t, l, x, n, z;
 
 		function y() {
-			return eF.mJ(dx.mG()) ? eG.ku ? eF.f8 - eF.co - 2 * K : eF.f8 - K : eG.ku ? s - eF.co - (q ? 3 : 2) * K : s - K
+			return eF.mJ(newannouncements.mG()) ? eG.ku ? eF.f8 - eF.co - 2 * K : eF.f8 - K : eG.ku ? s - eF.co - (q ? 3 : 2) * K : s - K
 		}
 
 		function A(G, M, Q, S, P, U, W, X) {
 			var V = 1E3 <= Q;
-			var pa = Math.floor(bu.measureText(M, dx.bs) + 1.5 * J + (V ? H : 1.5 * J));
+			var pa = Math.floor(bu.measureText(M, newannouncements.bs) + 1.5 * J + (V ? H : 1.5 * J));
 			if (pa + K > r && !V && 50 !== Q && 20 < M.length) {
 				var ba = Math.floor(.5 * M.length);
 				A(G, M.substring(0, ba), Q, S, P, U, W, X);
@@ -1888,7 +1989,7 @@ function game() {
 					alpha: !0
 				});
 				R.font =
-					dx.bs;
+					newannouncements.bs;
 				R.textBaseline = cA;
 				R.textAlign = mN;
 				R.clearRect(0, 0, pa, H);
@@ -1946,8 +2047,8 @@ function game() {
 			z = [" was conquered by ", " left the game.", " surrendered."];
 			E = [];
 			this.le();
-			fQ && this.fZ(0, 18);
-			var G = "Map: " + jX.br(mt).mf + "   Pixels: " + eD.g7(jA.mu) + "   Land: " + eD.g7(jA.mv) + " (" + dz.mw(100 * jA.mv / jA.mu, 1) + ")";
+			in_spawn && this.fZ(0, 18);
+			var G = "Map: " + jX.br(currentmap).mf + "   Pixels: " + eD.g7(jA.mu) + "   Land: " + eD.g7(jA.mv) + " (" + dz.mw(100 * jA.mv / jA.mu, 1) + ")";
 			0 < jA.mx && (G += "   Water: " + eD.g7(jA.mx) + " (" + dz.mw(100 * jA.mx / jA.mu, 1) + ")");
 			0 < jA.my && (G += "   Mountains: " + eD.g7(jA.my) + " (" + dz.mw(100 * jA.my / jA.mu, 1) + ")");
 			A(340, G, 6, 0, C(215, 245, 255), hi, -1, !1);
@@ -2010,7 +2111,7 @@ function game() {
 			1 === M ? (F(50, maxentities), bu.cI(G, 1), A(360, "You were conquered by " + nickname[G] + ".", 0, G, "rgb(255,40,40)", hi, -1, !0), eJ.gU(G, 2700, !0, 0)) : 
 			2 === M ? (bu.cI(G, 2), A(0, "Congratulations! You won the game.", 0, G, "rgb(10,255,255)", hi, -1, !0), eJ.gU(G, 2700, !0, 0)) : 
 			3 === M ? (bu.cI(G, 2), A(0, nickname[G] + " won the game.", 0, G, cC, hi, -1, !0), eJ.gU(G, 2700, !0, 0)) : 
-			4 === M ? (player_count--, ig--, this.mP(1, G, G)) : 
+			4 === M ? (playersingame--, spectators--, this.mP(1, G, G)) : 
 			5 === M ? 2 !== fH[G] && he.kw(myid) && (B(1, 5), dy.mR(G) ? A(180, nickname[G] + " has broken the non-aggression pact and invades you!", 1, G, C(255, 200, 180), hi, -1, !0) :  A(180, nickname[G] + " is attacking you!", 1, G, "rgb(255,70,10)", hi, -1, !0)) : 
 			18 === M ? A(255, "Choose your start position!", 18, 0, cC, hi, -1, !1) : 
 			21 === M ? A(220, "You surrendered!", M, 0, "rgb(255,40,40)", hi, -1, !1) : 
@@ -2025,8 +2126,7 @@ function game() {
 			eJ.gU(G, 2700, !0, 0)
 		};
 		this.mW = function (G, M, Q) {
-			G === myid ? A(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, C(200, 255, 210), hi, -1, !0) : this.mZ(G,
-				Q)
+			G === myid ? A(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, C(200, 255, 210), hi, -1, !0) : this.mZ(G, Q)
 		};
 		this.mZ = function (G, M) {
 			var Q, S = 0;
@@ -2042,20 +2142,20 @@ function game() {
 			G ? (9 === gamemode ? (G = "The Resistance defeated the virus.", bu.me("The Resistance", 2, 1, 12)) : G = "Congratulations! Team " + dO.bg[M] + " has won the game!", A(0, G, 40, 0, "rgb(10,220,10)", hi, -1, !1)) : (9 === gamemode ? (G = "Mankind lost the war against the virus.", bu.me("The Virus", 2, 0, 16)) : G = "Our alliance has been defeated!",
 				A(0, G, 41, 0, "rgb(200,80,80)", hi, -1, !1));
 			9 !== gamemode && bu.me("Team " + dO.bg[M], 2, 1, 12);
-			eJ.gd(2700)
+			eJ.gd(2700);
 		};
-		this.ht = function (G) {
-			A(300, G[0].mf + " [" + iT.hz(G[0].hw) + "] vs " + G[1].mf + " [" + iT.hz(G[1].hw) + "]", 65, 0, g5, "rgba(100,255,255,0.75)", -1, !1)
+		this.start_1v1 = function (G) {
+			A(300, G[0].mf + " [" + new1v1points.hz(G[0].hw) + "] vs " + G[1].mf + " [" + new1v1points.hz(G[1].hw) + "]", 65, 0, g5, "rgba(100,255,255,0.75)", -1, !1)
 		};
 		this.mg = function (G) {
 			A(200, G, 0, 0, "rgb(40,255,200)", "rgba(10,60,40,0.9)", -1, !1)
 		};
 		this.i1 = function (G, M, Q, S) {
-			1 === e1.mi && (A(0, G[0].mf + ": " + iT.hz(G[0].hw) + " -> " + M, 66, 0, cC, S[0], -1, !1), A(0, G[1].mf + ": " + iT.hz(G[1].hw) + " -> " + Q, 66, 1, cC, S[1], -1, !1))
+			1 === e1.mi && (A(0, G[0].mf + ": " + new1v1points.hz(G[0].hw) + " -> " + M, 66, 0, cC, S[0], -1, !1), A(0, G[1].mf + ": " + new1v1points.hz(G[1].hw) + " -> " + Q, 66, 1, cC, S[1], -1, !1))
 		};
 		this.iX = function (G) {
 			1 === e1.mi && A(0,
-				"[" + G + "] has won " + playercount + (iz ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hi, -1, !1)
+				"[" + G + "] has won " + playercount + (contest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hi, -1, !1)
 		};
 		this.lG = function (G, M) {
 			0 === M ? F(50, G) ? (A(128, "You signed a non-aggression pact with " + nickname[G] + ".", 52, G, C(180, 255, 180), hi, -1, !0), dy.mk(G, 2, 255)) : A(384, "You asked " + nickname[G] + " to sign a non-aggression pact.", 51, G, C(210, 210, 255), hi, -1, !0) : F(51, G) ? (A(128, nickname[G] + " accepted the non-aggression pact.", 52, G, cC, "rgba(60,120,10,0.9)", -1, !0), dy.mk(G, 2, 255)) : (A(384, nickname[G] + " requests a non-aggression pact.", 50, G, cC, "rgba(90,90,90,0.9)", -1,
@@ -2115,8 +2215,7 @@ function game() {
 			g[G] = M;
 			k[G] = Q;
 			1 === P && (x[G] = S);
-			1 === P && (32 > player_count || 2 === fN) ? this.n0(G) : 1 < P && (x[G] < S - 140 ||
-				2 === fN) && this.n0(G)
+			1 === P && (32 > playersingame || 2 === fN) ? this.n0(G) : 1 < P && (x[G] < S - 140 || 2 === fN) && this.n0(G)
 		};
 		this.d7 = function () {
 			var G, M = E.length - L;
@@ -2285,7 +2384,7 @@ function game() {
 				alpha: !0
 			});
 			x.clearRect(0, 0, this.bt, this.bt);
-			23 === k ? x.drawImage(he.kl[2], 0, 0) : 36 === k ? x.drawImage(he.kl[0], 0, 0) : 49 === k ? x.drawImage(he.kl[1], 0, 0) : x.drawImage(t, this.bt * g % (g === k ? this.nM * this.bt : 4E3), g === k ? ak(g, this.nM) * this.bt : 0, this.bt, this.bt, 0, 0, this.bt, this.bt);
+			23 === k ? x.drawImage(he.kl[2], 0, 0) : 36 === k ? x.drawImage(he.kl[0], 0, 0) : 49 === k ? x.drawImage(he.kl[1], 0, 0) : x.drawImage(t, this.bt * g % (g === k ? this.nM * this.bt : 4E3), g === k ? strange_divide_floor(g, this.nM) * this.bt : 0, this.bt, this.bt, 0, 0, this.bt, this.bt);
 			this.kn[k] = l
 		};
 		this.nd = function () {
@@ -2346,7 +2445,7 @@ function game() {
 			var t = Math.floor(g2 / this.nS);
 			t = 3 > t ? 3 : t > this.nT ? this.nT : t;
 			t = this.lM > t ? t : this.lM;
-			var l = 1 + ak(this.lM - 1, t),
+			var l = 1 + strange_divide_floor(this.lM - 1, t),
 				x = Math.floor(t * this.nS),
 				n = Math.floor(g - x / 2);
 			n = n + x > g2 ? g2 - x : n;
@@ -2357,7 +2456,7 @@ function game() {
 			z = 0 > z ? 0 : z;
 			this.ex = n + x;
 			this.ey = z + l;
-			for (x = 0; x < this.lM; x++) this.nU[x] = Math.floor(n + x % t * this.nS), this.nV[x] = Math.floor(z + ak(x, t) * this.nS);
+			for (x = 0; x < this.lM; x++) this.nU[x] = Math.floor(n + x % t * this.nS), this.nV[x] = Math.floor(z + strange_divide_floor(x, t) * this.nS);
 			return !0
 		};
 		this.ky = function (g, k) {
@@ -2501,7 +2600,7 @@ function game() {
 		if (0 === fN) jT.bz(g, k);
 		else if (!(hf.bz(g, k) || he.kt(g, k) || eK.bz(g, k) || eD.bz(g, k))) {
 			var t = fe.bz(g, k);
-			2 === t || eA.bz(g, k) || (gX.bz(g, k) ? bw.bx = !0 : eF.p0(g, k) ? (gX.gY = !1, eF.p1(g, k) && (bw.bx = !0)) : dx.bz(g, k) || eG.bz(g, k) || 0 === t && he.kv(g, k))
+			2 === t || eA.bz(g, k) || (gX.bz(g, k) ? bw.bx = !0 : eF.p0(g, k) ? (gX.gY = !1, eF.p1(g, k) && (bw.bx = !0)) : newannouncements.bz(g, k) || eG.bz(g, k) || 0 === t && he.kv(g, k))
 		}
 	}
 
@@ -2564,44 +2663,44 @@ function game() {
 
 	function jl() {
 		function g(C) {
-			var F = attacks[C].lZ.width;
-			attacks[C].hh.clearRect(0, 0, F, A);
-			attacks[C].hh.fillStyle = 0 !== attacks[C].id ? "rgba(33,33,120,0.83)" : attacks[C].target === maxentities ? "rgba(88,88,88,0.83)" : attacks[C].target < playercount ? "rgba(100,70,33,0.83)" : "rgba(33,100,80,0.83)";
-			attacks[C].hh.fillRect(0, 0, F, A);
-			pA(attacks[C].hh, F, A);
-			F > z + 2 * A && (attacks[C].hh.fillRect(F - z - A, 0, 1, A), attacks[C].hh.fillText(nickname[attacks[C].target], Math.floor((F - z) / 2), Math.floor(.57 * A)));
-			var E = 0 !== attacks[C].id ? 0 : A;
-			attacks[C].hh.fillText(eD.g7(attacks[C].remaining), Math.floor(F - z / 2 - E), Math.floor(.57 * A));
-			attacks[C].hh.fillStyle = oH;
-			attacks[C].hh.fillRect(Math.floor(F - z - E), A - B, Math.floor(z * attacks[C].remaining / attacks[C].sent), B);
-			0 === attacks[C].id ? (k(C, F), attacks[C].hh.strokeStyle = o4, attacks[C].hh.fillRect(A, 0, 1, A), F -= A, attacks[C].hh.beginPath(), attacks[C].hh.moveTo(Math.floor(.3 * A + F), Math.floor(A / 2)), attacks[C].hh.lineTo(Math.floor(A - .3 * A + F), Math.floor(A / 2)), attacks[C].hh.stroke(), attacks[C].hh.beginPath(), attacks[C].hh.moveTo(Math.floor(A / 2 + F), Math.floor(.3 * A)), attacks[C].hh.lineTo(Math.floor(A / 2 + F), Math.floor(A - .3 * A)), attacks[C].hh.stroke()) : k(C, 2 * A)
+			var F = myattacks[C].lZ.width;
+			myattacks[C].hh.clearRect(0, 0, F, A);
+			myattacks[C].hh.fillStyle = 0 !== myattacks[C].boatid ? "rgba(33,33,120,0.83)" : myattacks[C].target === maxentities ? "rgba(88,88,88,0.83)" : myattacks[C].target < playercount ? "rgba(100,70,33,0.83)" : "rgba(33,100,80,0.83)";
+			myattacks[C].hh.fillRect(0, 0, F, A);
+			pA(myattacks[C].hh, F, A);
+			F > z + 2 * A && (myattacks[C].hh.fillRect(F - z - A, 0, 1, A), myattacks[C].hh.fillText(nickname[myattacks[C].target], Math.floor((F - z) / 2), Math.floor(.57 * A)));
+			var E = 0 !== myattacks[C].boatid ? 0 : A;
+			myattacks[C].hh.fillText(eD.g7(myattacks[C].remaining), Math.floor(F - z / 2 - E), Math.floor(.57 * A));
+			myattacks[C].hh.fillStyle = oH;
+			myattacks[C].hh.fillRect(Math.floor(F - z - E), A - B, Math.floor(z * myattacks[C].remaining / myattacks[C].sent), B);
+			0 === myattacks[C].boatid ? (k(C, F), myattacks[C].hh.strokeStyle = o4, myattacks[C].hh.fillRect(A, 0, 1, A), F -= A, myattacks[C].hh.beginPath(), myattacks[C].hh.moveTo(Math.floor(.3 * A + F), Math.floor(A / 2)), myattacks[C].hh.lineTo(Math.floor(A - .3 * A + F), Math.floor(A / 2)), myattacks[C].hh.stroke(), myattacks[C].hh.beginPath(), myattacks[C].hh.moveTo(Math.floor(A / 2 + F), Math.floor(.3 * A)), myattacks[C].hh.lineTo(Math.floor(A / 2 + F), Math.floor(A - .3 * A)), myattacks[C].hh.stroke()) : k(C, 2 * A)
 		}
 
 		function k(C, F) {
-			attacks[C].hh.strokeStyle = attacks[C].pQ ? lu : oC;
-			attacks[C].hh.fillStyle = cC;
-			attacks[C].hh.fillRect(F - A, 0, 1, A);
+			myattacks[C].hh.strokeStyle = myattacks[C].cancelling ? lu : oC;
+			myattacks[C].hh.fillStyle = cC;
+			myattacks[C].hh.fillRect(F - A, 0, 1, A);
 			var E = Math.floor(A / 12);
-			attacks[C].hh.lineWidth = 3 > E ? 3 : E;
-			attacks[C].hh.lineCap = "round";
+			myattacks[C].hh.lineWidth = 3 > E ? 3 : E;
+			myattacks[C].hh.lineCap = "round";
 			F = A + 1;
-			attacks[C].hh.beginPath();
-			attacks[C].hh.moveTo(Math.floor(F - .35 * A), Math.floor(.35 * A));
-			attacks[C].hh.lineTo(Math.floor(F - A + .35 * A), Math.floor(A - .35 * A));
-			attacks[C].hh.stroke();
-			attacks[C].hh.beginPath();
-			attacks[C].hh.moveTo(Math.floor(F - A + .35 * A), Math.floor(.35 * A));
-			attacks[C].hh.lineTo(Math.floor(F - .35 * A), Math.floor(A - .35 * A));
-			attacks[C].hh.stroke()
+			myattacks[C].hh.beginPath();
+			myattacks[C].hh.moveTo(Math.floor(F - .35 * A), Math.floor(.35 * A));
+			myattacks[C].hh.lineTo(Math.floor(F - A + .35 * A), Math.floor(A - .35 * A));
+			myattacks[C].hh.stroke();
+			myattacks[C].hh.beginPath();
+			myattacks[C].hh.moveTo(Math.floor(F - A + .35 * A), Math.floor(.35 * A));
+			myattacks[C].hh.lineTo(Math.floor(F - .35 * A), Math.floor(A - .35 * A));
+			myattacks[C].hh.stroke()
 		}
 
 		function t(C) {
 			C.lZ = document.createElement("canvas");
 			pH.font = y;
 			var F = z;
-			C.target < maxentities && 0 === C.id && (F += Math.floor(pH.measureText(nickname[C.target] + "000").width));
+			C.target < maxentities && 0 === C.boatid && (F += Math.floor(pH.measureText(nickname[C.target] + "000").width));
 			F += A;
-			0 === C.id && (F += A);
+			0 === C.boatid && (F += A);
 			C.lZ.width = F;
 			C.lZ.height = A;
 			C.hh = C.lZ.getContext("2d", {
@@ -2613,7 +2712,7 @@ function game() {
 		}
 
 		function l(C) {
-			return eC.pl() ? g2 - attacks[C].lZ.width - lo : eC.f7
+			return eC.pl() ? g2 - myattacks[C].lZ.width - lo : eC.f7
 		}
 
 		function x(C) {
@@ -2621,22 +2720,22 @@ function game() {
 		}
 		var z, y, A, B;
 		this.bh = function () {
-			attacks = [];
+			myattacks = [];
 			this.le()
 		};
 		this.le = function () {
-			y = dx.bs;
-			A = dx.bq + 5;
+			y = newannouncements.bs;
+			A = newannouncements.bq + 5;
 			A = Math.floor(1.25 * A);
 			q && (A = Math.floor(1.25 * A));
 			B = Math.floor(.15 * A);
 			pH.font = y;
 			z = Math.floor(pH.measureText("02 000 000 0000").width);
 			for (var C =
-				attacks.length - 1; 0 <= C; C--) t(attacks[C]), g(C)
+				myattacks.length - 1; 0 <= C; C--) t(myattacks[C]), g(C)
 		};
 		this.eP = function () {
-			for (var C = attacks.length - 1; 0 <= C; C--) attacks[C].gained && (attacks[C].gained = !1, g(C))
+			for (var C = myattacks.length - 1; 0 <= C; C--) myattacks[C].gained && (myattacks[C].gained = !1, g(C))
 		};
 		this.g7 = function (C) {
 			if (1E3 > C) return 0 > C ? "-" + this.g7(Math.abs(C)) : C.toString();
@@ -2650,13 +2749,13 @@ function game() {
 			if (2 === fN || 0 === isalive[myid] || it || !he.kw(myid)) return !1;
 			var E, H = q ? A : 0,
 				K = q ? Math.floor(.15 * A) : 0;
-			for (E = attacks.length - 1; 0 <= E; E--) {
+			for (E = myattacks.length - 1; 0 <= E; E--) {
 				var J = l(E);
 				var D = x(E);
-				var L = attacks[E].lZ.width;
+				var L = myattacks[E].lZ.width;
 				if (F >= D - K && F <= D + A + K) {
-					if (C >= J - H && C <= J + A + H) return attacks[E].pQ || (attacks[E].gained = !0, attacks[E].pQ = !0, 0 === attacks[E].id ? singleplayer ? single.cancel(myid, attacks[E].target) : multi.cancel(attacks[E].target === maxentities ? myid : attacks[E].target) : singleplayer ? single.boatcancel(myid, attacks[E].id) : multi.boatcancel(attacks[E].id)), !0;
-					if (0 === attacks[E].id && C >= J + L - A - H && C <= J + L + H) return singleplayer ? singleattack(myid, attacks[E].target, eF.lB()) : multi.attack(eF.lB(), attacks[E].target === maxentities ? myid : attacks[E].target), !0
+					if (C >= J - H && C <= J + A + H) return myattacks[E].cancelling || (myattacks[E].gained = !0, myattacks[E].cancelling = !0, 0 === myattacks[E].boatid ? singleplayer ? single.cancel(myid, myattacks[E].target) : multi.cancel(myattacks[E].target === maxentities ? myid : myattacks[E].target) : singleplayer ? single.boatcancel(myid, myattacks[E].boatid) : multi.boatcancel(myattacks[E].boatid)), !0;
+					if (0 === myattacks[E].boatid && C >= J + L - A - H && C <= J + L + H) return singleplayer ? singleattack(myid, myattacks[E].target, eF.lB()) : multi.attack(eF.lB(), myattacks[E].target === maxentities ? myid : myattacks[E].target), !0
 				}
 			}
 			return !1
@@ -2664,11 +2763,11 @@ function game() {
 
 		this.d7 = function () {
 			if (2 !== fN && 0 !== isalive[myid] && !it && he.kw(myid)) {
-				var C = aW.aX(myid);
-				b: if (attacks.length !== C) var F = !0;
+				var attackingcount = attacks.currentattackcount(myid);
+				b: if (myattacks.length !== attackingcount) var F = !0;
 				else {
-					for (F = C - 1; 0 <= F; F--)
-						if (attacks[F].id !== aW.aY(myid, F) || attacks[F].target !== aW.ad(myid, F)) {
+					for (F = attackingcount - 1; 0 <= F; F--)
+						if (myattacks[F].boatid !== attacks.boatid(myid, F) || myattacks[F].target !== attacks.target(myid, F)) {
 							F = !0;
 							break b
 						} F = !1
@@ -2676,35 +2775,35 @@ function game() {
 				if (F) {
 					var E, H = [];
 					F = 0;
-					b: for (; F < C; F++) {
-						var K = aW.aY(myid, F);
-						var J = aW.ad(myid, F);
-						for (E = 0; E < attacks.length; E++)
-							if (attacks[E].id === K && attacks[E].target === J) {
-								H.push(attacks.splice(E, 1)[0]);
+					b: for (; F < attackingcount; F++) {
+						var K = attacks.boatid(myid, F);
+						var J = attacks.target(myid, F);
+						for (E = 0; E < myattacks.length; E++)
+							if (myattacks[E].boatid === K && myattacks[E].target === J) {
+								H.push(myattacks.splice(E, 1)[0]);
 								continue b
-							} E = aW.ae(myid, F);
+							} E = attacks.remaining(myid, F);
 						K = {
 							target: J,
 							remaining: E,
 							sent: E,
-							id: K,
+							boatid: K,
 							gained: !0,
-							pQ: !1,
+							cancelling: !1,
 							lZ: null,
 							hh: null
 						};
 						t(K);
 						H.push(K)
 					}
-					attacks = H
+					myattacks = H
 				}
-				for (--C; 0 <= C; C--) {
-					F = aW.ae(myid, C);
-					if (attacks[C].remaining !== F) {
-						attacks[C].remaining = F;
-						if (F > attacks[C].sent) attacks[C].sent = F;
-						else attacks[C].gained = !0
+				for (--attackingcount; 0 <= attackingcount; attackingcount--) {
+					F = attacks.remaining(myid, attackingcount);
+					if (myattacks[attackingcount].remaining !== F) {
+						myattacks[attackingcount].remaining = F;
+						if (F > myattacks[attackingcount].sent) myattacks[attackingcount].sent = F;
+						else myattacks[attackingcount].gained = !0
 					}
 				}
 			}
@@ -2712,7 +2811,7 @@ function game() {
 
 		this.c8 = function () {
 			if (0 !== isalive[myid] && he.kw(myid) && !it)
-				for (var C = attacks.length - 1; 0 <= C; C--) c9.drawImage(attacks[C].lZ, l(C), x(C))
+				for (var C = myattacks.length - 1; 0 <= C; C--) c9.drawImage(myattacks[C].lZ, l(C), x(C))
 		}
 	}
 
@@ -2796,7 +2895,7 @@ function game() {
 		};
 		this.d7 = function () {
 			if (0 !== x)
-				if (4 === x) bw.gQ > I && (x = 0, 1 === fN && bu.me(jX.br(mt).mf, 3, 1, 9));
+				if (4 === x) bw.gQ > I && (x = 0, 1 === fN && bu.me(jX.br(currentmap).mf, 3, 1, 9));
 				else {
 					if (1 === x) 0 === n && (k(), n = 1E-4), n +=
 						.002 * (bw.gQ - L), 1 <= n && (z = 0, x = 2, n = 1), bw.bx = !0;
@@ -2863,7 +2962,7 @@ function game() {
 		}
 
 		function t() {
-			return eF.mJ(dx.mG()) ? eF.f8 - l - lo : s - l - (q ? 2 : 1) * lo
+			return eF.mJ(newannouncements.mG()) ? eF.f8 - l - lo : s - l - (q ? 2 : 1) * lo
 		}
 		var l, x, n, z, y, A, B, C, F, E, H, K, J;
 		this.bh = function () {
@@ -2950,9 +3049,9 @@ function game() {
 					E = 360;
 					var L = 0;
 					for (D = alivecount - 1; 0 <= D; D--) he.kw(entitiesalive[D]) && (L += land[entitiesalive[D]]);
-					B[0] = mI(ak(3 * L, 5), 1);
+					B[0] = mI(strange_divide_floor(3 * L, 5), 1);
 					teamgame && 9 !== gamemode && (B[0] =
-						qJ(mI(ak(L * (100 - ak(100 * eH.qK(), iu)), 100), 1), B[0]));
+						qJ(mI(strange_divide_floor(L * (100 - strange_divide_floor(100 * eH.qK(), iu)), 100), 1), B[0]));
 					B[1] = mI(L - B[0], 1);
 					K++
 				}
@@ -3036,7 +3135,7 @@ function game() {
 		}
 		var x, n, z, y, A, B, C, F, E, H, K = 11 / 12;
 		this.bh = function () {
-			B = !fQ;
+			B = !in_spawn;
 			H = !1;
 			C = .5;
 			F = 0;
@@ -3537,7 +3636,7 @@ function game() {
 		this.co = this.f7 = 0;
 		var g, k, t, l, x, n, z, y, A, B, C, F, E;
 		this.bh = function () {
-			x = hK;
+			x = startingtroops;
 			C = "rgba(0,100,0,0.8)";
 			F = "rgba(150,0,0,0.8)";
 			B = !0;
@@ -3603,7 +3702,7 @@ function game() {
 			0 !== isalive[myid] && 2 !== fH[myid] && A !== troops[myid] && (x = mI(troops[myid], x), B = troops[myid] > A && 10 <= troops[myid], A = troops[myid], y = !0)
 		};
 		this.c8 = function () {
-			0 === isalive[myid] || fQ || 2 === fH[myid] || c9.drawImage(n, this.f7, t)
+			0 === isalive[myid] || in_spawn || 2 === fH[myid] || c9.drawImage(n, this.f7, t)
 		}
 	}
 	var rp, q0, rq, rr, rs, ea, rt;
@@ -3819,7 +3918,7 @@ function game() {
 			z.fillStyle = hi;
 			z.fillRect(0, 0, dz.bt, dz.co);
 			z.fillStyle = o0;
-			z.fillRect(0, dz.co - B - 1, Math.floor((0 < G ? G : Math.sqrt(L[4] / L[3])) * dz.bt), B);
+			z.fillRect(0, dz.co - B - 1, Math.floor((0 < spawning_percentage_left ? spawning_percentage_left : Math.sqrt(L[4] / L[3])) * dz.bt), B);
 			z.fillStyle = cC;
 			z.fillRect(0, 0, dz.bt, 1);
 			z.fillRect(0, 0, 1, dz.co);
@@ -3842,7 +3941,7 @@ function game() {
 		}
 
 		function t(P) {
-			P = ak(1E4 * P, iu);
+			P = strange_divide_floor(1E4 * P, iu);
 			8 === gamemode && (0 === isalive[0] ? fW.fX(1) : 0 === isalive[1] && fW.fX(0));
 			P >= L[3] && (fW.fX(-1), L[4] = -1);
 			L[4] !== P && (J++, L[4] = P)
@@ -3850,7 +3949,7 @@ function game() {
 
 		function l() {
 			for (var P = alivecount - 1; 0 <= P; P--)
-				if (0 < aw[entitiesalive[P]].length) return !1;
+				if (0 < temp_borderpixels[entitiesalive[P]].length) return !1;
 			return !0
 		}
 
@@ -3858,9 +3957,9 @@ function game() {
 			land[myid] !== L[6] && (L[6] = land[myid],
 				J++)
 		}
-		var n, z, y, A, B, C, F, E, H, K, J, D, L, I, N, G, M, Q, S;
+		var n, z, y, A, B, C, F, E, H, K, J, D, L, I, N, M, Q, S;
 		this.bh = function () {
-			G = M = 0;
+			spawning_percentage_left = M = 0;
 			D = Array(8);
 			D[0] = "Humans";
 			D[1] = singleplayer ? "Players" : "Bots";
@@ -3870,13 +3969,13 @@ function game() {
 			D[5] = "Interest";
 			D[6] = "Income";
 			D[7] = "Time";
-			S = iu - ak(iu, 100);
+			S = iu - strange_divide_floor(iu, 100);
 			L = Array(D.length);
 			L[0] = singleplayer ? 0 : playercount;
 			L[1] = singleplayer ? alivecount : botcount;
-			L[2] = ig;
+			L[2] = spectators;
 			L[3] = 1E4;
-			L[4] = ak(1E4 * land[0], iu);
+			L[4] = strange_divide_floor(1E4 * land[0], iu);
 			L[5] = 700;
 			L[6] = 0;
 			x();
@@ -3921,8 +4020,7 @@ function game() {
 			A = lo
 		};
 		this.im = function () {
-			A = lo + (eC.pl() && 0 !== isalive[myid] && !fQ ? eC.co +
-				lo : 0)
+			A = lo + (eC.pl() && 0 !== isalive[myid] && !in_spawn ? eC.co + lo : 0)
 		};
 		this.eP = function (P) {
 			0 < J && (P || 12 > sL && 100 <= J || 12 <= sL) && (J = 0, g())
@@ -3939,7 +4037,7 @@ function game() {
 			return P.toFixed(U) + "%"
 		};
 		this.d7 = function () {
-			I[0] && player_count - ig !== L[0] && (L[0] = player_count - ig, J++);
+			I[0] && playersingame - spectators !== L[0] && (L[0] = playersingame - spectators, J++);
 			alivecount - L[0] !== L[1] && (L[1] = alivecount - L[0], J++);
 			this.e0();
 			if (teamgame) {
@@ -3949,27 +4047,26 @@ function game() {
 			P = aq.t3(myid);
 			P !== L[5] && (L[5] = P, J++);
 			x();
-			L[7] +=
-				bw.t4();
+			L[7] += bw.t4();
 			P = k(7);
 			N !== P && (N = P, J += 100)
 		};
 		this.e0 = function () {
-			I[2] && ig !== L[2] && (L[2] = ig, J++)
+			I[2] && spectators !== L[2] && (L[2] = spectators, J++)
 		};
 		this.t5 = function (P) {
-			if (P === j0) return G = 0, g(), !1;
+			if (P === spawntimeallowed) return spawning_percentage_left = 0, g(), !1;
 			if (-1 === P && 0 === M) return !1;
-			var U = G,
-				W = performance.now();
+			var U = spawning_percentage_left, W = performance.now();
 			if (0 <= P) {
 				var X = W - 392 * P;
 				M = 0 === P || X < M ? X : M
 			}
-			G = (W - M) / (392 * j0);
-			G = 1 < G ? 1 : G;
+			spawning_percentage_left = (W - M) / (392 * spawntimeallowed);
+			spawning_percentage_left = 1 < spawning_percentage_left ? 1 : spawning_percentage_left;
+			check_spawn();
 			g();
-			return G !== U
+			return spawning_percentage_left !== U
 		};
 		this.c8 = function () {
 			c9.drawImage(n, y, A)
@@ -4050,16 +4147,16 @@ function game() {
 
 	function kN() {
 		function g(n, z, y, A, B, C, F) {
-			0 !== isalive[n] && 0 !== land[n] && (y = g2 * ((cs[n] + cr[n] + 1) / 2 - y) / (B - y) - .5 * z, A = c3 * ((cv[n] + cu[n] + 1) / 2 - A) / (C - A) - .5 * z, y > g2 || A > c3 || y < -z || A < -z || (c9.setTransform(fv * F, 0, 0, fv * F, y, A), c9.drawImage(t[teamgame ? dO.dP[n] : n < playercount ? 1 : 0], 0, 0)))
+			0 !== isalive[n] && 0 !== land[n] && (y = g2 * ((x_min[n] + x_max[n] + 1) / 2 - y) / (B - y) - .5 * z, A = c3 * ((y_min[n] + y_max[n] + 1) / 2 - A) / (C - A) - .5 * z, y > g2 || A > c3 || y < -z || A < -z || (c9.setTransform(fv * F, 0, 0, fv * F, y, A), c9.drawImage(t[teamgame ? dO.dP[n] : n < playercount ? 1 : 0], 0, 0)))
 		}
 		var k, t, l, x;
 		this.bh = function () {
 			var n;
 			t = [];
 			k = !1;
-			if (fQ)
+			if (in_spawn)
 				if (x = 0, l = 63, k = !0, teamgame)
-					for (n = 0; n <= iy; n++) t.push(this.tH(dO.tI[dO.iW[n]], l));
+					for (n = 0; n <= numberofteams; n++) t.push(this.tH(dO.tI[dO.iW[n]], l));
 				else t.push(this.tH(dO.tI[0], l)), t.push(this.tH(dO.tI[4], l))
 		};
 		this.d7 = function () {
@@ -4116,17 +4213,17 @@ function game() {
 
 	function singleattack(g, k, t) {
 		if (!(0 === isalive[g] || 0 > t || 1E3 < t || 2 === fH[g])) {
-			var l = ak(t * troops[g], 1E3);
+			var l = strange_divide_floor(t * troops[g], 1E3);
 			10 === gamemode && k < playercount && 2 !== fH[k] && (l = e3.tP(g, l));
 			if (teamgame && k < maxentities && !cZ(g, k)) dS(g, k, l);
 			else {
 				k < maxentities && 0 === isalive[k] && (k = maxentities);
-				var x = ak(3 * troops[g], 256);
+				var x = strange_divide_floor(3 * troops[g], 256);
 				l -= 500 <= t ? x : 0;
-				if (!(l <= al) && aW.d5(g)) {
-					var n = aw[g].length;
+				if (!(l <= neutral_landcost) && attacks.notatmaxconcurrentattacks(g)) {
+					var n = temp_borderpixels[g].length;
 					k === maxentities ? cP(g) : cK(g, k);
-					if (0 !== n || 0 !== aw[g].length) teamgame && (cz[g] = 1), g === myid && (as.at[0] += 500 <= t ? t - 12 : t, as.at[1]++, as.at[12] += x, as.at[13] += l), cH(n, g), aW.cI(g, l, k), troops[g] -= l + x, am.cJ(g, !1)
+					if (0 !== n || 0 !== temp_borderpixels[g].length) teamgame && (cz[g] = 1), g === myid && (as.at[0] += 500 <= t ? t - 12 : t, as.at[1]++, as.at[12] += x, as.at[13] += l), border_changetoattacking(n, g), attacks.cI(g, l, k), troops[g] -= l + x, am.cJ(g, !1)
 				}
 			}
 		}
@@ -4134,23 +4231,23 @@ function game() {
 
 	function em(g, k, t, l) {
 		10 === gamemode && g < playercount && (l = e3.tP(g, l));
-		if (l <= al || !aW.d5(g)) return !1;
+		if (l <= neutral_landcost || !attacks.notatmaxconcurrentattacks(g)) return !1;
 		k = e8.cJ(g, k, t);
 		if (0 === k) return !1;
-		t = ak(3 * troops[g], 128);
-		l >= ak(troops[g], 2) && (l -= t);
+		t = strange_divide_floor(3 * troops[g], 128);
+		l >= strange_divide_floor(troops[g], 2) && (l -= t);
 		g === myid && (as.at[12] += t);
-		aW.tQ(g, l, k);
+		attacks.tQ(g, l, k);
 		troops[g] -= l + t;
 		return !0
 	}
 
 	function dS(g, k, t) {
 		if (!(!teamgame || 0 === isalive[g] || 0 === isalive[k] || 0 > t || t > troops[g] || g === k || cZ(g, k) || g < playercount && k < playercount && 7 > gamemode && 1071 > bw.dM())) {
-			var l = ak(troops[g], 16);
-			t -= t >= ak(troops[g], 2) ? l : 0;
+			var l = strange_divide_floor(troops[g], 16);
+			t -= t >= strange_divide_floor(troops[g], 2) ? l : 0;
 			var x = land[k] * is - troops[k];
-			0 >= x || (t = t > x ? x : t, g === myid && (dx.mq(t, k), as.at[12] += l, as.at[16] += t), k === myid && (dx.ms(t, g), as.at[10] += t), troops[g] -= t + l, troops[k] += t)
+			0 >= x || (t = t > x ? x : t, g === myid && (newannouncements.mq(t, k), as.at[12] += l, as.at[16] += t), k === myid && (newannouncements.ms(t, g), as.at[10] += t), troops[g] -= t + l, troops[k] += t)
 		}
 	}
 
@@ -4173,8 +4270,8 @@ function game() {
 			}
 		};
 		this.ir = function () {
-			this.iq && this.tT[2] >= this.tT[0] && this.tT[3] >=
-				this.tT[1] && jG.putImageData(jH, 0, 0, this.tT[0], this.tT[1], this.tT[2] - this.tT[0] + 1, this.tT[3] - this.tT[1] + 1);
+			this.iq && this.tT[2] >= this.tT[0] && this.tT[3] >= this.tT[1] && 
+			jG.putImageData(jH, 0, 0, this.tT[0], this.tT[1], this.tT[2] - this.tT[0] + 1, this.tT[3] - this.tT[1] + 1);
 			this.iq = !1
 		};
 		this.ij = function () {
@@ -4182,35 +4279,34 @@ function game() {
 			this.iq = !1
 		};
 		this.bh = function () {
-			var g;
+			var y;
 			this.iq = this.gx = this.tS = !1;
 			this.tT[0] = mapwidth;
 			this.tT[1] = mapheight;
 			this.tT[2] = this.tT[3] = 0;
 			var k = 1;
 			a: for (; k < mapwidth - 1; k++)
-				for (g = mapheight - 2; 1 < g; g--)
-					if (1 === tW[ax.ep(k, g) + 2]) {
+				for (y = mapheight - 2; 1 < y; y--)
+					if (1 === pixel_rgbv[pixel.coordstopixel(k, y) + 2]) {
 						this.tT[0] = k;
 						break a
-					} g = 1;
-			a: for (; g < mapheight -
-				1; g++)
+					} y = 1;
+			a: for (; y < mapheight - 1; y++)
 				for (k = mapwidth - 2; 1 < k; k--)
-					if (1 === tW[ax.ep(k, g) + 2]) {
-						this.tT[1] = g;
+					if (1 === pixel_rgbv[pixel.coordstopixel(k, y) + 2]) {
+						this.tT[1] = y;
 						break a
 					} k = mapwidth - 2;
 			a: for (; 0 < k; k--)
-				for (g = mapheight - 2; 1 < g; g--)
-					if (1 === tW[ax.ep(k, g) + 2]) {
+				for (y = mapheight - 2; 1 < y; y--)
+					if (1 === pixel_rgbv[pixel.coordstopixel(k, y) + 2]) {
 						this.tT[2] = k;
 						break a
-					} g = mapheight - 2;
-			a: for (; 0 < g; g--)
+					} y = mapheight - 2;
+			a: for (; 0 < y; y--)
 				for (k = mapwidth - 2; 1 < k; k--)
-					if (1 === tW[ax.ep(k, g) + 2]) {
-						this.tT[3] = g;
+					if (1 === pixel_rgbv[pixel.coordstopixel(k, y) + 2]) {
+						this.tT[3] = y;
 						break a
 					}
 		}
@@ -4725,7 +4821,7 @@ function game() {
 			this.uf()
 		};
 		this.ug = function () {
-			return [ak(this.colors[0][0], 4), ak(this.colors[0][1], 4), ak(this.colors[0][2], 4)]
+			return [strange_divide_floor(this.colors[0][0], 4), strange_divide_floor(this.colors[0][1], 4), strange_divide_floor(this.colors[0][2], 4)]
 		};
 		this.bz = function (k, t) {
 			this.uZ = 0;
@@ -4748,7 +4844,7 @@ function game() {
 				g(this.colors[0][k])
 		};
 		this.uh = function () {
-			for (var k = "", t, l = 0; 3 > l; l++) t = ak(this.colors[0][l], 4), 10 > t && (k += "0"), k += t.toString();
+			for (var k = "", t, l = 0; 3 > l; l++) t = strange_divide_floor(this.colors[0][l], 4), 10 > t && (k += "0"), k += t.toString();
 			a8(k)
 		};
 		this.lV = function (k) {
@@ -5018,7 +5114,7 @@ function game() {
 					t = s / mapheight;
 				k = k > t ? k : t;
 				c9.setTransform(k, 0, 0, k, Math.floor((r - k * mapwidth) / 2), Math.floor((s - k * mapheight) / 2));
-				c9.drawImage(hc, 0, 0);
+				c9.drawImage(map, 0, 0);
 				c9.setTransform(1, 0, 0, 1, 0, 0);
 				c9.fillStyle = nt
 			} else c9.fillStyle = g5;
@@ -5045,7 +5141,7 @@ function game() {
 			k -= l;
 			if (0 > g || 0 > k || g >= this.bt - 1 || k >= this.co - 1) return 0 === t && (this.ku = !1, 0 === jT.rc() && jV.c6(0, !0), bw.bx = !0), !1;
 			l = Math.floor(this.bt / this.nM);
-			g = ak(g, l) + this.nM * ak(k, l);
+			g = strange_divide_floor(g, l) + this.nM * strange_divide_floor(k, l);
 			g = 0 > g ? 0 : g >= a5.nQ ? a5.nQ - 1 : g;
 			if (0 ===
 				t || 1 === t && !a5.a7[g] || 2 === t && a5.a7[g]) this.vN = !a5.a7[g], this.vO = this.uZ = !0, a5.a7[g] = !a5.a7[g], a5.ni(), bw.bx = !0;
@@ -5069,7 +5165,7 @@ function game() {
 			c9.strokeStyle = cC;
 			c9.strokeRect(-1, -1, this.bt + 2, this.co + 2);
 			for (var t = Math.floor(this.bt /
-				this.nM), l = (t - 2 * this.b3 * t) / a5.bt, x = a5.nQ - 1; 0 <= x; x--) c9.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nM * t), Math.floor(k + ak(x, this.nM) * t)), a5.a7[x] && (c9.fillStyle = o1, c9.fillRect(0, 0, t, t)), c9.setTransform(l, 0, 0, l, Math.floor(g + x % this.nM * t + this.b3 * t), Math.floor(k + ak(x, this.nM) * t + this.b3 * t)), c9.drawImage(a5.kn[x], 0, 0);
+				this.nM), l = (t - 2 * this.b3 * t) / a5.bt, x = a5.nQ - 1; 0 <= x; x--) c9.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nM * t), Math.floor(k + strange_divide_floor(x, this.nM) * t)), a5.a7[x] && (c9.fillStyle = o1, c9.fillRect(0, 0, t, t)), c9.setTransform(l, 0, 0, l, Math.floor(g + x % this.nM * t + this.b3 * t), Math.floor(k + strange_divide_floor(x, this.nM) * t + this.b3 * t)), c9.drawImage(a5.kn[x], 0, 0);
 			c9.setTransform(1, 0, 0, 1, 0, 0);
 			c9.imageSmoothingEnabled = !1
 		}
@@ -5155,7 +5251,7 @@ function game() {
 			} else if (7 === y) {
 				if (n !== e1.mi) return
 			} else {
-				8 === y && (n !== e1.jM || singleplayer || dx.mT(k(z)));
+				8 === y && (n !== e1.jM || singleplayer || newannouncements.mT(k(z)));
 				return
 			}
 			g()
@@ -5163,7 +5259,7 @@ function game() {
 		this.v3 = function (n) {
 			t =
 				n;
-			8 === jT.rc() ? dx.mT(k(n)) : g()
+			8 === jT.rc() ? newannouncements.mT(k(n)) : g()
 		};
 		this.le = function () {
 			jR.uO[2].nD = k(t)
@@ -5282,23 +5378,23 @@ function game() {
 
 		function t() {
 			if (7 === jT.rc()) {
-				for (var P = -1, U = E.length - 1; 0 <= U; U--)
-					if (null === E[U].lZ) {
+				for (var P = -1, U = lobbygames.length - 1; 0 <= U; U--)
+					if (null === lobbygames[U].lZ) {
 						P = U;
 						break
 					} if (-1 !== P) {
-						U = l(E[P].wU, E[P].wV);
-						if (null !== U) E[P].lZ = U;
+						U = l(lobbygames[P].mapid, lobbygames[P].wV);
+						if (null !== U) lobbygames[P].lZ = U;
 						else {
 							U = mapwidth;
 							var W = mapheight,
-								X = hc,
+								X = map,
 								V = pH,
 								pa = wb,
 								ba = wc,
-								da = mt,
+								da = currentmap,
 								qa = wR;
-							wd(E[P].wU, E[P].wV);
+							wd(lobbygames[P].mapid, lobbygames[P].wV);
 							we.wf();
 							var R = document.createElement("canvas");
 							R.width = 128;
@@ -5311,16 +5407,16 @@ function game() {
 							Y > T && (T = Y);
 							O.imageSmoothingEnabled = !0;
 							O.setTransform(T, 0, 0, T, (128 - T * mapwidth) / 2, (128 - T * mapheight) / 2);
-							O.drawImage(hc, 0, 0);
+							O.drawImage(map, 0, 0);
 							mapwidth = U;
 							mapheight = W;
-							hc = X;
+							map = X;
 							pH = V;
 							wb = pa;
 							wc = ba;
-							mt = da;
+							currentmap = da;
 							wR = qa;
-							E[P].lZ = R
+							lobbygames[P].lZ = R
 						}
 						bw.bx = !0
 					}
@@ -5328,36 +5424,36 @@ function game() {
 		}
 
 		function l(P, U) {
-			for (var W = E.length - 1; 0 <= W; W--)
-				if (null !== E[W].lZ && E[W].wU === P && E[W].wV === U) return E[W].lZ;
+			for (var W = lobbygames.length - 1; 0 <= W; W--)
+				if (null !== lobbygames[W].lZ && lobbygames[W].mapid === P && lobbygames[W].wV === U) return lobbygames[W].lZ;
 			return null
 		}
 
 		function x(P, U) {
 			var W, X;
-			if (0 === E.length) return !1;
+			if (0 === lobbygames.length) return !1;
 			var V = 0;
 			var pa = B;
 			for (X = 0; X < y[1]; X++) {
 				var ba = A;
 				for (W = 0; W < y[0]; W++) {
-					if (P > ba && P < ba + n && U > pa && U < pa + n) return multi.gameID(E[V].wS), K = E[V].wS !== K ? E[V].wS : -1, bw.bx = !0;
+					if (P > ba && P < ba + n && U > pa && U < pa + n) return multi.gameID(lobbygames[V].gameID), K = lobbygames[V].gameID !== K ? lobbygames[V].gameID : -1, bw.bx = !0;
 					V++;
-					if (V >= E.length) return !1;
+					if (V >= lobbygames.length) return !1;
 					ba += n + c2
 				}
 				pa += n + c2
 			}
 			return !1
 		}
-		var n, z, y, A, B, C, F, E, H, K, J, D, L = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
+		var n, z, y, A, B, C, F, H, K, J, D, L = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
 			I = [0, 0, 0, 0],
 			N, G, M, Q, S;
 		this.bh = function () {
 			S = 0;
 			K = -1;
 			jT.setState(7);
-			E = [];
+			lobbygames = [];
 			this.le();
 			var P;
 			F = Array(11);
@@ -5397,7 +5493,7 @@ function game() {
 			bw.bx = !0
 		};
 		this.tG = function () {
-			E = [];
+			lobbygames = [];
 			F = []
 		};
 		this.le = function () {
@@ -5407,7 +5503,7 @@ function game() {
 			q ? (J = Math.floor(.8 * .4 * bi), D = Math.floor(.56 * J), H[0] = c2, r < s ? (H[1] = D + 2 * c2, H[2] = r - 3 * H[0], H[3] = tx.c7() - 3 * c2 - D, G = Math.floor(.95 * D), M = Math.floor((r - J - c2) / 2), Q = Math.floor(c2 + D / 2)) : (H[1] = c2, H[2] = r - 3 * c2 - J, H[3] = tx.c7() - 2 * c2, G = Math.floor(.8 * J), H[3] - D < J && (G = Math.floor(.8 * (H[3] - D)), G = mI(D, G)), M = Math.floor(r - J / 2 - c2), Q = Math.floor(c2 + D + (H[3] - D) / 2), Q = mI(Q, Math.floor(D + 2 * c2 + G / 2)))) : (J = Math.floor(.2016 * bi), D = Math.floor(.56 * J), H[2] = Math.floor(.5 * r), H[3] = Math.floor(.5 * s),
 				H[1] = Math.floor(.45 * (s - H[3])), H[0] = Math.floor((r - H[2]) / 2), G = Math.floor(.75 * D), M = Math.floor(r / 2), Q = Math.floor(H[1] + H[3] + (s - H[3] - H[1]) / 2));
 			N = bl + Math.floor(.65 * D / 4) + bm;
-			for (P = U = 1; P * U < E.length;) H[2] / (P + 1) > H[3] / (U + 1) ? P++ : U++;
+			for (P = U = 1; P * U < lobbygames.length;) H[2] / (P + 1) > H[3] / (U + 1) ? P++ : U++;
 			var W = (H[2] - (P - 1) * c2) / P;
 			var X = (H[3] - (U - 1) * c2) / U;
 			n = W < X ? W : X;
@@ -5419,35 +5515,35 @@ function game() {
 			B = H[1] + Math.floor((H[3] - y[1] * n - (y[1] - 1) * c2) / 2)
 		};
 		this.ty = function (P, U) {
-			var W, X = E.length;
+			var W, X = lobbygames.length;
 			I = P;
 			for (W = 0; W < U.length; W++) {
-				var V =
-					l(U[W].mt, U[W].wR);
-				E.push({
-					wS: U[W].id,
-					j4: U[W].j4,
-					j5: U[W].wT,
-					wU: U[W].mt,
+				var V = l(U[W].mt, U[W].wR);
+
+				lobbygames.push({
+					gameID: U[W].id,
+					lobbygamemode: U[W].lobbygamemode,
+					contest: U[W].contest,
+					mapid: U[W].mt,
 					wV: U[W].wR,
 					joined: U[W].wW,
 					nI: U[W].v6,
-					wX: U[W].wX,
+					wX: U[W].maxplayers,
 					lZ: V
 				})
 			}
-			for (W = X - 1; 0 <= W; W--) E.shift();
+			for (W = X - 1; 0 <= W; W--) lobbygames.shift();
 			if (-1 !== K)
-				for (V = K, K = -1, W = E.length - 1; 0 <= W; W--)
-					if (E[W].wS === V) {
+				for (V = K, K = -1, W = lobbygames.length - 1; 0 <= W; W--)
+					if (lobbygames[W].gameID === V) {
 						K = V;
 						break
-					} if (E.length > S || E.length < S) S = E.length, this.le();
+					} if (lobbygames.length > S || lobbygames.length < S) S = lobbygames.length, this.le();
 			this.wY();
 			bw.bx = !0
 		};
 		this.wY = function () {
-			for (var P = E.length - 1; 0 <= P; P--) null === E[P].lZ && setTimeout(t, 0)
+			for (var P = lobbygames.length - 1; 0 <= P; P--) null === lobbygames[P].lZ && setTimeout(t, 0)
 		};
 		this.bz = function (P, U) {
 			return 4 * ((P - M) * (P - M) + (U - Q) * (U - Q)) <= G * G ? (this.tG(), e1.vU(3240), jO.bh(), jR.lV(P, U, !1), bw.bx = !0) : x(P, U)
@@ -5490,22 +5586,22 @@ function game() {
 					c9.textAlign = oO;
 					c9.fillText(eD.g7(I[V]), r - c2 - W, pa)
 				}
-				if (0 !== E.length)
+				if (0 !== lobbygames.length)
 					for (X = 0; X < y[1]; X++) {
 						pa = A;
 						for (W = 0; W < y[0]; W++) {
 							V = P;
 							var ba = Math.floor(pa),
 								da = Math.floor(U);
-							if (null === E[V].lZ) c9.fillStyle =
+							if (null === lobbygames[V].lZ) c9.fillStyle =
 								nt, c9.fillRect(ba, da, z, z);
 							else {
 								var qa = z / 128;
 								c9.setTransform(qa, 0, 0, qa, ba, da);
-								c9.drawImage(E[V].lZ, 0, 0);
+								c9.drawImage(lobbygames[V].lZ, 0, 0);
 								c9.setTransform(1, 0, 0, 1, 0, 0)
 							}
-							if (K === E[V].wS) {
+							if (K === lobbygames[V].gameID) {
 								qa = ba;
 								var R = da,
 									O = Math.floor(.2 * z),
@@ -5532,22 +5628,22 @@ function game() {
 							c9.textBaseline = cA;
 							c9.textAlign = mN;
 							c9.fillStyle = oG;
-							c9.fillText(E[V].joined.toString(), Math.floor(ba + .07 * n), Math.floor(da + .9 * n));
-							256 >= E[V].wX && (c9.textAlign = cB, c9.fillStyle = nz, c9.fillText(E[V].wX.toString(), Math.floor(ba + .5 * n), Math.floor(da + .9 * n)));
+							c9.fillText(lobbygames[V].joined.toString(), Math.floor(ba + .07 * n), Math.floor(da + .9 * n));
+							256 >= lobbygames[V].maxplayers && (c9.textAlign = cB, c9.fillStyle = nz, c9.fillText(lobbygames[V].maxplayers.toString(), Math.floor(ba + .5 * n), Math.floor(da + .9 * n)));
 							c9.textAlign = oO;
 							c9.fillStyle = oB;
-							c9.fillText(E[V].nI.toString(), Math.floor(ba + .93 * n), Math.floor(da + .9 * n));
+							c9.fillText(lobbygames[V].nI.toString(), Math.floor(ba + .93 * n), Math.floor(da + .9 * n));
 							c9.strokeStyle = oH;
 							c9.strokeRect(ba,
 								da, z, z);
 							O = Math.floor(.16 * n);
 							qa = O / 48;
 							c9.setTransform(qa, 0, 0, qa, Math.floor(ba + (R - O) / 2), Math.floor(da + (R - O) / 2));
-							F.length > E[V].j4 && c9.drawImage(F[E[V].j4], 0, 0);
+							F.length > lobbygames[V].lobbygamemode && c9.drawImage(F[lobbygames[V].lobbygamemode], 0, 0);
 							c9.setTransform(1, 0, 0, 1, 0, 0);
-							E[V].j5 && (V = bo.br(4), qa = .5 * n / V.width, c9.setTransform(qa, 0, 0, qa, Math.floor(ba + (n - qa * V.width) / 2), Math.floor(da + (n - qa * V.height) / 2)), c9.globalAlpha = .6, c9.drawImage(V, 0, 0), c9.globalAlpha = 1, c9.setTransform(1, 0, 0, 1, 0, 0));
+							lobbygames[V].contest && (V = bo.br(4), qa = .5 * n / V.width, c9.setTransform(qa, 0, 0, qa, Math.floor(ba + (n - qa * V.width) / 2), Math.floor(da + (n - qa * V.height) / 2)), c9.globalAlpha = .6, c9.drawImage(V, 0, 0), c9.globalAlpha = 1, c9.setTransform(1, 0, 0, 1, 0, 0));
 							P++;
-							if (P >= E.length) return;
+							if (P >= lobbygames.length) return;
 							pa += n + c2
 						}
 						U += n + c2
@@ -5726,7 +5822,7 @@ function game() {
 			jd.ku && jd.c8()
 		};
 		this.wy = function (t) {
-			return 0 === t && 1 === this.dm[t].ma ? "You" : d8.difficulty[this.dm[t].b5]
+			return 0 === t && 1 === this.dm[t].ma ? "You" : d8.dd[this.dm[t].b5]
 		};
 		this.wz = function (t) {
 			return 1 === this.dm[t].ma ? "1 Player" : this.dm[t].ma + " Players"
@@ -6024,19 +6120,19 @@ function game() {
 		}
 	}
 
-	function k3() {
-		function g(D, L) {
-			tW[D] = 0;
-			tW[D + 1] = 0;
-			tW[D + 2] = L;
-			tW[D + 3] = 0;
-			k(D)
+	function oldpixel() {
+		function revertdefaultpixel(pixelcoords, pixeltype) {
+			pixel_rgbv[pixelcoords] = 0;
+			pixel_rgbv[pixelcoords + 1] = 0;
+			pixel_rgbv[pixelcoords + 2] = pixeltype;
+			pixel_rgbv[pixelcoords + 3] = 0;
+			k(pixelcoords)
 		}
-
+	
 		function k(D) {
 			if (!gw.gx) {
-				var L = ax.g3(D);
-				D = ax.c7(D);
+				var L = pixel.pixeltox(D);
+				D = pixel.pixeltoy(D);
 				gw.gx = L >= gm.tV[0] && L <= gm.tV[2] && D >= gm.tV[1] && D <= gm.tV[3]
 			}
 		}
@@ -6063,11 +6159,11 @@ function game() {
 				[4, 4, 4, 14],
 				[4, 4, 4, 13]
 			],
-			n, z, y, A, B, C, F, E, H, K, J;
-		this.bh = function (D) {
-			n = new Uint8Array(maxentities);
-			z = new Uint8Array(maxentities);
-			y = new Uint8Array(maxentities);
+			border_red, border_green, border_blue, A, B, C, F, E, H, K;
+		this.color_init = function (D) {
+			border_red = new Uint8Array(maxentities);
+			border_green = new Uint8Array(maxentities);
+			border_blue = new Uint8Array(maxentities);
 			A = new Uint8Array(maxentities);
 			B = new Uint8Array(maxentities);
 			C = new Uint8Array(maxentities);
@@ -6075,124 +6171,114 @@ function game() {
 			E = new Uint8Array(maxentities);
 			H = new Uint8Array(maxentities);
 			K = new Uint8Array(maxentities);
-			this.qT = new Uint8Array(maxentities);
-			J = new Int32Array(4);
-			J[0] = -4 * mapwidth;
-			J[1] = 4;
-			J[2] = -J[0];
-			J[3] = -J[1];
+			this.lightness = new Uint8Array(maxentities);
+			aQ();
 			if (teamgame)
-				for (var L, I = maxentities - 1; 0 <= I; I--) L = dO.iW[dO.dP[I]], D = ak((x[L][3] + 1) * cW.random(), cW.value(100)), n[I] = l[L][0] + D * x[L][0], z[I] = l[L][1] + D * x[L][1], y[I] = l[L][2] + D * x[L][2];
+				for (var L, I = maxentities - 1; 0 <= I; I--) L = dO.iW[dO.dP[I]], D = strange_divide_floor((x[L][3] + 1) * cW.random(), cW.value(100)), border_red[I] = l[L][0] + D * x[L][0], border_green[I] = l[L][1] + D * x[L][1], border_blue[I] = l[L][2] + D * x[L][2];
 			else {
-				for (L = maxentities - 1; L >= playercount; L--) n[L] = 4 * ak(64 * cW.random(), cW.value(100)), z[L] = 4 * ak(64 * cW.random(), cW.value(100)),
-					y[L] = 4 * ak(64 * cW.random(), cW.value(100));
-				for (L = playercount - 1; 0 <= L; L--) n[L] = 4 * D[L].wv[0], z[L] = 4 * D[L].wv[1], y[L] = 4 * D[L].wv[2]
+				for (L = maxentities - 1; L >= playercount; L--) border_red[L] = 4 * strange_divide_floor(64 * cW.random(), cW.value(100)), border_green[L] = 4 * strange_divide_floor(64 * cW.random(), cW.value(100)),
+					border_blue[L] = 4 * strange_divide_floor(64 * cW.random(), cW.value(100));
+				for (L = playercount - 1; 0 <= L; L--) border_red[L] = 4 * D[L].wv[0], border_green[L] = 4 * D[L].wv[1], border_blue[L] = 4 * D[L].wv[2]
 			}
-			for (D = maxentities - 1; 0 <= D; D--) L = ak(n[D] + z[D] + y[D], 3), n[D] += xz(L - n[D], 2), z[D] += xz(L - z[D], 2), y[D] += xz(L - y[D], 2), n[D] -= n[D] % 4, z[D] -= z[D] % 4, y[D] -= y[D] % 4;
-			for (D = maxentities - 1; 0 <= D; D--) n[D] += ak(D, 128), z[D] += ak(D % 128, 32), y[D] += ak(D % 32, 8), A[D] = D % 8;
-			this.xw();
-			for (D = maxentities - 1; 0 <= D; D--) B[D] = 32 > n[D] ? n[D] + 32 : n[D] - 32, C[D] = 32 > z[D] ? z[D] + 32 : z[D] - 32, F[D] = 32 > y[D] ? y[D] + 32 : y[D] - 32;
-			for (D = maxentities - 1; 0 <= D; D--) E[D] = 235 < n[D] ? n[D] - 20 : n[D] + 20,
-				H[D] = 235 < z[D] ? z[D] - 20 : z[D] + 20, K[D] = 235 < y[D] ? y[D] - 20 : y[D] + 20
+			for (D = maxentities - 1; 0 <= D; D--) L = strange_divide_floor(border_red[D] + border_green[D] + border_blue[D], 3), border_red[D] += xz(L - border_red[D], 2), border_green[D] += xz(L - border_green[D], 2), border_blue[D] += xz(L - border_blue[D], 2), border_red[D] -= border_red[D] % 4, border_green[D] -= border_green[D] % 4, border_blue[D] -= border_blue[D] % 4;
+			for (D = maxentities - 1; 0 <= D; D--) border_red[D] += strange_divide_floor(D, 128), border_green[D] += strange_divide_floor(D % 128, 32), border_blue[D] += strange_divide_floor(D % 32, 8), A[D] = D % 8;
+			for (D = maxentities - 1; 0 <= D; D--) this.lightness[D] = 280 > border_red[D] + border_green[D] + border_blue[D] ? 0 : 1
+			for (D = maxentities - 1; 0 <= D; D--) B[D] = 32 > border_red[D] ? border_red[D] + 32 : border_red[D] - 32, C[D] = 32 > border_green[D] ? border_green[D] + 32 : border_green[D] - 32, F[D] = 32 > border_blue[D] ? border_blue[D] + 32 : border_blue[D] - 32;
+			for (D = maxentities - 1; 0 <= D; D--) E[D] = 235 < border_red[D] ? border_red[D] - 20 : border_red[D] + 20,
+				H[D] = 235 < border_green[D] ? border_green[D] - 20 : border_green[D] + 20, K[D] = 235 < border_blue[D] ? border_blue[D] - 20 : border_blue[D] + 20
 		};
-		this.xw = function () {
-			for (var D = maxentities - 1; 0 <= D; D--) this.qT[D] = 280 > n[D] + z[D] + y[D] ? 0 : 1
+		this.pixeltox = function (pixelcoords) {
+			return strange_divide_floor(pixelcoords, 4) % mapwidth
 		};
-		this.g3 = function (D) {
-			return ak(D, 4) % mapwidth
+		this.pixeltoy = function (pixelcoords) {
+			return strange_divide_floor(pixelcoords, 4 * mapwidth)
 		};
-		this.c7 = function (D) {
-			return ak(D, 4 * mapwidth)
+		this.coordstopixel = function (x, y) {
+			return Math.floor(4 * (y * mapwidth + x))
 		};
-		this.ep = function (D, L) {
-			return Math.floor(4 * (L * mapwidth + D))
+		this.bordersmountain = function (D) {
+			return this.ismountain(D + offset[0]) || this.ismountain(D + offset[1]) || this.ismountain(D + offset[2]) || this.ismountain(D + offset[3])
 		};
-		this.hQ = function (D) {
-			return this.y0(D + J[0]) || this.y0(D + J[1]) || this.y0(D + J[2]) || this.y0(D + J[3])
+		this.canexpandfromthispixel = function (pixelcoords, id) {
+			return this.canattackpixel(pixelcoords + offset[0], id) || this.canattackpixel(pixelcoords + offset[1], id) || this.canattackpixel(pixelcoords + offset[2], id) || this.canattackpixel(pixelcoords + offset[3], id)
 		};
-		this.hO = function (D, L) {
-			return this.y1(D + J[0], L) || this.y1(D + J[1], L) || this.y1(D + J[2], L) || this.y1(D + J[3], L)
+		this.isentitypixel = function (pixelcoords) {
+			return 208 <= pixel_rgbv[pixelcoords + 3]
 		};
-		this.b6 = function (D) {
-			return 208 <=
-				tW[D + 3]
+		this.strong_isowner = function (pixelowner, pixelcoords) {
+			return this.isentitypixel(pixelcoords) && this.isowner(pixelowner, pixelcoords)
 		};
-		this.hW = function (D, L) {
-			return this.b6(L) && this.y2(D, L)
+		this.isowner = function (pixelowner, pixelcoords) {
+			return pixelowner === this.pixelowner(pixelcoords)
 		};
-		this.y2 = function (D, L) {
-			return D === this.b7(L)
+		this.innerpixel = function (pixelcoords) {
+			return 208 <= pixel_rgbv[pixelcoords + 3] && 224 > pixel_rgbv[pixelcoords + 3]
 		};
-		this.y3 = function (D) {
-			return 208 <= tW[D + 3] && 224 > tW[D + 3]
+		this.stationaryborderpixel = function (pixelcoords) {
+			return 224 <= pixel_rgbv[pixelcoords + 3] && 248 > pixel_rgbv[pixelcoords + 3]
 		};
-		this.cM = function (D) {
-			return 224 <= tW[D + 3] && 248 > tW[D + 3]
+		this.borderswater = function (pixelcoords) {
+			for (var side = 3; 0 <= side; side--)
+				if (this.iswater(pixelcoords + offset[side])) return 1;
+			return 0;
 		};
-		this.hP = function (D) {
-			for (var L = 3; 0 <= L; L--)
-				if (this.y4(D + J[L])) return !0;
-			return !1
+		this.isboat = function (pixelcoords) {
+			return 192 <= pixel_rgbv[pixelcoords + 3] && 208 > pixel_rgbv[pixelcoords + 3]
 		};
-		this.y5 = function (D) {
-			return 192 <= tW[D + 3] && 208 > tW[D + 3]
+		this.strong_isboat = function (pixelcoords, L) {
+			return this.isboat(pixelcoords) && L === this.pixelowner(pixelcoords)
 		};
-		this.y6 = function (D, L) {
-			return this.y5(D) && L === this.b7(D)
+		this.canownpixel = function (pixelcoords) {
+			return this.isentitypixel(pixelcoords) || this.isneutral(pixelcoords)
 		};
-		this.ay = function (D) {
-			return this.b6(D) || this.b8(D)
+		this.iswater = function (pixelcoords) {
+			return 0 === pixel_rgbv[pixelcoords + 3] && 2 === pixel_rgbv[pixelcoords + 2] || this.isboat(pixelcoords)
 		};
-		this.y4 = function (D) {
-			return 0 === tW[D + 3] && 2 ===
-				tW[D + 2] || this.y5(D)
+		this.isneutral = function (pixelcoords) {
+			return 0 === pixel_rgbv[pixelcoords + 3] && 1 === pixel_rgbv[pixelcoords + 2]
 		};
-		this.b8 = function (D) {
-			return 0 === tW[D + 3] && 1 === tW[D + 2]
+		this.ismountain = function (pixelcoords) {
+			return 0 === pixel_rgbv[pixelcoords + 3] && 3 === pixel_rgbv[pixelcoords + 2]
 		};
-		this.y0 = function (D) {
-			return 0 === tW[D + 3] && 3 === tW[D + 2]
+		this.canattackpixel = function (pixelcoords, id) {
+			return this.isneutral(pixelcoords) || this.isentitypixel(pixelcoords) && id !== this.pixelowner(pixelcoords)
 		};
-		this.y1 = function (D, L) {
-			return this.b8(D) || this.b6(D) && L !== this.b7(D)
+		this.pixelowner = function (pixelcoords) {
+			return pixel_rgbv[pixelcoords] % 4 * 128 + pixel_rgbv[pixelcoords + 1] % 4 * 32 + pixel_rgbv[pixelcoords + 2] % 4 * 8 + pixel_rgbv[pixelcoords + 3] % 8
 		};
-		this.b7 = function (D) {
-			return tW[D] % 4 * 128 + tW[D + 1] % 4 * 32 + tW[D + 2] % 4 * 8 + tW[D + 3] % 8
+		this.revertland = function (pixelcoords) {
+			revertdefaultpixel(pixelcoords, 1)
 		};
-		this.hX = function (D) {
-			g(D, 1)
+		this.revertwater = function (pixelcoords) {
+			revertdefaultpixel(pixelcoords, 2)
 		};
-		this.y8 = function (D) {
-			g(D, 2)
+		this.changetoinner = function (pixelcoords, L) {
+			pixel_rgbv[pixelcoords] = border_red[L];
+			pixel_rgbv[pixelcoords + 1] = border_green[L];
+			pixel_rgbv[pixelcoords + 2] = border_blue[L];
+			pixel_rgbv[pixelcoords + 3] = 208 + A[L];
+			k(pixelcoords)
 		};
-		this.hN = function (D, L) {
-			tW[D] = n[L];
-			tW[D + 1] = z[L];
-			tW[D + 2] = y[L];
-			tW[D + 3] = 208 + A[L];
-			k(D)
+		this.changetoborder = function (pixelcoords, L) {
+			pixel_rgbv[pixelcoords] = B[L];
+			pixel_rgbv[pixelcoords + 1] = C[L];
+			pixel_rgbv[pixelcoords + 2] = F[L];
+			pixel_rgbv[pixelcoords + 3] = 224 + A[L];
+			k(pixelcoords)
 		};
-		this.az = function (D, L) {
-			tW[D] = B[L];
-			tW[D + 1] = C[L];
-			tW[D + 2] = F[L];
-			tW[D + 3] = 224 + A[L];
-			k(D)
+		this.changetoattacking = function (pixelcoords, L) {
+			pixel_rgbv[pixelcoords] = E[L];
+			pixel_rgbv[pixelcoords + 1] = H[L];
+			pixel_rgbv[pixelcoords + 2] = K[L];
+			pixel_rgbv[pixelcoords + 3] = 248 + A[L];
+			k(pixelcoords)
 		};
-		this.cO = function (D,
-			L) {
-			tW[D] = E[L];
-			tW[D + 1] = H[L];
-			tW[D + 2] = K[L];
-			tW[D + 3] = 248 + A[L];
-			k(D)
-		};
-		this.yB = function (D, L) {
-			tW[D] = t[0] + n[L] % 4;
-			tW[D + 1] = t[1] + z[L] % 4;
-			tW[D + 2] = t[2] + y[L] % 4;
-			tW[D + 3] = 192 + A[L];
-			k(D)
+		this.changetoboat = function (pixelcoords, L) {
+			pixel_rgbv[pixelcoords] = t[0] + border_red[L] % 4;
+			pixel_rgbv[pixelcoords + 1] = t[1] + border_green[L] % 4;
+			pixel_rgbv[pixelcoords + 2] = t[2] + border_blue[L] % 4;
+			pixel_rgbv[pixelcoords + 3] = 192 + A[L];
+			k(pixelcoords)
 		}
 	}
 
@@ -6207,7 +6293,7 @@ function game() {
 		}
 
 		function t() {
-			z[0] = "Passwor";
+			z[0] = "Player " + Math.floor(1E3 * Math.random());
 			z[1] = r < s ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
 			z[2] = 1;
 			z[3] = 1;
@@ -6295,7 +6381,7 @@ function game() {
 		};
 		this.d7 = function () {
 			if (0 !== k)
-				if (0 === isalive[myid] || aW.yT(myid) === aW.aX(myid)) k = 0;
+				if (0 === isalive[myid] || attacks.boatcount(myid) === attacks.currentattackcount(myid)) k = 0;
 				else {
 					var l;
 					for (l = k - 2; 0 <= l; l -= 2) {
@@ -6329,24 +6415,24 @@ function game() {
 		yY(g);
 		am.an(g);
 		e8.fr(g);
-		aW.yZ(g)
+		attacks.resetattacks(g)
 	}
 
 	function yW(g) {
-		he.kw(g) && ig++;
-		var k = aW.yb(g);
+		he.kw(g) && spectators++;
+		var k = attacks.yb(g);
 		0 === k.length ? g === myid && yc() : (yd(g, k), ye(g, k))
 	}
 
 	function yc() {
-		as.at[17] += troops[myid] + aW.yf(myid);
+		as.at[17] += troops[myid] + attacks.yf(myid);
 		eK.show(!1, !1);
 		dz.sr()
 	}
 
 	function yd(g, k) {
 		var t;
-		for (t = k.length - 1; 0 <= t; t--) aW.yg(k[t], g)
+		for (t = k.length - 1; 0 <= t; t--) attacks.yg(k[t], g)
 	}
 
 	function yh(g) {
@@ -6358,31 +6444,31 @@ function game() {
 	function ye(g, k) {
 		var t, l = k[yh(k)];
 		9 === gamemode && 1 === dO.dP[g] && cW.dH(8) && dq.yj(l);
-		if (g === myid) dx.fZ(l, 1), yc();
+		if (g === myid) newannouncements.fZ(l, 1), yc();
 		else {
 			for (t = k.length - 1; 0 <= t; t--)
 				if (k[t] === myid) {
-					dx.fZ(g, 0);
+					newannouncements.fZ(g, 0);
 					return
-				} g < playercount && dx.mP(0, g, l)
+				} g < playercount && newannouncements.mP(0, g, l)
 		}
 	}
 
 	function yY(g) {
 		isalive[g] = troops[g] = 0;
-		aw[g] = null;
-		borderpixels[g] = null;
-		bF[g] = null;
-		bI[g] = null;
+		temp_borderpixels[g] = null;
+		borderlandpixels[g] = null;
+		borderwaterpixels[g] = null;
+		bordermountainpixel[g] = null;
 		e6.fV(g)
 	}
 
 	function yX(g) {
 		var k, t;
-		for (k = cr[g]; k >= cs[g]; k--)
-			for (t = cu[g]; t >= cv[g]; t--) {
+		for (k = x_max[g]; k >= x_min[g]; k--)
+			for (t = y_max[g]; t >= y_min[g]; t--) {
 				var l = 4 * (t * mapwidth + k);
-				ax.hW(g, l) && (ax.hX(l), land[g]--)
+				pixel.strong_isowner(g, l) && (pixel.revertland(l), land[g]--)
 			}
 	}
 
@@ -6401,9 +6487,9 @@ function game() {
 			for (g = alivecount - 1; 0 <= g; g--) {
 				var x = t[g];
 				if (!(x >= playercount)) {
-					var n = Math.max(ak(l[x], 4), 2048);
+					var n = Math.max(strange_divide_floor(l[x], 4), 2048);
 					var z = Math.max(aq.t3(x), 100);
-					k[x] += ak(z * n, 1E4);
+					k[x] += strange_divide_floor(z * n, 1E4);
 					k[x] > n && (k[x] = n)
 				}
 			}
@@ -6415,127 +6501,126 @@ function game() {
 		}
 	}
 
-	function k5() {
-		function g(y) {
-			return y < playercount ? k * y : k * playercount + t * (y - playercount)
+	function oldattacks() {
+		function id_attacks_placement_inarray(id) {
+			return id < playercount ? maxconcurrentattacks * id : maxconcurrentattacks * playercount + bot_maxconcurrentattacks * (id - playercount)
 		}
-		var k, t, l, x, n, z;
+		var maxconcurrentattacks, bot_maxconcurrentattacks, currentattackcount, attacktargets, attackremaining, attackboatids;
 		this.bh = function () {
-			k = 16 > playercount ? 12 : 8;
-			t = 4;
-			var y = g(maxentities);
-			l = new Uint8Array(maxentities);
-			x = new Uint16Array(y);
-			n = new Uint32Array(y);
-			z = new Uint16Array(y)
+			maxconcurrentattacks = 16 > playercount ? 12 : 8;
+			bot_maxconcurrentattacks = 4;
+			var y = id_attacks_placement_inarray(maxentities);
+			currentattackcount = new Uint8Array(maxentities);
+			attacktargets = new Uint16Array(maxentities);
+			attackremaining = new Uint32Array(y);
+			attackboatids = new Uint16Array(y)
 		};
-		this.yZ = function (y) {
-			l[y] = 0
+		this.resetattacks = function (id) {
+			currentattackcount[id] = 0
 		};
 		this.yg = function (y, A) {
 			var B;
 			a: {
-				var C = g(y);
-				for (B = l[y] - 1; 0 <= B; B--)
-					if (0 === z[C + B] && x[C + B] === A) break a; B = l[y]
+				var C = id_attacks_placement_inarray(y);
+				for (B = currentattackcount[y] - 1; 0 <= B; B--)
+					if (0 === attackboatids[C + B] && attacktargets[C + B] === A) break a; B = currentattackcount[y]
 			}
-			B !== l[y] && (C = n[g(y) + B], this.au(y, B), this.cI(y, C, maxentities))
+			B !== currentattackcount[y] && (C = attackremaining[id_attacks_placement_inarray(y) + B], this.au(y, B), this.cI(y, C, maxentities))
 		};
 		this.cg = function (y, A) {
-			var B, C = g(y);
-			for (B = l[y] - 1; 0 <= B; B--)
-				if (0 === z[C + B] && x[C + B] === A) return !0;
+			var B, C = id_attacks_placement_inarray(y);
+			for (B = currentattackcount[y] - 1; 0 <= B; B--)
+				if (0 === attackboatids[C + B] && attacktargets[C + B] === A) return !0;
 			return !1
 		};
-		this.d5 =
-			function (y) {
-				return y < playercount ? l[y] < k : l[y] < t
-			};
-		this.aX = function (y) {
-			return l[y]
+		this.notatmaxconcurrentattacks = function (id) {
+			return id < playercount ? currentattackcount[id] < maxconcurrentattacks : currentattackcount[id] < bot_maxconcurrentattacks
 		};
-		this.ad = function (y, A) {
-			return x[g(y) + A]
+		this.currentattackcount = function (id) {
+			return currentattackcount[id]
 		};
-		this.aY = function (y, A) {
-			return z[g(y) + A]
+		this.target = function (id, attackid) {
+			return attacktargets[id_attacks_placement_inarray(id) + attackid]
+		};
+		this.boatid = function (id, attackid) {
+			return attackboatids[id_attacks_placement_inarray(id) + attackid]
 		};
 		this.fJ = function (y, A) {
-			var B, C = g(y);
-			for (B = l[y] - 1; 0 <= B; B--)
-				if (z[C + B] === A) return B;
+			var B, C = id_attacks_placement_inarray(y);
+			for (B = currentattackcount[y] - 1; 0 <= B; B--)
+				if (attackboatids[C + B] === A) return B;
 			return -1
 		};
-		this.ae = function (y, A) {
-			return n[g(y) + A]
+		this.remaining = function (id, attackid) {
+			return attackremaining[id_attacks_placement_inarray(id) + attackid]
 		};
 		this.ba = function (y, A) {
-			var B, C = g(y);
-			for (B = l[y] - 1; 0 <= B; B--)
-				if (0 === z[C + B] && x[C + B] === A) return n[C + B];
+			var B, C = id_attacks_placement_inarray(y);
+			for (B = currentattackcount[y] - 1; 0 <= B; B--)
+				if (0 === attackboatids[C + B] && attacktargets[C + B] === A) return attackremaining[C + B];
 			return 0
 		};
 		this.yf = function (y) {
-			var A = g(y),
+			var A = id_attacks_placement_inarray(y),
 				B = 0;
-			for (y = l[y] - 1; 0 <= y; y--) B += n[A + y];
+			for (y = currentattackcount[y] - 1; 0 <= y; y--) B += attackremaining[A + y];
 			return B
 		};
 		this.yq = function (y) {
-			var A = g(y),
+			var A = id_attacks_placement_inarray(y),
 				B = 0;
-			for (y = l[y] - 1; 0 <= y; y--) 0 === z[A + y] && (B += n[A + y]);
+			for (y = currentattackcount[y] - 1; 0 <= y; y--) 0 === attackboatids[A + y] && (B += attackremaining[A + y]);
 			return B
 		};
-		this.yT = function (y) {
-			var A = g(y),
+		this.boatcount = function (y) {
+			var A = id_attacks_placement_inarray(y),
 				B = 0;
-			for (y = l[y] - 1; 0 <= y; y--) 0 < z[A + y] && B++;
+			for (y = currentattackcount[y] - 1; 0 <= y; y--) 0 < attackboatids[A + y] && B++;
 			return B
 		};
 		this.bZ = function (y, A, B) {
-			var C = g(y);
-			for (y = l[y] - 1; 0 <= y; y--) 0 === z[C + y] && x[C + y] === A && (n[C + y] = B)
+			var C = id_attacks_placement_inarray(y);
+			for (y = currentattackcount[y] - 1; 0 <= y; y--) 0 === attackboatids[C + y] && attacktargets[C + y] === A && (attackremaining[C + y] = B)
 		};
 		this.bL = function (y, A, B) {
-			n[g(y) + A] = B
+			attackremaining[id_attacks_placement_inarray(y) + A] = B
 		};
 		this.cI = function (y, A, B) {
-			var C, F = g(y);
+			var C, F = id_attacks_placement_inarray(y);
 			B === myid && as.at[y < playercount ? 6 : 5]++;
-			for (C = l[y] - 1; 0 <= C; C--)
-				if (0 === z[F + C] && x[F + C] === B) {
-					n[F + C] += A;
-					n[F + C] = n[F + C] > iv ? iv : n[F + C];
+			for (C = currentattackcount[y] - 1; 0 <= C; C--)
+				if (0 === attackboatids[F + C] && attacktargets[F + C] === B) {
+					attackremaining[F + C] += A;
+					attackremaining[F + C] = attackremaining[F + C] > troopcap ? troopcap : attackremaining[F + C];
 					return
-				} x[F + l[y]] = B;
-			n[F + l[y]] = A;
-			z[F + l[y]] = 0;
-			l[y]++;
-			y < playercount && (B === myid ? dx.fZ(y, 5) : y === myid && dy.mR(B))
+				} attacktargets[F + currentattackcount[y]] = B;
+			attackremaining[F + currentattackcount[y]] = A;
+			attackboatids[F + currentattackcount[y]] = 0;
+			currentattackcount[y]++;
+			y < playercount && (B === myid ? newannouncements.fZ(y, 5) : y === myid && dy.mR(B))
 		};
 		this.tQ = function (y, A, B) {
-			var C = g(y);
+			var C = id_attacks_placement_inarray(y);
 			isalive[y] = 2;
-			x[C + l[y]] = 0;
-			n[C + l[y]] = A;
-			z[C + l[y]] = B;
-			l[y]++
+			attacktargets[C + currentattackcount[y]] = 0;
+			attackremaining[C + currentattackcount[y]] = A;
+			attackboatids[C + currentattackcount[y]] = B;
+			currentattackcount[y]++
 		};
 		this.au = function (y, A) {
 			var B;
-			if (0 !== l[y]) {
-				var C = g(y);
-				l[y]--;
-				for (B = A; B < l[y]; B++) x[C + B] = x[C + B + 1], n[C + B] = n[C + B + 1], z[C + B] = z[C + B + 1]
+			if (0 !== currentattackcount[y]) {
+				var C = id_attacks_placement_inarray(y);
+				currentattackcount[y]--;
+				for (B = A; B < currentattackcount[y]; B++) attacktargets[C + B] = attacktargets[C + B + 1], attackremaining[C + B] = attackremaining[C + B + 1], attackboatids[C + B] = attackboatids[C + B + 1]
 			}
 		};
 		this.yb = function (y) {
 			var A, B, C = [];
 			for (A = alivecount - 1; 0 <= A; A--) {
-				var F = g(entitiesalive[A]);
-				for (B = l[entitiesalive[A]] - 1; 0 <= B; B--)
-					if (0 === z[F + B] && x[F + B] === y) {
+				var F = id_attacks_placement_inarray(entitiesalive[A]);
+				for (B = currentattackcount[entitiesalive[A]] - 1; 0 <= B; B--)
+					if (0 === attackboatids[F + B] && attacktargets[F + B] === y) {
 						C.push(entitiesalive[A]);
 						break
 					}
@@ -6552,7 +6637,7 @@ function game() {
 		this.yx = function () {
 			n = 512;
 			x = new Uint16Array(n);
-			for (var z = 0; z < n; z++) x[z] = 100 + bd(ak(25600 * z, n - 4), 9)
+			for (var z = 0; z < n; z++) x[z] = 100 + bd(strange_divide_floor(25600 * z, n - 4), 9)
 		};
 		this.ro = function () {
 			return l
@@ -6561,9 +6646,9 @@ function game() {
 			if (0 >= --t) {
 				t = g;
 				var z, y = troops[myid];
-				singleplayer && !teamgame && 0 !== isalive[0] && 0 === dl.dm[0].b5 && (troops[0] += ak(land[0], 6));
+				singleplayer && !teamgame && 0 !== isalive[0] && 0 === dl.dm[0].b5 && (troops[0] += strange_divide_floor(land[0], 6));
 				for (z = alivecount - 1; 0 <= z; z--) {
-					var A = ak(aq.t3(entitiesalive[z]) * troops[entitiesalive[z]], 1E4);
+					var A = strange_divide_floor(aq.t3(entitiesalive[z]) * troops[entitiesalive[z]], 1E4);
 					troops[entitiesalive[z]] += 1 > A ? 1 : A;
 					aq.ar(entitiesalive[z])
 				}
@@ -6577,13 +6662,13 @@ function game() {
 			}
 		};
 		this.t3 = function (z) {
-			var y = x[ak((n - 1) * land[z], iu)];
+			var y = x[strange_divide_floor((n - 1) * land[z], iu)];
 			if (1920 > bw.dM()) {
-				var A = ak(100 * (13440 - 6 * bw.dM()), 1920);
+				var A = strange_divide_floor(100 * (13440 - 6 * bw.dM()), 1920);
 				y = A > y ? A : y
 			}
 			A = this.dB(z);
-			troops[z] > A && (y -= ak(2 * y * (troops[z] - A), A));
+			troops[z] > A && (y -= strange_divide_floor(2 * y * (troops[z] - A), A));
 			return 0 > y ? 0 : 700 < y ? 700 : y
 		};
 		this.dB = function (z) {
@@ -6592,7 +6677,7 @@ function game() {
 		};
 		this.ar = function (z) {
 			var y = land[z] * is;
-			troops[z] = troops[z] > iv ? iv : troops[z] > y ? y : troops[z]
+			troops[z] = troops[z] > troopcap ? troopcap : troops[z] > y ? y : troops[z]
 		}
 	}
 
@@ -6620,9 +6705,9 @@ function game() {
 					V.font = oR[fH[la]] + ka + bm;
 					ra = V;
 					var sa = la;
-					sa = ka >= I && ka < L ? dO.zn[ax.qT[sa]] + x(ka).toFixed(3) + ")" : dO.zo[ax.qT[sa]];
+					sa = ka >= I && ka < L ? dO.zn[pixel.lightness[sa]] + x(ka).toFixed(3) + ")" : dO.zo[pixel.lightness[sa]];
 					ra.fillStyle = sa;
-					V.fillText(8 === gamemode ? eD.g7(troops[la]) : nickname[la], ma, na);
+					V.fillText([7, 8, 11].includes(gamemode) ? eD.g7(troops[la]) : nickname[la], ma, na);
 					W = !0;
 					if (0 < da[la]) {
 						ra = ma;
@@ -6657,7 +6742,7 @@ function game() {
 							a5.bt - .534 * za * ta), Math.floor(wa + 1.4 * ya * a5.bt)), V.globalAlpha = x(ta), V.drawImage(1 === xa ? a5.kn[ba[Da + maxentities]] : 2 === xa && 255 > Ca ? he.kl[2] : he.kk[xa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), za -= 2)
 					}
 					ra = Math.floor(N * ka);
-					ra < M || (V.font = bl + ra + bm, V.fillText(8 === gamemode ? nickname[la] : eD.g7(troops[la]), ma, na + Math.floor(.78 * ka)))
+					ra < M || (V.font = bl + ra + bm, V.fillText([7,8,11].includes(gamemode) ? nickname[la] : eD.g7(troops[la]), ma, na + Math.floor(.78 * ka)))
 				}
 		}
 
@@ -6686,24 +6771,24 @@ function game() {
 
 		function n(O) {
 			var T, Y = F[O];
-			for (T = F[O] - cs[O] - 1; 0 <= T; T--)
+			for (T = F[O] - x_min[O] - 1; 0 <= T; T--)
 				if (Y--, !y(O, Y, E[O], K[O])) {
 					Y++;
 					break
 				} var Z = F[O];
-			for (T = cr[O] - F[O] - H[O]; 0 <= T; T--)
+			for (T = x_max[O] - F[O] - H[O]; 0 <= T; T--)
 				if (Z++, !y(O, Z + H[O] - 1, E[O], K[O])) {
 					Z--;
 					break
 				} Y = Math.floor((Y + Z) / 2);
 			Z = E[O];
-			for (T = E[O] - cv[O] - 1; 0 <=
+			for (T = E[O] - y_min[O] - 1; 0 <=
 				T; T--)
 				if (Z--, !A(O, Y, Z, H[O])) {
 					Z++;
 					break
 				} var ma = E[O];
-			for (T = cu[O] - E[O] - K[O]; 0 <= T; T--)
+			for (T = y_max[O] - E[O] - K[O]; 0 <= T; T--)
 				if (ma++, !A(O, Y, ma + K[O] - 1, H[O])) {
 					ma--;
 					break
@@ -6723,11 +6808,11 @@ function game() {
 		}
 
 		function y(O, T, Y, Z) {
-			return ax.hW(O, 4 * (Y * mapwidth + T)) && ax.hW(O, 4 * ((Y + Z - 1) * mapwidth + T))
+			return pixel.strong_isowner(O, 4 * (Y * mapwidth + T)) && pixel.strong_isowner(O, 4 * ((Y + Z - 1) * mapwidth + T))
 		}
 
 		function A(O, T, Y, Z) {
-			return ax.hW(O, 4 * (Y * mapwidth + T)) && ax.hW(O, 4 * (Y *
+			return pixel.strong_isowner(O, 4 * (Y * mapwidth + T)) && pixel.strong_isowner(O, 4 * (Y *
 				mapwidth + T + Z - 1))
 		}
 		var B, C, F, E, H, K, J, D, L, I, N, G, M, Q, S, P, U, W, X, V, pa, ba, da, qa, R;
@@ -6759,9 +6844,9 @@ function game() {
 				var T = 100 / Math.floor(V.measureText("20 000 000").width);
 				for (O = maxentities - 1; 0 <= O; O--) D[O] = J[O] = T
 			} else
-				for (V.font = bl + Math.floor(100 * N) + bm, T = 80 / Math.floor(V.measureText(eD.g7(iv)).width), V.font = bl + 100 + bm, O = maxentities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), J[O] = T < D[O] ? T : D[O];
-			for (O = maxentities - 1; 0 <= O; O--) 12 > land[O] ? (F[O] = cs[O] + 1, E[O] = cv[O] + 1, H[O] = 1, K[O] = 1) : (F[O] = cs[O], E[O] = cv[O] + 1, H[O] = 4, K[O] = 2);
-			if (fQ)
+				for (V.font = bl + Math.floor(100 * N) + bm, T = 80 / Math.floor(V.measureText(eD.g7(troopcap)).width), V.font = bl + 100 + bm, O = maxentities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), J[O] = T < D[O] ? T : D[O];
+			for (O = maxentities - 1; 0 <= O; O--) 12 > land[O] ? (F[O] = x_min[O] + 1, E[O] = y_min[O] + 1, H[O] = 1, K[O] = 1) : (F[O] = x_min[O], E[O] = y_min[O] + 1, H[O] = 4, K[O] = 2);
+			if (in_spawn)
 				for (O = 0; O < playercount; O++) H[O] = 0;
 			qa = bo.br(4).width;
 			R = bo.br(4).height
@@ -6771,8 +6856,8 @@ function game() {
 			k()
 		};
 		this.ip = function () {
-			for (var O = pa = 0; O < playercount; O++) 3 !== cr[O] - cs[O] || 3 !== cu[O] - cv[O] ?
-				(F[O] = cs[O] + (cr[O] !== cs[O] ? 1 : 0), E[O] = cv[O], H[O] = 1, K[O] = 1) : (F[O] = cs[O], E[O] = cv[O] + 1, H[O] = 4, K[O] = 2)
+			for (var O = pa = 0; O < playercount; O++) 3 !== x_max[O] - x_min[O] || 3 !== y_max[O] - y_min[O] ?
+				(F[O] = x_min[O] + (x_max[O] !== x_min[O] ? 1 : 0), E[O] = y_min[O], H[O] = 1, K[O] = 1) : (F[O] = x_min[O], E[O] = y_min[O] + 1, H[O] = 4, K[O] = 2)
 		};
 		this.mk = function (O, T, Y) {
 			0 === isalive[O] || 4 !== T && 2 === fH[O] || (O += T * maxentities, 0 === T ? ba[O] === Y && 0 < da[O] ? da[O] = 0 : (ba[O] = Y, da[O] = a5.nq(Y) ? 255 : 64) : 1 === T ? (da[O] = 64, ba[O] = Y) : da[O] = Y)
@@ -6784,8 +6869,7 @@ function game() {
 			S += O;
 			P += T
 		};
-		this.lV = function (O,
-			T) {
+		this.lV = function (O, T) {
 			dy.qy(O, T)
 		};
 		this.zoom = function (O, T, Y) {
@@ -6820,7 +6904,7 @@ function game() {
 						T, ra = !1, va = 0; 8 > va; va++) {
 						ma = H[ka] + 2;
 						Z = K[ka] + 2;
-						if (ma > cr[ka] - cs[ka] + 1 || Z > cu[ka] - cv[ka] + 1) break;
+						if (ma > x_max[ka] - x_min[ka] + 1 || Z > y_max[ka] - y_min[ka] + 1) break;
 						la = F[ka] - 1;
 						na = E[ka] - 1;
 						if (z(ka, la, na, ma, Z)) F[ka] = la, E[ka] = na, H[ka] = ma, K[ka] = Z, ra = !0;
@@ -6832,11 +6916,11 @@ function game() {
 						va = H[ka];
 						for (var Aa = 1 + Math.floor(.02 * va), sa = 1; 5 > sa; sa++) {
 							ma = va + sa * Aa;
-							if (ma > cr[ka] - cs[ka] + 1) break;
+							if (ma > x_max[ka] - x_min[ka] + 1) break;
 							Z = 1 + Math.floor(G * J[ka] * ma);
-							if (Z > cu[ka] - cv[ka] + 1) break;
-							la = cs[ka] + Math.floor(Math.random() * (cr[ka] - cs[ka] + 2 - ma));
-							na = cv[ka] + Math.floor(Math.random() * (cu[ka] - cv[ka] + 2 - Z));
+							if (Z > y_max[ka] - y_min[ka] + 1) break;
+							la = x_min[ka] + Math.floor(Math.random() * (x_max[ka] - x_min[ka] + 2 - ma));
+							na = y_min[ka] + Math.floor(Math.random() * (y_max[ka] - y_min[ka] + 2 - Z));
 							z(ka, la, na, ma, Z) && (F[ka] = la, E[ka] =
 								na, H[ka] = ma, K[ka] = Z, ra = !0)
 						}
@@ -6868,8 +6952,8 @@ function game() {
 					}
 					if (Z) n(T);
 					else
-						for (Z = T, na = cr[Z] - cs[Z] + 1, ma = Math.floor(.02 * na), ma = 1 > ma ? 1 : ma, T = -6 * ma; na >= T; na -= ma)
-							if (ka = 0 < na ? na : 1, la = 1 + Math.floor(G * J[Z] * ka), va = cs[Z] + Math.floor(Math.random() * (cr[Z] - cs[Z] + 2 - ka)), ra = cv[Z] + Math.floor(Math.random() * (cu[Z] - cv[Z] + 2 - la)), z(Z, va, ra, ka, la)) {
+						for (Z = T, na = x_max[Z] - x_min[Z] + 1, ma = Math.floor(.02 * na), ma = 1 > ma ? 1 : ma, T = -6 * ma; na >= T; na -= ma)
+							if (ka = 0 < na ? na : 1, la = 1 + Math.floor(G * J[Z] * ka), va = x_min[Z] + Math.floor(Math.random() * (x_max[Z] - x_min[Z] + 2 - ka)), ra = y_min[Z] + Math.floor(Math.random() * (y_max[Z] - y_min[Z] + 2 - la)), z(Z, va, ra, ka, la)) {
 								F[Z] =
 									va;
 								E[Z] = ra;
@@ -6883,7 +6967,7 @@ function game() {
 		this.mR = function (O) {
 			var T = O + 2 * maxentities,
 				Y = da[T];
-			return 0 < Y ? (dx.mp(50, O), da[T] = 0, 255 === Y) : !1
+			return 0 < Y ? (newannouncements.mp(50, O), da[T] = 0, 255 === Y) : !1
 		};
 		this.lR = function (O) {
 			return 255 === da[O + 2 * maxentities]
@@ -6895,8 +6979,7 @@ function game() {
 		this.bh = function () {
 			var t, l;
 			g = "Abbasid Caliphate;Aceh s;Achaemenid Z;Afsharid z;Aghlabid Emirate;Ahom z;Akkadian Z;Aksumite Z;Akwamu;Alaouite z;Almohad Caliphate;Almoravid z;Angevin Z;Aq Qoyunlu;Armenian Z;Assyria;Ashanti Z;Austrian Z;Austria-Hungary;Ayyubid z;Aztec Z;Aulikara Z;Babylonian Z;Balhae;Banten s;S Banjar;Bamana Z;Bengal s;Benin Z;Kadamba z;Bornu Z;E Brazil;Britannic Z;British Z;British Raj;Bruneian Z;Bukhara Z;Burgundian State;Buyid z;Byzantine Z;Caliphate of C\u00f3rdoba;Cao Wei;Carthaginian Z;Cebu Rajahnate;Chagatai Khanate;Chalukya z;Chauhan z;Chav\u00edn Z;Chenla;Chera z;Chola z;Comanche Z;Congo Free State;Crimean Khanate;Dacian Z;Delhi s;Demak s;Durrani Z;Dutch Z;Egyptian Z;Elamite Z;Exarchate of Africa;Abyssinia;Fatimid Caliphate;First French Z;Frankish Z;Funan;Gallic Z;Gaza Z;Republic of Genoa;German Z;Ghana Z;Ghaznavid z;Ghurid z;Goguryeo;Goryeo;Gorkha Z;G\u00f6kt\u00fcrk Khaganate;Golden Horde;S Gowa;Seljuq Z;Gupta Z;Hafsid Y;Han z;Hanseatic League;E Harsha;Hephthalite Z;Hittite Z;Holy Roman Z;Hotak z;Hoysala Z;Hunnic Z;Husainid z;Idrisid z;Ilkhanate;K Israel;K Judah;Inca Z;Italian Z;E Japan;Jin z;Johor Z;Jolof Z;Joseon;Kaabu Z;Kachari Y;Kalmar Union;Kanem Z;Kanva z;Kara-Khanid Khanate;Kazakh Khanate;Khazar Khaganate;Khmer Z;Khilji z;Khwarazmian z;Kievan Rus';Konbaung z;Kong Z;Korean Z;Kushan Z;K Kush;Lakota;Latin Z;Later L\u00ea z;Liao z;Lodi s;Khmer Z;Macedonian Z;Majapahit Z;Mali Z;Malacca Z;Mamluk s;Manchukuo;Maratha Z;Marinid z;Massina Z;Mataram s;Mauretania;Mauryan Z;Median Z;Mlechchha z;Ming z;Mitanni Z;Mongol Z;Mughal Z;Nanda Z;Nguy\u1ec5n z;North Sea Z;E Nicaea;Numidia;Omani Z;Ottoman Z;Oyo Z;Pagan Z;Pahlavi z;Pala Z;Palmyrene Z;Parthian Z;Pontic Z;Portuguese Z;K Prussia;Ptolemaic Z;Qajar z;Qara Qoyunlu;Qin z;Qing z;Ramnad Sethupathis;Rashidun Caliphate;Rashtrakuta z;Roman Z;Rouran Khaganate;Rozwi Z;Rustamid z;Russian Z;Tsardom of Russia;Saadi z;Safavid z;Saffarid z;Sassanid z;Satavahana z;Samanid Z;Soviet Union;Saudeleur z;Duchy of Savoy;Seleucid Z;Serbian Z;Shu Han;Shang z;Siam Z;Sikh Z;Singhasari;Sokoto Caliphate;Song z;Songhai Z;Spanish Z;Srivijaya Z;Sui z;K Mysore;Shunga Z;S Sulu;Sumer;Sur Z;Swedish Z;Tahirid z;Tang z;T\u00e2y S\u01a1n z;S Ternate;E Thessalonica;German Reich;Tibetan Z;Tondo z;S Tidore;Timurid Z;K Tlemcen;E Trebizond;Toltec Z;Toungoo z;Toucouleur Z;Tu'i Tonga Z;Turgesh Khaganate;Umayyad Caliphate;Uyunid Emirate;Uyghur Khaganate;Uzbek Khanate;Vandal Y;Vijayanagara Z;Republic of Venice;Wari Z;Wassoulou Z;Wattasids;Western Roman Z;Eastern Wu;Western Xia z;Xin z;Yuan z;Zand z;Zhou z;Zulu Z;Yugoslavia;Kosovo;Sikkim;Kanem\u2013Bornu Z;Wadai Z;Ethiopian Z;Rozvi Z;Sasanian Z;E Vietnam;Shilluk Y;K Aksum;Gwiriko Y;Toro Y;Malindi Y;K Loango;K Mapungubwe;Ryukyu Y;K Cyprus;K Jerusalem;Garhwal Y;K Nepal;K Cambodia;Champa Y;Hanthawaddy Y;Phayao Y;K Sardinia;K Sicily;K Gwynedd;K Scotland;K Desmond;K Poland;K Hungary;K Croatia;K Bohemia;Albanian Y;K Georgia;K Portugal;Khanate of Sibir;K Romania;Cossack Hetmanate;Duchy of Bouillon;K Ireland;Lordship of Ireland;K Italy;Republic of Pisa;Idrisid z;Almoravid z;Almohad Caliphate;Marinid z;Wattasid z;Saadian z;Republic of Sal\u00e9;Rif Republic;K Kush;Makuria;Alodia;Ayyubid z;Mamluk s;Egypt Eyalet;K Fazughli;S Sennar;S Darfur;Mahdist State;S Egypt;K Egypt;Emirate of Cyrenaica;K Libya;Republic of Egypt;Republic of the Sudan;United Arab Republic;Libyan Arab Republic;Zirid z;Hafsid z;K Kuku;Regency of Algiers;Gurunsi;Liptako;Tenkodogo;Wogodogo;Yatenga;Bilanga;Bilayanga;Bongandini;Con;Macakoali;Piela;Nungu;K Sine;K Saloum;K Baol;K Cayor;K Waalo;Bundu;Bonoman;Gyaaman;Denkyira;Mankessim Y;K Dahomey;Oyo Z;K Nri;Aro Confederacy;Kwararafa;Biafra;Buganda;Bunyoro;Ankole;Busoga;Tanganyika;Kuba Y;K Luba;K Lunda;Yeke Y;K Ndongo;Kasanje Y;K Matamba;Mbunda Y;Chokwe Y;Kazembe Y;K Butua;Ndebele Y;Mthethwa Z;Bophuthatswana;Ciskei;Transkei;Venda;Rhodesia;Kart z;Nogai Horde;Khanate of Bukhara;Khanate of Khiva;Khamag Mongol;Northern Fujiwara;Kamakura Shogunate;Ashikaga Shogunate;Jaxa;Republic of Ezo;Jiangxi Soviet;Hunan Soviet;Guangzhou Commune;Gojoseon;Alaiye;Beylik of Bafra;Kara Koyunlu;Kars Republic;K Iraq;Arab Federation;Kar-Kiya z;Baduspanids;Marashiyan z;Afrasiyab z;Mihrabanid z;Safavid Iran;Sheikhdom of Kuwait;Bani Khalid Emirate;Emirate of Diriyah;Emirate of Najd;Muscat and Oman;Emirate of Riyadh;S Najd;K Hejaz;Fadhli s;Emirate of Beihan;Emirate of Dhala;S Lahej;Republic of Kuwait;K Cochin;Jaffna Y;Laur Y;Pandya z;Jaunpur s;Jaintia Y;Hyderabad State;Travancore;Udaipur State;Manikya z;Lan Xang;K Vientiane;K Champasak;Lao Issara;K Laos;Pyu States;Ava;Mon Ys;Pegu;K Mrauk U;Taungoo z;Shan States;Arakan;Raktamaritika;Singhanavati;Dvaravati;Ngoenyang;Hariphunchai;Tambralinga;Lavo Y;Langkasuka;Sukhothai Y;S Singora;Ayutthaya Y;Thonburi Y;Lan Na;Pattani Y;Jambi s;Palembang s;S Deli;S Langkat;S Serdang;S Cirebon;K Pajang;K Bali;Bima s;K Larantuka;K Banggai;Luwu;S Bone;Caucasian Albania;Kabardia;Circassia;K Abkhazia;Elisu s;Avar Khanate;Caucasian Imamate;K Imereti;K Kartli;K Kakheti;Crown of Aragon;Emirate of Granada;K Majorca;Crown of Castile;K Haiti;Cocoll\u00e1n;Zapotec Civilization;Mosquito Y;Somoza Regime;Iroquois Confederacy;Cherokee Nation;Vermont Republic;State of Muskogee;K Alo;K Sigave;K Fiji;K Nauru;K Chile;Muisca Confederation;El Stronato;K Chimor;Jungle Republic;Liga Federal;Supreme Junta;Weimar Republic;K Bavaria;Bremen;Frankfurt;Hamburg;K Hanover;Holstein;Lippe;Nassau;Oldenburg;Pomerania;Reuss;Saxe-Altenburg;Saxony;Schleswig;Waldeck;W\u00fcrttemberg;Helvetic Republic;Republic of Florence;Duchy of Urbino;Republic of Cospaia;Duchy of Lucca;Duchy of Mantua;Duchy of Milan;Papal States".split(";");
-			k =
-				"Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
+			k = "Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
 			var x = "K ; Y;E ; Z; z; s;S ".split(";"),
 				n = "Kingdom of ; Kingdom;Empire of ; Empire; Dynasty; Sultanate;Sultanate of ".split(";");
 			for (t = g.length - 1; 0 <= t; t--)
@@ -6911,19 +6994,17 @@ function game() {
 				for (t = n; t < maxentities; t++) nickname[t] = "[Zombie] " + k[(t + l) % x]
 			} else if (singleplayer)
 				for (l = cW.random(), t = playercount; t < maxentities; t++) nickname[t] = g[(t + l) % maxentities];
-			else
-				for (l = k.length, x = cW.random(), t = playercount; t < maxentities; t++) nickname[t] = "[Bot] " + k[(t +
-					x) % l]
+			else for (l = k.length, x = cW.random(), t = playercount; t < maxentities; t++) nickname[t] = "[Bot] " + k[(t + x) % l]
 		};
 		this.jE = function () {
 			var t;
 			if (je.a09 && !singleplayer) {
-				a0A = Array(playercount);
+				temp_nickname = Array(playercount);
 				var l = playercount;
 				var x = k.length;
 				var n = cW.a0B();
-				for (t = 0; t < l; t++) a0A[t] = nickname[t], nickname[t] = k[(t + n) % x];
-				nickname[myid] = a0A[myid]
+				for (t = 0; t < l; t++) temp_nickname[t] = nickname[t], nickname[t] = k[(t + n) % x];
+				nickname[myid] = temp_nickname[myid]
 			}
 		}
 	}
@@ -6976,22 +7057,22 @@ function game() {
 		}
 	}
 
-	var a0A, cs, cv, cr, cu, hJ, aw, bF, bI, fH;
+	var temp_nickname, hJ, temp_borderpixels, fH;
 
 	function j8(g) {
-		a0A = nickname = Array(maxentities);
+		temp_nickname = nickname = Array(maxentities);
 		isalive = new Uint8Array(maxentities);
-		cs = new Uint16Array(maxentities);
-		cv = new Uint16Array(maxentities);
-		cr = new Uint16Array(maxentities);
-		cu = new Uint16Array(maxentities);
+		x_min = new Uint16Array(maxentities);
+		y_min = new Uint16Array(maxentities);
+		x_max = new Uint16Array(maxentities);
+		y_max = new Uint16Array(maxentities);
 		land = new Uint32Array(maxentities);
 		hJ = new Uint32Array(maxentities);
 		troops = new Uint32Array(maxentities);
-		aw = Array(maxentities);
-		borderpixels = Array(maxentities);
-		bF = Array(maxentities);
-		bI = Array(maxentities);
+		temp_borderpixels = Array(maxentities);
+		borderlandpixels = Array(maxentities);
+		borderwaterpixels = Array(maxentities);
+		bordermountainpixel = Array(maxentities);
 		fH = new Uint8Array(maxentities);
 		for (var k = g.length - 1; 0 <= k; k--) nickname[k] = g[k].mf, fH[k] = g[k].ww
 	}
@@ -7005,9 +7086,9 @@ function game() {
 		};
 		this.fc = function (g) {
 			this.hs.push(g);
-			ig++;
+			spectators++;
 			fH[g] = 2;
-			ax.qT[g] = (ax.qT[g] + 2) % 4;
+			pixel.lightness[g] = (pixel.lightness[g] + 2) % 4;
 			g === myid && (eK.show(!1, !1), dz.sr());
 			dy.mR(g)
 		};
@@ -7029,10 +7110,10 @@ function game() {
 			var g, k = this.hs;
 			for (g = k.length - 1; 0 <= g; g--) {
 				var t = k[g];
-				if (aW.d5(t)) {
-					var l = ak(40 * troops[t], 100);
+				if (attacks.notatmaxconcurrentattacks(t)) {
+					var l = strange_divide_floor(40 * troops[t], 100);
 					60 > l ||
-						(0 === borderpixels[t].length ? !d6.d7(t, 2) && teamgame && dA(t, l, 0, 0) : teamgame ? dL(t, l) : dT(t, l))
+						(0 === borderlandpixels[t].length ? !d6.d7(t, 2) && teamgame && dA(t, l, 0, 0) : teamgame ? dL(t, l) : dT(t, l))
 				}
 			}
 		}
@@ -7140,7 +7221,7 @@ function game() {
 	}
 
 	function a0k() {
-		for (var g, k = alivecount - 1; 0 <= k; k--) land[entitiesalive[k]] <= ak(hJ[entitiesalive[k]], 4) ? 1E3 >= land[entitiesalive[k]] && (2 !== isalive[entitiesalive[k]] || 0 === land[entitiesalive[k]]) && fa(entitiesalive[k]) : land[entitiesalive[k]] >= hJ[entitiesalive[k]] ? hJ[entitiesalive[k]] = land[entitiesalive[k]] : (g = ak(hJ[entitiesalive[k]] - land[entitiesalive[k]], 1E3), hJ[entitiesalive[k]] -= 1 > g ? 1 : g)
+		for (var g, k = alivecount - 1; 0 <= k; k--) land[entitiesalive[k]] <= strange_divide_floor(hJ[entitiesalive[k]], 4) ? 1E3 >= land[entitiesalive[k]] && (2 !== isalive[entitiesalive[k]] || 0 === land[entitiesalive[k]]) && fa(entitiesalive[k]) : land[entitiesalive[k]] >= hJ[entitiesalive[k]] ? hJ[entitiesalive[k]] = land[entitiesalive[k]] : (g = strange_divide_floor(hJ[entitiesalive[k]] - land[entitiesalive[k]], 1E3), hJ[entitiesalive[k]] -= 1 > g ? 1 : g)
 	}
 
 	function ic() {
@@ -7271,8 +7352,8 @@ function game() {
 			var t = [35, 330];
 			this.dr = 0;
 			this.ds = [0, 0, 0, 0, 0, 0];
-			playercount <= k[0] ? (this.dr = t[0] - playercount, this.ds[1] = t[1] - ak(t[1] * playercount, k[0]), this.ds[0] = 512 - this.ds[1] - t[0]) : playercount <= k[1] ? (this.dr = t[0] - k[0] - ak((t[0] - k[0]) * (playercount - k[0]), k[1] - k[0]), this.ds[0] = 512 - this.dr - playercount) : playercount <= k[2] ? (this.ds[0] = 512 - k[1] - ak((512 - k[1]) * (playercount - k[1]), k[2] - k[1]), this.ds[1] = 512 - playercount - this.ds[0]) : playercount <= k[3] ? (this.ds[1] = 512 - k[2] - ak((512 - k[2]) * (playercount - k[2]), k[3] - k[2]),
-				this.ds[2] = 512 - playercount - this.ds[1]) : playercount <= k[4] ? (this.ds[2] = 512 - k[3] - ak((512 - k[3]) * (playercount - k[3]), k[4] - k[3]), this.ds[3] = 512 - playercount - this.ds[2]) : playercount <= k[5] ? (this.ds[3] = 512 - k[4] - ak((512 - k[4]) * (playercount - k[4]), k[5] - k[4]), this.ds[4] = 512 - playercount - this.ds[3]) : playercount <= k[6] ? (this.ds[4] = 512 - k[5] - ak((512 - k[5]) * (playercount - k[5]), k[6] - k[5]), this.ds[5] = 512 - playercount - this.ds[4]) : this.ds[5] = 512 - playercount;
+			playercount <= k[0] ? (this.dr = t[0] - playercount, this.ds[1] = t[1] - strange_divide_floor(t[1] * playercount, k[0]), this.ds[0] = 512 - this.ds[1] - t[0]) : playercount <= k[1] ? (this.dr = t[0] - k[0] - strange_divide_floor((t[0] - k[0]) * (playercount - k[0]), k[1] - k[0]), this.ds[0] = 512 - this.dr - playercount) : playercount <= k[2] ? (this.ds[0] = 512 - k[1] - strange_divide_floor((512 - k[1]) * (playercount - k[1]), k[2] - k[1]), this.ds[1] = 512 - playercount - this.ds[0]) : playercount <= k[3] ? (this.ds[1] = 512 - k[2] - strange_divide_floor((512 - k[2]) * (playercount - k[2]), k[3] - k[2]),
+				this.ds[2] = 512 - playercount - this.ds[1]) : playercount <= k[4] ? (this.ds[2] = 512 - k[3] - strange_divide_floor((512 - k[3]) * (playercount - k[3]), k[4] - k[3]), this.ds[3] = 512 - playercount - this.ds[2]) : playercount <= k[5] ? (this.ds[3] = 512 - k[4] - strange_divide_floor((512 - k[4]) * (playercount - k[4]), k[5] - k[4]), this.ds[4] = 512 - playercount - this.ds[3]) : playercount <= k[6] ? (this.ds[4] = 512 - k[5] - strange_divide_floor((512 - k[5]) * (playercount - k[5]), k[6] - k[5]), this.ds[5] = 512 - playercount - this.ds[4]) : this.ds[5] = 512 - playercount;
 			t = this.dr;
 			for (k = 0; 6 > k; k++) t += this.ds[k];
 			if (t > botcount) {
@@ -7294,22 +7375,21 @@ function game() {
 			}
 		}
 	}
-	var hc, pH, wb, wc, mt, wR, vD, a1J = 14,
-		we;
+	var map, pH, wb, wc, currentmap, wR, vD, mapcount = 14, we;
 
 	function wd(g, k) {
-		g %= a1J;
-		if (g !== mt || a1M(mt) && k !== wR) {
+		g %= mapcount;
+		if (g !== currentmap || a1M(currentmap) && k !== wR) {
 			var t = performance.now();
 			vD = !1;
 			we.wf();
 			cW.j7(g);
-			mt = g;
+			currentmap = g;
 			wR = k;
 			a1M(g) && (jX.br(g).a0T = k);
-			if (a1N(mt)) a1O(t);
+			if (isrealmap(currentmap)) a1O(t);
 			else {
-				var l = jX.br(mt);
+				var l = jX.br(currentmap);
 				mapwidth = l.bt;
 				mapheight = l.co;
 				cW.j7(l.a0T);
@@ -7324,24 +7404,24 @@ function game() {
 
 	function a1S(g) {
 		var k = performance.now();
-		sL = Math.floor(29 - (k - g) / (33 * jX.br(mt).per));
+		sL = Math.floor(29 - (k - g) / (33 * jX.br(currentmap).per));
 		sL = 0 > sL ? 0 : 20 < sL ? 20 : sL
 	}
 
-	function a1U() {
-		return a1J - 4
+	function realmapid() {
+		return mapcount - 4
 	}
 
-	function a1N(g) {
-		return g >= a1U()
+	function isrealmap(mapid) {
+		return mapid >= realmapid()
 	}
 
 	function a1M(g) {
-		return !(1 === g || g >= a1U())
+		return !(1 === g || g >= realmapid())
 	}
 
-	function a1V(g) {
-		return 3 === g || 7 === g || 9 === g
+	function hasmountains(mapid) {
+		return 3 === mapid || 7 === mapid || 9 === mapid
 	}
 
 	function a1W(g) {
@@ -7378,15 +7458,15 @@ function game() {
 			jY.a1R()
 		};
 		this.bh = function () {
-			7 === jT.rc() || this.a1f || (this.a1e = !0, this.aA = 0, this.a1X = 1, this.a1c = [jX.br(mt).a1g[0], jX.br(mt).a1h[0]], this.qT = [jX.br(mt).a1i[3], jX.br(mt).a1i[4], jX.br(mt).a1i[5], jX.br(mt).a1i[6]], this.a1Y = jX.br(mt).a1i[7], this.a1Z = jX.br(mt).a1i[8], this.a1a = jX.br(mt).a1i[9], this.a1b = jX.br(mt).a1i[10], this.a1e ? this.rB = setTimeout(g, 16) : this.d7())
+			7 === jT.rc() || this.a1f || (this.a1e = !0, this.aA = 0, this.a1X = 1, this.a1c = [jX.br(currentmap).a1g[0], jX.br(currentmap).a1h[0]], this.qT = [jX.br(currentmap).a1i[3], jX.br(currentmap).a1i[4], jX.br(currentmap).a1i[5], jX.br(currentmap).a1i[6]], this.a1Y = jX.br(currentmap).a1i[7], this.a1Z = jX.br(currentmap).a1i[8], this.a1a = jX.br(currentmap).a1i[9], this.a1b = jX.br(currentmap).a1i[10], this.a1e ? this.rB = setTimeout(g, 16) : this.d7())
 		};
 		this.d7 = function () {
 			if (8 === jT.rc() && eJ.gR()) this.rB = setTimeout(g, 16);
 			else {
 				if (0 === this.aA) {
 					var l = cW.a0B();
-					cW.j7(jX.br(mt).a1i[2]);
-					jY.jD([mapwidth, mapheight, jX.br(mt).a1i[0], jX.br(mt).a1i[1]]);
+					cW.j7(jX.br(currentmap).a1i[2]);
+					jY.jD([mapwidth, mapheight, jX.br(currentmap).a1i[0], jX.br(currentmap).a1i[1]]);
 					cW.j7(l);
 					this.a1d = jY.a1k();
 					this.aA++;
@@ -7440,7 +7520,7 @@ function game() {
 	}
 
 	function a1P() {
-		2 === mt ? a1t([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0]) : 7 === mt ? a1t([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0]) : 8 === mt ? a1t([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0]) : 9 === mt && a1t([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
+		2 === currentmap ? a1t([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0]) : 7 === currentmap ? a1t([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0]) : 8 === currentmap ? a1t([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0]) : 9 === currentmap && a1t([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
 	}
 
 	function a1t(g, k, t, l, x) {
@@ -7476,15 +7556,15 @@ function game() {
 	}
 
 	function a27(g, k, t, l) {
-		500 > k ? l[g] = ak(l[g] * k * 2, 1E3) : 500 < k && (l[g] += ak(2 * (1E4 - l[g]) * (k - 500), 1E3));
-		l[g] += ak(t * (10 * k - l[g]), 1E3)
+		500 > k ? l[g] = strange_divide_floor(l[g] * k * 2, 1E3) : 500 < k && (l[g] += strange_divide_floor(2 * (1E4 - l[g]) * (k - 500), 1E3));
+		l[g] += strange_divide_floor(t * (10 * k - l[g]), 1E3)
 	}
 
 	function kA() {
 		var g;
 		this.my = this.mx = this.mv = this.mu = 0;
 		this.bh = function () {
-			g = Array(a1U());
+			g = Array(realmapid());
 			g[0] = {
 				bt: [0, 5E3, 8E3, 1E4],
 				ez: [220, 250, 255, 220],
@@ -7551,18 +7631,18 @@ function game() {
 			}
 		};
 		this.a1Q = function () {
-			hc = document.createElement("canvas");
-			hc.width = mapwidth;
-			hc.height = mapheight;
-			pH = hc.getContext("2d", {
+			map = document.createElement("canvas");
+			map.width = mapwidth;
+			map.height = mapheight;
+			pH = map.getContext("2d", {
 				alpha: !1
 			});
 			var k = pH.getImageData(0, 0, mapwidth, mapheight);
 			wc = k.data;
-			var t = g[mt].bt,
-				l = g[mt].ez,
-				x = g[mt].mm,
-				n = g[mt].ce,
+			var t = g[currentmap].bt,
+				l = g[currentmap].ez,
+				x = g[currentmap].mm,
+				n = g[currentmap].ce,
 				z, y, A = jY.a1k(),
 				B = t.length - 2,
 				C = Array(B + 1),
@@ -7581,47 +7661,51 @@ function game() {
 						wc[4 * z + 3] = 255;
 						break
 					} pH.putImageData(k, 0, 0);
-			jX.a2B() && bo.bp() && jX.a2B() && (t = bo.kr("arena"), pH.save(), pH.globalAlpha = 1 === mt ? .1 : 1, pH.imageSmoothingEnabled = !0, k = 2.8, pH.scale(k, k), pH.drawImage(t, Math.floor((mapwidth / k - t.width) / 2), Math.floor(.5 * mapheight / k - t.height / 2)), pH.restore(), t = bo.kr("territorial.io"), pH.save(), pH.globalAlpha = 1 === mt ? .1 : 1, pH.imageSmoothingEnabled = !0, k = .87, pH.scale(k, k), pH.drawImage(t, Math.floor(.745 *
+			jX.a2B() && bo.bp() && jX.a2B() && (t = bo.kr("arena"), pH.save(), pH.globalAlpha = 1 === currentmap ? .1 : 1, pH.imageSmoothingEnabled = !0, k = 2.8, pH.scale(k, k), pH.drawImage(t, Math.floor((mapwidth / k - t.width) / 2), Math.floor(.5 * mapheight / k - t.height / 2)), pH.restore(), t = bo.kr("territorial.io"), pH.save(), pH.globalAlpha = 1 === currentmap ? .1 : 1, pH.imageSmoothingEnabled = !0, k = .87, pH.scale(k, k), pH.drawImage(t, Math.floor(.745 *
 				(mapwidth / k - t.width)), Math.floor(.422 * mapheight / k - t.height / 2)), pH.restore());
 			vD = !0;
 			bw.bx = !0
 		};
-		this.jB = function () {
+
+		this.jB = function() {
 			var k, t = 0;
 			var l = mapheight * mapwidth * 4;
-			for (k = mapwidth - 1; 0 <= k; k--) tW[4 * k + 2] = 3, tW[l - 4 * k - 2] = 3;
+			var x = pixel_rgbv,
+				n = wc;
+			for (k = mapwidth - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
 			l = 4 * mapwidth;
-			for (k = mapheight - 1; 0 <= k; k--) tW[k * l + 2] = 3, tW[k * l + l - 2] = 3;
-			for (k = mapwidth * mapheight - 1; 0 <= k; k--) l = 4 * k, 3 !== tW[l + 2] && (wc[l + 2] > wc[l + 1] && wc[l + 2] > wc[l] ? tW[l + 2] = 2 : (tW[l + 2] = 1, t++));
+			for (k = mapheight - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
+			for (k = mapwidth * mapheight - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (n[l + 2] > n[l + 1] && n[l + 2] > n[l] ? x[l + 2] = 2 : (x[l + 2] = 1, t++));
 			this.mu = (mapwidth - 2) * (mapheight - 2);
 			this.my = 0;
-			if (a1V(mt)) {
-				wc = 0;
-				l = tW;
+			if (hasmountains(currentmap)) {
+				n = 0;
+				l = pixel_rgbv;
 				var z = wc;
-				for (tW = mapwidth * mapheight - 1; 0 <= tW; tW--) k = 4 * tW, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (wc++, l[k + 2] = 3);
-				jA.my = wc
+				for (x = mapwidth * mapheight - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (n++, l[k + 2] = 3);
+				jA.my = n
 			}
 			this.mv = iu = t - this.my;
 			this.mx = this.mu - this.mv - this.my
 		}
+
 	}
 
 	function a1O(g) {
 		var k;
-		mt === a1U() ? k = "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86fRU8Av6gRK76AeCE66hQ9IAw6iQ7IUu6kQ6IUu6lQy87EQmQofAK6Ak6nQUdA7F9D56nQAKAUQAKBA9F8D56nP9A9BKIBe57DaqQAGBeIBoSAKBAKjDGsQAFB6AySA7BUiDQrSKFCKCA6AyEDUcAKD6rV6AyFAoBCUc6yV6AyOB6C865WkBAEAKZ655X7Aod66M6a69Z967W5967W5967W5967W5867g5867g5867g5767q56675Z6675Z5676Z5676Z5676Z5676Zu77U6AKu678UyFEk78UyID9679UyID768L9yBA8A8DABAu8qEA8C769WEA8Cu95UoICG99T7AKGA9B9699UoKB77AUoLB56dAe69UyMBucAe69QUCBUCC7B6BGbAe7B58BABAeEAyYCAI6ZAe7B57B6AeHCUXAabAe7L57B7AKJCQ5UEHB57C7CQ5UEHB56C8CQ5eDHB57AUBCoV65eEG9QAZB965oEG9QAZB965yDG9QKZAUBAKCBa5yDG9QKZAKGAKEA665yDG9QUmAk5yDHB56AUED8AkxAUEAe7B565oAeCALyA7HV575oA8AyBOKGHf585qA8AKEN9Ay7p585sBVmAy7p595sBVkAo76P95uBLjAo76P9AKCAUB5rA8N6AK78Q55sA6V6Q65tAKQAMCQ756AGT8RF58AKBAz96RP6AFTz7P6oBTz7b59Rl58Rv57R675z7975V7975V7875f8HzSlwSbxSbxSbxSbxSlwSvvS56ZApRSuYA6L7S66WA6L7S656yBFeJL7S656yBFeIL8S656yDE8A9MB8556yEEoNMB8t6yFEAPMV8t6KJD7B8MV8t56BokB6Mz8t5UQD7B6M6S65yAyIAUlB7M6S65yAyuB7M7S75xAovB7M7S65yAeuCLZS75xAUuB6AoBM6S75xAKvB6NL87596BzhS759oPNz8959UPNz89589B8Nz9FsAKrB9Np9PqAUpCLiTV6oClyCD9C9M8Tf6oCloCD8DVaTz6UCloCDomMp9p6oCleBDUqMf9p6yClUBDUrMV9p67AN97AKFEABAfWTj66AKFD8M8TACAZ6yDAUnM8TACAZ66ELeT556ypNB9j67ELeTZ67EVeTP6ytNB9F67EffTF66EpfTZMAyDAUpEzfTZHByoE6NL9jDBKFAUpEfhTjCA9FKqNp9s97BeDAeeAUEAUEEziTADAY9ySDKJAouNf9AEAO96B7C7AKCAoCAyEEzhTAEAO96B7C6AULFLhS9MKEl6CKUAKCAUQE6Nf89MAIleWBoLB6EzhS9MeFleZA6B7B6EBlH8A7Ks9oBA6C9AKSB9DKCALoH6BLCxoEAevCUSAUCAeEOe7oPJ9xyEAUvCoQA8AzqGeFAoRJ9x7E9C6ByIA7OK6AJAUTJ8x8E6C8BeKApsGAeJ8x9EodBULAeGAVlF9DU96yArDKKBUEAyCN7F8De96x9EehA6ByMN6F7D7JZAEKnAUQBVjF7EA88yAoF8BpiF8EK86x9EK57B7NU58Eo8s98EAvAKHCBgF9E6IO96EKuAyECVfF9Fe7i9yrEyhAeBM6F9Fy7E9yrA8AKlEBXF9Fy7E9euAeFD6EfVF9F7G7xo5yiEzUF9F8G6xo56DexAUCAeBK8GA58G5xo6KbF9K7GK6A6Y9e6oYGpDGK6e58xoBAK6UYGpDGA6y56x8GKTHLBGA6y56x8GATHfAGA69FO99GKRH6J8F8Howx9GKPIA96F8H7E5XoBao6KPIK9y57IymXeIZ8GKOIo9e57I8DqhA9Z8GKOI6JK57I9DgeBg57GKOI6JK56JKfW8B7Z6GAOI8JA56JUdWyRAKCZ7GANJA89F6JecWUUaA6UKJe87FzCCCVCM6A6eIJ6AKDIK5zDB9WAWZABA9GyFKU8A5zEB7WKWY9AUJG6AfEAeBAoCG9FzGBqXCKMAMjAoGS7G7FzGBgZCAMAWiAoFS9G6FzJAeCAWbCKMAghT8G6F5ieWBKDXz98Go55ieWBAFXz98Ge5rtCUJAqjUo58FrvCAIA5XgGF8FrvCAHA6AeCW8U6F8F5i6CKGAoBAUBAqaU8F7F5ieYA6AoCA6W6U8F7FrrCyFAyCA6W7U7F7FrqC7AUHAUGW7U9Fy5rqD6AUGW6VA5y5q8yCF6DyBA7W6VK5o5q8oEFyjAKHW5VU5o5q8eJFKjAKHWqNFo5q8KMFAjAKHWqPFU5q8APE8EqYVo5U5q8AQE7EqYVyzFg8ATE6EUCAMWV6FA5g79CKtEgYV6FA5WFAeBAK68CosEeCAMVV7E9FWCBK6obEUrWqRE9FMDBy59C9EUrWgRE9FMCB6F6DynEoDAMSV7E9FB99CKwEenEoDAWQV6FAxT8CosE6D9EqWVyyE9T7C9D9E8D9EgWVozE9T6DyfFUnEgVVozE9TylC8FooEgUVe5UvT7D7C7FypEWTVyzE6T8D8Ce57EooV9Vo5UuT7EKUF8EypV7Vo5UuT7EKTGAuD9V7Ve5euT7EeRGKuD9V6VU5otT8EoQGKvD9VqNFosT9FACG8E9D9U8V7FyrUBUFKmU6V7F6Ef99MK5UoUgQF7Ef99MU5emUWPF9EMCMU5elUWPF9EMDMU5elUCOGKoUfXFelUCOGKoUfXFemT9VU6emUzXFesTgMGemUzXFowS8VK6omUpYFo5V8qJG6DoCAMFKyBB7FyuAeESfSAK9A66DqIKoCB7F6EyEAp8fQAo8y69DgKKeCB8Fy5p8VPAy77AKEHUhVBDAUVFU5z8LHAKEA9BeBFo8ygVLDAUVFU56SBCCALAexI9DWLJ7AeCAeNAeFFeuA6Ap78J8CyBAKHAyxI9DMMJoKBoDAy5oxAUFR6JomAKGE7JAfVK9oLByBA8FU57Ry9KxEe9eeVK9oMCyzFKGAL7K9ezBABDA9odVK9oOCyyFAEAL7e9U5oGA8Co96C9U8J6ByZFKxAUERK9e56AeJBAEA7J9C8UzAByZFK57Q9JK7eDAKCAyDKecUpBByaFA6B7K8z9KcUBEB6C7E9GL7A8B96C8AoBTVHB6C8E8Gp67IB96C8AeCGKDM6K8B7C9E8G6Qo78T8C8AUCGeBM6LAQC9E8G7Qe77T9DL77AUCMKPDAwG7Qe75UAeRfeByfE8G8QU7qADB7LgBokEo69Qe7MBDB7BiBelEo69Qe69UUeQ8N6BelEy69QU67UofAKDQfkBUmE6G9QK67UokQVjBUoE6HL58G5U6D6QfhBeoE7HV57GgHD6QACALhBerEy7V56GMJD6P9N7BerE6HV5y6CKDz59OAKEovHV5y57VUjP7OeIE6E8HL5o57UeCA7Dz57OeIE7E8HL5o55UUEA7Dz5zsA9E8E8HV5e5qCAeIDp56OyHFAwHL56FMBAoIDp56OyHFA66Ff57E9UKDBAiPpwA6FK66Ff59C8AUPUKEBAiPfyAo5e6y5p59CoKA6UeGBAhPWKGo56P9BKDA7V7A9BAhPCMGe59QAEXAJBKhO9Ve6U6B6KDXALA9DVxVy6A6L6KBXKOA7DVxP7Ae56F8GV6ACXKOA7DVvP8A6Fy56Gf6ABXKPA7DVvP7A8F9FU6V6ABXKOA8DLvP7BA59FK6LvA7AUGXAHAyDA8DLuP7BK59FU6BuCCcAKUDLuPyNGA5e58OAdAoFX7DBtP6B6GyvF7N8EClC9O6O8AKGB6G7AeBEo5zmD9X8C8O7O7Co7KuFflDgtC7O8O7Co7UvFLkC9ZAaO9OybHUwE9J6AKnC6ZeaO8F8AK87C7HewE8JyDAUBDyYZyaO8FeGBeFG9C7He5UsI7AUFA8AeCC8CyOAMoC6O8FAJBUGHAaHo5eqI6AoDB6AKDCKHAKUBAFX8DVrE7BUNAo7UYHo5opIoeB9A7AUXA8AWoDppE6BoNAo7UYHo56D8IefB9BKEB8Y9D7N8E6BoPAU7UYHy56D7IUgB6BeGB5ZKmN7E8By86Co76F6Dy8KKAKdA9BoFBC57D8N8E8Bo86Co79FohHyPAeiAePA6A5aKoN7E7Be87Ce8A56DK76ByCEeCBC69EAFAUBAfaE8BK87Ce8U56DA77E7B6A8a9EKCBLXE8BK88CK8o58C7H8DACBKUAq7U57MKvBA9AUI7F7Cy6ADByeAULd6F7MKvA9JKUJK5oYF9AeQEW97F8MAXAUZAy9UTJU56CU57AyQEM98GBTCKDCyEJUUJe5yXF6AyREM97GBTCADMUUJe56Ce5yFCUld6GLSOoVJoiAyRCU5yFByDAybAUIdy6LQO6CK9ohA6B8CK5yIBeFAeldo6VNO9CA9ehA8B8CA5yKBUFAekdo6VHAKCPUUJUhBKRB8FyNAUEAyFAUid6GfFP6CA9egBURB7FyNAUFAond8GfDP8CA9ydCALB8FeNAUGAeVAoOd8GpBP9CA96C7CUKCAzBoCA6AUVAoOMyBRU6pBP8CA98CyYA9CKyBoDC7AyOMyDRA6o99P9CLDB9C6A8CUyBoDC6A6BfZAf7A6o99P9CLEB8C6A8CeyEeEBpZAf7A6fAP9CLGB6C6A7CyyGBZAf7A6fAP9CLHByaA6C7FA59MoGQ8GfAP8CVIBoaA6C8FA58MoGQ8Go98P9CVIBobAycFK57BAELKFQ8Go96QKWK8BofAKcFU56AoKLUDQ9Go9z6UWK8Be56AoBFUjAKTAoKLoCIyDIK6o9z6UWK9BU5yFAK5UjAKgUUDAUBH8Gy9p6UWK9BU5yEAU5e66UeGH8Gy8UEA7QoVK9Be5yEAozF8AKEUyHH7G6IB76BAFA6K9By5oDAo5U5eGAqFAKBAo77Gy79R9A8A8AfKB8FUCAo5ezA8Aq87G6C8AotSKIMATF9FUwBAFc6G8BeBAKEA6A8EB88AVXB8F8FewAUBA7A7ce69BKKAKND6fySF7FoyA8A6ce7AKC9DNPB9F6E7AeEFAHA8cU7AIDUcf7B9F7EyFAoGAUqAyJcU7KHDyEAKUf7B9F8EoFAoHAK57cK7KFEoGAKLf7B9F9EoFAU66cK7UBE8AeGA8f8B8GAtHC8VfA5gKSGAtAoBGg8fgAXXB8GKsAeCGM8y66AN9ATGUBAelAKFGM8y66A9mUTG6Ey59cy6yLmKTGyjAKKB7AUocy6oMmURGyhA9AyRAUiAUFHKCVK6eNmUKHKhA6AUDAKBA7BeBDoDAy7ACVK6eNmUJHKrAyJD6AeGAeFHACBABUA6eNmKJHeqA6A8AKDDUDA6AoBHoBA9AWAGKQl9A9H7D9A7BUfAeIH7AKKAMAGKQl7BK78EAFBefAUHI9AV99GKQlyNH8EeCBefAUGJAET7GARlyNH8F8DADAo9UFT6GASlyMH9F7DADAe9eFT6F9B9loNH9F8DACA7JKBH9AVRF8CX7UNIAxA6AenAeDQeDL7F7Ch7UNIKZAKYAoDEABAp6UFL6F6C5lKMIUKB7CoEAUyP6A7Ly56C5geCEyKIyJAyBBoXAeCFf5eHLy56C7f8A6D7AeCBU96AyQB9AoHE9PKILy5ydf6A8DoFAKLH6AUUA8BoBAUPAyGE9NUEByHL6FoefyLCARAKKH7AUTBUOB6AyEFBfA6BeHL7FeiJ6AeBA6T8CASB6AeKH8AUMB9BURBKCE6NALA8A8D6AeBAK76FUkJURToVAUDBKRAeKH9AKLCyHB7FeBAzdBeEBAlA9HUyD9AeBIyXA6AKIA6BKEPo5oDA8JeaAyJAeHBeCDUGAzdCyoA7HeyE6AUDHoeAKGAUNAeMO9FeEA8JegBUGBeDDKEA7M8C6EUDHywFoKAK59HzsFeFA7JefBoFBoCELcC6EyBHywFyJAK57H9OU5VFDeOAokAKUM8C7MAvF8AoBAKCFy8VpFLFDoPAeSAeOAUUM7C8MAtG8EeBBA87CyCLKyJ7AUFD6BoDCABBeCCLaDBTEo69DoFAeGAo9AXAzJFA98AUED6CUBFLaDLSEo69DeHAUGAo9KWA6K8E8K8Dy7fZDVSEU7KfB8AU9eMAKFBKMAKmA7E9E7K8D6H7L9DpREU7ebLyJAKBB9A9A6DANFynLKjH6GUHAKDE6DpRD8AUBH7CpQA7C7AeIC6B7FylLyjHe58B9EUhL8D6IUCAUTMACEUWCA56DzQCUBBA7eCAK5yXD7DzSB9AKHAKEJePQyVCe5yhL8CUFAoXAKxF9CoiD6L9BeBAKHALDA7AUBQ9AeDA8AKFCo56DVTCKFAK7y59C7DUkL9BLQAV89AKBAoZF7DVSCKFAK76BAEEybC8EBSA9iA59DBTCK8KBBetC8C7EBSA9iA6AdL9CUoAUDAoNAKfEyeCKsL8A8iKNAUuC8L8CepAKDAotA8AygDKSE6L8A6ieLAexC7L6CotAetAyLDAhB6E6L8ArtA8A6FAbLyYH7AeHBARCyiAKDAy5fRAXvA7A7F6CLPC6HyCAyHAoBB8Co96u9AoIF7CBPC6JeBB8Co97u9AUJF9B8L6A9AKPLUYJ8v9B6AKrB7L7A7AePC8AUYAKJAUtCLCv8GKOL9AyFBybAU8UQK7v6GoNMAEA6BzMBo77AKdv6GoNMKDA6A7AUGEKBE9AKVBA79AUdv6GoNMKBA8A6AoFF7AKgAeVAKDAy78AUevo7AJMKBBADAyFCyBDACDKEK6Aoeve7UINUDA6AoYAU6UFKyDDi68V6AeHAe87A6KUFDs68V6AUJAUuAKoA6KKFD5u8V6AUJAomAUtA6KAGD5j6ALKV7AUKAe8oGJ6BAkjyHKqfAK8oGJUPD6jyKKNQAy9ASD7j6A7KXRAe9KUD5kKBKhRAe9AWDq9ADRWeAL78Cekc6A6RMeAV76CUmc6A6RMeAL76B8Eg8yHRYBCeqcyGR5n9CoqcyGR6eUBJyYEM86AL8NBAU96CUpu9eKCJ7CAqvg97AU97B9EY7y6UCXUCJ7B7Ei77d6AK97BUwv7nyKE9v7deBKKBAoCFY77ts77ts77t5v6X7A5Vi76XULA6A7A9A7A8AL7i78XKMAyYA7AL7Y78XKqAoERO78XUrAUGRD87AK9ChAKCE6RN87AU89X7AyGDV7h87Ao87ZyYRh88Ay85Z6B9R8m8A7Ig56BB87m7A9IM59Az89m8BK78aKBTX8yCAKMH5t6myDAUKH5Y9AMFm6AoBA8H7t5m6AyGAK76t7m6Ao8i58m7Ae8Y59m7AK8O6O67us67us65u6ui68r6AKau8q6AyEAUau9qUUCE69p9B8AeFB7u8qASAyEB6u6qUSA7AUQu6qyPC5u6qyQC5u5q8BoZuscByZuifBAcA8A5s9rKHDKIA5s8r6AUmAUCtO78ti78AeCs9v7AUDs9wiwwsvwiwwsuw6s5w5s6wsuw6s5w7AyBr8xslx5r5x9rY99rZCq8ysay6q6y6qtJqPMBeGoFgP6BWe5lPKQW65pO7B8W55rOoXV95zN7C7V655VbEMK55pZEWI557MKtU8557MKuUj66LowP6AeFA7DF69LKyPySCZ8VDFL5oWB858pBFVyC8B5588J7FpqAeEC9Bt89Jy68M6EAJ59e9o7BYEUD598Je7pU6sJU76AoOKQsJU96J96sJU96J66vJU96JkyJK97Ja5U89J9B6AK7k5o88J9BKHAeFA9AK5k5y88KAKC6AeDEu58I7KKBEAs658I6OeGAoh659Iz5yf66K86PeFA7B666y8z68Bk6y8z7KH668Iz7eF669IwwI58vIwyISzIS6K7S66G587U59X9AQhF8X8AeqAZ9U5qlAopAj9e5gkAypAj96E9X7A6EAD6BEgmA7D9AkBEWoA6D8AuED8YKHD7AkID5YKHD7AkJDqrA6D6AkKDWsA6D6AkLDCtA7DyD6MC8Y8A6DoD6OC5ZAHDUE6NCqzA8DAE6QCM5eJC8AkTB8ZoKC7AkUB6ZyKC6AuYA9Z8BAZA56ZA7Z9BAaA589KJC6A589UIC6Aw9eJCoE6bAM67A8CoE6bAW67A7CoE6bAg66A9CUF897A8CKE899A9B9AeDAUGAS9AJB7A9AKH889A9B6B8888BKOCI87BKOCI88BKMCI89BKKCS9KLA7Cc9ULA6Cw9Un89Uo89Kq889Em88E5887E688yu886E5887E6887Ew87E5887E5887Ew88E5886E6886E788ov88ow88ov88yv88ow88ew88ey88K5m8Az88Az88AzH" :
-		mt === a1U() + 1 ? k = "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Fs69FKxJ6556KX78Fs7AxFATAK75558KX78Fi7KuFeSAU7t59KN8AzvKuFyQAU7t6BBmAxvetF7BoDHj6U99mUvvetF8BeEHZ6e98metvUvF9BUEHZ6e98monv7E7GKJAy7Z6o7UBC5mocAKGAUCv7C7IKHA6Hj6o7UCCr86B8BUCwKZIoGA6HZ66HUDCX88B6x7Ce8yFA6AeBG8567HUHB8nAHy6CA8yFA7AUCG8L6AOyHeIB5nUEy9B6I8AeJAUCG7L7AOyHyJBJIBe9ADA8AUDG6L8AOyH79aBK9UCA7AUEGzTAYxH99eAVBAyDG6L9AsvIJ99AAhAKHGpUA5s7IJ99AAoGpVA6sy8T99AAmAoCF9MUGsy8T99AAfAoJF8MeGsy8T99AAdA8A7F7MoFs6Id99AAcAyKF7MyEs6Id99AArF6M6AsuIx99AApFzdAYuI6999AAnFzcAYvI6999AAnFpcAeDAOrI6999AAmFpdAUEAOrI6999AAmFpdAoBAYrI6999AAlFpeAoBAYpI8999AAlFpeA6sU87999AAmFfeA7sU86999AAoFBgA7BACrK85999AAoE9NUJA7AsgIx99AAoEBpBKDA5re8x99AAqCACBpqB9ro8n99AAtB7AeMOeTr6IT99AAuAKDBKDAUBA9OoTr7H9999AA5yGA8A8OoUr8H5999AA59AoKAzuB7sU69999AA78AVwB7se58999AA9ABOyUso57999AChB8s9F8999ACgB6tK58999ACgB6tK59999ACgBs5U59999AA7eCP8Bi5U58999AA7eCB9AVnBO5U59999AA9oCN9BE5e59999AA9oBOAIt6F9999AA9eBOAHt7F9999AChA6t9GJ99AA7eBOUCBeGuAuAeK999AA7eFBKDMoEBAHuKuA6A6999AA7oGAyIMeFAUCAKBAeGuot999AA8yTMeKAeHuyu999AA8oSMeKAoFu8AoBEJ99AA8oSMULA6AO7KDAen999AA8eRMAOv8AKEEJ99AA8eRL8B5v8AeFD8999AA8eQL8Bs8AEAymAyB999AA76BpTBs8KEAeqAeC999AA7oOL9Bs8UDAyqAKE999AA7UOL9Bi8yCAypAeD999AA7UOL8BY87AeEEKDAn99AA7UNL7Bi88AeFET99AA77A9AUBL6Bs89AoEEd99AA76A9AUBLoNxeDAeq999AA77A6L8BtAET99AA79AzQB5yUo999AA8KBL6B6yon999AB9yUyen999AB9USy7ET99AB89B7zKo999AB87B7zon999AB8yRzyo999AB8oRzKCAKBAKn999AB8eSz8D9999AB8ATzyCAUk999AB8KUz6AUCDx99AB8KU5XDd99AB8UT5WDn99AB8KU5UAKCAKBDT99AB8AU5WAKDDT99AB78CFWAoCDT99AB78B85YAoDDJ99AB77B85ZAyCDJ99AB8KM5ZA8AKf999AB8UI5bAKCD8999AB8eD5eAKDD9999AB7yC5tD6999AB7eC5vEJ99AB67AjuEn99AHOEn99AHQET99AHQET99AHUD7999AHRAKDD6999AHLAeDD9999AHMAyCD7999AHNAyBD7999AHSAKCD5999AHTAUBD567UB999AAuD767UC999AAsAKBAyBDQ7UDAUD999AAoAyBDQ7UI999AAoAoDDQ7AF999AAtAKBAUBDa7ABAoC999AArAKCAKCDT99AHXAKDDJ99AHVAUDC8999AHZAKDC8999AHfC5999AHaAKDAKBC5999ABvAP8KCAoW999ABuAP8UDAKY999AHiCx99AHeAKECeyAT99AG76AKHCUsAoBA5999AG8KWEeEAUG999AG8eBAUSEUDAKG999AG76AKGAKEB8EADAUE999AG89CKlAUEAn99AG8oBAUU999AHmB9999AHkAKDBoDAd99AHmBUFA5999AHjBUDA9999AHkA9AeJ999AHhAKCA9AeJ999AHkBAIA6999AHgBKHA7999AHhAyCAoBAKCBT99AHfAUBAUHAUBBn99AHgAKCAUBAKDAKDBVoAn99AF96AKHBVpAn99AF9yBAeROAE999AF9KYOAD999AF9oZN6Ad99AF98CT99AHgAUCBn99AHtBn99AHuAKCAn99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AGIAd99AJ99AJ99AJ99AJ99ACdAd99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AH7oE999AH5eB999AJ99AJ99AFGAKBAT99AJ99AJ99AJ99AJ99AC9KB999AH5UBAoF999AHtAyCAd99AHtAyCAd99AHvAx99AHxA7AUC999AHlAUFA9AUF668Ad99AA6ABAeCAyJAeE668Ax99AA57AeCAKEA7AeBA7AQ67Ax99AA56AyFA6999AHrAKBAKDA7999AHwA88mAdFBHDAVgAxFA97FALfA5898AKHA969KEOAF899AKGA98kAxGBE89A8YeII7AnGBoCAs76B7TUOC8Bo8yF9EA9AKDAeCAKBvyUN6AUyCUVB6G7CxDA9AeCv7C7NUDE8DABAULB7AeED9AyNDw9yJAyCvydNADA7BoDAoEAyBAyDD7A8C7CKFAeEAeHBKr88ACA6BE8KbNAwAKoAKhB7CyKFABAc7UDAUCAKIAUBveCAycM6M9AKoA7F6AKE86yEAKLvoHAUhKoIAguAKE858AeCBO6yDA7Ee9yEAM6m58AoDA9u6AoGFo8g6686UCAoCAUGueGAU7o65bS69A6t7KoubyDAm6UGtVJD9c786yHszND7c886yHA6AOkL6DrABKC8sA7AoCoKFC6L9DhCBKD8cAUNB5n8A6CfUD5eAFAKGAcbA7BUPn7A7CBWDrP8aA9BUOAyCm8BUQMUggABAKCAwRBAFAUCB8AeCm6ByEAUIMUch58MAUCBADCyBAN8eSAUDA8MAZAKBiIMAKDBADCr8UbAKCAVWCXv799AoMBADCr7V58AKDB7jl99AyMBADC5c7AUOAUKAeEA6D7QUTj68RBKDCg8KDAeEBeKAKTCf69CD6ABAcIByDCWaAKLAKYAUOBoIEAHR8AUCBr6wAAeGByDCqjAecC6A5W6AKDBX76AKB78eIBUKAeZWAEA9AoUa7BD85777A8BeMAeaUeDBAFDC69BD8779UTAeZUeGA6AyOAKMbAMm9787AKCCKDCp96AUEA7AyHAKPAKDAq7AOnKDAR78AUBCyDCz9oDAUJA5d9Br9568yCA6AK8yLAUQAoXT7foNn667yIAeDAUBAKEIyGBALAySUXMBX9u79Cy96BeGCp95fUIn669oNG8AoTB6A8Cf9rQAN9969UCAKCByCBeCHAOA9Cf9bR68oDA7A6DACA6Ao8UbSvT68ABAyEBeEC6AUDA6FKGCUiR87S68oBA6CAeA7AUCA6AKUAeQA6AUBB6D7R87P6CA7GAFCU68B9A7AUCA8A6AKBA8D9R77W6DA9BABE6A8De5yRA9AoEA7AUEE9RbL6UA9AoKEAJB9A8Ae6yIB7Ao58RHI6cA8AoPA8AUHAUPBKSQB7KGAk9ulAeGBUJAUHAyRA7CL56R869QRAeLAoRAyZAyHA6A7AUXPp5yDB969aHAeZAKhCKGA6D7O8P6AUR69kEBAFAoKGUEAymOUBAf58AUL6896LKKnOKCAV7Q886FK8AyDBKOA9N8Ru8aMc9RQ8kEd8RQ8aBd8Q9AoD68F97Z6AKrQu9j9KHAM5yHDf587B59eKAM5eJCp6HF6IZeKCB5vJ6OZV777M6AAoMZp7RN577AKEBKQAyFZ6Q57QBKC56yRAeGA9az577VA9BF6KcAq77OvWA9AeDAj6q8AHCVp7Y585cKQA7JeND57YA8AZ6yEC5bzCB9DRa57oHCM5oGB7DeEGeVC97bAUB57UJB6Z9A8BUdA7GeWC87R588BASZ7EeJGoYC77I6AA9Cq5UmA8G7CoeCUF6696MAyiY7AeOB6A7G8CokA8A967a6C58B6Ao7AaE767k7MxFeFDAdE966668MpFyGC8C8F666D68" :
-		mt === a1U() + 2 ? k = "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" :
-		mt === a1U() + 3 && (k = "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C9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo");
+		currentmap === realmapid() ? k = "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86fRU8Av6gRK76AeCE66hQ9IAw6iQ7IUu6kQ6IUu6lQy87EQmQofAK6Ak6nQUdA7F9D56nQAKAUQAKBA9F8D56nP9A9BKIBe57DaqQAGBeIBoSAKBAKjDGsQAFB6AySA7BUiDQrSKFCKCA6AyEDUcAKD6rV6AyFAoBCUc6yV6AyOB6C865WkBAEAKZ655X7Aod66M6a69Z967W5967W5967W5967W5867g5867g5867g5767q56675Z6675Z5676Z5676Z5676Z5676Zu77U6AKu678UyFEk78UyID9679UyID768L9yBA8A8DABAu8qEA8C769WEA8Cu95UoICG99T7AKGA9B9699UoKB77AUoLB56dAe69UyMBucAe69QUCBUCC7B6BGbAe7B58BABAeEAyYCAI6ZAe7B57B6AeHCUXAabAe7L57B7AKJCQ5UEHB57C7CQ5UEHB56C8CQ5eDHB57AUBCoV65eEG9QAZB965oEG9QAZB965yDG9QKZAUBAKCBa5yDG9QKZAKGAKEA665yDG9QUmAk5yDHB56AUED8AkxAUEAe7B565oAeCALyA7HV575oA8AyBOKGHf585qA8AKEN9Ay7p585sBVmAy7p595sBVkAo76P95uBLjAo76P9AKCAUB5rA8N6AK78Q55sA6V6Q65tAKQAMCQ756AGT8RF58AKBAz96RP6AFTz7P6oBTz7b59Rl58Rv57R675z7975V7975V7875f8HzSlwSbxSbxSbxSbxSlwSvvS56ZApRSuYA6L7S66WA6L7S656yBFeJL7S656yBFeIL8S656yDE8A9MB8556yEEoNMB8t6yFEAPMV8t6KJD7B8MV8t56BokB6Mz8t5UQD7B6M6S65yAyIAUlB7M6S65yAyuB7M7S75xAovB7M7S65yAeuCLZS75xAUuB6AoBM6S75xAKvB6NL87596BzhS759oPNz8959UPNz89589B8Nz9FsAKrB9Np9PqAUpCLiTV6oClyCD9C9M8Tf6oCloCD8DVaTz6UCloCDomMp9p6oCleBDUqMf9p6yClUBDUrMV9p67AN97AKFEABAfWTj66AKFD8M8TACAZ6yDAUnM8TACAZ66ELeT556ypNB9j67ELeTZ67EVeTP6ytNB9F67EffTF66EpfTZMAyDAUpEzfTZHByoE6NL9jDBKFAUpEfhTjCA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6Ao8i58m7Ae8Y59m7AK8O6O67us67us65u6ui68r6AKau8q6AyEAUau9qUUCE69p9B8AeFB7u8qASAyEB6u6qUSA7AUQu6qyPC5u6qyQC5u5q8BoZuscByZuifBAcA8A5s9rKHDKIA5s8r6AUmAUCtO78ti78AeCs9v7AUDs9wiwwsvwiwwsuw6s5w5s6wsuw6s5w7AyBr8xslx5r5x9rY99rZCq8ysay6q6y6qtJqPMBeGoFgP6BWe5lPKQW65pO7B8W55rOoXV95zN7C7V655VbEMK55pZEWI557MKtU8557MKuUj66LowP6AeFA7DF69LKyPySCZ8VDFL5oWB858pBFVyC8B5588J7FpqAeEC9Bt89Jy68M6EAJ59e9o7BYEUD598Je7pU6sJU76AoOKQsJU96J96sJU96J66vJU96JkyJK97Ja5U89J9B6AK7k5o88J9BKHAeFA9AK5k5y88KAKC6AeDEu58I7KKBEAs658I6OeGAoh659Iz5yf66K86PeFA7B666y8z68Bk6y8z7KH668Iz7eF669IwwI58vIwyISzIS6K7S66G587U59X9AQhF8X8AeqAZ9U5qlAopAj9e5gkAypAj96E9X7A6EAD6BEgmA7D9AkBEWoA6D8AuED8YKHD7AkID5YKHD7AkJDqrA6D6AkKDWsA6D6AkLDCtA7DyD6MC8Y8A6DoD6OC5ZAHDUE6NCqzA8DAE6QCM5eJC8AkTB8ZoKC7AkUB6ZyKC6AuYA9Z8BAZA56ZA7Z9BAaA589KJC6A589UIC6Aw9eJCoE6bAM67A8CoE6bAW67A7CoE6bAg66A9CUF897A8CKE899A9B9AeDAUGAS9AJB7A9AKH889A9B6B8888BKOCI87BKOCI88BKMCI89BKKCS9KLA7Cc9ULA6Cw9Un89Uo89Kq889Em88E5887E688yu886E5887E6887Ew87E5887E5887Ew88E5886E6886E788ov88ow88ov88yv88ow88ew88ey88K5m8Az88Az88AzH" :
+		currentmap === realmapid() + 1 ? k = "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Fs69FKxJ6556KX78Fs7AxFATAK75558KX78Fi7KuFeSAU7t59KN8AzvKuFyQAU7t6BBmAxvetF7BoDHj6U99mUvvetF8BeEHZ6e98metvUvF9BUEHZ6e98monv7E7GKJAy7Z6o7UBC5mocAKGAUCv7C7IKHA6Hj6o7UCCr86B8BUCwKZIoGA6HZ66HUDCX88B6x7Ce8yFA6AeBG8567HUHB8nAHy6CA8yFA7AUCG8L6AOyHeIB5nUEy9B6I8AeJAUCG7L7AOyHyJBJIBe9ADA8AUDG6L8AOyH79aBK9UCA7AUEGzTAYxH99eAVBAyDG6L9AsvIJ99AAhAKHGpUA5s7IJ99AAoGpVA6sy8T99AAmAoCF9MUGsy8T99AAfAoJF8MeGsy8T99AAdA8A7F7MoFs6Id99AAcAyKF7MyEs6Id99AArF6M6AsuIx99AApFzdAYuI6999AAnFzcAYvI6999AAnFpcAeDAOrI6999AAmFpdAUEAOrI6999AAmFpdAoBAYrI6999AAlFpeAoBAYpI8999AAlFpeA6sU87999AAmFfeA7sU86999AAoFBgA7BACrK85999AAoE9NUJA7AsgIx99AAoEBpBKDA5re8x99AAqCACBpqB9ro8n99AAtB7AeMOeTr6IT99AAuAKDBKDAUBA9OoTr7H9999AA5yGA8A8OoUr8H5999AA59AoKAzuB7sU69999AA78AVwB7se58999AA9ABOyUso57999AChB8s9F8999ACgB6tK58999ACgB6tK59999ACgBs5U59999AA7eCP8Bi5U58999AA7eCB9AVnBO5U59999AA9oCN9BE5e59999AA9oBOAIt6F9999AA9eBOAHt7F9999AChA6t9GJ99AA7eBOUCBeGuAuAeK999AA7eFBKDMoEBAHuKuA6A6999AA7oGAyIMeFAUCAKBAeGuot999AA8yTMeKAeHuyu999AA8oSMeKAoFu8AoBEJ99AA8oSMULA6AO7KDAen999AA8eRMAOv8AKEEJ99AA8eRL8B5v8AeFD8999AA8eQL8Bs8AEAymAyB999AA76BpTBs8KEAeqAeC999AA7oOL9Bs8UDAyqAKE999AA7UOL9Bi8yCAypAeD999AA7UOL8BY87AeEEKDAn99AA7UNL7Bi88AeFET99AA77A9AUBL6Bs89AoEEd99AA76A9AUBLoNxeDAeq999AA77A6L8BtAET99AA79AzQB5yUo999AA8KBL6B6yon999AB9yUyen999AB9USy7ET99AB89B7zKo999AB87B7zon999AB8yRzyo999AB8oRzKCAKBAKn999AB8eSz8D9999AB8ATzyCAUk999AB8KUz6AUCDx99AB8KU5XDd99AB8UT5WDn99AB8KU5UAKCAKBDT99AB8AU5WAKDDT99AB78CFWAoCDT99AB78B85YAoDDJ99AB77B85ZAyCDJ99AB8KM5ZA8AKf999AB8UI5bAKCD8999AB8eD5eAKDD9999AB7yC5tD6999AB7eC5vEJ99AB67AjuEn99AHOEn99AHQET99AHQET99AHUD7999AHRAKDD6999AHLAeDD9999AHMAyCD7999AHNAyBD7999AHSAKCD5999AHTAUBD567UB999AAuD767UC999AAsAKBAyBDQ7UDAUD999AAoAyBDQ7UI999AAoAoDDQ7AF999AAtAKBAUBDa7ABAoC999AArAKCAKCDT99AHXAKDDJ99AHVAUDC8999AHZAKDC8999AHfC5999AHaAKDAKBC5999ABvAP8KCAoW999ABuAP8UDAKY999AHiCx99AHeAKECeyAT99AG76AKHCUsAoBA5999AG8KWEeEAUG999AG8eBAUSEUDAKG999AG76AKGAKEB8EADAUE999AG89CKlAUEAn99AG8oBAUU999AHmB9999AHkAKDBoDAd99AHmBUFA5999AHjBUDA9999AHkA9AeJ999AHhAKCA9AeJ999AHkBAIA6999AHgBKHA7999AHhAyCAoBAKCBT99AHfAUBAUHAUBBn99AHgAKCAUBAKDAKDBVoAn99AF96AKHBVpAn99AF9yBAeROAE999AF9KYOAD999AF9oZN6Ad99AF98CT99AHgAUCBn99AHtBn99AHuAKCAn99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AGIAd99AJ99AJ99AJ99AJ99ACdAd99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AH7oE999AH5eB999AJ99AJ99AFGAKBAT99AJ99AJ99AJ99AJ99AC9KB999AH5UBAoF999AHtAyCAd99AHtAyCAd99AHvAx99AHxA7AUC999AHlAUFA9AUF668Ad99AA6ABAeCAyJAeE668Ax99AA57AeCAKEA7AeBA7AQ67Ax99AA56AyFA6999AHrAKBAKDA7999AHwA88mAdFBHDAVgAxFA97FALfA5898AKHA969KEOAF899AKGA98kAxGBE89A8YeII7AnGBoCAs76B7TUOC8Bo8yF9EA9AKDAeCAKBvyUN6AUyCUVB6G7CxDA9AeCv7C7NUDE8DABAULB7AeED9AyNDw9yJAyCvydNADA7BoDAoEAyBAyDD7A8C7CKFAeEAeHBKr88ACA6BE8KbNAwAKoAKhB7CyKFABAc7UDAUCAKIAUBveCAycM6M9AKoA7F6AKE86yEAKLvoHAUhKoIAguAKE858AeCBO6yDA7Ee9yEAM6m58AoDA9u6AoGFo8g6686UCAoCAUGueGAU7o65bS69A6t7KoubyDAm6UGtVJD9c786yHszND7c886yHA6AOkL6DrABKC8sA7AoCoKFC6L9DhCBKD8cAUNB5n8A6CfUD5eAFAKGAcbA7BUPn7A7CBWDrP8aA9BUOAyCm8BUQMUggABAKCAwRBAFAUCB8AeCm6ByEAUIMUch58MAUCBADCyBAN8eSAUDA8MAZAKBiIMAKDBADCr8UbAKCAVWCXv799AoMBADCr7V58AKDB7jl99AyMBADC5c7AUOAUKAeEA6D7QUTj68RBKDCg8KDAeEBeKAKTCf69CD6ABAcIByDCWaAKLAKYAUOBoIEAHR8AUCBr6wAAeGByDCqjAecC6A5W6AKDBX76AKB78eIBUKAeZWAEA9AoUa7BD85777A8BeMAeaUeDBAFDC69BD8779UTAeZUeGA6AyOAKMbAMm9787AKCCKDCp96AUEA7AyHAKPAKDAq7AOnKDAR78AUBCyDCz9oDAUJA5d9Br9568yCA6AK8yLAUQAoXT7foNn667yIAeDAUBAKEIyGBALAySUXMBX9u79Cy96BeGCp95fUIn669oNG8AoTB6A8Cf9rQAN9969UCAKCByCBeCHAOA9Cf9bR68oDA7A6DACA6Ao8UbSvT68ABAyEBeEC6AUDA6FKGCUiR87S68oBA6CAeA7AUCA6AKUAeQA6AUBB6D7R87P6CA7GAFCU68B9A7AUCA8A6AKBA8D9R77W6DA9BABE6A8De5yRA9AoEA7AUEE9RbL6UA9AoKEAJB9A8Ae6yIB7Ao58RHI6cA8AoPA8AUHAUPBKSQB7KGAk9ulAeGBUJAUHAyRA7CL56R869QRAeLAoRAyZAyHA6A7AUXPp5yDB969aHAeZAKhCKGA6D7O8P6AUR69kEBAFAoKGUEAymOUBAf58AUL6896LKKnOKCAV7Q886FK8AyDBKOA9N8Ru8aMc9RQ8kEd8RQ8aBd8Q9AoD68F97Z6AKrQu9j9KHAM5yHDf587B59eKAM5eJCp6HF6IZeKCB5vJ6OZV777M6AAoMZp7RN577AKEBKQAyFZ6Q57QBKC56yRAeGA9az577VA9BF6KcAq77OvWA9AeDAj6q8AHCVp7Y585cKQA7JeND57YA8AZ6yEC5bzCB9DRa57oHCM5oGB7DeEGeVC97bAUB57UJB6Z9A8BUdA7GeWC87R588BASZ7EeJGoYC77I6AA9Cq5UmA8G7CoeCUF6696MAyiY7AeOB6A7G8CokA8A967a6C58B6Ao7AaE767k7MxFeFDAdE966668MpFyGC8C8F666D68" :
+		currentmap === realmapid() + 2 ? k = "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" :
+		currentmap === realmapid() + 3 && (k = "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C9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo");
 		k = m.iI(k);
-		var t = jX.br(mt).a1g,
-			l = jX.br(mt).a1h;
+		var t = jX.br(currentmap).a1g,
+			l = jX.br(currentmap).a1h;
 		mapwidth = 1E3 * k[0] + k[1];
 		mapheight = 1E3 * k[2] + k[3];
-		hc = document.createElement("canvas");
-		hc.width = mapwidth;
-		hc.height = mapheight;
-		pH = hc.getContext("2d", {
+		map = document.createElement("canvas");
+		map.width = mapwidth;
+		map.height = mapheight;
+		pH = map.getContext("2d", {
 			alpha: !1
 		});
 		wb = pH.getImageData(0, 0, mapwidth, mapheight);
@@ -7643,7 +7727,7 @@ function game() {
 	function kB() {
 		var g;
 		this.bh = function () {
-			g = Array(a1J);
+			g = Array(mapcount);
 			g[0] = {
 				mf: "White Arena",
 				bt: 230,
@@ -7766,13 +7850,13 @@ function game() {
 			}
 		};
 		this.a2B = function () {
-			return 1 === mt
+			return 1 === currentmap
 		};
 		this.br = function (k) {
 			return g[k]
 		}
 	}
-	var hd, tW, jG, jH;
+	var hd, pixel_rgbv, jG, jH;
 
 	function j9() {
 		void 0 === hd && (hd = document.createElement("canvas"));
@@ -7782,7 +7866,7 @@ function game() {
 			alpha: !0
 		});
 		jH = jG.getImageData(0, 0, mapwidth, mapheight);
-		tW = jH.data
+		pixel_rgbv = jH.data
 	}
 
 	function kC() {
@@ -7801,10 +7885,10 @@ function game() {
 		function t(I, N) {
 			var G = I - C[N - 1];
 			if (0 !== G) {
-				var M = 1 + ak(Math.abs(G), N - 1);
+				var M = 1 + strange_divide_floor(Math.abs(G), N - 1);
 				M = 0 > G ? -M : M;
 				C[N - 1] = I;
-				var Q = N - 1 - ak(Math.abs(G), Math.abs(M));
+				var Q = N - 1 - strange_divide_floor(Math.abs(G), Math.abs(M));
 				Q = 1 > Q ? 1 : Q > N - 2 ? N - 2 : Q;
 				for (var S = N - 2; S >= Q; S--) C[S] += G - (N - 1 - S) * M;
 				if (0 > G)
@@ -7877,7 +7961,7 @@ function game() {
 				I = F.length - 1;
 				for (N = I - 1; 0 <= N; N--) E[N] > E[I] && (I = N);
 				if (5 > E[I]) break a;
-				N = F[I] + ak(E[I], 2);
+				N = F[I] + strange_divide_floor(E[I], 2);
 				if (H[I]) {
 					G = void 0;
 					var Q;
@@ -7922,7 +8006,7 @@ function game() {
 			}
 			for (I = 0; I < n; I++)
 				if (!K[I])
-					for (N = 0; N < z; N++) J[N] || (G = x[N * n + I - 1] + x[(N - 1) * n + I], M = 2, K[I + 1] && (M++, G += x[N * n + I + 1]), J[N + 1] && (M++, G += x[(N + 1) * n + I]), x[N * n + I] = ak(G, M))
+					for (N = 0; N < z; N++) J[N] || (G = x[N * n + I - 1] + x[(N - 1) * n + I], M = 2, K[I + 1] && (M++, G += x[N * n + I + 1]), J[N + 1] && (M++, G += x[(N + 1) * n + I]), x[N * n + I] = strange_divide_floor(G, M))
 		};
 		this.a1k = function () {
 			return x
@@ -7932,12 +8016,12 @@ function game() {
 		}
 	}
 
-	function ak(g, k) {
+	function strange_divide_floor(g, k) {
 		return Math.floor(g / k + 1 / (2 * k))
 	}
 
 	function xz(g, k) {
-		return 0 <= g ? ak(g, k) : -ak(-g, k)
+		return 0 <= g ? strange_divide_floor(g, k) : -strange_divide_floor(-g, k)
 	}
 
 	function cx(g) {
@@ -7957,7 +8041,7 @@ function game() {
 	}
 
 	function a2z(g, k) {
-		for (var t = ak(g + 1, 2), l = 0; l < k; l++) t = ak(t + ak(g, t), 2);
+		for (var t = strange_divide_floor(g + 1, 2), l = 0; l < k; l++) t = strange_divide_floor(t + strange_divide_floor(g, t), 2);
 		return t
 	}
 
@@ -8182,31 +8266,30 @@ function game() {
 			return g
 		};
 		this.cg = function (k, t) {
-			if (0 === bF[k].length || !ax.ay(t) || !ax.b8(t) && ax.b7(t) === k) return !1;
+			if (0 === borderwaterpixels[k].length || !pixel.canownpixel(t) || !pixel.isneutral(t) && pixel.pixelowner(t) === k) return !1;
 			for (var l = 21; 0 <= l; l--) {
 				if (21 === l) {
-					var x = bF[k],
+					var x = borderwaterpixels[k],
 						n = t,
-						z = ax.g3(n);
-					n = ax.c7(n);
+						z = pixel.pixeltox(n);
+					n = pixel.pixeltoy(n);
 					var y = 0;
-					var A = ax.g3(x[0]);
-					var B = ax.c7(x[0]);
+					var A = pixel.pixeltox(x[0]);
+					var B = pixel.pixeltoy(x[0]);
 					A = Math.abs(A - z) + Math.abs(B - n);
 					for (B = x.length - 1; 1 <= B; B--) {
-						var C = ax.g3(x[B]);
-						var F = ax.c7(x[B]);
+						var C = pixel.pixeltox(x[B]);
+						var F = pixel.pixeltoy(x[B]);
 						C = Math.abs(C - z) + Math.abs(F - n);
 						C < A && (A = C, y = B)
 					}
 					g = x[y]
-				} else g = bF[k][ak(l * bF[k].length, 21)];
+				} else g = borderwaterpixels[k][strange_divide_floor(l * borderwaterpixels[k].length, 21)];
 				a: {
-					B = g; y = t; x = ax.g3(B); z = ax.c7(B); n = ax.g3(y); y = ax.c7(y); A = Math.abs(n -
-						x) + Math.abs(y - z);
+					B = g; y = t; x = pixel.pixeltox(B); z = pixel.pixeltoy(B); n = pixel.pixeltox(y); y = pixel.pixeltoy(y); A = Math.abs(n - x) + Math.abs(y - z);
 					if (!(2 > A))
 						for (C = 0; C < A; C++)
-							if (B = Math.abs(n - ax.g3(B)) >= Math.abs(y - ax.c7(B)) ? B + offset[n > x ? 1 : 3] : B + offset[y > z ? 2 : 0], ax.ay(B)) {
+							if (B = Math.abs(n - pixel.pixeltox(B)) >= Math.abs(y - pixel.pixeltoy(B)) ? B + offset[n > x ? 1 : 3] : B + offset[y > z ? 2 : 0], pixel.canownpixel(B)) {
 								if (0 === C || C + 20 < A) break;
 								x = !0;
 								break a
@@ -8225,7 +8308,7 @@ function game() {
 				E = Math.floor(x / 2),
 				H = Math.floor(n / 2),
 				K = 1.5 * Math.PI;
-			for (B = iy; 0 <= B; B--) F += A[B], 0 === A[B] && C++;
+			for (B = numberofteams; 0 <= B; B--) F += A[B], 0 === A[B] && C++;
 			t = !1;
 			y.clearRect(0, 0, x, x);
 			y.fillStyle = hi;
@@ -8236,8 +8319,8 @@ function game() {
 			y.fillRect(x - 2, 0, 2, x);
 			y.fillRect(0, x - 2, x, 2);
 			if (0 < F)
-				if (C === iy)
-					for (B = iy; 0 <= B; B--) {
+				if (C === numberofteams)
+					for (B = numberofteams; 0 <= B; B--) {
 						if (0 < A[B]) {
 							F = E;
 							K = H;
@@ -8248,7 +8331,7 @@ function game() {
 							break
 						}
 					} else {
-					for (B = 0; B <= iy; B++)
+					for (B = 0; B <= numberofteams; B++)
 						if (0 < A[B]) {
 							C = K + 2 * Math.PI * A[B] / F;
 							var J = E,
@@ -8285,8 +8368,8 @@ function game() {
 		this.bh = function () {
 			if (teamgame) {
 				l = 16;
-				A = new Uint32Array(iy + 1);
-				for (var B = iy; 0 < B; B--) A[B] = 1;
+				A = new Uint32Array(numberofteams + 1);
+				for (var B = numberofteams; 0 < B; B--) A[B] = 1;
 				this.le()
 			} else A = y = z = null
 		};
@@ -8308,14 +8391,14 @@ function game() {
 			return this.md()
 		};
 		this.md = function () {
-			for (var B = 0, C = iy; 0 < C; C--) A[C] > A[B] && (B = C);
+			for (var B = 0, C = numberofteams; 0 < C; C--) A[C] > A[B] && (B = C);
 			return B
 		};
 		this.d7 = function () {
 			if (teamgame && 32 <= ++l) {
 				l = 0;
 				var B;
-				for (B = iy; 0 <= B; B--) A[B] = 0;
+				for (B = numberofteams; 0 <= B; B--) A[B] = 0;
 				for (B = alivecount - 1; 0 <= B; B--) A[dO.dP[entitiesalive[B]]] += land[entitiesalive[B]];
 				t = !0
 			}
@@ -8324,8 +8407,7 @@ function game() {
 			teamgame && t && g()
 		};
 		this.c8 = function () {
-			teamgame && c9.drawImage(z,
-				lo, q0 + 2 * lo)
+			teamgame && c9.drawImage(z, lo, q0 + 2 * lo)
 		}
 	}
 
@@ -8333,14 +8415,14 @@ function game() {
 		var g, k;
 		this.bh = function () {
 			k = Array(101);
-			for (var t = k.length - 1; 0 <= t; t--) k[t] = ak(32768 * t, 100);
+			for (var t = k.length - 1; 0 <= t; t--) k[t] = strange_divide_floor(32768 * t, 100);
 			this.j7(0)
 		};
 		this.value = function (t) {
 			return k[t]
 		};
 		this.a0B = function () {
-			return ak(g - 1, 2)
+			return strange_divide_floor(g - 1, 2)
 		};
 		this.j7 = function (t) {
 			g = 2 * t % 32768 + 1
@@ -8349,7 +8431,7 @@ function game() {
 			return g = 167 * g % 32768
 		};
 		this.cX = function (t) {
-			return ak(t * this.random(), 32768)
+			return strange_divide_floor(t * this.random(), 32768)
 		};
 		this.dH = function (t) {
 			return 0 !== t && this.random() < this.value(t)
@@ -8364,7 +8446,7 @@ function game() {
 		function k() {
 			n = 0;
 			z += 700 > z ? 200 : 0;
-			bo.bp() && (l() || x) && (x = !1, oh(), tx.bh(), jR.bh(), jV.le(), vG.bh(), jS.le(), jQ.le(), jP.le(), vA.le(), c5.le(), a5.bh(), 1 <= fN ? (eA.le(!1), eC.le(), dz.le(), gX.le(), eF.le(), dx.le(), fe.le(), eG.le(), eD.le(), bu.le(), he.kj(), hf.le(), dy.le(), eK.le(), eH.le(), gX.qq()) : (0 === jT.rc() ? jV.c6(0, !0) : 2 === jT.rc() ? dl.le() : 3 === jT.rc() && jU.le(), jT.vE(), jT.vH()), bw.bx = !0)
+			bo.bp() && (l() || x) && (x = !1, oh(), tx.bh(), jR.bh(), jV.le(), vG.bh(), jS.le(), jQ.le(), jP.le(), vA.le(), c5.le(), a5.bh(), 1 <= fN ? (eA.le(!1), eC.le(), dz.le(), gX.le(), eF.le(), newannouncements.le(), fe.le(), eG.le(), eD.le(), bu.le(), he.kj(), hf.le(), dy.le(), eK.le(), eH.le(), gX.qq()) : (0 === jT.rc() ? jV.c6(0, !0) : 2 === jT.rc() ? dl.le() : 3 === jT.rc() && jU.le(), jT.vE(), jT.vH()), bw.bx = !0)
 		}
 
 		function t(y) {
@@ -8380,7 +8462,7 @@ function game() {
 				r = g2;
 				s = c3;
 				ou = qJ(r, s);
-				bi = ak(s + r, 2);
+				bi = strange_divide_floor(s + r, 2);
 				if (5 <= d) {
 					var B = e.loadNumber(23);
 					var C = e.loadNumber(24);
@@ -8424,48 +8506,48 @@ function game() {
 	function kG() {
 		function g(H) {
 			e8.an(t, E);
-			aW.au(t, F);
+			attacks.au(t, F);
 			H && (troops[t] += l)
 		}
 
 		function k() {
-			ax.y6(x, t) && ax.y8(x)
+			pixel.strong_isboat(x, t) && pixel.revertwater(x)
 		}
 		var t, l, x, n, z, y, A, B, C, F, E;
 		this.d7 = function (H, K, J, D, L) {
 			C = H;
 			E = K;
 			t = J;
-			z = ax.g3(D);
-			y = ax.c7(D);
-			A = ax.g3(L);
-			B = ax.c7(L);
-			n = x = ax.ep(z, y);
-			F = aW.fJ(t, E); - 1 === F ? (k(), e8.an(t, E), H = !1) : (l = aW.ae(t, F), H = !0);
-			if (H && (k(), H = ak(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (as.at[15] += H), l <= al ? (t === myid && (as.at[15] += l), g(!1), H = !1) : (aW.bL(t, F, l), H = !0), H))
-				if (H = ax.ep(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? H + offset[A > z ? 1 : 3] : H + offset[B > y ? 2 : 0], z = ax.g3(x), y = ax.c7(x),
-					e8.fo(C, x), H = ax.ay(x) ? !1 : !0, H) ax.y4(x) && ax.yB(x, t);
+			z = pixel.pixeltox(D);
+			y = pixel.pixeltoy(D);
+			A = pixel.pixeltox(L);
+			B = pixel.pixeltoy(L);
+			n = x = pixel.coordstopixel(z, y);
+			F = attacks.fJ(t, E); - 1 === F ? (k(), e8.an(t, E), H = !1) : (l = attacks.remaining(t, F), H = !0);
+			if (H && (k(), H = strange_divide_floor(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (as.at[15] += H), l <= neutral_landcost ? (t === myid && (as.at[15] += l), g(!1), H = !1) : (attacks.bL(t, F, l), H = !0), H))
+				if (H = pixel.coordstopixel(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? H + offset[A > z ? 1 : 3] : H + offset[B > y ? 2 : 0], z = pixel.pixeltox(x), y = pixel.pixeltoy(x),
+					e8.fo(C, x), H = pixel.canownpixel(x) ? !1 : !0, H) pixel.iswater(x) && pixel.changetoboat(x, t);
 				else a: {
-					if (ax.b8(x)) H = maxentities;
+					if (pixel.isneutral(x)) H = maxentities;
 					else {
-						H = ax.b7(x);
+						H = pixel.pixelowner(x);
 						if (H === t) {
 							g(!0);
 							break a
 						}
 						if (!cZ(t, H)) {
 							K = land[H] * is - troops[H];
-							0 >= K || (K = l > K ? K : l, l -= K, t === myid && (dx.mq(K, H), as.at[16] += K), H === myid && (dx.ms(K, t), as.at[10] += K), troops[H] += K);
+							0 >= K || (K = l > K ? K : l, l -= K, t === myid && (newannouncements.mq(K, H), as.at[16] += K), H === myid && (newannouncements.ms(K, t), as.at[10] += K), troops[H] += K);
 							g(!0);
 							break a
 						}
 					}
-					t === myid && (as.at[13] += l); e8.an(t, E); aW.au(t, F); aw[t].push(n); aW.cI(t, l, H); am.cJ(t, !0)
+					t === myid && (as.at[13] += l); e8.an(t, E); attacks.au(t, F); temp_borderpixels[t].push(n); attacks.cI(t, l, H); am.cJ(t, !0)
 				}
 		};
 		this.fs = function (H, K) {
 			t = H;
-			x = ax.ep(ax.g3(K), ax.c7(K));
+			x = pixel.coordstopixel(pixel.pixeltox(K), pixel.pixeltoy(K));
 			k()
 		}
 	}
@@ -8476,11 +8558,11 @@ function game() {
 			var x, n, z;
 			t = !0;
 			l = "rgb(" + wc[0] + "," + wc[1] + "," + wc[2] + ")";
-			var y = a1W(mt) ? !0 : t = !1;
+			var y = a1W(currentmap) ? !0 : t = !1;
 			if (y) k = null;
 			else {
-				g = ak(96, 4);
-				if (1 === mt) {
+				g = strange_divide_floor(96, 4);
+				if (1 === currentmap) {
 					var A = 0;
 					var B = 160
 				} else A = 128, B = 32;
@@ -8625,7 +8707,7 @@ function game() {
 		this.a4J = function () {
 			this.a4F();
 			this.a4I(0);
-			this.ln = 1 + ak(this.cN, 2);
+			this.ln = 1 + strange_divide_floor(this.cN, 2);
 			for (var g = 1; g < this.ln; g++) this.a4C[g] = this.a4C[2 * g], this.rf[g] = this.rf[2 * g], this.t2[g] = this.t2[2 * g], this.a4I(g);
 			this.a4D *=
 				2
@@ -8676,8 +8758,8 @@ function game() {
 			if (!this.ku) return !1;
 			var t = g,
 				l = k;
-			g -= ak(g2 - this.bt, 2);
-			k -= ak(c3 - this.co, 2);
+			g -= strange_divide_floor(g2 - this.bt, 2);
+			k -= strange_divide_floor(c3 - this.co, 2);
 			if (0 > g || 0 > k || g >= this.bt || k >= this.co) {
 				if (1 < fe.bz(t, l)) return !0;
 				this.kx();
@@ -8692,7 +8774,7 @@ function game() {
 		};
 		this.lV = function (g) {
 			if (this.ku && this.a4N) {
-				g -= ak(g2 - this.bt, 2);
+				g -= strange_divide_floor(g2 - this.bt, 2);
 				var k = this.a4M;
 				this.a4M = (g - 2 * this.ho - this.u1) / this.u2;
 				if (0 <= this.a4M && 1 >= this.a4M || 0 <= k && 1 >= k) bw.bx = !0;
@@ -8724,8 +8806,8 @@ function game() {
 			this.ku && this.nB()
 		};
 		this.nB = function () {
-			var g = ak(g2 - this.bt, 2),
-				k = ak(c3 - this.co, 2);
+			var g = strange_divide_floor(g2 - this.bt, 2),
+				k = strange_divide_floor(c3 - this.co, 2);
 			c9.setTransform(1, 0, 0, 1, g, k);
 			c9.fillStyle = hi;
 			c9.fillRect(0, 0, this.bt, this.co);
@@ -8817,7 +8899,7 @@ function game() {
 			c9.fillStyle = nx;
 			c9.fillText(t, 0, 3 * l / 9);
 			c9.fillStyle = oE;
-			t = as.at[13] - aW.yq(myid);
+			t = as.at[13] - attacks.yq(myid);
 			c9.fillText(eD.g7(as.at[12]), 0, 4 * l / 9);
 			c9.fillText(eD.g7(t), 0, 5 * l / 9);
 			c9.fillText(eD.g7(as.at[14]), 0, 6 * l / 9);
@@ -8957,11 +9039,11 @@ function game() {
 			var B = playercount - 1;
 			a: for (; 0 <= B; B--) {
 				var C = B;
-				var F = a0A[C].indexOf("[");
+				var F = temp_nickname[C].indexOf("[");
 				if (0 > F) F = null;
 				else {
-					var E = a0A[C].indexOf("]");
-					F = 1 < E - F && 8 >= E - F ? a0A[C].substring(F + 1, E).toUpperCase().trim() : null
+					var E = temp_nickname[C].indexOf("]");
+					F = 1 < E - F && 8 >= E - F ? temp_nickname[C].substring(F + 1, E).toUpperCase().trim() : null
 				}
 				if (null !== F) {
 					for (E = k.length - 1; 0 <= E; E--)
@@ -8984,15 +9066,15 @@ function game() {
 					var H = C % z;
 					for (F = z - 1; 0 <= F; F--) y[F] > y[H] && (H = F);
 					var K = -1;
-					for (F = iy; 0 < F; F--)
+					for (F = numberofteams; 0 < F; F--)
 						if (this.iW[F] === H + 1) {
 							K = F;
 							break
 						} y[H] = 0;
 					if (-1 !== K) {
 						H = 0;
-						for (F = iy; 0 < F; F--) l[K] > l[F] && H++;
-						if (H !== iy - 1) {
+						for (F = numberofteams; 0 < F; F--) l[K] > l[F] && H++;
+						if (H !== numberofteams - 1) {
 							for (F = t[C].length - 1; 0 <= F; F--) l[K]++, this.dP[t[C][F]] = K;
 							break
 						}
@@ -9005,26 +9087,26 @@ function game() {
 			var z;
 			var y = this.iW.length - 1;
 			var A =
-				ak(playercount, iy);
-			0 < playercount % iy && A++;
+				strange_divide_floor(playercount, numberofteams);
+			0 < playercount % numberofteams && A++;
 			var B = new Uint8Array(y + 1);
 			for (z = y; 1 <= z; z--) B[this.iW[z]] = z;
-			for (y = 0; y < playercount; y++) z = B[l[y] + 1], 0 === this.dP[y] && z <= iy && n[z] < A && (n[z]++, this.dP[y] = z);
-			for (y = 0; y < playercount; y++) z = B[x[y] + 1], 0 === this.dP[y] && z <= iy && n[z] < A && (n[z]++, this.dP[y] = z);
-			for (z = iy; 1 <= z; z--)
+			for (y = 0; y < playercount; y++) z = B[l[y] + 1], 0 === this.dP[y] && z <= numberofteams && n[z] < A && (n[z]++, this.dP[y] = z);
+			for (y = 0; y < playercount; y++) z = B[x[y] + 1], 0 === this.dP[y] && z <= numberofteams && n[z] < A && (n[z]++, this.dP[y] = z);
+			for (z = numberofteams; 1 <= z; z--)
 				for (y = playercount - 1; 0 <= y && !(n[z] >= A); y--) 0 === this.dP[y] && (n[z]++, this.dP[y] = z)
 		};
 		this.a4p = function () {
-			var l, x = new Uint16Array(iy);
-			x[iy - 1] = maxentities;
-			for (l = iy - 2; 0 <= l; l--) x[l] = dl.dm[l].ma;
+			var l, x = new Uint16Array(numberofteams);
+			x[numberofteams - 1] = maxentities;
+			for (l = numberofteams - 2; 0 <= l; l--) x[l] = dl.dm[l].ma;
 			x[0]--;
 			var n = 0 === x[0] ? 1 : 0;
 			for (l = playercount; l < maxentities; l++) this.dP[l] = n + 1, x[n]--, 0 >= x[n] &&
 				n++
 		};
 		this.a4q = function () {
-			for (var l = playercount; l < maxentities; l++) this.dP[l] = 1 + l % iy
+			for (var l = playercount; l < maxentities; l++) this.dP[l] = 1 + l % numberofteams
 		};
 		this.iV = function (l) {
 			if (singleplayer) return [512, ""];
@@ -9037,108 +9119,11 @@ function game() {
 		}
 	}
 
-	function bN() {
-		for (var g, k, t = aI - 1; 0 <= t; t--) g = ak(aK[t], 4) % mapwidth, k = ak(aK[t], 4 * mapwidth), cs[aE] = cs[aE] > g ? g : cs[aE], cv[aE] = cv[aE] > k ? k : cv[aE], cr[aE] = cr[aE] < g ? g : cr[aE], cu[aE] = cu[aE] < k ? k : cu[aE]
-	}
-
-	function ab() {
-		var g = aw[aE].length,
-			k;
-		var t = g - 1;
-		a: for (; 0 <= t; t--) {
-			for (k = 3; 0 <= k; k--) {
-				var l = aw[aE][t] + offset[k];
-				if (ax.b8(l) || ax.b6(l) && ax.b7(l) !== aE) {
-					ax.cO(aw[aE][t], aE);
-					continue a
-				}
-			}
-			aw[aE][t] = aw[aE][g - 1];
-			aw[aE].pop();
-			g--
-		}
-	}
-
-	function ac() {
-		var g = borderpixels[aE].length,
-			k, t, l = g - 1;
-		a: for (; 0 <= l; l--) {
-			var x = t = !1;
-			for (k = 3; 0 <= k; k--) {
-				var n = borderpixels[aE][l] + offset[k];
-				if (ax.y1(n, aE)) continue a;
-				x = x || ax.y4(n);
-				t = t || ax.y0(n)
-			}
-			x ? bF[aE].push(borderpixels[aE][l]) : t ? bI[aE].push(borderpixels[aE][l]) : ax.hN(borderpixels[aE][l], aE);
-			borderpixels[aE][l] = borderpixels[aE][g - 1];
-			borderpixels[aE].pop();
-			g--
-		}
-	}
-
-	function bC() {
-		land[aH] -= aI
-	}
-
-	function bD(g) {
-		for (var k = g.length, t = k - 1; 0 <= t; t--) ax.hW(aH, g[t]) || (g[t] = g[k - 1], g.pop(), k--)
-	}
-
-	function bG(g) {
-		for (var k = g.length, t = k - 1; 0 <= t; t--) !ax.hW(aH, g[t]) && ax.ay(g[t]) && (g[t] = g[k - 1], g.pop(), k--)
-	}
-
-	function bH(g) {
-		for (var k = g.length, t, l, x = k - 1; 0 <= x; x--)
-			for (t = 3; 0 <= t; t--)
-				if (l = g[x] + offset[t], ax.y1(l, aH)) {
-					borderpixels[aH].push(g[x]);
-					g[x] = g[k - 1];
-					g.pop();
-					k--;
-					break
-				}
-	}
-
-	function bJ() {
-		for (var g, k, t = aI - 1; 0 <= t; t--)
-			for (g = 3; 0 <= g; g--) k = aK[t] + offset[g], ax.y2(aH, k) && ax.y3(k) && (borderpixels[aH].push(k), ax.az(k, aH))
-	}
-
-	function bK() {
-		var g;
-		a: for (; cv[aH] < cu[aH];) {
-			for (g = cr[aH]; g >= cs[aH]; g--)
-				if (ax.hW(aH, 4 * (cv[aH] * mapwidth + g))) break a;
-			cv[aH]++
-		}
-		a: for (; cv[aH] < cu[aH];) {
-			for (g = cr[aH]; g >= cs[aH]; g--)
-				if (ax.hW(aH, 4 * (cu[aH] * mapwidth + g))) break a;
-			cu[aH]--
-		}
-		a: for (; cs[aH] < cr[aH];) {
-			for (g = cu[aH]; g >= cv[aH]; g--)
-				if (ax.hW(aH, 4 * (g * mapwidth + cs[aH]))) break a;
-			cs[aH]++
-		}
-		a: for (; cs[aH] < cr[aH];) {
-			for (g = cu[aH]; g >= cv[aH]; g--)
-				if (ax.hW(aH, 4 * (g * mapwidth + cr[aH]))) break a;
-			cr[aH]--
-		}
-	}
-
-	function cZ(g, k) {
-		return 0 === dO.dP[g] || dO.dP[g] !== dO.dP[k]
-	}
-
 	function lP(g, k) {
-		var t, l = aW.aX(g);
+		var t, l = attacks.currentattackcount(g);
 		for (t = 0; t < l; t++)
-			if (0 === aW.aY(g, t)) {
-				var x = aW.ad(g, t);
+			if (0 === attacks.boatid(g, t)) {
+				var x = attacks.target(g, t);
 				if (x === maxentities) {
 					if (k === maxentities) break;
 					if (lO(k)) return !0
@@ -9149,25 +9134,25 @@ function game() {
 	}
 
 	function lO(g) {
-		var k, t, l = borderpixels[g].length;
+		var k, t, l = borderlandpixels[g].length;
 		for (k = 3; 0 <= k; k--) {
 			var x = offset[k];
 			for (t = 0; t < l; t++)
-				if (ax.b8(borderpixels[g][t] + x)) return !0
+				if (pixel.isneutral(borderlandpixels[g][t] + x)) return !0
 		}
 		return !1
 	}
 
 	function lT(g, k) {
 		var t;
-		var l = borderpixels[g].length;
-		var x = borderpixels[k].length;
+		var l = borderlandpixels[g].length;
+		var x = borderlandpixels[k].length;
 		x < l && (l = g, g = k, k = l, l = x);
 		for (t = 3; 0 <= t; t--) {
 			var n = offset[t];
 			for (x = 0; x < l; x++) {
-				var z = borderpixels[g][x] + n;
-				if (ax.b6(z) && ax.b7(z) === k) return !0
+				var z = borderlandpixels[g][x] + n;
+				if (pixel.isentitypixel(z) && pixel.pixelowner(z) === k) return !0
 			}
 		}
 		return !1
@@ -9193,7 +9178,7 @@ function game() {
 			this.gQ = performance.now()
 		};
 		this.a1B = function () {
-			1 !== fN || !singleplayer || fe.ld || fQ || fe.lj(); - 1 === this.a5D && (this.a5D = setInterval(k, 2E3))
+			1 !== fN || !singleplayer || fe.ld || in_spawn || fe.lj(); - 1 === this.a5D && (this.a5D = setInterval(k, 2E3))
 		};
 		this.xB = function () {
 			this.bx = !0; - 1 !== this.a5D && (clearInterval(this.a5D), this.a5D = -1)
@@ -9243,7 +9228,7 @@ function game() {
 		this.a5L = !1;
 		this.d7 = function () {
 			jb.d7();
-			fQ ? eQ() : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN || fe.ld ? dw() : (gametickincrement(), this.vm++, gw.tU()), this.bk++) : (fe.ld ? eQ() : (bw.bx = !0, eO()), this.bk = 0);
+			in_spawn ? eQ() : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN || fe.ld ? dw() : (gametickincrement(), this.vm++, gw.tU()), this.bk++) : (fe.ld ? eQ() : (bw.bx = !0, eO()), this.bk = 0);
 			eI();
 			bw.bx && (bw.bx = !1, hZ())
 		}
@@ -9262,7 +9247,7 @@ function game() {
 			g = this.vm = this.bk = 0
 		};
 		this.a5N = function (k) {
-			if (fQ) this.t5(k);
+			if (in_spawn) this.t5(k);
 			else if (this.a5M.push(k), 2 === fN) {
 				for (k = 0; k < this.a5M.length; k++) ja.a5O(this.a5M[k], g), g = (g + 1) % 8;
 				this.a5M = []
@@ -9272,11 +9257,11 @@ function game() {
 			ja.a5O(k, g);
 			g = (g + 1) % 8;
 			dz.t5(this.vl);
-			this.vl === j0 ? (fR.d7(), this.vm = this.bk = this.vl = 0, this.gQ = bw.gQ) : (this.vl++, dy.ip(), dy.eP(), gw.tU())
+			this.vl === spawntimeallowed ? (spawn.exit(), this.vm = this.bk = this.vl = 0, this.gQ = bw.gQ) : (this.vl++, dy.ip(), dy.eP(), gw.tU())
 		};
 		this.d7 = function () {
 			jb.d7();
-			fQ ? (bw.bx = dz.t5(-1) ||
+			in_spawn ? (bw.bx = dz.t5(-1) ||
 				bw.bx, eQ()) : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN ? dw() : this.a5P(), this.bk++) : (bw.bx = !0, eO(), this.bk = 0);
 			eI();
 			bw.bx && (bw.bx = !1, hZ())
@@ -9292,14 +9277,13 @@ function game() {
 			}
 		};
 		this.a5R = function () {
-			return 0 < this.a5M.length ? (this.vl++, ja.a5O(this.a5M[0], g), g = (g + 1) % 8, this.a5M.shift(),
-				!0) : !1
+			return 0 < this.a5M.length ? (this.vl++, ja.a5O(this.a5M[0], g), g = (g + 1) % 8, this.a5M.shift(), !0) : !1
 		}
 	}
 
 	function kV() {
 		function g(k, t) {
-			8 !== jT.rc() || 0 !== t && t !== gamemode || singleplayer && fQ || (dx.mg(k), k += " - Territorial.io");
+			8 !== jT.rc() || 0 !== t && t !== gamemode || singleplayer && in_spawn || (newannouncements.mg(k), k += " - Territorial.io");
 			0 === t && (document.title = k)
 		}
 		this.gK = 0;
@@ -9351,7 +9335,7 @@ function game() {
 		}
 
 		function k(x, n) {
-			for (var z = 0, y, A, B = l; B < l + n; B++) y = ak(B, 8), A = 7 - B % 8, z |= (x[y] >> A & 1) << l + n - B - 1;
+			for (var z = 0, y, A, B = l; B < l + n; B++) y = strange_divide_floor(B, 8), A = 7 - B % 8, z |= (x[y] >> A & 1) << l + n - B - 1;
 			l += n;
 			return z
 		}
@@ -9376,8 +9360,7 @@ function game() {
 							}
 						} else {
 							if (8 !== jT.rc())
-								if (3 > t) e1.a0h(x,
-									3208);
+								if (3 > t) e1.a0h(x, 3208);
 								else {
 									y = k(n, 1);
 									A = k(n, 16);
@@ -9406,8 +9389,8 @@ function game() {
 							C = [];
 							for (z = 0; z < B; z++) C.push({
 								id: k(n, 5),
-								j4: k(n, 4),
-								wT: 1 === k(n, 1),
+								lobbygamemode: k(n, 4),
+								contest: 1 === k(n, 1),
 								mt: k(n, 6),
 								wR: k(n, 14),
 								wW: k(n, A),
@@ -9416,7 +9399,7 @@ function game() {
 							});
 							jc.ty(y, C)
 						} else 2 !== z && 3 !== z || eM.bh(n);
-				else 1 === z && (z = jT.rc(), 8 !== z ? 10 === z && e1.a0h(x, 3243) : x !== e1.jM ? e1.a0h(x, 3244) : 0 === k(n, 1) ? bw.a5C.a5N(n) : (z = k(n, 2), 0 === z ? 3 !== t ? e1.a0h(e1.jM, 3230) : (z = k(n, 9), y = k(n, 7), 0 !== isalive[z] && 0 !== isalive[myid] && (y %= a5.a6, dx.mW(z, myid, y), dy.mk(z, 1, y))) : 1 === z ? 2 !== t ? e1.a0h(e1.jM, 3235) : (z = k(n, 9), 0 !== isalive[z] && 0 !== isalive[myid] && eE.a0K(0, [z], !0) && dx.lG(z, 1)) : 3 !== t ? e1.a0h(e1.jM, 3236) : (z = k(n, 9), y = k(n, 9), 0 !== isalive[z] && 0 !== isalive[y] && 0 !== isalive[myid] && eE.a0K(1, [z], !0) && (dy.mk(z, 3, 96), dy.mk(y, 4, 96), dx.mn(z, y)))))
+				else 1 === z && (z = jT.rc(), 8 !== z ? 10 === z && e1.a0h(x, 3243) : x !== e1.jM ? e1.a0h(x, 3244) : 0 === k(n, 1) ? bw.a5C.a5N(n) : (z = k(n, 2), 0 === z ? 3 !== t ? e1.a0h(e1.jM, 3230) : (z = k(n, 9), y = k(n, 7), 0 !== isalive[z] && 0 !== isalive[myid] && (y %= a5.a6, newannouncements.mW(z, myid, y), dy.mk(z, 1, y))) : 1 === z ? 2 !== t ? e1.a0h(e1.jM, 3235) : (z = k(n, 9), 0 !== isalive[z] && 0 !== isalive[myid] && eE.a0K(0, [z], !0) && newannouncements.lG(z, 1)) : 3 !== t ? e1.a0h(e1.jM, 3236) : (z = k(n, 9), y = k(n, 9), 0 !== isalive[z] && 0 !== isalive[y] && 0 !== isalive[myid] && eE.a0K(1, [z], !0) && (dy.mk(z, 3, 96), dy.mk(y, 4, 96), newannouncements.mn(z, y)))))
 			}
 		};
 		this.vo = function (x) {
@@ -9570,7 +9553,7 @@ function game() {
 			c9.fillStyle = cC;
 			for (g = 6; 0 <= g; g--) {
 				var x = Math.floor(this.wp[1] + k + c2 + g * (t + c2));
-				mt === g ? (c9.fillStyle = nv, c9.fillRect(this.wp[0] + c2, x, l, t), c9.fillStyle = cC) : mt === g + 7 && (c9.fillStyle = nv, c9.fillRect(this.wp[0] + l + 2 * c2, x, l, t), c9.fillStyle = cC);
+				currentmap === g ? (c9.fillStyle = nv, c9.fillRect(this.wp[0] + c2, x, l, t), c9.fillStyle = cC) : currentmap === g + 7 && (c9.fillStyle = nv, c9.fillRect(this.wp[0] + l + 2 * c2, x, l, t), c9.fillStyle = cC);
 				c9.strokeRect(this.wp[0] + c2, x, l, t);
 				c9.strokeRect(this.wp[0] + l + 2 * c2, x, l, t);
 				c9.fillText(jX.br(g).mf, Math.floor(this.wp[0] +
@@ -9584,8 +9567,7 @@ function game() {
 
 	function oldmulti() {
 		function g(n) {
-			var z = j(),
-				y = Math.floor(z / 16777216);
+			var z = j(), y = Math.floor(z / 16777216);
 			l(n, 24, y);
 			l(n, 24, z - 16777216 * y)
 		}
@@ -9599,11 +9581,11 @@ function game() {
 		}
 
 		function t(n) {
-			return ak(n, 8) + (0 < n % 8 ? 1 : 0)
+			return strange_divide_floor(n, 8) + (0 < n % 8 ? 1 : 0)
 		}
 
 		function l(n, z, y) {
-			for (var A, B, C = x; C < x + z; C++) A = ak(C, 8), B = 7 - C % 8, n[A] |= (y >> z - (C - x + 1) & 1) << B;
+			for (var A, B, C = x; C < x + z; C++) A = strange_divide_floor(C, 8), B = 7 - C % 8, n[A] |= (y >> z - (C - x + 1) & 1) << B;
 			x += z
 		}
 		var x;
@@ -9716,7 +9698,7 @@ function game() {
 			l(y, 9, target);
 			e1.send(e1.jM, y)
 		};
-		this.choosespawn = function (n, y_cord, x_cord) {
+		this.chooselocation = function (n, y_cord, x_cord) {
 			//n = 1000  
 			var A = new Uint8Array(5);
 			x = 0;
@@ -9773,7 +9755,7 @@ function game() {
 			e1.send(e1.jM, z)
 		};
 		this.message_emojis = function (emojiID, playerID) {
-			dx.mW(myid, playerID, emojiID);
+			newannouncements.mW(myid, playerID, emojiID);
 			var y = new Uint8Array(3);
 			x = 0;
 			l(y, 1, 1);
@@ -9821,6 +9803,4 @@ function game() {
 		}
 	}
 	a0w();
-}
-
-game();
+// } game();
