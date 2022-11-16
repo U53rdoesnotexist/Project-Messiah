@@ -1,7 +1,7 @@
 var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
-var timingbot, myattacks;
+var bot_timing, myattacks;
 var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 
 //function game() {
@@ -590,14 +590,14 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		cz = teamgame ? new Uint8Array(maxentities) : null
 	}
 
-	function d3(g, k) {
-		teamgame && (cz[g] = 0);
-		if (attacks.notatmaxconcurrentattacks(g) && !(60 > k))
-			if (0 === borderlandpixels[g].length) d6.d7(g, d8.cF[g - playercount]) || (d8.d9(g - playercount, 200), dA(g, k, d8.cF[g - playercount], aq.dB(g)));
-			else if (!(0 < borderwaterpixels[g].length && cW.random() < cW.value(borderwaterpixels[g].length > borderlandpixels[g].length ? 7 : 3) && d6.d7(g, d8.cF[g - playercount]))) {
-				var t = aq.dB(g);
-				troops[g] > t && k < troops[g] - t && (k = troops[g] - t);
-				teamgame ? dC(g, k, d8.cF[g - playercount], t) : dD(g, k, d8.cF[g - playercount])
+	function d3(id, attackamount) {
+		teamgame && (cz[id] = 0);
+		if (attacks.notatmaxconcurrentattacks(id) && !(60 > attackamount))
+			if (0 === borderlandpixels[id].length) d6.d7(id, d8.cF[id - playercount]) || (d8.d9(id - playercount, 200), dA(id, attackamount, d8.cF[id - playercount], aq.dB(id)));
+			else if (!(0 < borderwaterpixels[id].length && cW.random() < cW.value(borderwaterpixels[id].length > borderlandpixels[id].length ? 7 : 3) && d6.d7(id, d8.cF[id - playercount]))) {
+				var t = aq.dB(id);
+				troops[id] > t && attackamount < troops[id] - t && (attackamount = troops[id] - t);
+				teamgame ? dC(id, attackamount, d8.cF[id - playercount], t) : dD(id, attackamount, d8.cF[id - playercount])
 			}
 	}
 
@@ -652,7 +652,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 	var dV = [60, 74, 112, 200, 256, 512];
 
 	function dW() {
-		var k, t, l, x, n;
+		var fullsend_percentage, t, l, x, n;
 		this.dd = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
 		this.de = [97, 95, 93, 90, 87, 84];
 		this.dK = [98, 95, 90, 40, 20, 0];
@@ -660,8 +660,8 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		this.dI = [0, 0, 0, 0, 50, 90];
 		this.bh = function () {
 			var z;
-			timingbot = new Uint8Array(botcount);
-			k = new Uint16Array(botcount);
+			bot_timing = new Uint8Array(botcount);
+			fullsend_percentage = new Uint16Array(botcount);
 			t = new Uint16Array(botcount);
 			l = new Uint8Array(botcount);
 			this.cF = new Uint8Array(botcount);
@@ -679,8 +679,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 				for (z = botcount - 1; 0 <= z; z--) this.cF[z] = y
 			}
 			for (z = botcount - 1; 0 <= z; z--) {
-				2 >= this.cF[z] ? (l[z] = 5, x[z] = n[z] = 1040, 0 === this.cF[z] ? (k[z] = 1E3, t[z] = 1E3) : 1 === this.cF[z] ? (k[z] = 1E3, t[z] = 920, x[z] = n[z] = 1100) : (k[z] = 1E3, t[z] = 870)) : 4 >= this.cF[z] ? (l[z] = 1 + cW.cX(20), n[z] = 250 + cW.cX(1501), x[z] = 500 + cW.cX(501), 3 === this.cF[z] ? (k[z] = 600 + cW.cX(101), t[z] = 300 + cW.cX(401)) : (k[z] = 300 + cW.cX(201), t[z] = 100 + cW.cX(201))) : (x[z] = 1E3, n[z] = 1E3, l[z] = 35 + cW.cX(16), k[z] = 400 + cW.cX(101), t[z] = 50 + cW.cX(101)), timingbot[z] = 1 + strange_divide_floor(x[z] * cW.random(),
-				10 * cW.value(100))
+				2 >= this.cF[z] ? (l[z] = 5, x[z] = n[z] = 1040, 0 === this.cF[z] ? (fullsend_percentage[z] = 1E3, t[z] = 1E3) : 1 === this.cF[z] ? (fullsend_percentage[z] = 1E3, t[z] = 920, x[z] = n[z] = 1100) : (fullsend_percentage[z] = 1E3, t[z] = 870)) : 4 >= this.cF[z] ? (l[z] = 1 + cW.cX(20), n[z] = 250 + cW.cX(1501), x[z] = 500 + cW.cX(501), 3 === this.cF[z] ? (fullsend_percentage[z] = 600 + cW.cX(101), t[z] = 300 + cW.cX(401)) : (fullsend_percentage[z] = 300 + cW.cX(201), t[z] = 100 + cW.cX(201))) : (x[z] = 1E3, n[z] = 1E3, l[z] = 35 + cW.cX(16), fullsend_percentage[z] = 400 + cW.cX(101), t[z] = 50 + cW.cX(101)), bot_timing[z] = 1 + strange_divide_floor(x[z] * cW.random(), 10 * cW.value(100))
 			}
 
 		};
@@ -695,21 +694,22 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 				}
 		};
 		this.d9 = function (z, y) {
-			0 <= z && (timingbot[z] = y)
+			0 <= z && (bot_timing[z] = y)
 		};
-		this.d7 = function (z) {
-			if (0 === --timingbot[z]) {
-				x[z] !== n[z] && (x[z] += x[z] < n[z] ? 3 : -3);
-				k[z] !== t[z] && (k[z] += k[z] < t[z] ? l[z] : -l[z], k[z] = Math.abs(k[z] - t[z]) <= l[z] ? t[z] : k[z]);
-				timingbot[z] = strange_divide_floor(x[z], 10);
-				var y = z + playercount;
-				d3(y, strange_divide_floor(k[z] * troops[y], 1E3))
+		this.d7 = function (relative_id) {
+			if (0 === --bot_timing[relative_id]) {
+				x[relative_id] !== n[relative_id] && (x[relative_id] += x[relative_id] < n[relative_id] ? 3 : -3);
+				fullsend_percentage[relative_id] !== t[relative_id] && (fullsend_percentage[relative_id] += fullsend_percentage[relative_id] < t[relative_id] ? l[relative_id] : -l[relative_id], fullsend_percentage[relative_id] = Math.abs(fullsend_percentage[relative_id] - t[relative_id]) <= l[relative_id] ? t[relative_id] : fullsend_percentage[relative_id]);
+				bot_timing[relative_id] = strange_divide_floor(x[relative_id], 10);
+				var id = relative_id + playercount;
+				console.log('yo')
+				d3(id, strange_divide_floor(fullsend_percentage[relative_id] * troops[id], 1E3))
 			}
 		}
 	}
 
 	function dw() {
-		dx.d7();
+		newannouncements.d7();
 		dy.d7();
 		dz.e0();
 		e1.d7()
@@ -732,7 +732,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		eB.d7();
 		eC.d7();
 		eD.d7();
-		dx.d7();
+		newannouncements.d7();
 		eE.d7();
 		eF.d7();
 		eG.d7();
@@ -928,8 +928,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			1 === fN && g(y, 0, A, B, 0, 0)
 		};
 		this.fP = function (y, A, B, C) {
-			1 === fN && (in_spawn ?
-				spawn.cI(y, B, C) : g(y, 1, A, 0, B, C))
+			1 === fN && (in_spawn ? spawn.cI(y, B, C) : g(y, 1, A, 0, B, C))
 		};
 		this.fS = function (y, A) {
 			1 === fN && g(y, 2, 1, A, 0, 0)
@@ -942,13 +941,13 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		};
 		this.fV = function (y) {
 			1 === fN && 0 !== isalive[y] && 2 !== fH[y] && (8 === gamemode ? fW.fX(1 - y) : this.fY(y));
-			dx.fZ(y, 4)
+			newannouncements.fZ(y, 4)
 		};
 		this.fY = function (y) {
 			in_spawn ? (fa(y), fb()) : e6.fc(y)
 		};
 		this.fd = function (y) {
-			0 !== isalive[y] && 2 !== fH[y] && fe.ff(y) && (1 === alivecount ? fW.fX(y) : (dx.fZ(y, y === myid ? 21 : 22), 8 === gamemode ? fW.fX(1 - y) : singleplayer ? (fa(y), fb(), in_spawn && spawn.d7()) : this.fY(y)))
+			0 !== isalive[y] && 2 !== fH[y] && fe.ff(y) && (1 === alivecount ? fW.fX(y) : (newannouncements.fZ(y, y === myid ? 21 : 22), 8 === gamemode ? fW.fX(1 - y) : singleplayer ? (fa(y), fb(), in_spawn && spawn.exit()) : this.fY(y)))
 		}
 	}
 
@@ -1268,7 +1267,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		c9.setTransform(1, 0, 0, 1, 0, 0);
 		dy.c8();
 		e8.c8();
-		gW || (c9.imageSmoothingEnabled = !1, dx.c8(), eA.c8(), eF.c8(), eG.c8(), dz.c8(), gX.c8(), bu.c8(), eH.c8(), eC.c8(), eD.c8(), fe.c8(), eK.c8(), he.c8(), hf.c8(), eL.c8())
+		gW || (c9.imageSmoothingEnabled = !1, newannouncements.c8(), eA.c8(), eF.c8(), eG.c8(), dz.c8(), gX.c8(), bu.c8(), eH.c8(), eC.c8(), eD.c8(), fe.c8(), eK.c8(), he.c8(), hf.c8(), eL.c8())
 	}
 
 	function hg(g, k, t) {
@@ -1295,18 +1294,18 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		z && g.fillRect(k + l + y, t + l, x, n)
 	}
 
-	function hr() {
-		this.hs = null;
+	function old1v1points() {
+		this.players = null;
 		this.bh = function (g) {
-			this.hs = g;
-			dx.ht(this.hs)
+			this.players = g;
+			newannouncements.start_1v1(this.players);
 		};
 		this.hu = function (g) {
-			var k = 8 / (1 + Math.pow(2, (this.hs[g].hw - this.hs[1 - g].hw) / 10 / 32));
+			var k = 8 / (1 + Math.pow(2, (this.players[g].hw - this.players[1 - g].hw) / 10 / 32));
 			k = Math.floor(10 * k + .5);
-			var t = this.hz(this.hs[g].hw + k);
-			k = this.hz(this.hs[1 - g].hw - k);
-			0 === g ? dx.i1(this.hs, t, k, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : dx.i1(this.hs, k, t, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
+			var t = this.hz(this.players[g].hw + k);
+			k = this.hz(this.players[1 - g].hw - k);
+			0 === g ? newannouncements.i1(this.players, t, k, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : newannouncements.i1(this.players, k, t, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
 		};
 		this.hz = function (g) {
 			g = 0 > g ? 0 : 16E3 < g ? 16E3 : g;
@@ -1423,12 +1422,12 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			if (!k) {
 				if (8 === gamemode) {
 					var t = g = 0 > g ? land[0] >= land[1] ? 0 : 1 : g;
-					(k = g === myid) ? dx.fZ(g, 2) : dx.fZ(1 - myid, 3);
-					iT.hu(g)
-				} else teamgame ? (g = eH.iU(), k = dO.dP[myid] === g, 9 === gamemode ? t = k ? ea[0] : 512 : (g = dO.iV(dO.iW[g]), t = g[0], 512 !== t && dx.iX(g[1])), dx.iY(k)) : (t = ea[0], k = t === myid, dx.iZ(t));
+					(k = g === myid) ? newannouncements.fZ(g, 2) : newannouncements.fZ(1 - myid, 3);
+					new1v1points.hu(g)
+				} else teamgame ? (g = eH.iU(), k = dO.dP[myid] === g, 9 === gamemode ? t = k ? ea[0] : 512 : (g = dO.iV(dO.iW[g]), t = g[0], 512 !== t && newannouncements.iX(g[1])), newannouncements.iY(k)) : (t = ea[0], k = t === myid, newannouncements.iZ(t));
 				singleplayer || multi.result_1v1(ic(), t);
 				eK.show(k, !1);
-				dx.ii(!0);
+				newannouncements.ii(!0);
 				eA.eP(!0);
 				dz.eP(!0);
 				bw.bx = !0;
@@ -1442,11 +1441,11 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		this.cI = function (g, k, t) {
 			0 !== isalive[g] && il.hR(g, k, t) && (bw.bx = !0)
 		};
-		this.d7 = function () {
+		this.exit = function () {
 			in_spawn = !1;
 			for (var g = 0; g < playercount; g++) 0 !== isalive[g] && 0 === land[g] && il.hY(g);
 			0 !== isalive[myid] ? (as.at[7] = land[myid], as.at[8] = troops[myid], eF.c6(), dz.im(), eJ.gT(x_min[myid] - 5, y_min[myid] - 5, x_max[myid] + 5, y_max[myid] + 5), eL.bh()) : eK.show(!1, !1);
-			dx.io(18);
+			newannouncements.io(18);
 			dy.ip();
 			dy.eP();
 			spawn = null;
@@ -1458,7 +1457,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 
 	var playersingame, spectators, maxentities = 512,
 		is = 150, it, fN = 0, iu, troopcap, iw, startingtroops = 512,
-		neutral_landcost = 2, gW, in_spawn, freespawn, teamgame, numberofteams, contest, spawn, iT, spawntimeallowed;
+		neutral_landcost = 2, gW, in_spawn, freespawn, teamgame, numberofteams, contest, spawn, new1v1points, spawntimeallowed;
 		entitycount = 512
 
 	function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
@@ -1511,7 +1510,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		dz.bh();
 		fe.bh();
 		bu.bh();
-		dx.bh();
+		newannouncements.bh();
 		eD.bh();
 		he.bh();
 		eK.bh();
@@ -1526,7 +1525,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		e6.bh();
 		eE.bh();
 		e5.bh();
-		8 === gamemode ? (iT = new hr, iT.bh(playernames)) : iT = null;
+		8 === gamemode ? (new1v1points = new old1v1points, new1v1points.bh(playernames)) : new1v1points = null;
 		jI();
 		eL.bh();
 		singleplayer ? bw.jJ() : bw.jK();
@@ -1549,7 +1548,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		jO.bh();
 		a9(0)
 	}
-	var d8, am, d6, e7, single, e8, eJ, il, m, he, fe, dx, jP, eD, bu, eF, gX, jQ, eC, eA, dz, eK, jR, jS, jT, jU, jV, jW, dl, jO, bo, pixel, f, attacks, aq, dy, jC, dq, jA, jX, jY, gb, en, cW, fp, ha, jZ, ja, eL, multi, jb, eB, jc, jd, eG, eM, e1, e5, je, jf, e6, e3, eE;
+	var d8, am, d6, e7, single, e8, eJ, il, m, he, fe, newannouncements, jP, eD, bu, eF, gX, jQ, eC, eA, dz, eK, jR, jS, jT, jU, jV, jW, dl, jO, bo, pixel, f, attacks, aq, dy, jC, dq, jA, jX, jY, gb, en, cW, fp, ha, jZ, ja, eL, multi, jb, eB, jc, jd, eG, eM, e1, e5, je, jf, e6, e3, eE;
 
 	function jg() {
 		d8 = new dW;
@@ -1563,7 +1562,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		m = new i2;
 		he = new jh;
 		fe = new ji;
-		dx = new jj;
+		newannouncements = new oldannouncements;
 		jP = new jk;
 		eD = new jl;
 		bu = new jm;
@@ -1718,7 +1717,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			if (2 === M) { //Ask to attack target
 				if (x[7]) {
 					for (M = L.length - 1; 0 <= M; M--) 0 === isalive[L[M]] && L.splice(M, 1);
-					0 < L.length && (eE.l6(1, L, !0) && (dx.l7(L, E), multi.ask_to_attack(L, E)), L = []);
+					0 < L.length && (eE.l6(1, L, !0) && (newannouncements.l7(L, E), multi.ask_to_attack(L, E)), L = []);
 					this.kx();
 					return 1
 				}
@@ -1726,16 +1725,16 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			}
 			if (3 === M) { //Donations
 				this.kx();
-				if (this.kw(E) && 7 > gamemode && 1071 > bw.dM()) return dx.l9(), 1;
-				dx.lA();
+				if (this.kw(E) && 7 > gamemode && 1071 > bw.dM()) return newannouncements.l9(), 1;
+				newannouncements.lA();
 				singleplayer ? dS(myid, E, strange_divide_floor(eF.lB() * troops[myid], 1E3)) : multi.attack(eF.lB(), E === maxentities ? myid : E);
 				return 1
 			}
 			//4: Attack/Spawn 5: Boat 7: Emoji
-			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (spawn.cI(0, pixel.pixeltox(H), pixel.pixeltoy(H)), spawn.d7()) : multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H))) : (this.kx(), dx.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
-			if (5 === M) return x[1] ? (this.kx(), dx.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
+			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (spawn.cI(0, pixel.pixeltox(H), pixel.pixeltoy(H)), spawn.exit()) : multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H))) : (this.kx(), newannouncements.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+			if (5 === M) return x[1] ? (this.kx(), newannouncements.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
 			if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
-			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (dx.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
+			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (newannouncements.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
 			this.kx();
 			return 2
 		};
@@ -1966,16 +1965,16 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		}
 	}
 
-	function jj() {
+	function oldannouncements() {
 		var g, k, t, l, x, n, z;
 
 		function y() {
-			return eF.mJ(dx.mG()) ? eG.ku ? eF.f8 - eF.co - 2 * K : eF.f8 - K : eG.ku ? s - eF.co - (q ? 3 : 2) * K : s - K
+			return eF.mJ(newannouncements.mG()) ? eG.ku ? eF.f8 - eF.co - 2 * K : eF.f8 - K : eG.ku ? s - eF.co - (q ? 3 : 2) * K : s - K
 		}
 
 		function A(G, M, Q, S, P, U, W, X) {
 			var V = 1E3 <= Q;
-			var pa = Math.floor(bu.measureText(M, dx.bs) + 1.5 * J + (V ? H : 1.5 * J));
+			var pa = Math.floor(bu.measureText(M, newannouncements.bs) + 1.5 * J + (V ? H : 1.5 * J));
 			if (pa + K > r && !V && 50 !== Q && 20 < M.length) {
 				var ba = Math.floor(.5 * M.length);
 				A(G, M.substring(0, ba), Q, S, P, U, W, X);
@@ -1990,7 +1989,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 					alpha: !0
 				});
 				R.font =
-					dx.bs;
+					newannouncements.bs;
 				R.textBaseline = cA;
 				R.textAlign = mN;
 				R.clearRect(0, 0, pa, H);
@@ -2127,8 +2126,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			eJ.gU(G, 2700, !0, 0)
 		};
 		this.mW = function (G, M, Q) {
-			G === myid ? A(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, C(200, 255, 210), hi, -1, !0) : this.mZ(G,
-				Q)
+			G === myid ? A(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, C(200, 255, 210), hi, -1, !0) : this.mZ(G, Q)
 		};
 		this.mZ = function (G, M) {
 			var Q, S = 0;
@@ -2144,16 +2142,16 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			G ? (9 === gamemode ? (G = "The Resistance defeated the virus.", bu.me("The Resistance", 2, 1, 12)) : G = "Congratulations! Team " + dO.bg[M] + " has won the game!", A(0, G, 40, 0, "rgb(10,220,10)", hi, -1, !1)) : (9 === gamemode ? (G = "Mankind lost the war against the virus.", bu.me("The Virus", 2, 0, 16)) : G = "Our alliance has been defeated!",
 				A(0, G, 41, 0, "rgb(200,80,80)", hi, -1, !1));
 			9 !== gamemode && bu.me("Team " + dO.bg[M], 2, 1, 12);
-			eJ.gd(2700)
+			eJ.gd(2700);
 		};
-		this.ht = function (G) {
-			A(300, G[0].mf + " [" + iT.hz(G[0].hw) + "] vs " + G[1].mf + " [" + iT.hz(G[1].hw) + "]", 65, 0, g5, "rgba(100,255,255,0.75)", -1, !1)
+		this.start_1v1 = function (G) {
+			A(300, G[0].mf + " [" + new1v1points.hz(G[0].hw) + "] vs " + G[1].mf + " [" + new1v1points.hz(G[1].hw) + "]", 65, 0, g5, "rgba(100,255,255,0.75)", -1, !1)
 		};
 		this.mg = function (G) {
 			A(200, G, 0, 0, "rgb(40,255,200)", "rgba(10,60,40,0.9)", -1, !1)
 		};
 		this.i1 = function (G, M, Q, S) {
-			1 === e1.mi && (A(0, G[0].mf + ": " + iT.hz(G[0].hw) + " -> " + M, 66, 0, cC, S[0], -1, !1), A(0, G[1].mf + ": " + iT.hz(G[1].hw) + " -> " + Q, 66, 1, cC, S[1], -1, !1))
+			1 === e1.mi && (A(0, G[0].mf + ": " + new1v1points.hz(G[0].hw) + " -> " + M, 66, 0, cC, S[0], -1, !1), A(0, G[1].mf + ": " + new1v1points.hz(G[1].hw) + " -> " + Q, 66, 1, cC, S[1], -1, !1))
 		};
 		this.iX = function (G) {
 			1 === e1.mi && A(0,
@@ -2602,7 +2600,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		if (0 === fN) jT.bz(g, k);
 		else if (!(hf.bz(g, k) || he.kt(g, k) || eK.bz(g, k) || eD.bz(g, k))) {
 			var t = fe.bz(g, k);
-			2 === t || eA.bz(g, k) || (gX.bz(g, k) ? bw.bx = !0 : eF.p0(g, k) ? (gX.gY = !1, eF.p1(g, k) && (bw.bx = !0)) : dx.bz(g, k) || eG.bz(g, k) || 0 === t && he.kv(g, k))
+			2 === t || eA.bz(g, k) || (gX.bz(g, k) ? bw.bx = !0 : eF.p0(g, k) ? (gX.gY = !1, eF.p1(g, k) && (bw.bx = !0)) : newannouncements.bz(g, k) || eG.bz(g, k) || 0 === t && he.kv(g, k))
 		}
 	}
 
@@ -2726,8 +2724,8 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			this.le()
 		};
 		this.le = function () {
-			y = dx.bs;
-			A = dx.bq + 5;
+			y = newannouncements.bs;
+			A = newannouncements.bq + 5;
 			A = Math.floor(1.25 * A);
 			q && (A = Math.floor(1.25 * A));
 			B = Math.floor(.15 * A);
@@ -2964,7 +2962,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		}
 
 		function t() {
-			return eF.mJ(dx.mG()) ? eF.f8 - l - lo : s - l - (q ? 2 : 1) * lo
+			return eF.mJ(newannouncements.mG()) ? eF.f8 - l - lo : s - l - (q ? 2 : 1) * lo
 		}
 		var l, x, n, z, y, A, B, C, F, E, H, K, J;
 		this.bh = function () {
@@ -4249,7 +4247,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			var l = strange_divide_floor(troops[g], 16);
 			t -= t >= strange_divide_floor(troops[g], 2) ? l : 0;
 			var x = land[k] * is - troops[k];
-			0 >= x || (t = t > x ? x : t, g === myid && (dx.mq(t, k), as.at[12] += l, as.at[16] += t), k === myid && (dx.ms(t, g), as.at[10] += t), troops[g] -= t + l, troops[k] += t)
+			0 >= x || (t = t > x ? x : t, g === myid && (newannouncements.mq(t, k), as.at[12] += l, as.at[16] += t), k === myid && (newannouncements.ms(t, g), as.at[10] += t), troops[g] -= t + l, troops[k] += t)
 		}
 	}
 
@@ -5253,7 +5251,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			} else if (7 === y) {
 				if (n !== e1.mi) return
 			} else {
-				8 === y && (n !== e1.jM || singleplayer || dx.mT(k(z)));
+				8 === y && (n !== e1.jM || singleplayer || newannouncements.mT(k(z)));
 				return
 			}
 			g()
@@ -5261,7 +5259,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		this.v3 = function (n) {
 			t =
 				n;
-			8 === jT.rc() ? dx.mT(k(n)) : g()
+			8 === jT.rc() ? newannouncements.mT(k(n)) : g()
 		};
 		this.le = function () {
 			jR.uO[2].nD = k(t)
@@ -6446,13 +6444,13 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 	function ye(g, k) {
 		var t, l = k[yh(k)];
 		9 === gamemode && 1 === dO.dP[g] && cW.dH(8) && dq.yj(l);
-		if (g === myid) dx.fZ(l, 1), yc();
+		if (g === myid) newannouncements.fZ(l, 1), yc();
 		else {
 			for (t = k.length - 1; 0 <= t; t--)
 				if (k[t] === myid) {
-					dx.fZ(g, 0);
+					newannouncements.fZ(g, 0);
 					return
-				} g < playercount && dx.mP(0, g, l)
+				} g < playercount && newannouncements.mP(0, g, l)
 		}
 	}
 
@@ -6599,7 +6597,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			attackremaining[F + currentattackcount[y]] = A;
 			attackboatids[F + currentattackcount[y]] = 0;
 			currentattackcount[y]++;
-			y < playercount && (B === myid ? dx.fZ(y, 5) : y === myid && dy.mR(B))
+			y < playercount && (B === myid ? newannouncements.fZ(y, 5) : y === myid && dy.mR(B))
 		};
 		this.tQ = function (y, A, B) {
 			var C = id_attacks_placement_inarray(y);
@@ -6969,7 +6967,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		this.mR = function (O) {
 			var T = O + 2 * maxentities,
 				Y = da[T];
-			return 0 < Y ? (dx.mp(50, O), da[T] = 0, 255 === Y) : !1
+			return 0 < Y ? (newannouncements.mp(50, O), da[T] = 0, 255 === Y) : !1
 		};
 		this.lR = function (O) {
 			return 255 === da[O + 2 * maxentities]
@@ -8448,7 +8446,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 		function k() {
 			n = 0;
 			z += 700 > z ? 200 : 0;
-			bo.bp() && (l() || x) && (x = !1, oh(), tx.bh(), jR.bh(), jV.le(), vG.bh(), jS.le(), jQ.le(), jP.le(), vA.le(), c5.le(), a5.bh(), 1 <= fN ? (eA.le(!1), eC.le(), dz.le(), gX.le(), eF.le(), dx.le(), fe.le(), eG.le(), eD.le(), bu.le(), he.kj(), hf.le(), dy.le(), eK.le(), eH.le(), gX.qq()) : (0 === jT.rc() ? jV.c6(0, !0) : 2 === jT.rc() ? dl.le() : 3 === jT.rc() && jU.le(), jT.vE(), jT.vH()), bw.bx = !0)
+			bo.bp() && (l() || x) && (x = !1, oh(), tx.bh(), jR.bh(), jV.le(), vG.bh(), jS.le(), jQ.le(), jP.le(), vA.le(), c5.le(), a5.bh(), 1 <= fN ? (eA.le(!1), eC.le(), dz.le(), gX.le(), eF.le(), newannouncements.le(), fe.le(), eG.le(), eD.le(), bu.le(), he.kj(), hf.le(), dy.le(), eK.le(), eH.le(), gX.qq()) : (0 === jT.rc() ? jV.c6(0, !0) : 2 === jT.rc() ? dl.le() : 3 === jT.rc() && jU.le(), jT.vE(), jT.vH()), bw.bx = !0)
 		}
 
 		function t(y) {
@@ -8539,7 +8537,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 						}
 						if (!cZ(t, H)) {
 							K = land[H] * is - troops[H];
-							0 >= K || (K = l > K ? K : l, l -= K, t === myid && (dx.mq(K, H), as.at[16] += K), H === myid && (dx.ms(K, t), as.at[10] += K), troops[H] += K);
+							0 >= K || (K = l > K ? K : l, l -= K, t === myid && (newannouncements.mq(K, H), as.at[16] += K), H === myid && (newannouncements.ms(K, t), as.at[10] += K), troops[H] += K);
 							g(!0);
 							break a
 						}
@@ -9259,7 +9257,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			ja.a5O(k, g);
 			g = (g + 1) % 8;
 			dz.t5(this.vl);
-			this.vl === spawntimeallowed ? (spawn.d7(), this.vm = this.bk = this.vl = 0, this.gQ = bw.gQ) : (this.vl++, dy.ip(), dy.eP(), gw.tU())
+			this.vl === spawntimeallowed ? (spawn.exit(), this.vm = this.bk = this.vl = 0, this.gQ = bw.gQ) : (this.vl++, dy.ip(), dy.eP(), gw.tU())
 		};
 		this.d7 = function () {
 			jb.d7();
@@ -9285,7 +9283,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 
 	function kV() {
 		function g(k, t) {
-			8 !== jT.rc() || 0 !== t && t !== gamemode || singleplayer && in_spawn || (dx.mg(k), k += " - Territorial.io");
+			8 !== jT.rc() || 0 !== t && t !== gamemode || singleplayer && in_spawn || (newannouncements.mg(k), k += " - Territorial.io");
 			0 === t && (document.title = k)
 		}
 		this.gK = 0;
@@ -9362,8 +9360,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 							}
 						} else {
 							if (8 !== jT.rc())
-								if (3 > t) e1.a0h(x,
-									3208);
+								if (3 > t) e1.a0h(x, 3208);
 								else {
 									y = k(n, 1);
 									A = k(n, 16);
@@ -9402,7 +9399,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 							});
 							jc.ty(y, C)
 						} else 2 !== z && 3 !== z || eM.bh(n);
-				else 1 === z && (z = jT.rc(), 8 !== z ? 10 === z && e1.a0h(x, 3243) : x !== e1.jM ? e1.a0h(x, 3244) : 0 === k(n, 1) ? bw.a5C.a5N(n) : (z = k(n, 2), 0 === z ? 3 !== t ? e1.a0h(e1.jM, 3230) : (z = k(n, 9), y = k(n, 7), 0 !== isalive[z] && 0 !== isalive[myid] && (y %= a5.a6, dx.mW(z, myid, y), dy.mk(z, 1, y))) : 1 === z ? 2 !== t ? e1.a0h(e1.jM, 3235) : (z = k(n, 9), 0 !== isalive[z] && 0 !== isalive[myid] && eE.a0K(0, [z], !0) && dx.lG(z, 1)) : 3 !== t ? e1.a0h(e1.jM, 3236) : (z = k(n, 9), y = k(n, 9), 0 !== isalive[z] && 0 !== isalive[y] && 0 !== isalive[myid] && eE.a0K(1, [z], !0) && (dy.mk(z, 3, 96), dy.mk(y, 4, 96), dx.mn(z, y)))))
+				else 1 === z && (z = jT.rc(), 8 !== z ? 10 === z && e1.a0h(x, 3243) : x !== e1.jM ? e1.a0h(x, 3244) : 0 === k(n, 1) ? bw.a5C.a5N(n) : (z = k(n, 2), 0 === z ? 3 !== t ? e1.a0h(e1.jM, 3230) : (z = k(n, 9), y = k(n, 7), 0 !== isalive[z] && 0 !== isalive[myid] && (y %= a5.a6, newannouncements.mW(z, myid, y), dy.mk(z, 1, y))) : 1 === z ? 2 !== t ? e1.a0h(e1.jM, 3235) : (z = k(n, 9), 0 !== isalive[z] && 0 !== isalive[myid] && eE.a0K(0, [z], !0) && newannouncements.lG(z, 1)) : 3 !== t ? e1.a0h(e1.jM, 3236) : (z = k(n, 9), y = k(n, 9), 0 !== isalive[z] && 0 !== isalive[y] && 0 !== isalive[myid] && eE.a0K(1, [z], !0) && (dy.mk(z, 3, 96), dy.mk(y, 4, 96), newannouncements.mn(z, y)))))
 			}
 		};
 		this.vo = function (x) {
@@ -9758,7 +9755,7 @@ var mapwidth, mapheight, lobbygames, spawning_percentage_left;
 			e1.send(e1.jM, z)
 		};
 		this.message_emojis = function (emojiID, playerID) {
-			dx.mW(myid, playerID, emojiID);
+			newannouncements.mW(myid, playerID, emojiID);
 			var y = new Uint8Array(3);
 			x = 0;
 			l(y, 1, 1);
