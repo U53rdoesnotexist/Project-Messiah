@@ -13,3 +13,5 @@ A project to create clients, assistants and bots on the online browser game Terr
 - 12/11 Reversing the Pixel class/functions, RGB(A?) array determines pixel type:
 1: Neutral land (8); 2: Water (16); 3: Borders or Mountains (24)
 Spawning Radius Check (3 layer of bordering pixels from border length 8) (8 + 12 + 16 = 36, if bots have limited space then value is smaller than 36)
+- 16/11 More Spawn, last recorded attacks reversing, Reversing Attacks attributes and functions
+- 17/11 Resolved Issue: Bots not attacking, Reversed Account/color/emojis autosaving + announcements and suppressed accept cookies dialog 
