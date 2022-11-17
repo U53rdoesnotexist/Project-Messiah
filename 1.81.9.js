@@ -1,8 +1,10 @@
 var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
-var bot_timing, myattacks;
 var mapwidth, mapheight, lobbygames, spawning_percentage_left;
+var bot_timing, myattacks;
+
+var ui = true;
 
 //function game() {
 
@@ -35,6 +37,10 @@ function check_spawn() {
 function emoji_spam() {
 	const nerds = nickname.filter(nick => nick.includes('[') && !nick.includes('[Bot]') && !nick.includes('[Ez]')), ok = Math.random() * nerds.length;
 	multi.message_emojis([0, 43, 44][Math.floor(Math.random() * 3)], nickname.findIndex(nick => nick === nerds[Math.floor(Math.random() * nerds.length)]));
+}
+
+function density(id) {
+	return (land[id] > 0) ? troops[id] / land[id] : null
 }
 
 function a() {
@@ -925,23 +931,23 @@ function oldsingle() {
 		}
 	};
 	this.fM = function (y, A, B) {
-		1 === fN && g(y, 0, A, B, 0, 0)
+		1 === gamestatus && g(y, 0, A, B, 0, 0)
 	};
 	this.fP = function (y, A, B, C) {
-		1 === fN && (in_spawn ?
+		1 === gamestatus && (in_spawn ?
 			newspawn.cI(y, B, C) : g(y, 1, A, 0, B, C))
 	};
 	this.fS = function (y, A) {
-		1 === fN && g(y, 2, 1, A, 0, 0)
+		1 === gamestatus && g(y, 2, 1, A, 0, 0)
 	};
 	this.fT = function (y, A) {
-		1 === fN && g(y, 7, 1, A, 0, 0)
+		1 === gamestatus && g(y, 7, 1, A, 0, 0)
 	};
 	this.fU = function (y, A) {
-		1 === fN && g(y, 6, 1, A, 0, 0)
+		1 === gamestatus && g(y, 6, 1, A, 0, 0)
 	};
 	this.fV = function (y) {
-		1 === fN && 0 !== isalive[y] && 2 !== fH[y] && (8 === gamemode ? fW.fX(1 - y) : this.fY(y));
+		1 === gamestatus && 0 !== isalive[y] && 2 !== fH[y] && (8 === gamemode ? fW.fX(1 - y) : this.fY(y));
 		newannouncements.fZ(y, 4)
 	};
 	this.fY = function (y) {
@@ -1021,7 +1027,7 @@ function fi() {
 						c9.fillStyle = g5;
 						c9.fillText(nickname[D], K, J);
 						var I = Math.floor(.57 * L);
-						6 > I || (D = attacks.remaining(D, attacks.fJ(D, z[B])), c9.font = bl + I + bm, c9.fillText(eD.g7(D), K, J + Math.floor(.82 * L)))
+						6 > I || (D = attacks.remaining(D, attacks.fJ(D, z[B])), c9.font = bl + I + bm, c9.fillText(eD.splitpieces(D), K, J + Math.floor(.82 * L)))
 					}
 				}
 			}
@@ -1063,7 +1069,7 @@ function g8() {
 		in_spawn || this.gU(myid, 3E3, !0, .3)
 	};
 	this.gU = function (I, N, G, M) {
-		if (!(gW || D && !G && L || 0 === land[I])) {
+		if (!(canvashidden || D && !G && L || 0 === land[I])) {
 			gX.gY = !1;
 			L = G;
 			g(N);
@@ -1268,7 +1274,7 @@ function hZ() {
 	c9.setTransform(1, 0, 0, 1, 0, 0);
 	dy.c8();
 	e8.c8();
-	gW || (c9.imageSmoothingEnabled = !1, newannouncements.c8(), eA.c8(), eF.c8(), eG.c8(), dz.c8(), gX.c8(), bu.c8(), eH.c8(), eC.c8(), eD.c8(), fe.c8(), eK.c8(), he.c8(), hf.c8(), eL.c8())
+	canvashidden || (c9.imageSmoothingEnabled = !1, newannouncements.c8(), eA.c8(), eF.c8(), eG.c8(), dz.c8(), gX.c8(), bu.c8(), eH.c8(), eC.c8(), eD.c8(), fe.c8(), eK.c8(), he.c8(), hf.c8(), eL.c8())
 }
 
 function hg(g, k, t) {
@@ -1306,7 +1312,7 @@ function old1v1points() {
 		k = Math.floor(10 * k + .5);
 		var t = this.hz(this.players[g].hw + k);
 		k = this.hz(this.players[1 - g].hw - k);
-		0 === g ? newspawnnewannouncements.result_1v1(this.players, t, k, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : newspawnnewannouncements.result_1v1(this.players, k, t, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
+		0 === g ? newannouncements.result_1v1(this.players, t, k, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : newannouncements.result_1v1(this.players, k, t, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
 	};
 	this.hz = function (g) {
 		g = 0 > g ? 0 : 16E3 < g ? 16E3 : g;
@@ -1418,8 +1424,8 @@ function i2() {
 
 function iM() {
 	this.fX = function (g) {
-		if (2 === fN) var k = !0;
-		else eG.ie(), fN = 2, spectators = playersingame, k = !1;
+		if (2 === gamestatus) var k = !0;
+		else eG.ie(), gamestatus = 2, spectators = playersingame, k = !1;
 		if (!k) {
 			if (8 === gamemode) {
 				var t = g = 0 > g ? land[0] >= land[1] ? 0 : 1 : g;
@@ -1457,12 +1463,12 @@ function oldspawn() {
 }
 
 var playersingame, spectators, maxentities = 512,
-	is = 150, it, fN = 0, iu, troopcap, iw, startingtroops = 512,
-	neutral_landcost = 2, gW, in_spawn, freespawn, teamgame, numberofteams, contest, newspawn, new1v1points, spawntimeallowed;
+	is = 150, it, gamestatus = 0, iu, troopcap, iw, startingtroops = 512,
+	neutral_landcost = 2, canvashidden, in_spawn, freespawn, teamgame, numberofteams, contest, newspawn, new1v1points, spawntimeallowed;
 entitycount = 512
 
 function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
-	it = gW = !1;
+	it = canvashidden = !1;
 	contest = is_contest;
 	gamemode = game_mode;
 	teamgame = 7 > gamemode || 9 === gamemode;
@@ -1483,7 +1489,7 @@ function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
 	j8(playernames);
 	dq.bh();
 	dO.bh(playernames);
-	fN = 1;
+	gamestatus = 1;
 	troopcap = 2E9;
 	iw = strange_divide_floor(troopcap, 2);
 	as.bh();
@@ -1544,7 +1550,7 @@ function jI() {
 
 function jL() {
 	e1.close(e1.jM, 3246);
-	fN = 0;
+	gamestatus = 0;
 	bw.jN();
 	jO.bh();
 	a9(0)
@@ -1748,7 +1754,7 @@ function jh() {
 		if (1 > M || 1 > Q || M >= mapwidth - 1 || Q >= mapheight - 1) return !1;
 		var S = Q * mapwidth * 4 + 4 * M;
 		if (!pixel.canownpixel(S)) return !1;
-		if (2 === fN) return 1 <= a5.lM && (E = pixel.pixelowner(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
+		if (2 === gamestatus) return 1 <= a5.lM && (E = pixel.pixelowner(S), this.kw(E)) ? (E === myid && this.kx(), x[4] = !0, this.lN(N, G)) : !1;
 		H = pixel.coordstopixel(M, Q);
 		if (in_spawn) return x[0] = !0, this.lN(N, G);
 		x[1] = en.cg(myid, H);
@@ -1907,7 +1913,7 @@ function ji() {
 		g()
 	};
 	this.lj = function () {
-		(this.ld = !this.ld) ? (gW = !1, singleplayer && 1 === fN && !in_spawn && (setTimeout(function () {
+		(this.ld = !this.ld) ? (canvashidden = !1, singleplayer && 1 === gamestatus && !in_spawn && (setTimeout(function () {
 			gw.ij()
 		}, 0), a9(0))) : (y = -1, g(), singleplayer && a9(1));
 		bw.bx = !0
@@ -1951,7 +1957,7 @@ function ji() {
 		} else c9.drawImage(x, lo, eF.f8)
 	};
 	this.ff = function (B) {
-		return 0 !== isalive[B] && 2 !== fN && he.kw(B)
+		return 0 !== isalive[B] && 2 !== gamestatus && he.kw(B)
 	};
 	this.ls = function (B, C, F) {
 		c9.setTransform(1, 0, 0, 1, B, C);
@@ -2049,9 +2055,9 @@ function oldannouncements() {
 		E = [];
 		this.le();
 		in_spawn && this.fZ(0, 18);
-		var G = "Map: " + jX.br(currentmap).mf + "   Pixels: " + eD.g7(jA.mu) + "   Land: " + eD.g7(jA.mv) + " (" + dz.mw(100 * jA.mv / jA.mu, 1) + ")";
-		0 < jA.mx && (G += "   Water: " + eD.g7(jA.mx) + " (" + dz.mw(100 * jA.mx / jA.mu, 1) + ")");
-		0 < jA.my && (G += "   Mountains: " + eD.g7(jA.my) + " (" + dz.mw(100 * jA.my / jA.mu, 1) + ")");
+		var G = "Map: " + jX.br(currentmap).mf + "   Pixels: " + eD.splitpieces(jA.mu) + "   Land: " + eD.splitpieces(jA.mv) + " (" + dz.mw(100 * jA.mv / jA.mu, 1) + ")";
+		0 < jA.mx && (G += "   Water: " + eD.splitpieces(jA.mx) + " (" + dz.mw(100 * jA.mx / jA.mu, 1) + ")");
+		0 < jA.my && (G += "   Mountains: " + eD.splitpieces(jA.my) + " (" + dz.mw(100 * jA.my / jA.mu, 1) + ")");
 		A(340, G, 6, 0, C(215, 245, 255), hi, -1, !1);
 		10 === gamemode && A(120, "Full sending against human players is disabled.", 6, 0, C(235, 255, 120), hi, -1, !1)
 	};
@@ -2190,12 +2196,12 @@ function oldannouncements() {
 		A(80, "Boosting is disallowed in the first minute!", 9, 0, cC, hi, -1, !1)
 	};
 	this.mq = function (G, M) {
-		2 !== fH[myid] && A(200, "You exported " + eD.g7(G) + " resource" + (1 === G ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", hi, -1, !0)
+		2 !== fH[myid] && A(200, "You exported " + eD.splitpieces(G) + " resource" + (1 === G ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", hi, -1, !0)
 	};
 	this.ms = function (G, M) {
 		if (2 !== fH[myid]) {
 			var Q = 200 - 20 * E.length;
-			A(80 > Q ? 80 : Q, nickname[M] + " supported you with " + eD.g7(G) + " resource" + (1 === G ? "" :
+			A(80 > Q ? 80 : Q, nickname[M] + " supported you with " + eD.splitpieces(G) + " resource" + (1 === G ? "" :
 				"s") + ".", 31, M, g5, "rgba(205,255,205,0.9)", -1, !0);
 			B(31, q ? 4 : 6)
 		}
@@ -2217,7 +2223,7 @@ function oldannouncements() {
 		g[G] = M;
 		k[G] = Q;
 		1 === P && (x[G] = S);
-		1 === P && (32 > playersingame || 2 === fN) ? this.n0(G) : 1 < P && (x[G] < S - 140 || 2 === fN) && this.n0(G)
+		1 === P && (32 > playersingame || 2 === gamestatus) ? this.n0(G) : 1 < P && (x[G] < S - 140 || 2 === gamestatus) && this.n0(G)
 	};
 	this.d7 = function () {
 		var G, M = E.length - L;
@@ -2599,7 +2605,7 @@ function oq(g) {
 }
 
 function ox(g, k) {
-	if (0 === fN) jT.bz(g, k);
+	if (0 === gamestatus) jT.bz(g, k);
 	else if (!(hf.bz(g, k) || he.kt(g, k) || eK.bz(g, k) || eD.bz(g, k))) {
 		var t = fe.bz(g, k);
 		2 === t || eA.bz(g, k) || (gX.bz(g, k) ? bw.bx = !0 : eF.p0(g, k) ? (gX.gY = !1, eF.p1(g, k) && (bw.bx = !0)) : newannouncements.bz(g, k) || eG.bz(g, k) || 0 === t && he.kv(g, k))
@@ -2618,12 +2624,12 @@ function or(g) {
 }
 
 function p2(g, k) {
-	0 === fN ? jT.lV(g, k) : hf.lV(g) || (he.ku() ? he.lV(g, k) : fe.lV(g, k) || (eF.p4 ? eF.lV(g, k) && (bw.bx = !0) : (eA.lV(g, k), gX.gY && gX.lV(g, k) && (bw.bx = !0))))
+	0 === gamestatus ? jT.lV(g, k) : hf.lV(g) || (he.ku() ? he.lV(g, k) : fe.lV(g, k) || (eF.p4 ? eF.lV(g, k) && (bw.bx = !0) : (eA.lV(g, k), gX.gY && gX.lV(g, k) && (bw.bx = !0))))
 }
 
 function oo(g) {
 	g.preventDefault();
-	0 === fN ? (jT.lI(-1024, -1024), jQ.p5()) : (eA.p6(-1024, -1024), fe.lV(-1024, -1024), eF.p7(), gX.gY && (gX.gY = !1))
+	0 === gamestatus ? (jT.lI(-1024, -1024), jQ.p5()) : (eA.p6(-1024, -1024), fe.lV(-1024, -1024), eF.p7(), gX.gY && (gX.gY = !1))
 }
 
 function on(g) {
@@ -2633,7 +2639,7 @@ function on(g) {
 
 function os(g) {
 	g.preventDefault();
-	g && g.touches && 0 < g.touches.length && 0 !== fN ? gX.gY = !1 : p8(od, oe)
+	g && g.touches && 0 < g.touches.length && 0 !== gamestatus ? gX.gY = !1 : p8(od, oe)
 }
 
 function ot(g) {
@@ -2642,7 +2648,7 @@ function ot(g) {
 }
 
 function p8(g, k) {
-	0 === fN ? jT.lI(g, k) : (eA.p6(g, k), hf.p6(), eF.p7(), gX.gY = !1, he.lI(g, k) && (bw.bx = !0))
+	0 === gamestatus ? jT.lI(g, k) : (eA.p6(g, k), hf.p6(), eF.p7(), gX.gY = !1, he.lI(g, k) && (bw.bx = !0))
 }
 
 function op(g) {
@@ -2652,7 +2658,7 @@ function op(g) {
 		t = Math.floor(g.clientY),
 		l = g.deltaY;
 	1 === g.deltaMode && (l *= 20);
-	0 === fN ? jT.p9(k, t, l) : eA.p9(k, t, l) || (eF.p0(k, t) ? eF.p9(l) && (bw.bx = !0) : gX.p9(k, t, 2 * l) && (bw.bx = !0))
+	0 === gamestatus ? jT.p9(k, t, l) : eA.p9(k, t, l) || (eF.p0(k, t) ? eF.p9(l) && (bw.bx = !0) : gX.p9(k, t, 2 * l) && (bw.bx = !0))
 }
 
 function pA(g, k, t) {
@@ -2672,7 +2678,8 @@ function jl() {
 		pA(myattacks[C].hh, F, A);
 		F > z + 2 * A && (myattacks[C].hh.fillRect(F - z - A, 0, 1, A), myattacks[C].hh.fillText(nickname[myattacks[C].target], Math.floor((F - z) / 2), Math.floor(.57 * A)));
 		var E = 0 !== myattacks[C].boat_id ? 0 : A;
-		myattacks[C].hh.fillText(eD.g7(myattacks[C].remaining), Math.floor(F - z / 2 - E), Math.floor(.57 * A));
+		if (ui && density(myattacks[C].target) <= 0.5 && ![0, 512].includes(myattacks[C].target)) myattacks[C].hh.fillStyle = "Red"
+		myattacks[C].hh.fillText(eD.splitpieces(myattacks[C].remaining), Math.floor(F - z / 2 - E), Math.floor(.57 * A));
 		myattacks[C].hh.fillStyle = oH;
 		myattacks[C].hh.fillRect(Math.floor(F - z - E), A - B, Math.floor(z * myattacks[C].remaining / myattacks[C].sent), B);
 		0 === myattacks[C].boat_id ? (k(C, F), myattacks[C].hh.strokeStyle = o4, myattacks[C].hh.fillRect(A, 0, 1, A), F -= A, myattacks[C].hh.beginPath(), myattacks[C].hh.moveTo(Math.floor(.3 * A + F), Math.floor(A / 2)), myattacks[C].hh.lineTo(Math.floor(A - .3 * A + F), Math.floor(A / 2)), myattacks[C].hh.stroke(), myattacks[C].hh.beginPath(), myattacks[C].hh.moveTo(Math.floor(A / 2 + F), Math.floor(.3 * A)), myattacks[C].hh.lineTo(Math.floor(A / 2 + F), Math.floor(A - .3 * A)), myattacks[C].hh.stroke()) : k(C, 2 * A)
@@ -2739,8 +2746,8 @@ function jl() {
 	this.eP = function () {
 		for (var C = myattacks.length - 1; 0 <= C; C--) myattacks[C].gained && (myattacks[C].gained = !1, g(C))
 	};
-	this.g7 = function (C) {
-		if (1E3 > C) return 0 > C ? "-" + this.g7(Math.abs(C)) : C.toString();
+	this.splitpieces = function (C) {
+		if (1E3 > C) return 0 > C ? "-" + this.splitpieces(Math.abs(C)) : C.toString();
 		var F = Math.floor(Math.log(C + .5) / Math.log(10)) + 1,
 			E = Math.floor((F - 1) / 3);
 		C = C.toString();
@@ -2748,7 +2755,7 @@ function jl() {
 		return C.substring(0, F - 3 * E) + " " + H
 	};
 	this.bz = function (C, F) {
-		if (2 === fN || 0 === isalive[myid] || it || !he.kw(myid)) return !1;
+		if (2 === gamestatus || 0 === isalive[myid] || it || !he.kw(myid)) return !1;
 		var E, H = q ? A : 0,
 			K = q ? Math.floor(.15 * A) : 0;
 		for (E = myattacks.length - 1; 0 <= E; E--) {
@@ -2764,7 +2771,7 @@ function jl() {
 	};
 
 	this.d7 = function () {
-		if (2 !== fN && 0 !== isalive[myid] && !it && he.kw(myid)) {
+		if (2 !== gamestatus && 0 !== isalive[myid] && !it && he.kw(myid)) {
 			var attackingcount = attacks.currentattackcount(myid);
 			b: if (myattacks.length !== attackingcount) var F = !0;
 			else {
@@ -2897,7 +2904,7 @@ function jm() {
 	};
 	this.d7 = function () {
 		if (0 !== x)
-			if (4 === x) bw.gQ > I && (x = 0, 1 === fN && bu.me(jX.br(currentmap).mf, 3, 1, 9));
+			if (4 === x) bw.gQ > I && (x = 0, 1 === gamestatus && bu.me(jX.br(currentmap).mf, 3, 1, 9));
 			else {
 				if (1 === x) 0 === n && (k(), n = 1E-4), n +=
 					.002 * (bw.gQ - L), 1 <= n && (z = 0, x = 2, n = 1), bw.bx = !0;
@@ -3115,7 +3122,7 @@ function jn() {
 		A.fillRect(Math.floor(x - 1.25 * eF.co) + D, Math.floor((eF.co - J) / 2), eF.co - 2 * D - D % 2, J);
 		A.fillRect(Math.floor(x - 1.25 * eF.co) + Math.floor((eF.co - J) / 2), D, J, eF.co - 2 * D - D % 2);
 		F = Math.floor(troops[myid] * C);
-		A.fillText(eD.g7(F), Math.floor(x / 2), Math.floor(.55 * eF.co))
+		A.fillText(eD.splitpieces(F), Math.floor(x / 2), Math.floor(.55 * eF.co))
 	}
 
 	function t(J) {
@@ -3194,7 +3201,7 @@ function jn() {
 		return l(J)
 	};
 	this.qb = function (J) {
-		0 !== fN && this.ku() && t(J) && (bw.bx = !0)
+		0 !== gamestatus && this.ku() && t(J) && (bw.bx = !0)
 	};
 	this.p9 = function (J) {
 		if (0 === J || !this.ku()) return !1;
@@ -3601,7 +3608,7 @@ function jp() {
 			P = W + ", " + P.getUTCDate() + " " + U + " " + P.getFullYear();
 			var X = 1 === n[H] ? " second played" :
 				" seconds played";
-			X = eD.g7(n[H]) + X;
+			X = eD.splitpieces(n[H]) + X;
 			var V = Math.floor(c9.measureText(P).width),
 				pa = Math.floor(c9.measureText(X).width),
 				ba = Math.floor(.5 * (V + K));
@@ -3683,7 +3690,7 @@ function jq() {
 		this.rm();
 		this.rn();
 		z.fillStyle = troops[myid] >= aq.dB(myid) ? oC : cC;
-		z.fillText(eD.g7(A), Math.floor(k / 2), E);
+		z.fillText(eD.splitpieces(A), Math.floor(k / 2), E);
 		z.fillStyle = cC;
 		z.fillRect(0, 0, k, 1);
 		z.fillRect(0, 0, 1, this.co);
@@ -3939,7 +3946,7 @@ function js() {
 	}
 
 	function k(P) {
-		return 3 > P ? L[P].toString() : 3 === P ? dz.mw(L[P] / 100, 2) : 4 === P ? dz.mw(L[P] / 100, 2) : 5 === P ? dz.mw(L[P] / 100, 2) : 7 > P ? eD.g7(L[P]) : dz.ro(L[7])
+		return 3 > P ? L[P].toString() : 3 === P ? dz.mw(L[P] / 100, 2) : 4 === P ? dz.mw(L[P] / 100, 2) : 5 === P ? dz.mw(L[P] / 100, 2) : 7 > P ? eD.splitpieces(L[P]) : dz.ro(L[7])
 	}
 
 	function t(P) {
@@ -5586,7 +5593,7 @@ function kO() {
 				c9.textAlign = mN;
 				c9.fillText(L[V], r - J - c2 + W, pa);
 				c9.textAlign = oO;
-				c9.fillText(eD.g7(I[V]), r - c2 - W, pa)
+				c9.fillText(eD.splitpieces(I[V]), r - c2 - W, pa)
 			}
 			if (0 !== lobbygames.length)
 				for (X = 0; X < y[1]; X++) {
@@ -6703,12 +6710,15 @@ function k7() {
 			if (la = entitiesalive[Aa], ka = Math.floor(Q * fv * J[la] * H[la]), !(ka < M || ka >= L) && F[la] + H[la] > O && F[la] < Y && E[la] + K[la] > T && E[la] < Z) {
 				ma = Math.floor(g2 * (F[la] + H[la] / 2 - O) / (Y - O));
 				na = Math.floor(c3 * (E[la] + K[la] / 2 - T) / (Z - T) - .1 * ka);
-				V.font = oR[fH[la]] + ka + bm;
+				V.font = oR[fH[la]] + ka * (ui ? 1.5 : 1) + bm;
 				ra = V;
 				var sa = la;
 				sa = ka >= I && ka < L ? dO.zn[pixel.lightness[sa]] + x(ka).toFixed(3) + ")" : dO.zo[pixel.lightness[sa]];
+
 				ra.fillStyle = sa;
-				V.fillText([7,8,11].includes(gamemode) ? eD.g7(troops[la]) : nickname[la], ma, na);
+				if (ui) ra.fillStyle = density(la) < 0.5 ? "Red" : (bot_timing[la - playercount] <= 15 && 100 - tick + latency >= 15) && ("Blue")
+				V.fillText([7, 8, 11].includes(gamemode) ? eD.splitpieces(troops[la]) : nickname[la], ma, na);
+
 				W = !0;
 				if (0 < da[la]) {
 					ra = ma;
@@ -6743,7 +6753,7 @@ function k7() {
 						a5.bt - .534 * za * ta), Math.floor(wa + 1.4 * ya * a5.bt)), V.globalAlpha = x(ta), V.drawImage(1 === xa ? a5.kn[ba[Da + maxentities]] : 2 === xa && 255 > Ca ? he.kl[2] : he.kk[xa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), za -= 2)
 				}
 				ra = Math.floor(N * ka);
-				ra < M || (V.font = bl + ra + bm, V.fillText([7, 8, 11].includes(gamemode) ? nickname[la] : eD.g7(troops[la]), ma, na + Math.floor(.78 * ka)))
+				ra < M || (V.font = bl + ra + bm, V.fillText([7, 8, 11].includes(gamemode) ? nickname[la] : eD.splitpieces(troops[la]), ma, na + Math.floor(.78 * ka)))
 			}
 	}
 
@@ -6845,7 +6855,7 @@ function k7() {
 			var T = 100 / Math.floor(V.measureText("20 000 000").width);
 			for (O = maxentities - 1; 0 <= O; O--) D[O] = J[O] = T
 		} else
-			for (V.font = bl + Math.floor(100 * N) + bm, T = 80 / Math.floor(V.measureText(eD.g7(troopcap)).width), V.font = bl + 100 + bm, O = maxentities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), J[O] = T < D[O] ? T : D[O];
+			for (V.font = bl + Math.floor(100 * N) + bm, T = 80 / Math.floor(V.measureText(eD.splitpieces(troopcap)).width), V.font = bl + 100 + bm, O = maxentities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), J[O] = T < D[O] ? T : D[O];
 		for (O = maxentities - 1; 0 <= O; O--) 12 > land[O] ? (F[O] = x_min[O] + 1, E[O] = y_min[O] + 1, H[O] = 1, K[O] = 1) : (F[O] = x_min[O], E[O] = y_min[O] + 1, H[O] = 4, K[O] = 2);
 		if (in_spawn)
 			for (O = 0; O < playercount; O++) H[O] = 0;
@@ -6894,7 +6904,7 @@ function k7() {
 					var Y = entitiesalive[O] + T * maxentities;
 					0 < da[Y] && 255 > da[Y] && da[Y]--
 				}
-			if (2 !== fN)
+			if (2 !== gamestatus)
 				for (O = alivecount - 1; 0 <= O; O--) Y = entitiesalive[O], 0 < da[Y] && 255 > da[Y] && da[Y]--
 		}
 		O = Math.floor(.1 * alivecount);
@@ -7335,7 +7345,7 @@ function visibilitychange() {
 }
 
 function keyUp(g) {
-	400 > bw.gQ || (8 !== jT.rc() && jT.uG(g) ? bw.bx = !0 : "Escape" === g.key ? 1 <= fN ? gW ? (gW = !gW, bw.bx = !0) : hf.ku ? hf.kx() : fe.lj() : 7 === jT.rc() ? (jc.tG(), e1.vU(3240), jO.bh(), bw.bx = !0) : 2 === jT.rc() ? dl.vV() : 3 === jT.rc() && jU.vV(0, 0) : "ArrowLeft" === g.key ? gb.a1C(3) : "ArrowUp" === g.key ? gb.a1C(0) : "ArrowRight" === g.key ? gb.a1C(1) : "ArrowDown" === g.key ? gb.a1C(2) : "h" === g.key && 1 <= fN && (gW = !gW, bw.bx = !0))
+	400 > bw.gQ || (8 !== jT.rc() && jT.uG(g) ? bw.bx = !0 : "Escape" === g.key ? 1 <= gamestatus ? canvashidden ? (canvashidden = !canvashidden, bw.bx = !0) : hf.ku ? hf.kx() : fe.lj() : 7 === jT.rc() ? (jc.tG(), e1.vU(3240), jO.bh(), bw.bx = !0) : 2 === jT.rc() ? dl.vV() : 3 === jT.rc() && jU.vV(0, 0) : "ArrowLeft" === g.key ? gb.a1C(3) : "ArrowUp" === g.key ? gb.a1C(0) : "ArrowRight" === g.key ? gb.a1C(1) : "ArrowDown" === g.key ? gb.a1C(2) : ("h" === g.key && 1 <= gamestatus) ? (canvashidden = !canvashidden, bw.bx = !0) : ("u" === g.key && 1 <= gamestatus) && (ui = !ui))
 }
 
 function a0y() {
@@ -8236,7 +8246,7 @@ function kD() {
 
 	function k() {
 		if (-1 !== l)
-			if (0 !== fN && eJ.go()) {
+			if (0 !== gamestatus && eJ.go()) {
 				for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, g0 += n[A], g1 += z[A], dy.lV(n[A], z[A]), gX.qq());
 				y ? bw.bx = !0 : gb.gc()
 			} else gb.gc()
@@ -8244,10 +8254,10 @@ function kD() {
 	var t = !1,
 		l, x, n, z;
 	this.va = function (y) {
-		0 !== fN && eJ.go() && (t || g(), x[y] = !0, -1 === l && (l = setInterval(k, 20), k()))
+		0 !== gamestatus && eJ.go() && (t || g(), x[y] = !0, -1 === l && (l = setInterval(k, 20), k()))
 	};
 	this.a1C = function (y) {
-		if (0 !== fN && (t || g(), x[y] = !1, -1 !== l)) {
+		if (0 !== gamestatus && (t || g(), x[y] = !1, -1 !== l)) {
 			y = !1;
 			for (var A =
 				3; 0 <= A; A--) y = y || x[A];
@@ -8449,7 +8459,9 @@ function kM() {
 	function k() {
 		n = 0;
 		z += 700 > z ? 200 : 0;
-		bo.bp() && (l() || x) && (x = !1, oh(), tx.bh(), jR.bh(), jV.le(), vG.bh(), jS.le(), jQ.le(), jP.le(), vA.le(), c5.le(), a5.bh(), 1 <= fN ? (eA.le(!1), eC.le(), dz.le(), gX.le(), eF.le(), newannouncements.le(), fe.le(), eG.le(), eD.le(), bu.le(), he.kj(), hf.le(), dy.le(), eK.le(), eH.le(), gX.qq()) : (0 === jT.rc() ? jV.c6(0, !0) : 2 === jT.rc() ? dl.le() : 3 === jT.rc() && jU.le(), jT.vE(), jT.vH()), bw.bx = !0)
+		bo.bp() && (l() || x) && (x = !1, oh(), tx.bh(), jR.bh(), jV.le(), vG.bh(), jS.le(), jQ.le(), jP.le(),
+			/*vA.le(),*/ //No cookies popup
+			c5.le(), a5.bh(), 1 <= gamestatus ? (eA.le(!1), eC.le(), dz.le(), gX.le(), eF.le(), newannouncements.le(), fe.le(), eG.le(), eD.le(), bu.le(), he.kj(), hf.le(), dy.le(), eK.le(), eH.le(), gX.qq()) : (0 === jT.rc() ? jV.c6(0, !0) : 2 === jT.rc() ? dl.le() : 3 === jT.rc() && jU.le(), jT.vE(), jT.vH()), bw.bx = !0)
 	}
 
 	function t(y) {
@@ -8799,7 +8811,7 @@ function a16() {
 		this.a4M = -1
 	};
 	this.a4O = function () {
-		2 > this.bk ? this.u1 = bu.measureText(eD.g7(as.max[this.bk]), bl + this.a4K + bm) : 2 === this.bk && (this.u1 = bu.measureText(dz.mw(6, 2), bl + this.a4K + bm));
+		2 > this.bk ? this.u1 = bu.measureText(eD.splitpieces(as.max[this.bk]), bl + this.a4K + bm) : 2 === this.bk && (this.u1 = bu.measureText(dz.mw(6, 2), bl + this.a4K + bm));
 		this.u2 = this.bt - 2 * this.ho - this.u1 - this.hp
 	};
 	this.bn = function () {
@@ -8844,8 +8856,8 @@ function a16() {
 		for (t = as.ln - 2; 0 <= t; t--) c9.lineTo(t * this.u2 / (as.ln - 1), this.wo - k * Math.sqrt(g[t]));
 		c9.stroke();
 		g = this.ls(g, k, .5);
-		.95 > g && c9.fillText(eD.g7(l), -this.ho, 0);
-		.05 < Math.abs(g - .5) && c9.fillText(eD.g7(Math.floor(l / 4)), -this.ho, Math.floor(this.wo /
+		.95 > g && c9.fillText(eD.splitpieces(l), -this.ho, 0);
+		.05 < Math.abs(g - .5) && c9.fillText(eD.splitpieces(Math.floor(l / 4)), -this.ho, Math.floor(this.wo /
 			2));
 		.05 < g && c9.fillText("0", -this.ho, this.wo)
 	};
@@ -8892,25 +8904,25 @@ function a16() {
 		c9.fillStyle = oD;
 		c9.fillText(as.a4E[17], 0, 9 * l / 9);
 		c9.fillStyle = ny;
-		t = eD.g7(as.at[8] + as.at[9] + as.at[10] + as.at[11]);
+		t = eD.splitpieces(as.at[8] + as.at[9] + as.at[10] + as.at[11]);
 		var x = c9.measureText(t).width;
 		c9.setTransform(1, 0, 0, 1, g + .79 * this.bt + x, k + 2 * this.n4);
-		c9.fillText(eD.g7(as.at[8]), 0, 0);
-		c9.fillText(eD.g7(as.at[9]), 0, 1 * l /
+		c9.fillText(eD.splitpieces(as.at[8]), 0, 0);
+		c9.fillText(eD.splitpieces(as.at[9]), 0, 1 * l /
 			9);
-		c9.fillText(eD.g7(as.at[10]), 0, 2 * l / 9);
+		c9.fillText(eD.splitpieces(as.at[10]), 0, 2 * l / 9);
 		c9.fillStyle = nx;
 		c9.fillText(t, 0, 3 * l / 9);
 		c9.fillStyle = oE;
 		t = as.at[13] - attacks.yq(myid);
-		c9.fillText(eD.g7(as.at[12]), 0, 4 * l / 9);
-		c9.fillText(eD.g7(t), 0, 5 * l / 9);
-		c9.fillText(eD.g7(as.at[14]), 0, 6 * l / 9);
-		c9.fillText(eD.g7(as.at[15]), 0, 7 * l / 9);
-		c9.fillText(eD.g7(as.at[16]), 0, 8 * l / 9);
+		c9.fillText(eD.splitpieces(as.at[12]), 0, 4 * l / 9);
+		c9.fillText(eD.splitpieces(t), 0, 5 * l / 9);
+		c9.fillText(eD.splitpieces(as.at[14]), 0, 6 * l / 9);
+		c9.fillText(eD.splitpieces(as.at[15]), 0, 7 * l / 9);
+		c9.fillText(eD.splitpieces(as.at[16]), 0, 8 * l / 9);
 		t = as.at[12] + t + as.at[14] + as.at[15] + as.at[16] + as.at[17];
 		c9.fillStyle = oD;
-		c9.fillText(eD.g7(t), 0, l);
+		c9.fillText(eD.splitpieces(t), 0, l);
 		c9.fillStyle = cC
 	};
 	this.ls = function (g, k, t) {
@@ -8929,7 +8941,7 @@ function a16() {
 		g = this.a4M * bw.t4();
 		g = 0 === isalive[myid] ? Math.floor(g * eK.tA) : Math.floor(g * bw.dM());
 		c9.fillStyle = cC;
-		c9.fillText(1 === t ? dz.mw(n / 100, 2) : eD.g7(Math.floor(n)),
+		c9.fillText(1 === t ? dz.mw(n / 100, 2) : eD.splitpieces(Math.floor(n)),
 			-this.ho, this.wo - k * Math.pow(n, t));
 		c9.textAlign = cB;
 		c9.fillText(dz.ro(g), l * this.u2 / (as.ln - 1), this.wo + this.a4K - (q ? 2 : 0));
@@ -9181,7 +9193,7 @@ function a17() {
 		this.gQ = performance.now()
 	};
 	this.a1B = function () {
-		1 !== fN || !singleplayer || fe.ld || in_spawn || fe.lj(); - 1 === this.a5D && (this.a5D = setInterval(k, 2E3))
+		1 !== gamestatus || !singleplayer || fe.ld || in_spawn || fe.lj(); - 1 === this.a5D && (this.a5D = setInterval(k, 2E3))
 	};
 	this.xB = function () {
 		this.bx = !0; - 1 !== this.a5D && (clearInterval(this.a5D), this.a5D = -1)
@@ -9231,7 +9243,7 @@ function a5H() {
 	this.a5L = !1;
 	this.d7 = function () {
 		jb.d7();
-		in_spawn ? eQ() : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN || fe.ld ? dw() : (gametickincrement(), this.vm++, gw.tU()), this.bk++) : (fe.ld ? eQ() : (bw.bx = !0, eO()), this.bk = 0);
+		in_spawn ? eQ() : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === gamestatus || fe.ld ? dw() : (gametickincrement(), this.vm++, gw.tU()), this.bk++) : (fe.ld ? eQ() : (bw.bx = !0, eO()), this.bk = 0);
 		eI();
 		bw.bx && (bw.bx = !1, hZ())
 	}
@@ -9251,7 +9263,7 @@ function a5J() {
 	};
 	this.a5N = function (k) {
 		if (in_spawn) this.t5(k);
-		else if (this.a5M.push(k), 2 === fN) {
+		else if (this.a5M.push(k), 2 === gamestatus) {
 			for (k = 0; k < this.a5M.length; k++) ja.a5O(this.a5M[k], g), g = (g + 1) % 8;
 			this.a5M = []
 		}
@@ -9265,7 +9277,7 @@ function a5J() {
 	this.d7 = function () {
 		jb.d7();
 		in_spawn ? (bw.bx = dz.t5(-1) ||
-			bw.bx, eQ()) : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === fN ? dw() : this.a5P(), this.bk++) : (bw.bx = !0, eO(), this.bk = 0);
+			bw.bx, eQ()) : 0 === this.bk ? bw.gQ >= this.gQ && (this.gQ += this.a4D * Math.floor(1 + (bw.gQ - this.gQ) / this.a4D), 2 === gamestatus ? dw() : this.a5P(), this.bk++) : (bw.bx = !0, eO(), this.bk = 0);
 		eI();
 		bw.bx && (bw.bx = !1, hZ())
 	};
@@ -9318,7 +9330,7 @@ function kI() {
 		return 1 < z.touches.length ? (k(z), he.kx(), !0) : !1
 	};
 	this.p3 = function (z) {
-		if (0 === fN) return !1;
+		if (0 === gamestatus) return !1;
 		if (1 < z.touches.length) {
 			if (!eJ.go()) return !0;
 			var y = g();
