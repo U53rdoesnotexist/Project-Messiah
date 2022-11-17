@@ -10,7 +10,7 @@ var ui = true;
 
 function gameinit() {
 	tick = 0, cycle = 1;
-	if (playercount == 2) opponentid = myid === 0 ? 1 : 0
+	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
 	latency = singleplayer ? 0 : 8
 
 	console.clear();
@@ -31,7 +31,19 @@ function tickincrement() {
 }
 
 function check_spawn() {
-	if (spawning_percentage_left >= 0.99 && land[myid] === 0) multi.chooselocation(1E3, Math.random() * mapheight, Math.random() * mapwidth) //Checks if it is time to spawn
+	if (spawning_percentage_left >= 0.95) {
+		if (land[myid] === 0) multi.chooselocation(1E3, Math.random() * mapheight, Math.random() * mapwidth)
+		else if (x_min[opponentid] !== 0) {
+			if (distance(x_min[myid] - x_min[opponentid], y_min[myid] - y_min[opponentid]) <= 200) {
+				let x = 0, y = 0;
+				while (distance(x - x_min[opponentid], y - y_min[opponentid]) <= 200 || x === 0) {
+					x = Math.random() * mapwidth, y = Math.random() * mapheight;
+				}
+				multi.chooselocation(1E3, y, x)
+				console.log(x_min[opponentid], y_min[opponentid], x , y)
+			}
+		}
+	}
 }
 
 function emoji_spam() {
@@ -41,6 +53,10 @@ function emoji_spam() {
 
 function density(id) {
 	return (land[id] > 0) ? troops[id] / land[id] : null
+}
+
+function distance(x,y) {
+	return Math.sqrt(x**2 + y**2)
 }
 
 function a() {
