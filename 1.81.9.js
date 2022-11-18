@@ -211,7 +211,7 @@ function refund() {
 		var g = troops[last_action_owner];
 		troops[last_action_owner] += last_remaining_troops;
 		aq.ar(last_action_owner);
-		as.at[13] -= troops[last_action_owner] - g
+		newstatistics.stats[13] -= troops[last_action_owner] - g
 	}
 	attacks.au(last_action_owner, aD)
 }
@@ -760,7 +760,7 @@ function gametickincrement() {
 	eE.d7();
 	eF.d7();
 	eG.d7();
-	as.d7();
+	newstatistics.d7();
 	eH.d7();
 	e1.d7();
 
@@ -810,12 +810,12 @@ function eR() {
 	};
 	this.d7 = function () {
 		var A;
-		z = as.at[13];
+		z = newstatistics.stats[13];
 		y = troops[myid];
 		for (A = l - 1; 0 <= A; A--) 10 === n[x[A]] ? k(x[A]) : 0 === n[x[A]]-- && (k(x[A]), aT(x[A]));
 		16E4 <= land[ea[0]] && (g(16E4), 3E5 <= land[ea[0]] && g(3E5));
-		land[myid] > as.at[7] && (as.at[7] = land[myid]);
-		as.at[14] += y - troops[myid] + z - as.at[13]
+		land[myid] > newstatistics.stats[7] && (newstatistics.stats[7] = land[myid]);
+		newstatistics.stats[14] += y - troops[myid] + z - newstatistics.stats[13]
 	};
 	this.an = function (A) {
 		var B;
@@ -922,7 +922,7 @@ function oldsingle() {
 		0 < A && this.bh()
 	};
 	this.fA = function (y, A, B, C) {
-		0 !== isalive[y] && 2 !== fH[k] && en.cg(y, pixel.coordstopixel(B, C)) && em(y, en.eo(), pixel.coordstopixel(B, C), strange_divide_floor(A * troops[y], 1E3)) && y === myid && (as.at[0] += A, as.at[1]++, as.at[2]++)
+		0 !== isalive[y] && 2 !== fH[k] && en.cg(y, pixel.coordstopixel(B, C)) && em(y, en.eo(), pixel.coordstopixel(B, C), strange_divide_floor(A * troops[y], 1E3)) && y === myid && (newstatistics.stats[0] += A, newstatistics.stats[1]++, newstatistics.stats[2]++)
 	};
 	this.cancel = function (y, A) {
 		if (0 !== isalive[y] && 2 !== fH[k] && attacks.cg(y, A)) {
@@ -933,7 +933,7 @@ function oldsingle() {
 				var C = troops[y];
 				troops[y] += B;
 				aq.ar(y);
-				as.at[13] -= troops[y] - C
+				newstatistics.stats[13] -= troops[y] - C
 			}
 		}
 	};
@@ -1233,8 +1233,8 @@ function gy() {
 					t();
 					l(J - 2, K - 2)
 				} else t();
-		as.at[7] = land[myid];
-		as.at[8] = troops[myid]
+		newstatistics.stats[7] = land[myid];
+		newstatistics.stats[8] = troops[myid]
 	};
 	this.hR = function (K, J, D) {
 		var L, I;
@@ -1469,7 +1469,7 @@ function oldspawn() {
 	this.exit = function () {
 		in_spawn = !1;
 		for (var g = 0; g < playercount; g++) 0 !== isalive[g] && 0 === land[g] && il.hY(g);
-		0 !== isalive[myid] ? (as.at[7] = land[myid], as.at[8] = troops[myid], eF.c6(), dz.im(), eJ.gT(x_min[myid] - 5, y_min[myid] - 5, x_max[myid] + 5, y_max[myid] + 5), eL.bh()) : eK.show(!1, !1);
+		0 !== isalive[myid] ? (newstatistics.stats[7] = land[myid], newstatistics.stats[8] = troops[myid], eF.c6(), dz.im(), eJ.gT(x_min[myid] - 5, y_min[myid] - 5, x_max[myid] + 5, y_max[myid] + 5), eL.bh()) : eK.show(!1, !1);
 		newannouncements.io(18);
 		dy.ip();
 		dy.eP();
@@ -1510,7 +1510,7 @@ function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
 	gamestatus = 1;
 	troopcap = 2E9;
 	iw = strange_divide_floor(troopcap, 2);
-	as.bh();
+	newstatistics.bh();
 	j9();
 	jA.jB();
 	gw.bh();
@@ -1938,7 +1938,7 @@ function ji() {
 	};
 	this.bz = function (B, C) {
 		var F = k(B, C);
-		return this.ld ? 0 === F ? (jL(), aB(), 2) : 1 === F ? (this.lj(), 2) : 2 === F ? (this.ff(myid) && (singleplayer ? single.fd(myid) : multi.lm(), this.lj()), 2) : 3 === F && 2 <= as.ln ? (hf.lj(), bw.bx = !0, 2) :
+		return this.ld ? 0 === F ? (jL(), aB(), 2) : 1 === F ? (this.lj(), 2) : 2 === F ? (this.ff(myid) && (singleplayer ? single.fd(myid) : multi.lm(), this.lj()), 2) : 3 === F && 2 <= newstatistics.ln ? (hf.lj(), bw.bx = !0, 2) :
 			hf.ku || singleplayer && !in_spawn ? 1 : (this.lj(), 2) : 0 === F ? (this.lj(), 2) : 0
 	};
 	this.lV = function (B, C) {
@@ -1970,7 +1970,7 @@ function ji() {
 			B = .4 * l;
 			fe.ls(lo + 4 * l + (1.5 * l - B) / 2, eF.f8 + .3 * l, B);
 			t(1, fe.ff(myid) ? cC : lu);
-			2 <= as.ln && t(2, cC);
+			2 <= newstatistics.ln && t(2, cC);
 			c9.setTransform(1, 0, 0, 1, 0, 0)
 		} else c9.drawImage(x, lo, eF.f8)
 	};
@@ -2131,7 +2131,7 @@ function oldannouncements() {
 		for (var M = E.length - 1; 0 <= M; M--) E[M].id === G && (E[M].gQ = 1)
 	};
 	this.fZ = function (G, M) {
-		0 === M ? (as.at[G < playercount ? 4 : 3]++, bu.cI(G, 0), A(q ? 100 : 160, "You conquered " + nickname[G] + ".", 0, G, "rgb(10,220,10)", hi, -1, !1)) :
+		0 === M ? (newstatistics.stats[G < playercount ? 4 : 3]++, bu.cI(G, 0), A(q ? 100 : 160, "You conquered " + nickname[G] + ".", 0, G, "rgb(10,220,10)", hi, -1, !1)) :
 			1 === M ? (F(50, maxentities), bu.cI(G, 1), A(360, "You were conquered by " + nickname[G] + ".", 0, G, "rgb(255,40,40)", hi, -1, !0), eJ.gU(G, 2700, !0, 0)) :
 				2 === M ? (bu.cI(G, 2), A(0, "Congratulations! You won the game.", 0, G, "rgb(10,255,255)", hi, -1, !0), eJ.gU(G, 2700, !0, 0)) :
 					3 === M ? (bu.cI(G, 2), A(0, nickname[G] + " won the game.", 0, G, cC, hi, -1, !0), eJ.gU(G, 2700, !0, 0)) :
@@ -3956,8 +3956,9 @@ function js() {
 				var W = Math.floor((C - B + 2 * E) * (U - P + 1) / (D.length + 1) - .7 * E);
 				z.fillText(D[U], F, W);
 				z.textAlign = oO;
-				5 === U && 0 !== isalive[myid] &&
-					troops[myid] >= aq.dB(myid) ? (z.fillStyle = oL, z.fillText(k(U), dz.bt - F, W), z.fillStyle = cC) : z.fillText(k(U), dz.bt - F, W)
+				5 === U && 0 !== isalive[myid] && troops[myid] >= aq.dB(myid) ? 
+				(z.fillStyle = oL, z.fillText(k(U), dz.bt - F, W), z.fillStyle = cC) : 
+				z.fillText(k(U), dz.bt - F, W)
 			} else P++
 	}
 
@@ -4069,7 +4070,7 @@ function js() {
 			var P = eH.qK();
 			P >= S && l() ? (fW.fX(-1), t(eH.qK())) : t(P)
 		} else P = land[ea[0]], P >= S && l() && fW.fX(-1), t(P);
-		P = aq.t3(myid);
+		P = aq.interest(myid);
 		P !== L[5] && (L[5] = P, J++);
 		x();
 		L[7] += bw.t4();
@@ -4248,7 +4249,7 @@ function singleattack(g, k, t) {
 			if (!(l <= neutral_landcost) && attacks.belowattackcap(g)) {
 				var n = temp_borderpixels[g].length;
 				k === maxentities ? cP(g) : cK(g, k);
-				if (0 !== n || 0 !== temp_borderpixels[g].length) teamgame && (cz[g] = 1), g === myid && (as.at[0] += 500 <= t ? t - 12 : t, as.at[1]++, as.at[12] += x, as.at[13] += l), border_changetoattacking(n, g), attacks.cI(g, l, k), troops[g] -= l + x, am.cJ(g, !1)
+				if (0 !== n || 0 !== temp_borderpixels[g].length) teamgame && (cz[g] = 1), g === myid && (newstatistics.stats[0] += 500 <= t ? t - 12 : t, newstatistics.stats[1]++, newstatistics.stats[12] += x, newstatistics.stats[13] += l), border_changetoattacking(n, g), attacks.cI(g, l, k), troops[g] -= l + x, am.cJ(g, !1)
 			}
 		}
 	}
@@ -4261,7 +4262,7 @@ function em(g, k, t, l) {
 	if (0 === k) return !1;
 	t = strange_divide_floor(3 * troops[g], 128);
 	l >= strange_divide_floor(troops[g], 2) && (l -= t);
-	g === myid && (as.at[12] += t);
+	g === myid && (newstatistics.stats[12] += t);
 	attacks.tQ(g, l, k);
 	troops[g] -= l + t;
 	return !0
@@ -4272,7 +4273,7 @@ function dS(g, k, t) {
 		var l = strange_divide_floor(troops[g], 16);
 		t -= t >= strange_divide_floor(troops[g], 2) ? l : 0;
 		var x = land[k] * is - troops[k];
-		0 >= x || (t = t > x ? x : t, g === myid && (newannouncements.mq(t, k), as.at[12] += l, as.at[16] += t), k === myid && (newannouncements.ms(t, g), as.at[10] += t), troops[g] -= t + l, troops[k] += t)
+		0 >= x || (t = t > x ? x : t, g === myid && (newannouncements.mq(t, k), newstatistics.stats[12] += l, newstatistics.stats[16] += t), k === myid && (newannouncements.ms(t, g), newstatistics.stats[10] += t), troops[g] -= t + l, troops[k] += t)
 	}
 }
 
@@ -6448,7 +6449,7 @@ function yW(g) {
 }
 
 function yc() {
-	as.at[17] += troops[myid] + attacks.yf(myid);
+	newstatistics.stats[17] += troops[myid] + attacks.yf(myid);
 	eK.show(!1, !1);
 	dz.sr()
 }
@@ -6511,7 +6512,7 @@ function kX() {
 			var x = t[g];
 			if (!(x >= playercount)) {
 				var n = Math.max(strange_divide_floor(l[x], 4), 2048);
-				var z = Math.max(aq.t3(x), 100);
+				var z = Math.max(aq.interest(x), 100);
 				k[x] += strange_divide_floor(z * n, 1E4);
 				k[x] > n && (k[x] = n)
 			}
@@ -6611,7 +6612,7 @@ function oldattacks() {
 	};
 	this.cI = function (y, A, B) {
 		var C, F = position_inarray(y);
-		B === myid && as.at[y < playercount ? 6 : 5]++;
+		B === myid && newstatistics.stats[y < playercount ? 6 : 5]++;
 		for (C = currentattackcount[y] - 1; 0 <= C; C--)
 			if (0 === boatids[F + C] && targets[F + C] === B) {
 				remainings[F + C] += A;
@@ -6672,20 +6673,20 @@ function k6() {
 			var z, y = troops[myid];
 			singleplayer && !teamgame && 0 !== isalive[0] && 0 === dl.dm[0].b5 && (troops[0] += strange_divide_floor(land[0], 6));
 			for (z = alivecount - 1; 0 <= z; z--) {
-				var A = strange_divide_floor(aq.t3(entitiesalive[z]) * troops[entitiesalive[z]], 1E4);
+				var A = strange_divide_floor(aq.interest(entitiesalive[z]) * troops[entitiesalive[z]], 1E4);
 				troops[entitiesalive[z]] += 1 > A ? 1 : A;
 				aq.ar(entitiesalive[z])
 			}
-			as.at[9] += troops[myid] - y;
+			newstatistics.stats[9] += troops[myid] - y;
 			if (0 >= --l) {
 				l = k;
 				z = troops[myid];
 				for (A = alivecount - 1; 0 <= A; A--) troops[entitiesalive[A]] += land[entitiesalive[A]], aq.ar(entitiesalive[A]);
-				as.at[8] += troops[myid] - z
+				newstatistics.stats[8] += troops[myid] - z
 			}
 		}
 	};
-	this.t3 = function (z) {
+	this.interest = function (z) {
 		var y = x[strange_divide_floor((n - 1) * land[z], iu)];
 		if (1920 > bw.dM()) {
 			var A = strange_divide_floor(100 * (13440 - 6 * bw.dM()), 1920);
@@ -7258,7 +7259,7 @@ function ic() {
 	return k % 4096
 }
 var ok, c9, a0m, a0n, r, s, ou, bi, g2, c3, a0o, b, c, e, d, q, a0p = !1,
-	a0q, a0r, i, gm, sL, gw, a5, as, hf, vA, bw, dO, eH, c5, fW, vG, n9, tx, a0s, a0t, a0u = 0,
+	a0q, a0r, i, gm, sL, gw, a5, newstatistics, hf, vA, bw, dO, eH, c5, fW, vG, n9, tx, a0s, a0t, a0u = 0,
 	a0v = "";
 
 function a0w() {
@@ -7303,7 +7304,7 @@ function a0w() {
 	gm = new a14;
 	gw = new tR;
 	a5 = new nL;
-	as = new a15;
+	newstatistics = new oldstatistics;
 	hf = new a16;
 	vA = new n3;
 	bw = new a17;
@@ -8555,7 +8556,7 @@ function kG() {
 		B = pixel.pixeltoy(L);
 		n = x = pixel.coordstopixel(z, y);
 		F = attacks.fJ(t, E); - 1 === F ? (k(), e8.an(t, E), H = !1) : (l = attacks.remaining(t, F), H = !0);
-		if (H && (k(), H = strange_divide_floor(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (as.at[15] += H), l <= neutral_landcost ? (t === myid && (as.at[15] += l), g(!1), H = !1) : (attacks.bL(t, F, l), H = !0), H))
+		if (H && (k(), H = strange_divide_floor(l, 128), H = 1 > H ? 1 : H, l -= H, t === myid && (newstatistics.stats[15] += H), l <= neutral_landcost ? (t === myid && (newstatistics.stats[15] += l), g(!1), H = !1) : (attacks.bL(t, F, l), H = !0), H))
 			if (H = pixel.coordstopixel(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? H + offset[A > z ? 1 : 3] : H + offset[B > y ? 2 : 0], z = pixel.pixeltox(x), y = pixel.pixeltoy(x),
 				e8.fo(C, x), H = pixel.canownpixel(x) ? !1 : !0, H) pixel.iswater(x) && pixel.changetoboat(x, t);
 			else a: {
@@ -8568,12 +8569,12 @@ function kG() {
 					}
 					if (!cZ(t, H)) {
 						K = land[H] * is - troops[H];
-						0 >= K || (K = l > K ? K : l, l -= K, t === myid && (newannouncements.mq(K, H), as.at[16] += K), H === myid && (newannouncements.ms(K, t), as.at[10] += K), troops[H] += K);
+						0 >= K || (K = l > K ? K : l, l -= K, t === myid && (newannouncements.mq(K, H), newstatistics.stats[16] += K), H === myid && (newannouncements.ms(K, t), newstatistics.stats[10] += K), troops[H] += K);
 						g(!0);
 						break a
 					}
 				}
-				t === myid && (as.at[13] += l); e8.an(t, E); attacks.au(t, F); temp_borderpixels[t].push(n); attacks.cI(t, l, H); am.cJ(t, !0)
+				t === myid && (newstatistics.stats[13] += l); e8.an(t, E); attacks.au(t, F); temp_borderpixels[t].push(n); attacks.cI(t, l, H); am.cJ(t, !0)
 			}
 	};
 	this.fs = function (H, K) {
@@ -8711,7 +8712,7 @@ function a0c() {
 	}
 }
 
-function a15() {
+function oldstatistics() {
 	this.cN = 501;
 	this.a4C = new Uint32Array(this.cN);
 	this.rf = new Uint32Array(this.cN);
@@ -8720,8 +8721,8 @@ function a15() {
 	this.a4D = 1;
 	this.dN = 0;
 	this.max = [0, 0, 0];
-	this.at = 0;
-	this.a4E = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
+	this.stats = 0;
+	this.labels = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
 	this.bh = function () {
 		this.ln = 0;
 		this.a4D = 1;
@@ -8733,21 +8734,20 @@ function a15() {
 		0 < this.dN-- || this.a4H()
 	};
 	this.a4H = function () {
-		0 !== isalive[myid] && (this.a4C[this.ln] = land[myid], this.rf[this.ln] = troops[myid], this.t2[this.ln] = aq.t3(myid), this.a4I(this.ln), this.ln++, this.ln === this.cN && this.a4J(), this.dN = this.a4D - 1, hf.bn())
+		0 !== isalive[myid] && (this.a4C[this.ln] = land[myid], this.rf[this.ln] = troops[myid], this.t2[this.ln] = aq.interest(myid), this.a4I(this.ln), this.ln++, this.ln === this.cN && this.a4J(), this.dN = this.a4D - 1, hf.bn())
 	};
 	this.a4J = function () {
 		this.a4F();
 		this.a4I(0);
 		this.ln = 1 + strange_divide_floor(this.cN, 2);
 		for (var g = 1; g < this.ln; g++) this.a4C[g] = this.a4C[2 * g], this.rf[g] = this.rf[2 * g], this.t2[g] = this.t2[2 * g], this.a4I(g);
-		this.a4D *=
-			2
+		this.a4D *= 2
 	};
 	this.a4F = function () {
 		this.max[0] = this.max[1] = this.max[2] = 0
 	};
 	this.a4G = function () {
-		this.at = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+		this.stats = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	};
 	this.a4I = function (g) {
 		this.max[0] = this.a4C[g] > this.max[0] ? this.a4C[g] : this.max[0];
@@ -8820,14 +8820,14 @@ function a16() {
 		this.ku ? this.kx() : this.show()
 	};
 	this.show = function () {
-		2 > as.ln || (this.ku = !0, this.a4O())
+		2 > newstatistics.ln || (this.ku = !0, this.a4O())
 	};
 	this.kx = function () {
 		this.ku = !1;
 		this.a4M = -1
 	};
 	this.a4O = function () {
-		2 > this.bk ? this.u1 = bu.measureText(eD.splitpieces(as.max[this.bk]), bl + this.a4K + bm) : 2 === this.bk && (this.u1 = bu.measureText(dz.mw(6, 2), bl + this.a4K + bm));
+		2 > this.bk ? this.u1 = bu.measureText(eD.splitpieces(newstatistics.max[this.bk]), bl + this.a4K + bm) : 2 === this.bk && (this.u1 = bu.measureText(dz.mw(6, 2), bl + this.a4K + bm));
 		this.u2 = this.bt - 2 * this.ho - this.u1 - this.hp
 	};
 	this.bn = function () {
@@ -8846,7 +8846,7 @@ function a16() {
 		c9.strokeRect(0, 0, this.bt, this.co);
 		c9.textAlign = oO;
 		c9.font = bl + this.a4K + bm;
-		0 === this.bk ? this.a4Q(as.a4C, g, k) : 1 === this.bk ? this.a4Q(as.rf, g, k) : 2 === this.bk ? this.a4R(g, k) : 3 === this.bk && (this.a4S(g, k), this.a4T(g, k));
+		0 === this.bk ? this.a4Q(newstatistics.a4C, g, k) : 1 === this.bk ? this.a4Q(newstatistics.rf, g, k) : 2 === this.bk ? this.a4R(g, k) : 3 === this.bk && (this.a4S(g, k), this.a4T(g, k));
 		c9.setTransform(1, 0, 0, 1, 0, 0)
 	};
 	this.a4P = function () {
@@ -8863,13 +8863,13 @@ function a16() {
 			this.n5), c9.fillText(this.la[k], (k + .5) * g, this.co - .46 * this.n5)
 	};
 	this.a4Q = function (g, k, t) {
-		var l = as.max[this.bk];
+		var l = newstatistics.max[this.bk];
 		c9.setTransform(1, 0, 0, 1, k + 2 * this.ho + this.u1, t + this.n4);
 		c9.lineWidth = 2;
 		k = this.wo / Math.sqrt(l);
 		c9.beginPath();
-		c9.moveTo(this.u2, this.wo - k * Math.sqrt(g[as.ln - 1]));
-		for (t = as.ln - 2; 0 <= t; t--) c9.lineTo(t * this.u2 / (as.ln - 1), this.wo - k * Math.sqrt(g[t]));
+		c9.moveTo(this.u2, this.wo - k * Math.sqrt(g[newstatistics.ln - 1]));
+		for (t = newstatistics.ln - 2; 0 <= t; t--) c9.lineTo(t * this.u2 / (newstatistics.ln - 1), this.wo - k * Math.sqrt(g[t]));
 		c9.stroke();
 		g = this.ls(g, k, .5);
 		.95 > g && c9.fillText(eD.splitpieces(l), -this.ho, 0);
@@ -8880,13 +8880,13 @@ function a16() {
 	this.a4R = function (g, k) {
 		c9.setTransform(1, 0, 0, 1, g + 2 * this.ho + this.u1, k + this.n4);
 		c9.lineWidth = 2;
-		var t = this.wo / as.max[this.bk];
+		var t = this.wo / newstatistics.max[this.bk];
 		c9.beginPath();
-		c9.moveTo(this.u2, this.wo - t * as.t2[as.ln - 1]);
-		for (var l = as.ln - 2; 0 <= l; l--) c9.lineTo(l * this.u2 / (as.ln - 1), this.wo - t * as.t2[l]);
+		c9.moveTo(this.u2, this.wo - t * newstatistics.t2[newstatistics.ln - 1]);
+		for (var l = newstatistics.ln - 2; 0 <= l; l--) c9.lineTo(l * this.u2 / (newstatistics.ln - 1), this.wo - t * newstatistics.t2[l]);
 		c9.stroke();
-		t = this.ls(as.t2, t, 1);
-		l = as.max[this.bk] / 100;
+		t = this.ls(newstatistics.t2, t, 1);
+		l = newstatistics.max[this.bk] / 100;
 		.95 > t && c9.fillText(dz.mw(l, 2), -this.ho, 0);
 		.05 < Math.abs(t - .5) && c9.fillText(dz.mw(l / 2, 2), -this.ho, Math.floor(this.wo / 2));
 		.05 < t && c9.fillText(dz.mw(0,
@@ -8897,13 +8897,13 @@ function a16() {
 		c9.setTransform(1, 0, 0, 1, g + .34 * this.bt, k + 2 * this.n4);
 		c9.textAlign = oO;
 		var l = this.co - 4 * this.n4 - this.n5;
-		for (t = 7; 0 <= t; t--) c9.fillText(as.a4E[t], 0, t * l / 7);
+		for (t = 7; 0 <= t; t--) c9.fillText(newstatistics.labels[t], 0, t * l / 7);
 		c9.setTransform(1, 0, 0, 1, g + .39 * this.bt, k + 2 * this.n4);
 		c9.textAlign = mN;
-		t = as.at[1];
-		c9.fillText(dz.mw(as.at[0] / (10 * (1 > t ? 1 : t)), 1), 0, 0);
-		for (t = 6; 1 <= t; t--) c9.fillText(as.at[t].toString(), 0, t * l / 7);
-		c9.fillText(dz.mw(100 * (1 - land[myid] / as.at[7]), 0), 0, l)
+		t = newstatistics.stats[1];
+		c9.fillText(dz.mw(newstatistics.stats[0] / (10 * (1 > t ? 1 : t)), 1), 0, 0);
+		for (t = 6; 1 <= t; t--) c9.fillText(newstatistics.stats[t].toString(), 0, t * l / 7);
+		c9.fillText(dz.mw(100 * (1 - land[myid] / newstatistics.stats[7]), 0), 0, l)
 	};
 	this.a4T = function (g, k) {
 		var t;
@@ -8912,47 +8912,47 @@ function a16() {
 		c9.textAlign = oO;
 		var l = this.co - 4 * this.n4 - this.n5;
 		c9.fillStyle = ny;
-		for (t = 2; 0 <= t; t--) c9.fillText(as.a4E[t + 8], 0, t * l / 9);
+		for (t = 2; 0 <= t; t--) c9.fillText(newstatistics.labels[t + 8], 0, t * l / 9);
 		c9.fillStyle = nx;
-		c9.fillText(as.a4E[11], 0, 3 * l / 9);
+		c9.fillText(newstatistics.labels[11], 0, 3 * l / 9);
 		c9.fillStyle = oE;
-		for (t = 8; 4 <= t; t--) c9.fillText(as.a4E[t + 8], 0, t * l / 9);
+		for (t = 8; 4 <= t; t--) c9.fillText(newstatistics.labels[t + 8], 0, t * l / 9);
 		c9.fillStyle = oD;
-		c9.fillText(as.a4E[17], 0, 9 * l / 9);
+		c9.fillText(newstatistics.labels[17], 0, 9 * l / 9);
 		c9.fillStyle = ny;
-		t = eD.splitpieces(as.at[8] + as.at[9] + as.at[10] + as.at[11]);
+		t = eD.splitpieces(newstatistics.stats[8] + newstatistics.stats[9] + newstatistics.stats[10] + newstatistics.stats[11]);
 		var x = c9.measureText(t).width;
 		c9.setTransform(1, 0, 0, 1, g + .79 * this.bt + x, k + 2 * this.n4);
-		c9.fillText(eD.splitpieces(as.at[8]), 0, 0);
-		c9.fillText(eD.splitpieces(as.at[9]), 0, 1 * l /
+		c9.fillText(eD.splitpieces(newstatistics.stats[8]), 0, 0);
+		c9.fillText(eD.splitpieces(newstatistics.stats[9]), 0, 1 * l /
 			9);
-		c9.fillText(eD.splitpieces(as.at[10]), 0, 2 * l / 9);
+		c9.fillText(eD.splitpieces(newstatistics.stats[10]), 0, 2 * l / 9);
 		c9.fillStyle = nx;
 		c9.fillText(t, 0, 3 * l / 9);
 		c9.fillStyle = oE;
-		t = as.at[13] - attacks.yq(myid);
-		c9.fillText(eD.splitpieces(as.at[12]), 0, 4 * l / 9);
+		t = newstatistics.stats[13] - attacks.yq(myid);
+		c9.fillText(eD.splitpieces(newstatistics.stats[12]), 0, 4 * l / 9);
 		c9.fillText(eD.splitpieces(t), 0, 5 * l / 9);
-		c9.fillText(eD.splitpieces(as.at[14]), 0, 6 * l / 9);
-		c9.fillText(eD.splitpieces(as.at[15]), 0, 7 * l / 9);
-		c9.fillText(eD.splitpieces(as.at[16]), 0, 8 * l / 9);
-		t = as.at[12] + t + as.at[14] + as.at[15] + as.at[16] + as.at[17];
+		c9.fillText(eD.splitpieces(newstatistics.stats[14]), 0, 6 * l / 9);
+		c9.fillText(eD.splitpieces(newstatistics.stats[15]), 0, 7 * l / 9);
+		c9.fillText(eD.splitpieces(newstatistics.stats[16]), 0, 8 * l / 9);
+		t = newstatistics.stats[12] + t + newstatistics.stats[14] + newstatistics.stats[15] + newstatistics.stats[16] + newstatistics.stats[17];
 		c9.fillStyle = oD;
 		c9.fillText(eD.splitpieces(t), 0, l);
 		c9.fillStyle = cC
 	};
 	this.ls = function (g, k, t) {
 		if (0 > this.a4M || 1 < this.a4M) return .25;
-		var l = this.a4M * (as.ln - 1),
+		var l = this.a4M * (newstatistics.ln - 1),
 			x = Math.floor(l),
 			n = g[x];
-		n += (l - x) * (g[x < as.ln - 1 ? x + 1 : x] - n);
+		n += (l - x) * (g[x < newstatistics.ln - 1 ? x + 1 : x] - n);
 		c9.strokeStyle = oI;
-		.04 < this.a4M && this.a4Z(0, this.wo - k * Math.pow(n, t), l * this.u2 / (as.ln - 1), this.wo - k * Math.pow(n, t));
-		.04 < n / as.max[this.bk] && this.a4Z(l * this.u2 / (as.ln - 1), this.wo, l * this.u2 / (as.ln - 1), this.wo - k * Math.pow(n, t));
+		.04 < this.a4M && this.a4Z(0, this.wo - k * Math.pow(n, t), l * this.u2 / (newstatistics.ln - 1), this.wo - k * Math.pow(n, t));
+		.04 < n / newstatistics.max[this.bk] && this.a4Z(l * this.u2 / (newstatistics.ln - 1), this.wo, l * this.u2 / (newstatistics.ln - 1), this.wo - k * Math.pow(n, t));
 		c9.fillStyle = o9;
 		c9.beginPath();
-		c9.arc(l * this.u2 / (as.ln - 1), this.wo - k * Math.pow(n, t), 4, 0, 2 * Math.PI);
+		c9.arc(l * this.u2 / (newstatistics.ln - 1), this.wo - k * Math.pow(n, t), 4, 0, 2 * Math.PI);
 		c9.fill();
 		g = this.a4M * bw.t4();
 		g = 0 === isalive[myid] ? Math.floor(g * eK.tA) : Math.floor(g * bw.dM());
@@ -8960,7 +8960,7 @@ function a16() {
 		c9.fillText(1 === t ? dz.mw(n / 100, 2) : eD.splitpieces(Math.floor(n)),
 			-this.ho, this.wo - k * Math.pow(n, t));
 		c9.textAlign = cB;
-		c9.fillText(dz.ro(g), l * this.u2 / (as.ln - 1), this.wo + this.a4K - (q ? 2 : 0));
+		c9.fillText(dz.ro(g), l * this.u2 / (newstatistics.ln - 1), this.wo + this.a4K - (q ? 2 : 0));
 		c9.textAlign = oO;
 		return k * Math.pow(n, t) / this.wo
 	};
