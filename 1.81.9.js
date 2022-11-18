@@ -15,7 +15,9 @@ function gameinit() {
 
 	console.clear();
 	console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
-
+	
+	for (let index = 0; index < mapheight * mapwidth; index++) (pixel_list[index] = pixel.isentitypixel(4*index) ? 1 : 0)
+	
 }
 
 function tickincrement() {
@@ -2693,7 +2695,6 @@ function jl() {
 		pA(myattacks[C].hh, F, A);
 		F > z + 2 * A && (myattacks[C].hh.fillRect(F - z - A, 0, 1, A), myattacks[C].hh.fillText(nickname[myattacks[C].target], Math.floor((F - z) / 2), Math.floor(.57 * A)));
 		var E = 0 !== myattacks[C].boat_id ? 0 : A;
-		if (ui && density(myattacks[C].target) <= 0.5 && ![0, 512].includes(myattacks[C].target)) myattacks[C].hh.fillStyle = "Red"
 		myattacks[C].hh.fillText(eD.splitpieces(myattacks[C].remaining), Math.floor(F - z / 2 - E), Math.floor(.57 * A));
 		myattacks[C].hh.fillStyle = oH;
 		myattacks[C].hh.fillRect(Math.floor(F - z - E), A - B, Math.floor(z * myattacks[C].remaining / myattacks[C].sent), B);
@@ -6731,7 +6732,7 @@ function k7() {
 				sa = ka >= I && ka < L ? dO.zn[pixel.lightness[sa]] + x(ka).toFixed(3) + ")" : dO.zo[pixel.lightness[sa]];
 
 				ra.fillStyle = sa;
-				if (ui) ra.fillStyle = density(la) < 0.5 ? "Red" : (bot_timing[la - playercount] <= 15 && 100 - tick + latency >= 15) && ("Blue")
+				if (ui) ra.fillStyle = density(la) < 0.5 ? "Red" : (bot_timing[la - playercount] <= 15 && 100 - tick + latency >= 25) && ("Blue")
 				V.fillText([7, 8, 11].includes(gamemode) ? eD.splitpieces(troops[la]) : nickname[la], ma, na);
 
 				W = !0;
