@@ -15,7 +15,7 @@ function gameinit() {
 
 	console.clear();
 	console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
-	
+
 	for (let index = 0; index < mapheight * mapwidth; index++) (pixel_list[index] = pixel.isentitypixel(4*index) ? 1 : 0)
 	
 }
@@ -6732,7 +6732,7 @@ function k7() {
 				sa = ka >= I && ka < L ? dO.zn[pixel.lightness[sa]] + x(ka).toFixed(3) + ")" : dO.zo[pixel.lightness[sa]];
 
 				ra.fillStyle = sa;
-				if (ui) ra.fillStyle = density(la) < 0.5 ? "Red" : (bot_timing[la - playercount] <= 15 && 100 - tick + latency >= 25) && ("Blue")
+				if (ui) ra.fillStyle = density(la) < 0.5 ? "Red" : (bot_timing[la - playercount] <= 15 && 100 - tick >= 25) && ("Blue")
 				V.fillText([7, 8, 11].includes(gamemode) ? eD.splitpieces(troops[la]) : nickname[la], ma, na);
 
 				W = !0;
