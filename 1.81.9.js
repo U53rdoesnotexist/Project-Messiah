@@ -1,4 +1,4 @@
-var tick, cycle, latency, rating, opponentid;
+var tick, cycle, latency, rating, opponentid, pixel_list;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
 var mapwidth, mapheight, lobbygames, spawning_percentage_left;
@@ -9,12 +9,13 @@ var ui = true;
 //function game() {
 
 function gameinit() {
-	tick = 0, cycle = 1;
+	tick = 0, cycle = 1, pixel_list = [];
 	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
 	latency = singleplayer ? 0 : 8
 
 	console.clear();
 	console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
+
 }
 
 function tickincrement() {
@@ -31,12 +32,11 @@ function tickincrement() {
 }
 
 function check_spawn() {
-	if (spawning_percentage_left >= 0.95) {
-		if (land[myid] === 0) multi.chooselocation(1E3, Math.random() * mapheight, Math.random() * mapwidth)
-		else if (x_min[opponentid] !== 0) {
-			if (distance(x_min[myid] - x_min[opponentid], y_min[myid] - y_min[opponentid]) <= 200) {
+	if (spawning_percentage_left >= 0.96) {
+		if (x_min[opponentid] !== 0) {
+			if (distance(x_min[myid] - x_min[opponentid], y_min[myid] - y_min[opponentid]) <= 0.2*distance(mapheight, mapwidth)) {
 				let x = 0, y = 0;
-				while (distance(x - x_min[opponentid], y - y_min[opponentid]) <= 200 || x === 0) {
+				while (distance(x - x_min[opponentid], y - y_min[opponentid]) <= 0.2*distance(mapheight, mapwidth) || x === 0) {
 					x = Math.random() * mapwidth, y = Math.random() * mapheight;
 				}
 				multi.chooselocation(1E3, y, x)
@@ -2011,8 +2011,7 @@ function oldannouncements() {
 			var R = qa.getContext("2d", {
 				alpha: !0
 			});
-			R.font =
-				newannouncements.bs;
+			R.font = newannouncements.bs;
 			R.textBaseline = cA;
 			R.textAlign = mN;
 			R.clearRect(0, 0, pa, H);
@@ -5128,7 +5127,7 @@ function jw() {
 			je.c8();
 			0 === g ? jO.c8() : 2 === g ? dl.c8() : 3 === g ? jU.c8() : 5 === g ? jW.c8() : 6 === g ? jS.c8() : 7 === g && jc.c8();
 			c4.vJ();
-			//vA.c8(); We don't want cookies popup :)
+			vA.c8(); // We don't want cookies popup :)
 			c5.c8();
 			n9.c8()
 		}
@@ -6345,7 +6344,7 @@ function k4() {
 	this.bh = function () {
 		if (!(5 <= d || b)) {
 			B = 4;
-			A = 0;
+			A = 2;
 			n = [];
 			y = 10;
 			for (var C = 0; C < y; C++) n.push("u" + C);
@@ -8476,7 +8475,7 @@ function kM() {
 		n = 0;
 		z += 700 > z ? 200 : 0;
 		bo.bp() && (l() || x) && (x = !1, oh(), tx.bh(), jR.bh(), jV.le(), vG.bh(), jS.le(), jQ.le(), jP.le(),
-			/*vA.le(),*/ //No cookies popup
+			vA.le(), //No cookies popup
 			c5.le(), a5.bh(), 1 <= gamestatus ? (eA.le(!1), eC.le(), dz.le(), gX.le(), eF.le(), newannouncements.le(), fe.le(), eG.le(), eD.le(), bu.le(), he.kj(), hf.le(), dy.le(), eK.le(), eH.le(), gX.qq()) : (0 === jT.rc() ? jV.c6(0, !0) : 2 === jT.rc() ? dl.le() : 3 === jT.rc() && jU.le(), jT.vE(), jT.vH()), bw.bx = !0)
 	}
 
