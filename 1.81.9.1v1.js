@@ -62,6 +62,8 @@ function gameinit() {
 	}
 	spawns.sort(function (a, b) { return (a.penalty > b.penalty) ? 1 : ((b.penalty > a.penalty) ? -1 : 0); });
 
+	console.log('Preferred Spawn: ', spawns[0].x, ', ', spawns[0].y);
+
 }
 
 function tickincrement() {
@@ -87,10 +89,11 @@ function tickincrement() {
 function check_spawn() {
 	if (spawning_percentage_left >= 0.98) {
 		if (x_min[opponentid]) {
-			if (!x_min[myid] || (land[myid] != 0 && distance(x_min[myid] - x_min[opponentid], y_min[myid] - y_min[opponentid]) <= 0.2 * Math.sqrt(mapheight, mapwidth))) {
-				for (spawn of spawns) {
-					if (distance(spawn.x - x_min[opponentid] - 1.5, spawn.y - y_min[opponentid] - 1.5) >= 0.2 * Math.sqrt(mapheight, mapwidth)) multi.chooselocation(1E3, spawn.x, spawn.y)
-                }
+			for (spawn of spawns) {
+				if (distance(spawn.x - x_min[opponentid] - 1.5, spawn.y - y_min[opponentid] - 1.5) >= 0.2 * (mapheight* mapwidth)**0.5) {
+					multi.chooselocation(1E3, spawn.x, spawn.y)
+					break;
+				}
 			}
 
 		} else if (!x_min[myid]) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
