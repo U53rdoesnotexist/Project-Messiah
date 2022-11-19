@@ -9730,15 +9730,15 @@ function oldmulti() {
 		l(y, 9, target);
 		e1.send(e1.jM, y)
 	};
-	this.chooselocation = function (n, y_cord, x_cord) {
-		//n = 1000  
+	this.chooselocation = function (type, x_coord, y_coord) {
+		//type: 500 = boat, 1000 = choose spawn
 		var A = new Uint8Array(5);
 		x = 0;
 		l(A, 1, 1);
 		l(A, 3, 1);
-		l(A, 10, n);
-		l(A, 11, y_cord);
-		l(A, 11, x_cord);
+		l(A, 10, type);
+		l(A, 11, x_coord);
+		l(A, 11, y_coord);
 		e1.send(e1.jM, A)
 	};
 	this.cancel = function (n) {
