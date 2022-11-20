@@ -9,7 +9,7 @@ var ui = true;
 //function game() {
 
 function gameinit() {
-	tick = 0, cycle = 1, old_myattacks = [], spawns = [];
+	tick = 0, cycle = 1, old_myattacks = [], spawns = [], pending = [];
 	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
 	latency = singleplayer ? 0 : 8
 
@@ -61,6 +61,7 @@ function gameinit() {
 
 	}
 	spawns.sort(function (a, b) { return (a.penalty > b.penalty) ? 1 : ((b.penalty > a.penalty) ? -1 : 0); });
+	spawns.splice(15, spawns.length - 15);
 
 	console.log('Preferred Spawn: ', spawns[0].x, ', ', spawns[0].y);
 
@@ -68,10 +69,6 @@ function gameinit() {
 
 function tickincrement() {
 	tick++;
-
-	//console.log(tick, aq.interest(myid), myattacks, old_myattacks);
-
-	//if (tick + latency == 71 && cycle == 1) multi.attack(Math.ceil(228/troops[myid] * 1000 / (((Math.floor((tick + latency)/10)) - Math.floor(tick/10) >= 1) ? (1 + (aq.interest(myid) - latency * 0.3)/1E4) : 1)), myid)
 
 	if (tick >= 100) {
 		tick -= 100;
@@ -81,8 +78,19 @@ function tickincrement() {
 
 	}
 
+	for (let target of pending) {
+		if (old_myattacks.findIndex(atck => atck.target == target) === -1 && myattacks.findIndex(atck => atck.target == target) !== -1) pending = pending.filter(newtarget => newtarget !== target)
+		else {
+			let oldindex = old_myattacks.findIndex(atck => atck.target == target), newindex = myattacks.findIndex(atck => atck.target == target);
+			if (oldindex !== -1 && newindex !== -1 && old_myattacks[oldindex].remaining > myattacks[newindex].remaining) pending = pending.filter(atck => atck.target !== target)
+		}
+	}
+
+	if (cycle <= 5) opening1()
+	//else if (cycle <= 9) opening2()
+
 	old_myattacks = [];
-	for (let attack in myattacks) old_myattacks.push(JSON.parse(JSON.stringify(attack)))
+	for (let attack of myattacks) old_myattacks.push(JSON.parse(JSON.stringify(attack)))
 
 }
 
@@ -111,6 +119,29 @@ function penalty(spawn_x, spawn_y, range) {
 		}
 	}
 	return Math.round(pen);
+}
+
+function opening1() {
+
+	if (pending.includes(512) || myattacks.findIndex(atk => atk.target == 512) !== -1) return 0
+
+	if (tick + latency == 70) {
+		for (var layers = cycle < 3 ? Math.floor((100 - tick - latency - 7) * speed(myid)) : Math.ceil((100 - tick - latency - 7) * speed(myid)), border = borderlandpixels[myid].length, targetland = 0;
+			border < borderlandpixels[myid].length + 4 * layers; border += 4) {
+			targetland += border + 4;
+		}
+		var amount = 2 * targetland + border;
+		attack(amount, 512, 'Opening')
+    }
+}
+
+function attack(amount, target, type = 'Normal') {
+	let ratio = Math.ceil(amount * 1000 / troops[myid] / (((Math.floor((tick + latency) / 10)) - Math.floor(tick / 10) >= 1) ? (1 + (aq.interest(myid) - latency * 0.3) / 1E4) : 1));
+	if (ratio < 10) return 0
+	else if (ratio > 700 && type != 'Opening2') ratio = 700
+	if (target == 512 && !singleplayer) target == myid
+	singleplayer ? singleattack(0, target, ratio) : multi.attack(ratio, target)
+	pending.push(target);
 }
 
 function emoji_spam() {
@@ -7333,7 +7364,7 @@ var ok, c9, a0m, a0n, r, s, ou, bi, g2, c3, a0o, b, c, e, d, q, a0p = !1,
 
 function a0w() {
 	a0t = 2;
-	a0n = 1135;
+	a0n = 4262;
 	a0m = "1.81.9   27 October 2022";
 	jg();
 	d0();
