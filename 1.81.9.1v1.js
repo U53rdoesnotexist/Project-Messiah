@@ -1,4 +1,4 @@
-var tick, cycle, latency, rating, opponentid, old_myattacks, pending, spawns;
+var tick, cycle, latency, rating, opponentid, old_myattacks, pending, spawns, borderingpixels, borderingbots, borderingopponent;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
 var mapwidth, mapheight, lobbygames, spawning_percentage_left;
@@ -9,8 +9,9 @@ var ui = true;
 //function game() {
 
 function gameinit() {
-	tick = 0, cycle = 1, old_myattacks = [], spawns = [], pending = [];
+	tick = 0, cycle = 1, old_myattacks = [], spawns = [], pending = [], borderingpixels = [], borderingbots = [];
 	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
+	borderingopponent = playercount == 2 ? false : null
 	latency = singleplayer ? 0 : 8
 
 	console.clear();
@@ -78,6 +79,20 @@ function tickincrement() {
 
 	}
 
+	borderingpixels = [];
+		borderingbots = [];
+		for (let pixelcoords of borderlandpixels[myid]) {
+			for (let side = 0; side <= 3; side++) {
+				let pixelcoord = pixelcoords + offset[side];
+				if (!pixel.strong_isowner(myid, pixelcoord)) {
+					if (!borderingpixels.includes(pixelcoord)) borderingpixels.push(pixelcoord)
+					let owner = pixel.pixelowner(pixelcoord)
+					if (!borderingbots.includes(pixelcoord) && pixel.isentitypixel(pixelcoord) && owner >= playercount) borderingbots.push(owner)
+					if (!borderingopponent && opponentid == owner) borderingopponent = true
+				} 
+			}
+		}
+
 	for (let target of pending) {
 		if (old_myattacks.findIndex(atck => atck.target == target) === -1 && myattacks.findIndex(atck => atck.target == target) !== -1) pending = pending.filter(newtarget => newtarget !== target)
 		else {
@@ -125,14 +140,39 @@ function opening1() {
 
 	if (pending.includes(512) || myattacks.findIndex(atk => atk.target == 512) !== -1) return 0
 
-	if (tick + latency == 70) {
-		for (var layers = cycle < 3 ? Math.floor((100 - tick - latency - 7) * speed(myid)) : Math.ceil((100 - tick - latency - 7) * speed(myid)), border = borderlandpixels[myid].length, targetland = 0;
-			border < borderlandpixels[myid].length + 4 * layers; border += 4) {
-			targetland += border + 4;
+	if (borderingbots.length > 0 || borderingopponent) {
+		if ((tick + latency == 71) || (borderingopponent && cycle == 5 && tick + latency == 60)) {
+			for (var layers = cycle < 3 ? Math.floor((100 - tick - latency - 7) * speed(myid)) : Math.ceil((100 - tick - latency - 7) * speed(myid)), border = borderlandpixels[myid].length, targetland = 0;
+				border < borderlandpixels[myid].length + 4 * layers; border += 4) {
+				targetland += border + 4;
+			}
+			var amount = 2 * targetland + border;
+			attack(amount, 512, 'Opening')
 		}
-		var amount = 2 * targetland + border;
+	} else if (tick + latency == 71) { //Cycle 2 must lag!
+		var gainedland = 0;
+		switch (cycle) {
+			case 1:
+				gainedland = 112-12;
+				break;
+			case 2:
+				gainedland = 364 - 112;
+				break;
+			case 3:
+				gainedland = 760-364;
+				break;
+			case 4:
+				gainedland = 1404-760;
+				break;
+			case 5:
+				gainedland = 2380 - 1404;
+				break;
+		}
+		var layers = (2 - borderingpixels.length + ((borderingpixels.length - 2)**2 + 8 * gainedland)**0.5)/ 4, //Arithmetic series for border theory :)
+		amount = gainedland * 2 + borderingpixels.length + (layers - 1) * 4;
 		attack(amount, 512, 'Opening')
-    }
+	}
+	
 }
 
 function attack(amount, target, type = 'Normal') {
