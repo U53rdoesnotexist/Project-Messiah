@@ -12,7 +12,7 @@ function gameinit() {
 	tick = 0, cycle = 1, old_myattacks = [], spawns = [], pending = [], borderingpixels = [], borderingbots = [];
 	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
 	borderingopponent = playercount == 2 ? false : null
-	latency = singleplayer ? 0 : 8
+	latency = singleplayer ? 0 : 7
 
 	console.clear();
 	console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
@@ -75,7 +75,7 @@ function tickincrement() {
 		tick -= 100;
 		cycle += 1;
 
-		console.log(`Cycle: ${cycle}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
+		console.log(`Cycle: ${cycle}, Latency: ${latency}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
 
 	}
 
@@ -99,7 +99,10 @@ function tickincrement() {
 			let oldindex = old_myattacks.findIndex(atck => atck.target == target), newindex = myattacks.findIndex(atck => atck.target == target);
 			if (oldindex !== -1 && newindex !== -1 && old_myattacks[oldindex].remaining > myattacks[newindex].remaining) pending = pending.filter(atck => atck.target !== target)
 		}
+		if (target == 512 && pending.findIndex(targ => targ == target) === -1) latency++
 	}
+		
+	if (myattacks.findIndex(atck => atck.target == 512) === -1 && pending.includes(512) && !singleplayer && cycle <= 5 && latency < 10) latency++	
 
 	if (cycle <= 5) opening1()
 	//else if (cycle <= 9) opening2()
@@ -141,46 +144,46 @@ function opening1() {
 	if (pending.includes(512) || myattacks.findIndex(atk => atk.target == 512) !== -1) return 0
 
 	if (borderingbots.length > 0 || borderingopponent) {
-		if ((tick + latency == 71) || (borderingopponent && cycle == 5 && tick + latency == 60)) {
+		if (tick + latency == 71 || (borderingopponent && [4,5].includes(cycle) && tick + latency == 60)) {
 			for (var layers = cycle < 3 ? Math.floor((100 - tick - latency - 7) * speed(myid)) : Math.ceil((100 - tick - latency - 7) * speed(myid)), border = borderlandpixels[myid].length, targetland = 0;
 				border < borderlandpixels[myid].length + 4 * layers; border += 4) {
 				targetland += border + 4;
 			}
-			var amount = 2 * targetland + border;
+			var ratio = borderingpixels.filter(pixelcoord => pixel.isneutral(pixelcoord)).length / borderingpixels.length, amount = (2 * targetland + border) * ratio;
 			attack(amount, 512, 'Opening')
 		}
 	} else if (tick + latency == 71) { //Cycle 2 must lag!
 		var gainedland = 0;
 		switch (cycle) {
 			case 1:
-				gainedland = 112-12;
+				gainedland = 100;
 				break;
 			case 2:
-				gainedland = 364 - 112;
+				gainedland = 364 - land[myid];
 				break;
 			case 3:
-				gainedland = 760-364;
+				gainedland = 760 - land[myid];
 				break;
 			case 4:
-				gainedland = 1404-760;
+				gainedland = 1404 - land[myid];
 				break;
 			case 5:
-				gainedland = 2380 - 1404;
+				gainedland = 2380 - land[myid];
 				break;
 		}
 		var layers = (2 - borderingpixels.length + ((borderingpixels.length - 2)**2 + 8 * gainedland)**0.5)/ 4, //Arithmetic series for border theory :)
 		amount = gainedland * 2 + borderingpixels.length + (layers - 1) * 4;
-		attack(amount, 512, 'Opening')
+		attack(amount, 512, 'Opening1')
 	}
-	
+	if (pending.includes(512)) latency = 0
 }
 
 function attack(amount, target, type = 'Normal') {
-	let ratio = Math.ceil(amount * 1000 / troops[myid] / (((Math.floor((tick + latency) / 10)) - Math.floor(tick / 10) >= 1) ? (1 + (aq.interest(myid) - latency * 0.3) / 1E4) : 1));
+	let ratio = Math.ceil(amount * 1000 / troops[myid] / (((Math.floor((tick + latency) / 10)) - Math.floor(tick / 10) >= 1 && ['Opening1', 'Opening2'].includes(type)) ? (1 + (aq.interest(myid) - latency * 0.3) / 1E4) : 1));
 	if (ratio < 10) return 0
 	else if (ratio > 700 && type != 'Opening2') ratio = 700
-	if (target == 512 && !singleplayer) target == myid
-	singleplayer ? singleattack(0, target, ratio) : multi.attack(ratio, target)
+	let targ = (target == 512 && !singleplayer) ? myid : target
+	singleplayer ? singleattack(0, targ, ratio) : multi.attack(ratio, targ)
 	pending.push(target);
 }
 
