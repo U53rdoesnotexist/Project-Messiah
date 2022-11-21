@@ -1,7 +1,7 @@
 var tick, cycle, latency, rating, opponentid, old_myattacks, pending, spawns, borderingpixels, borderingbots, borderingopponent;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
-var mapwidth, mapheight, lobbygames, spawning_percentage_left;
+var mapwidth, mapheight, currentmap, lobbygames, spawning_percentage_left;
 var bot_timing, myattacks;
 
 var ui = true;
@@ -31,12 +31,11 @@ function gameinit() {
 		}
 	}
 
-	let range = Math.round(0.125 * (mapwidth * mapheight) ** (1 / 2));
 	for (spawn of spawns) {
-		spawn.penalty = penalty(spawn.x, spawn.y, range);
+		spawn.penalty = penalty(spawn.x, spawn.y);
 		while (!spawn.min) {
-			var up = penalty(spawn.x, spawn.y + 2, range), down = penalty(spawn.x, spawn.y - 2, range),
-				left = penalty(spawn.x - 2, spawn.y, range), right = penalty(spawn.x + 2, spawn.y, range),
+			var up = penalty(spawn.x, spawn.y + 2), down = penalty(spawn.x, spawn.y - 2),
+				left = penalty(spawn.x - 2, spawn.y), right = penalty(spawn.x + 2, spawn.y),
 				penalties = [spawn.penalty, up, down, left, right],
 				side = penalties.findIndex(penalty => penalty == Math.min(...penalties));
 			spawn.penalty = Math.min(...penalties);
@@ -126,8 +125,8 @@ function check_spawn() {
 	}
 }
 
-function penalty(spawn_x, spawn_y, range) {
-	var pen = 0;
+function penalty(spawn_x, spawn_y) {
+	var pen = 0, range = (currentmap == 1 ? 65 : currentmap == 3 ? 50 : [4, 5, 6].includes(currentmap) ? 70 : [8, 12].includes(currentmap) ? 55 : [10, 13].includes(currentmap) ? 45 : Math.round((mapheight * mapwidth / entitycount) ** 0.5));
 	for (let x = spawn_x - range; x <= spawn_x + range; x++) {
 		for (let y = spawn_y - range; y <= spawn_y + range; y++) {
 			if (!pixel.isneutral(pixel.coordstopixel(x, y))) {
@@ -136,6 +135,7 @@ function penalty(spawn_x, spawn_y, range) {
 			}
 		}
 	}
+	if ([1, 4, 13].includes(currentmap)) pen *= (1 + distance(spawn_x - mapwidth / 2, spawn_y - mapheight / 2) / distance(mapwidth/2, mapheight/2))
 	return Math.round(pen);
 }
 
@@ -7547,8 +7547,7 @@ function k9() {
 		}
 	}
 }
-var map, pH, wb, wc, currentmap, wR, vD, mapcount = 14,
-	we;
+var map, pH, wb, wc, wR, vD, mapcount = 14, we;
 
 function wd(g, k) {
 	g %= mapcount;
