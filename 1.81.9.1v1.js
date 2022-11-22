@@ -113,7 +113,7 @@ function tickincrement() {
 }
 
 function check_spawn() {
-	if (spawning_percentage_left >= 0.98) {
+	/*if (spawning_percentage_left >= 0.98) {
 		if (x_min[opponentid] != 0 && (x_min[myid] == 0 || x_min[myid] != 0 && distance(x_min[myid] - x_min[opponentid] - 1.5, y_min[myid] - y_min[opponentid] - 1.5) <= 0.25 * (mapheight* mapwidth)**0.5 )) {
 			for (spawn of spawns) {
 				if (distance(spawn.x - x_min[opponentid] - 1.5, spawn.y - y_min[opponentid] - 1.5) >= 0.25 * (mapheight* mapwidth)**0.5) {
@@ -123,7 +123,7 @@ function check_spawn() {
 			}
 
 		} else if (x_min[myid] == 0) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
-	}
+	}*/
 }
 
 function penalty(spawn_x, spawn_y) {
@@ -191,10 +191,12 @@ function opening2() {
 	}
 
 	let ratio = borderingneutral.length / borderingpixels.length; 
-	if ((cycle == 7 && tick + latency >= 33 || cycle == 6 && tick + latency >= 33 && tick + latency <= 90 || [8,9].includes(cycle)) && 
-	!borderingneutral.length == 0 && (atk == null || atk.remaining <= (singleplayer ? 500 : ratio > 0.1 ? 1000 : 500))) {
-		amount = ratio > 0.6 ? 3000 : ratio > 0.5 ? 2500 : ratio > 0.4 ? 2000 : ratio > 0.2 ? 1500 : ratio > 0.1 ? 1000 : 500;
-		amount += (amount == 0 ? 0 : cycle == 9 ? 1000 : cycle == 8 && 500);
+	if (((cycle == 7 && tick + latency >= (borderingopponent ? 23 : 33) || cycle == 6 && tick + latency >= 33) && tick + latency <= 90 || [8,9].includes(cycle)) && 
+	!borderingneutral.length == 0 && (atk == null || atk.remaining <= (singleplayer ? 250 : ratio > 0.2 ? 1250 : ratio > 0.1 ? 1000 : 500))) {
+		if (cycle <= 7) amount = ratio > 0.6 ? 3000 : ratio > 0.5 ? 2500 : ratio > 0.4 ? 2000 : ratio > 0.2 ? 1500 : ratio > 0.1 ? 1000 : 500
+		else amount = borderingneutral.length * 50
+		if (amount > 3000) amount = 3000
+		else if (amount < 1000) amount = 1000
 		if (borderingopponent && amount > 2000) amount = 2000
 		if (borderingopponent && density(myid) < 1.5 && tick + latency < 80) amount = 0
 		attack(amount, 512);
