@@ -1,4 +1,5 @@
-var tick, cycle, latency, rating, opponentid, old_myattacks, pending, spawns, borderingpixels, borderingbots, borderingopponent;
+var tick, cycle, latency, rating, opponentid, old_myattacks, pending, spawns;
+var borderingpixels, borderingneutral, borderingbots, borderingopponent;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
 var mapwidth, mapheight, currentmap, lobbygames, spawning_percentage_left;
@@ -9,9 +10,10 @@ var ui = true;
 //function game() {
 
 function gameinit() {
-	tick = 0, cycle = 1, old_myattacks = [], spawns = [], pending = [], borderingpixels = [], borderingbots = [];
+	tick = 0, cycle = 1, old_myattacks = [], spawns = [], pending = [],
+	borderingpixels = [], borderingbots = [], borderingneutral = [];
 	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
-	borderingopponent = playercount == 2 ? false : null
+	borderingopponent = false;
 	latency = singleplayer ? 0 : 7
 
 	console.clear();
@@ -74,54 +76,53 @@ function tickincrement() {
 		tick -= 100;
 		cycle += 1;
 
-		console.log(`Cycle: ${cycle}, Latency: ${latency}, Troops: ${troops[myid]}, Land: ${land[myid]}`)
+		console.log(`Cycle: ${cycle}, ${!singleplayer ? ('Latency: ' +  latency + ', ') : ''}Troops: ${troops[myid]}, Land: ${land[myid]}`)
 
 	}
+
+	if (!isalive[myid]) return 0
 
 	borderingpixels = [];
-		borderingbots = [];
-		for (let pixelcoords of borderlandpixels[myid]) {
-			for (let side = 0; side <= 3; side++) {
-				let pixelcoord = pixelcoords + offset[side];
-				if (!pixel.strong_isowner(myid, pixelcoord)) {
-					if (!borderingpixels.includes(pixelcoord)) borderingpixels.push(pixelcoord)
-					let owner = pixel.pixelowner(pixelcoord)
-					if (!borderingbots.includes(pixelcoord) && pixel.isentitypixel(pixelcoord) && owner >= playercount) borderingbots.push(owner)
-					if (!borderingopponent && opponentid == owner) borderingopponent = true
-				} 
-			}
+	borderingbots = [];
+	borderingneutral = [];
+	for (let pixelcoords of borderlandpixels[myid]) {
+		for (let side = 0; side <= 3; side++) {
+			let pixelcoord = pixelcoords + offset[side];
+			if (!pixel.strong_isowner(myid, pixelcoord)) {
+				let owner = pixel.pixelowner(pixelcoord);
+				if (!borderingpixels.includes(pixelcoord)) borderingpixels.push(pixelcoord)
+				if (!borderingneutral.includes(pixelcoord) && pixel.isneutral(pixelcoord)) borderingneutral.push(pixelcoord)
+				if (!borderingbots.includes(pixelcoord) && pixel.isentitypixel(pixelcoord) && owner >= playercount) borderingbots.push(owner)
+				if (!borderingopponent && owner < playercount && pixel.isentitypixel(pixelcoord)) borderingopponent = true
+			} 
 		}
+	}
 
 	for (let target of pending) {
-		if (old_myattacks.findIndex(atck => atck.target == target) === -1 && myattacks.findIndex(atck => atck.target == target) !== -1) pending = pending.filter(newtarget => newtarget !== target)
-		else {
-			let oldindex = old_myattacks.findIndex(atck => atck.target == target), newindex = myattacks.findIndex(atck => atck.target == target);
-			if (oldindex !== -1 && newindex !== -1 && old_myattacks[oldindex].remaining > myattacks[newindex].remaining) pending = pending.filter(atck => atck.target !== target)
-		}
-		if (target == 512 && pending.findIndex(targ => targ == target) === -1) latency++
+		let oldindex = old_myattacks.findIndex(atck => atck.target == target), newindex = myattacks.findIndex(atck => atck.target == target);
+		if (oldindex === -1 && newindex !== -1 || oldindex !== -1 && newindex !== -1 && old_myattacks[oldindex].remaining < myattacks[newindex].remaining || 
+			target === 512 && borderingneutral.length == 0) pending = pending.filter(newtarget => newtarget !== target)
 	}
-		
-	if (myattacks.findIndex(atck => atck.target == 512) === -1 && pending.includes(512) && !singleplayer && cycle <= 5 && latency < 10) latency++	
 
 	if (cycle <= 5) opening1()
-	//else if (cycle <= 9) opening2()
+	else if (cycle <= 9) opening2()
 
-	old_myattacks = [];
+	old_myattacks = []; 
 	for (let attack of myattacks) old_myattacks.push(JSON.parse(JSON.stringify(attack)))
 
 }
 
 function check_spawn() {
 	if (spawning_percentage_left >= 0.98) {
-		if (x_min[opponentid]) {
+		if (x_min[opponentid] != 0 && (x_min[myid] == 0 || x_min[myid] != 0 && distance(x_min[myid] - x_min[opponentid] - 1.5, y_min[myid] - y_min[opponentid] - 1.5) <= 0.25 * (mapheight* mapwidth)**0.5 )) {
 			for (spawn of spawns) {
-				if (distance(spawn.x - x_min[opponentid] - 1.5, spawn.y - y_min[opponentid] - 1.5) >= 0.2 * (mapheight* mapwidth)**0.5) {
-					multi.chooselocation(1E3, spawn.x, spawn.y)
+				if (distance(spawn.x - x_min[opponentid] - 1.5, spawn.y - y_min[opponentid] - 1.5) >= 0.25 * (mapheight* mapwidth)**0.5) {
+					multi.chooselocation(1E3, spawn.x, spawn.y);
 					break;
 				}
 			}
 
-		} else if (!x_min[myid]) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
+		} else if (x_min[myid] == 0) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
 	}
 }
 
@@ -135,7 +136,7 @@ function penalty(spawn_x, spawn_y) {
 			}
 		}
 	}
-	if ([1, 4, 13].includes(currentmap)) pen *= (1 + distance(spawn_x - mapwidth / 2, spawn_y - mapheight / 2) / distance(mapwidth/2, mapheight/2))
+	if ([1, 4, 13].includes(currentmap)) pen *= (1 + (distance(spawn_x - mapwidth / 2, spawn_y - mapheight / 2) / distance(mapwidth/2, mapheight/2))**0.5)
 	return Math.round(pen);
 }
 
@@ -145,46 +146,69 @@ function opening1() {
 
 	if (borderingbots.length > 0 || borderingopponent) {
 		if (tick + latency == 71 || (borderingopponent && [4,5].includes(cycle) && tick + latency == 60)) {
-			for (var layers = cycle < 3 ? Math.floor((100 - tick - latency - 7) * speed(myid)) : Math.ceil((100 - tick - latency - 7) * speed(myid)), border = borderlandpixels[myid].length, targetland = 0;
-				border < borderlandpixels[myid].length + 4 * layers; border += 4) {
+			for (var layers = cycle <= 3 ? Math.floor((100 - tick - latency - 7) * speed(myid)) : Math.ceil((100 - tick - latency - 7) * speed(myid)),
+			 border = borderingneutral.length - 4, targetland = 0; border < borderingneutral.length + 4 * (layers-1); border += 4) {
 				targetland += border + 4;
 			}
-			var ratio = borderingpixels.filter(pixelcoord => pixel.isneutral(pixelcoord)).length / borderingpixels.length, amount = (2 * targetland + border) * ratio;
-			attack(amount, 512, 'Opening')
+			var amount = (2 * targetland + border);
+			attack(amount, 512)
 		}
-	} else if (tick + latency == 71) { //Cycle 2 must lag!
+		return 1
+	}
+	let lagtick = tick + latency, diff = [0,-2,1,-1,1];
+	if (singleplayer && tick == 70 || !singleplayer && lagtick == 71 - diff[cycle-1]) {
 		var gainedland = 0;
 		switch (cycle) {
 			case 1:
 				gainedland = 100;
 				break;
 			case 2:
-				gainedland = 364 - land[myid];
+				gainedland = 312 - land[myid];
 				break;
 			case 3:
-				gainedland = 760 - land[myid];
+				gainedland = 684 - land[myid];
 				break;
 			case 4:
-				gainedland = 1404 - land[myid];
+				gainedland = 1300 - land[myid];
 				break;
 			case 5:
-				gainedland = 2380 - land[myid];
+				gainedland = 2244 - land[myid];
 				break;
 		}
 		var layers = (2 - borderingpixels.length + ((borderingpixels.length - 2)**2 + 8 * gainedland)**0.5)/ 4, //Arithmetic series for border theory :)
 		amount = gainedland * 2 + borderingpixels.length + (layers - 1) * 4;
-		attack(amount, 512, 'Opening1')
+		attack(amount, 512);
 	}
-	if (pending.includes(512)) latency = 0
 }
 
-function attack(amount, target, type = 'Normal') {
-	let ratio = Math.ceil(amount * 1000 / troops[myid] / (((Math.floor((tick + latency) / 10)) - Math.floor(tick / 10) >= 1 && ['Opening1', 'Opening2'].includes(type)) ? (1 + (aq.interest(myid) - latency * 0.3) / 1E4) : 1));
+function opening2() {
+	
+	var amount = 0;
+	if (pending.includes(512)) return 0
+	else {
+		let index = myattacks.findIndex(atck => atck.target === 512);
+		var atk = (index === -1 ? null : myattacks[index]);
+	}
+
+	let ratio = borderingneutral.length / borderingpixels.length; 
+	if ((cycle == 7 && tick + latency >= 33 || cycle == 6 && tick + latency >= 33 && tick + latency <= 90 || [8,9].includes(cycle)) && 
+	!borderingneutral.length == 0 && (atk == null || atk.remaining <= (singleplayer ? 500 : ratio > 0.1 ? 1000 : 500))) {
+		amount = ratio > 0.6 ? 3000 : ratio > 0.5 ? 2500 : ratio > 0.4 ? 2000 : ratio > 0.2 ? 1500 : ratio > 0.1 ? 1000 : 500;
+		amount += (amount == 0 ? 0 : cycle == 9 ? 1000 : cycle == 8 && 500);
+		if (borderingopponent && amount > 2000) amount = 2000
+		if (borderingopponent && density(myid) < 1.5 && tick + latency < 80) amount = 0
+		attack(amount, 512);
+	}
+}
+
+function attack(amount, target) {
+	let ratio = Math.ceil(amount * 1000 / troops[myid] / (((Math.floor((tick + latency) / 10)) - Math.floor(tick / 10) >= 1 && cycle <= 5) ? (1 + (aq.interest(myid) - latency * 0.3) / 1E4) : 1));
 	if (ratio < 10) return 0
-	else if (ratio > 700 && type != 'Opening2') ratio = 700
+	else if (ratio > 700) ratio = 700
 	let targ = (target == 512 && !singleplayer) ? myid : target
 	singleplayer ? singleattack(0, targ, ratio) : multi.attack(ratio, targ)
 	pending.push(target);
+	console.log(`Attacked ${target == 512 ? 'Free Land' : nickname[target]} with ${amount} Troops. ETA: ${tick + latency}`)
 }
 
 function emoji_spam() {
@@ -6870,14 +6894,13 @@ function k7() {
 			if (la = entitiesalive[Aa], ka = Math.floor(Q * fv * J[la] * H[la]), !(ka < M || ka >= L) && F[la] + H[la] > O && F[la] < Y && E[la] + K[la] > T && E[la] < Z) {
 				ma = Math.floor(g2 * (F[la] + H[la] / 2 - O) / (Y - O));
 				na = Math.floor(c3 * (E[la] + K[la] / 2 - T) / (Z - T) - .1 * ka);
-				V.font = oR[fH[la]] + ka * (ui ? 1.5 : 1) + bm;
+				V.font = oR[fH[la]] + ka + bm;
 				ra = V;
 				var sa = la;
 				sa = ka >= I && ka < L ? dO.zn[pixel.lightness[sa]] + x(ka).toFixed(3) + ")" : dO.zo[pixel.lightness[sa]];
 
-				ra.fillStyle = sa;
-				if (ui) ra.fillStyle = density(la) < 0.5 ? "Red" : (bot_timing[la - playercount] <= 15 && 100 - tick >= 25) && ("Blue")
-				V.fillText([7, 8, 11].includes(gamemode) ? eD.splitpieces(troops[la]) : nickname[la], ma, na);
+				ra.fillStyle = ui ? (density(la) < 0.5 || (la < playercount) && (cycle <= 8 && density(la) < 1.5 || cycle >= 9 && density(la) < 4)) ? "Red" : (la >= playercount && bot_timing[la - playercount] <= 15 && 100 - tick >= 25) ? "Blue" : sa : sa
+				V.fillText(([7, 11].includes(gamemode) && playercount <= 4 || gamemode === 8) ? eD.splitpieces(troops[la]) : nickname[la], ma, na);
 
 				W = !0;
 				if (0 < da[la]) {
@@ -6913,7 +6936,7 @@ function k7() {
 						a5.bt - .534 * za * ta), Math.floor(wa + 1.4 * ya * a5.bt)), V.globalAlpha = x(ta), V.drawImage(1 === xa ? a5.kn[ba[Da + maxentities]] : 2 === xa && 255 > Ca ? he.kl[2] : he.kk[xa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), za -= 2)
 				}
 				ra = Math.floor(N * ka);
-				ra < M || (V.font = bl + ra + bm, V.fillText([7, 8, 11].includes(gamemode) ? nickname[la] : eD.splitpieces(troops[la]), ma, na + Math.floor(.78 * ka)))
+				ra < M || (V.font = bl + ra + bm, V.fillText(([7, 11].includes(gamemode) && playercount <= 4 || gamemode === 8) ? nickname[la] : eD.splitpieces(troops[la]), ma, na + Math.floor(.78 * ka)))
 			}
 	}
 
