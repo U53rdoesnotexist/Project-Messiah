@@ -45,7 +45,7 @@ function tickincrement() {
 	if (!isalive[myid]) return 0
 
 	if (opponent != null) {
-		isattacked = false, opponent.borderingpixels = [], opponent.ourborder = [], opponent.borderingbots = [];
+		isattacked = false, opponent.borderingpixels = [], opponent.ourborder = [], opponent.borderingbots = [], opponent.attacks = [];
 		for (let index = 0; index < attacks.currentattackcount(opponent.id); index++) {
 			let atk = {
 				index: index,
@@ -249,15 +249,16 @@ function match() {
 	var timeleft = isattacked.remaining/(speed(opponent.id) * opponent.ourborder.length * density(myid));
 
 	if (density(myid) <= 8 && timeleft >= 1.5 * latency) {
-		for (let atk of myattacks) {
-			if (atk.cancelling) continue
-			if (atk.target == 512) cancel(512);
+		a: for (let atk of myattacks) {
+			if (atk.cancelling) continue a
+			else if (atk.target == 512) cancel(512);
 			else if (atk.target != opponent.id) {
 				let commonborder = borderingpixels.filter(pixelcoords => pixel.strong_isowner(atk.target, pixelcoords));
 				if (0.03 * troops[myid] <= atk.remaining && speed(myid) * commonborder.length * latency <= 0.7 * land[atk.target]) cancel(atk.target)
 			}
 		}
 		//Do density checks here to find appropriate counter amount
+		if (density(myid) <= 2 && cycle <= 9) attack(isattacked.remaining * (density(opponent.id) >= 1.5 ? 0.8 : 1.2), opponent.id)
 	}
 }
 
@@ -273,8 +274,9 @@ function attack(amount, target) {
 
 function cancel(target) {
     if (singleplayer) single.cancel(myid, target)
-    else multi.cancel(target)
-    console.log(`Cancelled Attack on ${nickname[target]} (ID: ${target})${target != 512 ? " , Their Density: " + density(target) : ''}. ETA Tick ${(tick + latency) % 100}`);
+    else multi.cancel(target == 512 ? myid : target)
+	myattacks[myattacks.findIndex(atck => atck.target == target)].cancelling = true;
+    console.log(`Cancelled Attack on ${target == 512 ? "Free Land" : nickname[target]} (ID: ${target})${target != 512 ? " , Their Density: " + density(target) : ''}. ETA Tick ${(tick + latency) % 100}`);
 }
 
 function emoji_spam() {
