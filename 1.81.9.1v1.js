@@ -1,5 +1,5 @@
-var tick, cycle, latency, rating, opponentid, old_myattacks, pending, spawns;
-var borderingpixels, borderingneutral, borderingbots, borderingopponent;
+var tick, cycle, latency, rating, opponent, old_myattacks, pending, spawns, isattacked;
+var borderingpixels, borderingneutral, borderingbots, borderingplayers;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
 var mapwidth, mapheight, currentmap, lobbygames, spawning_percentage_left;
@@ -12,13 +12,109 @@ var ui = true;
 function gameinit() {
 	tick = 0, cycle = 1, old_myattacks = [], spawns = [], pending = [],
 	borderingpixels = [], borderingbots = [], borderingneutral = [];
-	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
-	borderingopponent = false;
+	opponent = playercount == 2 ? {
+		id: myid ? 0 : 1,
+		oldtroops: 512,
+		attacks: [],
+		borderingpixels: [],
+		borderingbots: [],
+		ourborder: []
+	} : null
+	borderingplayers = false;
+	isattacked = false;
 	latency = singleplayer ? 0 : 7
 
 	console.clear();
 	console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
 
+	//spawn_generator();
+
+}
+
+function tickincrement() {
+	tick++;
+
+	if (tick >= 100) {
+		tick -= 100;
+		cycle += 1;
+
+		console.log(`Cycle: ${cycle}, ${!singleplayer ? ('Latency: ' +  latency + ', ') : ''}Troops: ${troops[myid]}, Land: ${land[myid]}`)
+
+	}
+
+	if (!isalive[myid]) return 0
+
+	if (opponent != null) {
+		isattacked = false, opponent.borderingpixels = [], opponent.ourborder = [], opponent.borderingbots = [];
+		for (let index = 0; index < attacks.currentattackcount(opponent.id); index++) {
+			let atk = {
+				index: index,
+				target: attacks.target(opponent.id, index),
+				remaining: attacks.remaining(opponent.id, index)
+			}
+			opponent.attacks.push(atk);
+			if (atk.target == myid) isattacked = atk
+		}
+
+		for (let pixelcoords of borderlandpixels[opponent.id]) {
+			for (let side = 0; side <= 3; side++) {
+				let pixelcoord = pixelcoords + offset[side];
+				if (!pixel.strong_isowner(opponent.id, pixelcoord)) {
+					let owner = pixel.pixelowner(pixelcoord);
+					if (!opponent.borderingpixels.includes(pixelcoord)) opponent.borderingpixels.push(pixelcoord)
+					if (!opponent.borderingbots.includes(pixelcoord) && pixel.isentitypixel(pixelcoord) && owner >= playercount) opponent.borderingbots.push(owner)
+					if (!opponent.ourborder.includes(pixelcoords) && pixel.strong_isowner(myid, pixelcoord)) opponent.ourborder.push(pixelcoords)
+				}
+			}
+		}
+
+	}
+
+	borderingpixels = [], borderingbots = [], borderingneutral = [];
+
+	for (let pixelcoords of borderlandpixels[myid]) {
+		for (let side = 0; side <= 3; side++) {
+			let pixelcoord = pixelcoords + offset[side];
+			if (!pixel.strong_isowner(myid, pixelcoord)) {
+				let owner = pixel.pixelowner(pixelcoord);
+				if (!borderingpixels.includes(pixelcoord)) borderingpixels.push(pixelcoord)
+				if (!borderingneutral.includes(pixelcoord) && pixel.isneutral(pixelcoord)) borderingneutral.push(pixelcoord)
+				if (!borderingbots.includes(pixelcoord) && pixel.isentitypixel(pixelcoord) && owner >= playercount) borderingbots.push(owner)
+				if (!borderingplayers && owner < playercount && pixel.isentitypixel(pixelcoord)) borderingplayers = true
+			} 
+		}
+	}
+
+	for (let target of pending) {
+		let oldindex = old_myattacks.findIndex(atck => atck.target == target), newindex = myattacks.findIndex(atck => atck.target == target);
+		if (oldindex === -1 && newindex !== -1 || oldindex !== -1 && newindex !== -1 && old_myattacks[oldindex].remaining < myattacks[newindex].remaining || 
+			target === 512 && borderingneutral.length == 0) pending = pending.filter(newtarget => newtarget !== target)
+	}
+
+	if (cycle <= 5) opening1()
+	else if (cycle <= 9) opening2()
+
+	old_myattacks = [];
+	if (opponent != null) opponent.oldtroops = troops[opponent.id]
+	for (let attack of myattacks) old_myattacks.push(JSON.parse(JSON.stringify(attack)))
+
+}
+
+function check_spawn() { //if there are no good spawns spawn near opponent with better position, and push him
+	if (spawning_percentage_left >= 0.98 && playercount == 2) {
+		if (x_min[opponent] != 0 && (x_min[myid] == 0 || x_min[myid] != 0 && distance(x_min[myid] - x_min[opponent] - 1.5, y_min[myid] - y_min[opponent] - 1.5) <= 0.16 * (mapheight* mapwidth)**0.5 )) {
+			for (spawn of spawns) {
+				if (distance(spawn.x - x_min[opponent] - 1.5, spawn.y - y_min[opponent] - 1.5) >= 0.16 * (mapheight* mapwidth)**0.5) {
+					multi.chooselocation(1E3, spawn.x, spawn.y);
+					break;
+				}
+			}
+
+		} else if (x_min[myid] == 0) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
+	}
+}
+
+function spawn_generator(){
 	for (let x = Math.round(mapwidth / 8); x < mapwidth; x += Math.round(mapwidth / 8)) {
 		for (let y = Math.round(mapheight / 8); y < mapheight; y += Math.round(mapheight / 8)) {
 			if (pixel.canownpixel(pixel.coordstopixel(x, y))) {
@@ -66,64 +162,6 @@ function gameinit() {
 	spawns.splice(15, spawns.length - 15);
 
 	console.log('Preferred Spawn: ', spawns[0].x, ', ', spawns[0].y);
-
-}
-
-function tickincrement() {
-	tick++;
-
-	if (tick >= 100) {
-		tick -= 100;
-		cycle += 1;
-
-		console.log(`Cycle: ${cycle}, ${!singleplayer ? ('Latency: ' +  latency + ', ') : ''}Troops: ${troops[myid]}, Land: ${land[myid]}`)
-
-	}
-
-	if (!isalive[myid]) return 0
-
-	borderingpixels = [];
-	borderingbots = [];
-	borderingneutral = [];
-	for (let pixelcoords of borderlandpixels[myid]) {
-		for (let side = 0; side <= 3; side++) {
-			let pixelcoord = pixelcoords + offset[side];
-			if (!pixel.strong_isowner(myid, pixelcoord)) {
-				let owner = pixel.pixelowner(pixelcoord);
-				if (!borderingpixels.includes(pixelcoord)) borderingpixels.push(pixelcoord)
-				if (!borderingneutral.includes(pixelcoord) && pixel.isneutral(pixelcoord)) borderingneutral.push(pixelcoord)
-				if (!borderingbots.includes(pixelcoord) && pixel.isentitypixel(pixelcoord) && owner >= playercount) borderingbots.push(owner)
-				if (!borderingopponent && owner < playercount && pixel.isentitypixel(pixelcoord)) borderingopponent = true
-			} 
-		}
-	}
-
-	for (let target of pending) {
-		let oldindex = old_myattacks.findIndex(atck => atck.target == target), newindex = myattacks.findIndex(atck => atck.target == target);
-		if (oldindex === -1 && newindex !== -1 || oldindex !== -1 && newindex !== -1 && old_myattacks[oldindex].remaining < myattacks[newindex].remaining || 
-			target === 512 && borderingneutral.length == 0) pending = pending.filter(newtarget => newtarget !== target)
-	}
-
-	if (cycle <= 5) opening1()
-	else if (cycle <= 9) opening2()
-
-	old_myattacks = []; 
-	for (let attack of myattacks) old_myattacks.push(JSON.parse(JSON.stringify(attack)))
-
-}
-
-function check_spawn() {
-	/*if (spawning_percentage_left >= 0.98) {
-		if (x_min[opponentid] != 0 && (x_min[myid] == 0 || x_min[myid] != 0 && distance(x_min[myid] - x_min[opponentid] - 1.5, y_min[myid] - y_min[opponentid] - 1.5) <= 0.25 * (mapheight* mapwidth)**0.5 )) {
-			for (spawn of spawns) {
-				if (distance(spawn.x - x_min[opponentid] - 1.5, spawn.y - y_min[opponentid] - 1.5) >= 0.25 * (mapheight* mapwidth)**0.5) {
-					multi.chooselocation(1E3, spawn.x, spawn.y);
-					break;
-				}
-			}
-
-		} else if (x_min[myid] == 0) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
-	}*/
 }
 
 function penalty(spawn_x, spawn_y) {
@@ -144,8 +182,9 @@ function opening1() {
 
 	if (pending.includes(512) || myattacks.findIndex(atk => atk.target == 512) !== -1) return 0
 
-	if (borderingbots.length > 0 || borderingopponent) {
-		if (tick + latency == 71 || (borderingopponent && [4,5].includes(cycle) && tick + latency == 60)) {
+	let lagtick = tick + latency, diff = [0,-2,1,-1,1];
+	if (borderingbots.length > 0 || borderingplayers) {
+		if (!singleplayer && lagtick == 71 - diff[cycle-1] || singleplayer && tick == 70 || ((borderingplayers && cycle == 4 || cycle == 5) && tick + latency == 63)) {
 			for (var layers = cycle <= 3 ? Math.floor((100 - tick - latency - 7) * speed(myid)) : Math.ceil((100 - tick - latency - 7) * speed(myid)),
 			 border = borderingneutral.length - 4, targetland = 0; border < borderingneutral.length + 4 * (layers-1); border += 4) {
 				targetland += border + 4;
@@ -155,7 +194,6 @@ function opening1() {
 		}
 		return 1
 	}
-	let lagtick = tick + latency, diff = [0,-2,1,-1,1];
 	if (singleplayer && tick == 70 || !singleplayer && lagtick == 71 - diff[cycle-1]) {
 		var gainedland = 0;
 		switch (cycle) {
@@ -184,22 +222,42 @@ function opening1() {
 function opening2() {
 	
 	var amount = 0;
-	if (pending.includes(512)) return 0
+	if (isattacked && isattacked.remaining >= 1000 && density(myid) <= 2) {
+		match();
+		return 0
+	} else if (pending.includes(512)) return 0
 	else {
 		let index = myattacks.findIndex(atck => atck.target === 512);
 		var atk = (index === -1 ? null : myattacks[index]);
 	}
 
 	let ratio = borderingneutral.length / borderingpixels.length; 
-	if (((cycle == 7 && tick + latency >= (borderingopponent ? 23 : 33) || cycle == 6 && tick + latency >= 33) && tick + latency <= 90 || [8,9].includes(cycle)) && 
+	if (((cycle == 7 && tick + latency >= (borderingplayers ? 23 : 33) || cycle == 6 && tick + latency >= 33) && tick + latency <= 90 || [8,9].includes(cycle)) && 
 	!borderingneutral.length == 0 && (atk == null || atk.remaining <= (singleplayer ? 250 : ratio > 0.2 ? 1250 : ratio > 0.1 ? 1000 : 500))) {
 		if (cycle <= 7) amount = ratio > 0.6 ? 3000 : ratio > 0.5 ? 2500 : ratio > 0.4 ? 2000 : ratio > 0.2 ? 1500 : ratio > 0.1 ? 1000 : 500
 		else amount = borderingneutral.length * 50
 		if (amount > 3000) amount = 3000
 		else if (amount < 1000) amount = 1000
-		if (borderingopponent && amount > 2000) amount = 2000
-		if (borderingopponent && density(myid) < 1.5 && tick + latency < 80) amount = 0
+		if (borderingplayers && amount > 2000) amount = 2000
+		if (borderingplayers && density(myid) < 1.5 && tick + latency < 80) amount = 0
 		attack(amount, 512);
+	}
+}
+
+function match() {
+	if (pending.includes(opponent.id) || myattacks.findIndex(atk => atk.target == opponent.id) !== -1) return 0
+	var timeleft = isattacked.remaining/(speed(opponent.id) * opponent.ourborder.length * density(myid));
+
+	if (density(myid) <= 8 && timeleft >= 1.5 * latency) {
+		for (let atk of myattacks) {
+			if (atk.cancelling) continue
+			if (atk.target == 512) cancel(512);
+			else if (atk.target != opponent.id) {
+				let commonborder = borderingpixels.filter(pixelcoords => pixel.strong_isowner(atk.target, pixelcoords));
+				if (0.03 * troops[myid] <= atk.remaining && speed(myid) * commonborder.length * latency <= 0.7 * land[atk.target]) cancel(atk.target)
+			}
+		}
+		//Do density checks here to find appropriate counter amount
 	}
 }
 
@@ -210,7 +268,13 @@ function attack(amount, target) {
 	let targ = (target == 512 && !singleplayer) ? myid : target
 	singleplayer ? singleattack(0, targ, ratio) : multi.attack(ratio, targ)
 	pending.push(target);
-	console.log(`Attacked ${target == 512 ? 'Free Land' : nickname[target]} with ${amount} Troops. ETA: ${tick + latency}`)
+	console.log(`Attacked ${target == 512 ? 'Free Land' : nickname[target]} (ID: ${target}) with ${amount} Troops. ETA: ${(tick + latency) % 100}`)
+}
+
+function cancel(target) {
+    if (singleplayer) single.cancel(myid, target)
+    else multi.cancel(target)
+    console.log(`Cancelled Attack on ${nickname[target]} (ID: ${target})${target != 512 ? " , Their Density: " + density(target) : ''}. ETA Tick ${(tick + latency) % 100}`);
 }
 
 function emoji_spam() {
@@ -219,7 +283,7 @@ function emoji_spam() {
 }
 
 function density(id) {
-	return (land[id] > 0) ? troops[id] / land[id] : null
+	return (id >= 0 && id < maxentities && land[id] > 0) ? troops[id] / land[id] : null
 }
 
 function distance(x, y) {
@@ -1082,7 +1146,7 @@ function oldsingle() {
 		var y, A = k.length;
 		for (y = 0; y < A; y++)
 			if (0 === t[y]) singleattack(k[y], x[y], l[y]);
-			else if (1 === t[y]) this.fA(k[y], l[y], n[y], z[y]);
+			else if (1 === t[y]) this.sendboat(k[y], l[y], n[y], z[y]);
 			else if (2 === t[y]) this.cancel(k[y], x[y]);
 			else if (6 === t[y]) {
 				var B = k[y];
@@ -1090,7 +1154,7 @@ function oldsingle() {
 			} else 7 === t[y] && this.boatcancel(k[y], x[y]);
 		0 < A && this.bh()
 	};
-	this.fA = function (y, A, B, C) {
+	this.sendboat = function (y, A, B, C) {
 		0 !== isalive[y] && 2 !== fH[k] && en.cg(y, pixel.coordstopixel(B, C)) && em(y, en.eo(), pixel.coordstopixel(B, C), strange_divide_floor(A * troops[y], 1E3)) && y === myid && (newstatistics.stats[0] += A, newstatistics.stats[1]++, newstatistics.stats[2]++)
 	};
 	this.cancel = function (y, A) {
@@ -1122,7 +1186,7 @@ function oldsingle() {
 	};
 	this.fP = function (y, A, B, C) {
 		1 === gamestatus && (in_spawn ?
-			newspawn.cI(y, B, C) : g(y, 1, A, 0, B, C))
+			newspawn.setspawn(y, B, C) : g(y, 1, A, 0, B, C))
 	};
 	this.fS = function (y, A) {
 		1 === gamestatus && g(y, 2, 1, A, 0, 0)
@@ -1632,8 +1696,8 @@ function iM() {
 }
 
 function oldspawn() {
-	this.cI = function (g, k, t) {
-		0 !== isalive[g] && il.hR(g, k, t) && (bw.bx = !0)
+	this.setspawn = function (id, x, y) {
+		0 !== isalive[id] && il.hR(id, x, y) && (bw.bx = !0)
 	};
 	this.exit = function () {
 		in_spawn = !1;
@@ -1925,8 +1989,8 @@ function jh() {
 			return 1
 		}
 		//4: Attack/Spawn 5: Boat 7: Emoji
-		if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.cI(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H))) : (this.kx(), newannouncements.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
-		if (5 === M) return x[1] ? (this.kx(), newannouncements.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
+		if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.setspawn(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : (multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H)), spawns.push({x: pixel.pixeltox(H), y: pixel.pixeltoy(H)}), console.log(`Priority ${spawns.length}: (${spawns[spawns.length - 1].x}, ${spawns[spawns.length - 1].y})`))) : (this.kx(), newannouncements.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+		if (5 === M) return x[1] ? (this.kx(), newannouncements.lA(), singleplayer ? single.sendboat(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
 		if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
 		if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (newannouncements.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
 		this.kx();
@@ -7522,7 +7586,7 @@ function a1A(g) {
 }
 
 function keyDown(g) {
-	"ArrowLeft" === g.key ? gb.va(3) : "ArrowUp" === g.key ? gb.va(0) : "ArrowRight" === g.key ? gb.va(1) : "ArrowDown" === g.key ? gb.va(2) : "a" === g.key ? eF.qb(.96875) : "d" === g.key ? eF.qb(32 / 31) : "s" === g.key ? eF.qb(.875) : "w" === g.key ? eF.qb(8 / 7) : "1" === g.key ? eF.qb(5 / 6) : "2" === g.key && eF.qb(1.2)
+	"ArrowLeft" === g.key ? gb.va(3) : "ArrowUp" === g.key ? gb.va(0) : "ArrowRight" === g.key ? gb.va(1) : "ArrowDown" === g.key ? gb.va(2) : "a" === g.key ? eF.qb(.96875) : "d" === g.key ? eF.qb(32 / 31) : "s" === g.key ? eF.qb(.875) : "w" === g.key ? eF.qb(8 / 7) : "1" === g.key ? eF.qb(5 / 6) : "2" === g.key ? eF.qb(1.2) : ("r" === g.key && in_spawn && !singleplayer && spawns.length >= 1) && (console.log(`Spawn ${spawns.length} (${spawns[spawns.length - 1].x}, ${spawns[spawns.length - 1].y}) Removed from list.`), spawns.pop(), spawns.length >= 1 && multi.chooselocation(1E3, spawns[spawns.length - 1].x, spawns[spawns.length - 1].y))
 }
 
 function visibilitychange() {
