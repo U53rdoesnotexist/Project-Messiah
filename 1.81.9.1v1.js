@@ -182,7 +182,7 @@ function opening1() {
 
 	if (pending.includes(512) || myattacks.findIndex(atk => atk.target == 512) !== -1) return 0
 
-	let lagtick = tick + latency, diff = [0,-2,1,-1,1];
+	let lagtick = tick + latency, diff = [0,3,1,-1,1];
 	if (borderingbots.length > 0 || borderingplayers) {
 		if (!singleplayer && lagtick == 71 - diff[cycle-1] || singleplayer && tick == 70 || ((borderingplayers && cycle == 4 || cycle == 5) && tick + latency == 63)) {
 			for (var layers = cycle <= 3 ? Math.floor((100 - tick - latency - 7) * speed(myid)) : Math.ceil((100 - tick - latency - 7) * speed(myid)),
