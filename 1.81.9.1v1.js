@@ -71,7 +71,6 @@ try {
 					}
 				}
 			}
-
 		}
 
 		borderingpixels = [], borderingbots = [], borderingneutral = [];
@@ -89,15 +88,22 @@ try {
 			}
 		}
 
+		if (cycle == 1 && !singleplayer && pending.findIndex(target => target == 512) !== -1) latency++
+
 		for (let target of pending) {
 			let oldindex = old_myattacks.findIndex(atck => atck.target == target), newindex = myattacks.findIndex(atck => atck.target == target);
 			if (oldindex === -1 && newindex !== -1 || oldindex !== -1 && newindex !== -1 && old_myattacks[oldindex].remaining < myattacks[newindex].remaining || 
-				target === 512 && borderingneutral.length == 0) pending = pending.filter(newtarget => newtarget !== target)
+				target === 512 && borderingneutral.length == 0) (pending = pending.filter(newtarget => newtarget !== target))
 			
 		}
 
-		if (cycle <= 5) opening1()
-		else if (cycle <= 9) opening2()
+		if ([10,13].includes(currentmap)) {
+			if (cycle <= 4) opening1()
+			else if (cycle <= 9) opening2(cycle + 1)
+		} else if (![0,2].includes(currentmap)){
+			if (cycle <= 5) opening1()
+			else if (cycle <= 9) opening2()
+		}
 
 		old_myattacks = [];
 		if (opponent != null) opponent.oldtroops = troops[opponent.id]
@@ -106,20 +112,19 @@ try {
 	}
 
 	function check_spawn() {
-		if (spawning_percentage_left >= 0.98 && opponent != null) {
+		if (spawning_percentage_left >= 0.95 && opponent != null) {
 			if (x_min[opponent.id] != 0) {
-				for (spawn of spawns) {
+				for (var spawn of spawns) {
 					if (distance(spawn.x - x_min[opponent.id] - 1.5, spawn.y - y_min[opponent.id] - 1.5) >= 0.16 * (mapheight* mapwidth)**0.5) {
-						if (x_min[myid] == 0 || distance(spawn.x - x_min[myid], spawn.y - y_min[myid]) >= 5) multi.chooselocation(1E3, spawn.x, spawn.y)
-						break;
+						if (x_min[myid] == 0 || distance(spawn.x - x_min[myid], spawn.y - y_min[myid]) >= 5) (multi.chooselocation(1E3, spawn.x, spawn.y))
+						return 1;
 					}
 				}
-				if (spawns.length == 0) { //steal your opponent's spawn
-					let x = x_min[opponent.id] + 1.5 - mapwidth/2 <= 0 ? 4 : -1, y = y_min[opponent.id] + 1.5 - mapheight/2 <= 0 ? 4 : -1;
-					multi.chooselocation(1E3, x_min[opponent.id] + x, y_min[opponent.id] + y)
-				}
 
-			} else if (x_min[myid] == 0 || spawns.length >= 1 && distance(spawns[0].x - x_min[myid], spawns[0].y - y_min[myid]) >= 5) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
+				let x = x_min[opponent.id] + 1.5 - mapwidth/2 <= 0 ? 5 : -2, y = y_min[opponent.id] + 1.5 - mapheight/2 <= 0 ? 5 : -2;
+				multi.chooselocation(1E3, x_min[opponent.id] + x, y_min[opponent.id] + y)
+
+			} else if (spawns.length >= 1 && (x_min[myid] == 0 || distance(spawns[0].x - x_min[myid], spawns[0].y - y_min[myid]) >= 5)) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
 		}
 	}
 
@@ -138,7 +143,7 @@ try {
 			}
 		}
 
-		for (spawn of spawns) {
+		for (let spawn of spawns) {
 			spawn.penalty = penalty(spawn.x, spawn.y);
 			while (!spawn.min) {
 				var up = penalty(spawn.x, spawn.y + 2), down = penalty(spawn.x, spawn.y - 2),
@@ -163,10 +168,9 @@ try {
 						spawn.x += 2
 						break;
 				}
-
 			}
-
 		}
+
 		spawns.sort(function (a, b) { return (a.penalty > b.penalty) ? 1 : ((b.penalty > a.penalty) ? -1 : 0); });
 		spawns.splice(15, spawns.length - 15);
 
@@ -208,6 +212,7 @@ try {
 			switch (cycle) {
 				case 1:
 					gainedland = 100;
+					latency = 0;
 					break;
 				case 2:
 					gainedland = 312 - land[myid];
@@ -228,8 +233,7 @@ try {
 		}
 	}
 
-	function opening2() {
-		
+	function opening2(preferred_cycle = cycle) {
 		var amount = 0;
 		if (isattacked && isattacked.remaining >= 1000 && density(myid) <= 2) {
 			match();
@@ -241,12 +245,13 @@ try {
 		}
 
 		let ratio = borderingneutral.length / borderingpixels.length; 
-		if (((cycle == 7 && tick + latency >= (borderingplayers ? 23 : 33) || cycle == 6 && tick + latency >= 33) && tick + latency <= 90 || [8,9].includes(cycle)) && 
+		if (((preferred_cycle == 7 && tick + latency >= (borderingplayers ? 23 : 33) || preferred_cycle == 6 && tick + latency >= 33) && tick + latency <= 90 || [8,9].includes(preferred_cycle)) && 
 		!borderingneutral.length == 0 && (atk == null || atk.remaining <= (singleplayer ? 250 : ratio > 0.2 ? 1250 : ratio > 0.1 ? 1000 : 500))) {
-			if (cycle <= 7) amount = ratio > 0.6 ? 3000 : ratio > 0.5 ? 2500 : ratio > 0.4 ? 2000 : ratio > 0.2 ? 1500 : ratio > 0.1 ? 1000 : 500
-			else amount = borderingneutral.length * 50
-			if (amount > 3000) amount = 3000
-			else if (amount < 1000) amount = 1000
+
+			if (preferred_cycle <= 7) amount = ratio > 0.6 ? 3000 : ratio > 0.5 ? 2500 : ratio > 0.4 ? 2000 : ratio > 0.2 ? 1500 : ratio > 0.1 ? 1000 : 500
+			else amount = borderingneutral.length * 40
+
+			amount = amount > 3000 ? 3000 : amount < 300 ? 0 : amount < 1000 ? 1000 : amount
 			if (borderingplayers && amount > 2000) amount = 2000
 			if (borderingplayers && (density(myid) < 1.5 && tick + latency < 80 || density(myid) < 1)) amount = 0
 			attack(amount, 512);
@@ -2000,7 +2005,7 @@ try {
 				return 1
 			}
 			//4: Attack/Spawn 5: Boat 7: Emoji
-			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.setspawn(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : (multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H)), spawns.push({x: pixel.pixeltox(H), y: pixel.pixeltoy(H)}), console.log(`Priority ${spawns.length}: (${spawns[spawns.length - 1].x}, ${spawns[spawns.length - 1].y})`))) : (this.kx(), newannouncements.lA(), pending.push(E), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.setspawn(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : (/*multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H)),*/ spawns.push({x: pixel.pixeltox(H), y: pixel.pixeltoy(H)}), console.log(`Priority ${spawns.length}: (${spawns[spawns.length - 1].x}, ${spawns[spawns.length - 1].y})`))) : (this.kx(), newannouncements.lA(), pending.push(E), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
 			if (5 === M) return x[1] ? (this.kx(), newannouncements.lA(), singleplayer ? single.sendboat(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
 			if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
 			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (newannouncements.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
