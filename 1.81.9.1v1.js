@@ -97,7 +97,7 @@ try {
 			
 		}
 
-		if ([10,13].includes(currentmap)) {
+		if ([10,13].includes(currentmap) || playercount >= 16) {
 			if (cycle <= 4) opening1()
 			else if (cycle <= 9) opening2(cycle + 1)
 		} else if (![0,2].includes(currentmap)){
@@ -2005,7 +2005,7 @@ try {
 				return 1
 			}
 			//4: Attack/Spawn 5: Boat 7: Emoji
-			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.setspawn(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : (/*multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H)),*/ spawns.push({x: pixel.pixeltox(H), y: pixel.pixeltoy(H)}), console.log(`Priority ${spawns.length}: (${spawns[spawns.length - 1].x}, ${spawns[spawns.length - 1].y})`))) : (this.kx(), newannouncements.lA(), pending.push(E), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+			if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.setspawn(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : ((gamemode <= 6  && multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H))), spawns.push({x: pixel.pixeltox(H), y: pixel.pixeltoy(H)}), console.log(`Priority ${spawns.length}: (${spawns[spawns.length - 1].x}, ${spawns[spawns.length - 1].y})`))) : (this.kx(), newannouncements.lA(), pending.push(E), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
 			if (5 === M) return x[1] ? (this.kx(), newannouncements.lA(), singleplayer ? single.sendboat(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
 			if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
 			if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (newannouncements.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
