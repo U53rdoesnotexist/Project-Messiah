@@ -285,8 +285,8 @@ try {
 					if (0.03 * troops[myid] <= atk.remaining && speed(myid) * commonborder.length * latency <= 0.7 * land[atk.target]) cancel(atk.target)
 				}
 			}
-			//Do density checks here to find appropriate counter amount
-			if (density(myid) <= 2 && cycle <= 9) attack(density(opponent.id) >= 1.5 ? isattacked.remaining - speed(opponent.id) * latency * opponent.ourborder.length * density(myid) : isattacked.remaining, opponent.id)
+
+			if (density(myid) <= 2 && cycle <= 8) attack(density(opponent.id) >= 1.5 ? isattacked.remaining - speed(opponent.id) * latency * opponent.ourborder.length * density(myid) : isattacked.remaining, opponent.id)
 		}
 	}
 
