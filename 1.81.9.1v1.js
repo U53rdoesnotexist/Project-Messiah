@@ -1,10 +1,11 @@
 try {
-	var tick, cycle, latency, rating, opponent, old_myattacks, pending, spawns, isattacked;
+	var tick, cycle, latency, rating, opponent, old_myattacks, pending, isattacked;
 	var borderingpixels, borderingneutral, borderingbots, borderingplayers;
 	var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 	var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
 	var mapwidth, mapheight, currentmap, lobbygames, spawning_percentage_left;
 	var bot_timing, myattacks;
+	var spawns, spawn_validator;
 
 	var ui = true;
 
@@ -24,6 +25,10 @@ try {
 		borderingplayers = false;
 		isattacked = false;
 		latency = singleplayer ? 0 : 7
+		spawn_validator = {
+			x: 0,
+			y: 0,
+		}
 
 		console.clear();
 		console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
@@ -112,19 +117,28 @@ try {
 	}
 
 	function check_spawn() {
-		if (spawning_percentage_left >= 0.95 && opponent != null) {
+		if (spawning_percentage_left >= 0.9 && opponent != null) {
 			if (x_min[opponent.id] != 0) {
-				for (var spawn of spawns) {
+				for (let spawn of spawns) {
 					if (distance(spawn.x - x_min[opponent.id] - 1.5, spawn.y - y_min[opponent.id] - 1.5) >= 0.16 * (mapheight* mapwidth)**0.5) {
-						if (x_min[myid] == 0 || distance(spawn.x - x_min[myid], spawn.y - y_min[myid]) >= 5) (multi.chooselocation(1E3, spawn.x, spawn.y))
+						if (spawn_validator.x == 0 || distance(spawn.x - spawn_validator.x, spawn.y - spawn_validator.y) >= 10) {
+							multi.chooselocation(1E3, spawn.x, spawn.y)
+							spawn_validator.x = spawn.x, spawn_validator.y = spawn.y;
+						}
 						return 1;
 					}
 				}
+				
+				if (distance(spawn_validator.x - x_min[opponent.id] - 1.5, spawn_validator.y - y_min[opponent.id] - 1.5) >= 10) {
+					let x = x_min[opponent.id] + (1.5 - mapwidth/2 <= 0 ? 5 : -2), y = y_min[opponent.id] + (1.5 - mapheight/2 <= 0 ? 5 : -2);
+					multi.chooselocation(1E3, x, y)
+					spawn_validator.x = x, spawn_validator.y = y;
+				}	
 
-				let x = x_min[opponent.id] + 1.5 - mapwidth/2 <= 0 ? 5 : -2, y = y_min[opponent.id] + 1.5 - mapheight/2 <= 0 ? 5 : -2;
-				multi.chooselocation(1E3, x_min[opponent.id] + x, y_min[opponent.id] + y)
-
-			} else if (spawns.length >= 1 && (x_min[myid] == 0 || distance(spawns[0].x - x_min[myid], spawns[0].y - y_min[myid]) >= 5)) multi.chooselocation(1E3, spawns[0].x, spawns[0].y)
+			} else if (spawning_percentage_left >= 0.96 && spawns.length >= 1 && (spawn_validator.x == 0 || spawn_validator.x != 0 && distance(spawns[0].x - spawn_validator.x, spawns[0].y - spawn_validator.y) >= 20)) {
+				multi.chooselocation(1E3, spawns[0].x, spawns[0].y);
+				spawn_validator.x = spawns[0].x, spawn_validator.y = spawns[0].y;
+			}
 		}
 	}
 
