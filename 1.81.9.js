@@ -13,7 +13,7 @@ function gameinit() {
 	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
 	latency = singleplayer ? 0 : 8
 
-	console.clear();
+	//console.clear();
 	console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
 
 	for (let index = 0; index < mapheight * mapwidth; index++) (pixel_list[index] = pixel.isentitypixel(4*index) ? 1 : 0)
@@ -953,7 +953,7 @@ function oldsingle() {
 	};
 	this.fP = function (y, A, B, C) {
 		1 === gamestatus && (in_spawn ?
-			newspawn.cI(y, B, C) : g(y, 1, A, 0, B, C))
+			newspawn.setspawn(y, B, C) : g(y, 1, A, 0, B, C))
 	};
 	this.fS = function (y, A) {
 		1 === gamestatus && g(y, 2, 1, A, 0, 0)
@@ -1463,7 +1463,7 @@ function iM() {
 }
 
 function oldspawn() {
-	this.cI = function (g, k, t) {
+	this.setspawn = function (g, k, t) {
 		0 !== isalive[g] && il.hR(g, k, t) && (bw.bx = !0)
 	};
 	this.exit = function () {
@@ -1485,12 +1485,12 @@ var playersingame, spectators, maxentities = 512,
 	neutral_landcost = 2, canvashidden, in_spawn, freespawn, teamgame, numberofteams, contest, newspawn, new1v1points, spawntimeallowed;
 entitycount = 512
 
-function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
+function systemgameinit(g, my_id, playerinfo, game_mode, is_contest) {
 	it = canvashidden = !1;
 	contest = is_contest;
 	gamemode = game_mode;
 	teamgame = 7 > gamemode || 9 === gamemode;
-	playersingame = playercount = playernames.length;
+	playersingame = playercount = playerinfo.length;
 	singleplayer = 1 === playersingame;
 	gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
 	gamemode = 8 === gamemode && 2 !== playercount ? 7 : gamemode;
@@ -1504,9 +1504,9 @@ function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
 	spectators = 0;
 	myid = my_id;
 	cW.j7(g);
-	j8(playernames);
+	j8(playerinfo);
 	dq.bh();
-	dO.bh(playernames);
+	dO.bh(playerinfo);
 	gamestatus = 1;
 	troopcap = 2E9;
 	iw = strange_divide_floor(troopcap, 2);
@@ -1516,7 +1516,7 @@ function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
 	gw.bh();
 	aq.bh();
 	d1();
-	pixel.color_init(playernames);
+	pixel.color_init(playerinfo);
 	ha.bh();
 	eH.bh();
 	d8.bh();
@@ -1550,7 +1550,7 @@ function systemgameinit(g, my_id, playernames, game_mode, is_contest) {
 	e6.bh();
 	eE.bh();
 	e5.bh();
-	8 === gamemode ? (new1v1points = new old1v1points, new1v1points.bh(playernames)) : new1v1points = null;
+	8 === gamemode ? (new1v1points = new old1v1points, new1v1points.bh(playerinfo)) : new1v1points = null;
 	jI();
 	eL.bh();
 	singleplayer ? bw.jJ() : bw.jK();
@@ -1756,7 +1756,7 @@ function jh() {
 			return 1
 		}
 		//4: Attack/Spawn 5: Boat 7: Emoji
-		if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.cI(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H))) : (this.kx(), newannouncements.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
+		if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.setspawn(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H))) : (this.kx(), newannouncements.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
 		if (5 === M) return x[1] ? (this.kx(), newannouncements.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
 		if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
 		if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (newannouncements.lG(E, 0), multi.lH(E)), this.kx(), 1) : 0;
@@ -7264,7 +7264,7 @@ var ok, c9, a0m, a0n, r, s, ou, bi, g2, c3, a0o, b, c, e, d, q, a0p = !1,
 
 function a0w() {
 	a0t = 2;
-	a0n = 1135;
+	a0n = 4262;
 	a0m = "1.81.9   27 October 2022";
 	jg();
 	d0();
@@ -9437,8 +9437,7 @@ function kJ() {
 	this.vo = function (x) {
 		l = 1;
 		t = x.length;
-		if (2 ===
-			k(x, 2)) {
+		if (2 === k(x, 2)) {
 			l += 20;
 			for (var n = k(x, 9), z = k(x, 14), y = k(x, 4), A = 1 === k(x, 1), B = k(x, 6), C = k(x, 14), F = k(x, 9) + 1, E = [], H, K, J, D = 0; D < F; D++) H = k(x, 1), K = [k(x, 6), k(x, 6), k(x, 6)], J = g(k(x, 5), x), E.push({
 				mf: J,
