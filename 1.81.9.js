@@ -34,18 +34,6 @@ function tickincrement() {
 }
 
 function check_spawn() {
-	if (spawning_percentage_left >= 0.96) {
-		if (x_min[opponentid] !== 0) {
-			if (distance(x_min[myid] - x_min[opponentid], y_min[myid] - y_min[opponentid]) <= 0.2*distance(mapheight, mapwidth)) {
-				let x = 0, y = 0;
-				while (distance(x - x_min[opponentid], y - y_min[opponentid]) <= 0.2*distance(mapheight, mapwidth) || x === 0) {
-					x = Math.random() * mapwidth, y = Math.random() * mapheight;
-				}
-				multi.chooselocation(1E3, y, x)
-				console.log(x_min[opponentid], y_min[opponentid], x , y)
-			}
-		}
-	}
 }
 
 function emoji_spam() {
@@ -6734,7 +6722,7 @@ function k7() {
 
 				ra.fillStyle = sa;
 				if (ui) ra.fillStyle = density(la) < 0.5 ? "Red" : (bot_timing[la - playercount] <= 15 && 100 - tick >= 25) && ("Blue")
-				V.fillText([7, 8, 11].includes(gamemode) ? eD.splitpieces(troops[la]) : nickname[la], ma, na);
+				V.fillText([7, 11].includes(gamemode) && ui || gamemode == 8 ? eD.splitpieces(troops[la]) : nickname[la] + (ui ? ` (${la})` : ''), ma, na);
 
 				W = !0;
 				if (0 < da[la]) {
@@ -6770,7 +6758,7 @@ function k7() {
 						a5.bt - .534 * za * ta), Math.floor(wa + 1.4 * ya * a5.bt)), V.globalAlpha = x(ta), V.drawImage(1 === xa ? a5.kn[ba[Da + maxentities]] : 2 === xa && 255 > Ca ? he.kl[2] : he.kk[xa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), za -= 2)
 				}
 				ra = Math.floor(N * ka);
-				ra < M || (V.font = bl + ra + bm, V.fillText([7, 8, 11].includes(gamemode) ? nickname[la] : eD.splitpieces(troops[la]), ma, na + Math.floor(.78 * ka)))
+				ra < M || (V.font = bl + ra + bm, V.fillText([7, 11].includes(gamemode) && ui || gamemode == 8 ? nickname[la] + (ui ? ` (${la})` : '') : eD.splitpieces(troops[la]), ma, na + Math.floor(.78 * ka)))
 			}
 	}
 
