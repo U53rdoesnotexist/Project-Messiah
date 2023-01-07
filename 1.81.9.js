@@ -1,4 +1,4 @@
-var tick, cycle, latency, rating, opponentid, pixel_list;
+var tick, cycle, latency, rating, opponentid;
 var playercount, botcount, entitycount, isalive, singleplayer, myid, gamemode;
 var nickname, land, troops, x_min, y_min, x_max, y_max, borderlandpixels, borderwaterpixels, bordermountainpixel, offset;
 var mapwidth, mapheight, lobbygames, spawning_percentage_left;
@@ -9,14 +9,12 @@ var ui = true;
 //function game() {
 
 function gameinit() {
-	tick = 0, cycle = 1, pixel_list = [];
+	tick = 0, cycle = 1;
 	opponentid = playercount == 2 ? (myid === 0 ? 1 : 0) : null
-	latency = singleplayer ? 0 : 8
+	latency = singleplayer ? 0 : 6
 
 	//console.clear();
 	console.log(`Cycle: 1, ID: ${myid}, Players: ${playercount}`);
-
-	for (let index = 0; index < mapheight * mapwidth; index++) (pixel_list[index] = pixel.isentitypixel(4*index) ? 1 : 0)
 	
 }
 
@@ -34,19 +32,11 @@ function tickincrement() {
 }
 
 function check_spawn() {
-}
 
-function emoji_spam() {
-	const nerds = nickname.filter(nick => nick.includes('[') && !nick.includes('[Bot]') && !nick.includes('[Ez]')), ok = Math.random() * nerds.length;
-	multi.message_emojis([0, 43, 44][Math.floor(Math.random() * 3)], nickname.findIndex(nick => nick === nerds[Math.floor(Math.random() * nerds.length)]));
 }
 
 function density(id) {
 	return (land[id] > 0) ? troops[id] / land[id] : null
-}
-
-function distance(x,y) {
-	return Math.sqrt(x**2 + y**2)
 }
 
 function a() {
