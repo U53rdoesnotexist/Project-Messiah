@@ -1,27 +1,27 @@
-function a() {
-    if (b) return c.username;
-    if (12 <= d) {
-        var g = e.loadString(20);
-        "" === g && (g = "Android User " + Math.floor(1E3 * Math.random()), e.saveString(20, g))
-    } else 5 <= d ? (g = e.loadString(0), "" === g && (g = "Player " + Math.floor(1E3 * Math.random()), e.saveString(0, g))) : g = f.g(0);
-    return g
+function set_username() {
+    if (is_ios) return ios.username;
+    if (12 <= device_version) {
+        var username = droid.loadString(20);
+        "" === username && (username = "Android User " + Math.floor(1E3 * Math.random()), droid.saveString(20, username))
+    } else 5 <= device_version ? (username = droid.loadString(0), "" === username && (username = "Player " + Math.floor(1E3 * Math.random()), droid.saveString(0, username))) : username = user_settings.get_settings(0);
+    return username
 }
 
-function h() {
-    i = Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1));
-    if (b) i = c.id;
-    else if (12 <= d) {
-        var g = e.loadNumber(20); - 1 === g ? e.saveNumber(20, i) : i = g
-    } else 5 <= d ? (g = e.loadNumber(2), 2 === g ? e.saveNumber(2, i + 3) : i = g - 3) : i = f.g(1)
+function set_client_id() {
+    client_id = Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1));
+    if (is_ios) client_id = ios.id;
+    else if (12 <= device_version) {
+        var old_client_id = droid.loadNumber(20); - 1 === old_client_id ? droid.saveNumber(20, client_id) : client_id = old_client_id
+    } else 5 <= device_version ? (old_client_id = droid.loadNumber(2), 2 === old_client_id ? droid.saveNumber(2, client_id + 3) : client_id = old_client_id - 3) : client_id = user_settings.get_settings(1)
 }
 
 function j() {
     var g = 0;
-    if (b) g = c.password;
-    else if (12 <= d) g = e.loadString(22);
+    if (is_ios) g = ios.password;
+    else if (12 <= device_version) g = droid.loadString(22);
     else {
-        if (5 <= d) return g;
-        g = f.g(9)
+        if (5 <= device_version) return g;
+        g = user_settings.get_settings(9)
     }
     var k = Math.floor(Math.pow(2, 48));
     g = Math.floor(parseInt(m.n(g)));
@@ -31,75 +31,75 @@ function j() {
 }
 
 function p() {
-    if (b) q = c.zoom || r < s;
-    else if (12 <= d) {
-        var g = e.loadNumber(21); - 1 === g ? (q = 100 >= e.getNumber(0) || r < s, e.saveNumber(21, q ? 1 : 0)) : q = 1 === g || r < s
-    } else 5 <= d ? (g = e.loadNumber(1), 2 === g ? (q = !0, e.saveNumber(1, q ? 1 : 0)) : q = 1 === g) : q = 0 === f.g(4) || r < s
+    if (is_ios) q = ios.zoom || r < s;
+    else if (12 <= device_version) {
+        var g = droid.loadNumber(21); - 1 === g ? (q = 100 >= droid.getNumber(0) || r < s, droid.saveNumber(21, q ? 1 : 0)) : q = 1 === g || r < s
+    } else 5 <= device_version ? (g = droid.loadNumber(1), 2 === g ? (q = !0, droid.saveNumber(1, q ? 1 : 0)) : q = 1 === g) : q = 0 === user_settings.get_settings(4) || r < s
 }
 
 function u() {
-    return b ? c.emojis : 5 <= d ? e.loadString(1) : f.g(7)
+    return is_ios ? ios.emojis : 5 <= device_version ? droid.loadString(1) : user_settings.get_settings(7)
 }
 
 function v() {
-    return b ? c.colors : 12 <= d ? e.loadString(21) : 5 <= d ? e.loadString(2) : f.g(8)
+    return is_ios ? ios.colors : 12 <= device_version ? droid.loadString(21) : 5 <= device_version ? droid.loadString(2) : user_settings.get_settings(8)
 }
 
 function w(g) {
-    if (b) window.webkit.messageHandlers.iosCommandA.postMessage("username " + g);
-    else if (12 <= d) e.saveString(20, g), e.setState(10);
-    else if (5 <= d) e.saveString(0, g);
+    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("username " + g);
+    else if (12 <= device_version) droid.saveString(20, g), droid.setState(10);
+    else if (5 <= device_version) droid.saveString(0, g);
     else {
         if (3 > g.length || 0 <= g.indexOf(";")) g = "Player 666";
-        f.x(0, g);
-        f.y()
+        user_settings.x(0, g);
+        user_settings.format_settings()
     }
 }
 
 function o(g) {
     g = m.z(g.toString());
-    return b ? (c.password = g, window.webkit.messageHandlers.iosCommandA.postMessage("password " + g), !0) : 12 <= d ? (e.saveString(22, g), !0) : 5 <= d ? !1 : 2 === f.a0() ? (f.x(9, g), f.y(), !0) : !1
+    return is_ios ? (ios.password = g, window.webkit.messageHandlers.iosCommandA.postMessage("password " + g), !0) : 12 <= device_version ? (droid.saveString(22, g), !0) : 5 <= device_version ? !1 : 2 === user_settings.a0() ? (user_settings.x(9, g), user_settings.format_settings(), !0) : !1
 }
 
 function a1(g, k) {
-    b ? (window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (g ? 1 : 0)), window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (k ? 1 : 0))) : 12 <= d ? (e.saveNumber(22, k ? 1 : 0), e.saveNumber(21, g ? 1 : 0)) : 5 <= d ? (e.saveNumber(1, g ? 1 : 0), e.saveNumber(11, k ? 1 : 0)) : (f.x(2, k ? 1 : 0), f.x(4, g ? 0 : 1), f.y())
+    is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (g ? 1 : 0)), window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (k ? 1 : 0))) : 12 <= device_version ? (droid.saveNumber(22, k ? 1 : 0), droid.saveNumber(21, g ? 1 : 0)) : 5 <= device_version ? (droid.saveNumber(1, g ? 1 : 0), droid.saveNumber(11, k ? 1 : 0)) : (user_settings.x(2, k ? 1 : 0), user_settings.x(4, g ? 0 : 1), user_settings.format_settings())
 }
 
 function a3() {
     for (var g = "", k = 0; k < a5.a6; k += 2) g += a5.a7[k] || a5.a7[k + 1] ? a5.a7[k] && !a5.a7[k + 1] ? "1" : !a5.a7[k] && a5.a7[k + 1] ? "2" : "3" : "0";
-    b ? window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + g) : 5 <= d ? e.saveString(1, g) : (f.x(7, g), f.y())
+    is_ios ? window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + g) : 5 <= device_version ? droid.saveString(1, g) : (user_settings.x(7, g), user_settings.format_settings())
 }
 
 function a8(g) {
-    if (b) window.webkit.messageHandlers.iosCommandA.postMessage("colors " + g);
+    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("colors " + g);
     else {
-        if (12 <= d) e.saveString(21, g);
-        else if (5 <= d) {
-            e.saveString(2, g);
+        if (12 <= device_version) droid.saveString(21, g);
+        else if (5 <= device_version) {
+            droid.saveString(2, g);
             return
         }
-        f.x(8, g);
-        f.y()
+        user_settings.x(8, g);
+        user_settings.format_settings()
     }
 }
 
-function a9(g) {
-    b || 5 <= d && e.setState(g)
+function set_android_state(state) {
+    is_ios || 5 <= device_version && droid.setState(state)
 }
 
 function show_ad() {
-    b ? window.webkit.messageHandlers.iosCommandA.postMessage("show ad 1800000") : 12 <= d && e.presentAd(18E5)
+    is_ios ? window.webkit.messageHandlers.iosCommandA.postMessage("show ad 1800000") : 12 <= device_version && droid.presentAd(18E5)
 }
 
 function aC() {
-    b ? location.reload() : 7 <= d ? e.setState(5) : location.reload()
+    is_ios ? location.reload() : 7 <= device_version ? droid.setState(5) : location.reload()
 }
 
 function aD() {
-    14 > d || e.saveString(23, '<!DOCTYPE html>\n<html lang="aG">\n' + document.getElementsByTagName("html")[0].innerHTML + "\n</html>")
+    14 > device_version || droid.saveString(23, '<!DOCTYPE html>\n<html lang="aG">\n' + document.getElementsByTagName("html")[0].innerHTML + "\n</html>")
 }
 self.aiCommand746 = function(g) {
-    0 === g ? aI() : 1 !== g || 14 > d || aJ.aK()
+    0 === g ? aI() : 1 !== g || 14 > device_version || aJ.aK()
 };
 var aL, aM, aN, aO, aP, aQ, aR, aS, aT, aU, offset, aW, aX;
 
@@ -140,7 +140,7 @@ function ah() {
 
 function aq() {
     aO = divide_floor(aN, aQ);
-    return aO > at
+    return aO > neutral_land_cost
 }
 
 function ap() {
@@ -226,7 +226,7 @@ function bH() {
 }
 
 function bY() {
-    var g = aQ * at,
+    var g = aQ * neutral_land_cost,
         k = bb(),
         n = bd();
     k = g + 2 * k + n;
@@ -264,7 +264,7 @@ function bk() {
 }
 
 function bX() {
-    aN -= aQ * at;
+    aN -= aQ * neutral_land_cost;
     return !0
 }
 
@@ -372,7 +372,7 @@ function cY(g, k) {
                 for (n = cg - 1; 0 <= n; n--)
                     if (ci[n] === z) continue a;
                 ci[cg] = z;
-                if (++cg >= cj) return !0
+                if (++cg >= const_8) return !0
             }
         }
     return 0 < cg
@@ -447,12 +447,12 @@ function cv(g) {
 function d6() {
     return ci[ce.cf(cg)]
 }
-var cj, cg, ci, d7;
+var const_8, cg, ci, d7;
 
 function d8() {
-    cj = 8;
+    const_8 = 8;
     cg = 0;
-    ci = new Uint16Array(cj)
+    ci = new Uint16Array(const_8)
 }
 
 function d9() {
@@ -479,15 +479,15 @@ function dT(g, k) {
 }
 
 function dO(g, k, n) {
-    3 <= n && 2142 < c4.dU() && (k === max_entities || troops[k] < divide_floor(troops[g], 20)) && dG.dH(g - player_count, 25)
+    3 <= n && 2142 < c4.time_elapsed() && (k === max_entities || troops[k] < divide_floor(troops[g], 20)) && dG.dH(g - player_count, 25)
 }
 
 function dI(g, k, n, l) {
-    if (0 !== dW.dX[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divide_floor(l, 2)))
+    if (0 !== teams.team_array[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divide_floor(l, 2)))
         for (n = ce.cf(alive_count), l = 0; l < alive_count; l++) {
             var x = alive_entities[(l + n) % alive_count];
-            if (dW.dX[x] === dW.dX[g] && 1 === d7[x]) {
-                da(g, x, k);
+            if (teams.team_array[x] === teams.team_array[g] && 1 === d7[x]) {
+                single_donate(g, x, k);
                 x < player_count && ce.random() < ce.value(10) && (d7[x] = 0);
                 break
             }
@@ -543,7 +543,7 @@ function de() {
         else if (singleplayer)
             if (team_game)
                 for (z = bot_count - 1; 0 <=
-                    z; z--) this.cN[z] = dy.dz[dW.dX[z + player_count] - 1].bD;
+                    z; z--) this.cN[z] = dy.dz[teams.team_array[z + player_count] - 1].bD;
             else
                 for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = dy.dz[0].bD;
         else {
@@ -760,16 +760,16 @@ function Single() {
             else if (2 === n[y]) this.cancel(k[y], x[y]);
             else if (6 === n[y]) {
             var B = k[y];
-            0 !== is_alive[B] && 2 !== fT[k] && peace.single_vote_peace(B, 1 === x[y])
+            0 !== is_alive[B] && 2 !== player_status[k] && peace.single_vote_peace(B, 1 === x[y])
         } else 7 === n[y] && this.cancel_boat(k[y], x[y]);
         0 < A && this.init()
     };
     this.send_boat = function(attacker, ratio, x_coord, y_coord) {
-        0 !== is_alive[attacker] && 2 !== fT[k] && ez.co(attacker, pixel.to_coords(x_coord, y_coord)) && ey(attacker, ez.f0(), pixel.to_coords(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
+        0 !== is_alive[attacker] && 2 !== player_status[k] && ez.co(attacker, pixel.to_coords(x_coord, y_coord)) && ey(attacker, ez.f0(), pixel.to_coords(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
             attacker === my_id && (statistics.numbers[0] += ratio, statistics.numbers[1]++, statistics.numbers[2]++)
     };
     this.cancel = function(attacker, target) {
-        if (0 !== is_alive[attacker] && 2 !== fT[k] && attacks.co(attacker, target)) {
+        if (0 !== is_alive[attacker] && 2 !== player_status[k] && attacks.co(attacker, target)) {
             var troops_returned = attacks.get_troops_remaining_from_target(attacker, target);
             attacks.set_attack_troops_remaining_from_target(attacker, target, 0);
             if (attacker !== my_id) troops[attacker] += troops_returned, ay.az(attacker);
@@ -782,7 +782,7 @@ function Single() {
         }
     };
     this.cancel_boat = function(attacker, boat_id) {
-        if (0 !== is_alive[attacker] && 2 !== fT[k]) {
+        if (0 !== is_alive[attacker] && 2 !== player_status[k]) {
             var boat_index = attacks.find_boat_index_from_boat_id(attacker, boat_id);
             if (-1 !== boat_index) {
                 var troops_returned = attacks.get_attack_troops_remaining_from_attack_index(attacker, boat_index);
@@ -809,14 +809,14 @@ function Single() {
         1 === client_status && g(y, 6, 1, A, 0, 0)
     };
     this.fh = function(y) {
-        1 === client_status && 0 !== is_alive[y] && 2 !== fT[y] && (8 === gamemode ? fi.fj(1 - y) : this.fk(y));
+        1 === client_status && 0 !== is_alive[y] && 2 !== player_status[y] && (8 === gamemode ? fi.fj(1 - y) : this.fk(y));
         announcements.fl(y, 4)
     };
     this.fk = function(y) {
         in_spawn ? (fm(y), fn()) : eI.fo(y)
     };
     this.fp = function(y) {
-        0 !== is_alive[y] && 2 !== fT[y] && fq.fr(y) && (1 === alive_count ? fi.fj(y) : (announcements.fl(y, y === my_id ? 21 : 22), 8 === gamemode ? fi.fj(1 - y) : singleplayer ? (fm(y), fn(), in_spawn && spawn.dF()) : this.fk(y)))
+        0 !== is_alive[y] && 2 !== player_status[y] && fq.fr(y) && (1 === alive_count ? fi.fj(y) : (announcements.fl(y, y === my_id ? 21 : 22), 8 === gamemode ? fi.fj(1 - y) : singleplayer ? (fm(y), fn(), in_spawn && spawn.dF()) : this.fk(y)))
     }
 }
 
@@ -1294,23 +1294,25 @@ function iI() {
 }
 
 function ib() {
-    this.fj = function(g) {
+    this.fj = function(winner) {
         if (2 === client_status) var k = !0;
         else peace.iv(), client_status = 2, spectators = players_in_game, k = !1;
         if (!k) {
             if (8 === gamemode) {
-                var n = g = 0 > g ? land[0] >= land[1] ? 0 : 1 : g;
-                (k = g === my_id) ? announcements.fl(g, 2): announcements.fl(1 - my_id, 3);
-                points_1v1.calculate_new_elo(g)
-            } else team_game ? (g = eT.ik(), k = dW.dX[my_id] === g, 9 === gamemode ? n = k ? em[0] : 512 : (g = dW.il(dW.im[g]), n = g[0], 512 !== n && announcements.clan_points_won(g[1])), announcements.ip(k)) : (n = em[0], k = n === my_id, announcements.iq(n));
-            singleplayer || multi.upload_1v1_result(it(), n);
+                var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
+                (k = winner === my_id) ? announcements.fl(winner, 2): announcements.fl(1 - my_id, 3);
+                points_1v1.calculate_new_elo(winner)
+            } else team_game ? (winner = eT.ik(), k = teams.team_array[my_id] === winner, 9 === gamemode ? result = k ? em[0] : 512 : 
+                (winner = teams.il(teams.im[winner]), result = winner[0], 512 !== result && announcements.clan_points_won(winner[1])), announcements.ip(k)) : 
+                (result = em[0], k = result === my_id, announcements.iq(result));
+            singleplayer || multi.upload_1v1_result(troop_hash(), result);
             eW.show(k, !1);
             announcements.iy(!0);
             eM.eb(!0);
             eB.eb(!0);
             c4.c5 = !0;
             h8.iz();
-            a9(0)
+            set_android_state(0)
         }
     }
 }
@@ -1329,15 +1331,15 @@ function Spawn() {
         spawn = null;
         h8.j5 = !0;
         h8.j6();
-        singleplayer && a9(1)
+        singleplayer && set_android_state(1)
     }
 }
 var player_count, players_in_game, bot_count, spectators, max_entities = 512,
     entity_count = 512,
-    j7 = 150,
+    max_troops_to_land_ratio = 150,
     singleplayer, j8, client_status = 0,
     j9, troop_cap, jB, starting_troops = 512,
-    at = 2,
+    neutral_land_cost = 2,
     my_id, canvas_hidden, in_spawn, free_spawn, team_game, team_count, gamemode, contest, spawn, points_1v1, spawn_time;
 
 function game_init(seed, myid, player_info, game_mode, is_contest) {
@@ -1353,16 +1355,16 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     spawn_time = 2 >= player_count ? 30 : 50 >= player_count ? 40 : 50;
     free_spawn = dr.ds && !dr.dt.jL ? in_spawn = !1 : in_spawn = team_game || 100 > player_count;
     spawn = in_spawn ? new Spawn : null;
-    starting_troops = 512; //Needs check again
+    starting_troops = 512;
     entity_count = max_entities;
     singleplayer && (entity_count = dy.jM());
     bot_count = entity_count - player_count;
     spectators = 0;
     my_id = myid;
     ce.jN(seed);
-    jO(player_info);
+    create_info_arrays(player_info);
     e2.init();
-    dW.init(player_info);
+    teams.init(player_info);
     client_status = 1;
     troop_cap = 15E8;
     jB = 1E9;
@@ -1411,7 +1413,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     ja();
     eX.init();
     c4.c5 = !0;
-    singleplayer && in_spawn || a9(1)
+    singleplayer && in_spawn || set_android_state(1)
 }
 
 function ja() {
@@ -1425,10 +1427,12 @@ function leave_game() {
     client_status = 0;
     c4.jd();
     je.init();
-    a9(0);
+    set_android_state(0);
     show_ad()
 }
-var dG, au, dE, eJ, single, eK, eV, j1, m, hu, fq, announcements, jf, eP, c2, eR, gj, jg, eO, eM, eB, eW, jh, ji, aJ, jj, jk, jl, dy, je, bw, pixel, f, attacks, ay, eA, jS, e2, jQ, jm, jn, gn, ez, ce, g1, hq, jo, jp, eX, multi, jq, eN, lobby, js, peace, eY, eD, eH, jt, ju, eI, eF, eQ, jv, dr, jw;
+var dG, au, dE, eJ, single, eK, eV, j1, m, hu, fq, announcements, jf, eP, c2, eR, gj, jg, eO, eM, eB, eW, 
+jh, ji, aJ, jj, jk, jl, dy, je, bw, pixel, user_settings, attacks, ay, eA, jS, e2, jQ, jm, jn, gn, ez, ce, 
+g1, hq, jo, jp, eX, multi, jq, eN, lobby, js, peace, eY, eD, eH, jt, ju, eI, eF, eQ, jv, dr, jw;
 
 function construct() {
     dG = new de;
@@ -1464,7 +1468,7 @@ function construct() {
     je = new kI;
     bw = new kJ;
     pixel = new Pixel;
-    f = new kL;
+    user_settings = new User_settings;
     attacks = new Attacks;
     ay = new kN;
     eA = new kO;
@@ -1571,11 +1575,11 @@ function jy() {
         this.hidden() || (B = L, C = H, E = (new Date).getTime())
     };
     this.lG = function(L) {
-        return L < player_count && 2 !== fT[L]
+        return L < player_count && 2 !== player_status[L]
     };
     this.c7 = function(L, H) {
         C = B = -1E3;
-        if (2 === fT[my_id] || 0 === is_alive[my_id] && !in_spawn) return this.end(), 1;
+        if (2 === player_status[my_id] || 0 === is_alive[my_id] && !in_spawn) return this.end(), 1;
         if (t) {
             this.end();
             if (a5.lI(L, H)) a5.lJ(L, H, F) && (t = !0);
@@ -1608,10 +1612,9 @@ function jy() {
         }
         if (3 === M) {
             this.end();
-            if (this.lG(F) && 7 > gamemode && 1071 > c4.dU()) return announcements.anti_boosting(),
-                1;
+            if (this.lG(F) && 7 > gamemode && 1071 > c4.time_elapsed()) return announcements.anti_boosting(), 1;
             announcements.low_balance();
-            singleplayer ? da(my_id, F, divide_floor(eR.lV() * troops[my_id], 1E3)) : multi.attack(eR.lV(), F === max_entities ? my_id : F);
+            singleplayer ? single_donate(my_id, F, divide_floor(eR.lV() * troops[my_id], 1E3)) : multi.attack(eR.lV(), F === max_entities ? my_id : F);
             return 1
         }
         if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.dF()) : multi.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? fL(my_id, F, eR.lV()) : (!free_spawn || 300 < eB.lX()) && multi.attack(eR.lV(), F === max_entities ? my_id : F)) : x[8] ? (this.end(), eH.lZ(F, eR.lV())) : this.end(), 1;
@@ -1623,7 +1626,7 @@ function jy() {
         return 2
     };
     this.click = function(L, H) {
-        if (this.hidden() || 2 === fT[my_id] || 0 === is_alive[my_id] && !in_spawn) return !1;
+        if (this.hidden() || 2 === player_status[my_id] || 0 === is_alive[my_id] && !in_spawn) return !1;
         var M = (q ? .0288 : .0144) * bq;
         if (Math.abs(L - B) > M || Math.abs(H - C) > M || (new Date).getTime() > E + 425) return !1;
         M = Math.floor((L + gC) / g7);
@@ -1792,7 +1795,7 @@ function jz() {
     this.m2 = function() {
         (this.lw = !this.lw) ? (canvas_hidden = !1, singleplayer && 1 === client_status && !in_spawn && (setTimeout(function() {
             h8.iz()
-        }, 0), a9(0))) : (y = -1, g(), singleplayer && a9(1));
+        }, 0), set_android_state(0))) : (y = -1, g(), singleplayer && set_android_state(1));
         c4.c5 = !0
     };
     this.c7 = function(B, C) {
@@ -1994,12 +1997,21 @@ function Announcements() {
     this.j3 = function(H) {
         for (var M = F.length - 1; 0 <= M; M--) F[M].id === H && (F[M].time = 1)
     };
-    this.fl = function(H, M) {
-        0 === M ? (statistics.numbers[H < player_count ? 4 : 3]++, c2.set(H, 0), new_announcement(q ? 100 : 160, "You conquered " + nickname[H] + ".", 0, H, "rgb(10,220,10)", hy, -1, !1)) : 1 === M ? (E(50, max_entities), c2.set(H, 1), new_announcement(360, "You were conquered by " + nickname[H] + ".", 0, H, "rgb(255,40,40)", hy, -1, !0), eV.gg(H, 2700, !0, 0)) : 2 === M ? (c2.set(H, 2), new_announcement(0, "Congratulations! You won the game.", 0, H, "rgb(10,255,255)", hy, -1, !0), eV.gg(H, 2700, !0, 0)) : 3 === M ? (c2.set(H, 2), new_announcement(0, nickname[H] + " won the game.", 0, H, cK, hy, -1, !0), eV.gg(H, 2700,
-            !0, 0)) : 4 === M ? (players_in_game--, spectators--, this.ml(1, H, H)) : 5 === M ? 2 !== fT[H] && hu.lG(my_id) && (B(1, 5), eA.mn(H) ? new_announcement(180, nickname[H] + " has broken the non-aggression pact and invades you!", 1, H, get_color_style(255, 200, 180), hy, -1, !0) : new_announcement(180, nickname[H] + " is attacking you!", 1, H, "rgb(255,70,10)", hy, -1, !0)) : 18 === M ? new_announcement(255, "Choose your start position!", 18, 0, cK, hy, -1, !1) : 21 === M ? new_announcement(220, "You surrendered!", M, 0, "rgb(255,40,40)", hy, -1, !1) : 22 === M && this.ml(2, H, H)
+    this.fl = function(id, type) {
+        0 === type ? (statistics.numbers[id < player_count ? 4 : 3]++, c2.set(id, 0), new_announcement(q ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", hy, -1, !1)) : 
+        1 === type ? (E(50, max_entities), c2.set(id, 1), new_announcement(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+        2 === type ? (c2.set(id, 2), new_announcement(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+        3 === type ? (c2.set(id, 2), new_announcement(0, nickname[id] + " won the game.", 0, id, cK, hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+        4 === type ? (players_in_game--, spectators--, this.ml(1, id, id)) : 
+        5 === type ? 2 !== player_status[id] && hu.lG(my_id) && (B(1, 5), eA.mn(id) ? 
+            new_announcement(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, get_color_style(255, 200, 180), hy, -1, !0) : 
+            new_announcement(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", hy, -1, !0)) : 
+        18 === type ? new_announcement(255, "Choose your start position!", 18, 0, cK, hy, -1, !1) : 
+        21 === type ? new_announcement(220, "You surrendered!", type, 0, "rgb(255,40,40)", hy, -1, !1) : 
+        22 === type && this.ml(2, id, id)
     };
-    this.mo = function(H) {
-        new_announcement(200, "Error [" + H + "]", 94, 0, cK, mq, -1, !1)
+    this.error = function(error_code) {
+        new_announcement(200, "Error [" + error_code + "]", 94, 0, cK, mq, -1, !1)
     };
     this.iq = function(H) {
         c2.set(H, 2);
@@ -2020,10 +2032,10 @@ function Announcements() {
             }
     };
     this.ip = function(H) {
-        var M = dW.im[eT.my()];
-        H ? (9 === gamemode ? (H = "The Resistance defeated the virus.", c2.mz("The Resistance",
-            2, 1, 12)) : H = "Congratulations! Team " + dW.bo[M] + " has won the game!", new_announcement(0, H, 40, 0, "rgb(10,220,10)", hy, -1, !1)) : (9 === gamemode ? (H = "Mankind lost the war against the virus.", c2.mz("The Virus", 2, 0, 16)) : H = "Our alliance has been defeated!", new_announcement(0, H, 41, 0, "rgb(200,80,80)", hy, -1, !1));
-        9 !== gamemode && c2.mz("Team " + dW.bo[M], 2, 1, 12);
+        var M = teams.im[eT.get_largest_team()];
+        H ? (9 === gamemode ? (H = "The Resistance defeated the virus.", c2.mz("The Resistance", 2, 1, 12)) : H = "Congratulations! Team " + teams.label_team_color[M] + " has won the game!", new_announcement(0, H, 40, 0, "rgb(10,220,10)", hy, -1, !1)) : 
+        (9 === gamemode ? (H = "Mankind lost the war against the virus.", c2.mz("The Virus", 2, 0, 16)) : H = "Our alliance has been defeated!", new_announcement(0, H, 41, 0, "rgb(200,80,80)", hy, -1, !1));
+        9 !== gamemode && c2.mz("Team " + teams.label_team_color[M], 2, 1, 12);
         eV.gp(2700)
     };
     this.new_1v1 = function(player_info) {
@@ -2070,18 +2082,18 @@ function Announcements() {
         new_announcement(80, "Boosting is disallowed in the first minute!", 9, 0, cK, hy, -1, !1)
     };
     this.donate = function(H, M) {
-        2 !== fT[my_id] && new_announcement(200, "You exported " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", hy, -1, !0)
+        2 !== player_status[my_id] && new_announcement(200, "You exported " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", hy, -1, !0)
     };
     this.receive_donate = function(H, M) {
-        if (2 !== fT[my_id]) {
-            var Q = 2 === fT[M] || M >= player_count;
+        if (2 !== player_status[my_id]) {
+            var Q = 2 === player_status[M] || M >= player_count;
             var R = 200 - 20 * F.length;
             new_announcement(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, gH, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
             B(31, q ? 4 : 6)
         }
     };
     this.iy = function(H) {
-        var M, Q = c4.dU();
+        var M, Q = c4.time_elapsed();
         for (M = 2; 0 <= M; M--) 0 < l[M] && (H || x[M] < Q - 220) && this.nN(M)
     };
     this.nN = function(H) {
@@ -2092,7 +2104,7 @@ function Announcements() {
         : 2 <= M && (M = nickname[Q] + " and " + (M - 1) + " other player" + (2 === M ? "" : "s") + display_label_leave_plural[H], new_announcement(n[H], M, 7, Q, cK, hy, -1, !1))
     };
     this.ml = function(H, M, Q) {
-        var R = c4.dU(),
+        var R = c4.time_elapsed(),
             P = l[H] + 1;
         l[H]++;
         g[H] = M;
@@ -2105,7 +2117,7 @@ function Announcements() {
         index = 1 >= index ? 1 : index * index;
         for (H = F.length - 1; 0 <= H; H--) 0 < F[H].time && (F[H].time -= index, 0 >= F[H].time && F.splice(H, 1));
         if (128 !== J && (J++, !(128 > J)))
-            for (H = 5, index = alive_count - 1; 0 <= index; index--) 1 === fT[alive_entities[index]] && 0 < H-- 
+            for (H = 5, index = alive_count - 1; 0 <= index; index--) 1 === player_status[alive_entities[index]] && 0 < H-- 
             && new_announcement(240, nickname[alive_entities[index]] + " joined the game.", 1, alive_entities[index], gH, "rgba(255,255,255,0.75)", -1, !0);
         this.iy(!1)
     };
@@ -2122,7 +2134,7 @@ function nQ() {
     this.hidden = !1;
     this.init = function() {
         this.lx();
-        this.hidden = 5 > d && !b && 0 === f.a0()
+        this.hidden = 5 > device_version && !is_ios && 0 === user_settings.a0()
     };
     this.lx = function() {
         this.c1 = Math.floor(2.8 * Math.floor((q ? .09 : .062) * bq));
@@ -2137,7 +2149,7 @@ function nQ() {
         if (!this.hidden) return !1;
         var n = this.nU(g, k);
         if (-1 === n) return !1;
-        0 === n ? (f.nV(2), this.hidden = !1) : 1 === n ? nW.init(nX, !0) : 2 === n && (f.nV(1), this.hidden = !1);
+        0 === n ? (user_settings.nV(2), this.hidden = !1) : 1 === n ? nW.init(nX, !0) : 2 === n && (user_settings.nV(1), this.hidden = !1);
         return c4.c5 = !0
     };
     this.lo = function(g, k) {
@@ -2472,14 +2484,14 @@ function p4() {
 
 function p8(g) {
     g.preventDefault();
-    oz || (eD.pM(eD.jc), pN(Math.floor(pO * g.clientX), Math.floor(pO * g.clientY)))
+    oz || (eD.pM(eD.jc), pN(Math.floor(device_pixel_ratio * g.clientX), Math.floor(device_pixel_ratio * g.clientY)))
 }
 
 function pE(g) {
     g.preventDefault();
     eD.pM(eD.jc);
     oz = !0;
-    0 < g.touches.length && (p0 = Math.floor(pO * g.touches[0].clientX), p1 = Math.floor(pO * g.touches[0].clientY), jo.pP(g) || pN(p0, p1))
+    0 < g.touches.length && (p0 = Math.floor(device_pixel_ratio * g.touches[0].clientX), p1 = Math.floor(device_pixel_ratio * g.touches[0].clientY), jo.pP(g) || pN(p0, p1))
 }
 
 function pN(g, k) {
@@ -2493,12 +2505,12 @@ function pN(g, k) {
 function p9(g) {
     oz = !1;
     g.preventDefault();
-    pT(Math.floor(pO * g.clientX), Math.floor(pO * g.clientY))
+    pT(Math.floor(device_pixel_ratio * g.clientX), Math.floor(device_pixel_ratio * g.clientY))
 }
 
 function pF(g) {
     g.preventDefault();
-    0 < g.touches.length && (p0 = Math.floor(pO * g.touches[0].clientX), p1 = Math.floor(pO * g.touches[0].clientY), jo.pU(g) || pT(p0, p1))
+    0 < g.touches.length && (p0 = Math.floor(device_pixel_ratio * g.touches[0].clientX), p1 = Math.floor(device_pixel_ratio * g.touches[0].clientY), jo.pU(g) || pT(p0, p1))
 }
 
 function pT(g, k) {
@@ -2512,7 +2524,7 @@ function pC(g) {
 
 function pA(g) {
     g.preventDefault();
-    oz || pZ(Math.floor(pO * g.clientX), Math.floor(pO * g.clientY))
+    oz || pZ(Math.floor(device_pixel_ratio * g.clientX), Math.floor(device_pixel_ratio * g.clientY))
 }
 
 function pB(g) {
@@ -2544,8 +2556,8 @@ function pZ(g, k) {
 function pD(g) {
     g.preventDefault();
     eD.pM(eD.jc);
-    var k = Math.floor(pO * g.clientX),
-        n = Math.floor(pO * g.clientY),
+    var k = Math.floor(device_pixel_ratio * g.clientX),
+        n = Math.floor(device_pixel_ratio * g.clientY),
         l = g.deltaY;
     1 === g.deltaMode && (l *= 20);
     0 === client_status ? aJ.pd(k, n, l) : eM.pd(k, n, l) || (eR.pR(k, n) ? eR.pd(l) && (c4.c5 = !0) : gj.pd(k, n, 2 * l) && (c4.c5 = !0))
@@ -2940,7 +2952,7 @@ function Peace() {
                 for (D = alive_count - 1; 0 <= D; D--) hu.lG(alive_entities[D]) && (K += land[alive_entities[D]]);
                 peace_requirement[0] = me(divide_floor(3 * K, 5), 1);
                 team_game && 9 !== gamemode && (peace_requirement[0] =
-                    qn(me(divide_floor(K * (100 - divide_floor(100 * eT.qo(), j9)), 100), 1), peace_requirement[0]));
+                    qn(me(divide_floor(K * (100 - divide_floor(100 * eT.get_largest_team_total_land(), j9)), 100), 1), peace_requirement[0]));
                 peace_requirement[1] = me(K - peace_requirement[0], 1);
                 N++
             }
@@ -3589,10 +3601,10 @@ function k7() {
         z.fillRect(l, this.cw - l, Math.floor((k - 2 * l) * troops[my_id] / x), l)
     };
     this.dF = function() {
-        0 !== is_alive[my_id] && 2 !== fT[my_id] && A !== troops[my_id] && (x = me(troops[my_id], x), B = troops[my_id] > A && 10 <= troops[my_id], A = troops[my_id], y = !0)
+        0 !== is_alive[my_id] && 2 !== player_status[my_id] && A !== troops[my_id] && (x = me(troops[my_id], x), B = troops[my_id] > A && 10 <= troops[my_id], A = troops[my_id], y = !0)
     };
     this.cG = function() {
-        0 === is_alive[my_id] || in_spawn || 2 === fT[my_id] || cH.drawImage(t, this.fJ, n)
+        0 === is_alive[my_id] || in_spawn || 2 === player_status[my_id] || cH.drawImage(t, this.fJ, n)
     }
 }
 var sI, qU, sJ, sK, sL, em, sM;
@@ -3629,7 +3641,7 @@ function k8() {
     }
 
     function k(S) {
-        team_game && (B.fillStyle = dW.su[dW.im[dW.dX[S]]])
+        team_game && (B.fillStyle = teams.su[teams.im[teams.team_array[S]]])
     }
 
     function n(S, O) {
@@ -3642,9 +3654,9 @@ function k8() {
 
     function l(S, O, T) {
         B.fillText(R[O], D, Math.floor(F + sL + (S + .5) * I));
-        1 === fT[T] && (B.font = om + sK);
+        1 === player_status[T] && (B.font = om + sK);
         B.fillText(H[T] === T ? nickname[T] : L[H[T] % max_entities], K, Math.floor(F + sL + (S + .5) * I));
-        0 !== fT[T] && (B.font = sK)
+        0 !== player_status[T] && (B.font = sK)
     }
 
     function x(S, O) {
@@ -3731,7 +3743,7 @@ function k8() {
         return sI
     };
     this.eb = function(S) {
-        W && (S || 14 >= so && 0 === c4.dU() % 6 || 14 < so) && (W = !1, g())
+        W && (S || 14 >= so && 0 === c4.time_elapsed() % 6 || 14 < so) && (W = !1, g())
     };
     this.dF = function() {
         for (var S = E - 1; 0 <= S; S--)
@@ -3932,14 +3944,13 @@ function k9() {
         alive_count - K[0] !== K[1] && (K[1] = alive_count - K[0], I++);
         this.eC();
         if (team_game) {
-            var P = eT.qo();
-            P >= R && l() ? (fi.fj(-1), n(eT.qo())) : n(P)
+            var P = eT.get_largest_team_total_land();
+            P >= R && l() ? (fi.fj(-1), n(eT.get_largest_team_total_land())) : n(P)
         } else P = land[em[0]], P >= R && l() && fi.fj(-1), n(P);
         P = ay.tW(my_id);
         P !== K[5] && (K[5] = P, I++);
         x();
-        K[7] +=
-            c4.tX();
+        K[7] += c4.tick_interval();
         P = k(7);
         L !== P && (L = P, I += 100)
     };
@@ -4019,7 +4030,7 @@ function kA() {
     };
     this.show = function(C, E) {
         g || (k = C ? 1 : 2, g = !0, this.lx(), hu.lp(), eR.qj(), B = c4.time, -1 === this.td &&
-            (this.td = c4.dU()), y = E ? 1 : 0)
+            (this.td = c4.time_elapsed()), y = E ? 1 : 0)
     };
     this.dF = function() {
         !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.c5 = !0)
@@ -4039,7 +4050,7 @@ function kA() {
 
 function ke() {
     function g(t, z, y, A, B, C, E) {
-        0 !== is_alive[t] && 0 !== land[t] && (y = gE * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = cB * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > gE || A > cB || y < -z || A < -z || (cH.setTransform(g7 * E, 0, 0, g7 * E, y, A), cH.drawImage(n[team_game ? dW.dX[t] : t < player_count ? 1 : 0], 0, 0)))
+        0 !== is_alive[t] && 0 !== land[t] && (y = gE * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = cB * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > gE || A > cB || y < -z || A < -z || (cH.setTransform(g7 * E, 0, 0, g7 * E, y, A), cH.drawImage(n[team_game ? teams.team_array[t] : t < player_count ? 1 : 0], 0, 0)))
     }
     var k, n, l, x;
     this.init = function() {
@@ -4048,8 +4059,8 @@ function ke() {
         k = !1;
         if (in_spawn)
             if (x = 0, l = 63, k = !0, team_game)
-                for (t = 0; t <= team_count; t++) n.push(this.tk(dW.tl[dW.im[t]], l));
-            else n.push(this.tk(dW.tl[0], l)), n.push(this.tk(dW.tl[4], l))
+                for (t = 0; t <= team_count; t++) n.push(this.tk(teams.tl[teams.im[t]], l));
+            else n.push(this.tk(teams.tl[0], l)), n.push(this.tk(teams.tl[4], l))
     };
     this.dF = function() {
         k && 349 === ++x && (n = [], k = !1)
@@ -4103,15 +4114,15 @@ function ke() {
 }
 
 function fL(g, k, n) {
-    if (!(0 === is_alive[g] || 0 > n || 1E3 < n || 2 === fT[g])) {
+    if (!(0 === is_alive[g] || 0 > n || 1E3 < n || 2 === player_status[g])) {
         var l = divide_floor(n * troops[g], 1E3);
-        10 === gamemode && k < player_count && 2 !== fT[k] && (l = eF.ts(g, l));
-        if (team_game && k < max_entities && !ch(g, k)) da(g, k, l);
+        10 === gamemode && k < player_count && 2 !== player_status[k] && (l = eF.ts(g, l));
+        if (team_game && k < max_entities && !ch(g, k)) single_donate(g, k, l);
         else {
             k < max_entities && 0 === is_alive[k] && (k = max_entities);
             var x = divide_floor(3 * troops[g], 256);
             l -= 500 <= n ? x : 0;
-            if (!(l <= at) && attacks.below_attack_cap(g)) {
+            if (!(l <= neutral_land_cost) && attacks.below_attack_cap(g)) {
                 var t = temp_border_pixels[g].length;
                 k === max_entities ? cX(g) : cS(g, k);
                 if (0 !== t || 0 !== temp_border_pixels[g].length) team_game && (d7[g] = 1), g === my_id && (statistics.numbers[0] += 500 <= n ? n - 12 : n, statistics.numbers[1]++, statistics.numbers[12] += x, statistics.numbers[13] += l), cP(t, g), attacks.set(g, l, k), troops[g] -= l + x, au.cR(g, !1)
@@ -4122,7 +4133,7 @@ function fL(g, k, n) {
 
 function ey(g, k, n, l) {
     10 === gamemode && g < player_count && (l = eF.ts(g, l));
-    if (l <= at || !attacks.below_attack_cap(g)) return !1;
+    if (l <= neutral_land_cost || !attacks.below_attack_cap(g)) return !1;
     k = eK.cR(g, k, n);
     if (0 === k) return !1;
     n = divide_floor(3 * troops[g], 128);
@@ -4133,12 +4144,13 @@ function ey(g, k, n, l) {
     return !0
 }
 
-function da(g, k, n) {
-    if (!(!team_game || 0 === is_alive[g] || 0 === is_alive[k] || 0 > n || n > troops[g] || g === k || ch(g, k) || g < player_count && k < player_count && 7 > gamemode && 1071 > c4.dU())) {
-        var l = divide_floor(troops[g], 16);
-        n -= n >= divide_floor(troops[g], 2) ? l : 0;
-        var x = land[k] * j7 - troops[k];
-        0 >= x || (n = n > x ? x : n, g === my_id && (announcements.donate(n, k), statistics.numbers[12] += l, statistics.numbers[16] += n), k === my_id && (announcements.receive_donate(n, g), statistics.numbers[10] += n), troops[g] -= n + l, troops[k] += n)
+function single_donate(donator, target, amount) {
+    if (!(!team_game || 0 === is_alive[donator] || 0 === is_alive[target] || 0 > amount || amount > troops[donator] || donator === target || ch(donator, target) || donator < player_count && target < player_count && 7 > gamemode && 1071 > c4.time_elapsed())) {
+        var tax = divide_floor(troops[donator], 16);
+        amount -= amount >= divide_floor(troops[donator], 2) ? tax : 0;
+        var new_troops = land[target] * max_troops_to_land_ratio - troops[target];
+        0 >= new_troops || (amount = amount > new_troops ? new_troops : amount, donator === my_id && (announcements.donate(amount, target), statistics.numbers[12] += tax, statistics.numbers[16] += amount), 
+        target === my_id && (announcements.receive_donate(amount, donator), statistics.numbers[10] += amount), troops[donator] -= amount + tax, troops[target] += amount)
     }
 }
 
@@ -4208,7 +4220,7 @@ function ks() {
     this.u0 = function() {
         if (1 === client_status) {
             var g = my_id;
-            2 === fT[g] || 0 === is_alive[g] || in_spawn || attacks.below_attack_cap(g) && 0 !== pixels_bordering_land[g].length && this.lJ()
+            2 === player_status[g] || 0 === is_alive[g] || in_spawn || attacks.below_attack_cap(g) && 0 !== pixels_bordering_land[g].length && this.lJ()
         }
     };
     this.lJ = function() {
@@ -4475,7 +4487,7 @@ function ui() {
     var g, k, n, l, x, t, z, y, A, B, C, E, F;
     this.hidden = !1;
     this.init = function(G, N) {
-        if (13 <= d) N ? E = G : E === G && e.saveString(200, G);
+        if (13 <= device_version) N ? E = G : E === G && droid.saveString(200, G);
         else if (N) {
             (cC.mE[1].ih.hidden || cC.mE[2].ih.hidden) && cC.us();
             je.tj();
@@ -4487,8 +4499,8 @@ function ui() {
             z = Math.floor(.6 * x);
             y = Math.floor(2.5 * z);
             l = x + t + 3 * z;
-            var I = bt + Math.floor(t / pO) + bu;
-            B = Math.floor(pO * c2.measureText(E, I));
+            var I = bt + Math.floor(t / device_pixel_ratio) + bu;
+            B = Math.floor(device_pixel_ratio * c2.measureText(E, I));
             C = (B > A ? B : A) + 2 * y;
             g = Math.floor((gE - C) / 2);
             k = Math.floor((cB - l) / 2);
@@ -4503,8 +4515,8 @@ function ui() {
             F.style.position = "absolute";
             F.style.padding = "0px";
             F.style.margin = "0px";
-            F.style.top = Math.floor((k + 2 * z + x) / pO) + "px";
-            F.style.left = Math.floor((g + (C - B) / 2) / pO) + "px";
+            F.style.top = Math.floor((k + 2 * z + x) / device_pixel_ratio) + "px";
+            F.style.left = Math.floor((g + (C - B) / 2) / device_pixel_ratio) + "px";
             document.body.appendChild(F);
             this.hidden = !0;
             c4.c5 = !0
@@ -4990,7 +5002,7 @@ function kD() {
     this.aK =
         function() {
             c4.c5 = !0;
-            8 === g ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.m2() : fq.m2() : 7 === g ? lobby.vt() : 6 === g ? ji.ve() : 3 === g ? jj.vu(0, 0) : 2 === g ? dy.vu() : 0 === g && (this.vr() || a9(11))
+            8 === g ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.m2() : fq.m2() : 7 === g ? lobby.vt() : 6 === g ? ji.ve() : 3 === g ? jj.vu(0, 0) : 2 === g ? dy.vu() : 0 === g && (this.vr() || set_android_state(11))
         };
     this.c7 = function(k, n) {
         if (!vn.c7(k, n) && vq && !(nW.c7(k, n) || 6 === g && ji.c7(k, n) || 2 === g && dy.c7(k, n) || jt.c7(k, n) || cD.c7(k, n) || vv.c7(k, n, !0) || cC.c7(k, n, !0))) {
@@ -5213,7 +5225,7 @@ function kE() {
         } else if (7 === y) {
             if (t !== eD.w6) return
         } else {
-            8 === y && (t !== eD.jc || singleplayer || announcements.mo(k(z)));
+            8 === y && (t !== eD.jc || singleplayer || announcements.error(k(z)));
             return
         }
         g()
@@ -5221,7 +5233,7 @@ function kE() {
     this.vd = function(t) {
         n =
             t;
-        8 === aJ.pa() ? announcements.mo(k(t)) : g()
+        8 === aJ.pa() ? announcements.error(k(t)) : g()
     };
     this.lx = function() {
         jh.uz[2].na = k(n)
@@ -5270,17 +5282,17 @@ function kF() {
         this.lx()
     };
     this.lx = function() {
-        var x = Math.floor(.22 * jh.cw / pO);
+        var x = Math.floor(.22 * jh.cw / device_pixel_ratio);
         k[0].input.style.font = bt + x + bu;
         k[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
-        k[0].input.style.width = Math.floor(jh.c1 / pO - 13) + "px"
+        k[0].input.style.width = Math.floor(jh.c1 / device_pixel_ratio - 13) + "px"
     };
     this.bz = function(x) {
         return k[x]
     };
     this.rs = function(x) {
-        k[x].input.style.left = Math.floor((gE / pO - (jh.c1 / pO - 3) - 7) / 2) + "px";
-        0 === x && (k[x].input.style.bottom = Math.floor((cB - jh.fK + jh.f6) / pO) + "px")
+        k[x].input.style.left = Math.floor((gE / device_pixel_ratio - (jh.c1 / device_pixel_ratio - 3) - 7) / 2) + "px";
+        0 === x && (k[x].input.style.bottom = Math.floor((cB - jh.fK + jh.f6) / device_pixel_ratio) + "px")
     };
     this.cE = function(x, t) {
         k[x].hidden !== t && ((k[x].hidden = t) ? document.body.appendChild(k[x].input) : document.body.removeChild(k[x].input))
@@ -5438,7 +5450,7 @@ function Lobby() {
                 var ba = X,
                     ca = na,
                     pa = W;
-                pa.fillStyle = dW.wy[V + 1];
+                pa.fillStyle = teams.wy[V + 1];
                 pa.beginPath();
                 pa.arc(24, 24, 23, ba, ca);
                 pa.lineTo(24, 24);
@@ -5704,7 +5716,7 @@ function kH() {
             game_init(Math.floor(16384 * Math.random()), 0, [{
                 name: je.xc(),
                 xd: cC.mE[2].ih.vH(),
-                xe: 0
+                status: 0
             }], n, !1)
         }
     };
@@ -5931,7 +5943,7 @@ function kI() {
     }
 
     function k() {
-        x = a();
+        x = set_username();
         jk.bz(0).input.value = x;
         jk.wE(0, !0)
     }
@@ -5945,7 +5957,7 @@ function kI() {
         if (0 >= t || t >= z) return k(), jj.vd(3266), !0;
         if (o(t)) return k(), jj.vd(3231), !0;
         k();
-        5 <= d ? jj.vd(3232) : (jj.vd(3265), vn.hidden = !0,
+        5 <= device_version ? jj.vd(3232) : (jj.vd(3265), vn.hidden = !0,
             vn.bs = -1);
         return !0
     }
@@ -5965,7 +5977,7 @@ function kI() {
         jk.rs(0);
         jf.init();
         cC.rs();
-        void 0 === x && (x = a(), jk.bz(0).input.value = x, l())
+        void 0 === x && (x = set_username(), jk.bz(0).input.value = x, l())
     };
     this.tj = function() {
         jk.cE(0, !1)
@@ -5984,10 +5996,10 @@ function kI() {
     };
     this.c7 = function(t, z) {
         c4.xt();
-        1 === jh.pR(t, z, 1, 1) ? n() || g() || (a9(10), l() ? (this.tj(), w(x), dy.init()) : jj.vd(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
+        1 === jh.pR(t, z, 1, 1) ? n() || g() || (set_android_state(10), l() ? (this.tj(), w(x), dy.init()) : jj.vd(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
     };
     this.vs = function() {
-        n() || g() || (a9(10), void 0 !== x && m.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vV((Math.abs(x.charCodeAt(1)) + 7) % eD.vX) : ji.vV(jt.xy - 1), l() ? bw.bx() ? (this.tj(), w(x), dr.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
+        n() || g() || (set_android_state(10), void 0 !== x && m.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vV((Math.abs(x.charCodeAt(1)) + 7) % eD.vX) : ji.vV(jt.xy - 1), l() ? bw.bx() ? (this.tj(), w(x), dr.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
     };
     this.y2 = function() {
         return !cC.xk() && !cD.hidden && !nW.hidden
@@ -6053,7 +6065,7 @@ function kJ() {
                 n[t] = E
             }
             k--;
-            bw.bx() && (uZ.bv(), hu.l3(), a5.init(), vv.uv([n[8], n[16], n[7], n[9], n[10]], [!b, 0 === d, !0, !0, !0]), c4.c5 = !0, n[7] = x, n[8] = x, n[9] = x, n[10] = x)
+            bw.bx() && (uZ.bv(), hu.l3(), a5.init(), vv.uv([n[8], n[16], n[7], n[9], n[10]], [!is_ios, 0 === device_version, !0, !0, !0]), c4.c5 = !0, n[7] = x, n[8] = x, n[9] = x, n[10] = x)
         };
         n[t].src = A
     }
@@ -6157,7 +6169,7 @@ function Pixel() {
         this.font_color = new Uint8Array(max_entities);
         aY();
         if (team_game)
-            for (var K, J = max_entities - 1; 0 <= J; J--) K = dW.im[dW.dX[J]], D_then_index = divide_floor((x[K][3] + 1) * ce.random(), ce.value(100)), inner_red[J] = l[K][0] + D_then_index * x[K][0], inner_green[J] = l[K][1] + D_then_index * x[K][1], inner_blue[J] = l[K][2] + D_then_index * x[K][2];
+            for (var K, J = max_entities - 1; 0 <= J; J--) K = teams.im[teams.team_array[J]], D_then_index = divide_floor((x[K][3] + 1) * ce.random(), ce.value(100)), inner_red[J] = l[K][0] + D_then_index * x[K][0], inner_green[J] = l[K][1] + D_then_index * x[K][1], inner_blue[J] = l[K][2] + D_then_index * x[K][2];
         else if (dr.ds && dr.dt.ya)
             for (D_then_index = dr.dt.ya, K = entity_count - 1; 0 <= K; K--) inner_red[K] = 4 * D_then_index[K][0], inner_green[K] = 4 * D_then_index[K][1], inner_blue[K] = 4 * D_then_index[K][2];
         else {
@@ -6289,33 +6301,33 @@ function Pixel() {
     }
 }
 
-function kL() {
+function User_settings() {
     function g() {
-        for (var C = 0, E = 1; 5 > E; E++) C += z[E] % 1024;
+        for (var C = 0, E = 1; 5 > E; E++) C += settings_array[E] % 1024;
         return C
     }
 
     function k() {
-        for (var C = 1; C < y - B; C++) z[C] = parseInt(z[C])
+        for (var C = 1; C < const_10 - const_4; C++) settings_array[C] = parseInt(settings_array[C])
     }
 
     function n() {
-        z[0] = "Player " + Math.floor(1E3 * Math.random());
-        z[1] = r < s ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
-        z[2] = 1;
-        z[3] = 1;
-        z[4] = r < s ? 0 : 1;
-        z[5] = 0;
-        z[6] = "000";
-        z[7] = "0";
-        z[8] = "0";
-        z[9] = "0";
-        f.y()
+        settings_array[0] = "Player " + Math.floor(1E3 * Math.random());
+        settings_array[1] = r < s ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
+        settings_array[2] = 1;
+        settings_array[3] = 1;
+        settings_array[4] = r < s ? 0 : 1;
+        settings_array[5] = 0;
+        settings_array[6] = "000"; 
+        settings_array[7] = "0"; //Emoji
+        settings_array[8] = "0"; //Color
+        settings_array[9] = "0"; //Password
+        user_settings.format_settings()
     }
 
     function l() {
-        for (var C = y - B - 1; 0 <= C; C--) z[C] = m.n(z[C]);
-        z[0] = m.iW(z[0])
+        for (var index = const_10 - const_4 - 1; 0 <= index; index--) settings_array[index] = m.n(settings_array[index]);
+        settings_array[0] = m.iW(settings_array[0])
     }
 
     function x(C, E, F) {
@@ -6325,39 +6337,39 @@ function kL() {
             ";SameSite=Strict;Secure;path=/";
         document.cookie = C
     }
-    var t, z, y, A, B;
+    var t, settings_array, const_10, A, const_4;
     this.init = function() {
-        if (!(5 <= d || b)) {
-            B = 4;
+        if (!(5 <= device_version || is_ios)) {
+            const_4 = 4;
             A = 0;
             t = [];
-            y = 10;
-            for (var C = 0; C < y; C++) t.push("u" + C);
-            z = Array(y);
+            const_10 = 10;
+            for (var C = 0; C < const_10; C++) t.push("u" + C);
+            settings_array = Array(const_10);
             for (var E, F = document.cookie.split(";"), G = F.length - 1; 0 <= G; G--) {
                 F[G] = F[G].trim();
                 for (C = 2; 0 <= C; C--) F[G] = F[G].replace(" ", "");
-                3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? z[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
+                3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? settings_array[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
             }
-            z[9] || (z[9] = "0");
+            settings_array[9] || (settings_array[9] = "0");
             a: {
-                for (C = y - 1; 0 <= C; C--)
-                    if (void 0 === z[C]) {
+                for (C = const_10 - 1; 0 <= C; C--)
+                    if (void 0 === settings_array[C]) {
                         C = !1;
                         break a
                     } C = !0
             }
-            C ? (A = 2, l(), k(), g() !== z[5] && n()) : n()
+            C ? (A = 2, l(), k(), g() !== settings_array[5] && n()) : n()
         }
     };
-    this.y = function() {
+    this.format_settings = function() {
         if (2 === A) {
-            z[1] = 0 === z[1] ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : z[1];
-            z[5] = g();
-            for (var C = 1; C < y - B; C++) z[C] = z[C].toString();
-            z[0] = m.iV(z[0]);
-            for (C = y - B - 1; 0 <= C; C--) z[C] = m.z(z[C]);
-            for (C = y - 1; 0 <= C; C--) x(t[C], z[C], 1);
+            settings_array[1] = 0 === settings_array[1] ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : settings_array[1];
+            settings_array[5] = g();
+            for (var C = 1; C < const_10 - const_4; C++) settings_array[C] = settings_array[C].toString();
+            settings_array[0] = m.iV(settings_array[0]);
+            for (C = const_10 - const_4 - 1; 0 <= C; C--) settings_array[C] = m.z(settings_array[C]);
+            for (C = const_10 - 1; 0 <= C; C--) x(t[C], settings_array[C], 1);
             l();
             k()
         }
@@ -6367,13 +6379,13 @@ function kL() {
     };
     this.nV = function(C) {
         A = C;
-        this.y()
+        this.format_settings()
     };
     this.x = function(C, E) {
-        5 <= d || b || (z[C] = E)
+        5 <= device_version || is_ios || (settings_array[C] = E)
     };
-    this.g = function(C) {
-        return 5 <= d || b ? 0 : z[C]
+    this.get_settings = function(C) {
+        return 5 <= device_version || is_ios ? 0 : settings_array[C]
     }
 }
 
@@ -6450,7 +6462,7 @@ function zQ(g) {
 
 function zO(g, k) {
     var n, l = k[zQ(k)];
-    9 === gamemode && 1 === dW.dX[g] && ce.dP(8) && e2.zS(l);
+    9 === gamemode && 1 === teams.team_array[g] && ce.dP(8) && e2.zS(l);
     if (g === my_id) announcements.fl(l, 1), zM();
     else {
         for (n = k.length - 1; 0 <= n; n--)
@@ -6612,7 +6624,7 @@ function kr() {
         return [{
             name: this.dt.zm ? je.xc() : this.dt.zn[0],
             xd: [0, 0, 0],
-            xe: 0
+            status: 0
         }]
     };
     this.za = function(z) {
@@ -6843,8 +6855,8 @@ function kN() {
     };
     this.tW = function(z) {
         var y = x[divide_floor((t - 1) * land[z], j9)];
-        if (1920 > c4.dU()) {
-            var A = divide_floor(100 * (13440 - 6 * c4.dU()), 1920);
+        if (1920 > c4.time_elapsed()) {
+            var A = divide_floor(100 * (13440 - 6 * c4.time_elapsed()), 1920);
             y = A > y ? A : y
         }
         A = this.dJ(z);
@@ -6856,7 +6868,7 @@ function kN() {
         return z > jB ? jB : z
     };
     this.az = function(z) {
-        var y = land[z] * j7;
+        var y = land[z] * max_troops_to_land_ratio;
         troops[z] = troops[z] > troop_cap ? troop_cap : troops[z] > y ? y : troops[z]
     }
 }
@@ -6882,10 +6894,10 @@ function kO() {
             if (ia = alive_entities[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
                 la = Math.floor(gE * (E[ia] + G[ia] / 2 - O) / (Y - O));
                 ma = Math.floor(cB * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
-                V.font = oo[fT[ia]] + fa + bu;
+                V.font = oo[player_status[ia]] + fa + bu;
                 qa = V;
                 var ra = ia;
-                ra = fa >= J && fa < K ? dW.a19[pixel.font_color[ra]] + x(fa).toFixed(3) + ")" : dW.a1A[pixel.font_color[ra]];
+                ra = fa >= J && fa < K ? teams.a19[pixel.font_color[ra]] + x(fa).toFixed(3) + ")" : teams.a1A[pixel.font_color[ra]];
                 qa.fillStyle = ra;
                 V.fillText(8 === gamemode ? eP.split_into_pieces(troops[ia]) : nickname[ia], la, ma);
                 W = !0;
@@ -7040,7 +7052,7 @@ function kO() {
             (E[O] = x_min[O] + (x_max[O] !== x_min[O] ? 1 : 0), F[O] = y_min[O], G[O] = 1, N[O] = 1) : (E[O] = x_min[O], F[O] = y_min[O] + 1, G[O] = 4, N[O] = 2)
     };
     this.n4 = function(O, T, Y) {
-        0 === is_alive[O] || 4 !== T && 2 === fT[O] || (O += T * max_entities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oD(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
+        0 === is_alive[O] || 4 !== T && 2 === player_status[O] || (O += T * max_entities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oD(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
     };
     this.cG = function() {
         W && (1 !== U ? (cH.imageSmoothingEnabled = !0, cH.setTransform(U, 0, 0, U, 0, 0), cH.drawImage(X, -R / U, -P / U), cH.setTransform(1, 0, 0, 1, 0, 0)) : (cH.imageSmoothingEnabled = !1, cH.drawImage(X, -R, -P)))
@@ -7185,12 +7197,12 @@ function kP() {
     this.jU = function() {
         var n;
         if (jt.a1U && !singleplayer) {
-            a1V = Array(player_count);
+            temp_nickname = Array(player_count);
             var l = player_count;
             var x = k.length;
             var t = ce.a1W();
-            for (n = 0; n < l; n++) a1V[n] = nickname[n], nickname[n] = k[(n + t) % x];
-            nickname[my_id] = a1V[my_id]
+            for (n = 0; n < l; n++) temp_nickname[n] = nickname[n], nickname[n] = k[(n + t) % x];
+            nickname[my_id] = temp_nickname[my_id]
         }
     }
 }
@@ -7242,11 +7254,11 @@ function kp() {
         return !0
     }
 }
-var nickname, a1V, is_alive, x_min, y_min, x_max, y_max, land, ha, troops, temp_border_pixels, pixels_bordering_land, pixels_bordering_water, pixels_bordering_mountain, fT;
+var nickname, temp_nickname, is_alive, x_min, y_min, x_max, y_max, land, ha, troops, temp_border_pixels, pixels_bordering_land, pixels_bordering_water, pixels_bordering_mountain, player_status;
 
-function jO(g) {
-    var k;
-    a1V = nickname = Array(max_entities);
+function create_info_arrays(player_info) {
+    var id;
+    temp_nickname = nickname = Array(max_entities);
     is_alive = new Uint8Array(max_entities);
     x_min = new Uint16Array(max_entities);
     y_min = new Uint16Array(max_entities);
@@ -7259,8 +7271,8 @@ function jO(g) {
     pixels_bordering_land = Array(max_entities);
     pixels_bordering_water = Array(max_entities);
     pixels_bordering_mountain = Array(max_entities);
-    fT = new Uint8Array(max_entities);
-    for (k = g.length - 1; 0 <= k; k--) nickname[k] = g[k].name, fT[k] = g[k].xe
+    player_status = new Uint8Array(max_entities);
+    for (id = player_info.length - 1; 0 <= id; id--) nickname[id] = player_info[id].name, player_status[id] = player_info[id].status
 }
 
 function kn() {
@@ -7273,14 +7285,14 @@ function kn() {
     this.fo = function(g) {
         this.players.push(g);
         spectators++;
-        fT[g] = 2;
+        player_status[g] = 2;
         pixel.font_color[g] = (pixel.font_color[g] + 2) % 4;
         g === my_id && (eW.show(!1, !1), eB.tK());
         eA.mn(g)
     };
     this.fh = function(g) {
         var k;
-        if (2 !== fT[g]) {
+        if (2 !== player_status[g]) {
             var n = this.players;
             for (k = n.length - 1; 0 <= k; k--)
                 if (n[k] === g) {
@@ -7354,12 +7366,11 @@ function kj() {
     this.a1v = function(l, x) {
         g(l) && ws_array[l].a1v(x)
     };
-    this.a1y = function(l, x) {
-        0 === x ? jg.rm() : 3 > x ? multi.load_leaderboard(l, x - 1) : 3 === x ? multi.single_loaded(l) : 4 === x ? ji.rm(l) : 5 === x ? l === this.jc && multi.multi_loaded() : 6 === x ? multi.a20(l) : 7 === x && multi.vote(l)
+    this.a1y = function(remote, generic_param_or_leaderboard_page) {
+        0 === generic_param_or_leaderboard_page ? jg.rm() : 3 > generic_param_or_leaderboard_page ? multi.load_leaderboard(remote, generic_param_or_leaderboard_page - 1) : 3 === generic_param_or_leaderboard_page ? multi.single_loaded(remote) : 4 === generic_param_or_leaderboard_page ? ji.rm(remote) : 5 === generic_param_or_leaderboard_page ? remote === this.jc && multi.multi_loaded() : 6 === generic_param_or_leaderboard_page ? multi.a20(remote) : 7 === generic_param_or_leaderboard_page && multi.vote(remote)
     };
     this.vT = function(l) {
-        return n[l].a1p &&
-            ws_array[l].vT()
+        return n[l].a1p && ws_array[l].vT()
     };
     this.send = function(remote, data) {
         n[remote].time = c4.time;
@@ -7415,56 +7426,54 @@ function a25() {
     for (var g, k = alive_count - 1; 0 <= k; k--) land[alive_entities[k]] <= divide_floor(ha[alive_entities[k]], 4) ? 1E3 >= land[alive_entities[k]] && (2 !== is_alive[alive_entities[k]] || 0 === land[alive_entities[k]]) && fm(alive_entities[k]) : land[alive_entities[k]] >= ha[alive_entities[k]] ? ha[alive_entities[k]] = land[alive_entities[k]] : (g = divide_floor(ha[alive_entities[k]] - land[alive_entities[k]], 1E3), ha[alive_entities[k]] -= 1 > g ? 1 : g)
 }
 
-function it() {
-    var g, k = 0;
-    for (g = alive_count - 1; 0 <= g; g--) k += troops[alive_entities[g]];
-    return k % 4096
+function troop_hash() {
+    var id, sum = 0;
+    for (id = alive_count - 1; 0 <= id; id--) sum += troops[alive_entities[id]];
+    return sum % 4096
 }
-var p7, cH, version, version_hash, r, s, pK, bq, gE, cB, pO, a29, b, c, e, d, q, a2A = !1,
-    is_not_top_window, a2C, i, gy, so, h8, a5, statistics, hv, vn, c4, dW, eT, cD, fi, vv, nW, uZ, time_hash, const_2, a2F = 0,
+var p7, cH, version, version_hash, r, s, pK, bq, gE, cB, device_pixel_ratio, a29, is_ios, ios, droid, device_version, q, a2A = !1,
+    is_not_top_window, a2C, client_id, gy, so, h8, a5, statistics, hv, vn, c4, teams, eT, cD, fi, vv, nW, uZ, time_hash, const_2_ws, a2F = 0,
     a2G = "",
-    a2H = !1;
+    start_function_called = !1;
 
-function a2I() {
-    const_2 = 2;
+function main() {
+    const_2_ws = 2;
     version_hash = 6262;
     version = "1.83.2   10 January 2023";
     construct();
     d8();
-    a2H = !0;
-    d = (e = "undefined" !== typeof Android ? Android : null) ? e.getVersion() : 0;
-    12 <= d && e.prepareAd("6685097465");
-    b = !1;
-    window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iosCommandA && (b = !0, window.webkit.messageHandlers.iosCommandA.postMessage("prepare ad 5907904081"), c = "undefined" !== typeof mwIOSdataX ? mwIOSdataX : {
-        username: "iOS User " + Math.floor(1E3 * Math.random()),
-        id: Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)),
-        zoom: !0,
-        sound: !0,
-        emojis: "0",
-        colors: "0",
-        password: "0",
-        freeSpawn: !1,
-        unlimitedTime: !1,
-        alliances: !1
-    });
+    start_function_called = !0;
+    device_version = (droid = "undefined" !== typeof Android ? Android : null) ? droid.getVersion() : 0;
+    12 <= device_version && droid.prepareAd("6685097465");
+    is_ios = !1;
+    window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iosCommandA && 
+        (is_ios = !0, window.webkit.messageHandlers.iosCommandA.postMessage("prepare ad 5907904081"), 
+        ios = "undefined" !== typeof mwIOSdataX ? mwIOSdataX : {
+            username: "iOS User " + Math.floor(1E3 * Math.random()),
+            id: Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)),
+            zoom: !0,
+            sound: !0,
+            emojis: "0",
+            colors: "0",
+            password: "0",
+            freeSpawn: !1,
+            unlimitedTime: !1,
+            alliances: !1
+        });
     time_hash = (new Date).getTime() % 1024;
     is_not_top_window = check_not_top_window();
     jq.init();
-    f.init();
-    h();
+    user_settings.init();
+    set_client_id();
     p();
     aD();
-    document.addEventListener ? document.addEventListener("contextmenu", function(g) {
-        g.preventDefault()
-    }, !1) : document.attachEvent("oncontextmenu", function() {
-        window.event.returnValue = !1
-    });
+    document.addEventListener ? document.addEventListener("contextmenu", function(g) { g.preventDefault() }, !1) : 
+        document.attachEvent("oncontextmenu", function() { window.event.returnValue = !1 });
     a2K();
     document.addEventListener("keyup", a2L);
     document.addEventListener("keydown", a2M);
     document.addEventListener("visibilitychange", a2N);
-    window.addEventListener("error",
-        a2O, !0);
+    window.addEventListener("error", a2O, !0);
     so = 10;
     xK = new a2P;
     gy = new a2Q;
@@ -7476,7 +7485,7 @@ function a2I() {
     c4 = new a2T;
     c4.jd();
     c4.init();
-    dW = new a2U;
+    teams = new Teams;
     eT = new a2V;
     uZ = new bm;
     uZ.init();
@@ -7499,13 +7508,11 @@ function a2I() {
     p6();
     bw.init();
     c4.c5 = !0;
-    setTimeout(function() {
-        xJ(2, 14071)
-    }, 0)
+    setTimeout(function() { xJ(2, 14071) }, 0)
 }
 
 function aI() {
-    a2H || a2I()
+    start_function_called || main()
 }
 
 function check_not_top_window() {
@@ -7521,7 +7528,7 @@ function a2O(g) {
 }
 
 function a2W(g) {
-    e ? e.showToast(g) : alert(g)
+    droid ? droid.showToast(g) : alert(g)
 }
 
 function a2M(g) {
@@ -8264,7 +8271,7 @@ function kl() {
         var y = jt.a1U ? 1 : 0,
             A = jt.a4N ? 1 : 0,
             B = jt.a0p ? 1 : 0;
-        b ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= d ? (e.saveNumber(25, y), e.saveNumber(26, A)) : (f.x(6, 4 * B + 2 * A + y), f.y())
+        is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= device_version ? (droid.saveNumber(25, y), droid.saveNumber(26, A)) : (user_settings.x(6, 4 * B + 2 * A + y), user_settings.format_settings())
     }
 
     function k(y, A, B, C) {
@@ -8337,7 +8344,7 @@ function kl() {
                 n6: 0,
                 cm: 0
             });
-            !b && 5 > d && z.push({
+            !is_ios && 5 > device_version && z.push({
                 name: "High Resolution",
                 id: 4,
                 fB: 0,
@@ -8372,7 +8379,7 @@ function kl() {
                 n6: 0,
                 cm: 0
             });
-            !b && 5 > d && z.push({
+            !is_ios && 5 > device_version && z.push({
                 name: "Cookie Policy",
                 id: 9,
                 fB: 0,
@@ -8386,17 +8393,17 @@ function kl() {
                 n6: 0,
                 cm: 0
             });
-            if (b) this.a1U = c.freeSpawn, this.a4N = c.unlimitedTime, this.a0p = !1;
-            else if (5 <= d) this.a1U = 1 === e.loadNumber(25), this.a4N = 1 === e.loadNumber(26), this.a0p = !1;
+            if (is_ios) this.a1U = ios.freeSpawn, this.a4N = ios.unlimitedTime, this.a0p = !1;
+            else if (5 <= device_version) this.a1U = 1 === droid.loadNumber(25), this.a4N = 1 === droid.loadNumber(26), this.a0p = !1;
             else {
-                var y = f.g(6);
+                var y = user_settings.get_settings(6);
                 this.a1U = 1 === (y & 1);
                 this.a4N = 2 === (y & 2);
                 this.a0p = 4 === (y & 4)
             }
             z[2].n6 = this.a1U ? 130 : 0;
             z[3].n6 = this.a4N ? 130 : 0;
-            !b && 5 > d && (z[4].n6 = this.a0p ? 130 : 0);
+            !is_ios && 5 > device_version && (z[4].n6 = this.a0p ? 130 : 0);
             this.a4N && (vv.uu[2] = vv.uu[3] = vv.uu[4] = !1)
         };
     this.c7 = function(y, A) {
@@ -8535,13 +8542,13 @@ function kV() {
 }
 
 function a2V() {
-    function g() {
+    function draw_pie_chart() {
         var B, C = 0,
             E = 0,
             F = Math.floor(x / 2),
             G = Math.floor(t / 2),
             N = 1.5 * Math.PI;
-        for (B = team_count; 0 <= B; B--) E += A[B], 0 === A[B] && C++;
+        for (B = team_count; 0 <= B; B--) E += team_total_land[B], 0 === team_total_land[B] && C++;
         n = !1;
         y.clearRect(0, 0, x, x);
         y.fillStyle = hy;
@@ -8554,10 +8561,10 @@ function a2V() {
         if (0 < E)
             if (C === team_count)
                 for (B = team_count; 0 <= B; B--) {
-                    if (0 < A[B]) {
+                    if (0 < team_total_land[B]) {
                         E = F;
                         N = G;
-                        y.fillStyle = dW.wy[dW.im[B]];
+                        y.fillStyle = teams.wy[teams.im[B]];
                         y.beginPath();
                         y.arc(E, E, N, 0, 2 * Math.PI);
                         y.fill();
@@ -8565,13 +8572,13 @@ function a2V() {
                     }
                 } else {
                     for (B = 0; B <= team_count; B++)
-                        if (0 < A[B]) {
-                            C = N + 2 * Math.PI * A[B] / E;
+                        if (0 < team_total_land[B]) {
+                            C = N + 2 * Math.PI * team_total_land[B] / E;
                             var I = F,
                                 D = G,
                                 K = N,
                                 J = C;
-                            y.fillStyle = dW.wy[dW.im[B]];
+                            y.fillStyle = teams.wy[teams.im[B]];
                             y.beginPath();
                             y.arc(I, I, D, K, J);
                             y.lineTo(I, I);
@@ -8597,51 +8604,48 @@ function a2V() {
         t = 0,
         z = null,
         y = null,
-        A = null;
+        team_total_land = null;
     this.init = function() {
         if (team_game) {
             l = 16;
-            A = new Uint32Array(team_count + 1);
-            for (var B = team_count; 0 < B; B--) A[B] = 1;
+            team_total_land = new Uint32Array(team_count + 1);
+            for (var index = team_count; 0 < index; index--) team_total_land[index] = 1;
             this.lx()
-        } else A = y = z = null
+        } else team_total_land = y = z = null
     };
     this.qT = function() {
         return x
     };
     this.lx = function() {
-        team_game && (x = Math.floor(.18 *
-            pK), x += x % 2, t = Math.floor(7 * x / 8), z = z ? z : document.createElement("canvas"), z.width = x, z.height = x, y = z.getContext("2d", {
-            alpha: !0
-        }), y.lineWidth = 2, y.strokeStyle = cK, g())
+        team_game && (x = Math.floor(.18 * pK), x += x % 2, t = Math.floor(7 * x / 8), 
+        z = z ? z : document.createElement("canvas"), z.width = x, z.height = x, y = z.getContext("2d", { alpha: !0 }), y.lineWidth = 2, y.strokeStyle = cK, draw_pie_chart())
     };
-    this.qo = function() {
-        return A[this.my()]
+    this.get_largest_team_total_land = function() {
+        return team_total_land[this.get_largest_team()]
     };
     this.ik = function() {
         l = 31;
         this.dF();
-        return this.my()
+        return this.get_largest_team()
     };
-    this.my = function() {
-        for (var B = 0, C = team_count; 0 < C; C--) A[C] > A[B] && (B = C);
-        return B
+    this.get_largest_team = function() {
+        for (var largest_team = 0, index = team_count; 0 < index; index--) team_total_land[index] > team_total_land[largest_team] && (largest_team = index);
+        return largest_team
     };
     this.dF = function() {
         if (team_game && 32 <= ++l) {
             l = 0;
-            var B;
-            for (B = team_count; 0 <= B; B--) A[B] = 0;
-            for (B = alive_count - 1; 0 <= B; B--) A[dW.dX[alive_entities[B]]] += land[alive_entities[B]];
+            var index;
+            for (index = team_count; 0 <= index; index--) team_total_land[index] = 0;
+            for (index = alive_count - 1; 0 <= index; index--) team_total_land[teams.team_array[alive_entities[index]]] += land[alive_entities[index]];
             n = !0
         }
     };
     this.bv = function() {
-        team_game && n && g()
+        team_game && n && draw_pie_chart()
     };
     this.cG = function() {
-        team_game &&
-            cH.drawImage(z, m7, qU + 2 * m7)
+        team_game && cH.drawImage(z, m7, qU + 2 * m7)
     }
 }
 
@@ -8688,45 +8692,45 @@ function kd() {
     }
 
     function l() {
-        if (5 <= d) {
-            var y = n(document.documentElement.clientWidth);
-            var A = n(document.documentElement.clientHeight);
-            pO = 1;
-            if (y !== gE || A !== cB) {
-                gE = y;
-                cB = A;
+        if (5 <= device_version) {
+            var client_width = n(document.documentElement.clientWidth);
+            var client_height = n(document.documentElement.clientHeight);
+            device_pixel_ratio = 1;
+            if (client_width !== gE || client_height !== cB) {
+                gE = client_width;
+                cB = client_height;
                 r = gE;
                 s = cB;
                 pK = qn(r, s);
                 bq = divide_floor(s + r, 2);
-                if (5 <= d) {
-                    var B = e.loadNumber(23);
-                    var C = e.loadNumber(24);
-                    y > B && (B = y, e.saveNumber(23, B));
-                    A > C && (C = A, e.saveNumber(24, C))
-                } else B = y, C = A;
-                y = p7.width;
-                A = p7.height;
-                B > y && (y = B, p7.width = B);
-                C > A && (A = C, p7.height = C);
-                p7.style.width = y + "px";
-                p7.style.height = A + "px";
+                if (5 <= device_version) {
+                    var B = droid.loadNumber(23);
+                    var C = droid.loadNumber(24);
+                    client_width > B && (B = client_width, droid.saveNumber(23, B));
+                    client_height > C && (C = client_height, droid.saveNumber(24, C))
+                } else B = client_width, C = client_height;
+                client_width = p7.width;
+                client_height = p7.height;
+                B > client_width && (client_width = B, p7.width = B);
+                C > client_height && (client_height = C, p7.height = C);
+                p7.style.width = client_width + "px";
+                p7.style.height = client_height + "px";
                 B = !0
             } else B = !1;
             return B
         }
-        jt.a0p ? (pO = window.devicePixelRatio) || (pO = 1) : pO = 1;
+        jt.a0p ? (device_pixel_ratio = window.devicePixelRatio) || (device_pixel_ratio = 1) : device_pixel_ratio = 1;
         B = n(document.documentElement.clientWidth);
         C = n(document.documentElement.clientHeight);
-        y = Math.floor(.5 + pO * B);
-        A = Math.floor(.5 + pO * C);
-        if (y === gE && A === cB) return !1;
-        gE = r = y;
-        cB = s = A;
+        client_width = Math.floor(.5 + device_pixel_ratio * B);
+        client_height = Math.floor(.5 + device_pixel_ratio * C);
+        if (client_width === gE && client_height === cB) return !1;
+        gE = r = client_width;
+        cB = s = client_height;
         pK = qn(r, s);
         bq = divide_floor(s + r, 2);
-        p7.width = y;
-        p7.height = A;
+        p7.width = client_width;
+        p7.height = client_height;
         p7.style.width = B + "px";
         p7.style.height = C + "px";
         return !0
@@ -8737,7 +8741,7 @@ function kd() {
         t = 1;
         z = 100;
         r = s = pK = gE = cB = bq = 0;
-        pO = 1;
+        device_pixel_ratio = 1;
         p7 = document.getElementById("canvasA");
         cH = p7.getContext("2d", {
             alpha: !1
@@ -8777,7 +8781,7 @@ function kX() {
         B = pixel.to_y(K);
         t = x = pixel.to_coords(z, y);
         E = attacks.find_boat_index_from_boat_id(n, F); - 1 === E ? (k(), eK.av(n, F), G = !1) : (l = attacks.get_attack_troops_remaining_from_attack_index(n, E), G = !0);
-        if (G && (k(), G = divide_floor(l, 128), G = 1 > G ? 1 : G, l -= G, n === my_id && (statistics.numbers[15] += G), l <= at ? (n === my_id && (statistics.numbers[15] += l), g(!1), G = !1) : (attacks.set_attack_troops_remaining_from_attack_index(n, E, l), G = !0), G))
+        if (G && (k(), G = divide_floor(l, 128), G = 1 > G ? 1 : G, l -= G, n === my_id && (statistics.numbers[15] += G), l <= neutral_land_cost ? (n === my_id && (statistics.numbers[15] += l), g(!1), G = !1) : (attacks.set_attack_troops_remaining_from_attack_index(n, E, l), G = !0), G))
             if (G = pixel.to_coords(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.to_x(x), y = pixel.to_y(x),
                 eK.g0(C, x), G = pixel.can_take(x) ? !1 : !0, G) pixel.is_water(x) && pixel.change_to_boat(x, n);
             else a: {
@@ -8789,7 +8793,7 @@ function kX() {
                         break a
                     }
                     if (!ch(n, G)) {
-                        N = land[G] * j7 - troops[G];
+                        N = land[G] * max_troops_to_land_ratio - troops[G];
                         0 >= N || (N = l > N ? N : l, l -= N, n === my_id && (announcements.donate(N, G), statistics.numbers[16] += N), G === my_id && (announcements.receive_donate(N, n), statistics.numbers[10] += N), troops[G] += N);
                         g(!0);
                         break a
@@ -8901,8 +8905,8 @@ function Terri_ws() {
         data_reader = new FileReader;
         data_reader.addEventListener("loadend", l);
         var ws_url = ws_strings[0];
-        ws_url = remote < eD.wQ ? ws_url + (eD.a1l[remote] + ws_strings[1 + const_2]) : 
-            ws_url + (eD.a1l[0] + "/i" + (1 + const_2) + (remote - eD.wR) + "/");
+        ws_url = remote < eD.wQ ? ws_url + (eD.a1l[remote] + ws_strings[1 + const_2_ws]) : 
+            ws_url + (eD.a1l[0] + "/i" + (1 + const_2_ws) + (remote - eD.wR) + "/");
         ws = new WebSocket(ws_url);
         ws.onopen = ws_onopen;
         ws.onmessage = ws_onmessage;
@@ -9021,8 +9025,7 @@ function a2S() {
             this.end();
             return !0
         }
-        if (k < this.cw - this.nS) return this.a5i = !0, this.a5h =
-            (g - 2 * this.i4 - this.ud) / this.ue, !0;
+        if (k < this.cw - this.nS) return this.a5i = !0, this.a5h = (g - 2 * this.i4 - this.ud) / this.ue, !0;
         n = Math.floor(g / (this.c1 / this.lt.length));
         n = 0 > n ? 0 : n >= this.lt.length ? this.lt.length - 1 : n;
         n !== this.bs && (this.bs = n, this.a5j(), c4.c5 = !0);
@@ -9179,8 +9182,8 @@ function a2S() {
         cH.beginPath();
         cH.arc(l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
         cH.fill();
-        g = this.a5h * c4.tX();
-        g = 0 === is_alive[my_id] ? Math.floor(g * eW.td) : Math.floor(g * c4.dU());
+        g = this.a5h * c4.tick_interval();
+        g = 0 === is_alive[my_id] ? Math.floor(g * eW.td) : Math.floor(g * c4.time_elapsed());
         cH.fillStyle = cK;
         cH.fillText(1 === n ? eB.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
             -this.i4, this.xU - k * Math.pow(t, n));
@@ -9197,7 +9200,7 @@ function a2S() {
     }
 }
 
-function a2U() {
+function Teams() {
     this.wy = "rgba(130,130,130,0.88) rgba(130,12,12,0.88) rgba(12,130,12,0.88) rgba(12,12,130,0.88) rgba(130,130,12,0.88) rgba(130,12,130,0.88) rgba(12,130,130,0.88) rgba(130,130,130,0.88) rgba(0,0,0,0.88)".split(" ");
     this.su = [cK, "rgb(255,120,120)", "rgb(0,230,0)", "rgb(150,150,255)", "rgb(240,240,25)", "rgb(240,25,240)", "rgb(25,240,240)", cK, "rgb(170,170,170)"];
     this.a5v = [cK, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", cK, gH];
@@ -9206,7 +9209,7 @@ function a2U() {
     ];
     this.a19 = ["rgba(255,255,255,", "rgba(0,0,0,", "rgba(170,170,170,", "rgba(85,85,85,"];
     this.a1A = ["rgb(255,255,255)", "rgb(0,0,0)", "rgb(170,170,170)", "rgb(85,85,85)"];
-    this.bo = "White Red Green Blue Yellow Magenta Cyan White Black".split(" ");
+    this.label_team_color = "White Red Green Blue Yellow Magenta Cyan White Black".split(" ");
     this.tl = [
         [255, 255, 255, 180],
         [255, 0, 0, 180],
@@ -9234,14 +9237,14 @@ function a2U() {
     this.im = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     var k, n;
     this.init = function(l) {
-        this.dX = new Uint8Array(max_entities);
+        this.team_array = new Uint8Array(max_entities);
         this.a62();
         team_game && (dr.ds && dr.dt.zw ? this.yb() : 9 === gamemode ? this.a63() : this.dF(l))
     };
     this.yb = function() {
         var l, x = entity_count;
         this.im = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-        for (l = 0; l < x; l++) this.dX[l] = dr.dt.zw[l]
+        for (l = 0; l < x; l++) this.team_array[l] = dr.dt.zw[l]
     };
     this.a62 = function() {
         for (var l = this.im.length - 1; 0 <= l; l--) this.im[l] = l;
@@ -9250,8 +9253,8 @@ function a2U() {
     };
     this.a63 = function() {
         var l;
-        for (l = player_count + e2.e3 - 1; 0 <= l; l--) this.dX[l] = 1;
-        for (l = player_count + e2.e3; l < max_entities; l++) this.dX[l] = 2;
+        for (l = player_count + e2.e3 - 1; 0 <= l; l--) this.team_array[l] = 1;
+        for (l = player_count + e2.e3; l < max_entities; l++) this.team_array[l] = 2;
         this.im[1] = 7;
         this.im[2] = 8
     };
@@ -9302,11 +9305,11 @@ function a2U() {
         var B = player_count - 1;
         a: for (; 0 <= B; B--) {
             var C = B;
-            var E = a1V[C].indexOf("[");
+            var E = temp_nickname[C].indexOf("[");
             if (0 > E) E = null;
             else {
-                var F = a1V[C].indexOf("]");
-                E = 1 < F - E && 8 >= F - E ? a1V[C].substring(E + 1, F).toUpperCase().trim() : null
+                var F = temp_nickname[C].indexOf("]");
+                E = 1 < F - E && 8 >= F - E ? temp_nickname[C].substring(E + 1, F).toUpperCase().trim() : null
             }
             if (null !== E) {
                 for (F = k.length - 1; 0 <= F; F--)
@@ -9337,7 +9340,7 @@ function a2U() {
                     G = 0;
                     for (E = team_count; 0 < E; E--) l[N] > l[E] && G++;
                     if (G !== team_count - 1) {
-                        for (E = n[C].length - 1; 0 <= E; E--) l[N]++, this.dX[n[C][E]] = N;
+                        for (E = n[C].length - 1; 0 <= E; E--) l[N]++, this.team_array[n[C][E]] = N;
                         break
                     }
                 }
@@ -9352,10 +9355,10 @@ function a2U() {
         0 < player_count % team_count && A++;
         var B = new Uint8Array(y + 1);
         for (z = y; 1 <= z; z--) B[this.im[z]] = z;
-        for (y = 0; y < player_count; y++) z = B[l[y] + 1], 0 === this.dX[y] && z <= team_count && t[z] < A && (t[z]++, this.dX[y] = z);
-        for (y = 0; y < player_count; y++) z = B[x[y] + 1], 0 === this.dX[y] && z <= team_count && t[z] < A && (t[z]++, this.dX[y] = z);
+        for (y = 0; y < player_count; y++) z = B[l[y] + 1], 0 === this.team_array[y] && z <= team_count && t[z] < A && (t[z]++, this.team_array[y] = z);
+        for (y = 0; y < player_count; y++) z = B[x[y] + 1], 0 === this.team_array[y] && z <= team_count && t[z] < A && (t[z]++, this.team_array[y] = z);
         for (z = team_count; 1 <= z; z--)
-            for (y = player_count - 1; 0 <= y && !(t[z] >= A); y--) 0 === this.dX[y] && (t[z]++, this.dX[y] = z)
+            for (y = player_count - 1; 0 <= y && !(t[z] >= A); y--) 0 === this.team_array[y] && (t[z]++, this.team_array[y] = z)
     };
     this.a6A = function() {
         var l, x = new Uint16Array(team_count);
@@ -9363,17 +9366,17 @@ function a2U() {
         for (l = team_count - 2; 0 <= l; l--) x[l] = dy.dz[l].mv;
         x[0]--;
         var t = 0 === x[0] ? 1 : 0;
-        for (l = player_count; l < max_entities; l++) this.dX[l] = t + 1, x[t]--, 0 >= x[t] && t++
+        for (l = player_count; l < max_entities; l++) this.team_array[l] = t + 1, x[t]--, 0 >= x[t] && t++
     };
     this.a6B = function() {
-        for (var l = player_count; l < max_entities; l++) this.dX[l] = 1 + l % team_count
+        for (var l = player_count; l < max_entities; l++) this.team_array[l] = 1 + l % team_count
     };
     this.il = function(l) {
         if (singleplayer) return [512, ""];
         var x, t, z = -1,
             y = -1;
         for (t = k.length - 1; 0 <= t; t--)
-            for (x = n[t].length - 1; 0 <= x && this.im[this.dX[n[t][x]]] === l; x--)
+            for (x = n[t].length - 1; 0 <= x && this.im[this.team_array[n[t][x]]] === l; x--)
                 if (-1 === z || sM[n[t][x]] < sM[z]) z = n[t][x], y = t;
         return -1 === z || 0 === is_alive[z] ? [512, ""] : [z, k[y]]
     }
@@ -9473,7 +9476,7 @@ function bS() {
 }
 
 function ch(g, k) {
-    return 0 === dW.dX[g] || dW.dX[g] !== dW.dX[k]
+    return 0 === teams.team_array[g] || teams.team_array[g] !== teams.team_array[k]
 }
 
 function li(g, k) {
@@ -9541,8 +9544,7 @@ function a2T() {
         this.c5 = !0; - 1 !== this.a6Y && (clearInterval(this.a6Y), this.a6Y = -1)
     };
     this.jd = function() {
-        this.a6V =
-            this.a6b;
+        this.a6V = this.a6b;
         this.a6W = null;
         this.c5 = !0
     };
@@ -9570,10 +9572,10 @@ function a2T() {
     this.a6f = function() {
         this.a6X.dF()
     };
-    this.dU = function() {
+    this.time_elapsed = function() {
         return singleplayer ? this.a6W.wP : this.a6X.wP
     };
-    this.tX = function() {
+    this.tick_interval = function() {
         return 56
     }
 }
@@ -9662,10 +9664,10 @@ function kZ() {
     }
 
     function k(z) {
-        n = pO * z.touches[0].clientX;
-        l = pO * z.touches[0].clientY;
-        x = pO * z.touches[1].clientX;
-        t = pO * z.touches[1].clientY
+        n = device_pixel_ratio * z.touches[0].clientX;
+        l = device_pixel_ratio * z.touches[0].clientY;
+        x = device_pixel_ratio * z.touches[1].clientX;
+        t = device_pixel_ratio * z.touches[1].clientY
     }
     var n, l, x, t;
     this.pP = function(z) {
@@ -9769,7 +9771,7 @@ function ka() {
             for (var t = k(x, 9), z = k(x, 14), y = k(x, 4), A = 1 === k(x, 1), B = k(x, 6), C = k(x, 14), E = k(x, 9) + 1, F = [], G, elo, nick, D = 0; D < E; D++) G = k(x, 1), elo = [k(x, 6), k(x, 6), k(x, 6)], nick = g(k(x, 5), x), F.push({
                 name: nick,
                 xd: elo,
-                xe: G
+                status: G
             });
             aJ.vp();
             xJ(B, C);
@@ -9788,7 +9790,7 @@ function ka() {
                 name: nick,
                 xd: G,
                 elo: elo,
-                xe: F
+                status: F
             });
             aJ.vp();
             xJ(B, C);
@@ -9937,7 +9939,7 @@ function Multi() {
 
     function k(t) {
         l(t, 14, version_hash);
-        l(t, 4, b ? 2 : 12 <= d ? 1 : 0 < d ? 3 : 0);
+        l(t, 4, is_ios ? 2 : 12 <= device_version ? 1 : 0 < device_version ? 3 : 0);
         l(t, 1, a2C ? 1 : 0);
         l(t, 1, is_not_top_window ? 1 : 0);
         l(t, 5, (new Date).getHours() % 24)
@@ -10145,13 +10147,13 @@ function Multi() {
         l(z, 1, choice ? 1 : 0);
         eD.send(eD.jc, z)
     };
-    this.single_loaded = function(t) {
+    this.single_loaded = function(remote) {
         var z = new Uint8Array(4);
         x = 0;
         l(z, 1, 0);
         l(z, 3, 3);
         k(z);
-        eD.send(t, z)
+        eD.send(remote, z)
     }
 }
-setTimeout(aI, 1E4);
+aI()
