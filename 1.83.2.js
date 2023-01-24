@@ -1,4 +1,4 @@
-function set_username() {
+function get_username() {
     if (is_ios) return ios.username;
     if (12 <= device_version) {
         var username = droid.loadString(20);
@@ -27,58 +27,58 @@ function load_password() {
     password = Math.floor(parseInt(names.str_to_charcode(password)));
     if (0 < password && password < password_max_limit) return password;
     password = Math.floor(1 + (password_max_limit - 1) * Math.random());
-    return is_valid_password(password) ? password : 0
+    return save_password(password) ? password : 0
 }
 
-function p() {
-    if (is_ios) q = ios.zoom || r < s;
+function set_zoom() {
+    if (is_ios) zoom = ios.zoom || r < s;
     else if (12 <= device_version) {
-        var g = droid.loadNumber(21); - 1 === g ? (q = 100 >= droid.getNumber(0) || r < s, droid.saveNumber(21, q ? 1 : 0)) : q = 1 === g || r < s
-    } else 5 <= device_version ? (g = droid.loadNumber(1), 2 === g ? (q = !0, droid.saveNumber(1, q ? 1 : 0)) : q = 1 === g) : q = 0 === user_settings.get_settings(4) || r < s
+        var stored_zoom = droid.loadNumber(21); - 1 === stored_zoom ? (zoom = 100 >= droid.getNumber(0) || r < s, droid.saveNumber(21, zoom ? 1 : 0)) : zoom = 1 === stored_zoom || r < s
+    } else 5 <= device_version ? (stored_zoom = droid.loadNumber(1), 2 === stored_zoom ? (zoom = !0, droid.saveNumber(1, zoom ? 1 : 0)) : zoom = 1 === stored_zoom) : zoom = 0 === user_settings.get_settings(4) || r < s
 }
 
-function u() {
+function get_emojis() {
     return is_ios ? ios.emojis : 5 <= device_version ? droid.loadString(1) : user_settings.get_settings(7)
 }
 
-function v() {
+function get_colors() {
     return is_ios ? ios.colors : 12 <= device_version ? droid.loadString(21) : 5 <= device_version ? droid.loadString(2) : user_settings.get_settings(8)
 }
 
-function w(g) {
-    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("username " + g);
-    else if (12 <= device_version) droid.saveString(20, g), droid.setState(10);
-    else if (5 <= device_version) droid.saveString(0, g);
+function save_username(name) {
+    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("username " + name);
+    else if (12 <= device_version) droid.saveString(20, name), droid.setState(10);
+    else if (5 <= device_version) droid.saveString(0, name);
     else {
-        if (3 > g.length || 0 <= g.indexOf(";")) g = "Player 666";
-        user_settings.x(0, g);
+        if (3 > name.length || 0 <= name.indexOf(";")) name = "Player 666";
+        user_settings.set_setting(0, name);
         user_settings.format_settings()
     }
 }
 
-function is_valid_password(password) {
+function save_password(password) {
     password = names.charcode_to_str(password.toString());
-    return is_ios ? (ios.password = password, window.webkit.messageHandlers.iosCommandA.postMessage("password " + password), !0) : 12 <= device_version ? (droid.saveString(22, password), !0) : 5 <= device_version ? !1 : 2 === user_settings.a0() ? (user_settings.x(9, password), user_settings.format_settings(), !0) : !1
+    return is_ios ? (ios.password = password, window.webkit.messageHandlers.iosCommandA.postMessage("password " + password), !0) : 12 <= device_version ? (droid.saveString(22, password), !0) : 5 <= device_version ? !1 : 2 === user_settings.a0() ? (user_settings.set_setting(9, password), user_settings.format_settings(), !0) : !1
 }
 
-function a1(g, k) {
-    is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (g ? 1 : 0)), window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (k ? 1 : 0))) : 12 <= device_version ? (droid.saveNumber(22, k ? 1 : 0), droid.saveNumber(21, g ? 1 : 0)) : 5 <= device_version ? (droid.saveNumber(1, g ? 1 : 0), droid.saveNumber(11, k ? 1 : 0)) : (user_settings.x(2, k ? 1 : 0), user_settings.x(4, g ? 0 : 1), user_settings.format_settings())
+function save_options(zoom, sound) {
+    is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (zoom ? 1 : 0)), window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (sound ? 1 : 0))) : 12 <= device_version ? (droid.saveNumber(22, sound ? 1 : 0), droid.saveNumber(21, zoom ? 1 : 0)) : 5 <= device_version ? (droid.saveNumber(1, zoom ? 1 : 0), droid.saveNumber(11, sound ? 1 : 0)) : (user_settings.set_setting(2, sound ? 1 : 0), user_settings.set_setting(4, zoom ? 0 : 1), user_settings.format_settings())
 }
 
-function a3() {
-    for (var g = "", k = 0; k < a5.a6; k += 2) g += a5.a7[k] || a5.a7[k + 1] ? a5.a7[k] && !a5.a7[k + 1] ? "1" : !a5.a7[k] && a5.a7[k + 1] ? "2" : "3" : "0";
-    is_ios ? window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + g) : 5 <= device_version ? droid.saveString(1, g) : (user_settings.x(7, g), user_settings.format_settings())
+function save_emojis() {
+    for (var emoji_str = "", index = 0; index < a5.a6; index += 2) emoji_str += a5.a7[index] || a5.a7[index + 1] ? a5.a7[index] && !a5.a7[index + 1] ? "1" : !a5.a7[index] && a5.a7[index + 1] ? "2" : "3" : "0";
+    is_ios ? window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + emoji_str) : 5 <= device_version ? droid.saveString(1, emoji_str) : (user_settings.set_setting(7, emoji_str), user_settings.format_settings())
 }
 
-function a8(g) {
-    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("colors " + g);
+function save_colors(colors) {
+    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("colors " + colors);
     else {
-        if (12 <= device_version) droid.saveString(21, g);
+        if (12 <= device_version) droid.saveString(21, colors);
         else if (5 <= device_version) {
-            droid.saveString(2, g);
+            droid.saveString(2, colors);
             return
         }
-        user_settings.x(8, g);
+        user_settings.set_setting(8, colors);
         user_settings.format_settings()
     }
 }
@@ -91,192 +91,194 @@ function show_ad() {
     is_ios ? window.webkit.messageHandlers.iosCommandA.postMessage("show ad 1800000") : 12 <= device_version && droid.presentAd(18E5)
 }
 
-function aC() {
+function reload_client() {
     is_ios ? location.reload() : 7 <= device_version ? droid.setState(5) : location.reload()
 }
 
-function aD() {
+function set_android_html_header() {
     14 > device_version || droid.saveString(23, '<!DOCTYPE html>\n<html lang="aG">\n' + document.getElementsByTagName("html")[0].innerHTML + "\n</html>")
 }
-self.aiCommand746 = function(g) {
-    0 === g ? aI() : 1 !== g || 14 > device_version || aJ.aK()
-};
-var aL, aM, aN, aO, aP, aQ, aR, aS, aT, aU, offset, aW, aX;
 
-function aY() {
-    aQ = 0;
-    aR = 2048;
-    aS = new Uint32Array(4 * aR);
-    aT = 0;
-    aU = new Uint32Array(aR);
+self.aiCommand746 = function(option) {
+    0 === option ? start() : 1 !== option || 14 > device_version || aJ.aK()
+};
+
+var prev_attack, prev_author, prev_remaining, prev_remaining_per_pixel, prev_target, prev_border_length, prev_array_max_length, prev_border_land, prev_land_gain, prev_inner, offset, editing_matrix, prev_border_taken;
+
+function matrix_processor_init() {
+    prev_border_length = 0;
+    prev_array_max_length = 2048;
+    prev_border_land = new Uint32Array(4 * prev_array_max_length);
+    prev_land_gain = 0;
+    prev_inner = new Uint32Array(prev_array_max_length);
     offset = new Int32Array(4);
     offset[0] = -4 * map_width;
     offset[1] = 4;
     offset[2] = -offset[0];
     offset[3] = -offset[1];
-    aW = new Uint8Array(map_width * map_height)
+    editing_matrix = new Uint8Array(map_width * map_height)
 }
 
-function ab(g) {
-    aM = g;
-    aX = !1;
-    ac();
-    ad();
-    for (g = attacks.ongoing_attack_count(aM) - 1; 0 <= g; g--) 0 === attacks.get_boat_id_from_attack_index(aM, g) && (aL = g, ah());
-    aX && ai()
+function ab(index) {
+    prev_author = index;
+    prev_border_taken = !1;
+    set_border_to_inner();
+    set_takeable_land_to_border();
+    for (index = attacks.ongoing_attack_count(prev_author) - 1; 0 <= index; index--) 0 === attacks.get_boat_id_from_attack_index(prev_author, index) && (prev_attack = index, start_testing_taking_process());
+    prev_border_taken && update_pixel_arrays()
 }
 
-function ai() {
-    aj();
-    ak()
+function update_pixel_arrays() {
+    update_editing_border_pixels();
+    update_pixels_bordering_terrain()
 }
 
-function ah() {
-    aP = attacks.get_attack_target_from_attack_index(aM, aL);
-    aN = attacks.get_attack_troops_remaining_from_attack_index(aM, aL);
-    an();
-    0 === aQ ? ao() : (ap(), aq() ? ar() : ao())
+function start_testing_taking_process() {
+    prev_target = attacks.get_attack_target_from_attack_index(prev_author, prev_attack);
+    prev_remaining = attacks.get_attack_troops_remaining_from_attack_index(prev_author, prev_attack);
+    mark_possible_expansion();
+    0 === prev_border_length ? return_remaining() : (reset_editing_matrix(), can_take_marked_pixels() ? try_take_marked_pixels() : return_remaining())
 }
 
-function aq() {
-    aO = divide_floor(aN, aQ);
-    return aO > neutral_land_cost
+function can_take_marked_pixels() {
+    prev_remaining_per_pixel = divide_floor(prev_remaining, prev_border_length);
+    return prev_remaining_per_pixel > neutral_land_cost
 }
 
-function ap() {
-    var g;
-    for (g = aQ - 1; 0 <= g; g--) aW[divide_floor(aS[g], 4)] = 0
+function reset_editing_matrix() {
+    var index;
+    for (index = prev_border_length - 1; 0 <= index; index--) editing_matrix[divide_floor(prev_border_land[index], 4)] = 0
 }
 
-function ao() {
-    1 === attacks.ongoing_attack_count(aM) && au.av(aM);
-    if (aM !== my_id) troops[aM] += aN, ay.az(aM);
+function return_remaining() {
+    1 === attacks.ongoing_attack_count(prev_author) && au.av(prev_author);
+    if (prev_author !== my_id) troops[prev_author] += prev_remaining, ay.az(prev_author);
     else {
-        var g = troops[aM];
-        troops[aM] += aN;
-        ay.az(aM);
-        statistics.numbers[13] -= troops[aM] - g
+        var old_troop = troops[prev_author];
+        troops[prev_author] += prev_remaining;
+        ay.az(prev_author);
+        statistics.numbers[13] -= troops[prev_author] - old_troop
     }
-    attacks.b2(aM, aL)
+    attacks.remove_attack(prev_author, prev_attack)
 }
 
-function ac() {
-    var g = temp_border_pixels[aM].length;
-    g = g > aR ? aR : g;
-    aT = 0;
-    for (--g; 0 <= g; g--) aU[aT++] = temp_border_pixels[aM][g]
+function set_border_to_inner() {
+    var border_length = editing_border_pixels[prev_author].length;
+    border_length = border_length > prev_array_max_length ? prev_array_max_length : border_length;
+    prev_land_gain = 0;
+    for (--border_length; 0 <= border_length; border_length--) prev_inner[prev_land_gain++] = editing_border_pixels[prev_author][border_length]
 }
 
-function ad() {
-    var g;
-    for (g = temp_border_pixels[aM].length - 1; 0 <= g; g--) pixel.can_take(temp_border_pixels[aM][g]) && pixel.change_to_border(temp_border_pixels[aM][g], aM);
-    temp_border_pixels[aM] = []
+function set_takeable_land_to_border() {
+    var border_pixel;
+    for (border_pixel = editing_border_pixels[prev_author].length - 1; 0 <= border_pixel; border_pixel--) pixel.can_take(editing_border_pixels[prev_author][border_pixel]) && pixel.change_to_border(editing_border_pixels[prev_author][border_pixel], prev_author);
+    editing_border_pixels[prev_author] = []
 }
 
-function an() {
-    aQ = 0;
-    aP === max_entities ? b9() : bA()
+function mark_possible_expansion() {
+    prev_border_length = 0;
+    prev_target === max_entities ? mark_possible_neutral_expansion() : mark_possible_entity_expansion()
 }
 
-function bA() {
-    var g, k;
-    for (g = 3; 0 <= g; g--)
-        for (k = aT - 1; 0 <= k; k--) {
-            var n = aU[k] + offset[g];
-            var l = divide_floor(n, 4);
-            0 === aW[l] && pixel.controlled_by_entity(n) && pixel.owner(n) === aP && (aW[l] = 1, aS[aQ++] = n)
+function mark_possible_entity_expansion() {
+    var side, index;
+    for (side = 3; 0 <= side; side--)
+        for (index = prev_land_gain - 1; 0 <= index; index--) {
+            var entity_coord = prev_inner[index] + offset[side];
+            var coord_index = divide_floor(entity_coord, 4);
+            0 === editing_matrix[coord_index] && pixel.controlled_by_entity(entity_coord) && pixel.owner(entity_coord) === prev_target && (editing_matrix[coord_index] = 1, prev_border_land[prev_border_length++] = entity_coord)
         }
 }
 
-function b9() {
-    var g, k;
-    for (g = 3; 0 <= g; g--)
-        for (k = aT - 1; 0 <= k; k--) {
-            var n = aU[k] + offset[g];
-            var l = divide_floor(n, 4);
-            0 === aW[l] && pixel.is_neutral(n) && (aW[l] = 1, aS[aQ++] = n)
+function mark_possible_neutral_expansion() {
+    var side, index;
+    for (side = 3; 0 <= side; side--)
+        for (index = prev_land_gain - 1; 0 <= index; index--) {
+            var neutral_coord = prev_inner[index] + offset[side];
+            var coord_index = divide_floor(neutral_coord, 4);
+            0 === editing_matrix[coord_index] && pixel.is_neutral(neutral_coord) && (editing_matrix[coord_index] = 1, prev_border_land[prev_border_length++] = neutral_coord)
         }
 }
 
-function ar() {
-    bH() ? (bI(), aP !== max_entities && bJ()) : ao()
+function try_take_marked_pixels() {
+    still_can_take_marked_pixels() ? (take_border(), prev_target !== max_entities && bJ()) : return_remaining()
 }
 
 function bJ() {
     bK();
-    bL(pixels_bordering_land[aP]);
-    bL(pixels_bordering_water[aP]);
-    bO(temp_border_pixels[aP]);
-    bP(pixels_bordering_water[aP]);
-    bP(pixels_bordering_mountain[aP]);
+    bL(pixels_bordering_land[prev_target]);
+    bL(pixels_bordering_water[prev_target]);
+    bO(editing_border_pixels[prev_target]);
+    bP(pixels_bordering_water[prev_target]);
+    bP(pixels_bordering_mountain[prev_target]);
     bR();
     bS()
 }
 
-function bI() {
-    aX = !0;
-    attacks.set_attack_troops_remaining_from_attack_index(aM, aL, aN);
-    land[aM] += aQ;
+function take_border() {
+    prev_border_taken = !0;
+    attacks.set_attack_troops_remaining_from_attack_index(prev_author, prev_attack, prev_remaining);
+    land[prev_author] += prev_border_length;
     bV();
     bW()
 }
 
-function bH() {
-    return aP === max_entities ? bX() : bY()
+function still_can_take_marked_pixels() {
+    return prev_target === max_entities ? deduct_troops_taking_border() : bY()
 }
 
 function bY() {
-    var g = aQ * neutral_land_cost,
+    var troops_needed = prev_border_length * neutral_land_cost,
         k = bb(),
         n = bd();
-    k = g + 2 * k + n;
-    var l = aO * aQ;
-    if (l > k) return aN -= k, bg(k - g, n), !0;
-    aN -= l;
-    bg(l - g, n);
+    k = troops_needed + 2 * k + n;
+    var l = prev_remaining_per_pixel * prev_border_length;
+    if (l > k) return prev_remaining -= k, bg(k - troops_needed, n), !0;
+    prev_remaining -= l;
+    bg(l - troops_needed, n);
     return !1
 }
 
 function bg(g, k) {
     if (0 < k)
-        if (g >= k) attacks.set_attack_troops_remaining_from_target(aP, aM, 0), g -= k;
+        if (g >= k) attacks.set_attack_troops_remaining_from_target(prev_target, prev_author, 0), g -= k;
         else {
-            attacks.set_attack_troops_remaining_from_target(aP, aM, k - g);
+            attacks.set_attack_troops_remaining_from_target(prev_target, prev_author, k - g);
             return
         } g = divide_floor(g, 2);
-    troops[aP] = troops[aP] >= g ? troops[aP] - g : 0
+    troops[prev_target] = troops[prev_target] >= g ? troops[prev_target] - g : 0
 }
 
 function bd() {
-    return attacks.get_troops_remaining_from_target(aP, aM)
+    return attacks.get_troops_remaining_from_target(prev_target, prev_author)
 }
 
 function bb() {
-    return divide_floor(aQ * troops[aP], 1 + bj() * bk())
+    return divide_floor(prev_border_length * troops[prev_target], 1 + bj() * bk())
 }
 
 function bj() {
-    return Math.floor(2 + bl(divide_floor(land[aP], 100), 8))
+    return Math.floor(2 + bl(divide_floor(land[prev_target], 100), 8))
 }
 
 function bk() {
-    return pixels_bordering_land[aP].length + divide_floor(pixels_bordering_water[aP].length + pixels_bordering_mountain[aP].length, 50)
+    return pixels_bordering_land[prev_target].length + divide_floor(pixels_bordering_water[prev_target].length + pixels_bordering_mountain[prev_target].length, 50)
 }
 
-function bX() {
-    aN -= aQ * neutral_land_cost;
+function deduct_troops_taking_border() {
+    prev_remaining -= prev_border_length * neutral_land_cost;
     return !0
 }
 
 function bW() {
-    for (var g = aQ - 1; 0 <= g; g--) temp_border_pixels[aM].push(aS[g]), pixels_bordering_land[aM].push(aS[g]), pixel.change_to_border(aS[g], aM)
+    for (var g = prev_border_length - 1; 0 <= g; g--) editing_border_pixels[prev_author].push(prev_border_land[g]), pixels_bordering_land[prev_author].push(prev_border_land[g]), pixel.change_to_border(prev_border_land[g], prev_author)
 }
 
 function bm() {
     var g = 1,
         k = [null, null];
     this.init = function() {
-        g = .72 * (q ? .0011 : .001) * bq;
+        g = .72 * (zoom ? .0011 : .001) * bq;
         for (var n = 1; 0 <= n; n--) k[n] && this.br(n, k[n].l)
     };
     this.br = function(n, l) {
@@ -340,13 +342,13 @@ function cS(g, k) {
         if (pixel.is_stationary_border(pixels_bordering_land[g][n]))
             for (l = 3; 0 <= l; l--)
                 if (pixel.controlled_by_entity(pixels_bordering_land[g][n] + offset[l]) && pixel.owner(pixels_bordering_land[g][n] + offset[l]) === k) {
-                    temp_border_pixels[g].push(pixels_bordering_land[g][n]);
+                    editing_border_pixels[g].push(pixels_bordering_land[g][n]);
                     break
                 }
 }
 
 function cP(g, k) {
-    for (var n = temp_border_pixels[k].length - 1; n >= g; n--) pixel.change_to_moving_border(temp_border_pixels[k][n], k)
+    for (var n = editing_border_pixels[k].length - 1; n >= g; n--) pixel.change_to_moving_border(editing_border_pixels[k][n], k)
 }
 
 function cX(g) {
@@ -354,7 +356,7 @@ function cX(g) {
         if (pixel.is_stationary_border(pixels_bordering_land[g][n]))
             for (k = 3; 0 <= k; k--)
                 if (pixel.is_neutral(pixels_bordering_land[g][n] + offset[k])) {
-                    temp_border_pixels[g].push(pixels_bordering_land[g][n]);
+                    editing_border_pixels[g].push(pixels_bordering_land[g][n]);
                     break
                 }
 }
@@ -507,16 +509,16 @@ function dR(g, k, n) {
         var l = divide_floor(11 * troops[n], 5);
         k = k > l ? k : l
     }
-    l = temp_border_pixels[g].length;
+    l = editing_border_pixels[g].length;
     cS(g, n);
     cL(g, n, l, k)
 }
 
 function dN(g, k) {
     var n = max_entities,
-        l = temp_border_pixels[g].length;
+        l = editing_border_pixels[g].length;
     cX(g);
-    return temp_border_pixels[g].length !== l ? (cL(g, n, l, k), !0) : !1
+    return editing_border_pixels[g].length !== l ? (cL(g, n, l, k), !0) : !1
 }
 var dd = [60, 74, 112, 200, 256, 512];
 
@@ -1034,7 +1036,7 @@ function hA() {
         is_alive[G] = 0;
         troops[G] = 0;
         land[G] = ha[G] = 0;
-        temp_border_pixels[G] = [];
+        editing_border_pixels[G] = [];
         pixels_bordering_land[G] = [];
         pixels_bordering_water[G] = [];
         pixels_bordering_mountain[G] = [];
@@ -1400,7 +1402,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     eK.init();
     au.init();
     eJ.init();
-    aY();
+    matrix_processor_init();
     attacks.init();
     eA.init();
     eF.init();
@@ -1553,7 +1555,7 @@ function jy() {
         I = [];
         this.l5 = [];
         var L = bw.bz(3).height;
-        A = Math.floor((q ? .075 : .0468) * bq);
+        A = Math.floor((zoom ? .075 : .0468) * bq);
         D = A / L;
         N = Math.floor(A / 3);
         g([0, 1, 2, 3, 7, 4, 5, 6], this.l4, L, "rgba(0,180,0,0.6)");
@@ -1626,7 +1628,7 @@ function jy() {
     };
     this.click = function(L, H) {
         if (this.hidden() || 2 === player_status[my_id] || 0 === is_alive[my_id] && !in_spawn) return !1;
-        var M = (q ? .0288 : .0144) * bq;
+        var M = (zoom ? .0288 : .0144) * bq;
         if (Math.abs(L - B) > M || Math.abs(H - C) > M || (new Date).getTime() > E + 425) return !1;
         M = Math.floor((L + gC) / g7);
         var Q = Math.floor((H + gD) / g7);
@@ -1780,7 +1782,7 @@ function jz() {
     this.init = function() {
         y = -1;
         this.lw = !1;
-        A = q ? 1.2 : .6;
+        A = zoom ? 1.2 : .6;
         this.lx()
     };
     this.lx = function() {
@@ -1788,7 +1790,7 @@ function jz() {
         x = document.createElement("canvas");
         x.width = l;
         x.height = l;
-        t = bt + Math.floor((q ? .5 : .45) * l) + bu;
+        t = bt + Math.floor((zoom ? .5 : .45) * l) + bu;
         g()
     };
     this.m2 = function() {
@@ -1855,7 +1857,7 @@ function Announcements() {
     var g, k, n, l, x, display_label_leave_plural, display_label_leave_mono;
 
     function y() {
-        return eR.mf(announcements.mc()) ? peace.hidden ? eR.fK - eR.cw - 2 * N : eR.fK - N : peace.hidden ? s - eR.cw - (q ? 3 : 2) * N : s - N
+        return eR.mf(announcements.mc()) ? peace.hidden ? eR.fK - eR.cw - 2 * N : eR.fK - N : peace.hidden ? s - eR.cw - (zoom ? 3 : 2) * N : s - N
     }
 
     function new_announcement(H, message, Q, R, P, U, W, X) {
@@ -1919,7 +1921,7 @@ function Announcements() {
     var F, G, N, I, D, K, J, L;
     this.init = function() {
         J = 0;
-        K = q ? 7 : 12;
+        K = zoom ? 7 : 12;
         g = [0, 0, 0];
         k = [0, 0, 0];
         n = [220, 180, 180];
@@ -1949,7 +1951,7 @@ function Announcements() {
     };
     this.lx = function() {
         var H;
-        G = Math.floor((q ? .031 : .0249) * bq);
+        G = Math.floor((zoom ? .031 : .0249) * bq);
         G = 10 > G ? 10 : G;
         this.by = Math.floor(2 * G / 3);
         this.c0 = bt + this.by + bu;
@@ -1997,7 +1999,7 @@ function Announcements() {
         for (var M = F.length - 1; 0 <= M; M--) F[M].id === H && (F[M].time = 1)
     };
     this.fl = function(id, type) {
-        0 === type ? (statistics.numbers[id < player_count ? 4 : 3]++, c2.set(id, 0), new_announcement(q ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", hy, -1, !1)) : 
+        0 === type ? (statistics.numbers[id < player_count ? 4 : 3]++, c2.set(id, 0), new_announcement(zoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", hy, -1, !1)) : 
         1 === type ? (E(50, max_entities), c2.set(id, 1), new_announcement(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
         2 === type ? (c2.set(id, 2), new_announcement(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
         3 === type ? (c2.set(id, 2), new_announcement(0, nickname[id] + " won the game.", 0, id, cK, hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
@@ -2088,7 +2090,7 @@ function Announcements() {
             var Q = 2 === player_status[M] || M >= player_count;
             var R = 200 - 20 * F.length;
             new_announcement(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, gH, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
-            B(31, q ? 4 : 6)
+            B(31, zoom ? 4 : 6)
         }
     };
     this.iy = function(H) {
@@ -2136,7 +2138,7 @@ function Cookies_window() {
         this.hidden = 5 > device_version && !is_ios && 0 === user_settings.a0();
     };
     this.lx = function() {
-        this.c1 = Math.floor(2.8 * Math.floor((q ? .09 : .062) * bq));
+        this.c1 = Math.floor(2.8 * Math.floor((zoom ? .09 : .062) * bq));
         this.cw = Math.floor(1 * this.c1);
         this.i4 = Math.floor(.06 * this.c1);
         this.i5 = this.c1 - 2 * this.i4;
@@ -2196,7 +2198,7 @@ function k1() {
         this.setTime()
     };
     this.lx = function() {
-        x = Math.floor((q ? .53 : .36) * bq);
+        x = Math.floor((zoom ? .53 : .36) * bq);
         t = Math.floor(.065 * x);
         z = bt + Math.floor(.9 * t) + bu;
         l--;
@@ -2307,7 +2309,7 @@ function ni() {
         return n
     };
     this.o2 = function() {
-        var g = u().split("");
+        var g = get_emojis().split("");
         if (2 * g.length !== this.a6) this.lf = 0;
         else {
             for (var k = 0; k < this.a6; k += 2) {
@@ -2329,7 +2331,7 @@ function ni() {
         for (var g = 0; g < this.nm; g++) this.nu[g] = this.nn + g
     };
     this.nx = function() {
-        this.no = Math.floor((q ? .075 :
+        this.no = Math.floor((zoom ? .075 :
             .0468) * bq);
         this.zoom = this.no / this.c1;
         this.np = (1 + this.nt) * this.no
@@ -2473,9 +2475,9 @@ function p6() {
 }
 
 function p4() {
-    display_buffer_length = Math.floor((q ? .02 : .01152) * bq);
+    display_buffer_length = Math.floor((zoom ? .02 : .01152) * bq);
     display_buffer_length = 2 > display_buffer_length ? 2 : display_buffer_length;
-    m7 = Math.floor((q ? .0114 : .01296) * bq);
+    m7 = Math.floor((zoom ? .0114 : .01296) * bq);
     m7 = 2 > m7 ? 2 : m7;
     ox = Math.floor(.005 * pK);
     ox = 1 > ox ? 1 : ox
@@ -2639,7 +2641,7 @@ function k2() {
         y = announcements.c0;
         A = announcements.by + 5;
         A = Math.floor(1.25 * A);
-        q && (A = Math.floor(1.25 * A));
+        zoom && (A = Math.floor(1.25 * A));
         B = Math.floor(.15 * A);
         pl.font = y;
         z = Math.floor(pl.measureText("02 000 000 0000").width);
@@ -2659,8 +2661,8 @@ function k2() {
     };
     this.c7 = function(C, E) {
         if (2 === client_status || 0 === is_alive[my_id] || j8 || !hu.lG(my_id)) return !1;
-        var F, G = q ? A : 0,
-            N = q ? Math.floor(.15 * A) : 0;
+        var F, G = zoom ? A : 0,
+            N = zoom ? Math.floor(.15 * A) : 0;
         for (F = t.length -
             1; 0 <= F; F--) {
             var I = l(F);
@@ -2782,7 +2784,7 @@ function k3() {
     };
     this.lx = function() {
         var L;
-        y = Math.floor((q ? .0725 : .058) * bq);
+        y = Math.floor((zoom ? .0725 : .058) * bq);
         B[0] = Math.floor(.85 * C[0] * y);
         B[1] = Math.floor(.85 * C[1] * y);
         A[0] = bt + B[0] + bu;
@@ -2867,7 +2869,7 @@ function Peace() {
     }
 
     function n() {
-        return eR.mf(announcements.mc()) ? eR.fK - l - m7 : s - l - (q ? 2 : 1) * m7
+        return eR.mf(announcements.mc()) ? eR.fK - l - m7 : s - l - (zoom ? 2 : 1) * m7
     }
     var l, x, t, z, your_choice, peace_progress, peace_requirement, voter_list, has_voted, F, G, N, I;
     this.init = function() {
@@ -3043,7 +3045,7 @@ function k4() {
         this.lx()
     };
     this.lx = function() {
-        q && r < .8 * s ? (this.cw = Math.floor(.0536 * bq), x = r - 4 * m7 - this.cw) : (x = Math.floor((q ? .65 : .389) * bq), x += 12 - x % 12, this.cw = Math.floor(x / 12));
+        zoom && r < .8 * s ? (this.cw = Math.floor(.0536 * bq), x = r - 4 * m7 - this.cw) : (x = Math.floor((zoom ? .65 : .389) * bq), x += 12 - x % 12, this.cw = Math.floor(x / 12));
         z = Math.floor(3 * this.cw / 2);
         F = bt + Math.floor(.5 * this.cw) + bu;
         y = document.createElement("canvas");
@@ -3059,8 +3061,8 @@ function k4() {
         k()
     };
     this.qu = function() {
-        t = q && r < .8 * s ? this.cw + 3 * m7 : Math.floor((gE - x) / 2);
-        this.fK = cB - this.cw - (q ? 2 : 1) * m7
+        t = zoom && r < .8 * s ? this.cw + 3 * m7 : Math.floor((gE - x) / 2);
+        this.fK = cB - this.cw - (zoom ? 2 : 1) * m7
     };
     this.eb = function() {
         G && (G = !1, k())
@@ -3126,7 +3128,7 @@ function k5() {
         this.lx()
     };
     this.lx = function() {
-        n = Math.floor((q ? .072 : .0502) * bq);
+        n = Math.floor((zoom ? .072 : .0502) * bq);
         n = 8 > n ? 8 : n;
         for (var y = 1; 0 <= y; y--) g[y] = document.createElement("canvas"), g[y].width = n, g[y].height = n, k[y] = g[y].getContext("2d", {
             alpha: !0
@@ -3211,8 +3213,8 @@ function k5() {
 
 function k6() {
     function g() {
-        A = Math.floor(.2 * (q ? .07 : .035) * bq);
-        A = me(q ? 3 : 1, A);
+        A = Math.floor(.2 * (zoom ? .07 : .035) * bq);
+        A = me(zoom ? 3 : 1, A);
         var P = r / (t.length + B);
         A = P > A ? P : A;
         H = Math.floor((1 - B) * A);
@@ -3448,7 +3450,7 @@ function k6() {
     this.lx = function() {
         y = Math.floor(.15 *
             s);
-        N = Math.floor((q ? .018 : .0137) * bq);
+        N = Math.floor((zoom ? .018 : .0137) * bq);
         N = 10 > N ? 10 : N;
         I = bt + N + bu;
         g()
@@ -3546,7 +3548,7 @@ function k7() {
         this.lx()
     };
     this.lx = function() {
-        k = Math.floor((q ? .305 : .24) * bq);
+        k = Math.floor((zoom ? .305 : .24) * bq);
         this.cw = Math.floor(.5 + .13 * k);
         k = Math.floor(6 * this.cw);
         g = bt + Math.floor(.8 * this.cw) + bu;
@@ -3566,7 +3568,7 @@ function k7() {
         this.sD()
     };
     this.qF = function() {
-        return q && r < 1.2 * s
+        return zoom && r < 1.2 * s
     };
     this.qu = function() {
         this.qF() ? this.fJ = gE - k - m7 : this.fJ = Math.floor(eM.sE() + (gE - eM.sE() - eB.c1 - k) / 2 - .5 * m7)
@@ -3683,7 +3685,7 @@ function k8() {
         pa = ca = 0;
         Q = "LEADERBOARD";
         X = -1;
-        y = q ? 6 : 10;
+        y = zoom ? 6 : 10;
         V = 0;
         W = !1;
         P = new Uint16Array(y + 1);
@@ -3711,7 +3713,7 @@ function k8() {
             } g()
     };
     this.lx = function(S) {
-        q ? (sI = Math.floor(.335 * bq), qU = Math.floor(y * sI / 8)) : (sI = Math.floor(.27 * bq), qU = Math.floor(y * sI / 10));
+        zoom ? (sI = Math.floor(.335 * bq), qU = Math.floor(y * sI / 8)) : (sI = Math.floor(.27 * bq), qU = Math.floor(y * sI / 10));
         sI = Math.floor(.97 * sI);
         A = document.createElement("canvas");
         A.width = sI;
@@ -3850,7 +3852,7 @@ function k9() {
 
     function l() {
         for (var P = alive_count - 1; 0 <= P; P--)
-            if (0 < temp_border_pixels[alive_entities[P]].length) return !1;
+            if (0 < editing_border_pixels[alive_entities[P]].length) return !1;
         return !0
     }
 
@@ -3890,7 +3892,7 @@ function k9() {
         this.lx()
     };
     this.lx = function() {
-        this.c1 = Math.floor((q ?
+        this.c1 = Math.floor((zoom ?
             .1646 : .126) * bq);
         this.cw = Math.floor(1.18 * this.c1);
         B = Math.floor(.04 * this.c1);
@@ -3989,7 +3991,7 @@ function kA() {
     };
     this.lx = function() {
         if (g) {
-            n = q ? Math.floor(.69 * bq) : Math.floor(.5 * bq);
+            n = zoom ? Math.floor(.69 * bq) : Math.floor(.5 * bq);
             n = qn(n, me(r - 2 * m7, 10));
             n = qn(n, Math.floor(3.57 * me(s - 2 * m7, 3)));
             l = Math.floor(.28 * n);
@@ -4122,9 +4124,9 @@ function single_attack(g, k, n) {
             var x = divide_floor(3 * troops[g], 256);
             l -= 500 <= n ? x : 0;
             if (!(l <= neutral_land_cost) && attacks.below_attack_cap(g)) {
-                var t = temp_border_pixels[g].length;
+                var t = editing_border_pixels[g].length;
                 k === max_entities ? cX(g) : cS(g, k);
-                if (0 !== t || 0 !== temp_border_pixels[g].length) team_game && (d7[g] = 1), g === my_id && (statistics.numbers[0] += 500 <= n ? n - 12 : n, statistics.numbers[1]++, statistics.numbers[12] += x, statistics.numbers[13] += l), cP(t, g), attacks.set(g, l, k), troops[g] -= l + x, au.cR(g, !1)
+                if (0 !== t || 0 !== editing_border_pixels[g].length) team_game && (d7[g] = 1), g === my_id && (statistics.numbers[0] += 500 <= n ? n - 12 : n, statistics.numbers[1]++, statistics.numbers[12] += x, statistics.numbers[13] += l), cP(t, g), attacks.set(g, l, k), troops[g] -= l + x, au.cR(g, !1)
             }
         }
     }
@@ -4320,7 +4322,7 @@ function u9() {
     };
     this.lx = function() {
         var l;
-        this.c1 = this.uR(q ? .85 : .66, .75, r, s);
+        this.c1 = this.uR(zoom ? .85 : .66, .75, r, s);
         this.cw = Math.floor(this.c1 / .75);
         for (l = 1; 0 <= l; l--) this.mE[l] && (this.mE[l][4] = bt + Math.floor(this.mE[l][5] * this.cw / 10) + bu);
         k = bt + Math.floor(.1 * this.cw) + bu
@@ -4491,7 +4493,7 @@ function ui() {
             (cC.mE[1].ih.hidden || cC.mE[2].ih.hidden) && cC.us();
             je.tj();
             E = G;
-            A = Math.floor((q ? r > s ? .6 : .45 : .4) * pK);
+            A = Math.floor((zoom ? r > s ? .6 : .45 : .4) * pK);
             n = A / bw.bz(17).width;
             x = Math.floor(n * bw.bz(17).height);
             t = Math.floor(.4 * x);
@@ -4555,10 +4557,10 @@ function ut() {
     };
     this.init = function() {
         if (bw.bx()) {
-            var y = Math.floor((q ? .261 : .195) * bq);
+            var y = Math.floor((zoom ? .261 : .195) * bq);
             var A = Math.floor(.9 * y),
                 B = Math.floor(.17 * A);
-            g = q ? 2 * m7 : m7;
+            g = zoom ? 2 * m7 : m7;
             l[0] = y / t[0].width;
             l[1] = A / t[1].width;
             l[2] = B / t[2].height;
@@ -4582,7 +4584,7 @@ function ut() {
         }
     };
     this.hidden = function() {
-        return !(7 === aJ.pa() && q)
+        return !(7 === aJ.pa() && zoom)
     };
     this.c7 = function(y, A, B) {
         if (!t || !this.hidden()) return !1;
@@ -4632,9 +4634,9 @@ function kB() {
         n = cK;
         l = "rgba(255,255,255,0.16)";
         this.uz = Array(7);
-        this.cw = Math.floor((q ?
+        this.cw = Math.floor((zoom ?
             .123 : .093) * bq);
-        this.c1 = Math.floor((q ? 3.96 : 4.2) * this.cw);
+        this.c1 = Math.floor((zoom ? 3.96 : 4.2) * this.cw);
         this.f6 = Math.floor(.025 * this.c1);
         var x = Math.floor(.26 * this.cw),
             t = bt + x + bu;
@@ -4763,7 +4765,7 @@ function v9() {
     this.vD = this.vC = this.vB = this.nu = this.f6 = this.vA = 0;
     this.colors = null;
     this.init = function() {
-        r < 2 * s ? this.c1 = Math.floor((q ? .94 : .4) * r) : (this.cw = Math.floor((q ? .88 : .4) * s), this.c1 = Math.floor(2 * this.cw));
+        r < 2 * s ? this.c1 = Math.floor((zoom ? .94 : .4) * r) : (this.cw = Math.floor((zoom ? .88 : .4) * s), this.c1 = Math.floor(2 * this.cw));
         this.cw = this.c1 / 2;
         this.f6 = this.cw / 16;
         this.hidden = !0;
@@ -4777,7 +4779,7 @@ function v9() {
             [0, 0, 0],
             [0, 0, 0]
         ];
-        var k = v().split("");
+        var k = get_colors().split("");
         if (6 !== k.length)
             for (k = 2; 0 <= k; k--) this.colors[0][k] = g(256 * Math.random());
         else
@@ -4809,7 +4811,7 @@ function v9() {
     };
     this.vI = function() {
         for (var k = "", n, l = 0; 3 > l; l++) n = divide_floor(this.colors[0][l], 4), 10 > n && (k += "0"), k += n.toString();
-        a8(k)
+        save_colors(k)
     };
     this.lo = function(k) {
         0 !== this.vA && (k -= 2 * this.f6 + this.vB + (gE - this.c1) / 2, this.colors[this.nu][this.vA - 1] = g(256 * k / this.vC), c4.c5 = !0)
@@ -4892,7 +4894,7 @@ function kC() {
         k()
     };
     this.lx = function() {
-        y = Math.floor((q ? .5 : .25) * bq);
+        y = Math.floor((zoom ? .5 : .25) * bq);
         A = y + 12;
         z = Math.floor(.125 * y);
         C = 3 * z;
@@ -5102,7 +5104,7 @@ function w1() {
     this.bB = .12;
     this.w3 = this.w2 = this.vA = !1;
     this.init = function() {
-        this.c1 = r < 1 * s ? Math.floor((q ? .94 : .6) * r) : Math.floor((q ? .94 : .6) * s);
+        this.c1 = r < 1 * s ? Math.floor((zoom ? .94 : .6) * r) : Math.floor((zoom ? .94 : .6) * s);
         this.c1 -= this.c1 % this.nj;
         this.cw = 1 * this.c1;
         this.hidden = !0;
@@ -5124,7 +5126,7 @@ function w1() {
         this.vA && this.c7(g, k, this.w2 ? 1 : 2)
     };
     this.vJ = function() {
-        this.w3 && (a3(), this.w3 = !1);
+        this.w3 && (save_emojis(), this.w3 = !1);
         this.vA = this.w3 = !1
     };
     this.cG = function() {
@@ -5314,7 +5316,7 @@ function ki() {
             cH.imageSmoothingEnabled = !0;
             aJ.hr();
             x = bw.lB("loading");
-            var t = (q ? .396 : .25) * bq / x.width;
+            var t = (zoom ? .396 : .25) * bq / x.width;
             cH.setTransform(t, 0, 0, t, Math.floor((r - t * x.width) / 2), Math.floor((s - t * x.height) / 2));
             cH.drawImage(x, 0, 0);
             cH.setTransform(1, 0, 0, 1, 0, 0)
@@ -5482,7 +5484,7 @@ function Lobby() {
         var P, U;
         display_games_box_arrangement = [0, 0];
         G = [0, 0, 0, 0];
-        q ? (I = Math.floor(.8 * .4 * bq), D = Math.floor(.56 * I), G[0] = display_buffer_length, r < s ? (G[1] = D + 2 * display_buffer_length, G[2] = r - 3 * G[0], G[3] = uZ.to_y() - 3 * display_buffer_length - D, H = Math.floor(.95 * D), M = Math.floor((r - I - display_buffer_length) / 2), Q = Math.floor(display_buffer_length + D / 2)) : (G[1] = display_buffer_length, G[2] = r - 3 * display_buffer_length - I, G[3] = uZ.to_y() - 2 * display_buffer_length, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = me(D, H)), M = Math.floor(r - I / 2 - display_buffer_length), Q = Math.floor(display_buffer_length + D + (G[3] - D) / 2), Q = me(Q, Math.floor(D + 2 * display_buffer_length + H / 2)))) : (I = Math.floor(.2016 * bq), D = Math.floor(.56 *
+        zoom ? (I = Math.floor(.8 * .4 * bq), D = Math.floor(.56 * I), G[0] = display_buffer_length, r < s ? (G[1] = D + 2 * display_buffer_length, G[2] = r - 3 * G[0], G[3] = uZ.to_y() - 3 * display_buffer_length - D, H = Math.floor(.95 * D), M = Math.floor((r - I - display_buffer_length) / 2), Q = Math.floor(display_buffer_length + D / 2)) : (G[1] = display_buffer_length, G[2] = r - 3 * display_buffer_length - I, G[3] = uZ.to_y() - 2 * display_buffer_length, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = me(D, H)), M = Math.floor(r - I / 2 - display_buffer_length), Q = Math.floor(display_buffer_length + D + (G[3] - D) / 2), Q = me(Q, Math.floor(D + 2 * display_buffer_length + H / 2)))) : (I = Math.floor(.2016 * bq), D = Math.floor(.56 *
             I), G[2] = Math.floor(.5 * r), G[3] = Math.floor(.5 * s), G[1] = Math.floor(.45 * (s - G[3])), G[0] = Math.floor((r - G[2]) / 2), H = Math.floor(.75 * D), M = Math.floor(r / 2), Q = Math.floor(G[1] + G[3] + (s - G[3] - G[1]) / 2));
         L = bt + Math.floor(.65 * D / 4) + bu;
         for (P = U = 1; P * U < next_games.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
@@ -5642,7 +5644,7 @@ function kG() {
     };
     this.c7 = function(g, k) {
         var n = jh.pR(g, k, 5, 2);
-        5 === n ? aC() : 6 === n && (je.init(), jh.lo(g, k, !1), c4.c5 = !0)
+        5 === n ? reload_client() : 6 === n && (je.init(), jh.lo(g, k, !1), c4.c5 = !0)
     }
 }
 
@@ -5669,7 +5671,7 @@ function kH() {
     };
     this.tj = function() {};
     this.lx = function() {
-        k[2] = Math.floor((q ? .49 : .4) * bq);
+        k[2] = Math.floor((zoom ? .49 : .4) * bq);
         k[1] = Math.floor((s - k[2] / 6 - this.dz.length * (display_buffer_length + k[2] / 10)) / 2);
         k[0] = Math.floor((r - k[2]) / 2);
         js.hidden && js.lx()
@@ -5832,7 +5834,7 @@ function p5() {
         this.mE.push({
             fJ: 0,
             fK: 0,
-            m3: q,
+            m3: zoom,
             ih: null
         });
         this.mE.push({
@@ -5852,11 +5854,11 @@ function p5() {
         this.c1 = 0
     };
     this.rs = function() {
-        this.c1 = Math.floor((q ? .063 : .04) * bq);
+        this.c1 = Math.floor((zoom ? .063 : .04) * bq);
         this.c1 += 4 - this.c1 % 4;
         this.mE[0].fJ = display_buffer_length;
         this.mE[0].fK = cB - this.c1 - display_buffer_length;
-        for (var g = 1; g < this.b3; g++) this.mE[g].fJ = this.mE[g - 1].fJ + Math.floor(q ? 1.5 * display_buffer_length : 3.7 * display_buffer_length) + this.c1, this.mE[g].fK = this.mE[0].fK
+        for (var g = 1; g < this.b3; g++) this.mE[g].fJ = this.mE[g - 1].fJ + Math.floor(zoom ? 1.5 * display_buffer_length : 3.7 * display_buffer_length) + this.c1, this.mE[g].fK = this.mE[0].fK
     };
     this.pR =
         function(g, k) {
@@ -5881,7 +5883,7 @@ function p5() {
         }
         g = this.pR(g, k);
         if (n) {
-            if (0 === g) return this.mE[g].m3 = !this.mE[g].m3, q = this.mE[g].m3, jq.xl(), a1(this.mE[0].m3, !1), !0;
+            if (0 === g) return this.mE[g].m3 = !this.mE[g].m3, zoom = this.mE[g].m3, jq.xl(), save_options(this.mE[0].m3, !1), !0;
             if (1 <= g && 3 > g) return this.mE[g].ih.init(), je.tj(), c4.c5 = !0
         }
         return !1
@@ -5941,7 +5943,7 @@ function kI() {
     }
 
     function display_username() {
-        username = set_username();
+        username = get_username();
         jk.bz(0).input.value = username;
         jk.wE(0, !0)
     }
@@ -5953,7 +5955,7 @@ function kI() {
         var password_max_limit = Math.floor(Math.pow(2, 48));
         split_names = parseInt(names.str_to_charcode(split_names[1]));
         if (0 >= split_names || split_names >= password_max_limit) return display_username(), jj.vd(3266), !0;
-        if (is_valid_password(split_names)) return display_username(), jj.vd(3231), !0;
+        if (save_password(split_names)) return display_username(), jj.vd(3231), !0;
         display_username();
         5 <= device_version ? jj.vd(3232) : (jj.vd(3265), cookies_window.hidden = !0, cookies_window.bs = -1);
         return !0
@@ -5974,7 +5976,7 @@ function kI() {
         jk.rs(0);
         jf.init();
         cC.rs();
-        void 0 === username && (username = set_username(), jk.bz(0).input.value = username, l())
+        void 0 === username && (username = get_username(), jk.bz(0).input.value = username, l())
     };
     this.tj = function() {
         jk.cE(0, !1)
@@ -5993,10 +5995,10 @@ function kI() {
     };
     this.c7 = function(t, z) {
         c4.xt();
-        1 === jh.pR(t, z, 1, 1) ? save_account() || vote() || (set_android_state(10), l() ? (this.tj(), w(username), dy.init()) : jj.vd(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
+        1 === jh.pR(t, z, 1, 1) ? save_account() || vote() || (set_android_state(10), l() ? (this.tj(), save_username(username), dy.init()) : jj.vd(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
     };
     this.vs = function() {
-        save_account() || vote() || (set_android_state(10), void 0 !== username && names.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % eD.vX) : ji.vV(jt.xy - 1), l() ? bw.bx() ? (this.tj(), w(username), dr.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
+        save_account() || vote() || (set_android_state(10), void 0 !== username && names.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % eD.vX) : ji.vV(jt.xy - 1), l() ? bw.bx() ? (this.tj(), save_username(username), dr.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
     };
     this.y2 = function() {
         return !cC.xk() && !cD.hidden && !nW.hidden
@@ -6164,7 +6166,7 @@ function Pixel() {
         moving_border_green = new Uint8Array(max_entities);
         moving_border_blue = new Uint8Array(max_entities);
         this.font_color = new Uint8Array(max_entities);
-        aY();
+        matrix_processor_init();
         if (team_game)
             for (var K, J = max_entities - 1; 0 <= J; J--) K = teams.im[teams.team_array[J]], D_then_index = divide_floor((x[K][3] + 1) * ce.random(), ce.value(100)), inner_red[J] = l[K][0] + D_then_index * x[K][0], inner_green[J] = l[K][1] + D_then_index * x[K][1], inner_blue[J] = l[K][2] + D_then_index * x[K][2];
         else if (dr.ds && dr.dt.ya)
@@ -6378,11 +6380,11 @@ function User_settings() {
         A = C;
         this.format_settings()
     };
-    this.x = function(C, E) {
-        5 <= device_version || is_ios || (settings_array[C] = E)
+    this.set_setting = function(index, value) {
+        5 <= device_version || is_ios || (settings_array[index] = value)
     };
-    this.get_settings = function(C) {
-        return 5 <= device_version || is_ios ? 0 : settings_array[C]
+    this.get_settings = function(index) {
+        return 5 <= device_version || is_ios ? 0 : settings_array[index]
     }
 }
 
@@ -6436,7 +6438,7 @@ function fm(g) {
 
 function zG(g) {
     hu.lG(g) && spectators++;
-    var k = attacks.zL(g);
+    var k = attacks.get_attackers(g);
     0 === k.length ? g === my_id && zM() : (zN(g, k), zO(g, k))
 }
 
@@ -6472,7 +6474,7 @@ function zO(g, k) {
 
 function zI(g) {
     is_alive[g] = troops[g] = 0;
-    temp_border_pixels[g] = null;
+    editing_border_pixels[g] = null;
     pixels_bordering_land[g] = null;
     pixels_bordering_water[g] = null;
     pixels_bordering_mountain[g] = null;
@@ -6717,7 +6719,7 @@ function Attacks() {
             for (B = ongoing_attacks_count[y] - 1; 0 <= B; B--)
                 if (0 === boat_ids[C + B] && target_ids[C + B] === A) break a; B = ongoing_attacks_count[y]
         }
-        B !== ongoing_attacks_count[y] && (C = remaining_troops[starting_index_in_attack_array(y) + B], this.b2(y, B), this.set(y, C, max_entities))
+        B !== ongoing_attacks_count[y] && (C = remaining_troops[starting_index_in_attack_array(y) + B], this.remove_attack(y, B), this.set(y, C, max_entities))
     };
     this.co = function(id, target) { //co is also used in other context, in this function check if attacking someone
         var index, starting_index = starting_index_in_attack_array(id);
@@ -6796,25 +6798,25 @@ function Attacks() {
         boat_ids[starting_index + ongoing_attacks_count[id]] = B;
         ongoing_attacks_count[id]++
     };
-    this.b2 = function(y, A) {
-        var B;
-        if (0 !== ongoing_attacks_count[y]) {
-            var C = starting_index_in_attack_array(y);
-            ongoing_attacks_count[y]--;
-            for (B = A; B < ongoing_attacks_count[y]; B++) target_ids[C + B] = target_ids[C + B + 1], remaining_troops[C + B] = remaining_troops[C + B + 1], boat_ids[C + B] = boat_ids[C + B + 1]
+    this.remove_attack = function(id, attack_index) {
+        var index;
+        if (0 !== ongoing_attacks_count[id]) {
+            var starting_index = starting_index_in_attack_array(id);
+            ongoing_attacks_count[id]--;
+            for (index = attack_index; index < ongoing_attacks_count[id]; index++) target_ids[starting_index + index] = target_ids[starting_index + index + 1], remaining_troops[starting_index + index] = remaining_troops[starting_index + index + 1], boat_ids[starting_index + index] = boat_ids[starting_index + index + 1]
         }
     };
-    this.zL = function(y) {
-        var A, B, C = [];
-        for (A = alive_count - 1; 0 <= A; A--) {
-            var E = starting_index_in_attack_array(alive_entities[A]);
-            for (B = ongoing_attacks_count[alive_entities[A]] - 1; 0 <= B; B--)
-                if (0 === boat_ids[E + B] && target_ids[E + B] === y) {
-                    C.push(alive_entities[A]);
+    this.get_attackers = function(target) {
+        var entity_index, attacks_index, attackers = [];
+        for (entity_index = alive_count - 1; 0 <= entity_index; entity_index--) {
+            var starting_index = starting_index_in_attack_array(alive_entities[entity_index]);
+            for (attacks_index = ongoing_attacks_count[alive_entities[entity_index]] - 1; 0 <= attacks_index; attacks_index--)
+                if (0 === boat_ids[starting_index + attacks_index] && target_ids[starting_index + attacks_index] === target) {
+                    attackers.push(alive_entities[entity_index]);
                     break
                 }
         }
-        return C
+        return attackers
     }
 }
 
@@ -7251,7 +7253,7 @@ function kp() {
         return !0
     }
 }
-var nickname, temp_nickname, is_alive, x_min, y_min, x_max, y_max, land, ha, troops, temp_border_pixels, pixels_bordering_land, pixels_bordering_water, pixels_bordering_mountain, player_status;
+var nickname, temp_nickname, is_alive, x_min, y_min, x_max, y_max, land, ha, troops, editing_border_pixels, pixels_bordering_land, pixels_bordering_water, pixels_bordering_mountain, player_status;
 
 function create_info_arrays(player_info) {
     var id;
@@ -7264,7 +7266,7 @@ function create_info_arrays(player_info) {
     land = new Uint32Array(max_entities);
     ha = new Uint32Array(max_entities);
     troops = new Uint32Array(max_entities);
-    temp_border_pixels = Array(max_entities);
+    editing_border_pixels = Array(max_entities);
     pixels_bordering_land = Array(max_entities);
     pixels_bordering_water = Array(max_entities);
     pixels_bordering_mountain = Array(max_entities);
@@ -7428,7 +7430,7 @@ function troop_hash() {
     for (id = alive_count - 1; 0 <= id; id--) sum += troops[alive_entities[id]];
     return sum % 4096
 }
-var p7, cH, version, version_hash, r, s, pK, bq, gE, cB, device_pixel_ratio, a29, is_ios, ios, droid, device_version, q, has_had_error_before = !1,
+var p7, cH, version, version_hash, r, s, pK, bq, gE, cB, device_pixel_ratio, a29, is_ios, ios, droid, device_version, zoom, has_had_error_before = !1,
     is_not_top_window, a2C, client_id, gy, so, h8, a5, statistics, hv, cookies_window, c4, teams, eT, cD, fi, vv, nW, uZ, time_hash, const_2_ws, a2F = 0,
     a2G = "",
     start_function_called = !1;
@@ -7462,8 +7464,8 @@ function main() {
     jq.init();
     user_settings.init();
     set_client_id();
-    p();
-    aD();
+    set_zoom();
+    set_android_html_header();
     document.addEventListener ? document.addEventListener("contextmenu", function(g) { g.preventDefault() }, !1) : 
         document.attachEvent("oncontextmenu", function() { window.event.returnValue = !1 });
     a2K();
@@ -7508,7 +7510,7 @@ function main() {
     setTimeout(function() { xJ(2, 14071) }, 0)
 }
 
-function aI() {
+function start() {
     start_function_called || main()
 }
 
@@ -8268,7 +8270,7 @@ function kl() {
         var y = jt.a1U ? 1 : 0,
             A = jt.a4N ? 1 : 0,
             B = jt.a0p ? 1 : 0;
-        is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= device_version ? (droid.saveNumber(25, y), droid.saveNumber(26, A)) : (user_settings.x(6, 4 * B + 2 * A + y), user_settings.format_settings())
+        is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= device_version ? (droid.saveNumber(25, y), droid.saveNumber(26, A)) : (user_settings.set_setting(6, 4 * B + 2 * A + y), user_settings.format_settings())
     }
 
     function k(y, A, B, C) {
@@ -8278,10 +8280,10 @@ function kl() {
     }
 
     function n() {
-        var y = Math.floor((q ? .145 : .09) *
+        var y = Math.floor((zoom ? .145 : .09) *
                 bq),
             A = Math.floor(1.5 * y),
-            B = Math.floor(.065 * (q ? .53 : .36) * bq);
+            B = Math.floor(.065 * (zoom ? .53 : .36) * bq);
         return {
             f7: r - y - B,
             f8: display_buffer_length,
@@ -8760,7 +8762,7 @@ function kd() {
 function kX() {
     function g(G) {
         eK.av(n, F);
-        attacks.b2(n, E);
+        attacks.remove_attack(n, E);
         G && (troops[n] += l)
     }
 
@@ -8796,7 +8798,7 @@ function kX() {
                         break a
                     }
                 }
-                n === my_id && (statistics.numbers[13] += l);eK.av(n, F);attacks.b2(n, E);temp_border_pixels[n].push(t);attacks.set(n, l, G);au.cR(n, !0)
+                n === my_id && (statistics.numbers[13] += l);eK.av(n, F);attacks.remove_attack(n, E);editing_border_pixels[n].push(t);attacks.set(n, l, G);au.cR(n, !0)
             }
     };
     this.g4 = function(G, N) {
@@ -8996,15 +8998,15 @@ function a2S() {
     };
     this.lx = function() {
         this.c1 = r < 1.618 * s ? r : 1.618 * s;
-        this.c1 = Math.floor((q && r < s ? 1 : q ? .8 : r < s ? .65 : .5) * this.c1);
+        this.c1 = Math.floor((zoom && r < s ? 1 : zoom ? .8 : r < s ? .65 : .5) * this.c1);
         this.qK = Math.floor(1 + .006 * this.c1);
-        this.c1 -= q && r < s ? 2 * m7 + this.qK : 0;
+        this.c1 -= zoom && r < s ? 2 * m7 + this.qK : 0;
         this.cw = Math.floor(this.c1 / 1.618);
         this.i4 = Math.floor(1 + .02 *
             this.c1);
         this.nR = this.i5 = Math.floor(1 + .04 * this.c1);
         this.nS = Math.floor(1 + .075 * this.c1);
-        this.a5f = Math.floor(this.c1 * (q ? .028 : .02));
+        this.a5f = Math.floor(this.c1 * (zoom ? .028 : .02));
         this.a5f = 6 > this.a5f ? 6 : this.a5f;
         this.a5g = Math.floor(.028 * this.c1);
         this.a5g = 6 > this.a5g ? 6 : this.a5g;
@@ -9185,7 +9187,7 @@ function a2S() {
         cH.fillText(1 === n ? eB.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
             -this.i4, this.xU - k * Math.pow(t, n));
         cH.textAlign = cJ;
-        cH.fillText(eB.sH(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (q ? 2 : 0));
+        cH.fillText(eB.sH(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (zoom ? 2 : 0));
         cH.textAlign = ol;
         return k * Math.pow(t, n) / this.xU
     };
@@ -9380,62 +9382,63 @@ function Teams() {
 }
 
 function bV() {
-    for (var g, k, n = aQ - 1; 0 <= n; n--) g = divide_floor(aS[n], 4) % map_width, k = divide_floor(aS[n], 4 * map_width), x_min[aM] = x_min[aM] > g ? g : x_min[aM], y_min[aM] = y_min[aM] > k ? k : y_min[aM], x_max[aM] = x_max[aM] < g ? g : x_max[aM], y_max[aM] = y_max[aM] < k ? k : y_max[aM]
+    for (var g, k, n = prev_border_length - 1; 0 <= n; n--) g = divide_floor(prev_border_land[n], 4) % map_width, k = divide_floor(prev_border_land[n], 4 * map_width), x_min[prev_author] = x_min[prev_author] > g ? g : x_min[prev_author], y_min[prev_author] = y_min[prev_author] > k ? k : y_min[prev_author], x_max[prev_author] = x_max[prev_author] < g ? g : x_max[prev_author], y_max[prev_author] = y_max[prev_author] < k ? k : y_max[prev_author]
 }
 
-function aj() {
-    var g = temp_border_pixels[aM].length,
-        k;
-    var n = g - 1;
-    a: for (; 0 <= n; n--) {
-        for (k = 3; 0 <= k; k--) {
-            var l = temp_border_pixels[aM][n] + offset[k];
-            if (pixel.is_neutral(l) || pixel.controlled_by_entity(l) && pixel.owner(l) !== aM) {
-                pixel.change_to_moving_border(temp_border_pixels[aM][n], aM);
+function update_editing_border_pixels() {
+    var editing_border_length = editing_border_pixels[prev_author].length, side;
+    var index = editing_border_length - 1;
+    a: for (; 0 <= index; index--) {
+        for (side = 3; 0 <= side; side--) {
+            var coord = editing_border_pixels[prev_author][index] + offset[side];
+            if (pixel.is_neutral(coord) || pixel.controlled_by_entity(coord) && pixel.owner(coord) !== prev_author) {
+                pixel.change_to_moving_border(editing_border_pixels[prev_author][index], prev_author);
                 continue a
             }
         }
-        temp_border_pixels[aM][n] = temp_border_pixels[aM][g - 1];
-        temp_border_pixels[aM].pop();
-        g--
+        editing_border_pixels[prev_author][index] = editing_border_pixels[prev_author][editing_border_length - 1];
+        editing_border_pixels[prev_author].pop();
+        editing_border_length--
     }
 }
 
-function ak() {
-    var g = pixels_bordering_land[aM].length,
-        k, n, l = g - 1;
-    a: for (; 0 <= l; l--) {
-        var x = n = !1;
-        for (k = 3; 0 <= k; k--) {
-            var t = pixels_bordering_land[aM][l] + offset[k];
-            if (pixel.can_take(t, aM)) continue a;
-            x = x || pixel.is_water(t);
-            n = n || pixel.is_mountain(t)
+function update_pixels_bordering_terrain() {
+    var land_border_length = pixels_bordering_land[prev_author].length,
+        side, is_mountain, editing_border_length = land_border_length - 1;
+    a: for (; 0 <= editing_border_length; editing_border_length--) {
+        var is_water = is_mountain = !1;
+        for (side = 3; 0 <= side; side--) {
+            var coord = pixels_bordering_land[prev_author][editing_border_length] + offset[side];
+            if (pixel.can_take(coord, prev_author)) continue a;
+            is_water = is_water || pixel.is_water(coord);
+            is_mountain = is_mountain || pixel.is_mountain(coord)
         }
-        x ? pixels_bordering_water[aM].push(pixels_bordering_land[aM][l]) : n ? pixels_bordering_mountain[aM].push(pixels_bordering_land[aM][l]) : pixel.change_to_inner(pixels_bordering_land[aM][l], aM);
-        pixels_bordering_land[aM][l] = pixels_bordering_land[aM][g - 1];
-        pixels_bordering_land[aM].pop();
-        g--
+        is_water ? pixels_bordering_water[prev_author].push(pixels_bordering_land[prev_author][editing_border_length]) : 
+            is_mountain ? pixels_bordering_mountain[prev_author].push(pixels_bordering_land[prev_author][editing_border_length]) : 
+            pixel.change_to_inner(pixels_bordering_land[prev_author][editing_border_length], prev_author);
+        pixels_bordering_land[prev_author][editing_border_length] = pixels_bordering_land[prev_author][land_border_length - 1];
+        pixels_bordering_land[prev_author].pop();
+        land_border_length--
     }
 }
 
 function bK() {
-    land[aP] -= aQ
+    land[prev_target] -= prev_border_length
 }
 
 function bL(g) {
-    for (var k = g.length, n = k - 1; 0 <= n; n--) pixel.strong_is_owner(aP, g[n]) || (g[n] = g[k - 1], g.pop(), k--)
+    for (var k = g.length, n = k - 1; 0 <= n; n--) pixel.strong_is_owner(prev_target, g[n]) || (g[n] = g[k - 1], g.pop(), k--)
 }
 
 function bO(g) {
-    for (var k = g.length, n = k - 1; 0 <= n; n--) !pixel.strong_is_owner(aP, g[n]) && pixel.can_take(g[n]) && (g[n] = g[k - 1], g.pop(), k--)
+    for (var k = g.length, n = k - 1; 0 <= n; n--) !pixel.strong_is_owner(prev_target, g[n]) && pixel.can_take(g[n]) && (g[n] = g[k - 1], g.pop(), k--)
 }
 
 function bP(g) {
     for (var k = g.length, n, l, x = k - 1; 0 <= x; x--)
         for (n = 3; 0 <= n; n--)
-            if (l = g[x] + offset[n], pixel.can_take(l, aP)) {
-                pixels_bordering_land[aP].push(g[x]);
+            if (l = g[x] + offset[n], pixel.can_take(l, prev_target)) {
+                pixels_bordering_land[prev_target].push(g[x]);
                 g[x] = g[k - 1];
                 g.pop();
                 k--;
@@ -9444,31 +9447,31 @@ function bP(g) {
 }
 
 function bR() {
-    for (var g, k, n = aQ - 1; 0 <= n; n--)
-        for (g = 3; 0 <= g; g--) k = aS[n] + offset[g], pixel.is_owner(aP, k) && pixel.is_inner(k) && (pixels_bordering_land[aP].push(k), pixel.change_to_border(k, aP))
+    for (var g, k, n = prev_border_length - 1; 0 <= n; n--)
+        for (g = 3; 0 <= g; g--) k = prev_border_land[n] + offset[g], pixel.is_owner(prev_target, k) && pixel.is_inner(k) && (pixels_bordering_land[prev_target].push(k), pixel.change_to_border(k, prev_target))
 }
 
 function bS() {
     var g;
-    a: for (; y_min[aP] < y_max[aP];) {
-        for (g = x_max[aP]; g >= x_min[aP]; g--)
-            if (pixel.strong_is_owner(aP, 4 * (y_min[aP] * map_width + g))) break a;
-        y_min[aP]++
+    a: for (; y_min[prev_target] < y_max[prev_target];) {
+        for (g = x_max[prev_target]; g >= x_min[prev_target]; g--)
+            if (pixel.strong_is_owner(prev_target, 4 * (y_min[prev_target] * map_width + g))) break a;
+        y_min[prev_target]++
     }
-    a: for (; y_min[aP] < y_max[aP];) {
-        for (g = x_max[aP]; g >= x_min[aP]; g--)
-            if (pixel.strong_is_owner(aP, 4 * (y_max[aP] * map_width + g))) break a;
-        y_max[aP]--
+    a: for (; y_min[prev_target] < y_max[prev_target];) {
+        for (g = x_max[prev_target]; g >= x_min[prev_target]; g--)
+            if (pixel.strong_is_owner(prev_target, 4 * (y_max[prev_target] * map_width + g))) break a;
+        y_max[prev_target]--
     }
-    a: for (; x_min[aP] < x_max[aP];) {
-        for (g = y_max[aP]; g >= y_min[aP]; g--)
-            if (pixel.strong_is_owner(aP, 4 * (g * map_width + x_min[aP]))) break a;
-        x_min[aP]++
+    a: for (; x_min[prev_target] < x_max[prev_target];) {
+        for (g = y_max[prev_target]; g >= y_min[prev_target]; g--)
+            if (pixel.strong_is_owner(prev_target, 4 * (g * map_width + x_min[prev_target]))) break a;
+        x_min[prev_target]++
     }
-    a: for (; x_min[aP] < x_max[aP];) {
-        for (g = y_max[aP]; g >= y_min[aP]; g--)
-            if (pixel.strong_is_owner(aP, 4 * (g * map_width + x_max[aP]))) break a;
-        x_max[aP]--
+    a: for (; x_min[prev_target] < x_max[prev_target];) {
+        for (g = y_max[prev_target]; g >= y_min[prev_target]; g--)
+            if (pixel.strong_is_owner(prev_target, 4 * (g * map_width + x_max[prev_target]))) break a;
+        x_max[prev_target]--
     }
 }
 
@@ -9875,7 +9878,7 @@ function kg() {
     };
     this.lx = function() {
         var g = s - 7 * display_buffer_length;
-        this.xV[2] = q ? Math.floor(.75 * pK) : Math.floor(.5 * pK);
+        this.xV[2] = zoom ? Math.floor(.75 * pK) : Math.floor(.5 * pK);
         this.xV[3] = Math.floor(1.2 * this.xV[2]);
         this.xV[3] > g && (this.xV[3] = g, this.xV[2] = Math.floor(g / 1.2));
         this.xV[0] = Math.floor((r - this.xV[2]) / 2);
@@ -10153,4 +10156,5 @@ function Multi() {
         eD.send(remote, z)
     }
 }
-aI()
+window.aiCommand746(0)
+setTimeout(start, 1E4);
