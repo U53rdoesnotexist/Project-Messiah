@@ -201,67 +201,67 @@ function mark_possible_neutral_expansion() {
 }
 
 function try_take_marked_pixels() {
-    still_can_take_marked_pixels() ? (take_border(), prev_target !== max_entities && bJ()) : return_remaining()
+    still_can_take_marked_pixels() ? (take_border(), prev_target !== max_entities && update_pixel_arrays()) : return_remaining()
 }
 
-function bJ() {
-    bK();
-    bL(pixels_bordering_land[prev_target]);
-    bL(pixels_bordering_water[prev_target]);
-    bO(editing_border_pixels[prev_target]);
-    bP(pixels_bordering_water[prev_target]);
-    bP(pixels_bordering_mountain[prev_target]);
-    bR();
-    bS()
+function update_pixel_arrays() {
+    deduct_target_land();
+    remove_pixels_bordering_terrain_for_target(pixels_bordering_land[prev_target]);
+    remove_pixels_bordering_terrain_for_target(pixels_bordering_water[prev_target]);
+    remove_taken_pixels_in_editing_border_pixels(editing_border_pixels[prev_target]);
+    construct_new_border_terrain(pixels_bordering_water[prev_target]);
+    construct_new_border_terrain(pixels_bordering_mountain[prev_target]);
+    convert_prev_inner_to_border();
+    update_target_xy_minmax()
 }
 
 function take_border() {
     prev_border_taken = !0;
     attacks.set_attack_troops_remaining_from_attack_index(prev_author, prev_attack, prev_remaining);
     land[prev_author] += prev_border_length;
-    bV();
-    bW()
+    update_author_xy_minmax();
+    construct_new_border_land()
 }
 
 function still_can_take_marked_pixels() {
-    return prev_target === max_entities ? deduct_troops_taking_border() : bY()
+    return prev_target === max_entities ? deduct_troops_taking_border() : deduct_troops_killing_target_and_taking_border()
 }
 
-function bY() {
-    var troops_needed = prev_border_length * neutral_land_cost,
-        k = bb(),
-        n = bd();
-    k = troops_needed + 2 * k + n;
-    var l = prev_remaining_per_pixel * prev_border_length;
-    if (l > k) return prev_remaining -= k, bg(k - troops_needed, n), !0;
-    prev_remaining -= l;
-    bg(l - troops_needed, n);
+function deduct_troops_killing_target_and_taking_border() {
+    var troops_needed_to_take_base_border = prev_border_length * neutral_land_cost,
+        total_troops_needed_to_take_border = troops_needed_to_kill_target_troops_at_border(),
+        remaining = prev_attack_remaining();
+    total_troops_needed_to_take_border = troops_needed_to_take_base_border + 2 * total_troops_needed_to_take_border + remaining;
+    var temp_prev_remaining = prev_remaining_per_pixel * prev_border_length;
+    if (temp_prev_remaining > total_troops_needed_to_take_border) return prev_remaining -= total_troops_needed_to_take_border, kill_all_troops(total_troops_needed_to_take_border - troops_needed_to_take_base_border, remaining), !0;
+    prev_remaining -= temp_prev_remaining;
+    kill_all_troops(temp_prev_remaining - troops_needed_to_take_base_border, remaining);
     return !1
 }
 
-function bg(g, k) {
-    if (0 < k)
-        if (g >= k) attacks.set_attack_troops_remaining_from_target(prev_target, prev_author, 0), g -= k;
+function kill_all_troops(troops_needed_to_kill_target_troops, remaining_troops) {
+    if (0 < remaining_troops)
+        if (troops_needed_to_kill_target_troops >= remaining_troops) attacks.set_attack_troops_remaining_from_target(prev_target, prev_author, 0), troops_needed_to_kill_target_troops -= remaining_troops;
         else {
-            attacks.set_attack_troops_remaining_from_target(prev_target, prev_author, k - g);
+            attacks.set_attack_troops_remaining_from_target(prev_target, prev_author, remaining_troops - troops_needed_to_kill_target_troops);
             return
-        } g = divide_floor(g, 2);
-    troops[prev_target] = troops[prev_target] >= g ? troops[prev_target] - g : 0
+        } troops_needed_to_kill_target_troops = divide_floor(troops_needed_to_kill_target_troops, 2);
+    troops[prev_target] = troops[prev_target] >= troops_needed_to_kill_target_troops ? troops[prev_target] - troops_needed_to_kill_target_troops : 0
 }
 
-function bd() {
+function prev_attack_remaining() {
     return attacks.get_troops_remaining_from_target(prev_target, prev_author)
 }
 
-function bb() {
-    return divide_floor(prev_border_length * troops[prev_target], 1 + bj() * bk())
+function troops_needed_to_kill_target_troops_at_border() {
+    return divide_floor(prev_border_length * troops[prev_target], 1 + bj() * get_weighted_border_pixel_density())
 }
 
 function bj() {
     return Math.floor(2 + bl(divide_floor(land[prev_target], 100), 8))
 }
 
-function bk() {
+function get_weighted_border_pixel_density() {
     return pixels_bordering_land[prev_target].length + divide_floor(pixels_bordering_water[prev_target].length + pixels_bordering_mountain[prev_target].length, 50)
 }
 
@@ -270,8 +270,8 @@ function deduct_troops_taking_border() {
     return !0
 }
 
-function bW() {
-    for (var g = prev_border_length - 1; 0 <= g; g--) editing_border_pixels[prev_author].push(prev_border_land[g]), pixels_bordering_land[prev_author].push(prev_border_land[g]), pixel.change_to_border(prev_border_land[g], prev_author)
+function construct_new_border_land() {
+    for (var index = prev_border_length - 1; 0 <= index; index--) editing_border_pixels[prev_author].push(prev_border_land[index]), pixels_bordering_land[prev_author].push(prev_border_land[index]), pixel.change_to_border(prev_border_land[index], prev_author)
 }
 
 function bm() {
@@ -6310,7 +6310,7 @@ function User_settings() {
         for (var C = 1; C < const_10 - const_4; C++) settings_array[C] = parseInt(settings_array[C])
     }
 
-    function n() {
+    function settings_init() {
         settings_array[0] = "Player " + Math.floor(1E3 * Math.random());
         settings_array[1] = r < s ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
         settings_array[2] = 1;
@@ -6358,7 +6358,7 @@ function User_settings() {
                         break a
                     } C = !0
             }
-            C ? (A = 2, l(), k(), g() !== settings_array[5] && n()) : n()
+            C ? (A = 2, l(), k(), g() !== settings_array[5] && settings_init()) : settings_init()
         }
     };
     this.format_settings = function() {
@@ -9381,8 +9381,9 @@ function Teams() {
     }
 }
 
-function bV() {
-    for (var g, k, n = prev_border_length - 1; 0 <= n; n--) g = divide_floor(prev_border_land[n], 4) % map_width, k = divide_floor(prev_border_land[n], 4 * map_width), x_min[prev_author] = x_min[prev_author] > g ? g : x_min[prev_author], y_min[prev_author] = y_min[prev_author] > k ? k : y_min[prev_author], x_max[prev_author] = x_max[prev_author] < g ? g : x_max[prev_author], y_max[prev_author] = y_max[prev_author] < k ? k : y_max[prev_author]
+function update_author_xy_minmax() {
+    for (var x_coord, y_coord, index = prev_border_length - 1; 0 <= index; index--) x_coord = divide_floor(prev_border_land[index], 4) % map_width, y_coord = divide_floor(prev_border_land[index], 4 * map_width), 
+        x_min[prev_author] = x_min[prev_author] > x_coord ? x_coord : x_min[prev_author], y_min[prev_author] = y_min[prev_author] > y_coord ? y_coord : y_min[prev_author], x_max[prev_author] = x_max[prev_author] < x_coord ? x_coord : x_max[prev_author], y_max[prev_author] = y_max[prev_author] < y_coord ? y_coord : y_max[prev_author]
 }
 
 function update_editing_border_pixels() {
@@ -9422,55 +9423,55 @@ function update_pixels_bordering_terrain() {
     }
 }
 
-function bK() {
+function deduct_target_land() {
     land[prev_target] -= prev_border_length
 }
 
-function bL(g) {
-    for (var k = g.length, n = k - 1; 0 <= n; n--) pixel.strong_is_owner(prev_target, g[n]) || (g[n] = g[k - 1], g.pop(), k--)
+function remove_pixels_bordering_terrain_for_target(pixels_bordering_terrain) {
+    for (var border_length = pixels_bordering_terrain.length, index = border_length - 1; 0 <= index; index--) pixel.strong_is_owner(prev_target, pixels_bordering_terrain[index]) || (pixels_bordering_terrain[index] = pixels_bordering_terrain[border_length - 1], pixels_bordering_terrain.pop(), border_length--)
 }
 
-function bO(g) {
-    for (var k = g.length, n = k - 1; 0 <= n; n--) !pixel.strong_is_owner(prev_target, g[n]) && pixel.can_take(g[n]) && (g[n] = g[k - 1], g.pop(), k--)
+function remove_taken_pixels_in_editing_border_pixels(editing_pixels_border) {
+    for (var border_length = editing_pixels_border.length, index = border_length - 1; 0 <= index; index--) !pixel.strong_is_owner(prev_target, editing_pixels_border[index]) && pixel.can_take(editing_pixels_border[index]) && (editing_pixels_border[index] = editing_pixels_border[border_length - 1], editing_pixels_border.pop(), border_length--)
 }
 
-function bP(g) {
-    for (var k = g.length, n, l, x = k - 1; 0 <= x; x--)
-        for (n = 3; 0 <= n; n--)
-            if (l = g[x] + offset[n], pixel.can_take(l, prev_target)) {
-                pixels_bordering_land[prev_target].push(g[x]);
-                g[x] = g[k - 1];
-                g.pop();
-                k--;
+function construct_new_border_terrain(pixels_bordering_terrain) {
+    for (var border_length = pixels_bordering_terrain.length, side, coord, index = border_length - 1; 0 <= index; index--)
+        for (side = 3; 0 <= side; side--)
+            if (coord = pixels_bordering_terrain[index] + offset[side], pixel.can_take(coord, prev_target)) {
+                pixels_bordering_land[prev_target].push(pixels_bordering_terrain[index]);
+                pixels_bordering_terrain[index] = pixels_bordering_terrain[border_length - 1];
+                pixels_bordering_terrain.pop();
+                border_length--;
                 break
             }
 }
 
-function bR() {
-    for (var g, k, n = prev_border_length - 1; 0 <= n; n--)
-        for (g = 3; 0 <= g; g--) k = prev_border_land[n] + offset[g], pixel.is_owner(prev_target, k) && pixel.is_inner(k) && (pixels_bordering_land[prev_target].push(k), pixel.change_to_border(k, prev_target))
+function convert_prev_inner_to_border() {
+    for (var side, coord, index = prev_border_length - 1; 0 <= index; index--)
+        for (side = 3; 0 <= side; side--) coord = prev_border_land[index] + offset[side], pixel.is_owner(prev_target, coord) && pixel.is_inner(coord) && (pixels_bordering_land[prev_target].push(coord), pixel.change_to_border(coord, prev_target))
 }
 
-function bS() {
-    var g;
+function update_target_xy_minmax() {
+    var index;
     a: for (; y_min[prev_target] < y_max[prev_target];) {
-        for (g = x_max[prev_target]; g >= x_min[prev_target]; g--)
-            if (pixel.strong_is_owner(prev_target, 4 * (y_min[prev_target] * map_width + g))) break a;
+        for (index = x_max[prev_target]; index >= x_min[prev_target]; index--)
+            if (pixel.strong_is_owner(prev_target, 4 * (y_min[prev_target] * map_width + index))) break a;
         y_min[prev_target]++
     }
     a: for (; y_min[prev_target] < y_max[prev_target];) {
-        for (g = x_max[prev_target]; g >= x_min[prev_target]; g--)
-            if (pixel.strong_is_owner(prev_target, 4 * (y_max[prev_target] * map_width + g))) break a;
+        for (index = x_max[prev_target]; index >= x_min[prev_target]; index--)
+            if (pixel.strong_is_owner(prev_target, 4 * (y_max[prev_target] * map_width + index))) break a;
         y_max[prev_target]--
     }
     a: for (; x_min[prev_target] < x_max[prev_target];) {
-        for (g = y_max[prev_target]; g >= y_min[prev_target]; g--)
-            if (pixel.strong_is_owner(prev_target, 4 * (g * map_width + x_min[prev_target]))) break a;
+        for (index = y_max[prev_target]; index >= y_min[prev_target]; index--)
+            if (pixel.strong_is_owner(prev_target, 4 * (index * map_width + x_min[prev_target]))) break a;
         x_min[prev_target]++
     }
     a: for (; x_min[prev_target] < x_max[prev_target];) {
-        for (g = y_max[prev_target]; g >= y_min[prev_target]; g--)
-            if (pixel.strong_is_owner(prev_target, 4 * (g * map_width + x_max[prev_target]))) break a;
+        for (index = y_max[prev_target]; index >= y_min[prev_target]; index--)
+            if (pixel.strong_is_owner(prev_target, 4 * (index * map_width + x_max[prev_target]))) break a;
         x_max[prev_target]--
     }
 }
