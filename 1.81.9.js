@@ -735,7 +735,7 @@ function gametickincrement() {
 	eC.d7();
 	eD.d7();
 	newannouncements.d7();
-	eE.d7();
+	game_tick.d7();
 	eF.d7();
 	newpeace.d7();
 	newstatistics.d7();
@@ -1526,7 +1526,7 @@ function systemgameinit(g, my_id, playerinfo, game_mode, is_contest) {
 	dy.bh();
 	e3.bh();
 	e6.bh();
-	eE.bh();
+	game_tick.bh();
 	e5.bh();
 	8 === gamemode ? (new1v1points = new old1v1points, new1v1points.setplayers(playerinfo)) : new1v1points = null;
 	jI();
@@ -1617,7 +1617,7 @@ function jg() {
 	jf = new kV;
 	e6 = new kW;
 	e3 = new kX;
-	eE = new kY
+	game_tick = new kY
 }
 
 function jh() {
@@ -1720,7 +1720,7 @@ function jh() {
 		if (2 === M) { //Ask to attack target
 			if (x[7]) {
 				for (M = L.length - 1; 0 <= M; M--) 0 === isalive[L[M]] && L.splice(M, 1);
-				0 < L.length && (eE.l6(1, L, !0) && (newannouncements.l7(L, E), multi.ask_to_attack(L, E)), L = []);
+				0 < L.length && (game_tick.l6(1, L, !0) && (newannouncements.l7(L, E), multi.ask_to_attack(L, E)), L = []);
 				this.kx();
 				return 1
 			}
@@ -1737,7 +1737,7 @@ function jh() {
 		if (4 === M) return x[0] ? in_spawn ? (this.kx(), singleplayer ? (newspawn.setspawn(0, pixel.pixeltox(H), pixel.pixeltoy(H)), newspawn.exit()) : multi.chooselocation(1E3, pixel.pixeltox(H), pixel.pixeltoy(H))) : (this.kx(), newannouncements.lA(), singleplayer ? singleattack(myid, E, eF.lB()) : (!freespawn || 300 < dz.lD()) && multi.attack(eF.lB(), E === maxentities ? myid : E)) : x[8] ? (this.kx(), e5.lF(E, eF.lB())) : this.kx(), 1;
 		if (5 === M) return x[1] ? (this.kx(), newannouncements.lA(), singleplayer ? single.fA(myid, eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)) : multi.chooselocation(eF.lB(), pixel.pixeltox(H), pixel.pixeltoy(H)), 1) : 0;
 		if (7 === M && x[4]) return this.kx(), n = a5.show(N, G), 1;
-		if (8 === M) return x[5] ? (eE.l6(0, [E], !0) && (newannouncements.lG(E, 0), multi.non_aggression(E)), this.kx(), 1) : 0;
+		if (8 === M) return x[5] ? (game_tick.l6(0, [E], !0) && (newannouncements.lG(E, 0), multi.non_aggression(E)), this.kx(), 1) : 0;
 		this.kx();
 		return 2
 	};
@@ -1764,11 +1764,11 @@ function jh() {
 		}
 		M = x;
 		Q = E;
-		Q = he.kw(Q) && !k(Q) && eE.l6(1, [Q], !1);
+		Q = he.kw(Q) && !k(Q) && game_tick.l6(1, [Q], !1);
 		M[6] = Q;
 		x[4] = 1 <= a5.lM && this.kw(E);
 		if (cZ(E, myid)) {
-			x[5] = this.kw(E) && !dy.lR(E) && eE.l6(0, [E], !1);
+			x[5] = this.kw(E) && !dy.lR(E) && game_tick.l6(0, [E], !1);
 			M = x;
 			Q = E;
 			if (0 === L.length) Q = !1;
@@ -9408,7 +9408,7 @@ function kJ() {
 						});
 						lobby.ty(y, C)
 					} else 2 !== z && 3 !== z || eM.bh(n);
-			else 1 === z && (z = jT.rc(), 8 !== z ? 10 === z && e1.a0h(x, 3243) : x !== e1.jM ? e1.a0h(x, 3244) : 0 === k(n, 1) ? bw.a5C.a5N(n) : (z = k(n, 2), 0 === z ? 3 !== t ? e1.a0h(e1.jM, 3230) : (z = k(n, 9), y = k(n, 7), 0 !== isalive[z] && 0 !== isalive[myid] && (y %= a5.a6, newannouncements.display_emoji(z, myid, y), dy.mk(z, 1, y))) : 1 === z ? 2 !== t ? e1.a0h(e1.jM, 3235) : (z = k(n, 9), 0 !== isalive[z] && 0 !== isalive[myid] && eE.a0K(0, [z], !0) && newannouncements.lG(z, 1)) : 3 !== t ? e1.a0h(e1.jM, 3236) : (z = k(n, 9), y = k(n, 9), 0 !== isalive[z] && 0 !== isalive[y] && 0 !== isalive[myid] && eE.a0K(1, [z], !0) && (dy.mk(z, 3, 96), dy.mk(y, 4, 96), newannouncements.mn(z, y)))))
+			else 1 === z && (z = jT.rc(), 8 !== z ? 10 === z && e1.a0h(x, 3243) : x !== e1.jM ? e1.a0h(x, 3244) : 0 === k(n, 1) ? bw.a5C.a5N(n) : (z = k(n, 2), 0 === z ? 3 !== t ? e1.a0h(e1.jM, 3230) : (z = k(n, 9), y = k(n, 7), 0 !== isalive[z] && 0 !== isalive[myid] && (y %= a5.a6, newannouncements.display_emoji(z, myid, y), dy.mk(z, 1, y))) : 1 === z ? 2 !== t ? e1.a0h(e1.jM, 3235) : (z = k(n, 9), 0 !== isalive[z] && 0 !== isalive[myid] && game_tick.a0K(0, [z], !0) && newannouncements.lG(z, 1)) : 3 !== t ? e1.a0h(e1.jM, 3236) : (z = k(n, 9), y = k(n, 9), 0 !== isalive[z] && 0 !== isalive[y] && 0 !== isalive[myid] && game_tick.a0K(1, [z], !0) && (dy.mk(z, 3, 96), dy.mk(y, 4, 96), newannouncements.mn(z, y)))))
 		}
 	};
 	this.vo = function (x) {

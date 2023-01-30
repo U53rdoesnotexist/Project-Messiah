@@ -1,45 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Territorial.io</title>
-    <meta name="description" content="Territorial.io - The Art of Conquest" />
-    <meta
-      name="keywords"
-      content="territorial.io,territory games,territorial io,map games,games with maps,david tschacher,territorial,territory game,io game,io games,territory.io,territory io,territory games io"
-    />
-    <meta name="author" content="David Tschacher" />
+    <head>
+        <meta charset="utf-8" />
+        <title>Territorial.io</title>
+        <meta
+            name="description"
+            content="Territorial.io - The Art of Conquest"
+        />
+        <meta
+            name="keywords"
+            content="territorial.io,territory games,territorial io,map games,games with maps,david tschacher,territorial,territory game,io game,io games,territory.io,territory io,territory games io"
+        />
+        <meta name="author" content="David Tschacher" />
+
+        <style>
+            html,
+            body {
+              overflow: hidden;
+              padding: 0;
+              margin: 0;
+              background: rgb(0, 0, 0);
+              touch-action: none;
+              -webkit-touch-callout: none;
+              -webkit-user-select: none;
+              -khtml-user-select: none;
+              -moz-user-select: none;
+              -ms-user-select: none;
+              user-select: none;
+            }
+
+            #preroll {
+              position: absolute;
+              top: 0px;
+              left: 0px;
+              z-index: 1;
+            }
+        </style>
+    </head>
+
+    <body>
+        <canvas id="canvasA" width="128" height="128"></canvas>
+        <div id="preroll"></div>
+    </body>
 
     <style>
-      html,
-      body {
-        overflow: hidden;
-        padding: 0;
-        margin: 0;
-        background: rgb(0, 0, 0);
-        touch-action: none;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
+        #menu {
+            position: absolute;
+            z-index: 9;
+            background-color: lightgrey;
+            border: 1px solid grey;
+            text-align: center;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            width: 750px;
+            font-size: 25px;
+            top: 100px;
+            right: 60px;
+          }
 
-      #preroll {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        z-index: 1;
-      }
+          #header_menu {
+            padding: 10px;
+            cursor: move;
+            z-index: 10;
+            background-color: lightskyblue;
+            color: black;
+            height: 25px;
+          }
+
+          #modules {
+            display: flex;
+            height: 203px;
+          }
+
+          #modules > * {
+            width: 80%;
+            background-color: lightgray;
+            color: black;
+            margin-bottom: 2px;
+            margin-right: 2px ;
+          }
+
+          #sections {
+            width: 20%;
+            margin-bottom: 2px;
+            margin-left: 2px;
+            margin-right: 0;
+            border-right: black solid 1px;
+          }
+
+          #sections > * {
+            border-bottom: black solid 1px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+          }
+
+          #sections:hover {
+            cursor: pointer;
+          }
+
+          #settings {
+            overflow-y: scroll;
+            text-align: left;
+            padding-left: 15px;
+          }
+
+          hr {
+            margin-right: 10px;
+            width: 98%;
+          }
+
+          input[type=number] {
+            width: 50px
+          }
     </style>
-  </head>
+    <div id="menu" oncontextmenu="return false">
+        <div id="header_menu">Mod Settings</div>
+        <div id="modules">
+            <div id="sections">
+                <div onclick="display('interface')" id="interfaceBut" style="font-weight: bold">Interface</div>
+                <div onclick="display('bots')" id="botsBut">Bots</div>
+                <div onclick="display('mode')" id="modeBut">Mode</div>
+                <div onclick="display('misc')" id="miscBut">Misc</div>
+                <div onclick="display('about')" id="aboutBut">About</div>
+                <div style="border-bottom: none"></div>
+            </div>
 
-  <body>
-    <canvas id="canvasA" width="128" height="128"></canvas>
-    <div id="preroll"></div>
+            <div id="settings">
+                <div id="interface">
+                    <label>
+                        Font Mod: <input type="checkbox" onclick="font = this.checked" checked/>
+                    </label>
+                </div>
+
+                <div id="bots" style="display: none">
+                    <label>
+                        <input type="submit" onclick="if (typeof(join_bots) != 'undefined') join_bots()" value="Join Bots" id="joinBotsBut"/>
+                        Number of Bots: <input type="number" value="1" id="nBots"/>
+                        Lobby: <input type="number" value="1" id="lobbyBots"/> <hr>
+                        <input type="submit" onclick="if (typeof(join_game) != 'undefined') join_game()" value="Join Game" id="joinGameBut"/> 
+                        Game ID: <input type="number" value="0" id="gameID">
+                        Follow Main Instance: <input type="checkbox" onclick="" checked/> <hr>
+                        Joined Bots: 
+                      </label>
+                </div>
+
+                <div id="mode" style="display: none">
+                    <label>
+                      <input type="number" value="1" id="emoj" />
+                        <input
+                            type="submit"
+                            value="toggle emoj"
+                            onclick="toggleEmoj(document.getElementById('emoj').value)" />
+                        <input
+                            type="submit"
+                            value="reset emoj"
+                            onclick="resetEmoj()" />
+                        <input
+                            type="submit"
+                            value="active emojs"
+                            onclick="activeEmojs()"
+                    /></label>
+                    <hr />
+                    <label>
+                        <input type="number" value="1000" id="spamEmoj" />
+                        <input
+                            type="submit"
+                            value="spam emoj"
+                            onclick="spamEmoj()"
+                        />
+                    </label>
+                </div>
+
+                <div id="misc" style="display: none"></div>
+
+                <div id="about" style="display: none">
+                    <label>
+                        Disclaimer: This mod is made for educational and testing
+                        purposes only. Malicious and unauthorised usage of the mod
+                        is prohibited.
+                    </label>
+                    <hr />
+                    <label>
+                        Mod in sync with game Version 1.83.2
+                    </label>
+                    <hr />
+                    <label>Made By 4T</label>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="./1.83.2.js"></script>
-    <script src="./bots.js"></script>
-  </body>
+    <script src="./auto_team.js"></script>
+
 </html>

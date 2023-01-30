@@ -289,12 +289,12 @@ function bm() {
         this.bv(n)
     };
     this.bv = function(n) {
-        if (bw.bx() && k[n]) {
+        if (sprites.bx() && k[n]) {
             var l = k[n].l,
-                x = Math.floor(.15 * g * bw.bz(13).height),
+                x = Math.floor(.15 * g * sprites.bz(13).height),
                 t = bt + x + bu,
                 z = c2.measureText(l, t),
-                y = .8 * g * bw.bz(13).width;
+                y = .8 * g * sprites.bz(13).width;
             z > y && (x = Math.floor(x * y / z), t = bt + x + bu);
             k[n] = {
                 l: l,
@@ -304,24 +304,24 @@ function bm() {
         }
     };
     this.c6 = function() {
-        return Math.floor(g * bw.bz(13).height)
+        return Math.floor(g * sprites.bz(13).height)
     };
     this.c7 = function(n, l) {
-        return !bw.bx() || n < display_buffer_length || l < cB - cC.c1 -
-            g * bw.bz(13).height - 2 * display_buffer_length || l > cB - cC.c1 - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * bw.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * bw.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * bw.bz(13).width ? (cD.cE(1), !0) : !1
+        return !sprites.bx() || n < display_buffer_length || l < cB - cC.c1 -
+            g * sprites.bz(13).height - 2 * display_buffer_length || l > cB - cC.c1 - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * sprites.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * sprites.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * sprites.bz(13).width ? (cD.cE(1), !0) : !1
     };
     this.to_y = function() {
-        return Math.floor(cB - cC.c1 - g * bw.bz(13).height - 2 * display_buffer_length)
+        return Math.floor(cB - cC.c1 - g * sprites.bz(13).height - 2 * display_buffer_length)
     };
     this.cG = function() {
-        if (bw.bx()) {
+        if (sprites.bx()) {
             cH.imageSmoothingEnabled = !0;
             cH.setTransform(g, 0, 0, g, display_buffer_length, this.to_y());
-            cH.drawImage(bw.bz(14), 0, 0);
-            cH.setTransform(g, 0, 0, g, 2 * display_buffer_length + g * bw.bz(13).width, this.to_y());
-            cH.drawImage(bw.bz(13), 0, 0);
+            cH.drawImage(sprites.bz(14), 0, 0);
+            cH.setTransform(g, 0, 0, g, 2 * display_buffer_length + g * sprites.bz(13).width, this.to_y());
+            cH.drawImage(sprites.bz(13), 0, 0);
             for (var n = 1; 0 <= n; n--) k[n] && (cH.setTransform(1, 0, 0, 1, (1 + n) * display_buffer_length + n * g *
-                bw.bz(13).width, this.to_y()), cH.font = k[n].font, cH.textBaseline = cI, cH.textAlign = cJ, cH.fillStyle = cK, cH.fillText(k[n].l, .5 * g * bw.bz(13).width, .86 * g * bw.bz(13).height));
+                sprites.bz(13).width, this.to_y()), cH.font = k[n].font, cH.textBaseline = cI, cH.textAlign = cJ, cH.fillStyle = cK, cH.fillText(k[n].l, .5 * g * sprites.bz(13).width, .86 * g * sprites.bz(13).height));
             cH.setTransform(1, 0, 0, 1, 0, 0)
         }
     }
@@ -521,9 +521,9 @@ function dN(g, k) {
     return editing_border_pixels[g].length !== l ? (cL(g, n, l, k), !0) : !1
 }
 var dd = [60, 74, 112, 200, 256, 512];
-
+var bots_timing;
 function de() {
-    var g, k, n, l, x, t;
+    var /*bots_timing, */bots_send_ratio, n, l, x, t;
     this.dl = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
     this.dm = [97, 95, 93, 90, 87, 84];
     this.dS = [98, 95, 90, 40, 20, 0];
@@ -531,8 +531,8 @@ function de() {
     this.dQ = [0, 0, 0, 0, 50, 90];
     this.init = function() {
         var z;
-        g = new Uint8Array(bot_count);
-        k = new Uint16Array(bot_count);
+        bots_timing = new Uint8Array(bot_count);
+        bots_send_ratio = new Uint16Array(bot_count);
         n = new Uint16Array(bot_count);
         l = new Uint8Array(bot_count);
         this.cN = new Uint8Array(bot_count);
@@ -552,8 +552,8 @@ function de() {
             var y = 8 === gamemode ? 1 : 0;
             for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = y
         }
-        for (z = bot_count - 1; 0 <= z; z--) 2 >= this.cN[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.cN[z] ? (k[z] = 1E3, n[z] = 1E3) : 1 === this.cN[z] ? (k[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (k[z] = 1E3, n[z] = 870)) : 4 >= this.cN[z] ? (l[z] = 1 + ce.cf(20), t[z] = 250 + ce.cf(1501), x[z] = 500 + ce.cf(501), 3 === this.cN[z] ? (k[z] = 600 + ce.cf(101), n[z] = 300 + ce.cf(401)) : (k[z] = 300 + ce.cf(201), n[z] = 100 + ce.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
-            35 + ce.cf(16), k[z] = 400 + ce.cf(101), n[z] = 50 + ce.cf(101)), g[z] = 1 + divide_floor(x[z] * ce.random(), 10 * ce.value(100))
+        for (z = bot_count - 1; 0 <= z; z--) 2 >= this.cN[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 1E3) : 1 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (bots_send_ratio[z] = 1E3, n[z] = 870)) : 4 >= this.cN[z] ? (l[z] = 1 + ce.cf(20), t[z] = 250 + ce.cf(1501), x[z] = 500 + ce.cf(501), 3 === this.cN[z] ? (bots_send_ratio[z] = 600 + ce.cf(101), n[z] = 300 + ce.cf(401)) : (bots_send_ratio[z] = 300 + ce.cf(201), n[z] = 100 + ce.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
+            35 + ce.cf(16), bots_send_ratio[z] = 400 + ce.cf(101), n[z] = 50 + ce.cf(101)), bots_timing[z] = 1 + divide_floor(x[z] * ce.random(), 10 * ce.value(100))
     };
     this.dw = function() {
         var z, y;
@@ -566,15 +566,15 @@ function de() {
             }
     };
     this.dH = function(z, y) {
-        0 <= z && (g[z] = y)
+        0 <= z && (bots_timing[z] = y)
     };
     this.dF = function(z) {
-        if (0 === --g[z]) {
+        if (0 === --bots_timing[z]) {
             x[z] !== t[z] && (x[z] += x[z] < t[z] ? 3 : -3);
-            k[z] !== n[z] && (k[z] += k[z] < n[z] ? l[z] : -l[z], k[z] = Math.abs(k[z] - n[z]) <= l[z] ? n[z] : k[z]);
-            g[z] = divide_floor(x[z], 10);
+            bots_send_ratio[z] !== n[z] && (bots_send_ratio[z] += bots_send_ratio[z] < n[z] ? l[z] : -l[z], bots_send_ratio[z] = Math.abs(bots_send_ratio[z] - n[z]) <= l[z] ? n[z] : bots_send_ratio[z]);
+            bots_timing[z] = divide_floor(x[z], 10);
             var y = z + player_count;
-            dB(y, divide_floor(k[z] * troops[y], 1E3))
+            dB(y, divide_floor(bots_send_ratio[z] * troops[y], 1E3))
         }
     }
 }
@@ -586,7 +586,7 @@ function e8() {
     websocket_manager.dF()
 }
 
-function eE() {
+function game_tick() {
     ay.dF();
     eF.dF();
     single.dF();
@@ -610,6 +610,7 @@ function eE() {
     statistics.dF();
     eT.dF();
     websocket_manager.dF()
+    if (typeof(script_game_tick) != 'undefined') script_game_tick()
 }
 
 function eU() {
@@ -1415,6 +1416,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     eX.init();
     c4.c5 = !0;
     singleplayer && in_spawn || set_android_state(1)
+    if (typeof(script_game_init) != 'undefined') script_game_init()
 }
 
 function ja() {
@@ -1432,7 +1434,7 @@ function leave_game() {
     show_ad()
 }
 var dG, au, dE, eJ, single, eK, eV, j1, names, hu, fq, announcements, jf, eP, c2, eR, gj, jg, eO, eM, eB, eW, 
-jh, ji, aJ, jj, jk, jl, dy, name_input, bw, pixel, user_settings, attacks, ay, eA, jS, e2, jQ, jm, jn, gn, ez, ce, 
+jh, ji, aJ, jj, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, ay, eA, jS, e2, jQ, jm, jn, gn, ez, ce, 
 g1, hq, jo, multi_in, eX, multi_out, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, eI, eF, eQ, jv, dr, jw;
 
 function construct() {
@@ -1467,7 +1469,7 @@ function construct() {
     jl = new kG;
     dy = new kH;
     name_input = new Name_input;
-    bw = new kJ;
+    sprites = new Sprites;
     pixel = new Pixel;
     user_settings = new User_settings;
     attacks = new Attacks;
@@ -1520,7 +1522,7 @@ function jy() {
             W.beginPath();
             W.arc(Math.floor(U / 2), Math.floor(U / 2), Math.floor(.47 * U), 0, 2 * Math.PI);
             W.fill();
-            6 === L[P] ? R.drawImage(bw.bz(19), 0, 0) : 7 === L[P] ? R.drawImage(bw.lB("emojis"), -4 * M, 0) : R.drawImage(bw.bz(3), -L[P] * M, 0)
+            6 === L[P] ? R.drawImage(sprites.bz(19), 0, 0) : 7 === L[P] ? R.drawImage(sprites.lB("emojis"), -4 * M, 0) : R.drawImage(sprites.bz(3), -L[P] * M, 0)
         }
     }
 
@@ -1554,7 +1556,7 @@ function jy() {
         this.l4 = [];
         I = [];
         this.l5 = [];
-        var L = bw.bz(3).height;
+        var L = sprites.bz(3).height;
         A = Math.floor((zoom ? .075 : .0468) * bq);
         D = A / L;
         N = Math.floor(A / 3);
@@ -1747,10 +1749,10 @@ function jz() {
         B.fillRect(0, 0, 1, l);
         B.fillRect(0, l - 1, l, 1);
         B.fillRect(l - 1, 0, 1, l);
-        var C = .9 * l / bw.bz(0).width;
+        var C = .9 * l / sprites.bz(0).width;
         B.imageSmoothingEnabled = !0;
-        B.setTransform(C, 0, 0, C, Math.floor((l - C * bw.bz(0).width) / 2), Math.floor((l - C * bw.bz(0).height) / 2));
-        B.drawImage(bw.bz(0), 0, 0);
+        B.setTransform(C, 0, 0, C, Math.floor((l - C * sprites.bz(0).width) / 2), Math.floor((l - C * sprites.bz(0).height) / 2));
+        B.drawImage(sprites.bz(0), 0, 0);
         B.setTransform(1, 0, 0, 1, 0, 0)
     }
 
@@ -2261,10 +2263,10 @@ function ni() {
         var g;
         this.a7 = Array(this.a6);
         this.nu = Array(this.a6);
-        var k = bw.lB("emojis");
+        var k = sprites.lB("emojis");
         this.nx();
         for (g = this.lf = 0; g < this.nk; g++) this.ny(g, g, k);
-        k = bw.lB("flags");
+        k = sprites.lB("flags");
         for (g = 0; g < this.nl; g++) this.ny(g,
             this.nk + g, k);
         this.o0();
@@ -2645,8 +2647,7 @@ function k2() {
         B = Math.floor(.15 * A);
         pl.font = y;
         z = Math.floor(pl.measureText("02 000 000 0000").width);
-        for (var C =
-                t.length - 1; 0 <= C; C--) n(t[C]), g(C)
+        for (var C = t.length - 1; 0 <= C; C--) n(t[C]), g(C)
     };
     this.eb = function() {
         for (var C = t.length - 1; 0 <= C; C--) t[C].po && (t[C].po = !1, g(C))
@@ -3638,7 +3639,7 @@ function k8() {
         B.textAlign = ol;
         for (S = y - O; 0 <= S; S--) k(em[S + V]), x(S, em[S + V]);
         2 === O && (k(my_id), B.textAlign = mj, l(y - 1, sM[my_id], my_id), B.textAlign = ol, x(y - 1, my_id));
-        0 === V && (S = .7 * I / bw.bz(4).height, B.setTransform(S, 0, 0, S, Math.floor(D + .58 * I + .5 * S * bw.bz(4).width), Math.floor(F + sL + .4 * I)), B.imageSmoothingEnabled = !0, B.drawImage(bw.bz(4), -Math.floor(bw.bz(4).width / 2), -Math.floor(bw.bz(4).height / 2)), B.setTransform(1, 0, 0, 1, 0, 0))
+        0 === V && (S = .7 * I / sprites.bz(4).height, B.setTransform(S, 0, 0, S, Math.floor(D + .58 * I + .5 * S * sprites.bz(4).width), Math.floor(F + sL + .4 * I)), B.imageSmoothingEnabled = !0, B.drawImage(sprites.bz(4), -Math.floor(sprites.bz(4).width / 2), -Math.floor(sprites.bz(4).height / 2)), B.setTransform(1, 0, 0, 1, 0, 0))
     }
 
     function k(S) {
@@ -4011,7 +4012,7 @@ function kA() {
             C.strokeRect(E,
                 E, n - 2 * E, l - 2 * E);
             C.imageSmoothingEnabled = !0;
-            var F = bw.bz(k),
+            var F = sprites.bz(k),
                 G = F.height,
                 N = x * l / G;
             C.setTransform(N, 0, 0, N, Math.floor((n - N * F.width) / 2), Math.floor((l - N * G) / 2));
@@ -4494,8 +4495,8 @@ function ui() {
             name_input.tj();
             E = G;
             A = Math.floor((zoom ? r > s ? .6 : .45 : .4) * pK);
-            n = A / bw.bz(17).width;
-            x = Math.floor(n * bw.bz(17).height);
+            n = A / sprites.bz(17).width;
+            x = Math.floor(n * sprites.bz(17).height);
             t = Math.floor(.4 * x);
             z = Math.floor(.6 * x);
             y = Math.floor(2.5 * z);
@@ -4536,7 +4537,7 @@ function ui() {
         return !0
     };
     this.cG = function() {
-        this.hidden && (cH.imageSmoothingEnabled = !0, cH.setTransform(1, 0, 0, 1, g, k), cH.fillStyle = hy, cH.fillRect(0, 0, C, l), cH.lineWidth = oy, cH.strokeStyle = cK, cH.strokeRect(0, 0, C, l), cH.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), cH.drawImage(bw.bz(17), 0, 0), cH.setTransform(1, 0, 0, 1, 0, 0))
+        this.hidden && (cH.imageSmoothingEnabled = !0, cH.setTransform(1, 0, 0, 1, g, k), cH.fillStyle = hy, cH.fillRect(0, 0, C, l), cH.lineWidth = oy, cH.strokeStyle = cK, cH.strokeRect(0, 0, C, l), cH.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), cH.drawImage(sprites.bz(17), 0, 0), cH.setTransform(1, 0, 0, 1, 0, 0))
     }
 }
 
@@ -4556,7 +4557,7 @@ function ut() {
         this.init()
     };
     this.init = function() {
-        if (bw.bx()) {
+        if (sprites.bx()) {
             var y = Math.floor((zoom ? .261 : .195) * bq);
             var A = Math.floor(.9 * y),
                 B = Math.floor(.17 * A);
@@ -5059,7 +5060,7 @@ function kD() {
             jg.cG();
             jf.cG();
             var k = Math.floor(.3 * cB),
-                n = bw.lB("territorial.io"),
+                n = sprites.lB("territorial.io"),
                 l = 1.75 * cB / n.width;
             l = l * n.width < .98 * gE ? .98 * gE / n.width : l;
             cH.globalAlpha = .15;
@@ -5315,7 +5316,7 @@ function ki() {
             aJ.setState(10);
             cH.imageSmoothingEnabled = !0;
             aJ.hr();
-            x = bw.lB("loading");
+            x = sprites.lB("loading");
             var t = (zoom ? .396 : .25) * bq / x.width;
             cH.setTransform(t, 0, 0, t, Math.floor((r - t * x.width) / 2), Math.floor((s - t * x.height) / 2));
             cH.drawImage(x, 0, 0);
@@ -5463,7 +5464,7 @@ function Lobby() {
             W.arc(24, 24, 23, 0, 2 * Math.PI);
             W.stroke()
         }
-        g(7, bw.bz(4));
+        g(7, sprites.bz(4));
         g(8, a5.l7[27]);
         g(9, a5.l7[46]);
         g(10, a5.l7[36]);
@@ -5510,8 +5511,8 @@ function Lobby() {
                 map_id: U[W].x6,
                 xB: U[W].x7,
                 joined: U[W].xC,
-                nf: U[W].vj,
-                xD: U[W].xD,
+                time_left: U[W].time_left,
+                maximum_players: U[W].maximum_players,
                 ls: V
             })
         }
@@ -5545,10 +5546,10 @@ function Lobby() {
         cH.beginPath();
         cH.arc(M, Q, W, 0, 2 * Math.PI);
         cH.stroke();
-        W = bw.bz(0).height;
+        W = sprites.bz(0).height;
         var X = .6 * H / W;
-        cH.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * bw.bz(0).width), Math.floor(Q - .5 * X * W));
-        cH.drawImage(bw.bz(0), 0, 0);
+        cH.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * sprites.bz(0).width), Math.floor(Q - .5 * X * W));
+        cH.drawImage(sprites.bz(0), 0, 0);
         cH.setTransform(1, 0, 0, 1, 0, 0);
         cH.fillStyle = oG;
         cH.fillRect(r - I - display_buffer_length, display_buffer_length, I, D);
@@ -5610,11 +5611,10 @@ function Lobby() {
                     cH.textAlign = mj;
                     cH.fillStyle = od;
                     cH.fillText(next_games[V].joined.toString(), Math.floor(ba + .07 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
-                    256 >= next_games[V].xD && (cH.textAlign = cJ, cH.fillStyle = oM, cH.fillText(next_games[V].xD.toString(), Math.floor(ba + .5 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length)));
+                    cH.textAlign = cJ, cH.fillStyle = oM, cH.fillText(next_games[V].game_id.toString(), Math.floor(ba + .5 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
                     cH.textAlign = ol;
                     cH.fillStyle = oY;
-                    cH.fillText(next_games[V].nf.toString(), Math.floor(ba + .93 * display_games_box_length), Math.floor(ca +
-                        .9 * display_games_box_length));
+                    cH.fillText(next_games[V].time_left.toString(), Math.floor(ba + .93 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
                     cH.strokeStyle = oe;
                     cH.strokeRect(ba, ca, z, z);
                     O = Math.floor(.16 * display_games_box_length);
@@ -5622,7 +5622,7 @@ function Lobby() {
                     cH.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
                     E.length > next_games[V].jJ && cH.drawImage(E[next_games[V].jJ], 0, 0);
                     cH.setTransform(1, 0, 0, 1, 0, 0);
-                    next_games[V].jK && (V = bw.bz(4), pa = .5 * display_games_box_length / V.width, cH.setTransform(pa, 0, 0, pa, Math.floor(ba + (display_games_box_length - pa * V.width) / 2), Math.floor(ca + (display_games_box_length - pa * V.height) / 2)), cH.globalAlpha = .6, cH.drawImage(V, 0, 0), cH.globalAlpha = 1, cH.setTransform(1, 0, 0, 1, 0, 0));
+                    next_games[V].jK && (V = sprites.bz(4), pa = .5 * display_games_box_length / V.width, cH.setTransform(pa, 0, 0, pa, Math.floor(ba + (display_games_box_length - pa * V.width) / 2), Math.floor(ca + (display_games_box_length - pa * V.height) / 2)), cH.globalAlpha = .6, cH.drawImage(V, 0, 0), cH.globalAlpha = 1, cH.setTransform(1, 0, 0, 1, 0, 0));
                     P++;
                     if (P >= next_games.length) return;
                     na += display_games_box_length + display_buffer_length
@@ -5861,7 +5861,7 @@ function p5() {
     };
     this.pR =
         function(g, k) {
-            if (!bw.bx()) return -1;
+            if (!sprites.bx()) return -1;
             for (var n = this.b3 - 1; 0 <= n; n--)
                 if (g >= this.mE[n].fJ && k >= this.mE[n].fK && g < this.mE[n].fJ + this.c1 && k < this.mE[n].fK + this.c1) return n;
             return -1
@@ -5896,10 +5896,10 @@ function p5() {
         return !1
     };
     this.cG = function() {
-        if (bw.bx()) {
+        if (sprites.bx()) {
             cH.imageSmoothingEnabled = !0;
             for (var g = this.b3 - 1; 0 <= g; g--) cH.fillStyle =
-                this.mE[g].m3 ? mb : hy, cH.fillRect(this.mE[g].fJ, this.mE[g].fK, this.c1, this.c1), 0 === g ? this.xm(g, bw.bz(15)) : 1 === g ? this.xn() : 2 === g && this.xo(), cH.setTransform(1, 0, 0, 1, 0, 0), cH.lineWidth = oy, cH.strokeStyle = cK, cH.strokeRect(this.mE[g].fJ, this.mE[g].fK, this.c1, this.c1);
+                this.mE[g].m3 ? mb : hy, cH.fillRect(this.mE[g].fJ, this.mE[g].fK, this.c1, this.c1), 0 === g ? this.xm(g, sprites.bz(15)) : 1 === g ? this.xn() : 2 === g && this.xo(), cH.setTransform(1, 0, 0, 1, 0, 0), cH.lineWidth = oy, cH.strokeStyle = cK, cH.strokeRect(this.mE[g].fJ, this.mE[g].fK, this.c1, this.c1);
             cH.imageSmoothingEnabled = !1
         }
     };
@@ -5997,7 +5997,7 @@ function Name_input() {
         1 === jh.pR(t, z, 1, 1) ? save_account() || vote() || (set_android_state(10), l() ? (this.tj(), save_username(username), dy.init()) : jj.vd(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
     };
     this.vs = function() {
-        save_account() || vote() || (set_android_state(10), void 0 !== username && names.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % websocket_manager.vX) : ji.vV(jt.xy - 1), l() ? bw.bx() ? (this.tj(), save_username(username), dr.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
+        save_account() || vote() || (set_android_state(10), void 0 !== username && names.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % websocket_manager.vX) : ji.vV(jt.xy - 1), l() ? sprites.bx() ? (this.tj(), save_username(username), dr.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
     };
     this.y2 = function() {
         return !cC.xk() && !cD.hidden && !nW.hidden
@@ -6005,7 +6005,7 @@ function Name_input() {
     this.cG = function() {
         if (this.y2()) {
             cH.imageSmoothingEnabled = !0;
-            var t = bw.lB("territorial.io"),
+            var t = sprites.lB("territorial.io"),
                 z = 1.1 * jh.c1 / t.width;
             cH.setTransform(z, 0, 0, z, Math.floor((gE - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
             cH.drawImage(t, 0, 0);
@@ -6018,7 +6018,7 @@ function Name_input() {
     }
 }
 
-function kJ() {
+function Sprites() {
     function g(t, z, y, A) {
         l[t] = z;
         n[t] = new Image;
@@ -6063,7 +6063,7 @@ function kJ() {
                 n[t] = E
             }
             k--;
-            bw.bx() && (uZ.bv(), hu.l3(), a5.init(), vv.uv([n[8], n[16], n[7], n[9], n[10]], [!is_ios, 0 === device_version, !0, !0, !0]), c4.c5 = !0, n[7] = x, n[8] = x, n[9] = x, n[10] = x)
+            sprites.bx() && (uZ.bv(), hu.l3(), a5.init(), vv.uv([n[8], n[16], n[7], n[9], n[10]], [!is_ios, 0 === device_version, !0, !0, !0]), c4.c5 = !0, n[7] = x, n[8] = x, n[9] = x, n[10] = x)
         };
         n[t].src = A
     }
@@ -6072,8 +6072,7 @@ function kJ() {
         if (void 0 === n) {
             k = 20;
             n = Array(k);
-            l =
-                Array(k);
+            l = Array(k);
             x = document.createElement("canvas");
             x.width = 1;
             x.height = 1;
@@ -6871,6 +6870,8 @@ function kN() {
     }
 }
 
+var font = true;
+
 function kO() {
     function g() {
         X.width = gE;
@@ -6892,12 +6893,14 @@ function kO() {
             if (ia = alive_entities[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
                 la = Math.floor(gE * (E[ia] + G[ia] / 2 - O) / (Y - O));
                 ma = Math.floor(cB * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
-                V.font = oo[player_status[ia]] + fa + bu;
+                V.font = oo[player_status[ia]] + fa * (font ? 1.5 : 1) + bu;
                 qa = V;
                 var ra = ia;
                 ra = fa >= J && fa < K ? teams.a19[pixel.font_color[ra]] + x(fa).toFixed(3) + ")" : teams.a1A[pixel.font_color[ra]];
                 qa.fillStyle = ra;
-                V.fillText(8 === gamemode ? eP.split_into_pieces(troops[ia]) : nickname[ia], la, ma);
+				if (font) qa.fillStyle = density(ia) < 0.5 ? "Red" : (bots_timing[ia - player_count] <= 15 && 100 - tick >= 25) && ("Blue")
+				V.fillText(([7, 11].includes(gamemode) && font || gamemode == 8) ? eP.split_into_pieces(troops[ia]) : nickname[ia] + (font ? ` (${ia})` : ''), la, ma);
+
                 W = !0;
                 if (0 < ca[ia]) {
                     qa = la;
@@ -6932,7 +6935,7 @@ function kO() {
                         a5.c1 - .534 * ya * sa), Math.floor(va + 1.4 * xa * a5.c1)), V.globalAlpha = x(sa), V.drawImage(1 === wa ? a5.l7[ba[Ca + max_entities]] : 2 === wa && 255 > Ba ? hu.l5[2] : hu.l4[wa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), ya -= 2)
                 }
                 qa = Math.floor(L * fa);
-                qa < M || (V.font = bt + qa + bu, V.fillText(8 === gamemode ? nickname[ia] : eP.split_into_pieces(troops[ia]), la, ma + Math.floor(.78 * fa)))
+                qa < M || (V.font = bt + qa + bu, V.fillText([7, 11].includes(gamemode) && font || gamemode == 8 ? nickname[ia] + (font ? ` (${ia})` : '') : eP.split_into_pieces(troops[ia]), la, ma + Math.floor(.78 * fa)))
             }
     }
 
@@ -6940,7 +6943,7 @@ function kO() {
         var ma = .95 * Y / S;
         V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * pa + .8 * Z * Y), Math.floor(T - 1.76 * ma * S - .82 * la * Y));
         V.globalAlpha = x(Y);
-        V.drawImage(bw.bz(4), 0, 0);
+        V.drawImage(sprites.bz(4), 0, 0);
         V.globalAlpha = 1;
         V.setTransform(1,
             0, 0, 1, 0, 0)
@@ -7038,8 +7041,8 @@ function kO() {
         for (O = max_entities - 1; 0 <= O; O--) 12 > land[O] ? (E[O] = x_min[O] + 1, F[O] = y_min[O] + 1, G[O] = 1, N[O] = 1) : (E[O] = x_min[O], F[O] = y_min[O] + 1, G[O] = 4, N[O] = 2);
         if (in_spawn)
             for (O = 0; O < player_count; O++) G[O] = 0;
-        pa = bw.bz(4).width;
-        S = bw.bz(4).height
+        pa = sprites.bz(4).width;
+        S = sprites.bz(4).height
     };
     this.lx = function() {
         g();
@@ -7504,7 +7507,7 @@ function main() {
     jg.init();
     jS.init();
     p6();
-    bw.init();
+    sprites.init();
     c4.c5 = !0;
     setTimeout(function() { xJ(2, 14071) }, 0)
 }
@@ -7866,7 +7869,7 @@ function kR() {
                     xI[4 * z + 3] = 255;
                     break
                 } pl.putImageData(k, 0, 0);
-        jm.a3W() && bw.bx() && jm.a3W() && (n = bw.lB("arena"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = 2.8, pl.scale(k, k), pl.drawImage(n, Math.floor((map_width / k - n.width) / 2), Math.floor(.5 * map_height / k - n.height / 2)), pl.restore(), n = bw.lB("territorial.io"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = .87, pl.scale(k, k), pl.drawImage(n, Math.floor(.745 *
+        jm.a3W() && sprites.bx() && jm.a3W() && (n = sprites.lB("arena"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = 2.8, pl.scale(k, k), pl.drawImage(n, Math.floor((map_width / k - n.width) / 2), Math.floor(.5 * map_height / k - n.height / 2)), pl.restore(), n = sprites.lB("territorial.io"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = .87, pl.scale(k, k), pl.drawImage(n, Math.floor(.745 *
             (map_width / k - n.width)), Math.floor(.422 * map_height / k - n.height / 2)), pl.restore());
         vq = !0;
         c4.c5 = !0
@@ -8682,7 +8685,7 @@ function kd() {
     function k() {
         t = 0;
         z += 700 > z ? 200 : 0;
-        bw.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), jg.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), eR.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), eW.lx(), eT.lx(), gj.rK()) : (0 === aJ.pa() ? jk.cE(0, !0) : 2 === aJ.pa() ? dy.lx() : 3 === aJ.pa() && jj.lx(), aJ.vr(), aJ.vw()), c4.c5 = !0)
+        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), jg.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), eR.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), eW.lx(), eT.lx(), gj.rK()) : (0 === aJ.pa() ? jk.cE(0, !0) : 2 === aJ.pa() ? dy.lx() : 3 === aJ.pa() && jj.lx(), aJ.vr(), aJ.vw()), c4.c5 = !0)
     }
 
     function n(y) {
@@ -9591,7 +9594,7 @@ function a6c() {
     this.a6g = !1;
     this.dF = function() {
         jq.dF();
-        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status || fq.lw ? e8() : (eE(), this.wP++, h8.tx()), this.bs++) : (fq.lw ? ec() : (c4.c5 = !0, ea()), this.bs = 0);
+        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status || fq.lw ? e8() : (game_tick(), this.wP++, h8.tx()), this.bs++) : (fq.lw ? ec() : (c4.c5 = !0, ea()), this.bs = 0);
         eU();
         c4.c5 && (c4.c5 = !1, hp())
     }
@@ -9630,11 +9633,11 @@ function a6e() {
         c4.c5 && (c4.c5 = !1, hp())
     };
     this.a6k = function() {
-        if (this.wP !== 7 * this.wO) eE(), this.wP++, h8.tx();
+        if (this.wP !== 7 * this.wO) game_tick(), this.wP++, h8.tx();
         else {
             for (var k = !1; this.a6m();)
-                if (k = !0, eE(), this.wP++, 0 < this.a6h.length)
-                    for (var n = this.a0j - 2; 0 <= n; n--) eE(), this.wP++;
+                if (k = !0, game_tick(), this.wP++, 0 < this.a6h.length)
+                    for (var n = this.a0j - 2; 0 <= n; n--) game_tick(), this.wP++;
                 else break;
             k ? h8.tx() : (e8(), h8.j6())
         }
@@ -9730,17 +9733,17 @@ function Multi_in() {
                                 y = decrypter(data, 1);
                                 A = decrypter(data, 16);
                                 B = decrypter(data, 4);
-                                var players = [];
+                                var players_or_games = [];
                                 for (message = 0; message < B; message++) {
                                     var E = decrypter(data, 14);
                                     var F = decrypter(data, 5);
                                     F = decrypt_names(F, data);
-                                    players.push({
+                                    players_or_games.push({
                                         name: F,
                                         elo: E
                                     })
                                 }
-                                0 === y ? cD.uS(0, players, 10, 1, .36, .55, A) : cD.uS(1, players, 100, 2, .47, .5, A)
+                                0 === y ? cD.uS(0, players_or_games, 10, 1, .36, .55, A) : cD.uS(1, players_or_games, 100, 2, .47, .5, A)
                             }
                     }
                 }
@@ -9752,18 +9755,18 @@ function Multi_in() {
                         A = decrypter(data, 6);
                         for (message = 0; 4 > message; message++) y[message] = decrypter(data, A);
                         B = decrypter(data, 4);
-                        players = [];
-                        for (message = 0; message < B; message++) players.push({
+                        players_or_games = [];
+                        for (message = 0; message < B; message++) players_or_games.push({
                             id: decrypter(data, 5),
                             jJ: decrypter(data, 4),
                             x9: 1 === decrypter(data, 1),
                             x6: decrypter(data, 6),
                             x7: decrypter(data, 14),
                             xC: decrypter(data, A),
-                            xD: decrypter(data, 9) + 1,
-                            vj: decrypter(data, 10)
+                            maximum_players: decrypter(data, 9) + 1,
+                            time_left: decrypter(data, 10)
                         });
-                        lobby.ua(y, players)
+                        lobby.ua(y, players_or_games)
                     }
                 } 
                 else 2 !== message && 3 !== message || eY.init(data);
@@ -10176,5 +10179,60 @@ function Multi_out() {
         websocket_manager.send(remote, z)
     }
 }
-window.aiCommand746(0)
+
+function dragElementModules(elmnt) {
+
+    function dragModules(event) {
+        event = event || window.event;
+        event.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - event.clientX;
+        pos2 = pos4 - event.clientY;
+        pos3 = event.clientX;
+        pos4 = event.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    }
+
+    function closeModules() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+
+    function modulesDown(event) {
+        event = event || window.event;
+        event.preventDefault();
+        if (event.button === 2) {
+            document.getElementById("modules").style.display = isActive ? "none" : "flex";
+            isActive = !isActive;
+        } else {
+            // get the mouse cursor position at startup:
+            pos3 = event.clientX;
+            pos4 = event.clientY;
+            document.onmouseup = closeModules;
+            // call a function whenever the cursor moves:
+            document.onmousemove = dragModules;
+        }
+    }
+
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    var isActive = true;
+    document.getElementById("header_menu").onmousedown = modulesDown;
+}
+
+const everyId = ["interface", "bots", "mode", "misc", "about"];
+
+function display(name) {
+everyId.forEach(id => {
+    document.getElementById(id).style.display = "none";
+    document.getElementById(id + "But").style.fontWeight = "normal";
+})
+document.getElementById(name).style.display = "initial";
+document.getElementById(name + "But").style.fontWeight = "bold";
+}
+
+aiCommand746(0)
 setTimeout(start, 1E4);
+dragElementModules(document.getElementById('menu'));
