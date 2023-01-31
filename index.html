@@ -129,13 +129,14 @@
             </div>
 
             <div id="settings">
-                <div id="interface">
+                <div id="settings_interface">
                     <label>
                         Font Mod: <input type="checkbox" onclick="font = this.checked" checked/>
+                        Hide Menu: <input type="checkbox" onclick="document.getElementById('menu').hidden = this.checked"/>
                     </label>
                 </div>
 
-                <div id="bots" style="display: none">
+                <div id="settings_bots" style="display: none">
                     <label>
                         <input type="submit" onclick="if (typeof(join_bots) != 'undefined') join_bots()" value="Join Bots" id="joinBotsBut"/>
                         Number of Bots: <input type="number" value="1" id="nBots"/>
@@ -147,7 +148,7 @@
                       </label>
                 </div>
 
-                <div id="mode" style="display: none">
+                <div id="settings_mode" style="display: none">
                     <label>
                       <input type="number" value="1" id="emoj" />
                         <input
@@ -174,9 +175,9 @@
                     </label>
                 </div>
 
-                <div id="misc" style="display: none"></div>
+                <div id="settings_misc" style="display: none"></div>
 
-                <div id="about" style="display: none">
+                <div id="settings_about" style="display: none">
                     <label>
                         Disclaimer: This mod is made for educational and testing
                         purposes only. Malicious and unauthorised usage of the mod
