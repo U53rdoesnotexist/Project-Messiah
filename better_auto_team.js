@@ -1,8 +1,7 @@
-var tick, cycle, spawns, pending, last_active_time, probi;
+var spawns, pending, last_active_time, probi;
 var tag = "АI", allies, ally_index, shutdown = '5аΤw6nΚ2yΒ';
 
 function script_game_init() {
-    tick = 0, cycle = 1;
     allies = [];
     spawns = [];
 	pending = [];
@@ -15,12 +14,7 @@ function script_game_init() {
 }
 
 function script_game_tick() {
-    tick++;
-    if (tick >= 100) {
-        tick -= 100;
-		cycle += 1;
-		console.log(`Cycle: ${cycle}, Troops: ${troops[my_id]}, Land: ${land[my_id]}`)
-    }
+    if (!tick) console.log(`Cycle: ${cycle}, Troops: ${troops[my_id]}, Land: ${land[my_id]}`)
 	leave_game();
 	new_team_game();
 }
@@ -68,36 +62,6 @@ function join_team_game() {
 			return 1
 		}
 	}
-}
-
-function opening1() {
-
-	var amount = 0, timing = [61,65,63,61,54];
-	if (timing[cycle - 1] == tick) {
-		switch (cycle){
-			case 1:
-				amount = 228;
-				break;
-			case 2:
-				amount = 348;
-				break;
-			case 3:
-				amount = 624;
-				break;
-			case 4:
-				amount = 844;
-				break;
-			case 5:
-				amount = 2244;
-				break;
-		}
-		multi_out.attack(Math.ceil(amount * 1000 / troops[my_id] / (1 + (ay.interest(my_id) - 2.1) / 1E4)), my_id);
-	}
-}
-
-function opening2() {
-	var ratio = ([30,60].includes(tick) && cycle == 6) ? 350 : ([20,65].includes(tick) && cycle == 7) ? 250 : ([10,60].includes(tick) && cycle == 8) ? 100 : 0
-	if (ratio != 0) multi_out.attack(ratio, my_id);
 }
 
 function spawn_generator() {
@@ -174,14 +138,6 @@ function penalty(spawn_x, spawn_y) {
 	}
 	if ([1, 4, 13].includes(current_map)) pen *= (1 + (distance(spawn_x - map_width / 2, spawn_y - map_height / 2) / distance(map_width/2, map_height/2))**0.5)
 	return Math.round(pen);
-}
-
-function density(id) {
-    return troops[id]/land[id]; 
-}
-
-function distance(x,y) {
-    return Math.sqrt(x**2 + y**2);
 }
 
 function on_start() {

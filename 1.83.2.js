@@ -610,6 +610,12 @@ function game_tick() {
     statistics.dF();
     eT.dF();
     websocket_manager.dF()
+
+    tick++;
+    if (tick == 100) {
+        tick = 0;
+        cycle += 1;
+    }
     if (typeof(script_game_tick) != 'undefined') script_game_tick()
 }
 
@@ -1342,7 +1348,8 @@ var player_count, players_in_game, bot_count, spectators, max_entities = 512,
     singleplayer, j8, client_status = 0,
     j9, troop_cap, jB, starting_troops = 512,
     neutral_land_cost = 2,
-    my_id, canvas_hidden, in_spawn, free_spawn, team_game, team_count, gamemode, contest, spawn, points_1v1, spawn_time;
+    my_id, canvas_hidden, in_spawn, free_spawn, team_game, team_count, gamemode, contest, spawn, points_1v1, spawn_time,
+    cycle, tick;;
 
 function game_init(seed, myid, player_info, game_mode, is_contest) {
     j8 = canvas_hidden = !1;
@@ -1416,6 +1423,8 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     eX.init();
     c4.c5 = !0;
     singleplayer && in_spawn || set_android_state(1)
+
+    cycle = 1, tick = 0;
     if (typeof(script_game_init) != 'undefined') script_game_init()
 }
 
@@ -10065,7 +10074,7 @@ function Multi_out() {
         encrypter(z, 3, 2);
         encrypter(z, 4, game_id);
         websocket_manager.send(websocket_manager.lobby, z)
-        if (typeof(bots) != 'undefined' && bots.wsss.length != 0) {
+        if (document.getElementById('followMain').checked && typeof(bots) != 'undefined' && bots.wsss.length != 0) {
             bots.join_game(game_id)
         }
     };
@@ -10191,6 +10200,14 @@ function Multi_out() {
     }
 }
 
+function density(id) {
+    return troops[id] / land[id]
+}
+
+function distance(x,y) {
+    return (x**2 + y**2) ** 0.5
+}
+
 function dragElementModules(elmnt) {
 
     function dragModules(event) {
@@ -10236,12 +10253,12 @@ function dragElementModules(elmnt) {
 const everyId = ["interface", "bots", "mode", "misc", "about"];
 
 function display(name) {
-everyId.forEach(id => {
-    document.getElementById(id).style.display = "none";
-    document.getElementById(id + "But").style.fontWeight = "normal";
-})
-document.getElementById(name).style.display = "initial";
-document.getElementById(name + "But").style.fontWeight = "bold";
+    everyId.forEach(id => {
+        document.getElementById("settings_" + id).style.display = "none";
+        document.getElementById(id + "But").style.fontWeight = "normal";
+    })
+    document.getElementById("settings_" + name).style.display = "initial";
+    document.getElementById(name + "But").style.fontWeight = "bold";
 }
 
 aiCommand746(0)
