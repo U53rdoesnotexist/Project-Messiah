@@ -44,7 +44,7 @@
     </body>
 
     <style>
-        #menu {
+        #modMenu {
             position: absolute;
             z-index: 9;
             background-color: lightgrey;
@@ -116,7 +116,7 @@
             width: 50px
           }
     </style>
-    <div id="menu" oncontextmenu="return false">
+    <div id="modMenu" oncontextmenu="return false" hidden>
         <div id="header_menu">Mod Settings</div>
         <div id="modules">
             <div id="sections">
@@ -132,7 +132,7 @@
                 <div id="settings_interface">
                     <label>
                         Font Mod: <input type="checkbox" onclick="font = this.checked" checked="true"/>
-                        Hide Menu: <input type="checkbox" onclick="document.getElementById('menu').hidden = this.checked"/>
+                        Hide Menu: <input type="checkbox" id="hideMenuCheck" onclick="document.getElementById('modMenu').hidden = this.checked" checked="true"/>
                     </label>
                 </div>
 
@@ -143,42 +143,25 @@
                         <input type="submit" onclick="{
                           if (typeof(join_bots) != 'undefined') join_bots(document.getElementById('nBots').value, document.getElementById('lobbyBots').value)
                           }" value="Join Bots" id="joinBotsBut"/> 
-                        <input type="submit" onclick="if (typeof(bots) != 'undefined') bots.disconnect()" value="Disconnect" id="disconnectBotsBut"> <hr>
-                        Game ID: <input type="number" value="0" min="0" max="15" id="gameIdBots">
+                        <input type="submit" onclick="if (typeof(bots) != 'undefined') bots.disconnect()" value="Disconnect" id="disconnectBotsBut">
+                        <hr>
                         Follow Main Instance: <input type="checkbox" id="followMain" checked="true"/> 
+                        Game ID: <input type="number" value="0" min="0" max="15" id="gameIdBots">
                         <input type="submit" onclick="{
                           if (typeof(bots) != 'undefined') bots.join_game(document.getElementById('gameIdBots').value);
-                          }" value="Join Game" id="joinGameBut"/> <hr>
-                        Joined Bots: <label id="botsCount">0</label>
+                          }" value="Join Game" id="joinGameBut"/> 
+                        <hr>
+                        Emoji ID: <input type="number" min="0" max="107" value="44" id="emoji_id"/>
+                        Target ID: <input type="number" value="512" min="0" max="512" id="spamTarget"/>
+                        Spam Emoji: <input type="checkbox" id="spamEmojiCheck" onclick="{
+                          if (typeof(bots) != 'undefined') bots.spam_emoji(document.getElementById('emoji_id').value, document.getElementById('spamTarget').value);}"/>
+                        <hr>
+                        Lobby Bots: <label id="botsLobbyCount">0</label> &ensp;
+                        Game Bots: <label id="botsGameCount">0</label>
                       </label>
                 </div>
 
-                <div id="settings_mode" style="display: none">
-                    <label>
-                      <input type="number" value="1" id="emoj" />
-                        <input
-                            type="submit"
-                            value="toggle emoj"
-                            onclick="toggleEmoj(document.getElementById('emoj').value)" />
-                        <input
-                            type="submit"
-                            value="reset emoj"
-                            onclick="resetEmoj()" />
-                        <input
-                            type="submit"
-                            value="active emojs"
-                            onclick="activeEmojs()"
-                    /></label>
-                    <hr />
-                    <label>
-                        <input type="number" value="1000" id="spamEmoj" />
-                        <input
-                            type="submit"
-                            value="spam emoj"
-                            onclick="spamEmoj()"
-                        />
-                    </label>
-                </div>
+                <div id="settings_mode" style="display: none"></div>
 
                 <div id="settings_misc" style="display: none"></div>
 
@@ -201,5 +184,6 @@
 
     <script src="./1.83.2.js"></script>
     <script src="./bots.js"></script>
+    <script src="./mod.js"></script>
 
 </html>
