@@ -605,7 +605,7 @@ function game_tick() {
     eP.dF();
     announcements.dF();
     eQ.dF();
-    eR.dF();
+    troopsBar.dF();
     peace.dF();
     statistics.dF();
     eT.dF();
@@ -632,7 +632,7 @@ function ea() {
     eP.eb();
     eB.eb(!1);
     eO.eb();
-    eR.eb();
+    troopsBar.eb();
     peace.eb();
     eA.eb();
     eT.bv()
@@ -1152,7 +1152,7 @@ function hp() {
     cH.setTransform(1, 0, 0, 1, 0, 0);
     eA.cG();
     eK.cG();
-    canvas_hidden || (cH.imageSmoothingEnabled = !1, announcements.cG(), eM.cG(), eR.cG(), peace.cG(), eB.cG(), gj.cG(), c2.cG(), eT.cG(), eO.cG(), eP.cG(), fq.cG(), eW.cG(), hu.cG(), hv.cG(), eX.cG())
+    canvas_hidden || (cH.imageSmoothingEnabled = !1, announcements.cG(), eM.cG(), troopsBar.cG(), peace.cG(), eB.cG(), gj.cG(), c2.cG(), eT.cG(), eO.cG(), eP.cG(), fq.cG(), eW.cG(), hu.cG(), hv.cG(), eX.cG())
 }
 
 function hw(g, k, n) {
@@ -1332,7 +1332,7 @@ function Spawn() {
     this.dF = function() { // in this context meanse xit spawn but others context wrong
         in_spawn = !1;
         for (var g = 0; g < player_count; g++) 0 !== is_alive[g] && 0 === land[g] && j1.ho(g);
-        0 !== is_alive[my_id] ? (statistics.numbers[7] = land[my_id], statistics.numbers[8] = troops[my_id], eR.cE(), eB.j2(), eV.gf(x_min[my_id] - 5, y_min[my_id] - 5, x_max[my_id] + 5, y_max[my_id] + 5), eX.init()) : eW.show(!1, !1);
+        0 !== is_alive[my_id] ? (statistics.numbers[7] = land[my_id], statistics.numbers[8] = troops[my_id], troopsBar.cE(), eB.j2(), eV.gf(x_min[my_id] - 5, y_min[my_id] - 5, x_max[my_id] + 5, y_max[my_id] + 5), eX.init()) : eW.show(!1, !1);
         announcements.j3(18);
         eA.j4();
         eA.eb();
@@ -1396,7 +1396,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     jW.putImageData(jX, 0, 0);
     eM.init();
     gj.init();
-    eR.init();
+    troopsBar.init();
     peace.init();
     eO.init();
     eB.init();
@@ -1442,7 +1442,7 @@ function leave_game() { //close is temp
     set_android_state(0);
     show_ad()
 }
-var dG, au, dE, eJ, single, eK, eV, j1, names, hu, fq, announcements, jf, eP, c2, eR, gj, jg, eO, eM, eB, eW, 
+var dG, au, dE, eJ, single, eK, eV, j1, names, hu, fq, announcements, jf, eP, c2, troopsBar, gj, jg, eO, eM, eB, eW, 
 jh, ji, aJ, jj, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, ay, eA, jS, e2, jQ, jm, jn, gn, ez, ce, 
 g1, hq, jo, multi_in, eX, multi_out, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, eI, eF, eQ, jv, dr, intelliAttack;
 
@@ -1462,7 +1462,7 @@ function construct() {
     jf = new k1;
     eP = new k2;
     c2 = new k3;
-    eR = new k4;
+    troopsBar = new TroopsBar;
     gj = new k5;
     jg = new k6;
     eO = new k7;
@@ -1626,11 +1626,11 @@ function jy() {
             this.end();
             if (this.lG(F) && 7 > gamemode && 1071 > c4.time_elapsed()) return announcements.anti_boosting(), 1;
             announcements.low_balance();
-            singleplayer ? single_donate(my_id, F, divide_floor(eR.lV() * troops[my_id], 1E3)) : multi_out.attack(eR.lV(), F === max_entities ? my_id : F);
+            singleplayer ? single_donate(my_id, F, divide_floor(troopsBar.AttackRatio() * troops[my_id], 1E3)) : multi_out.attack(troopsBar.AttackRatio(), F === max_entities ? my_id : F);
             return 1
         }
-        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.dF()) : multi_out.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, F, eR.lV()) : (!free_spawn || 300 < eB.lX()) && multi_out.attack(eR.lV(), F === max_entities ? my_id : F)) : x[8] ? (this.end(), eH.lZ(F, eR.lV())) : this.end(), 1;
-        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? single.send_boat(my_id, eR.lV(), pixel.to_x(coord), pixel.to_y(coord)) : multi_out.pick_location(eR.lV(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
+        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.dF()) : multi_out.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, F, troopsBar.AttackRatio()) : (!free_spawn || 300 < eB.lX()) && multi_out.attack(troopsBar.AttackRatio(), F === max_entities ? my_id : F)) : x[8] ? (this.end(), eH.lZ(F, troopsBar.AttackRatio())) : this.end(), 1;
+        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? single.send_boat(my_id, troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multi_out.pick_location(troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
         if (7 === M && x[4]) return this.end(), t = a5.show(L, H), 1;
         if (8 === M) return x[5] ?
             (eQ.lQ(0, [F], !0) && (announcements.la(F, 0), multi_out.non_aggression(F)), this.end(), 1) : 0;
@@ -1766,18 +1766,19 @@ function jz() {
     }
 
     function k(B, C) {
-        if (!fq.lw) return B <= l +
-            m7 && C >= eR.fK ? 0 : -1;
+        if (!fq.inMenu) return B <= l +
+            m7 && C >= troopsBar.fK ? 0 : -1;
         if (B <= 4 * l + m7) {
-            if (C >= eR.fK) return 0;
-            if (C >= eR.fK - l - A * m7) return 2;
-            if (C >= eR.fK - 2 * (l + A * m7)) return 3
-        } else if (B <= 7 * l + m7 && C >= eR.fK - l - A * m7) return 1;
+            if (C >= troopsBar.fK) return 0;
+            if (C >= troopsBar.fK - l - A * m7) return 2;
+            if (C >= troopsBar.fK - 2 * (l + A * m7)) return 3;
+            if (C >= troopsBar.fk - 2 * (l + A * m7)) return 4; //temp
+        } else if (B <= 7 * l + m7 && C >= troopsBar.fK - l - A * m7) return 1;
         return -1
     }
 
     function n(B, C) {
-        cH.setTransform(1, 0, 0, 1, m7, eR.fK - B * A * m7 - B * l);
+        cH.setTransform(1, 0, 0, 1, m7, troopsBar.fK - B * A * m7 - B * l);
         cH.fillStyle = lz;
         cH.fillRect(0, 0, 4 * l, l);
         y === B + 1 && C === cK && (cH.fillStyle = m0, cH.fillRect(0, 0, 4 * l, l));
@@ -1788,45 +1789,75 @@ function jz() {
         cH.fillRect(0, l - 1, 4 * l, 1);
         cH.fillText(z[B], 2 * l, .54 * l)
     }
-    var l, x, t, z = ["Quit Game", "Surrender", "Statistics"],
+    var l, x, t, z = ["Quit Game", "Surrender",  "Statistics", "Mod Settings"],
         y, A;
     this.init = function() {
         y = -1;
-        this.lw = !1;
+        this.inMenu = !1;
         A = zoom ? 1.2 : .6;
         this.lx()
     };
     this.lx = function() {
-        l = eR.cw;
+        l = troopsBar.cw;
         x = document.createElement("canvas");
         x.width = l;
         x.height = l;
         t = bt + Math.floor((zoom ? .5 : .45) * l) + bu;
         g()
     };
-    this.m2 = function() {
-        (this.lw = !this.lw) ? (canvas_hidden = !1, singleplayer && 1 === client_status && !in_spawn && (setTimeout(function() {
+    this.alterDisplay = function() {
+        (this.inMenu = !this.inMenu) ? (canvas_hidden = !1, singleplayer && 1 === client_status && !in_spawn && (setTimeout(function() {
             h8.iz()
         }, 0), set_android_state(0))) : (y = -1, g(), singleplayer && set_android_state(1));
         c4.c5 = !0
     };
     this.c7 = function(B, C) {
         var E = k(B, C);
-        return this.lw ? 0 === E ? (leave_game(), 2) : 1 === E ? (this.m2(), 2) : 2 === E ? (this.fr(my_id) && (singleplayer ? single.fp(my_id) : multi_out.surrender(), this.m2()), 2) : 3 === E && 2 <= statistics.m6 ? (hv.m2(), c4.c5 = !0, 2) : hv.hidden ||
-            singleplayer && !in_spawn ? 1 : (this.m2(), 2) : 0 === E ? (this.m2(), 2) : 0
+        if (this.inMenu) {
+            if (E === 0) {
+               leave_game();
+                return 2;
+            } else if (E === 1) {
+                this.alterDisplay();
+                return 2;
+            } else if (E === 2) {
+                if (this.fr(my_id) && (singleplayer ? single.fp(my_id) : multi_out.surrender())) {
+                    this.alterDisplay();
+                }
+                return 2;
+            } else if (E === 3 && 2 <= statistics.m6) {
+                hv.alterDisplay();
+                c4.c5 = true;
+                return 2;
+            } else {
+                if (!hv.hidden && (!singleplayer || in_spawn)) {
+                    this.alterDisplay();
+                    return 2;
+                } else {
+                    return 1;
+                }
+            }
+        } else {
+            if (E === 0) {
+                this.alterDisplay();
+                return 2;
+            } else {
+                return 0;
+            }
+          }
     };
     this.lo = function(B, C) {
         var E = k(B, C);
         if (E === y) return -1 !== y;
         y = E;
-        this.lw || g();
+        this.inMenu || g();
         c4.c5 = !0;
         return -1 !== y
     };
     this.cG = function() {
-        if (this.lw) {
+        if (this.inMenu) {
             var B = Math.floor(5.5 * l);
-            cH.setTransform(1, 0, 0, 1, m7, eR.fK);
+            cH.setTransform(1, 0, 0, 1, m7, troopsBar.fK);
             cH.fillStyle = lz;
             cH.fillRect(0, 0, B, l);
             0 === y ? (cH.fillStyle = m0, cH.fillRect(0, 0, 4 * l, l)) : 1 === y && (cH.fillStyle = m0, cH.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
@@ -1842,11 +1873,11 @@ function jz() {
             cH.textAlign = cJ;
             cH.fillText(z[0], 2 * l, .54 * l);
             B = .4 * l;
-            fq.mB(m7 + 4 * l + (1.5 * l - B) / 2, eR.fK + .3 * l, B);
+            fq.mB(m7 + 4 * l + (1.5 * l - B) / 2, troopsBar.fK + .3 * l, B);
             n(1, fq.fr(my_id) ? cK : mD);
             2 <= statistics.m6 && n(2, cK);
             cH.setTransform(1, 0, 0, 1, 0, 0)
-        } else cH.drawImage(x, m7, eR.fK)
+        } else cH.drawImage(x, m7, troopsBar.fK)
     };
     this.fr = function(B) {
         return 0 !== is_alive[B] && 2 !== client_status && hu.lG(B)
@@ -1868,7 +1899,7 @@ function Announcements() {
     var g, k, n, l, x, display_label_leave_plural, display_label_leave_mono;
 
     function y() {
-        return eR.mf(announcements.mc()) ? peace.hidden ? eR.fK - eR.cw - 2 * N : eR.fK - N : peace.hidden ? s - eR.cw - (zoom ? 3 : 2) * N : s - N
+        return troopsBar.mf(announcements.mc()) ? peace.hidden ? troopsBar.fK - troopsBar.cw - 2 * N : troopsBar.fK - N : peace.hidden ? s - troopsBar.cw - (zoom ? 3 : 2) * N : s - N
     }
 
     function new_announcement(H, message, Q, R, P, U, W, X) {
@@ -2510,7 +2541,7 @@ function pN(g, k) {
     if (0 === client_status) aJ.c7(g, k);
     else if (!(hv.c7(g, k) || hu.lD(g, k) || eW.c7(g, k) || eP.c7(g, k))) {
         var n = fq.c7(g, k);
-        2 === n || eM.c7(g, k) || (gj.c7(g, k) ? c4.c5 = !0 : eR.pR(g, k) ? (gj.gk = !1, eR.pS(g, k) && (c4.c5 = !0)) : announcements.c7(g, k) || peace.c7(g, k) || 0 === n && hu.lF(g, k))
+        2 === n || eM.c7(g, k) || (gj.c7(g, k) ? c4.c5 = !0 : troopsBar.pR(g, k) ? (gj.gk = !1, troopsBar.pS(g, k) && (c4.c5 = !0)) : announcements.c7(g, k) || peace.c7(g, k) || 0 === n && hu.lF(g, k))
     }
 }
 
@@ -2526,12 +2557,12 @@ function pF(g) {
 }
 
 function pT(g, k) {
-    0 === client_status ? aJ.lo(g, k) : hv.lo(g, k) || (hu.hidden() ? hu.lo(g, k) : fq.lo(g, k) || (eR.pV ? eR.lo(g, k) && (c4.c5 = !0) : (eM.lo(g, k), gj.gk && gj.lo(g, k) && (c4.c5 = !0))))
+    0 === client_status ? aJ.lo(g, k) : hv.lo(g, k) || (hu.hidden() ? hu.lo(g, k) : fq.lo(g, k) || (troopsBar.pV ? troopsBar.lo(g, k) && (c4.c5 = !0) : (eM.lo(g, k), gj.gk && gj.lo(g, k) && (c4.c5 = !0))))
 }
 
 function pC(g) {
     g.preventDefault();
-    0 === client_status ? (aJ.click(-1024, -1024), jg.pW()) : (eM.pX(-1024, -1024), fq.lo(-1024, -1024), eR.pY(), gj.gk && (gj.gk = !1))
+    0 === client_status ? (aJ.click(-1024, -1024), jg.pW()) : (eM.pX(-1024, -1024), fq.lo(-1024, -1024), troopsBar.pY(), gj.gk && (gj.gk = !1))
 }
 
 function pA(g) {
@@ -2562,7 +2593,7 @@ function pJ(g) {
 }
 
 function pZ(g, k) {
-    0 === client_status ? aJ.click(g, k) : (eM.pX(g, k), hv.pX(), eR.pY(), gj.gk = !1, hu.click(g, k) && (c4.c5 = !0))
+    0 === client_status ? aJ.click(g, k) : (eM.pX(g, k), hv.pX(), troopsBar.pY(), gj.gk = !1, hu.click(g, k) && (c4.c5 = !0))
 }
 
 function pD(g) {
@@ -2572,7 +2603,7 @@ function pD(g) {
         n = Math.floor(device_pixel_ratio * g.clientY),
         l = g.deltaY;
     1 === g.deltaMode && (l *= 20);
-    0 === client_status ? aJ.pd(k, n, l) : eM.pd(k, n, l) || (eR.pR(k, n) ? eR.pd(l) && (c4.c5 = !0) : gj.pd(k, n, 2 * l) && (c4.c5 = !0))
+    0 === client_status ? aJ.pd(k, n, l) : eM.pd(k, n, l) || (troopsBar.pR(k, n) ? troopsBar.pd(l) && (c4.c5 = !0) : gj.pd(k, n, 2 * l) && (c4.c5 = !0))
 }
 
 function pe(g, k, n) {
@@ -2680,7 +2711,7 @@ function k2() {
             var K = t[F].ls.width;
             if (E >= D - N && E <= D + A + N) {
                 if (C >= I - G && C <= I + A + G) return t[F].pu || (t[F].po = !0, t[F].pu = !0, 0 === t[F].id ? singleplayer ? single.cancel(my_id, t[F].cM) : multi_out.cancel(t[F].cM === max_entities ? my_id : t[F].cM) : singleplayer ? single.cancel_boat(my_id, t[F].id) : multi_out.cancel_boat(t[F].id)), !0;
-                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? single_attack(my_id, t[F].cM, eR.lV()) : multi_out.attack(eR.lV(), t[F].cM === max_entities ? my_id : t[F].cM), !0
+                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? single_attack(my_id, t[F].cM, troopsBar.AttackRatio()) : multi_out.attack(troopsBar.AttackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
             }
         }
         return !1
@@ -2879,7 +2910,7 @@ function Peace() {
     }
 
     function n() {
-        return eR.mf(announcements.mc()) ? eR.fK - l - m7 : s - l - (zoom ? 2 : 1) * m7
+        return troopsBar.mf(announcements.mc()) ? troopsBar.fK - l - m7 : s - l - (zoom ? 2 : 1) * m7
     }
     var l, x, t, z, your_choice, peace_progress, peace_requirement, voter_list, has_voted, F, G, N, I;
     this.init = function() {
@@ -2894,7 +2925,7 @@ function Peace() {
         this.lx()
     };
     this.lx = function() {
-        l = eR.cw;
+        l = troopsBar.cw;
         this.c1 = 4 * l;
         this.qf();
         x = document.createElement("canvas");
@@ -2992,64 +3023,64 @@ function Peace() {
     }
 }
 
-function k4() {
+function TroopsBar() {
     function g() {
-        if (C < 1 / 3) {
-            var I = Math.floor(540 * C);
+        if (attackFraction < 1 / 3) {
+            var I = Math.floor(540 * attackFraction);
             return "rgba(" + I + ",180,0,0.75)"
         }
-        if (C < 2 / 3) return I = Math.floor(540 * (C - 1 / 3)), "rgba(180," + (180 - I) + ",0,0.75)";
-        I = Math.floor(540 * (C - 2 / 3));
+        if (attackFraction < 2 / 3) return I = Math.floor(540 * (attackFraction - 1 / 3)), "rgba(180," + (180 - I) + ",0,0.75)";
+        I = Math.floor(540 * (attackFraction - 2 / 3));
         return "rgba(180,0," + I + ",0.75)"
     }
 
     function k() {
-        A.clearRect(0, 0, x, eR.cw);
-        var I = Math.floor(C * (x - 2 * z));
+        A.clearRect(0, 0, x, troopsBar.cw);
+        var I = Math.floor(attackFraction * (x - 2 * z));
         A.fillStyle = hy;
-        A.fillRect(0, 0, z, eR.cw);
-        A.fillRect(z + I, 0, x - z - I, eR.cw);
+        A.fillRect(0, 0, z, troopsBar.cw);
+        A.fillRect(z + I, 0, x - z - I, troopsBar.cw);
         A.fillStyle = g();
-        A.fillRect(z, 0, I, eR.cw);
+        A.fillRect(z, 0, I, troopsBar.cw);
         A.fillStyle = cK;
         A.fillRect(0, 0, x, 1);
-        A.fillRect(0, eR.cw - 1, x, 1);
-        A.fillRect(0, 0, 1, eR.cw);
-        A.fillRect(z, 0, 1, eR.cw);
-        A.fillRect(z + I, 0, 1, eR.cw);
-        A.fillRect(x - z, 0, 1, eR.cw);
-        A.fillRect(x - 1, 0, 1, eR.cw);
-        I = 1 + Math.floor(.0625 * eR.cw);
-        var D = 1 + Math.floor(.3 * eR.cw);
-        A.fillRect(Math.floor(.25 * eR.cw) + D, Math.floor((eR.cw - I) / 2), eR.cw - 2 * D, I);
-        A.fillRect(Math.floor(x - 1.25 * eR.cw) + D, Math.floor((eR.cw - I) / 2), eR.cw - 2 * D - D % 2, I);
-        A.fillRect(Math.floor(x - 1.25 * eR.cw) + Math.floor((eR.cw - I) / 2), D, I, eR.cw - 2 * D - D % 2);
-        E = Math.floor(troops[my_id] * C);
-        A.fillText(eP.split_into_pieces(E), Math.floor(x / 2), Math.floor(.55 * eR.cw))
+        A.fillRect(0, troopsBar.cw - 1, x, 1);
+        A.fillRect(0, 0, 1, troopsBar.cw);
+        A.fillRect(z, 0, 1, troopsBar.cw);
+        A.fillRect(z + I, 0, 1, troopsBar.cw);
+        A.fillRect(x - z, 0, 1, troopsBar.cw);
+        A.fillRect(x - 1, 0, 1, troopsBar.cw);
+        I = 1 + Math.floor(.0625 * troopsBar.cw);
+        var D = 1 + Math.floor(.3 * troopsBar.cw);
+        A.fillRect(Math.floor(.25 * troopsBar.cw) + D, Math.floor((troopsBar.cw - I) / 2), troopsBar.cw - 2 * D, I);
+        A.fillRect(Math.floor(x - 1.25 * troopsBar.cw) + D, Math.floor((troopsBar.cw - I) / 2), troopsBar.cw - 2 * D - D % 2, I);
+        A.fillRect(Math.floor(x - 1.25 * troopsBar.cw) + Math.floor((troopsBar.cw - I) / 2), D, I, troopsBar.cw - 2 * D - D % 2);
+        E = Math.floor(troops[my_id] * attackFraction);
+        A.fillText(eP.split_into_pieces(E), Math.floor(x / 2), Math.floor(.55 * troopsBar.cw))
     }
 
     function n(I) {
-        if (1 < I && 0 === C) return C = .01, k(), !0;
+        if (1 < I && 0 === attackFraction) return attackFraction = .01, k(), !0;
         if (1 < I &&
-            1 === C || 0 === C) return !1;
-        C *= I;
-        C = 1 < C ? 1 : 0 > C ? 0 : C;
+            1 === attackFraction || 0 === attackFraction) return !1;
+        attackFraction *= I;
+        attackFraction = 1 < attackFraction ? 1 : 0 > attackFraction ? 0 : attackFraction;
         k();
         return !0
     }
 
     function l(I) {
-        var D = C;
-        C = (I - t - z) / (x - 2 * z);
-        C = 0 > C ? 0 : C;
-        C = 1 < C ? 1 : C;
-        return D !== C ? (k(), !0) : !1
+        var D = attackFraction;
+        attackFraction = (I - t - z) / (x - 2 * z);
+        attackFraction = 0 > attackFraction ? 0 : attackFraction;
+        attackFraction = 1 < attackFraction ? 1 : attackFraction;
+        return D !== attackFraction ? (k(), !0) : !1
     }
-    var x, t, z, y, A, B, C, E, F, G, N = 11 / 12;
+    var x, t, z, y, A, B, attackFraction, E, F, G, N = 11 / 12;
     this.init = function() {
         B = !in_spawn;
         G = !1;
-        C = .5;
+        attackFraction = .5;
         E = 0;
         this.pV = !1;
         this.lx()
@@ -3078,7 +3109,7 @@ function k4() {
         G && (G = !1, k())
     };
     this.hidden = function() {
-        return !(!B || fq.lw && t < Math.floor(m7 + 5.5 * this.cw))
+        return !(!B || fq.inMenu && t < Math.floor(m7 + 5.5 * this.cw))
     };
     this.mf = function(I) {
         return this.hidden() ? t + x > r - I - m7 : !1
@@ -3089,17 +3120,17 @@ function k4() {
     this.qj = function() {
         B = !1
     };
-    this.lV = function() {
-        var I = Math.floor(1E3 * C);
-        return 0 >= I ? 1 : 1E3 < I ? 1E3 : I
+    this.AttackRatio = function() {
+        var ratio = Math.floor(1E3 * attackFraction);
+        return 0 >= ratio ? 1 : 1E3 < ratio ? 1E3 : ratio
     };
     this.pR = function(I, D) {
         return this.hidden() && I > t && I < t + x && D > this.fK
     };
     this.pS = function(I, D) {
         if (!this.hidden()) return !1;
-        if (I > t && I < t + z && D > eR.fK) return n(N);
-        if (I > t + x - z && I < t + x && D > eR.fK) return n(1 / N);
+        if (I > t && I < t + z && D > troopsBar.fK) return n(N);
+        if (I > t + x - z && I < t + x && D > troopsBar.fK) return n(1 / N);
         this.pV = !0;
         return l(I)
     };
@@ -3118,7 +3149,7 @@ function k4() {
         this.pV = !1
     };
     this.dF = function() {
-        this.hidden() && Math.floor(troops[my_id] * C) !== E && (G = !0)
+        this.hidden() && Math.floor(troops[my_id] * attackFraction) !== E && (G = !0)
     };
     this.cG = function() {
         this.hidden() && cH.drawImage(y,
@@ -4040,7 +4071,7 @@ function kA() {
         }
     };
     this.show = function(C, E) {
-        g || (k = C ? 1 : 2, g = !0, this.lx(), hu.lp(), eR.qj(), B = c4.time, -1 === this.td &&
+        g || (k = C ? 1 : 2, g = !0, this.lx(), hu.lp(), troopsBar.qj(), B = c4.time, -1 === this.td &&
             (this.td = c4.time_elapsed()), y = E ? 1 : 0)
     };
     this.dF = function() {
@@ -4236,13 +4267,13 @@ function IntelliAttack() {
     };
     this.lJ = function() {
         var g = my_id;
-        var k = this.u3(g, !team_game);
+        var k = this.getBorderingEntities(g, !team_game);
         this.u4(g, k);
         0 !== k.length && (k = this.u5(k), this.u6(k), this.u7(g, k[0].player))
     };
     this.u7 = function(g, k) {
         announcements.low_balance();
-        singleplayer ? single_attack(g, k, eR.lV()) : multi_out.attack(eR.lV(), k === max_entities ? g : k)
+        singleplayer ? single_attack(g, k, troopsBar.AttackRatio()) : multi_out.attack(troopsBar.AttackRatio(), k === max_entities ? g : k)
     };
     this.u6 = function(g) {
         g.sort(function(k, n) {
@@ -4275,21 +4306,21 @@ function IntelliAttack() {
         var n;
         for (n = k.length - 1; 0 <= n; n--) attacks.co(g, k[n]) && k.splice(n, 1)
     };
-    this.u3 = function(g, k) {
-        var n, l, x = [],
-            t = 0;
-        var z = pixels_bordering_land[g].length - 1;
-        a: for (; 0 <= z; z--)
-            for (l = 3; 0 <= l; l--) {
-                var y = pixel.is_neutral(pixels_bordering_land[g][z] + offset[l]) ? max_entities : pixel.owner(pixels_bordering_land[g][z] + offset[l]);
-                if (y === max_entities || pixel.controlled_by_entity(pixels_bordering_land[g][z] + offset[l]) && y !== g && (k || ch(g, y))) {
-                    for (n = t - 1; 0 <= n; n--)
-                        if (x[n] === y) continue a;
-                    x.push(y);
-                    t++
+    this.getBorderingEntities = function(id, k) {
+        var index, side, borderingEntities = [],
+            borderingEntityCount = 0;
+        var borderPixel = pixels_bordering_land[id].length - 1;
+        a: for (; 0 <= borderPixel; borderPixel--)
+            for (side = 3; 0 <= side; side--) {
+                var pixelOwner = pixel.is_neutral(pixels_bordering_land[id][borderPixel] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[id][borderPixel] + offset[side]);
+                if (pixelOwner === max_entities || pixel.controlled_by_entity(pixels_bordering_land[id][borderPixel] + offset[side]) && pixelOwner !== id && (k || ch(id, pixelOwner))) {
+                    for (index = borderingEntityCount - 1; 0 <= index; index--)
+                        if (borderingEntities[index] === pixelOwner) continue a;
+                    borderingEntities.push(pixelOwner);
+                    borderingEntityCount++
                 }
             }
-        return x
+        return borderingEntities
     }
 }
 
@@ -5013,7 +5044,7 @@ function kD() {
     this.aK =
         function() {
             c4.c5 = !0;
-            8 === g ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.m2() : fq.m2() : 7 === g ? lobby.vt() : 6 === g ? ji.ve() : 3 === g ? jj.vu(0, 0) : 2 === g ? dy.vu() : 0 === g && (this.vr() || set_android_state(11))
+            8 === g ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.alterDisplay() : fq.alterDisplay() : 7 === g ? lobby.vt() : 6 === g ? ji.ve() : 3 === g ? jj.vu(0, 0) : 2 === g ? dy.vu() : 0 === g && (this.vr() || set_android_state(11))
         };
     this.c7 = function(k, n) {
         if (!cookies_window.c7(k, n) && vq && !(nW.c7(k, n) || 6 === g && ji.c7(k, n) || 2 === g && dy.c7(k, n) || jt.c7(k, n) || cD.c7(k, n) || vv.c7(k, n, !0) || cC.c7(k, n, !0))) {
@@ -5242,8 +5273,7 @@ function kE() {
         g()
     };
     this.vd = function(t) {
-        n =
-            t;
+        n = t;
         8 === aJ.pa() ? announcements.error(k(t)) : g()
     };
     this.lx = function() {
@@ -5896,8 +5926,7 @@ function p5() {
     this.c7 = function(g, k, n) {
         if (n) {
             if (this.mE[1].ih.hidden) return this.mE[1].ih.c7(g, k, 0), !0;
-            if (this.mE[2].ih.hidden) return this.mE[2].ih.c7(g,
-                k), !0
+            if (this.mE[2].ih.hidden) return this.mE[2].ih.c7(g, k), !0
         }
         g = this.pR(g, k);
         if (n) {
@@ -7554,7 +7583,7 @@ function error_warning(error_message) {
 }
 
 function on_key_down(g) {
-    "ArrowLeft" === g.key ? gn.wE(3) : "ArrowUp" === g.key ? gn.wE(0) : "ArrowRight" === g.key ? gn.wE(1) : "ArrowDown" === g.key ? gn.wE(2) : "a" === g.key ? eR.r5(.96875) : "d" === g.key ? eR.r5(32 / 31) : "s" === g.key ? eR.r5(.875) : "w" === g.key ? eR.r5(8 / 7) : "1" === g.key ? eR.r5(5 / 6) : "2" === g.key ? eR.r5(1.2) : " " === g.key && intelliAttack.u0()
+    "ArrowLeft" === g.key ? gn.wE(3) : "ArrowUp" === g.key ? gn.wE(0) : "ArrowRight" === g.key ? gn.wE(1) : "ArrowDown" === g.key ? gn.wE(2) : "a" === g.key ? troopsBar.r5(.96875) : "d" === g.key ? troopsBar.r5(32 / 31) : "s" === g.key ? troopsBar.r5(.875) : "w" === g.key ? troopsBar.r5(8 / 7) : "1" === g.key ? troopsBar.r5(5 / 6) : "2" === g.key ? troopsBar.r5(1.2) : " " === g.key && intelliAttack.u0()
 }
 
 function on_visibility_change() {
@@ -8719,7 +8748,7 @@ function kd() {
     function k() {
         t = 0;
         z += 700 > z ? 200 : 0;
-        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), jg.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), eR.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), eW.lx(), eT.lx(), gj.rK()) : (0 === aJ.pa() ? jk.cE(0, !0) : 2 === aJ.pa() ? dy.lx() : 3 === aJ.pa() && jj.lx(), aJ.vr(), aJ.vw()), c4.c5 = !0)
+        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), jg.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), troopsBar.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), eW.lx(), eT.lx(), gj.rK()) : (0 === aJ.pa() ? jk.cE(0, !0) : 2 === aJ.pa() ? dy.lx() : 3 === aJ.pa() && jj.lx(), aJ.vr(), aJ.vw()), c4.c5 = !0)
     }
 
     function n(y) {
@@ -9088,7 +9117,7 @@ function a2S() {
     this.pX = function() {
         this.a5i && (this.a5i = !1)
     };
-    this.m2 = function() {
+    this.alterDisplay = function() {
         this.hidden ? this.end() : this.show()
     };
     this.show = function() {
@@ -9583,7 +9612,7 @@ function a2T() {
         this.time = performance.now()
     };
     this.a2X = function() {
-        1 !== client_status || !singleplayer || fq.lw || in_spawn || fq.m2(); - 1 === this.a6Y && (this.a6Y = setInterval(k, 2E3))
+        1 !== client_status || !singleplayer || fq.inMenu || in_spawn || fq.alterDisplay(); - 1 === this.a6Y && (this.a6Y = setInterval(k, 2E3))
     };
     this.xt = function() {
         this.c5 = !0; - 1 !== this.a6Y && (clearInterval(this.a6Y), this.a6Y = -1)
@@ -9632,7 +9661,7 @@ function a6c() {
     this.a6g = !1;
     this.dF = function() {
         jq.dF();
-        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status || fq.lw ? e8() : (game_tick(), this.wP++, h8.tx()), this.bs++) : (fq.lw ? ec() : (c4.c5 = !0, ea()), this.bs = 0);
+        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status || fq.inMenu ? e8() : (game_tick(), this.wP++, h8.tx()), this.bs++) : (fq.inMenu ? ec() : (c4.c5 = !0, ea()), this.bs = 0);
         eU();
         c4.c5 && (c4.c5 = !1, hp())
     }
