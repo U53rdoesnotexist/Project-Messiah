@@ -119,12 +119,12 @@ function matrix_processor_init() {
     editing_matrix = new Uint8Array(map_width * map_height)
 }
 
-function ab(index) {
-    prev_author = index;
+function attackProcessInit(idThenIndex) {
+    prev_author = idThenIndex;
     prev_border_taken = !1;
     set_border_to_inner();
     set_takeable_land_to_border();
-    for (index = attacks.ongoing_attack_count(prev_author) - 1; 0 <= index; index--) 0 === attacks.get_boat_id_from_attack_index(prev_author, index) && (prev_attack = index, start_testing_taking_process());
+    for (idThenIndex = attacks.ongoing_attack_count(prev_author) - 1; 0 <= idThenIndex; idThenIndex--) 0 === attacks.get_boat_id_from_attack_index(prev_author, idThenIndex) && (prev_attack = idThenIndex, start_testing_taking_process());
     prev_border_taken && update_taken_pixel_arrays()
 }
 
@@ -152,11 +152,11 @@ function reset_editing_matrix() {
 
 function return_remaining() {
     1 === attacks.ongoing_attack_count(prev_author) && au.av(prev_author);
-    if (prev_author !== my_id) troops[prev_author] += prev_remaining, ay.az(prev_author);
+    if (prev_author !== my_id) troops[prev_author] += prev_remaining, ay.limitTroops(prev_author);
     else {
         var old_troop = troops[prev_author];
         troops[prev_author] += prev_remaining;
-        ay.az(prev_author);
+        ay.limitTroops(prev_author);
         statistics.numbers[13] -= troops[prev_author] - old_troop
     }
     attacks.remove_attack(prev_author, prev_attack)
@@ -306,23 +306,23 @@ function bm() {
     this.c6 = function() {
         return Math.floor(g * sprites.bz(13).height)
     };
-    this.c7 = function(n, l) {
-        return !sprites.bx() || n < display_buffer_length || l < cB - cC.c1 -
-            g * sprites.bz(13).height - 2 * display_buffer_length || l > cB - cC.c1 - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * sprites.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * sprites.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * sprites.bz(13).width ? (cD.cE(1), !0) : !1
+    this.clicked = function(n, l) {
+        return !sprites.bx() || n < display_buffer_length || l < cB - cC.width -
+            g * sprites.bz(13).height - 2 * display_buffer_length || l > cB - cC.width - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * sprites.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * sprites.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * sprites.bz(13).width ? (cD.cE(1), !0) : !1
     };
     this.to_y = function() {
-        return Math.floor(cB - cC.c1 - g * sprites.bz(13).height - 2 * display_buffer_length)
+        return Math.floor(cB - cC.width - g * sprites.bz(13).height - 2 * display_buffer_length)
     };
     this.cG = function() {
         if (sprites.bx()) {
-            cH.imageSmoothingEnabled = !0;
-            cH.setTransform(g, 0, 0, g, display_buffer_length, this.to_y());
-            cH.drawImage(sprites.bz(14), 0, 0);
-            cH.setTransform(g, 0, 0, g, 2 * display_buffer_length + g * sprites.bz(13).width, this.to_y());
-            cH.drawImage(sprites.bz(13), 0, 0);
-            for (var n = 1; 0 <= n; n--) k[n] && (cH.setTransform(1, 0, 0, 1, (1 + n) * display_buffer_length + n * g *
-                sprites.bz(13).width, this.to_y()), cH.font = k[n].font, cH.textBaseline = cI, cH.textAlign = cJ, cH.fillStyle = cK, cH.fillText(k[n].l, .5 * g * sprites.bz(13).width, .86 * g * sprites.bz(13).height));
-            cH.setTransform(1, 0, 0, 1, 0, 0)
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.setTransform(g, 0, 0, g, display_buffer_length, this.to_y());
+            mainCanvasCtx.drawImage(sprites.bz(14), 0, 0);
+            mainCanvasCtx.setTransform(g, 0, 0, g, 2 * display_buffer_length + g * sprites.bz(13).width, this.to_y());
+            mainCanvasCtx.drawImage(sprites.bz(13), 0, 0);
+            for (var n = 1; 0 <= n; n--) k[n] && (mainCanvasCtx.setTransform(1, 0, 0, 1, (1 + n) * display_buffer_length + n * g *
+                sprites.bz(13).width, this.to_y()), mainCanvasCtx.font = k[n].font, mainCanvasCtx.textBaseline = cI, mainCanvasCtx.textAlign = cJ, mainCanvasCtx.fillStyle = cK, mainCanvasCtx.fillText(k[n].l, .5 * g * sprites.bz(13).width, .86 * g * sprites.bz(13).height));
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     }
 }
@@ -362,15 +362,15 @@ function cX(g) {
 }
 
 function cY(g, k) {
-    var n, l;
-    var x = pixels_bordering_land[g].length;
-    var t = 256 <= x ? 12 : 32 <= x ? 6 : 1;
-    x = x - 1 - ce.cf(t);
+    var n, side;
+    var borderPixelCount = pixels_bordering_land[g].length;
+    var t = 256 <= borderPixelCount ? 12 : 32 <= borderPixelCount ? 6 : 1;
+    borderPixelCount = borderPixelCount - 1 - ce.cf(t);
     cg = 0;
-    a: for (; 0 <= x; x -= t)
-        for (l = 3; 0 <= l; l--) {
-            var z = pixel.is_neutral(pixels_bordering_land[g][x] + offset[l]) ? max_entities : pixel.owner(pixels_bordering_land[g][x] + offset[l]);
-            if (z === max_entities || pixel.controlled_by_entity(pixels_bordering_land[g][x] + offset[l]) && z !== g && (k || ch(g, z))) {
+    a: for (; 0 <= borderPixelCount; borderPixelCount -= t)
+        for (side = 3; 0 <= side; side--) {
+            var z = pixel.is_neutral(pixels_bordering_land[g][borderPixelCount] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[g][borderPixelCount] + offset[side]);
+            if (z === max_entities || pixel.controlled_by_entity(pixels_bordering_land[g][borderPixelCount] + offset[side]) && z !== g && (k || isTeamate(g, z))) {
                 for (n = cg - 1; 0 <= n; n--)
                     if (ci[n] === z) continue a;
                 ci[cg] = z;
@@ -380,13 +380,13 @@ function cY(g, k) {
     return 0 < cg
 }
 
-function ck(g, k) {
-    var n, l;
+function ck(id, k) {
+    var index, side;
     cg = 0;
-    for (n = pixels_bordering_land[g].length - 1; 0 <= n; n--)
-        for (l = 3; 0 <= l; l--) {
-            var x = pixel.is_neutral(pixels_bordering_land[g][n] + offset[l]) ? max_entities : pixel.owner(pixels_bordering_land[g][n] + offset[l]);
-            if (x === max_entities || pixel.controlled_by_entity(pixels_bordering_land[g][n] + offset[l]) && x !== g && (k || ch(g, x))) return ci[cg++] = x, !0
+    for (index = pixels_bordering_land[id].length - 1; 0 <= index; index--)
+        for (side = 3; 0 <= side; side--) {
+            var owner = pixel.is_neutral(pixels_bordering_land[id][index] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[id][index] + offset[side]);
+            if (owner === max_entities || pixel.controlled_by_entity(pixels_bordering_land[id][index] + offset[side]) && owner !== id && (k || isTeamate(id, owner))) return ci[cg++] = owner, !0
         }
     return !1
 }
@@ -403,7 +403,7 @@ function cl() {
 function cn(g) {
     var k, n;
     for (k = cg - 1; 0 <= k; k--)
-        if (attacks.co(g, ci[k]))
+        if (attacks.check(g, ci[k]))
             for (cg--, n = k; n < cg; n++) ci[n] = ci[n + 1];
     return 0 === cg
 }
@@ -464,8 +464,8 @@ function d9() {
 function dB(g, k) {
     team_game && (d7[g] = 0);
     if (attacks.below_attack_cap(g) && !(60 > k))
-        if (0 === pixels_bordering_land[g].length) dE.dF(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], ay.dJ(g)));
-        else if (!(0 < pixels_bordering_water[g].length && ce.random() < ce.value(pixels_bordering_water[g].length > pixels_bordering_land[g].length ? 7 : 3) && dE.dF(g, dG.cN[g - player_count]))) {
+        if (0 === pixels_bordering_land[g].length) dE.update(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], ay.dJ(g)));
+        else if (!(0 < pixels_bordering_water[g].length && ce.random() < ce.value(pixels_bordering_water[g].length > pixels_bordering_land[g].length ? 7 : 3) && dE.update(g, dG.cN[g - player_count]))) {
         var n = ay.dJ(g);
         troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
         team_game ? dK(g, k, dG.cN[g - player_count], n) : dL(g, k, dG.cN[g - player_count])
@@ -473,7 +473,7 @@ function dB(g, k) {
 }
 
 function dK(g, k, n, l) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, max_entities, n)) : (ce.dP(dG.dQ[n]) ? l = cs(g) : (cp() && ce.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < pixels_bordering_water[g].length && ce.random() < ce.value(60) && dE.dF(g, n) || (dG.dH(g - player_count, 200), dI(g, k, n, l))
+    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, max_entities, n)) : (ce.dP(dG.dQ[n]) ? l = cs(g) : (cp() && ce.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < pixels_bordering_water[g].length && ce.random() < ce.value(60) && dE.update(g, n) || (dG.dH(g - player_count, 200), dI(g, k, n, l))
 }
 
 function dT(g, k) {
@@ -524,7 +524,7 @@ var dd = [60, 74, 112, 200, 256, 512];
 var bots_timing;
 function de() {
     var /*bots_timing, */bots_send_ratio, n, l, x, t;
-    this.dl = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
+    this.botDifficultyLabel = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
     this.dm = [97, 95, 93, 90, 87, 84];
     this.dS = [98, 95, 90, 40, 20, 0];
     this.dn = [85, 70, 65, 30, 7, 3];
@@ -538,9 +538,9 @@ function de() {
         this.cN = new Uint8Array(bot_count);
         x = new Uint16Array(bot_count);
         t = new Uint16Array(bot_count);
-        if (dr.ds) {
-            if (dr.dt.du)
-                for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = dr.dt.du[z + 1]
+        if (customMap.ds) {
+            if (customMap.dt.du)
+                for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = customMap.dt.du[z + 1]
         } else if (9 === gamemode) this.dw();
         else if (singleplayer)
             if (team_game)
@@ -568,7 +568,7 @@ function de() {
     this.dH = function(z, y) {
         0 <= z && (bots_timing[z] = y)
     };
-    this.dF = function(z) {
+    this.update = function(z) {
         if (0 === --bots_timing[z]) {
             x[z] !== t[z] && (x[z] += x[z] < t[z] ? 3 : -3);
             bots_send_ratio[z] !== n[z] && (bots_send_ratio[z] += bots_send_ratio[z] < n[z] ? l[z] : -l[z], bots_send_ratio[z] = Math.abs(bots_send_ratio[z] - n[z]) <= l[z] ? n[z] : bots_send_ratio[z]);
@@ -580,36 +580,36 @@ function de() {
 }
 
 function e8() {
-    announcements.dF();
-    eA.dF();
+    announcements.update();
+    eA.update();
     eB.eC();
-    websocket_manager.dF()
+    websocket_manager.update()
 }
 
 function game_tick() {
-    ay.dF();
-    eF.dF();
-    single.dF();
-    eH.dF();
-    eI.dF();
-    eJ.dF();
-    au.dF();
-    eK.dF();
+    ay.update();
+    antiFullsend.update();
+    single.update();
+    eH.update();
+    eI.update();
+    eJ.update();
+    au.update();
+    eK.update();
     eL();
-    eM.dF();
-    e2.dF();
-    eA.dF();
-    eB.dF();
-    eN.dF();
-    eO.dF();
-    eP.dF();
-    announcements.dF();
-    eQ.dF();
-    troopsBar.dF();
-    peace.dF();
-    statistics.dF();
-    eT.dF();
-    websocket_manager.dF()
+    eM.update();
+    e2.update();
+    eA.update();
+    eB.update();
+    eN.update();
+    eO.update();
+    eP.update();
+    announcements.update();
+    eQ.update();
+    troopsBar.update();
+    peace.update();
+    statistics.update();
+    eT.update();
+    websocket_manager.update()
 
     tick++;
     if (tick == 100) {
@@ -620,10 +620,10 @@ function game_tick() {
 }
 
 function eU() {
-    eV.dF();
-    eW.dF();
-    c2.dF();
-    eX.dF();
+    eV.update();
+    eW.update();
+    c2.update();
+    eX.update();
     eY.eZ()
 }
 
@@ -640,13 +640,13 @@ function ea() {
 
 function ec() {
     eA.eb() && (c4.c5 = !0);
-    websocket_manager.dF()
+    websocket_manager.update()
 }
 
 function ed() {
     function g(A) {
         var B;
-        for (B = l - 1; 0 <= B; B--) 0 === t[x[B]] && land[x[B]] >= A && ab(x[B])
+        for (B = l - 1; 0 <= B; B--) 0 === t[x[B]] && land[x[B]] >= A && attackProcessInit(x[B])
     }
 
     function k(A) {
@@ -660,12 +660,12 @@ function ed() {
         x = new Uint16Array(max_entities);
         t = new Uint8Array(max_entities)
     };
-    this.dF = function() {
+    this.update = function() {
         var A;
         z = statistics.numbers[13];
         y = troops[my_id];
-        for (A = l - 1; 0 <= A; A--) 10 === t[x[A]] ? k(x[A]) : 0 === t[x[A]]-- && (k(x[A]), ab(x[A]));
-        16E4 <= land[em[0]] && (g(16E4), 3E5 <= land[em[0]] && g(3E5));
+        for (A = l - 1; 0 <= A; A--) 10 === t[x[A]] ? k(x[A]) : 0 === t[x[A]]-- && (k(x[A]), attackProcessInit(x[A]));
+        16E4 <= land[orderedLand[0]] && (g(16E4), 3E5 <= land[orderedLand[0]] && g(3E5));
         land[my_id] > statistics.numbers[7] && (statistics.numbers[7] = land[my_id]);
         statistics.numbers[14] += y - troops[my_id] + z - statistics.numbers[13]
     };
@@ -706,8 +706,8 @@ function er() {
     }
 
     function k(y) {
-        if (pixel.can_take(y) && (pixel.is_neutral(y) || pixel.owner(y) !== z && ch(z, pixel.owner(y)))) {
-            if (ez.co(z, y)) return 2;
+        if (pixel.can_take(y) && (pixel.is_neutral(y) || pixel.owner(y) !== z && isTeamate(z, pixel.owner(y)))) {
+            if (ez.check(z, y)) return 2;
             if (0 === l--) return 0
         }
         return 1
@@ -720,13 +720,13 @@ function er() {
         return 1
     }
     var l, x, t, z;
-    this.dF = function(y, A) {
+    this.update = function(y, A) {
         z = y;
         if (0 === pixels_bordering_water[z].length) return !1;
         if (g()) {
             var B = divide_floor(dG.dn[A] * troops[z], 100);
             100 > B && 100 <= troops[z] && (B = 100);
-            if (100 <= B) return ey(z, ez.f0(), pixel.to_coord(x, t), B)
+            if (100 <= B) return single_boat(z, ez.f0(), pixel.to_coord(x, t), B)
         }
         return !1
     }
@@ -739,12 +739,12 @@ function fC() {
         k = new Uint16Array(bot_count);
         for (var n = bot_count - 1; 0 <= n; n--) k[n] = n
     };
-    this.dF = function() {
+    this.update = function() {
         for (var n = g - 1; 0 <= n; n--)
             if (0 === is_alive[k[n] + player_count]) {
                 var l = n;
                 for (g--; l < g; l++) k[l] = k[l + 1]
-            } else dG.dF(k[n])
+            } else dG.update(k[n])
     }
 }
 
@@ -761,7 +761,7 @@ function Single() {
         t = [];
         z = []
     };
-    this.dF = function() {
+    this.update = function() {
         var y, A = k.length;
         for (y = 0; y < A; y++)
             if (0 === n[y]) single_attack(k[y], x[y], l[y]);
@@ -774,18 +774,18 @@ function Single() {
         0 < A && this.init()
     };
     this.send_boat = function(attacker, ratio, x_coord, y_coord) {
-        0 !== is_alive[attacker] && 2 !== player_status[k] && ez.co(attacker, pixel.to_coord(x_coord, y_coord)) && ey(attacker, ez.f0(), pixel.to_coord(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
+        0 !== is_alive[attacker] && 2 !== player_status[k] && ez.check(attacker, pixel.to_coord(x_coord, y_coord)) && single_boat(attacker, ez.f0(), pixel.to_coord(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
             attacker === my_id && (statistics.numbers[0] += ratio, statistics.numbers[1]++, statistics.numbers[2]++)
     };
     this.cancel = function(attacker, target) {
-        if (0 !== is_alive[attacker] && 2 !== player_status[k] && attacks.co(attacker, target)) {
+        if (0 !== is_alive[attacker] && 2 !== player_status[k] && attacks.check(attacker, target)) {
             var troops_returned = attacks.get_troops_remaining_from_target(attacker, target);
             attacks.set_attack_troops_remaining_from_target(attacker, target, 0);
-            if (attacker !== my_id) troops[attacker] += troops_returned, ay.az(attacker);
+            if (attacker !== my_id) troops[attacker] += troops_returned, ay.limitTroops(attacker);
             else {
                 var previous_troops = troops[attacker];
                 troops[attacker] += troops_returned;
-                ay.az(attacker);
+                ay.limitTroops(attacker);
                 statistics.numbers[13] -= troops[attacker] - previous_troops
             }
         }
@@ -797,7 +797,7 @@ function Single() {
                 var troops_returned = attacks.get_attack_troops_remaining_from_attack_index(attacker, boat_index);
                 attacks.set_attack_troops_remaining_from_attack_index(attacker, boat_index, 0);
                 troops[attacker] += troops_returned;
-                ay.az(attacker)
+                ay.limitTroops(attacker)
             }
         }
     };
@@ -818,14 +818,14 @@ function Single() {
         1 === client_status && g(y, 6, 1, A, 0, 0)
     };
     this.fh = function(y) {
-        1 === client_status && 0 !== is_alive[y] && 2 !== player_status[y] && (8 === gamemode ? fi.fj(1 - y) : this.fk(y));
-        announcements.fl(y, 4)
+        1 === client_status && 0 !== is_alive[y] && 2 !== player_status[y] && (8 === gamemode ? endGame.gameEnd(1 - y) : this.fk(y));
+        announcements.showGenericMessages(y, 4)
     };
     this.fk = function(y) {
         in_spawn ? (fm(y), fn()) : eI.fo(y)
     };
-    this.fp = function(y) {
-        0 !== is_alive[y] && 2 !== player_status[y] && fq.fr(y) && (1 === alive_count ? fi.fj(y) : (announcements.fl(y, y === my_id ? 21 : 22), 8 === gamemode ? fi.fj(1 - y) : singleplayer ? (fm(y), fn(), in_spawn && spawn.dF()) : this.fk(y)))
+    this.surrender = function(id) {
+        0 !== is_alive[id] && 2 !== player_status[id] && fq.canSurrender(id) && (1 === alive_count ? endGame.gameEnd(id) : (announcements.showGenericMessages(id, id === my_id ? 21 : 22), 8 === gamemode ? endGame.gameEnd(1 - id) : singleplayer ? (fm(id), fn(), in_spawn && spawn.update()) : this.fk(id)))
     }
 }
 
@@ -847,8 +847,8 @@ function fu() {
     this.g0 = function(B, C) {
         y[B] = C
     };
-    this.dF = function() {
-        for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, g1.dF(B, z[B], x[B], y[B], A[B]))
+    this.update = function() {
+        for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, g1.update(B, z[B], x[B], y[B], A[B]))
     };
     this.av = function(B, C) {
         var E;
@@ -882,8 +882,8 @@ function fu() {
                 E = gD / g7,
                 F = (gE + gC) / g7,
                 G = (cB + gD) / g7;
-            cH.textAlign = cJ;
-            cH.textBaseline = cI;
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.textBaseline = cI;
             for (B = l - 1; 0 <= B; B--) {
                 var N = pixel.to_x(y[B]);
                 var I = pixel.to_y(y[B]);
@@ -893,12 +893,12 @@ function fu() {
                     if (!(6 > K)) {
                         N = Math.floor(gE * (N + .5 - C) / (F - C));
                         I = Math.floor(cB * (I + .48 - E) / (G - E));
-                        cH.font = bt +
+                        mainCanvasCtx.font = bt +
                             K + bu;
-                        cH.fillStyle = gH;
-                        cH.fillText(nickname[D], N, I);
+                        mainCanvasCtx.fillStyle = gH;
+                        mainCanvasCtx.fillText(nickname[D], N, I);
                         var J = Math.floor(.57 * K);
-                        6 > J || (D = attacks.get_attack_troops_remaining_from_attack_index(D, attacks.find_boat_index_from_boat_id(D, z[B])), cH.font = bt + J + bu, cH.fillText(eP.split_into_pieces(D), N, I + Math.floor(.82 * K)))
+                        6 > J || (D = attacks.get_attack_troops_remaining_from_attack_index(D, attacks.find_boat_index_from_boat_id(D, z[B])), mainCanvasCtx.font = bt + J + bu, mainCanvasCtx.fillText(eP.split_into_pieces(D), N, I + Math.floor(.82 * K)))
                     }
                 }
             }
@@ -979,7 +979,7 @@ function gK() {
         D = !1;
         return !0
     };
-    this.dF = function() {
+    this.update = function() {
         if (D) {
             .5 > x ? z < y && (z += y * l, t = x) : x > 1 - t && (z -= y * l, z = z < y * l ? y * l : z);
             N = N >= c4.time ? c4.time - 1 : N;
@@ -1088,12 +1088,12 @@ function hA() {
         E = divide_floor(map_height - B * A, 2);
         if (in_spawn)
             for (I = 0; I < player_count; I++) G = I, n(), is_alive[G] = 1;
-        if (dr.ds && dr.dt.hH)
+        if (customMap.ds && customMap.dt.hH)
             for (G = 0; G < max_entities; G++) {
                 if (1 !== is_alive[G]) {
                     if (G < entity_count) {
-                        var D = dr.dt.hH[G] + 1;
-                        I = dr.dt.hS[G] + 1;
+                        var D = customMap.dt.hH[G] + 1;
+                        I = customMap.dt.hS[G] + 1;
                         3 < D && D < map_width - 5 && 3 < I && I < map_height - 5 &&
                             pixel.can_take(pixel.to_coord(D, I)) && x(D + 3, I + 3) ? (D += 1, I += 1, n(), l(D - 2, I - 2), I = !0) : I = !1;
                         if (I) continue;
@@ -1142,17 +1142,17 @@ function hA() {
 
 function hp() {
     hq.hr();
-    cH.setTransform(g7, 0, 0, g7, 0, 0);
-    cH.imageSmoothingEnabled = 3 > g7;
-    cH.drawImage(hs, gj.to_x(), gj.to_y());
+    mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0);
+    mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
+    mainCanvasCtx.drawImage(hs, gj.to_x(), gj.to_y());
     eN.cG();
-    cH.drawImage(ht, gj.to_x(), gj.to_y());
-    cH.imageSmoothingEnabled = !1;
+    mainCanvasCtx.drawImage(mapCanvas, gj.to_x(), gj.to_y());
+    mainCanvasCtx.imageSmoothingEnabled = !1;
     hq.cG();
-    cH.setTransform(1, 0, 0, 1, 0, 0);
+    mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
     eA.cG();
     eK.cG();
-    canvas_hidden || (cH.imageSmoothingEnabled = !1, announcements.cG(), eM.cG(), troopsBar.cG(), peace.cG(), eB.cG(), gj.cG(), c2.cG(), eT.cG(), eO.cG(), eP.cG(), fq.cG(), eW.cG(), hu.cG(), hv.cG(), eX.cG())
+    canvas_hidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.cG(), eM.cG(), troopsBar.cG(), peace.cG(), eB.cG(), gj.cG(), c2.cG(), eT.cG(), eO.cG(), eP.cG(), fq.cG(), eW.cG(), hu.cG(), hv.cG(), eX.cG())
 }
 
 function hw(g, k, n) {
@@ -1301,18 +1301,18 @@ function Names() {
     }
 }
 
-function ib() {
-    this.fj = function(winner) {
+function EndGame() {
+    this.gameEnd = function(winner) {
         if (2 === client_status) var k = !0;
         else peace.iv(), client_status = 2, spectators = players_in_game, k = !1;
         if (!k) {
             if (8 === gamemode) {
                 var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
-                (k = winner === my_id) ? announcements.fl(winner, 2): announcements.fl(1 - my_id, 3);
+                (k = winner === my_id) ? announcements.showGenericMessages(winner, 2): announcements.showGenericMessages(1 - my_id, 3);
                 points_1v1.calculate_new_elo(winner)
-            } else team_game ? (winner = eT.ik(), k = teams.team_array[my_id] === winner, 9 === gamemode ? result = k ? em[0] : 512 : 
-                (winner = teams.il(teams.im[winner]), result = winner[0], 512 !== result && announcements.clan_points_won(winner[1])), announcements.ip(k)) : 
-                (result = em[0], k = result === my_id, announcements.iq(result));
+            } else team_game ? (winner = eT.ik(), k = teams.team_array[my_id] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : 
+                (winner = teams.il(teams.im[winner]), result = winner[0], 512 !== result && announcements.clan_points_won(winner[1])), announcements.resultTeam(k)) : 
+                (result = orderedLand[0], k = result === my_id, announcements.resultBR(result));
             singleplayer || multi_out.upload_result(troop_hash(), result);
             eW.show(k, !1);
             announcements.iy(!0);
@@ -1329,7 +1329,7 @@ function Spawn() {
     this.set = function(id, x_coord, y_coord) {
         0 !== is_alive[id] && j1.hi(id, x_coord, y_coord) && (c4.c5 = !0)
     };
-    this.dF = function() { // in this context meanse xit spawn but others context wrong
+    this.update = function() {
         in_spawn = !1;
         for (var g = 0; g < player_count; g++) 0 !== is_alive[g] && 0 === land[g] && j1.ho(g);
         0 !== is_alive[my_id] ? (statistics.numbers[7] = land[my_id], statistics.numbers[8] = troops[my_id], troopsBar.cE(), eB.j2(), eV.gf(x_min[my_id] - 5, y_min[my_id] - 5, x_max[my_id] + 5, y_max[my_id] + 5), eX.init()) : eW.show(!1, !1);
@@ -1362,7 +1362,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     gamemode = 8 === gamemode && 2 !== player_count ? 7 : gamemode;
     team_count = 9 === gamemode ? 2 : gamemode + 2;
     spawn_time = 2 >= player_count ? 30 : 50 >= player_count ? 40 : 50;
-    free_spawn = dr.ds && !dr.dt.jL ? in_spawn = !1 : in_spawn = team_game || 100 > player_count;
+    free_spawn = customMap.ds && !customMap.dt.jL ? in_spawn = !1 : in_spawn = team_game || 100 > player_count;
     spawn = in_spawn ? new Spawn : null;
     starting_troops = 512;
     entity_count = max_entities;
@@ -1378,7 +1378,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     troop_cap = 15E8;
     jB = 1E9;
     statistics.init();
-    jP();
+    loadMapCanvas();
     jQ.jR();
     h8.init();
     ay.init();
@@ -1393,7 +1393,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     jV();
     eN.init();
     hv.init();
-    jW.putImageData(jX, 0, 0);
+    mapCanvasCtx.putImageData(jX, 0, 0);
     eM.init();
     gj.init();
     troopsBar.init();
@@ -1413,7 +1413,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     matrix_processor_init();
     attacks.init();
     eA.init();
-    eF.init();
+    antiFullsend.init();
     eI.init();
     eQ.init();
     eH.init();
@@ -1444,7 +1444,7 @@ function leave_game() { //close is temp
 }
 var dG, au, dE, eJ, single, eK, eV, j1, names, hu, fq, announcements, jf, eP, c2, troopsBar, gj, jg, eO, eM, eB, eW, 
 jh, ji, aJ, jj, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, ay, eA, jS, e2, jQ, jm, jn, gn, ez, ce, 
-g1, hq, jo, multi_in, eX, multi_out, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, eI, eF, eQ, jv, dr, intelliAttack;
+g1, hq, jo, multi_in, eX, multi_out, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, eI, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
 
 function construct() {
     dG = new de;
@@ -1509,10 +1509,10 @@ function construct() {
     jt = new kl;
     ju = new km;
     eI = new kn;
-    eF = new ko;
+    antiFullsend = new AntiFullsend;
     eQ = new kp;
-    jv = new kq;
-    dr = new kr;
+    loadCustom = new LoadCustom;
+    customMap = new CustomMap;
     intelliAttack = new IntelliAttack
 }
 
@@ -1550,7 +1550,7 @@ function jy() {
         return L < z - A - N || L > z + 2 * A + N || H < y - A - N || H > y + 2 * A + N ? -1 : 3 * (H < y - N / 2 ? 0 : H < y + A + N / 2 ? 1 : 2) + (L < z - N / 2 ? 0 : L < z + A + N / 2 ? 1 : 2)
     }
     var x = [],
-        t, z, y, A, B, C, E, F, coord, N, I, D, K, J;
+        t, z, y, A, B, C, E, target, coord, N, I, D, K, J;
     this.l2 = [];
     this.init = function() {
         K = [];
@@ -1577,7 +1577,7 @@ function jy() {
     };
     this.lD = function(L, H) {
         if (this.hidden()) {
-            var M = this.c7(L, H);
+            var M = this.clicked(L, H);
             c4.c5 = 0 < M;
             return 2 > M
         }
@@ -1586,15 +1586,15 @@ function jy() {
     this.lF = function(L, H) {
         this.hidden() || (B = L, C = H, E = (new Date).getTime())
     };
-    this.lG = function(L) {
-        return L < player_count && 2 !== player_status[L]
+    this.isHuman = function(id) {
+        return id < player_count && 2 !== player_status[id]
     };
-    this.c7 = function(L, H) {
+    this.clicked = function(L, H) {
         C = B = -1E3;
         if (2 === player_status[my_id] || 0 === is_alive[my_id] && !in_spawn) return this.end(), 1;
         if (t) {
             this.end();
-            if (a5.lI(L, H)) a5.lJ(L, H, F) && (t = !0);
+            if (a5.lI(L, H)) a5.lJ(L, H, target) && (t = !0);
             else return a5.lK(), 2;
             return 1
         }
@@ -1605,8 +1605,8 @@ function jy() {
                 M = (new Date).getTime();
                 M > J + 4E3 && (K = []);
                 J = M;
-                if (k(F)) return this.end(), 1;
-                K.push(F);
+                if (k(target)) return this.end(), 1;
+                K.push(target);
                 16 < K.length && K.shift();
                 this.end();
                 return 1
@@ -1616,7 +1616,7 @@ function jy() {
         if (2 === M) {
             if (x[7]) {
                 for (M = K.length - 1; 0 <= M; M--) 0 === is_alive[K[M]] && K.splice(M, 1);
-                0 < K.length && (eQ.lQ(1, K, !0) && (announcements.request_attack(K, F), multi_out.request_attack(K, F)), K = []);
+                0 < K.length && (eQ.lQ(1, K, !0) && (announcements.request_attack(K, target), multi_out.request_attack(K, target)), K = []);
                 this.end();
                 return 1
             }
@@ -1624,16 +1624,15 @@ function jy() {
         }
         if (3 === M) {
             this.end();
-            if (this.lG(F) && 7 > gamemode && 1071 > c4.time_elapsed()) return announcements.anti_boosting(), 1;
+            if (this.isHuman(target) && 7 > gamemode && 1071 > c4.time_elapsed()) return announcements.anti_boosting(), 1;
             announcements.low_balance();
-            singleplayer ? single_donate(my_id, F, divide_floor(troopsBar.AttackRatio() * troops[my_id], 1E3)) : multi_out.attack(troopsBar.AttackRatio(), F === max_entities ? my_id : F);
+            singleplayer ? single_donate(my_id, target, divide_floor(troopsBar.AttackRatio() * troops[my_id], 1E3)) : multi_out.attack(troopsBar.AttackRatio(), target === max_entities ? my_id : target);
             return 1
         }
-        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.dF()) : multi_out.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, F, troopsBar.AttackRatio()) : (!free_spawn || 300 < eB.lX()) && multi_out.attack(troopsBar.AttackRatio(), F === max_entities ? my_id : F)) : x[8] ? (this.end(), eH.lZ(F, troopsBar.AttackRatio())) : this.end(), 1;
+        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multi_out.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, target, troopsBar.AttackRatio()) : (!free_spawn || 300 < eB.lX()) && multi_out.attack(troopsBar.AttackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.AttackRatio())) : this.end(), 1;
         if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? single.send_boat(my_id, troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multi_out.pick_location(troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
         if (7 === M && x[4]) return this.end(), t = a5.show(L, H), 1;
-        if (8 === M) return x[5] ?
-            (eQ.lQ(0, [F], !0) && (announcements.la(F, 0), multi_out.non_aggression(F)), this.end(), 1) : 0;
+        if (8 === M) return x[5] ? (eQ.lQ(0, [target], !0) && (announcements.la(target, 0), multi_out.non_aggression(target)), this.end(), 1) : 0;
         this.end();
         return 2
     };
@@ -1646,27 +1645,27 @@ function jy() {
         if (1 > M || 1 > Q || M >= map_width - 1 || Q >= map_height - 1) return !1;
         var R = Q * map_width * 4 + 4 * M;
         if (!pixel.can_take(R)) return !1;
-        if (2 === client_status) return 1 <= a5.lf && (F = pixel.owner(R), this.lG(F)) ? (F === my_id && this.end(), x[4] = !0, this.lg(L, H)) : !1;
+        if (2 === client_status) return 1 <= a5.lf && (target = pixel.owner(R), this.isHuman(target)) ? (target === my_id && this.end(), x[4] = !0, this.lg(L, H)) : !1;
         coord = pixel.to_coord(M, Q);
         if (in_spawn) return x[0] = !0, this.lg(L, H);
-        x[1] = ez.co(my_id, coord);
-        if (pixel.is_neutral(R)) return F = max_entities, lh(my_id) ? x[0] = !0 : li(my_id, F) && (x[8] = !0), this.lg(L, H);
-        F = pixel.owner(R);
-        if (F === my_id) {
+        x[1] = ez.check(my_id, coord);
+        if (pixel.is_neutral(R)) return target = max_entities, lh(my_id) ? x[0] = !0 : li(my_id, target) && (x[8] = !0), this.lg(L, H);
+        target = pixel.owner(R);
+        if (target === my_id) {
             this.end();
             if (0 === a5.lf) return !1;
             x[4] = !0;
             return this.lg(L, H)
         }
         M = x;
-        Q = F;
-        Q = hu.lG(Q) && !k(Q) && eQ.lQ(1, [Q], !1);
+        Q = target;
+        Q = hu.isHuman(Q) && !k(Q) && eQ.lQ(1, [Q], !1);
         M[6] = Q;
-        x[4] = 1 <= a5.lf && this.lG(F);
-        if (ch(F, my_id)) {
-            x[5] = this.lG(F) && !eA.lk(F) && eQ.lQ(0, [F], !1);
+        x[4] = 1 <= a5.lf && this.isHuman(target);
+        if (isTeamate(target, my_id)) {
+            x[5] = this.isHuman(target) && !eA.lk(target) && eQ.lQ(0, [target], !1);
             M = x;
-            Q = F;
+            Q = target;
             if (0 === K.length) Q = !1;
             else if ((new Date).getTime() > J + 4E3) K = [], Q = !1;
             else {
@@ -1674,7 +1673,7 @@ function jy() {
                     b: {
                         if (team_game)
                             for (R = K.length - 1; 0 <= R; R--)
-                                if (!ch(Q, K[R])) {
+                                if (!isTeamate(Q, K[R])) {
                                     Q = !0;
                                     break b
                                 } Q = !1
@@ -1685,7 +1684,7 @@ function jy() {
             }
             M[7] = Q;
             lm(my_id,
-                F) ? x[0] = !0 : li(my_id, F) && (x[8] = !0);
+                target) ? x[0] = !0 : li(my_id, target) && (x[8] = !0);
             return this.lg(L, H)
         }
         x[2] = team_game;
@@ -1721,31 +1720,30 @@ function jy() {
         return t
     };
     this.cG = function() {
-        this.hidden() &&
-            this.lq()
+        this.hidden() && this.lq()
     };
     this.lq = function() {
         if (t) a5.cG();
         else {
             var L = (A + N) / D;
-            cH.imageSmoothingEnabled = !0;
-            cH.setTransform(D, 0, 0, D, z, y);
-            x[0] ? in_spawn ? cH.drawImage(this.l4[3], 0, 0) : cH.drawImage(this.l4[0], 0, 0) : x[8] ? cH.drawImage(this.l2[0], 0, 0) : cH.drawImage(I[0], 0, 0);
-            x[1] && cH.drawImage(this.l4[1], L, 0);
-            x[2] && cH.drawImage(this.l4[2], -L, 0);
-            x[4] && cH.drawImage(this.l4[4], 0, L);
-            x[5] && cH.drawImage(this.l4[5], L, L);
-            x[6] && cH.drawImage(this.l4[6], 0, -L);
-            x[7] && cH.drawImage(this.l4[7], L, -L);
-            cH.imageSmoothingEnabled = !1;
-            cH.setTransform(1,
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.setTransform(D, 0, 0, D, z, y);
+            x[0] ? in_spawn ? mainCanvasCtx.drawImage(this.l4[3], 0, 0) : mainCanvasCtx.drawImage(this.l4[0], 0, 0) : x[8] ? mainCanvasCtx.drawImage(this.l2[0], 0, 0) : mainCanvasCtx.drawImage(I[0], 0, 0);
+            x[1] && mainCanvasCtx.drawImage(this.l4[1], L, 0);
+            x[2] && mainCanvasCtx.drawImage(this.l4[2], -L, 0);
+            x[4] && mainCanvasCtx.drawImage(this.l4[4], 0, L);
+            x[5] && mainCanvasCtx.drawImage(this.l4[5], L, L);
+            x[6] && mainCanvasCtx.drawImage(this.l4[6], 0, -L);
+            x[7] && mainCanvasCtx.drawImage(this.l4[7], L, -L);
+            mainCanvasCtx.imageSmoothingEnabled = !1;
+            mainCanvasCtx.setTransform(1,
                 0, 0, 1, 0, 0)
         }
     }
 }
 
-function jz() {
-    function g() {
+function jz() { //Added Mod Menu
+    function drawExitBut() {
         var B = x.getContext("2d", {
             alpha: !0
         });
@@ -1766,34 +1764,33 @@ function jz() {
     }
 
     function k(B, C) {
-        if (!fq.inMenu) return B <= l +
-            m7 && C >= troopsBar.fK ? 0 : -1;
+        if (!fq.menuOpen) return B <= l + m7 && C >= troopsBar.fK ? 0 : -1;
         if (B <= 4 * l + m7) {
             if (C >= troopsBar.fK) return 0;
             if (C >= troopsBar.fK - l - A * m7) return 2;
             if (C >= troopsBar.fK - 2 * (l + A * m7)) return 3;
-            if (C >= troopsBar.fk - 2 * (l + A * m7)) return 4; //temp
+            if (C >= troopsBar.fK - (in_spawn ? 2 : 3) * (l + A * m7)) return 4; //Added
         } else if (B <= 7 * l + m7 && C >= troopsBar.fK - l - A * m7) return 1;
         return -1
     }
 
-    function n(B, C) {
-        cH.setTransform(1, 0, 0, 1, m7, troopsBar.fK - B * A * m7 - B * l);
-        cH.fillStyle = lz;
-        cH.fillRect(0, 0, 4 * l, l);
-        y === B + 1 && C === cK && (cH.fillStyle = m0, cH.fillRect(0, 0, 4 * l, l));
-        cH.fillStyle = C;
-        cH.fillRect(0, 0, 4 * l, 1);
-        cH.fillRect(0, 0, 1, l);
-        cH.fillRect(4 * l, 0, 1, l);
-        cH.fillRect(0, l - 1, 4 * l, 1);
-        cH.fillText(z[B], 2 * l, .54 * l)
+    function drawOptionsBut(option, style) {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, m7, troopsBar.fK - option * A * m7 - option * l);
+        mainCanvasCtx.fillStyle = lz;
+        mainCanvasCtx.fillRect(0, 0, 4 * l, l);
+        y === option + 1 && style === cK && (mainCanvasCtx.fillStyle = m0, mainCanvasCtx.fillRect(0, 0, 4 * l, l));
+        mainCanvasCtx.fillStyle = style;
+        mainCanvasCtx.fillRect(0, 0, 4 * l, 1);
+        mainCanvasCtx.fillRect(0, 0, 1, l);
+        mainCanvasCtx.fillRect(4 * l, 0, 1, l);
+        mainCanvasCtx.fillRect(0, l - 1, 4 * l, 1);
+        mainCanvasCtx.fillText(z[option == 2 && 2 >= statistics.m6 ? 3 : option], 2 * l, .54 * l)
     }
     var l, x, t, z = ["Quit Game", "Surrender",  "Statistics", "Mod Settings"],
         y, A;
     this.init = function() {
         y = -1;
-        this.inMenu = !1;
+        this.menuOpen = !1;
         A = zoom ? 1.2 : .6;
         this.lx()
     };
@@ -1803,31 +1800,34 @@ function jz() {
         x.width = l;
         x.height = l;
         t = bt + Math.floor((zoom ? .5 : .45) * l) + bu;
-        g()
+        drawExitBut()
     };
     this.alterDisplay = function() {
-        (this.inMenu = !this.inMenu) ? (canvas_hidden = !1, singleplayer && 1 === client_status && !in_spawn && (setTimeout(function() {
+        (this.menuOpen = !this.menuOpen) ? (canvas_hidden = !1, singleplayer && 1 === client_status && !in_spawn && (setTimeout(function() {
             h8.iz()
-        }, 0), set_android_state(0))) : (y = -1, g(), singleplayer && set_android_state(1));
+        }, 0), set_android_state(0))) : (y = -1, drawExitBut(), singleplayer && set_android_state(1));
         c4.c5 = !0
     };
-    this.c7 = function(B, C) {
-        var E = k(B, C);
-        if (this.inMenu) {
-            if (E === 0) {
-               leave_game();
+    this.clicked = function(B, C) {
+        var option = k(B, C);
+        if (this.menuOpen) {
+            if (option === 0) {
+                leave_game();
                 return 2;
-            } else if (E === 1) {
+            } else if (option === 1) {
                 this.alterDisplay();
                 return 2;
-            } else if (E === 2) {
-                if (this.fr(my_id) && (singleplayer ? single.fp(my_id) : multi_out.surrender())) {
+            } else if (option === 2) {
+                if (this.canSurrender(my_id) && (singleplayer ? single.surrender(my_id) : multi_out.surrender())) {
                     this.alterDisplay();
                 }
                 return 2;
-            } else if (E === 3 && 2 <= statistics.m6) {
+            } else if (option === 3 && 2 <= statistics.m6 && !in_spawn) {
                 hv.alterDisplay();
                 c4.c5 = true;
+                return 2;
+            } else if (option === 4 && 2 <= statistics.m6 || option === 3 && 2 >= statistics.m6) {
+                typeof (document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden)
                 return 2;
             } else {
                 if (!hv.hidden && (!singleplayer || in_spawn)) {
@@ -1838,7 +1838,7 @@ function jz() {
                 }
             }
         } else {
-            if (E === 0) {
+            if (option === 0) {
                 this.alterDisplay();
                 return 2;
             } else {
@@ -1850,48 +1850,48 @@ function jz() {
         var E = k(B, C);
         if (E === y) return -1 !== y;
         y = E;
-        this.inMenu || g();
+        this.menuOpen || drawExitBut();
         c4.c5 = !0;
         return -1 !== y
     };
     this.cG = function() {
-        if (this.inMenu) {
+        if (this.menuOpen) {
             var B = Math.floor(5.5 * l);
-            cH.setTransform(1, 0, 0, 1, m7, troopsBar.fK);
-            cH.fillStyle = lz;
-            cH.fillRect(0, 0, B, l);
-            0 === y ? (cH.fillStyle = m0, cH.fillRect(0, 0, 4 * l, l)) : 1 === y && (cH.fillStyle = m0, cH.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
-            cH.fillStyle = cK;
-            cH.fillRect(0, 0, B, 1);
-            cH.fillRect(0, 0, 1, l);
-            cH.fillRect(4 * l, 0, 1, l);
-            cH.fillRect(0, l - 1, B, 1);
-            cH.fillRect(B - 1,
-                0, 1, l);
-            cH.font = t;
-            cH.textBaseline = cI;
-            cH.textAlign = cJ;
-            cH.fillText(z[0], 2 * l, .54 * l);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, m7, troopsBar.fK);
+            mainCanvasCtx.fillStyle = lz;
+            mainCanvasCtx.fillRect(0, 0, B, l);
+            0 === y ? (mainCanvasCtx.fillStyle = m0, mainCanvasCtx.fillRect(0, 0, 4 * l, l)) : 1 === y && (mainCanvasCtx.fillStyle = m0, mainCanvasCtx.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
+            mainCanvasCtx.fillStyle = cK;
+            mainCanvasCtx.fillRect(0, 0, B, 1);
+            mainCanvasCtx.fillRect(0, 0, 1, l);
+            mainCanvasCtx.fillRect(4 * l, 0, 1, l);
+            mainCanvasCtx.fillRect(0, l - 1, B, 1);
+            mainCanvasCtx.fillRect(B - 1, 0, 1, l);
+            mainCanvasCtx.font = t;
+            mainCanvasCtx.textBaseline = cI;
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.fillText(z[0], 2 * l, .54 * l);
             B = .4 * l;
-            fq.mB(m7 + 4 * l + (1.5 * l - B) / 2, troopsBar.fK + .3 * l, B);
-            n(1, fq.fr(my_id) ? cK : mD);
-            2 <= statistics.m6 && n(2, cK);
-            cH.setTransform(1, 0, 0, 1, 0, 0)
-        } else cH.drawImage(x, m7, troopsBar.fK)
+            fq.drawShape(m7 + 4 * l + (1.5 * l - B) / 2, troopsBar.fK + .3 * l, B);
+            drawOptionsBut(1, fq.canSurrender(my_id) ? cK : mD);
+            2 <= statistics.m6 && drawOptionsBut(2, cK);
+            drawOptionsBut(2 >= statistics.m6 ? 2 : 3, cK); //Added
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+        } else mainCanvasCtx.drawImage(x, m7, troopsBar.fK)
     };
-    this.fr = function(B) {
-        return 0 !== is_alive[B] && 2 !== client_status && hu.lG(B)
+    this.canSurrender = function(id) {
+        return 0 !== is_alive[id] && 2 !== client_status && hu.isHuman(id)
     };
-    this.mB = function(B, C, E) {
-        cH.setTransform(1, 0, 0, 1, B, C);
-        cH.lineWidth = 2;
-        cH.strokeStyle = cK;
-        cH.beginPath();
-        cH.moveTo(0, 0);
-        cH.lineTo(E, E);
-        cH.moveTo(0, E);
-        cH.lineTo(E, 0);
-        cH.stroke()
+    this.drawShape = function(B, C, E) {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, B, C);
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(0, 0);
+        mainCanvasCtx.lineTo(E, E);
+        mainCanvasCtx.moveTo(0, E);
+        mainCanvasCtx.lineTo(E, 0);
+        mainCanvasCtx.stroke()
     }
 }
 
@@ -1902,38 +1902,38 @@ function Announcements() {
         return troopsBar.mf(announcements.mc()) ? peace.hidden ? troopsBar.fK - troopsBar.cw - 2 * N : troopsBar.fK - N : peace.hidden ? s - troopsBar.cw - (zoom ? 3 : 2) * N : s - N
     }
 
-    function new_announcement(H, message, Q, R, P, U, W, X) {
-        var V = 1E3 <= Q;
-        var na = Math.floor(c2.measureText(message, announcements.c0) + 1.5 * I + (V ? G : 1.5 * I));
-        if (na + N > r && !V && 50 !== Q && 20 < message.length) {
+    function announce(displayTime, message, messageID, hoverTo, P, U, W, X) {
+        var isEmoji = 1E3 <= messageID;
+        var messageWidth = Math.floor(c2.measureText(message, announcements.c0) + 1.5 * I + (isEmoji ? G : 1.5 * I));
+        if (messageWidth + N > r && !isEmoji && 50 !== messageID && 20 < message.length) {
             var ba = Math.floor(.5 * message.length);
-            new_announcement(H, message.substring(0, ba), Q, R, P, U, W, X);
-            new_announcement(H, message.substring(ba), Q, R, P, U, W, X)
+            announce(displayTime, message.substring(0, ba), messageID, hoverTo, P, U, W, X);
+            announce(displayTime, message.substring(ba), messageID, hoverTo, P, U, W, X)
         } else {
-            var ca = Q - 1E3;
-            ba = na + (50 === Q ? D : 0);
-            var pa = document.createElement("canvas");
-            pa.width = na;
-            pa.height = G;
-            var S = pa.getContext("2d", {alpha: !0});
+            var emojiID = messageID - 1E3;
+            ba = messageWidth + (50 === messageID ? D : 0);
+            var messageCanvas = document.createElement("canvas");
+            messageCanvas.width = messageWidth;
+            messageCanvas.height = G;
+            var S = messageCanvas.getContext("2d", {alpha: !0});
             S.font = announcements.c0;
             S.textBaseline = cI;
             S.textAlign = mj;
-            S.clearRect(0, 0, na, G);
+            S.clearRect(0, 0, messageWidth, G);
             S.fillStyle = U;
-            S.fillRect(0, 0, na, G);
+            S.fillRect(0, 0, messageWidth, G);
             S.fillStyle = P;
             S.fillText(message, Math.floor(1.5 * I), Math.floor(G / 2));
-            V && (V = G / a5.c1, S.imageSmoothingEnabled = !0, S.setTransform(V, 0, 0, V, na - G, 0), S.drawImage(a5.l7[ca], 0, 0));
+            isEmoji && (isEmoji = G / a5.width, S.imageSmoothingEnabled = !0, S.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - G, 0), S.drawImage(a5.l7[emojiID], 0, 0));
             F.unshift({
-                time: H,
+                time: displayTime,
                 l: message,
-                id: Q,
-                player: R,
-                ls: pa,
+                id: messageID,
+                player: hoverTo,
+                canvas: messageCanvas,
                 mW: P,
                 mX: U,
-                c1: na,
+                width: messageWidth,
                 md: ba,
                 mY: W,
                 mZ: X
@@ -1973,22 +1973,22 @@ function Announcements() {
         display_label_leave_mono = [" was conquered by ", " left the game.", " surrendered."];
         F = [];
         this.lx();
-        in_spawn && this.fl(0, 18);
-        var display_label_map_land_info = "Map: " + jm.nF() + "   Pixels: " + eP.split_into_pieces(jQ.nG) + "   Land: " + eP.split_into_pieces(jQ.nH) + " (" + eB.nI(100 * jQ.nH / jQ.nG, 1) + ")",
+        in_spawn && this.showGenericMessages(0, 18);
+        var display_label_map_land_info = "Map: " + jm.getMapName() + "   Pixels: " + eP.split_into_pieces(jQ.nG) + "   Land: " + eP.split_into_pieces(jQ.nH) + " (" + eB.nI(100 * jQ.nH / jQ.nG, 1) + ")",
             display_label_map_special_info = "";
         0 < jQ.nK && (display_label_map_special_info += "Water: " + eP.split_into_pieces(jQ.nK) +
             " (" + eB.nI(100 * jQ.nK / jQ.nG, 1) + ")");
         0 < jQ.nL && (display_label_map_special_info += 0 < jQ.nK ? "   " : "", display_label_map_special_info += "Mountains: " + eP.split_into_pieces(jQ.nL) + " (" + eB.nI(100 * jQ.nL / jQ.nG, 1) + ")");
-        new_announcement(340, display_label_map_land_info, 6, 0, get_color_style(215, 245, 255), hy, -1, !1);
-        0 < display_label_map_special_info.length && new_announcement(340, display_label_map_special_info, 6, 0, get_color_style(215, 245, 255), hy, -1, !1);
-        10 === gamemode && new_announcement(120, "Full sending against human players is disabled.", 6, 0, get_color_style(235, 255, 120), hy, -1, !1);
+        announce(340, display_label_map_land_info, 6, 0, get_color_style(215, 245, 255), hy, -1, !1);
+        0 < display_label_map_special_info.length && announce(340, display_label_map_special_info, 6, 0, get_color_style(215, 245, 255), hy, -1, !1);
+        10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, get_color_style(235, 255, 120), hy, -1, !1);
         this.mR()
     };
     this.mR = function() {
         var H;
-        if (dr.ds) {
-            var M = dr.dt.mS.length;
-            for (H = 0; H < M; H++) new_announcement(400, dr.dt.mS[H], 6, 0, get_color_style(255, 255, 255), hy, -1, !1)
+        if (customMap.ds) {
+            var M = customMap.dt.mS.length;
+            for (H = 0; H < M; H++) announce(400, customMap.dt.mS[H], 6, 0, get_color_style(255, 255, 255), hy, -1, !1)
         }
     };
     this.lx = function() {
@@ -2002,7 +2002,7 @@ function Announcements() {
         if (0 < F.length) {
             var M = F;
             F = [];
-            for (H = M.length - 1; 0 <= H; H--) new_announcement(M[H].time, M[H].l, M[H].id, M[H].player, M[H].mW, M[H].mX, M[H].mY, M[H].mZ)
+            for (H = M.length - 1; 0 <= H; H--) announce(M[H].time, M[H].l, M[H].id, M[H].player, M[H].mW, M[H].mX, M[H].mY, M[H].mZ)
         }
         this.ma()
     };
@@ -2022,81 +2022,81 @@ function Announcements() {
         H.fillText("Accept", Math.floor(D / 2), Math.floor(G / 2))
     };
     this.mc = function() {
-        if (peace.hidden) return peace.c1;
+        if (peace.hidden) return peace.width;
         var H = F.length;
         return 0 === H ? 0 : 1 === H ? F[0].md : me(F[0].md, F[1].md)
     };
-    this.c7 = function(H, M) {
+    this.clicked = function(H, M) {
         for (var Q = y(), R, P = F.length - 1; 0 <= P; P--)
             if (R = Q - (P + 1) * G, M >= R && M < R + G) {
                 if (50 === F[P].id) {
-                    if (H >= gE - D - N - F[P].c1) return H >= gE - D - N ? (P = F[P].player, this.la(P, 0), multi_out.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
+                    if (H >= gE - D - N - F[P].width) return H >= gE - D - N ? (P = F[P].player, this.la(P, 0), multi_out.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
                     break
                 }
-                if (H >= gE - F[P].c1 - N) return F[P].mZ && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mY && (Q = F[P].mY, F[P].mY = F[P].player, F[P].player = Q)), !0;
+                if (H >= gE - F[P].width - N) return F[P].mZ && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mY && (Q = F[P].mY, F[P].mY = F[P].player, F[P].player = Q)), !0;
                 break
             } return !1
     };
     this.j3 = function(H) {
         for (var M = F.length - 1; 0 <= M; M--) F[M].id === H && (F[M].time = 1)
     };
-    this.fl = function(id, type) {
-        0 === type ? (statistics.numbers[id < player_count ? 4 : 3]++, c2.set(id, 0), new_announcement(zoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", hy, -1, !1)) : 
-        1 === type ? (E(50, max_entities), c2.set(id, 1), new_announcement(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
-        2 === type ? (c2.set(id, 2), new_announcement(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
-        3 === type ? (c2.set(id, 2), new_announcement(0, nickname[id] + " won the game.", 0, id, cK, hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+    this.showGenericMessages = function(id, type) {
+        0 === type ? (statistics.numbers[id < player_count ? 4 : 3]++, c2.set(id, 0), announce(zoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", hy, -1, !1)) : 
+        1 === type ? (E(50, max_entities), c2.set(id, 1), announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+        2 === type ? (c2.set(id, 2), announce(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+        3 === type ? (c2.set(id, 2), announce(0, nickname[id] + " won the game.", 0, id, cK, hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
         4 === type ? (players_in_game--, spectators--, this.ml(1, id, id)) : 
-        5 === type ? 2 !== player_status[id] && hu.lG(my_id) && (B(1, 5), eA.mn(id) ? 
-            new_announcement(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, get_color_style(255, 200, 180), hy, -1, !0) : 
-            new_announcement(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", hy, -1, !0)) : 
-        18 === type ? new_announcement(255, "Choose your start position!", 18, 0, cK, hy, -1, !1) : 
-        21 === type ? new_announcement(220, "You surrendered!", type, 0, "rgb(255,40,40)", hy, -1, !1) : 
+        5 === type ? 2 !== player_status[id] && hu.isHuman(my_id) && (B(1, 5), eA.mn(id) ? 
+            announce(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, get_color_style(255, 200, 180), hy, -1, !0) : 
+            announce(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", hy, -1, !0)) : 
+        18 === type ? announce(255, "Choose your start position!", 18, 0, cK, hy, -1, !1) : 
+        21 === type ? announce(220, "You surrendered!", type, 0, "rgb(255,40,40)", hy, -1, !1) : 
         22 === type && this.ml(2, id, id)
     };
     this.error = function(error_code) {
-        new_announcement(200, "Error [" + error_code + "]", 94, 0, cK, mq, -1, !1)
+        announce(200, "Error [" + error_code + "]", 94, 0, cK, mq, -1, !1)
     };
-    this.iq = function(H) {
-        c2.set(H, 2);
-        100 > player_count ? new_announcement(0, nickname[H] + " won the game.", 3, H, cK, hy, -1, !0) : 
-            new_announcement(0, nickname[H] + " has been immortalized!", 3, H, cK, hy, -1, !0);
-        eV.gg(H, 2700, !0, 0)
+    this.resultBR = function(winner) {
+        c2.set(winner, 2);
+        100 > player_count ? announce(0, nickname[winner] + " won the game.", 3, winner, cK, hy, -1, !0) : 
+            announce(0, nickname[winner] + " has been immortalized!", 3, winner, cK, hy, -1, !0);
+        eV.gg(winner, 2700, !0, 0)
     };
-    this.mr = function(H, M, Q) {
-        H === my_id ? new_announcement(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, get_color_style(200, 255, 210), hy, -1, !0) : this.mu(H, Q)
+    this.sentEmoji = function(author, target, emoji) {
+        author === my_id ? announce(175, " Message to " + nickname[target] + ": ", 1E3 + emoji, target, get_color_style(200, 255, 210), hy, -1, !0) : this.receivedEmoji(author, emoji)
     };
-    this.mu = function(H, M) {
+    this.receivedEmoji = function(author, emoji) {
         var Q, R = 0;
-        new_announcement(175, nickname[H] + ": ", 1E3 + M, H, cK, "rgba(5,60,25,0.9)", -1, !0);
+        announce(175, nickname[author] + ": ", 1E3 + emoji, author, cK, "rgba(5,60,25,0.9)", -1, !0);
         for (Q = 0; Q < F.length; Q++)
-            if (1E3 <= F[Q].id && F[Q].player === H && (R++, 3 < R)) {
+            if (1E3 <= F[Q].id && F[Q].player === author && (R++, 3 < R)) {
                 F.splice(Q, 1);
                 break
             }
     };
-    this.ip = function(H) {
+    this.resultTeam = function(result_then_message) {
         var M = teams.im[eT.get_largest_team()];
-        H ? (9 === gamemode ? (H = "The Resistance defeated the virus.", c2.mz("The Resistance", 2, 1, 12)) : H = "Congratulations! Team " + teams.label_team_color[M] + " has won the game!", new_announcement(0, H, 40, 0, "rgb(10,220,10)", hy, -1, !1)) : 
-        (9 === gamemode ? (H = "Mankind lost the war against the virus.", c2.mz("The Virus", 2, 0, 16)) : H = "Our alliance has been defeated!", new_announcement(0, H, 41, 0, "rgb(200,80,80)", hy, -1, !1));
+        result_then_message ? (9 === gamemode ? (result_then_message = "The Resistance defeated the virus.", c2.mz("The Resistance", 2, 1, 12)) : result_then_message = "Congratulations! Team " + teams.label_team_color[M] + " has won the game!", announce(0, result_then_message, 40, 0, "rgb(10,220,10)", hy, -1, !1)) : 
+        (9 === gamemode ? (result_then_message = "Mankind lost the war against the virus.", c2.mz("The Virus", 2, 0, 16)) : result_then_message = "Our alliance has been defeated!", announce(0, result_then_message, 41, 0, "rgb(200,80,80)", hy, -1, !1));
         9 !== gamemode && c2.mz("Team " + teams.label_team_color[M], 2, 1, 12);
         eV.gp(2700)
     };
     this.new_1v1 = function(player_info) {
-        new_announcement(300, player_info[0].name + " [" + points_1v1.round_elo(player_info[0].elo) + "] vs " + player_info[1].name + " [" + points_1v1.round_elo(player_info[1].elo) + "]", 65, 0, gH, "rgba(100,255,255,0.75)", -1, !1)
+        announce(300, player_info[0].name + " [" + points_1v1.round_elo(player_info[0].elo) + "] vs " + player_info[1].name + " [" + points_1v1.round_elo(player_info[1].elo) + "]", 65, 0, gH, "rgba(100,255,255,0.75)", -1, !1)
     };
     this.n0 = function(H) {
-        new_announcement(200, H, 0, 0, "rgb(40,255,200)",
+        announce(200, H, 0, 0, "rgb(40,255,200)",
             "rgba(10,60,40,0.9)", -1, !1)
     };
     this.result_1v1 = function(H, M, Q, R) {
-        1 === websocket_manager.getEquivalentLobby() && (new_announcement(0, H[0].name + ": " + points_1v1.round_elo(H[0].elo) + " -> " + M, 66, 0, cK, R[0], -1, !1), new_announcement(0, H[1].name + ": " + points_1v1.round_elo(H[1].elo) + " -> " + Q, 66, 1, cK, R[1], -1, !1))
+        1 === websocket_manager.getEquivalentLobby() && (announce(0, H[0].name + ": " + points_1v1.round_elo(H[0].elo) + " -> " + M, 66, 0, cK, R[0], -1, !1), announce(0, H[1].name + ": " + points_1v1.round_elo(H[1].elo) + " -> " + Q, 66, 1, cK, R[1], -1, !1))
     };
     this.clan_points_won = function(clan) {
-        1 === websocket_manager.getEquivalentLobby() && new_announcement(0, "[" + clan + "] has won " + player_count + (contest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hy, -1, !1)
+        1 === websocket_manager.getEquivalentLobby() && announce(0, "[" + clan + "] has won " + player_count + (contest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hy, -1, !1)
     };
     this.la = function(H, M) {
-        0 === M ? E(50, H) ? (new_announcement(128, "You signed a non-aggression pact with " + nickname[H] + ".", 52, H, get_color_style(180, 255, 180), hy, -1, !0), eA.n4(H, 2, 255)) : new_announcement(384, "You asked " + nickname[H] + " to sign a non-aggression pact.",
-            51, H, get_color_style(210, 210, 255), hy, -1, !0) : E(51, H) ? (new_announcement(128, nickname[H] + " accepted the non-aggression pact.", 52, H, cK, "rgba(60,120,10,0.9)", -1, !0), eA.n4(H, 2, 255)) : (new_announcement(384, nickname[H] + " requests a non-aggression pact.", 50, H, cK, "rgba(90,90,90,0.9)", -1, !0), eA.n4(H, 2, 96))
+        0 === M ? E(50, H) ? (announce(128, "You signed a non-aggression pact with " + nickname[H] + ".", 52, H, get_color_style(180, 255, 180), hy, -1, !0), eA.n4(H, 2, 255)) : announce(384, "You asked " + nickname[H] + " to sign a non-aggression pact.",
+            51, H, get_color_style(210, 210, 255), hy, -1, !0) : E(51, H) ? (announce(128, nickname[H] + " accepted the non-aggression pact.", 52, H, cK, "rgba(60,120,10,0.9)", -1, !0), eA.n4(H, 2, 255)) : (announce(384, nickname[H] + " requests a non-aggression pact.", 50, H, cK, "rgba(90,90,90,0.9)", -1, !0), eA.n4(H, 2, 96))
     };
     this.request_attack = function(friends, target) {
         var Q = "You ", index;
@@ -2108,30 +2108,30 @@ function Announcements() {
                 } index = !0
         }
         index ? (Q += "ordered ", index = get_color_style(255, 235, 210)) : (Q += "asked ", index = get_color_style(210, 255, 210));
-        1 < friends.length ? new_announcement(230, Q + friends.length + " players to attack " + nickname[target] + ".", 66, target, index, hy, -1, !0) 
-        : new_announcement(230, Q + nickname[friends[0]] + " to attack " + nickname[target] + ".", 66, friends[0], index, hy, target, !0)
+        1 < friends.length ? announce(230, Q + friends.length + " players to attack " + nickname[target] + ".", 66, target, index, hy, -1, !0) 
+        : announce(230, Q + nickname[friends[0]] + " to attack " + nickname[target] + ".", 66, friends[0], index, hy, target, !0)
     };
     this.requested_attack = function(friend, target) {
-        land[friend] > 2 * land[my_id] ? new_announcement(230, nickname[friend] + " orders you to attack " + nickname[target] + "!", 66, friend, cK, "rgba(90,50,5,0.9)", target, !0) 
-        : new_announcement(230, nickname[friend] + " asks you to attack " + nickname[target] + ".", 66, friend, cK, "rgba(75,65,5,0.9)", target, !0)
+        land[friend] > 2 * land[my_id] ? announce(230, nickname[friend] + " orders you to attack " + nickname[target] + "!", 66, friend, cK, "rgba(90,50,5,0.9)", target, !0) 
+        : announce(230, nickname[friend] + " asks you to attack " + nickname[target] + ".", 66, friend, cK, "rgba(75,65,5,0.9)", target, !0)
     };
     this.n9 = function(H, M) {
         E(H, M)
     };
     this.low_balance = function() {
-        100 <= troops[my_id] || new_announcement(80, "Your balance is too low!", 9, 0, cK, hy, -1, !1)
+        100 <= troops[my_id] || announce(80, "Your balance is too low!", 9, 0, cK, hy, -1, !1)
     };
     this.anti_boosting = function() {
-        new_announcement(80, "Boosting is disallowed in the first minute!", 9, 0, cK, hy, -1, !1)
+        announce(80, "Boosting is disallowed in the first minute!", 9, 0, cK, hy, -1, !1)
     };
     this.donate = function(H, M) {
-        2 !== player_status[my_id] && new_announcement(200, "You exported " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", hy, -1, !0)
+        2 !== player_status[my_id] && announce(200, "You exported " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", hy, -1, !0)
     };
     this.receive_donate = function(H, M) {
         if (2 !== player_status[my_id]) {
             var Q = 2 === player_status[M] || M >= player_count;
             var R = 200 - 20 * F.length;
-            new_announcement(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, gH, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
+            announce(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, gH, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
             B(31, zoom ? 4 : 6)
         }
     };
@@ -2140,11 +2140,11 @@ function Announcements() {
         for (M = 2; 0 <= M; M--) 0 < l[M] && (H || x[M] < Q - 220) && this.nN(M)
     };
     this.nN = function(H) {
-        var M = l[H];
-        var Q = g[H];
+        var leftCountOrMessage = l[H];
+        var firstLeft = g[H];
         l[H] = 0;
-        1 === M ? (M = nickname[Q] + display_label_leave_mono[H], 0 === H && (M += nickname[k[H]] + "."), new_announcement(n[H], M, 7, k[H], cK, hy, -1, !0)) 
-        : 2 <= M && (M = nickname[Q] + " and " + (M - 1) + " other player" + (2 === M ? "" : "s") + display_label_leave_plural[H], new_announcement(n[H], M, 7, Q, cK, hy, -1, !1))
+        1 === leftCountOrMessage ? (leftCountOrMessage = nickname[firstLeft] + display_label_leave_mono[H], 0 === H && (leftCountOrMessage += nickname[k[H]] + "."), announce(n[H], leftCountOrMessage, 7, k[H], cK, hy, -1, !0)) 
+        : 2 <= leftCountOrMessage && (leftCountOrMessage = nickname[firstLeft] + " and " + (leftCountOrMessage - 1) + " other player" + (2 === leftCountOrMessage ? "" : "s") + display_label_leave_plural[H], announce(n[H], leftCountOrMessage, 7, firstLeft, cK, hy, -1, !1))
     };
     this.ml = function(H, M, Q) {
         var R = c4.time_elapsed(),
@@ -2155,22 +2155,22 @@ function Announcements() {
         1 === P && (x[H] = R);
         1 === P && (32 > players_in_game || 2 === client_status) ? this.nN(H) : 1 < P && (x[H] < R - 140 || 2 === client_status) && this.nN(H)
     };
-    this.dF = function() {
+    this.update = function() {
         var H, index = F.length - K;
         index = 1 >= index ? 1 : index * index;
         for (H = F.length - 1; 0 <= H; H--) 0 < F[H].time && (F[H].time -= index, 0 >= F[H].time && F.splice(H, 1));
         if (128 !== J && (J++, !(128 > J)))
             for (H = 5, index = alive_count - 1; 0 <= index; index--) 1 === player_status[alive_entities[index]] && 0 < H-- 
-            && new_announcement(240, nickname[alive_entities[index]] + " joined the game.", 1, alive_entities[index], gH, "rgba(255,255,255,0.75)", -1, !0);
+            && announce(240, nickname[alive_entities[index]] + " joined the game.", 1, alive_entities[index], gH, "rgba(255,255,255,0.75)", -1, !0);
         this.iy(!1)
     };
     this.cG = function() {
-        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (cH.drawImage(F[Q].ls, gE - F[Q].c1 - D - N, M), cH.drawImage(L, gE - D - N, M)) : cH.drawImage(F[Q].ls, gE - F[Q].c1 - N, M)
+        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (mainCanvasCtx.drawImage(F[Q].canvas, gE - F[Q].width - D - N, M), mainCanvasCtx.drawImage(L, gE - D - N, M)) : mainCanvasCtx.drawImage(F[Q].canvas, gE - F[Q].width - N, M)
     }
 }
 
 function Cookies_window() {
-    this.by = this.nS = this.nR = this.i4 = this.cw = this.c1 = 0;
+    this.by = this.nS = this.nR = this.i4 = this.cw = this.width = 0;
     this.bs = -1;
     this.lt = ["Accept Cookies", "More Information", "Decline"];
     this.colors = ["rgba(0,255,0,0.4)", "rgba(0,0,255,0.4)", "rgba(255,0,0,0.4)"];
@@ -2180,15 +2180,15 @@ function Cookies_window() {
         this.hidden = 5 > device_version && !is_ios && 0 === user_settings.a0();
     };
     this.lx = function() {
-        this.c1 = Math.floor(2.8 * Math.floor((zoom ? .09 : .062) * bq));
-        this.cw = Math.floor(1 * this.c1);
-        this.i4 = Math.floor(.06 * this.c1);
-        this.i5 = this.c1 - 2 * this.i4;
+        this.width = Math.floor(2.8 * Math.floor((zoom ? .09 : .062) * bq));
+        this.cw = Math.floor(1 * this.width);
+        this.i4 = Math.floor(.06 * this.width);
+        this.i5 = this.width - 2 * this.i4;
         this.nR = this.i4;
         this.nS = (this.cw - (this.lt.length + 1) * this.nR) / this.lt.length;
         this.by = Math.floor(.3 * this.nS)
     };
-    this.c7 = function(g, k) {
+    this.clicked = function(g, k) {
         if (!this.hidden) return !1;
         var n = this.nU(g, k);
         if (-1 === n) return !1;
@@ -2205,7 +2205,7 @@ function Cookies_window() {
     this.nU = function(g, k) {
         g -= display_buffer_length;
         k -= Math.floor(cB - this.cw - display_buffer_length);
-        if (0 > g || 0 > k || g >= this.c1 || k >= this.cw) return -1;
+        if (0 > g || 0 > k || g >= this.width || k >= this.cw) return -1;
         var n = Math.floor((k - .5 * this.nR) / ((this.cw - this.nR) / this.lt.length));
         return 0 >
             n ? 0 : n >= this.lt.length ? this.lt.length - 1 : n
@@ -2216,17 +2216,17 @@ function Cookies_window() {
     this.nY = function() {
         var g = display_buffer_length,
             k = Math.floor(cB - this.cw - display_buffer_length);
-        cH.setTransform(1, 0, 0, 1, g, k);
-        cH.fillStyle = hy;
-        cH.fillRect(0, 0, this.c1, this.cw);
-        cH.textBaseline = cI;
-        cH.textAlign = cJ;
-        cH.strokeStyle = cK;
-        cH.font = bt + this.by + bu;
-        cH.strokeRect(0, 0, this.c1, this.cw);
-        for (var n = this.lt.length - 1; 0 <= n; n--) cH.setTransform(1, 0, 0, 1, g + this.i4, k + this.nR + n * (this.nR + this.nS)), cH.fillStyle = this.colors[n], cH.fillRect(0, 0, this.i5, this.nS), this.bs === n && (cH.fillStyle =
-            nZ, cH.fillRect(0, 0, this.i5, this.nS)), cH.fillStyle = cK, cH.fillText(this.lt[n], this.i5 / 2, .54 * this.nS), cH.strokeRect(0, 0, this.i5, this.nS);
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.font = bt + this.by + bu;
+        mainCanvasCtx.strokeRect(0, 0, this.width, this.cw);
+        for (var n = this.lt.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.i4, k + this.nR + n * (this.nR + this.nS)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.i5, this.nS), this.bs === n && (mainCanvasCtx.fillStyle =
+            nZ, mainCanvasCtx.fillRect(0, 0, this.i5, this.nS)), mainCanvasCtx.fillStyle = cK, mainCanvasCtx.fillText(this.lt[n], this.i5 / 2, .54 * this.nS), mainCanvasCtx.strokeRect(0, 0, this.i5, this.nS);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
 
@@ -2246,7 +2246,7 @@ function k1() {
         l--;
         this.setTime()
     };
-    this.dF = function() {
+    this.update = function() {
         this.setTime() && (c4.c5 = !0)
     };
     this.setTime = function() {
@@ -2265,19 +2265,19 @@ function k1() {
         return !0
     };
     this.cG = function() {
-        cH.lineWidth = 1 + Math.floor(t / 15);
-        cH.translate(gE - t, Math.floor(.5 * (cB + x)));
-        cH.rotate(-Math.PI / 2);
-        cH.fillStyle = cK;
-        cH.fillRect(0, 0, x, t);
-        cH.strokeStyle = gH;
-        cH.strokeRect(0, 0, x, t + 10);
-        cH.fillStyle = gH;
-        cH.font = z;
-        cH.textBaseline = cI;
-        cH.textAlign = cJ;
-        cH.fillText(k, Math.floor(x / 2), Math.floor(.59 * t));
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.lineWidth = 1 + Math.floor(t / 15);
+        mainCanvasCtx.translate(gE - t, Math.floor(.5 * (cB + x)));
+        mainCanvasCtx.rotate(-Math.PI / 2);
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillRect(0, 0, x, t);
+        mainCanvasCtx.strokeStyle = gH;
+        mainCanvasCtx.strokeRect(0, 0, x, t + 10);
+        mainCanvasCtx.fillStyle = gH;
+        mainCanvasCtx.font = z;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.fillText(k, Math.floor(x / 2), Math.floor(.59 * t));
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
 
@@ -2287,7 +2287,7 @@ function ni() {
     this.nm = 8;
     this.nn = this.nk + this.nl;
     this.a6 = this.nk + this.nl + this.nm;
-    this.c1 = 72;
+    this.width = 72;
     this.np = this.no = 0;
     this.l7 = Array(this.a6);
     this.nq = 8;
@@ -2317,13 +2317,13 @@ function ni() {
         this.a7[k] = !1;
         this.nu[k] = 0;
         var l = document.createElement("canvas");
-        l.width = this.c1;
-        l.height = this.c1;
+        l.width = this.width;
+        l.height = this.width;
         var x = l.getContext("2d", {
             alpha: !0
         });
-        x.clearRect(0, 0, this.c1, this.c1);
-        23 === k ? x.drawImage(hu.l5[2], 0, 0) : 36 === k ? x.drawImage(hu.l5[0], 0, 0) : 49 === k ? x.drawImage(hu.l5[1], 0, 0) : x.drawImage(n, this.c1 * g % (g === k ? this.nj * this.c1 : 4E3), g === k ? divide_floor(g, this.nj) * this.c1 : 0, this.c1, this.c1, 0, 0, this.c1, this.c1);
+        x.clearRect(0, 0, this.width, this.width);
+        23 === k ? x.drawImage(hu.l5[2], 0, 0) : 36 === k ? x.drawImage(hu.l5[0], 0, 0) : 49 === k ? x.drawImage(hu.l5[1], 0, 0) : x.drawImage(n, this.width * g % (g === k ? this.nj * this.width : 4E3), g === k ? divide_floor(g, this.nj) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
         this.l7[k] = l
     };
     this.o0 = function() {
@@ -2339,15 +2339,15 @@ function ni() {
     };
     this.o1 = function(g, k) {
         var n = document.createElement("canvas");
-        n.width = this.c1;
-        n.height = this.c1;
+        n.width = this.width;
+        n.height = this.width;
         var l = n.getContext("2d", {
             alpha: !0
         });
-        l.clearRect(0, 0, this.c1, this.c1);
+        l.clearRect(0, 0, this.width, this.width);
         l.rotate(k * Math.PI / 2);
         l.drawImage(this.l7[g], 1 === k ?
-            0 : -this.c1, -this.c1);
+            0 : -this.width, -this.width);
         return n
     };
     this.o2 = function() {
@@ -2375,7 +2375,7 @@ function ni() {
     this.nx = function() {
         this.no = Math.floor((zoom ? .075 :
             .0468) * bq);
-        this.zoom = this.no / this.c1;
+        this.zoom = this.no / this.width;
         this.np = (1 + this.nt) * this.no
     };
     this.show = function(g, k) {
@@ -2418,17 +2418,17 @@ function ni() {
         return g >= this.nk && g < this.nk + this.nl
     };
     this.cG = function() {
-        cH.imageSmoothingEnabled = !0;
-        for (var g = this.nt * this.no / 2, k = this.lf - 1; 0 <= k; k--) cH.setTransform(this.zoom, 0, 0, this.zoom, this.nr[k] + g, this.ns[k] + g), cH.drawImage(this.l7[this.nu[k]], 0, 0);
-        cH.imageSmoothingEnabled = !1;
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        for (var g = this.nt * this.no / 2, k = this.lf - 1; 0 <= k; k--) mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.nr[k] + g, this.ns[k] + g), mainCanvasCtx.drawImage(this.l7[this.nu[k]], 0, 0);
+        mainCanvasCtx.imageSmoothingEnabled = !1;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.oE = function(g, k, n) {
-        cH.imageSmoothingEnabled = !0;
-        cH.setTransform(this.zoom, 0, 0, this.zoom, g, k);
-        cH.drawImage(this.l7[n], 0, 0);
-        cH.imageSmoothingEnabled = !1;
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, g, k);
+        mainCanvasCtx.drawImage(this.l7[n], 0, 0);
+        mainCanvasCtx.imageSmoothingEnabled = !1;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
 var gH = "rgb(0,0,0)",
@@ -2500,19 +2500,19 @@ function p3() {
     cC.init()
 }
 
-function p6() {
-    p7.addEventListener("mousedown", p8);
-    p7.addEventListener("mousemove", p9);
-    p7.addEventListener("mouseup", pA);
-    p7.addEventListener("click", pB);
-    p7.addEventListener("mouseleave", pC);
-    p7.addEventListener("wheel", pD);
-    p7.addEventListener("touchstart", pE);
-    p7.addEventListener("touchmove", pF);
-    p7.addEventListener("touchend", pG);
-    p7.addEventListener("touchcancel", pH);
-    p7.addEventListener("dragover", pI);
-    p7.addEventListener("drop", pJ);
+function addCanvasEventListeners() {
+    mainCanvas.addEventListener("mousedown", p8);
+    mainCanvas.addEventListener("mousemove", p9);
+    mainCanvas.addEventListener("mouseup", pA);
+    mainCanvas.addEventListener("click", onclick);
+    mainCanvas.addEventListener("mouseleave", pC);
+    mainCanvas.addEventListener("wheel", pD);
+    mainCanvas.addEventListener("touchstart", pE);
+    mainCanvas.addEventListener("touchmove", pF);
+    mainCanvas.addEventListener("touchend", pG);
+    mainCanvas.addEventListener("touchcancel", pH);
+    mainCanvas.addEventListener("dragover", pI);
+    mainCanvas.addEventListener("drop", pJ);
     oz = !1
 }
 
@@ -2538,10 +2538,10 @@ function pE(g) {
 }
 
 function pN(g, k) {
-    if (0 === client_status) aJ.c7(g, k);
-    else if (!(hv.c7(g, k) || hu.lD(g, k) || eW.c7(g, k) || eP.c7(g, k))) {
-        var n = fq.c7(g, k);
-        2 === n || eM.c7(g, k) || (gj.c7(g, k) ? c4.c5 = !0 : troopsBar.pR(g, k) ? (gj.gk = !1, troopsBar.pS(g, k) && (c4.c5 = !0)) : announcements.c7(g, k) || peace.c7(g, k) || 0 === n && hu.lF(g, k))
+    if (0 === client_status) aJ.clicked(g, k);
+    else if (!(hv.clicked(g, k) || hu.lD(g, k) || eW.clicked(g, k) || eP.clicked(g, k))) {
+        var n = fq.clicked(g, k);
+        2 === n || eM.clicked(g, k) || (gj.clicked(g, k) ? c4.c5 = !0 : troopsBar.pR(g, k) ? (gj.gk = !1, troopsBar.pS(g, k) && (c4.c5 = !0)) : announcements.clicked(g, k) || peace.clicked(g, k) || 0 === n && hu.lF(g, k))
     }
 }
 
@@ -2570,8 +2570,8 @@ function pA(g) {
     oz || pZ(Math.floor(device_pixel_ratio * g.clientX), Math.floor(device_pixel_ratio * g.clientY))
 }
 
-function pB(g) {
-    2 === aJ.pa() && dy.click(g.clientX, g.clientY)
+function onclick(e) {
+    2 === aJ.pa() && dy.click(e.clientX, e.clientY)
 }
 
 function pG(g) {
@@ -2585,11 +2585,11 @@ function pH(g) {
 }
 
 function pI(g) {
-    jv.pb(g)
+    loadCustom.pb(g)
 }
 
 function pJ(g) {
-    jv.pc(g)
+    loadCustom.pc(g)
 }
 
 function pZ(g, k) {
@@ -2616,7 +2616,7 @@ function pe(g, k, n) {
 
 function k2() {
     function g(C) {
-        var E = t[C].ls.width;
+        var E = t[C].canvas.width;
         t[C].hx.clearRect(0, 0, E, A);
         t[C].hx.fillStyle = 0 !== t[C].id ? "rgba(33,33,120,0.83)" : t[C].cM === max_entities ? "rgba(88,88,88,0.83)" : t[C].cM < player_count ? "rgba(100,70,33,0.83)" : "rgba(33,100,80,0.83)";
         t[C].hx.fillRect(0, 0, E, A);
@@ -2650,16 +2650,15 @@ function k2() {
     }
 
     function n(C) {
-        C.ls = document.createElement("canvas");
+        C.canvas = document.createElement("canvas");
         pl.font = y;
         var E = z;
-        C.cM < max_entities && 0 === C.id && (E += Math.floor(pl.measureText(nickname[C.cM] +
-            "000").width));
+        C.cM < max_entities && 0 === C.id && (E += Math.floor(pl.measureText(nickname[C.cM] + "000").width));
         E += A;
         0 === C.id && (E += A);
-        C.ls.width = E;
-        C.ls.height = A;
-        C.hx = C.ls.getContext("2d", {
+        C.canvas.width = E;
+        C.canvas.height = A;
+        C.hx = C.canvas.getContext("2d", {
             alpha: !0
         });
         C.hx.font = y;
@@ -2668,7 +2667,7 @@ function k2() {
     }
 
     function l(C) {
-        return eO.qF() ? gE - t[C].ls.width - m7 : eO.fJ
+        return eO.qF() ? gE - t[C].canvas.width - m7 : eO.fJ
     }
 
     function x(C) {
@@ -2700,15 +2699,15 @@ function k2() {
         for (var G = C.substring(E - 3, E), N = 1; N < F; N++) G = C.substring(E - 3 * (N + 1), E - 3 * N) + " " + G;
         return C.substring(0, E - 3 * F) + " " + G
     };
-    this.c7 = function(C, E) {
-        if (2 === client_status || 0 === is_alive[my_id] || j8 || !hu.lG(my_id)) return !1;
+    this.clicked = function(C, E) {
+        if (2 === client_status || 0 === is_alive[my_id] || j8 || !hu.isHuman(my_id)) return !1;
         var F, G = zoom ? A : 0,
             N = zoom ? Math.floor(.15 * A) : 0;
         for (F = t.length -
             1; 0 <= F; F--) {
             var I = l(F);
             var D = x(F);
-            var K = t[F].ls.width;
+            var K = t[F].canvas.width;
             if (E >= D - N && E <= D + A + N) {
                 if (C >= I - G && C <= I + A + G) return t[F].pu || (t[F].po = !0, t[F].pu = !0, 0 === t[F].id ? singleplayer ? single.cancel(my_id, t[F].cM) : multi_out.cancel(t[F].cM === max_entities ? my_id : t[F].cM) : singleplayer ? single.cancel_boat(my_id, t[F].id) : multi_out.cancel_boat(t[F].id)), !0;
                 if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? single_attack(my_id, t[F].cM, troopsBar.AttackRatio()) : multi_out.attack(troopsBar.AttackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
@@ -2716,8 +2715,8 @@ function k2() {
         }
         return !1
     };
-    this.dF = function() {
-        if (2 !== client_status && 0 !== is_alive[my_id] && !j8 && hu.lG(my_id)) {
+    this.update = function() {
+        if (2 !== client_status && 0 !== is_alive[my_id] && !j8 && hu.isHuman(my_id)) {
             var C = attacks.ongoing_attack_count(my_id);
             b: if (t.length !== C) var E = !0;
                 else {
@@ -2746,7 +2745,7 @@ function k2() {
                         id: N,
                         po: !0,
                         pu: !1,
-                        ls: null,
+                        canvas: null,
                         hx: null
                     };
                     n(N);
@@ -2758,14 +2757,14 @@ function k2() {
         }
     };
     this.cG = function() {
-        if (0 !== is_alive[my_id] && hu.lG(my_id) && !j8)
-            for (var C = t.length - 1; 0 <= C; C--) cH.drawImage(t[C].ls, l(C), x(C))
+        if (0 !== is_alive[my_id] && hu.isHuman(my_id) && !j8)
+            for (var C = t.length - 1; 0 <= C; C--) mainCanvasCtx.drawImage(t[C].canvas, l(C), x(C))
     }
 }
 
 function k3() {
     function g() {
-        cH.drawImage(I, m7 + (team_game ? m7 + eT.qT() : 0), qU + 2 * m7)
+        mainCanvasCtx.drawImage(I, m7 + (team_game ? m7 + eT.qT() : 0), qU + 2 * m7)
     }
 
     function k() {
@@ -2841,9 +2840,9 @@ function k3() {
             k()
         }
     };
-    this.dF = function() {
+    this.update = function() {
         if (0 !== x)
-            if (4 === x) c4.time > J && (x = 0, 1 === client_status && c2.mz(jm.nF(), 3, 1, 9));
+            if (4 === x) c4.time > J && (x = 0, 1 === client_status && c2.mz(jm.getMapName(), 3, 1, 9));
             else {
                 if (1 === x) 0 === t && (k(), t = 1E-4), t += .002 *
                     (c4.time - K), 1 <= t && (z = 0, x = 2, t = 1), c4.c5 = !0;
@@ -2854,8 +2853,8 @@ function k3() {
             }
     };
     this.measureText = function(L, H) {
-        cH.font = H;
-        return Math.floor(cH.measureText(L).width)
+        mainCanvasCtx.font = H;
+        return Math.floor(mainCanvasCtx.measureText(L).width)
     };
     this.set = function(L, H) {
         this.mz(nickname[L], H, 1, 0 === H ? 3 : 7)
@@ -2873,14 +2872,13 @@ function k3() {
         0 === x && (t = 0, x = 1, K = c4.time)
     };
     this.cG = function() {
-        0 !== x && 0 !==
-            t && (1 > t ? (cH.globalAlpha = t, g(), cH.globalAlpha = 1) : g())
+        0 !== x && 0 !== t && (1 > t ? (mainCanvasCtx.globalAlpha = t, g(), mainCanvasCtx.globalAlpha = 1) : g())
     }
 }
 
 function Peace() {
     function g() {
-        var D = peace.c1;
+        var D = peace.width;
         has_voted = !1;
         hw(t, D, l);
         var K = Math.floor(D / 2);
@@ -2926,10 +2924,10 @@ function Peace() {
     };
     this.lx = function() {
         l = troopsBar.cw;
-        this.c1 = 4 * l;
+        this.width = 4 * l;
         this.qf();
         x = document.createElement("canvas");
-        x.width = this.c1;
+        x.width = this.width;
         x.height = l;
         t = x.getContext("2d", { alpha: !0 });
         g()
@@ -2962,36 +2960,36 @@ function Peace() {
             K.stroke()
         }
     };
-    this.c7 = function(D, K) {
-        if (D < r - this.c1 - m7) return !1;
+    this.clicked = function(D, K) {
+        if (D < r - this.width - m7) return !1;
         var choice = n();
         if (K < choice || K > choice + l) return !1;
-        choice = D > r - m7 - this.c1 / 2;
-        singleplayer ? this.single_vote_peace(0, choice) : hu.lG(my_id) && 0 !== is_alive[my_id] && multi_out.vote_peace(choice);
+        choice = D > r - m7 - this.width / 2;
+        singleplayer ? this.single_vote_peace(0, choice) : hu.isHuman(my_id) && 0 !== is_alive[my_id] && multi_out.vote_peace(choice);
         return !0
     };
-    this.dF = function() {
+    this.update = function() {
         if (0 < I) I--, 0 === I && k();
         else if (this.hidden) {
             F--;
             var D;
             if (D = 270 === F && 2 <= N) a: {
                 for (D = alive_count - 1; 0 <= D; D--)
-                    if (hu.lG(alive_entities[D])) {
+                    if (hu.isHuman(alive_entities[D])) {
                         D = !1;
                         break a
                     } D = !0
             }
             D && (has_voted = !0, peace_progress[0] += peace_requirement[0]);
-            180 === F && 3 * peace_progress[0] < peace_requirement[0] ? k() : peace_progress[0] >= peace_requirement[0] ? fi.fj(-1) : peace_progress[1] >= peace_requirement[1] ? I = 4 : 0 >= F && k()
+            180 === F && 3 * peace_progress[0] < peace_requirement[0] ? k() : peace_progress[0] >= peace_requirement[0] ? endGame.gameEnd(-1) : peace_progress[1] >= peace_requirement[1] ? I = 4 : 0 >= F && k()
         } else {
-            for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[em[D]]) && (F = 140), G[D] = land[em[D]];
+            for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[orderedLand[D]]) && (F = 140), G[D] = land[orderedLand[D]];
             D = 0 >= --F ? !0 : !1;
             if (D) {
                 this.hidden = !0;
                 F = 360;
                 var K = 0;
-                for (D = alive_count - 1; 0 <= D; D--) hu.lG(alive_entities[D]) && (K += land[alive_entities[D]]);
+                for (D = alive_count - 1; 0 <= D; D--) hu.isHuman(alive_entities[D]) && (K += land[alive_entities[D]]);
                 peace_requirement[0] = me(divide_floor(3 * K, 5), 1);
                 team_game && 9 !== gamemode && (peace_requirement[0] =
                     qn(me(divide_floor(K * (100 - divide_floor(100 * eT.get_largest_team_total_land(), j9)), 100), 1), peace_requirement[0]));
@@ -3018,7 +3016,7 @@ function Peace() {
     this.cG = function() {
         if (this.hidden) {
             var D = n();
-            cH.drawImage(x, r - this.c1 - m7, D)
+            mainCanvasCtx.drawImage(x, r - this.width - m7, D)
         }
     }
 }
@@ -3109,7 +3107,7 @@ function TroopsBar() {
         G && (G = !1, k())
     };
     this.hidden = function() {
-        return !(!B || fq.inMenu && t < Math.floor(m7 + 5.5 * this.cw))
+        return !(!B || fq.menuOpen && t < Math.floor(m7 + 5.5 * this.cw))
     };
     this.mf = function(I) {
         return this.hidden() ? t + x > r - I - m7 : !1
@@ -3148,12 +3146,11 @@ function TroopsBar() {
     this.pY = function() {
         this.pV = !1
     };
-    this.dF = function() {
+    this.update = function() {
         this.hidden() && Math.floor(troops[my_id] * attackFraction) !== E && (G = !0)
     };
     this.cG = function() {
-        this.hidden() && cH.drawImage(y,
-            t, this.fK)
+        this.hidden() && mainCanvasCtx.drawImage(y, t, this.fK)
     }
 }
 var g7, gC, gD;
@@ -3191,7 +3188,7 @@ function k5() {
     this.gx = function(y, A) {
         gD = g7 * y - A
     };
-    this.c7 = function(y, A) {
+    this.clicked = function(y, A) {
         if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pd(Math.floor(gE / 2), Math.floor(cB / 2), -200) : this.pd(Math.floor(gE / 2), Math.floor(cB / 2), 200);
         eV.h0() && (this.gk = !0, t = y, z = A);
         return !1
@@ -3247,8 +3244,8 @@ function k5() {
         x = Math.floor(cB / 2 - 1.25 * n)
     };
     this.cG = function() {
-        cH.drawImage(g[0], l, x);
-        cH.drawImage(g[1], l, Math.floor(x + 3 * n / 2))
+        mainCanvasCtx.drawImage(g[0], l, x);
+        mainCanvasCtx.drawImage(g[1], l, Math.floor(x + 3 * n / 2))
     }
 }
 
@@ -3285,7 +3282,7 @@ function k6() {
 
     function l(P) {
         var U = Math.floor(C * Math.pow(t[P], L));
-        cH.fillRect(z + gE - (P + 1) * A, cB - U, H, U)
+        mainCanvasCtx.fillRect(z + gE - (P + 1) * A, cB - U, H, U)
     }
 
     function x() {
@@ -3518,19 +3515,19 @@ function k6() {
     this.pd = function(P, U) {
         -1 !== G && (z += Math.floor(U), k(), n(P), c4.c5 = !0)
     };
-    this.c7 = function(P, U) {
+    this.clicked = function(P, U) {
         this.lo(P, U); - 1 !== G && (K = P, this.ri = !0)
     };
     this.pX = function() {
         -1 !== G && (this.ri = !1)
     };
     this.cG = function() {
-        cH.fillStyle = of ;
+        mainCanvasCtx.fillStyle = of ;
         for (var P = F; P >= E; P--) l(P);
-        J && 0 === E && (cH.fillStyle = oV, l(0)); - 1 !== G && (cH.fillStyle = oe, l(G));
+        J && 0 === E && (mainCanvasCtx.fillStyle = oV, l(0)); - 1 !== G && (mainCanvasCtx.fillStyle = oe, l(G));
         if (-1 !== G) {
-            cH.font = I;
-            cH.textBaseline = ok;
+            mainCanvasCtx.font = I;
+            mainCanvasCtx.textBaseline = ok;
             P = new Date;
             P.setTime(D.getTime() - 864E5 * G);
             var U = "month",
@@ -3544,34 +3541,34 @@ function k6() {
             var X = 1 === t[G] ? " second played" :
                 " seconds played";
             X = eP.split_into_pieces(t[G]) + X;
-            var V = Math.floor(cH.measureText(P).width),
-                na = Math.floor(cH.measureText(X).width),
+            var V = Math.floor(mainCanvasCtx.measureText(P).width),
+                na = Math.floor(mainCanvasCtx.measureText(X).width),
                 ba = Math.floor(.5 * (V + N));
             U = z + gE - (G + 1) * A;
             U = U < ba ? ba : U > gE - ba ? gE - ba : U;
             W = cB - Math.floor(C * Math.pow(t[G], L));
             var ca = Math.floor(1.1 * N),
                 pa = W > cB - ca ? cB - ca : W;
-            cH.fillStyle = hy;
-            cH.fillRect(gE - na - N, pa - ca, na + N, ca);
-            cH.fillRect(U - ba, cB - ca, V + N, ca);
-            cH.fillStyle = cK;
-            cH.textAlign = ol;
-            cH.fillText(X, Math.floor(gE - .5 * N), pa);
+            mainCanvasCtx.fillStyle = hy;
+            mainCanvasCtx.fillRect(gE - na - N, pa - ca, na + N, ca);
+            mainCanvasCtx.fillRect(U - ba, cB - ca, V + N, ca);
+            mainCanvasCtx.fillStyle = cK;
+            mainCanvasCtx.textAlign = ol;
+            mainCanvasCtx.fillText(X, Math.floor(gE - .5 * N), pa);
             X = pa - 2 * ca;
             V = -1;
             na = t.length - G - 1;
             for (ba = R.length - 1; 0 <= ba; ba--) na >= R[ba].b3 && na <= R[ba].pL && (-1 ===
-                V || R[ba].pL - R[ba].b3 < R[V].pL - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(cH.measureText(R[V].mv).width), cH.fillStyle = hy, cH.fillRect(gE - na - N, X, na + N, ca), cH.fillStyle = cK, cH.fillText(R[V].mv, Math.floor(gE - .5 * N), X + ca));
-            cH.textAlign = cJ;
-            cH.fillText(P, U, cB);
-            cH.strokeStyle = nZ;
-            cH.lineWidth = 1;
-            cH.beginPath();
-            cH.moveTo(0, W);
-            cH.lineTo(gE, W);
-            cH.closePath();
-            cH.stroke()
+                V || R[ba].pL - R[ba].b3 < R[V].pL - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(mainCanvasCtx.measureText(R[V].mv).width), mainCanvasCtx.fillStyle = hy, mainCanvasCtx.fillRect(gE - na - N, X, na + N, ca), mainCanvasCtx.fillStyle = cK, mainCanvasCtx.fillText(R[V].mv, Math.floor(gE - .5 * N), X + ca));
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.fillText(P, U, cB);
+            mainCanvasCtx.strokeStyle = nZ;
+            mainCanvasCtx.lineWidth = 1;
+            mainCanvasCtx.beginPath();
+            mainCanvasCtx.moveTo(0, W);
+            mainCanvasCtx.lineTo(gE, W);
+            mainCanvasCtx.closePath();
+            mainCanvasCtx.stroke()
         }
     }
 }
@@ -3612,7 +3609,7 @@ function k7() {
         return zoom && r < 1.2 * s
     };
     this.qu = function() {
-        this.qF() ? this.fJ = gE - k - m7 : this.fJ = Math.floor(eM.sE() + (gE - eM.sE() - eB.c1 - k) / 2 - .5 * m7)
+        this.qF() ? this.fJ = gE - k - m7 : this.fJ = Math.floor(eM.sE() + (gE - eM.sE() - eB.width - k) / 2 - .5 * m7)
     };
     this.eb = function() {
         y && (y = !1, this.sD())
@@ -3642,14 +3639,14 @@ function k7() {
     this.sG = function() {
         z.fillRect(l, this.cw - l, Math.floor((k - 2 * l) * troops[my_id] / x), l)
     };
-    this.dF = function() {
+    this.update = function() {
         0 !== is_alive[my_id] && 2 !== player_status[my_id] && A !== troops[my_id] && (x = me(troops[my_id], x), B = troops[my_id] > A && 10 <= troops[my_id], A = troops[my_id], y = !0)
     };
     this.cG = function() {
-        0 === is_alive[my_id] || in_spawn || 2 === player_status[my_id] || cH.drawImage(t, this.fJ, n)
+        0 === is_alive[my_id] || in_spawn || 2 === player_status[my_id] || mainCanvasCtx.drawImage(t, this.fJ, n)
     }
 }
-var sI, qU, sJ, sK, sL, em, sM;
+var sI, qU, sJ, sK, sL, orderedLand, sM;
 
 function k8() {
     function g() {
@@ -3674,10 +3671,10 @@ function k8() {
         var O = sM[my_id] < V + y - 1 ? 1 : 2;
         B.font = sK;
         B.textAlign = mj;
-        for (S = y - O; 0 <= S; S--) k(em[S + V]),
-            l(S, S + V, em[S + V]);
+        for (S = y - O; 0 <= S; S--) k(orderedLand[S + V]),
+            l(S, S + V, orderedLand[S + V]);
         B.textAlign = ol;
-        for (S = y - O; 0 <= S; S--) k(em[S + V]), x(S, em[S + V]);
+        for (S = y - O; 0 <= S; S--) k(orderedLand[S + V]), x(S, orderedLand[S + V]);
         2 === O && (k(my_id), B.textAlign = mj, l(y - 1, sM[my_id], my_id), B.textAlign = ol, x(y - 1, my_id));
         0 === V && (S = .7 * I / sprites.bz(4).height, B.setTransform(S, 0, 0, S, Math.floor(D + .58 * I + .5 * S * sprites.bz(4).width), Math.floor(F + sL + .4 * I)), B.imageSmoothingEnabled = !0, B.drawImage(sprites.bz(4), -Math.floor(sprites.bz(4).width / 2), -Math.floor(sprites.bz(4).height / 2)), B.setTransform(1, 0, 0, 1, 0, 0))
     }
@@ -3718,7 +3715,7 @@ function k8() {
     function z(S, O) {
         return S >= m7 && S < m7 + sI && O >= m7 && O < m7 + qU
     }
-    var y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, W, X, V, na, ba, ca, pa;
+    var y, A, B, C, const_maxEntities, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, W, X, V, na, ba, ca, pa;
     this.init = function() {
         var S, O;
         na = 0;
@@ -3731,10 +3728,10 @@ function k8() {
         W = !1;
         P = new Uint16Array(y + 1);
         U = new Uint32Array(y + 1);
-        E = max_entities;
-        em = new Uint16Array(E);
-        sM = new Uint16Array(E);
-        for (S = E - 1; 0 <= S; S--) em[S] = S, sM[S] = S;
+        const_maxEntities = max_entities;
+        orderedLand = new Uint16Array(const_maxEntities);
+        sM = new Uint16Array(const_maxEntities);
+        for (S = const_maxEntities - 1; 0 <= S; S--) orderedLand[S] = S, sM[S] = S;
         this.lx(!0);
         L = [];
         H = new Uint16Array(max_entities);
@@ -3787,28 +3784,28 @@ function k8() {
     this.eb = function(S) {
         W && (S || 14 >= so && 0 === c4.time_elapsed() % 6 || 14 < so) && (W = !1, g())
     };
-    this.dF = function() {
-        for (var S = E - 1; 0 <= S; S--)
-            if (0 === is_alive[em[S]]) {
+    this.update = function() {
+        for (var S = const_maxEntities - 1; 0 <= S; S--)
+            if (0 === is_alive[orderedLand[S]]) {
                 var O =
                     S,
-                    T = em[O];
-                for (E--; O < E; O++) em[O] = em[O + 1], sM[em[O]] = O;
-                em[E] = T;
-                sM[em[E]] = E
-            } T = E - 1;
-        for (O = 0; O < T; O++) land[em[O]] < land[em[O + 1]] && (S = em[O], em[O] = em[O + 1], em[O + 1] = S, sM[em[O]] = O, sM[em[O + 1]] = O + 1);
+                    T = orderedLand[O];
+                for (const_maxEntities--; O < const_maxEntities; O++) orderedLand[O] = orderedLand[O + 1], sM[orderedLand[O]] = O;
+                orderedLand[const_maxEntities] = T;
+                sM[orderedLand[const_maxEntities]] = const_maxEntities
+            } T = const_maxEntities - 1;
+        for (O = 0; O < T; O++) land[orderedLand[O]] < land[orderedLand[O + 1]] && (S = orderedLand[O], orderedLand[O] = orderedLand[O + 1], orderedLand[O + 1] = S, sM[orderedLand[O]] = O, sM[orderedLand[O + 1]] = O + 1);
         a: {
             S = W;W = !0;
             for (O = T = sM[my_id] >= y - 1 ? y - 2 : y - 1; 0 <= O; O--)
-                if (P[O] !== em[O] || U[O] !== land[em[O]]) break a;
+                if (P[O] !== orderedLand[O] || U[O] !== land[orderedLand[O]]) break a;
             if (T !== y - 2 || P[y] === sM[my_id] && U[y] === land[my_id]) W = S
         }
-        for (S = y - 1; 0 <= S; S--) P[S] = em[S], U[S] = land[em[S]];
+        for (S = y - 1; 0 <= S; S--) P[S] = orderedLand[S], U[S] = land[orderedLand[S]];
         P[y] = sM[my_id];
         U[y] = land[my_id]
     };
-    this.c7 = function(S, O) {
+    this.clicked = function(S, O) {
         if (z(S, O)) {
             na = c4.time;
             ba = !0;
@@ -3841,7 +3838,7 @@ function k8() {
         var T = t(O);
         oz && -1 !== X && (X = -1, g(), c4.c5 = !0);
         if (350 > c4.time - na && pa === T && (T = t7(-1, T, y), T = T !== y && z(S, O) ? T : -1, -1 !== T)) {
-            var Y = em[T + V];
+            var Y = orderedLand[T + V];
             T === y - 1 && sM[my_id] >= V + y - 1 && (Y = my_id);
             0 !== is_alive[Y] && eV.gg(Y, 800, !1, 0)
         }
@@ -3852,23 +3849,23 @@ function k8() {
         return ba ? !1 : z(S, O) ? (S = t(O), S = t7(-1, S, y), S = S === y || oz ? -1 : S, 0 < T ? V < max_entities - y && (V++, X = S, g(), c4.c5 = !0) : 0 < V && (V--, X = S, g(), c4.c5 = !0), !0) : !1
     };
     this.cG = function() {
-        cH.drawImage(A, m7, m7)
+        mainCanvasCtx.drawImage(A, m7, m7)
     }
 }
 
 function k9() {
     function g() {
-        z.clearRect(0, 0, eB.c1, eB.cw);
+        z.clearRect(0, 0, eB.width, eB.cw);
         z.fillStyle = hy;
-        z.fillRect(0, 0, eB.c1, eB.cw);
+        z.fillRect(0, 0, eB.width, eB.cw);
         z.fillStyle = oN;
-        z.fillRect(0, eB.cw - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * eB.c1), B);
+        z.fillRect(0, eB.cw - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * eB.width), B);
         z.fillStyle = cK;
-        z.fillRect(0, 0, eB.c1, 1);
+        z.fillRect(0, 0, eB.width, 1);
         z.fillRect(0, 0, 1, eB.cw);
-        z.fillRect(eB.c1 - 1, 0, 1, eB.cw);
-        z.fillRect(0, eB.cw - 1, eB.c1, 1);
-        z.fillRect(0, eB.cw - B - 1, eB.c1, 1);
+        z.fillRect(eB.width - 1, 0, 1, eB.cw);
+        z.fillRect(0, eB.cw - 1, eB.width, 1);
+        z.fillRect(0, eB.cw - B - 1, eB.width, 1);
         for (var P = 0, U = 0; U < D.length; U++)
             if (J[U]) {
                 z.textAlign = mj;
@@ -3876,7 +3873,7 @@ function k9() {
                 z.fillText(D[U], E, W);
                 z.textAlign = ol;
                 5 === U && 0 !== is_alive[my_id] &&
-                    troops[my_id] >= ay.dJ(my_id) ? (z.fillStyle = oi, z.fillText(k(U), eB.c1 - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.c1 - E, W)
+                    troops[my_id] >= ay.dJ(my_id) ? (z.fillStyle = oi, z.fillText(k(U), eB.width - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.width - E, W)
             } else P++
     }
 
@@ -3886,8 +3883,8 @@ function k9() {
 
     function n(P) {
         P = divide_floor(1E4 * P, j9);
-        8 === gamemode && (0 === is_alive[0] ? fi.fj(1) : 0 === is_alive[1] && fi.fj(0));
-        P >= K[3] && (fi.fj(-1), K[4] = -1);
+        8 === gamemode && (0 === is_alive[0] ? endGame.gameEnd(1) : 0 === is_alive[1] && endGame.gameEnd(0));
+        P >= K[3] && (endGame.gameEnd(-1), K[4] = -1);
         K[4] !== P && (I++, K[4] = P)
     }
 
@@ -3933,18 +3930,18 @@ function k9() {
         this.lx()
     };
     this.lx = function() {
-        this.c1 = Math.floor((zoom ?
+        this.width = Math.floor((zoom ?
             .1646 : .126) * bq);
-        this.cw = Math.floor(1.18 * this.c1);
-        B = Math.floor(.04 * this.c1);
-        E = Math.floor(.05 * this.c1);
-        F = .04 * this.c1;
+        this.cw = Math.floor(1.18 * this.width);
+        B = Math.floor(.04 * this.width);
+        E = Math.floor(.05 * this.width);
+        F = .04 * this.width;
         C = this.cw;
         this.cw -= Math.floor(Q * (this.cw - 2 * B) / D.length);
         N = Math.floor(.55 * (C - B) / D.length);
         G = bt + N + bu;
         t = document.createElement("canvas");
-        t.width = this.c1;
+        t.width = this.width;
         t.height = this.cw;
         z = t.getContext("2d", {
             alpha: !0
@@ -3958,7 +3955,7 @@ function k9() {
         g()
     };
     this.qu = function() {
-        y = gE - this.c1 - m7
+        y = gE - this.width - m7
     };
     this.tK = function() {
         A = m7
@@ -3981,14 +3978,14 @@ function k9() {
     this.nI = function(P, U) {
         return P.toFixed(U) + "%"
     };
-    this.dF = function() {
+    this.update = function() {
         J[0] && players_in_game - spectators !== K[0] && (K[0] = players_in_game - spectators, I++);
         alive_count - K[0] !== K[1] && (K[1] = alive_count - K[0], I++);
         this.eC();
         if (team_game) {
             var P = eT.get_largest_team_total_land();
-            P >= R && l() ? (fi.fj(-1), n(eT.get_largest_team_total_land())) : n(P)
-        } else P = land[em[0]], P >= R && l() && fi.fj(-1), n(P);
+            P >= R && l() ? (endGame.gameEnd(-1), n(eT.get_largest_team_total_land())) : n(P)
+        } else P = land[orderedLand[0]], P >= R && l() && endGame.gameEnd(-1), n(P);
         P = ay.interest(my_id);
         P !== K[5] && (K[5] = P, I++);
         x();
@@ -4014,7 +4011,7 @@ function k9() {
         return H !== U
     };
     this.cG = function() {
-        cH.drawImage(t, y, A)
+        mainCanvasCtx.drawImage(t, y, A)
     }
 }
 
@@ -4074,10 +4071,10 @@ function kA() {
         g || (k = C ? 1 : 2, g = !0, this.lx(), hu.lp(), troopsBar.qj(), B = c4.time, -1 === this.td &&
             (this.td = c4.time_elapsed()), y = E ? 1 : 0)
     };
-    this.dF = function() {
+    this.update = function() {
         !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.c5 = !0)
     };
-    this.c7 = function(C, E) {
+    this.clicked = function(C, E) {
         if (!g || 0 >= y) return !1;
         C -= Math.floor((gE - n) / 2);
         E -= cB - l - 2 * m7;
@@ -4086,13 +4083,13 @@ function kA() {
         return !0
     };
     this.cG = function() {
-        !g || 0 >= y || (cH.globalAlpha = y, cH.drawImage(A, Math.floor((gE - n) / 2), cB - l - 2 * m7), cH.globalAlpha = 1)
+        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((gE - n) / 2), cB - l - 2 * m7), mainCanvasCtx.globalAlpha = 1)
     }
 }
 
 function ke() {
     function g(t, z, y, A, B, C, E) {
-        0 !== is_alive[t] && 0 !== land[t] && (y = gE * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = cB * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > gE || A > cB || y < -z || A < -z || (cH.setTransform(g7 * E, 0, 0, g7 * E, y, A), cH.drawImage(n[team_game ? teams.team_array[t] : t < player_count ? 1 : 0], 0, 0)))
+        0 !== is_alive[t] && 0 !== land[t] && (y = gE * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = cB * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > gE || A > cB || y < -z || A < -z || (mainCanvasCtx.setTransform(g7 * E, 0, 0, g7 * E, y, A), mainCanvasCtx.drawImage(n[team_game ? teams.team_array[t] : t < player_count ? 1 : 0], 0, 0)))
     }
     var k, n, l, x;
     this.init = function() {
@@ -4104,7 +4101,7 @@ function ke() {
                 for (t = 0; t <= team_count; t++) n.push(this.tk(teams.tl[teams.im[t]], l));
             else n.push(this.tk(teams.tl[0], l)), n.push(this.tk(teams.tl[4], l))
     };
-    this.dF = function() {
+    this.update = function() {
         k && 349 === ++x && (n = [], k = !1)
     };
     this.tk = function(t, z) {
@@ -4135,8 +4132,8 @@ function ke() {
     this.cG = function() {
         if (k) {
             var t;
-            cH.imageSmoothingEnabled = !0;
-            cH.globalAlpha = 1 - (160 < x ? (x - 160) / 190 : 0);
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.globalAlpha = 1 - (160 < x ? (x - 160) / 190 : 0);
             var z = gC / g7,
                 y = gD / g7,
                 A = (gE + gC) /
@@ -4148,46 +4145,46 @@ function ke() {
             C = .5;
             E = l * g7 * C;
             for (t = player_count - 1; 0 <= t; t--) g(t, E, z, y, A, B, C);
-            cH.globalAlpha = 1;
-            cH.imageSmoothingEnabled = 3 > g7;
-            cH.setTransform(g7, 0, 0, g7, 0, 0)
+            mainCanvasCtx.globalAlpha = 1;
+            mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
+            mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0)
         }
     }
 }
 
-function single_attack(g, k, n) {
-    if (!(0 === is_alive[g] || 0 > n || 1E3 < n || 2 === player_status[g])) {
-        var l = divide_floor(n * troops[g], 1E3);
-        10 === gamemode && k < player_count && 2 !== player_status[k] && (l = eF.ts(g, l));
-        if (team_game && k < max_entities && !ch(g, k)) single_donate(g, k, l);
+function single_attack(author, target, ratio) {
+    if (!(0 === is_alive[author] || 0 > ratio || 1E3 < ratio || 2 === player_status[author])) {
+        var amount = divide_floor(ratio * troops[author], 1E3);
+        10 === gamemode && target < player_count && 2 !== player_status[target] && (amount = antiFullsend.reduceAmount(author, amount));
+        if (team_game && target < max_entities && !isTeamate(author, target)) single_donate(author, target, amount);
         else {
-            k < max_entities && 0 === is_alive[k] && (k = max_entities);
-            var x = divide_floor(3 * troops[g], 256);
-            l -= 500 <= n ? x : 0;
-            if (!(l <= neutral_land_cost) && attacks.below_attack_cap(g)) {
-                var t = editing_border_pixels[g].length;
-                k === max_entities ? cX(g) : cS(g, k);
-                if (0 !== t || 0 !== editing_border_pixels[g].length) team_game && (d7[g] = 1), g === my_id && (statistics.numbers[0] += 500 <= n ? n - 12 : n, statistics.numbers[1]++, statistics.numbers[12] += x, statistics.numbers[13] += l), cP(t, g), attacks.set(g, l, k), troops[g] -= l + x, au.cR(g, !1)
+            target < max_entities && 0 === is_alive[target] && (target = max_entities);
+            var tax = divide_floor(3 * troops[author], 256);
+            amount -= 500 <= ratio ? tax : 0;
+            if (!(amount <= neutral_land_cost) && attacks.below_attack_cap(author)) {
+                var t = editing_border_pixels[author].length;
+                target === max_entities ? cX(author) : cS(author, target);
+                if (0 !== t || 0 !== editing_border_pixels[author].length) team_game && (d7[author] = 1), author === my_id && (statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio, statistics.numbers[1]++, statistics.numbers[12] += tax, statistics.numbers[13] += amount), cP(t, author), attacks.set(author, amount, target), troops[author] -= amount + tax, au.cR(author, !1)
             }
         }
     }
 }
 
-function ey(g, k, n, l) {
-    10 === gamemode && g < player_count && (l = eF.ts(g, l));
-    if (l <= neutral_land_cost || !attacks.below_attack_cap(g)) return !1;
-    k = eK.cR(g, k, n);
+function single_boat(author, k, coordThenTax, amount) {
+    10 === gamemode && author < player_count && (amount = antiFullsend.reduceAmount(author, amount));
+    if (amount <= neutral_land_cost || !attacks.below_attack_cap(author)) return !1;
+    k = eK.cR(author, k, coordThenTax);
     if (0 === k) return !1;
-    n = divide_floor(3 * troops[g], 128);
-    l >= divide_floor(troops[g], 2) && (l -= n);
-    g === my_id && (statistics.numbers[12] += n);
-    attacks.tt(g, l, k);
-    troops[g] -= l + n;
+    coordThenTax = divide_floor(3 * troops[author], 128);
+    amount >= divide_floor(troops[author], 2) && (amount -= coordThenTax);
+    author === my_id && (statistics.numbers[12] += coordThenTax);
+    attacks.addBoat(author, amount, k);
+    troops[author] -= amount + coordThenTax;
     return !0
 }
 
 function single_donate(donator, target, amount) {
-    if (!(!team_game || 0 === is_alive[donator] || 0 === is_alive[target] || 0 > amount || amount > troops[donator] || donator === target || ch(donator, target) || donator < player_count && target < player_count && 7 > gamemode && 1071 > c4.time_elapsed())) {
+    if (!(!team_game || 0 === is_alive[donator] || 0 === is_alive[target] || 0 > amount || amount > troops[donator] || donator === target || isTeamate(donator, target) || donator < player_count && target < player_count && 7 > gamemode && 1071 > c4.time_elapsed())) {
         var tax = divide_floor(troops[donator], 16);
         amount -= amount >= divide_floor(troops[donator], 2) ? tax : 0;
         var new_troops = land[target] * max_troops_to_land_ratio - troops[target];
@@ -4211,100 +4208,98 @@ function tu() {
             n = n > this.tw[2] ? this.tw[2] : n;
             l = l > this.tw[3] ? this.tw[3] : l;
             this.tv = this.h9 = !1;
-            g === this.tw[0] && k === this.tw[1] && n === this.tw[2] && l === this.tw[3] ? this.j6() : n >= g && l >= k && jW.putImageData(jX, 0, 0, g, k, n - g + 1, l - k + 1)
+            g === this.tw[0] && k === this.tw[1] && n === this.tw[2] && l === this.tw[3] ? this.j6() : n >= g && l >= k && mapCanvasCtx.putImageData(jX, 0, 0, g, k, n - g + 1, l - k + 1)
         }
     };
     this.j6 = function() {
         this.j5 && this.tw[2] >= this.tw[0] && this.tw[3] >=
-            this.tw[1] && jW.putImageData(jX, 0, 0, this.tw[0], this.tw[1], this.tw[2] - this.tw[0] + 1, this.tw[3] - this.tw[1] + 1);
+            this.tw[1] && mapCanvasCtx.putImageData(jX, 0, 0, this.tw[0], this.tw[1], this.tw[2] - this.tw[0] + 1, this.tw[3] - this.tw[1] + 1);
         this.j5 = !1
     };
     this.iz = function() {
-        this.tw[2] >= this.tw[0] && this.tw[3] >= this.tw[1] && jW.putImageData(jX, 0, 0, this.tw[0], this.tw[1], this.tw[2] - this.tw[0] + 1, this.tw[3] - this.tw[1] + 1);
+        this.tw[2] >= this.tw[0] && this.tw[3] >= this.tw[1] && mapCanvasCtx.putImageData(jX, 0, 0, this.tw[0], this.tw[1], this.tw[2] - this.tw[0] + 1, this.tw[3] - this.tw[1] + 1);
         this.j5 = !1
     };
     this.init = function() {
-        var g;
+        var y_coord;
         this.j5 = this.h9 = this.tv = !1;
         this.tw[0] = map_width;
         this.tw[1] = map_height;
         this.tw[2] = this.tw[3] = 0;
-        var k = 1;
-        a: for (; k < map_width - 1; k++)
-            for (g = map_height - 2; 1 < g; g--)
-                if (1 === pixel_rgba[pixel.to_coord(k, g) + 2]) {
-                    this.tw[0] = k;
+        var x_coord = 1;
+        a: for (; x_coord < map_width - 1; x_coord++)
+            for (y_coord = map_height - 2; 1 < y_coord; y_coord--)
+                if (1 === pixel_rgba[pixel.to_coord(x_coord, y_coord) + 2]) {
+                    this.tw[0] = x_coord; //bottom left >^ x coord
                     break a
-                } g = 1;
-        a: for (; g < map_height -
-            1; g++)
-            for (k = map_width - 2; 1 < k; k--)
-                if (1 === pixel_rgba[pixel.to_coord(k, g) + 2]) {
-                    this.tw[1] = g;
+                } y_coord = 1;
+        a: for (; y_coord < map_height - 1; y_coord++)
+            for (x_coord = map_width - 2; 1 < x_coord; x_coord--)
+                if (1 === pixel_rgba[pixel.to_coord(x_coord, y_coord) + 2]) {
+                    this.tw[1] = y_coord;
                     break a
-                } k = map_width - 2;
-        a: for (; 0 < k; k--)
-            for (g = map_height - 2; 1 < g; g--)
-                if (1 === pixel_rgba[pixel.to_coord(k, g) + 2]) {
-                    this.tw[2] = k;
+                } x_coord = map_width - 2; //top right <v y coord
+        a: for (; 0 < x_coord; x_coord--)
+            for (y_coord = map_height - 2; 1 < y_coord; y_coord--)
+                if (1 === pixel_rgba[pixel.to_coord(x_coord, y_coord) + 2]) {
+                    this.tw[2] = x_coord; //bottom right ^< x coord
                     break a
-                } g = map_height - 2;
-        a: for (; 0 < g; g--)
-            for (k = map_width - 2; 1 < k; k--)
-                if (1 === pixel_rgba[pixel.to_coord(k, g) + 2]) {
-                    this.tw[3] = g;
+                } y_coord = map_height - 2;
+        a: for (; 0 < y_coord; y_coord--)
+            for (x_coord = map_width - 2; 1 < x_coord; x_coord--)
+                if (1 === pixel_rgba[pixel.to_coord(x_coord, y_coord) + 2]) {
+                    this.tw[3] = y_coord; //bottom right <^ y coord
                     break a
                 }
     }
 }
 
 function IntelliAttack() {
-    this.u0 = function() {
+    this.checkIntelli = function() {
         if (1 === client_status) {
-            var g = my_id;
-            2 === player_status[g] || 0 === is_alive[g] || in_spawn || attacks.below_attack_cap(g) && 0 !== pixels_bordering_land[g].length && this.lJ()
+            var myID = my_id;
+            2 === player_status[myID] || 0 === is_alive[myID] || in_spawn || attacks.below_attack_cap(myID) && 0 !== pixels_bordering_land[myID].length && this.startIntelli()
         }
     };
-    this.lJ = function() {
-        var g = my_id;
-        var k = this.getBorderingEntities(g, !team_game);
-        this.u4(g, k);
-        0 !== k.length && (k = this.u5(k), this.u6(k), this.u7(g, k[0].player))
+    this.startIntelli = function() {
+        var myID = my_id;
+        var targets = this.getBorderingEntities(myID, !team_game);
+        this.removeAttackingTarget(myID, targets);
+        0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(myID, targets[0].player))
     };
-    this.u7 = function(g, k) {
+    this.doIntelliAttack = function(myID, target) {
         announcements.low_balance();
-        singleplayer ? single_attack(g, k, troopsBar.AttackRatio()) : multi_out.attack(troopsBar.AttackRatio(), k === max_entities ? g : k)
+        singleplayer ? single_attack(myID, target, troopsBar.AttackRatio()) : multi_out.attack(troopsBar.AttackRatio(), target === max_entities ? myID : target)
     };
-    this.u6 = function(g) {
-        g.sort(function(k, n) {
-            return k.value - n.value
+    this.sortTargets = function(targetValues) {
+        targetValues.sort(function(prev, next) {
+            return prev.value - next.value
         })
     };
-    this.u5 = function(g) {
-        var k, n = [],
-            l = g.length;
-        for (k = 0; k < l; k++) {
-            var x = g[k];
-            if (x === max_entities) n.push({
-                player: x,
+    this.calcValue = function(targets) {
+        var index, targetValues = [],
+            targetsCount = targets.length;
+        for (index = 0; index < targetsCount; index++) {
+            var id = targets[index];
+            if (id === max_entities) targetValues.push({
+                player: id,
                 value: 0
             });
             else {
-                var t =
-                    troops[x];
-                t += .1 * land[x] * (10 - ay.sH());
-                t += .5 * attacks.total_troops_currently_sent_away(x);
-                n.push({
-                    player: x,
-                    value: t
+                var value = troops[id];
+                value += .1 * land[id] * (10 - ay.sH());
+                value += .5 * attacks.total_troops_currently_sent_away(id);
+                targetValues.push({
+                    player: id,
+                    value: value
                 })
             }
         }
-        return n
+        return targetValues
     };
-    this.u4 = function(g, k) {
-        var n;
-        for (n = k.length - 1; 0 <= n; n--) attacks.co(g, k[n]) && k.splice(n, 1)
+    this.removeAttackingTarget = function(myID, targets) {
+        var index;
+        for (index = targets.length - 1; 0 <= index; index--) attacks.check(myID, targets[index]) && targets.splice(index, 1)
     };
     this.getBorderingEntities = function(id, k) {
         var index, side, borderingEntities = [],
@@ -4313,7 +4308,7 @@ function IntelliAttack() {
         a: for (; 0 <= borderPixel; borderPixel--)
             for (side = 3; 0 <= side; side--) {
                 var pixelOwner = pixel.is_neutral(pixels_bordering_land[id][borderPixel] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[id][borderPixel] + offset[side]);
-                if (pixelOwner === max_entities || pixel.controlled_by_entity(pixels_bordering_land[id][borderPixel] + offset[side]) && pixelOwner !== id && (k || ch(id, pixelOwner))) {
+                if (pixelOwner === max_entities || pixel.controlled_by_entity(pixels_bordering_land[id][borderPixel] + offset[side]) && pixelOwner !== id && (k || isTeamate(id, pixelOwner))) {
                     for (index = borderingEntityCount - 1; 0 <= index; index--)
                         if (borderingEntities[index] === pixelOwner) continue a;
                     borderingEntities.push(pixelOwner);
@@ -4328,7 +4323,7 @@ function u9() {
     this.hidden = !1;
     this.mE = null;
     this.uA = 0;
-    this.cw = this.c1 = null;
+    this.cw = this.width = null;
     this.uB = .013;
     this.uC = .022;
     this.uD = .025;
@@ -4355,7 +4350,7 @@ function u9() {
         name_input.tj();
         c4.c5 = !0
     };
-    this.dF = function() {
+    this.update = function() {
         this.hidden && this.bv()
     };
     this.bv = function() {
@@ -4363,8 +4358,8 @@ function u9() {
     };
     this.lx = function() {
         var l;
-        this.c1 = this.uR(zoom ? .85 : .66, .75, r, s);
-        this.cw = Math.floor(this.c1 / .75);
+        this.width = this.uR(zoom ? .85 : .66, .75, r, s);
+        this.cw = Math.floor(this.width / .75);
         for (l = 1; 0 <= l; l--) this.mE[l] && (this.mE[l][4] = bt + Math.floor(this.mE[l][5] * this.cw / 10) + bu);
         k = bt + Math.floor(.1 * this.cw) + bu
     };
@@ -4375,7 +4370,7 @@ function u9() {
         this.position[l] = B;
         var C = x.length,
             E = bt + Math.floor(y * this.cw / 10) + bu;
-        this.uX(x, E, A * this.c1);
+        this.uX(x, E, A * this.width);
         z = [
             [],
             C, -1, z, E, y, 10 * B
@@ -4433,14 +4428,14 @@ function u9() {
             for (; 3 < l[z].name.length && c2.measureText(l[z].name, x) > t;) l[z].name = l[z].name.substring(0,
                 l[z].name.length - 4) + "..."
     };
-    this.c7 = function(l, x) {
+    this.clicked = function(l, x) {
         if (!this.hidden) return !1;
-        l -= (gE - this.c1) / 2;
+        l -= (gE - this.width) / 2;
         x -= (cB - this.cw) / 2;
-        if (0 > l || l > this.c1 || 0 > x || x > this.cw) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0;
+        if (0 > l || l > this.width || 0 > x || x > this.cw) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0;
         if (x < .3 * this.cw) var t = 1;
         else x < .85 * this.cw ? (t = (0 === this.uA ? 14.1 : 3) * (x - .3 * this.cw) / (.55 * this.cw), t = Math.floor(1 + t * t)) : t = 0 === this.uA ? 200 : 10;
-        this.uP[this.uA] = l < this.c1 / 2 ? -t : t;
+        this.uP[this.uA] = l < this.width / 2 ? -t : t;
         if (n[this.uA] + 50 > c4.time) return !0;
         n[this.uA] = c4.time;
         websocket_manager.rk(0, 1 + this.uA) && multi_out.load_leaderboard(0, this.uA);
@@ -4449,79 +4444,79 @@ function u9() {
     this.cG = function() {
         if (this.hidden) {
             var l = this.uB *
-                this.c1,
+                this.width,
                 x = this.uF * l,
-                t = this.uC * this.c1,
+                t = this.uC * this.width,
                 z = this.uG * t,
-                y = this.uD * this.c1,
+                y = this.uD * this.width,
                 A = Math.floor(.25 * this.cw);
-            cH.setTransform(1, 0, 0, 1, (gE - this.c1) / 2, (cB - this.cw) / 2);
-            cH.fillStyle = 0 === this.uA ? oc : oX;
-            cH.fillRect(0, 0, this.c1, A);
-            cH.fillStyle = oH;
-            cH.fillRect(0, A, this.c1, this.cw - A);
-            cH.fillStyle = cK;
-            cH.font = k;
-            cH.textBaseline = cI;
-            cH.textAlign = cJ;
-            cH.fillText(g[this.uA], Math.floor(this.c1 / 2), Math.floor(.135 * this.cw));
-            cH.font = bt + Math.floor(.025 * this.cw) + bu;
-            cH.fillText(g[this.uA + 2], Math.floor(this.c1 / 2), Math.floor(.2125 * this.cw));
-            cH.beginPath();
-            cH.moveTo(this.c1 / 4, 0);
-            cH.lineTo(this.c1 / 2 - l, 0);
-            cH.lineTo(this.c1 / 2, -x);
-            cH.lineTo(this.c1 / 2 + l, 0);
-            cH.lineTo(this.c1 - t, 0);
-            cH.lineTo(this.c1 + z, -z);
-            cH.lineTo(this.c1, t);
-            cH.lineTo(this.c1, this.cw / 2 - l);
-            cH.lineTo(this.c1 + x, this.cw / 2);
-            cH.lineTo(this.c1, this.cw / 2 + l);
-            cH.lineTo(this.c1, this.cw - t);
-            cH.lineTo(this.c1 + z, this.cw + z);
-            cH.lineTo(this.c1 - t, this.cw);
-            cH.lineTo(this.c1 / 2 + l, this.cw);
-            cH.lineTo(this.c1 / 2, this.cw + x);
-            cH.lineTo(this.c1 / 2 - l, this.cw);
-            cH.lineTo(t, this.cw);
-            cH.lineTo(-z, this.cw + z);
-            cH.lineTo(0,
+            mainCanvasCtx.setTransform(1, 0, 0, 1, (gE - this.width) / 2, (cB - this.cw) / 2);
+            mainCanvasCtx.fillStyle = 0 === this.uA ? oc : oX;
+            mainCanvasCtx.fillRect(0, 0, this.width, A);
+            mainCanvasCtx.fillStyle = oH;
+            mainCanvasCtx.fillRect(0, A, this.width, this.cw - A);
+            mainCanvasCtx.fillStyle = cK;
+            mainCanvasCtx.font = k;
+            mainCanvasCtx.textBaseline = cI;
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.fillText(g[this.uA], Math.floor(this.width / 2), Math.floor(.135 * this.cw));
+            mainCanvasCtx.font = bt + Math.floor(.025 * this.cw) + bu;
+            mainCanvasCtx.fillText(g[this.uA + 2], Math.floor(this.width / 2), Math.floor(.2125 * this.cw));
+            mainCanvasCtx.beginPath();
+            mainCanvasCtx.moveTo(this.width / 4, 0);
+            mainCanvasCtx.lineTo(this.width / 2 - l, 0);
+            mainCanvasCtx.lineTo(this.width / 2, -x);
+            mainCanvasCtx.lineTo(this.width / 2 + l, 0);
+            mainCanvasCtx.lineTo(this.width - t, 0);
+            mainCanvasCtx.lineTo(this.width + z, -z);
+            mainCanvasCtx.lineTo(this.width, t);
+            mainCanvasCtx.lineTo(this.width, this.cw / 2 - l);
+            mainCanvasCtx.lineTo(this.width + x, this.cw / 2);
+            mainCanvasCtx.lineTo(this.width, this.cw / 2 + l);
+            mainCanvasCtx.lineTo(this.width, this.cw - t);
+            mainCanvasCtx.lineTo(this.width + z, this.cw + z);
+            mainCanvasCtx.lineTo(this.width - t, this.cw);
+            mainCanvasCtx.lineTo(this.width / 2 + l, this.cw);
+            mainCanvasCtx.lineTo(this.width / 2, this.cw + x);
+            mainCanvasCtx.lineTo(this.width / 2 - l, this.cw);
+            mainCanvasCtx.lineTo(t, this.cw);
+            mainCanvasCtx.lineTo(-z, this.cw + z);
+            mainCanvasCtx.lineTo(0,
                 this.cw - t);
-            cH.lineTo(0, this.cw / 2 + l);
-            cH.lineTo(-x, this.cw / 2);
-            cH.lineTo(0, this.cw / 2 - l);
-            cH.lineTo(0, t);
-            cH.lineTo(-z, -z);
-            cH.lineTo(t, 0);
-            cH.lineTo(this.c1 / 4, 0);
-            cH.lineTo(this.c1 / 4, y);
-            cH.lineTo(y, y);
-            cH.lineTo(y, this.cw - y);
-            cH.lineTo(this.c1 - y, this.cw - y);
-            cH.lineTo(this.c1 - y, y);
-            cH.lineTo(this.c1 / 4, y);
-            cH.fill();
+            mainCanvasCtx.lineTo(0, this.cw / 2 + l);
+            mainCanvasCtx.lineTo(-x, this.cw / 2);
+            mainCanvasCtx.lineTo(0, this.cw / 2 - l);
+            mainCanvasCtx.lineTo(0, t);
+            mainCanvasCtx.lineTo(-z, -z);
+            mainCanvasCtx.lineTo(t, 0);
+            mainCanvasCtx.lineTo(this.width / 4, 0);
+            mainCanvasCtx.lineTo(this.width / 4, y);
+            mainCanvasCtx.lineTo(y, y);
+            mainCanvasCtx.lineTo(y, this.cw - y);
+            mainCanvasCtx.lineTo(this.width - y, this.cw - y);
+            mainCanvasCtx.lineTo(this.width - y, y);
+            mainCanvasCtx.lineTo(this.width / 4, y);
+            mainCanvasCtx.fill();
             this.mE[this.uA] && this.ug(A);
             this.uh(A);
-            cH.setTransform(1, 0, 0, 1, 0, 0)
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     };
     this.uh = function(l) {
-        var x = me(2, Math.floor(.06 * this.c1));
+        var x = me(2, Math.floor(.06 * this.width));
         x -= x % 2;
-        var t = me(2, Math.floor(.01 * this.c1));
+        var t = me(2, Math.floor(.01 * this.width));
         t -= t % 2;
         l = Math.floor(.82 * l);
-        cH.fillRect(x,
+        mainCanvasCtx.fillRect(x,
             l, x, t);
-        cH.fillRect(this.c1 - x - x, l, x, t);
-        cH.fillRect(Math.floor(this.c1 - x - x + (x - t) / 2), Math.floor(l - (x - t) / 2), t, x)
+        mainCanvasCtx.fillRect(this.width - x - x, l, x, t);
+        mainCanvasCtx.fillRect(Math.floor(this.width - x - x + (x - t) / 2), Math.floor(l - (x - t) / 2), t, x)
     };
     this.ug = function(l) {
-        cH.font = this.mE[this.uA][4];
-        for (var x, t = this.mE[this.uA][1] - 1; 0 <= t; t--) cH.textAlign = ol, x = Math.floor(this.uK * this.cw + l + t * ((1 - 2 * this.uK) * this.cw - l) / 9), cH.fillText(this.mE[this.uA][0][t].value.toFixed(this.mE[this.uA][3]), Math.floor(this.uJ * this.c1), x), cH.fillText(t + 1 + this.mE[this.uA][6] + ".", Math.floor(this.uH * this.c1), x), cH.textAlign = mj, cH.fillText(this.mE[this.uA][0][t].name,
-            Math.floor(this.uI * this.c1), x)
+        mainCanvasCtx.font = this.mE[this.uA][4];
+        for (var x, t = this.mE[this.uA][1] - 1; 0 <= t; t--) mainCanvasCtx.textAlign = ol, x = Math.floor(this.uK * this.cw + l + t * ((1 - 2 * this.uK) * this.cw - l) / 9), mainCanvasCtx.fillText(this.mE[this.uA][0][t].value.toFixed(this.mE[this.uA][3]), Math.floor(this.uJ * this.width), x), mainCanvasCtx.fillText(t + 1 + this.mE[this.uA][6] + ".", Math.floor(this.uH * this.width), x), mainCanvasCtx.textAlign = mj, mainCanvasCtx.fillText(this.mE[this.uA][0][t].name,
+            Math.floor(this.uI * this.width), x)
     }
 }
 
@@ -4570,14 +4565,14 @@ function ui() {
         this.hidden = !1;
         return !0
     };
-    this.c7 = function(G, N) {
+    this.clicked = function(G, N) {
         if (!this.hidden) return !1;
         if (G < g || N < k || G > g + C || N > k + l) c4.c5 = !0, this.hidden = !1, document.body.removeChild(F),
             0 === aJ.pa() && jk.cE(0, !0);
         return !0
     };
     this.cG = function() {
-        this.hidden && (cH.imageSmoothingEnabled = !0, cH.setTransform(1, 0, 0, 1, g, k), cH.fillStyle = hy, cH.fillRect(0, 0, C, l), cH.lineWidth = oy, cH.strokeStyle = cK, cH.strokeRect(0, 0, C, l), cH.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), cH.drawImage(sprites.bz(17), 0, 0), cH.setTransform(1, 0, 0, 1, 0, 0))
+        this.hidden && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = hy, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = oy, mainCanvasCtx.strokeStyle = cK, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.bz(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
     }
 }
 
@@ -4627,7 +4622,7 @@ function ut() {
     this.hidden = function() {
         return !(7 === aJ.pa() && zoom)
     };
-    this.c7 = function(y, A, B) {
+    this.clicked = function(y, A, B) {
         if (!t || !this.hidden()) return !1;
         var C;
         for (C = x.length - 1; 0 <= C; C--)
@@ -4636,11 +4631,11 @@ function ut() {
     };
     this.cG = function() {
         if (t && this.hidden()) {
-            cH.imageSmoothingEnabled = !0;
+            mainCanvasCtx.imageSmoothingEnabled = !0;
             var y;
             for (y = 0; 5 > y; y++) x[y] &&
-                this.uu[y] && (cH.setTransform(l[y], 0, 0, l[y], k[y], n[y]), cH.drawImage(t[y], 0, 0));
-            cH.setTransform(1, 0, 0, 1, 0, 0)
+                this.uu[y] && (mainCanvasCtx.setTransform(l[y], 0, 0, l[y], k[y], n[y]), mainCanvasCtx.drawImage(t[y], 0, 0));
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     }
 }
@@ -4650,26 +4645,26 @@ function kB() {
         var t = jh.uz[x],
             z = t.fJ,
             y = t.fK,
-            A = t.c1,
+            A = t.width,
             B = t.cw;
-        cH.fillStyle = t.v2;
-        cH.fillRect(z, y, A, B);
-        x === k && (cH.fillStyle = l, cH.fillRect(z, y, A, B));
-        cH.lineWidth = 3;
-        cH.strokeStyle = n;
-        cH.strokeRect(z, y, A, B);
+        mainCanvasCtx.fillStyle = t.v2;
+        mainCanvasCtx.fillRect(z, y, A, B);
+        x === k && (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(z, y, A, B));
+        mainCanvasCtx.lineWidth = 3;
+        mainCanvasCtx.strokeStyle = n;
+        mainCanvasCtx.strokeRect(z, y, A, B);
         x = t.fJ;
         z = t.fK;
-        y = t.c1;
+        y = t.width;
         A = t.cw;
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
-        cH.font = t.font;
-        cH.fillStyle = n;
-        cH.fillText(t.na, Math.floor(x + y / 2), Math.floor(z + A / 2 + .1 * t.by))
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.font = t.font;
+        mainCanvasCtx.fillStyle = n;
+        mainCanvasCtx.fillText(t.na, Math.floor(x + y / 2), Math.floor(z + A / 2 + .1 * t.by))
     }
     var k, n, l;
-    this.f6 = this.fK = this.cw = this.c1 = 0;
+    this.f6 = this.fK = this.cw = this.width = 0;
     this.init = function() {
         k = -1;
         n = cK;
@@ -4677,14 +4672,14 @@ function kB() {
         this.uz = Array(7);
         this.cw = Math.floor((zoom ?
             .123 : .093) * bq);
-        this.c1 = Math.floor((zoom ? 3.96 : 4.2) * this.cw);
-        this.f6 = Math.floor(.025 * this.c1);
+        this.width = Math.floor((zoom ? 3.96 : 4.2) * this.cw);
+        this.f6 = Math.floor(.025 * this.width);
         var x = Math.floor(.26 * this.cw),
             t = bt + x + bu;
         this.uz[0] = {
             fJ: 0,
             fK: 0,
-            c1: Math.floor(.6 * this.c1 - this.f6 / 2),
+            width: Math.floor(.6 * this.width - this.f6 / 2),
             cw: this.cw,
             na: "Multiplayer",
             font: t,
@@ -4696,7 +4691,7 @@ function kB() {
         this.uz[1] = {
             fJ: 0,
             fK: 0,
-            c1: this.c1 - this.uz[0].c1 - this.f6,
+            width: this.width - this.uz[0].width - this.f6,
             cw: this.cw,
             na: "Singleplayer",
             font: t,
@@ -4706,7 +4701,7 @@ function kB() {
         this.uz[2] = {
             fJ: 0,
             fK: 0,
-            c1: this.c1,
+            width: this.width,
             cw: Math.floor(.3 * this.cw),
             na: "",
             font: this.uz[1].font,
@@ -4716,7 +4711,7 @@ function kB() {
         this.uz[3] = {
             fJ: 0,
             fK: 0,
-            c1: this.c1,
+            width: this.width,
             cw: this.cw,
             na: "Back",
             font: this.uz[0].font,
@@ -4726,7 +4721,7 @@ function kB() {
         this.uz[4] = {
             fJ: 0,
             fK: 0,
-            c1: this.c1,
+            width: this.width,
             cw: Math.floor(.3 * this.cw),
             na: "The game was updated!",
             font: this.uz[1].font,
@@ -4736,7 +4731,7 @@ function kB() {
         this.uz[5] = {
             fJ: 0,
             fK: 0,
-            c1: this.uz[0].c1,
+            width: this.uz[0].width,
             cw: Math.floor(.8 * this.cw),
             na: "Reload",
             font: this.uz[0].font,
@@ -4746,7 +4741,7 @@ function kB() {
         this.uz[6] = {
             fJ: 0,
             fK: 0,
-            c1: this.uz[1].c1,
+            width: this.uz[1].width,
             cw: this.uz[5].cw,
             na: "Back",
             font: this.uz[0].font,
@@ -4757,8 +4752,8 @@ function kB() {
     };
     this.rs = function() {
         this.fK = Math.floor(.54 * cB);
-        this.uz[0].fJ = Math.floor(.5 * gE - .5 * this.c1);
-        this.uz[1].fJ = this.uz[0].fJ + this.uz[0].c1 + this.f6;
+        this.uz[0].fJ = Math.floor(.5 * gE - .5 * this.width);
+        this.uz[1].fJ = this.uz[0].fJ + this.uz[0].width + this.f6;
         this.uz[2].fJ = this.uz[3].fJ = this.uz[0].fJ;
         this.uz[4].fJ = this.uz[5].fJ = this.uz[0].fJ;
         this.uz[6].fJ = this.uz[1].fJ;
@@ -4791,7 +4786,7 @@ function kB() {
     };
     this.pR = function(x, t, z, y) {
         for (var A = z; A < z + y; A++)
-            if (x >= this.uz[A].fJ && t >= this.uz[A].fK && x <= this.uz[A].fJ + this.uz[A].c1 &&
+            if (x >= this.uz[A].fJ && t >= this.uz[A].fK && x <= this.uz[A].fJ + this.uz[A].width &&
                 t <= this.uz[A].fK + this.uz[A].cw) return A;
         return -1
     }
@@ -4801,18 +4796,18 @@ function v9() {
     function g(k) {
         return 0 > k ? 0 : 255 < k ? 255 : Math.floor(k)
     }
-    this.cw = this.c1 = 0;
+    this.cw = this.width = 0;
     this.hidden = !1;
     this.vD = this.vC = this.vB = this.nu = this.f6 = this.vA = 0;
     this.colors = null;
     this.init = function() {
-        r < 2 * s ? this.c1 = Math.floor((zoom ? .94 : .4) * r) : (this.cw = Math.floor((zoom ? .88 : .4) * s), this.c1 = Math.floor(2 * this.cw));
-        this.cw = this.c1 / 2;
+        r < 2 * s ? this.width = Math.floor((zoom ? .94 : .4) * r) : (this.cw = Math.floor((zoom ? .88 : .4) * s), this.width = Math.floor(2 * this.cw));
+        this.cw = this.width / 2;
         this.f6 = this.cw / 16;
         this.hidden = !0;
         this.vA = 0;
         this.vB = (this.cw - 3 * this.f6) / 2;
-        this.vC = this.c1 - 3 * this.f6 - this.vB;
+        this.vC = this.width - 3 * this.f6 - this.vB;
         this.vD = (this.cw - 4 * this.f6) / 3
     };
     this.vE = function() {
@@ -4830,13 +4825,13 @@ function v9() {
     this.get_rgb_64 = function() {
         return [divide_floor(this.colors[0][0], 4), divide_floor(this.colors[0][1], 4), divide_floor(this.colors[0][2], 4)]
     };
-    this.c7 = function(k, n) {
+    this.clicked = function(k, n) {
         this.vA = 0;
         var l = (cB - this.cw) / 2;
-        k -= (gE - this.c1) / 2;
+        k -= (gE - this.width) / 2;
         n -= l;
-        if (0 > k || 0 > n || k >= this.c1 - 1 || n >= this.cw - 1) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0, !1;
-        if (k < this.f6 || n < this.f6 || k >= this.c1 - this.f6 || n >= this.cw - this.f6) return !0;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.cw - 1) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0, !1;
+        if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.cw - this.f6) return !0;
         if (k < this.f6 + this.vB) return n < this.f6 + this.vB && 0 !== this.nu && (this.nu = 0, c4.c5 = !0), !0;
         if (k < 2 * this.f6 + this.vB) return !0;
         k -= 2 * this.f6 + this.vB;
@@ -4855,42 +4850,42 @@ function v9() {
         save_colors(k)
     };
     this.lo = function(k) {
-        0 !== this.vA && (k -= 2 * this.f6 + this.vB + (gE - this.c1) / 2, this.colors[this.nu][this.vA - 1] = g(256 * k / this.vC), c4.c5 = !0)
+        0 !== this.vA && (k -= 2 * this.f6 + this.vB + (gE - this.width) / 2, this.colors[this.nu][this.vA - 1] = g(256 * k / this.vC), c4.c5 = !0)
     };
     this.vJ = function() {
         0 < this.vA && (this.vA = 0, this.vG(), this.vI(), c4.c5 = !0)
     };
     this.cG = function() {
-        cH.setTransform(1, 0, 0, 1, (gE - this.c1) / 2, (cB - this.cw) / 2);
-        cH.fillStyle = hy;
-        cH.fillRect(0, 0, this.c1, this.cw);
-        cH.lineWidth = oy;
-        cH.strokeStyle = cK;
-        cH.strokeRect(-1,
-            -1, this.c1 + 2, this.cw + 2);
-        cH.font = bt + Math.floor(.8 * this.vB) + bu;
-        cH.textBaseline = cI;
-        cH.textAlign = cJ;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, (gE - this.width) / 2, (cB - this.cw) / 2);
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
+        mainCanvasCtx.lineWidth = oy;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(-1,
+            -1, this.width + 2, this.cw + 2);
+        mainCanvasCtx.font = bt + Math.floor(.8 * this.vB) + bu;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.textAlign = cJ;
         this.vK(0);
-        cH.lineWidth = oy;
+        mainCanvasCtx.lineWidth = oy;
         this.vL(0);
         this.vL(1);
         this.vL(2);
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.vK = function(k) {
-        cH.fillStyle = "rgb(" + this.colors[k][0] + "," + this.colors[k][1] + "," + this.colors[k][2] + ")";
-        cH.fillRect(this.f6, this.f6, this.vB, 2 * this.vB + this.f6);
-        cH.lineWidth = 2 + oy;
-        cH.strokeStyle = cK;
-        cH.strokeRect(this.f6, this.f6, this.vB, 2 * this.vB + this.f6)
+        mainCanvasCtx.fillStyle = "rgb(" + this.colors[k][0] + "," + this.colors[k][1] + "," + this.colors[k][2] + ")";
+        mainCanvasCtx.fillRect(this.f6, this.f6, this.vB, 2 * this.vB + this.f6);
+        mainCanvasCtx.lineWidth = 2 + oy;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(this.f6, this.f6, this.vB, 2 * this.vB + this.f6)
     };
     this.vL = function(k) {
-        cH.fillStyle = "rgb(" + (0 === k ? 200 : 2 === k ? 50 :
+        mainCanvasCtx.fillStyle = "rgb(" + (0 === k ? 200 : 2 === k ? 50 :
             0) + "," + (1 === k ? 200 : 2 === k ? 50 : 0) + "," + (2 === k ? 255 : 0) + ")";
-        cH.fillRect(2 * this.f6 + this.vB, this.f6 + k * (this.f6 + this.vD), Math.floor(this.colors[this.nu][k] * this.vC / 255), this.vD);
-        cH.strokeStyle = cK;
-        cH.strokeRect(2 * this.f6 + this.vB, this.f6 + k * (this.f6 + this.vD), this.vC, this.vD)
+        mainCanvasCtx.fillRect(2 * this.f6 + this.vB, this.f6 + k * (this.f6 + this.vD), Math.floor(this.colors[this.nu][k] * this.vC / 255), this.vD);
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(2 * this.f6 + this.vB, this.f6 + k * (this.f6 + this.vD), this.vC, this.vD)
     }
 }
 
@@ -4912,13 +4907,13 @@ function kC() {
     function l(L, H, M) {
         var Q = Math.floor((gE - y) / 2) + C,
             R = Q + Math.floor(M * (y - 2 * C));
-        cH.lineWidth = H;
-        cH.beginPath();
-        cH.moveTo(Q, L);
-        cH.lineTo(R, L);
-        cH.lineTo(Math.floor(Q - C + M * y), L + z);
-        cH.lineTo(Q - C, L + z);
-        cH.closePath()
+        mainCanvasCtx.lineWidth = H;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(Q, L);
+        mainCanvasCtx.lineTo(R, L);
+        mainCanvasCtx.lineTo(Math.floor(Q - C + M * y), L + z);
+        mainCanvasCtx.lineTo(Q - C, L + z);
+        mainCanvasCtx.closePath()
     }
     var x, t, z, y, A, B, C, E, F, G, N, I, D, K = 0,
         J;
@@ -4952,7 +4947,7 @@ function kC() {
     this.rm = function(L) {
         6 !== aJ.pa() || J || (I = c4.time, J = !0, multi_out.join_lobby(L))
     };
-    this.c7 = function(L, H) {
+    this.clicked = function(L, H) {
         var M = Math.floor((gE - A) / 2),
             Q = Math.floor(.5 * (cB - display_buffer_length - z - B)) + z + display_buffer_length;
         return L > M && L < M + A && H > Q && H < Q + B ? (this.ve(), jh.lo(L, H, !1), !0) : !1
@@ -4962,7 +4957,7 @@ function kC() {
         name_input.init();
         c4.c5 = !0
     };
-    this.dF = function() {
+    this.update = function() {
         6 === aJ.pa() && (J ? c4.time > I + 2E4 && jj.vd(3250) : c4.time > I + 2E4 && n(), 
         x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), 
         E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", 
@@ -4972,67 +4967,67 @@ function kC() {
         var L = Math.floor((gE - A) / 2),
             H = Math.floor(.5 * (cB - display_buffer_length - z - B)),
             M = x / 100;
-        cH.fillStyle = F;
+        mainCanvasCtx.fillStyle = F;
         l(H, 3, 1);
-        cH.fill();
-        cH.fillStyle = E;
+        mainCanvasCtx.fill();
+        mainCanvasCtx.fillStyle = E;
         l(H, 3, M);
-        cH.fill();
-        cH.strokeStyle = cK;
+        mainCanvasCtx.fill();
+        mainCanvasCtx.strokeStyle = cK;
         l(H, 3, 1);
-        cH.stroke();
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
-        cH.font = G;
-        cH.fillStyle = cK;
-        cH.fillText("Loading", Math.floor(.5 * gE), Math.floor(H + .58 * z));
+        mainCanvasCtx.stroke();
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.font = G;
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillText("Loading", Math.floor(.5 * gE), Math.floor(H + .58 * z));
         H = H + z + display_buffer_length;
         M = A;
         var Q = B;
-        cH.fillStyle = oG;
-        cH.fillRect(L, H, M, Q);
-        cH.lineWidth = 3;
-        cH.strokeStyle = cK;
-        cH.strokeRect(L, H, M, Q);
+        mainCanvasCtx.fillStyle = oG;
+        mainCanvasCtx.fillRect(L, H, M, Q);
+        mainCanvasCtx.lineWidth = 3;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(L, H, M, Q);
         var R = Math.floor(.3 * Q);
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
-        cH.font = on + R + bu;
-        cH.fillStyle = cK;
-        cH.fillText("Back", Math.floor(L + M / 2), Math.floor(H + Q / 2 + .1 * R))
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.font = on + R + bu;
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillText("Back", Math.floor(L + M / 2), Math.floor(H + Q / 2 + .1 * R))
     }
 }
 
 function kD() {
-    var g;
+    var state;
     this.init = function() {
         jh.init();
         jk.init();
-        g = 0;
+        state = 0;
         cookies_window.init();
         name_input.init()
     };
-    this.setState = function(k) {
-        g = k
+    this.setState = function(newState) {
+        state = newState
     };
     this.pa = function() {
-        return g
+        return state
     };
     this.vp = function() {
         this.setState(8);
         lobby.tj();
         cC.us();
         cD.hidden = !1;
-        nW.c7(-1E3, -1E3)
+        nW.clicked(-1E3, -1E3)
     };
     this.us = function(k) {
         if (!vq) return !1;
         if (!(400 > c4.time)) {
             if ("Enter" === k.key || "Escape" === k.key) {
-                if (this.vr()) return 0 === g && jk.cE(0, !0), !0;
+                if (this.vr()) return 0 === state && jk.cE(0, !0), !0;
                 if ("Enter" === k.key) {
-                    if (0 === g) return name_input.vs(), !0;
-                    if (7 === g) return !0
+                    if (0 === state) return name_input.vs(), !0;
+                    if (7 === state) return !0
                 }
             }
             return !1
@@ -5044,16 +5039,16 @@ function kD() {
     this.aK =
         function() {
             c4.c5 = !0;
-            8 === g ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.alterDisplay() : fq.alterDisplay() : 7 === g ? lobby.vt() : 6 === g ? ji.ve() : 3 === g ? jj.vu(0, 0) : 2 === g ? dy.vu() : 0 === g && (this.vr() || set_android_state(11))
+            8 === state ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.alterDisplay() : fq.alterDisplay() : 7 === state ? lobby.vt() : 6 === state ? ji.ve() : 3 === state ? jj.vu(0, 0) : 2 === state ? dy.vu() : 0 === state && (this.vr() || set_android_state(11))
         };
-    this.c7 = function(k, n) {
-        if (!cookies_window.c7(k, n) && vq && !(nW.c7(k, n) || 6 === g && ji.c7(k, n) || 2 === g && dy.c7(k, n) || jt.c7(k, n) || cD.c7(k, n) || vv.c7(k, n, !0) || cC.c7(k, n, !0))) {
-            jg.c7(k, n);
-            if (0 === g) name_input.c7(k, n);
-            else if (3 === g) jj.c7(k, n);
-            else if (5 === g) jl.c7(k, n);
-            else if (7 === g && lobby.c7(k, n)) return;
-            uZ.c7(k, n)
+    this.clicked = function(k, n) {
+        if (!cookies_window.clicked(k, n) && vq && !(nW.clicked(k, n) || 6 === state && ji.clicked(k, n) || 2 === state && dy.clicked(k, n) || jt.clicked(k, n) || cD.clicked(k, n) || vv.clicked(k, n, !0) || cC.clicked(k, n, !0))) {
+            jg.clicked(k, n);
+            if (0 === state) name_input.clicked(k, n);
+            else if (3 === state) jj.clicked(k, n);
+            else if (5 === state) jl.clicked(k, n);
+            else if (7 === state && lobby.clicked(k, n)) return;
+            uZ.clicked(k, n)
         }
     };
     this.lo = function(k, n) {
@@ -5064,7 +5059,7 @@ function kD() {
                 return
             }
             if (2 ===
-                g && dy.lo(k, n)) {
+                state && dy.lo(k, n)) {
                 jg.pW();
                 return
             }
@@ -5082,20 +5077,20 @@ function kD() {
     };
     this.click = function(k, n) {
         jg.pX();
-        cC.vJ() || vv.c7(k, n, !1) || cC.c7(k, n, !1)
+        cC.vJ() || vv.clicked(k, n, !1) || cC.clicked(k, n, !1)
     };
     this.pd = function(k, n, l) {
-        cC.mE[1].ih.hidden || 0 === g && jg.pd(k, l)
+        cC.mE[1].ih.hidden || 0 === state && jg.pd(k, l)
     };
     this.vw = function() {
         jh.rs();
         cC.rs();
-        0 === g ? (jk.rs(0), jg.rs()) : 7 === g && lobby.lx();
+        0 === state ? (jk.rs(0), jg.rs()) : 7 === state && lobby.lx();
         c4.c5 = !0
     };
     this.cG = function() {
-        if (8 !== g && 10 !== g) {
-            cH.imageSmoothingEnabled = !0;
+        if (8 !== state && 10 !== state) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
             this.hr();
             jg.cG();
             jf.cG();
@@ -5103,20 +5098,20 @@ function kD() {
                 n = sprites.lB("territorial.io"),
                 l = 1.75 * cB / n.width;
             l = l * n.width < .98 * gE ? .98 * gE / n.width : l;
-            cH.globalAlpha = .15;
+            mainCanvasCtx.globalAlpha = .15;
             var x = Math.floor(.5 * (gE - l * n.width));
             x = Math.floor(x / l);
             k = Math.floor(k - .5 * n.height * l);
             k = Math.floor(k / l);
-            cH.setTransform(l, 0, 0, l, x, k);
-            cH.drawImage(n, x, k);
-            cH.setTransform(1, 0, 0, 1, 0, 0);
-            cH.globalAlpha = 1;
+            mainCanvasCtx.setTransform(l, 0, 0, l, x, k);
+            mainCanvasCtx.drawImage(n, x, k);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            mainCanvasCtx.globalAlpha = 1;
             vv.cG();
             uZ.cG();
             cC.cG();
             jt.cG();
-            0 === g ? name_input.cG() : 2 === g ? dy.cG() : 3 === g ? jj.cG() : 5 === g ? jl.cG() : 6 === g ? ji.cG() : 7 === g && lobby.cG();
+            0 === state ? name_input.cG() : 2 === state ? dy.cG() : 3 === state ? jj.cG() : 5 === state ? jl.cG() : 6 === state ? ji.cG() : 7 === state && lobby.cG();
             cC.vy();
             cookies_window.cG();
             cD.cG();
@@ -5128,35 +5123,35 @@ function kD() {
             var k = r / map_width,
                 n = s / map_height;
             k = k > n ? k : n;
-            cH.setTransform(k, 0, 0, k, Math.floor((r - k * map_width) /
+            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((r - k * map_width) /
                 2), Math.floor((s - k * map_height) / 2));
-            cH.drawImage(hs, 0, 0);
-            cH.setTransform(1, 0, 0, 1, 0, 0);
-            cH.fillStyle = oG
-        } else cH.fillStyle = gH;
-        cH.fillRect(0, 0, r, s)
+            mainCanvasCtx.drawImage(hs, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            mainCanvasCtx.fillStyle = oG
+        } else mainCanvasCtx.fillStyle = gH;
+        mainCanvasCtx.fillRect(0, 0, r, s)
     }
 }
 
 function w1() {
-    this.cw = this.c1 = 0;
+    this.cw = this.width = 0;
     this.hidden = !1;
     this.nj = 10;
     this.bB = .12;
     this.w3 = this.w2 = this.vA = !1;
     this.init = function() {
-        this.c1 = r < 1 * s ? Math.floor((zoom ? .94 : .6) * r) : Math.floor((zoom ? .94 : .6) * s);
-        this.c1 -= this.c1 % this.nj;
-        this.cw = 1 * this.c1;
+        this.width = r < 1 * s ? Math.floor((zoom ? .94 : .6) * r) : Math.floor((zoom ? .94 : .6) * s);
+        this.width -= this.width % this.nj;
+        this.cw = 1 * this.width;
         this.hidden = !0;
         this.vA = !1
     };
-    this.c7 = function(g, k, n) {
+    this.clicked = function(g, k, n) {
         var l = (cB - this.cw) / 2;
-        g -= (gE - this.c1) / 2;
+        g -= (gE - this.width) / 2;
         k -= l;
-        if (0 > g || 0 > k || g >= this.c1 - 1 || k >= this.cw - 1) return 0 === n && (this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0), !1;
-        l = Math.floor(this.c1 / this.nj);
+        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.cw - 1) return 0 === n && (this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0), !1;
+        l = Math.floor(this.width / this.nj);
         g = divide_floor(g, l) + this.nj * divide_floor(k, l);
         g = 0 > g ? 0 : g >= a5.nn ? a5.nn - 1 : g;
         if (0 ===
@@ -5164,26 +5159,26 @@ function w1() {
         return !0
     };
     this.lo = function(g, k) {
-        this.vA && this.c7(g, k, this.w2 ? 1 : 2)
+        this.vA && this.clicked(g, k, this.w2 ? 1 : 2)
     };
     this.vJ = function() {
         this.w3 && (save_emojis(), this.w3 = !1);
         this.vA = this.w3 = !1
     };
     this.cG = function() {
-        cH.imageSmoothingEnabled = !0;
-        var g = (gE - this.c1) / 2,
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        var g = (gE - this.width) / 2,
             k = (cB - this.cw) / 2;
-        cH.setTransform(1, 0, 0, 1, g, k);
-        cH.fillStyle = hy;
-        cH.fillRect(0, 0, this.c1, this.cw);
-        cH.lineWidth = oy;
-        cH.strokeStyle = cK;
-        cH.strokeRect(-1, -1, this.c1 + 2, this.cw + 2);
-        for (var n = Math.floor(this.c1 /
-                this.nj), l = (n - 2 * this.bB * n) / a5.c1, x = a5.nn - 1; 0 <= x; x--) cH.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nj * n), Math.floor(k + divide_floor(x, this.nj) * n)), a5.a7[x] && (cH.fillStyle = oO, cH.fillRect(0, 0, n, n)), cH.setTransform(l, 0, 0, l, Math.floor(g + x % this.nj * n + this.bB * n), Math.floor(k + divide_floor(x, this.nj) * n + this.bB * n)), cH.drawImage(a5.l7[x], 0, 0);
-        cH.setTransform(1, 0, 0, 1, 0, 0);
-        cH.imageSmoothingEnabled = !1
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
+        mainCanvasCtx.lineWidth = oy;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.cw + 2);
+        for (var n = Math.floor(this.width /
+                this.nj), l = (n - 2 * this.bB * n) / a5.width, x = a5.nn - 1; 0 <= x; x--) mainCanvasCtx.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nj * n), Math.floor(k + divide_floor(x, this.nj) * n)), a5.a7[x] && (mainCanvasCtx.fillStyle = oO, mainCanvasCtx.fillRect(0, 0, n, n)), mainCanvasCtx.setTransform(l, 0, 0, l, Math.floor(g + x % this.nj * n + this.bB * n), Math.floor(k + divide_floor(x, this.nj) * n + this.bB * n)), mainCanvasCtx.drawImage(a5.l7[x], 0, 0);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        mainCanvasCtx.imageSmoothingEnabled = !1
     }
 }
 
@@ -5279,7 +5274,7 @@ function kE() {
     this.lx = function() {
         jh.uz[2].na = k(n)
     };
-    this.c7 = function(t, z) {
+    this.clicked = function(t, z) {
         3 === jh.pR(t, z, 3, 1) && this.vu(t, z)
     };
     this.vu = function(t, z) {
@@ -5326,13 +5321,13 @@ function kF() {
         var x = Math.floor(.22 * jh.cw / device_pixel_ratio);
         k[0].input.style.font = bt + x + bu;
         k[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
-        k[0].input.style.width = Math.floor(jh.c1 / device_pixel_ratio - 13) + "px"
+        k[0].input.style.width = Math.floor(jh.width / device_pixel_ratio - 13) + "px"
     };
     this.bz = function(x) {
         return k[x]
     };
     this.rs = function(x) {
-        k[x].input.style.left = Math.floor((gE / device_pixel_ratio - (jh.c1 / device_pixel_ratio - 3) - 7) / 2) + "px";
+        k[x].input.style.left = Math.floor((gE / device_pixel_ratio - (jh.width / device_pixel_ratio - 3) - 7) / 2) + "px";
         0 === x && (k[x].input.style.bottom = Math.floor((cB - jh.fK + jh.f6) / device_pixel_ratio) + "px")
     };
     this.cE = function(x, t) {
@@ -5353,13 +5348,13 @@ function ki() {
             n = c4.time + 4500;
             l = multi_in.getRemote(g) ? 2 : 0;
             aJ.setState(10);
-            cH.imageSmoothingEnabled = !0;
+            mainCanvasCtx.imageSmoothingEnabled = !0;
             aJ.hr();
             x = sprites.lB("loading");
             var t = (zoom ? .396 : .25) * bq / x.width;
-            cH.setTransform(t, 0, 0, t, Math.floor((r - t * x.width) / 2), Math.floor((s - t * x.height) / 2));
-            cH.drawImage(x, 0, 0);
-            cH.setTransform(1, 0, 0, 1, 0, 0)
+            mainCanvasCtx.setTransform(t, 0, 0, t, Math.floor((r - t * x.width) / 2), Math.floor((s - t * x.height) / 2));
+            mainCanvasCtx.drawImage(x, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     };
     this.eZ = function() {
@@ -5394,12 +5389,12 @@ function Lobby() {
     function n() {
         if (7 === aJ.pa()) {
             for (var P = -1, U = next_games.length - 1; 0 <= U; U--)
-                if (null === next_games[U].ls) {
+                if (null === next_games[U].canvas) {
                     P = U;
                     break
                 } if (-1 !== P) {
                 U = l(next_games[P].map_id, next_games[P].xB);
-                if (null !== U) next_games[P].ls = U;
+                if (null !== U) next_games[P].canvas = U;
                 else {
                     U = map_width;
                     var W = map_height,
@@ -5431,7 +5426,7 @@ function Lobby() {
                     xI = ba;
                     current_map = ca;
                     x7 = pa;
-                    next_games[P].ls = S
+                    next_games[P].canvas = S
                 }
                 c4.c5 = !0
             }
@@ -5440,7 +5435,7 @@ function Lobby() {
 
     function l(P, U) {
         for (var W = next_games.length - 1; 0 <= W; W--)
-            if (null !== next_games[W].ls && next_games[W].map_id === P && next_games[W].xB === U) return next_games[W].ls;
+            if (null !== next_games[W].canvas && next_games[W].map_id === P && next_games[W].xB === U) return next_games[W].canvas;
         return null
     }
 
@@ -5466,7 +5461,7 @@ function Lobby() {
     var display_games_box_length, z, display_games_box_arrangement, games_display_box_init_x_min, display_games_box_init_y_min, C, E, next_games, G, game_selected, I, D, status_display_label = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
         J = [0, 0, 0, 0],
         L, H, M, Q, R;
-    //The bottom 3 functions are temporary
+    //The bottom 3 functions are Added
     this.get_next_games = function() {
         return next_games;
     }
@@ -5548,8 +5543,7 @@ function Lobby() {
         display_games_box_init_y_min = G[1] + Math.floor((G[3] - display_games_box_arrangement[1] * display_games_box_length - (display_games_box_arrangement[1] - 1) * display_buffer_length) / 2)
     };
     this.ua = function(P, U) {
-        var W,
-            X = next_games.length;
+        var W, X = next_games.length;
         J = P;
         for (W = 0; W < U.length; W++) {
             var V = l(U[W].map_id, U[W].x7);
@@ -5562,7 +5556,7 @@ function Lobby() {
                 joined: U[W].xC,
                 time_left: U[W].time_left,
                 maximum_players: U[W].maximum_players,
-                ls: V
+                canvas: V
             })
         }
         for (W = X - 1; 0 <= W; W--) next_games.shift();
@@ -5576,47 +5570,47 @@ function Lobby() {
         c4.c5 = !0
     };
     this.xE = function() {
-        for (var P = next_games.length - 1; 0 <= P; P--) null === next_games[P].ls && setTimeout(n, 0)
+        for (var P = next_games.length - 1; 0 <= P; P--) null === next_games[P].canvas && setTimeout(n, 0)
     };
-    this.c7 = function(x_coord, y_coord) {
+    this.clicked = function(x_coord, y_coord) {
         return 4 * ((x_coord - M) * (x_coord - M) + (y_coord - Q) * (y_coord - Q)) <= H * H ? (this.vt(), jh.lo(x_coord, y_coord, !1), !0) : x(x_coord, y_coord)
     };
     this.cG = function() {
         var P = 0,
             U = display_games_box_init_y_min;
-        cH.imageSmoothingEnabled = !0;
-        cH.lineWidth = 3;
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        mainCanvasCtx.lineWidth = 3;
         var W = Math.floor(.5 * H);
-        cH.fillStyle = oG;
-        cH.beginPath();
-        cH.arc(M, Q, W, 0, 2 * Math.PI);
-        cH.fill();
-        cH.strokeStyle = cK;
-        cH.beginPath();
-        cH.arc(M, Q, W, 0, 2 * Math.PI);
-        cH.stroke();
+        mainCanvasCtx.fillStyle = oG;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
+        mainCanvasCtx.fill();
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
+        mainCanvasCtx.stroke();
         W = sprites.bz(0).height;
         var X = .6 * H / W;
-        cH.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * sprites.bz(0).width), Math.floor(Q - .5 * X * W));
-        cH.drawImage(sprites.bz(0), 0, 0);
-        cH.setTransform(1, 0, 0, 1, 0, 0);
-        cH.fillStyle = oG;
-        cH.fillRect(r - I - display_buffer_length, display_buffer_length, I, D);
-        0 <= game_selected ? (cH.fillStyle = oO, cH.fillRect(r - I -
-            display_buffer_length, display_buffer_length, I, Math.floor(.25 * D))) : (cH.fillStyle = oj, cH.fillRect(r - I - display_buffer_length, display_buffer_length + Math.floor(.25 * D), I, Math.floor(.25 * D)));
-        cH.strokeStyle = cK;
-        cH.strokeRect(r - I - display_buffer_length, display_buffer_length, I, D);
-        cH.fillStyle = cK;
-        cH.font = L;
-        cH.textBaseline = cI;
+        mainCanvasCtx.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * sprites.bz(0).width), Math.floor(Q - .5 * X * W));
+        mainCanvasCtx.drawImage(sprites.bz(0), 0, 0);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        mainCanvasCtx.fillStyle = oG;
+        mainCanvasCtx.fillRect(r - I - display_buffer_length, display_buffer_length, I, D);
+        0 <= game_selected ? (mainCanvasCtx.fillStyle = oO, mainCanvasCtx.fillRect(r - I -
+            display_buffer_length, display_buffer_length, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = oj, mainCanvasCtx.fillRect(r - I - display_buffer_length, display_buffer_length + Math.floor(.25 * D), I, Math.floor(.25 * D)));
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(r - I - display_buffer_length, display_buffer_length, I, D);
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.font = L;
+        mainCanvasCtx.textBaseline = cI;
         W = Math.floor(.04 * I);
         X = Math.floor(.08 * D);
         for (var V = 3; 0 <= V; V--) {
             var na = Math.floor(display_buffer_length + (V + 1) * (D + 2 * X) / 5 - X);
-            cH.textAlign = mj;
-            cH.fillText(status_display_label[V], r - I - display_buffer_length + W, na);
-            cH.textAlign = ol;
-            cH.fillText(eP.split_into_pieces(J[V]), r - display_buffer_length - W, na)
+            mainCanvasCtx.textAlign = mj;
+            mainCanvasCtx.fillText(status_display_label[V], r - I - display_buffer_length + W, na);
+            mainCanvasCtx.textAlign = ol;
+            mainCanvasCtx.fillText(eP.split_into_pieces(J[V]), r - display_buffer_length - W, na)
         }
         if (0 !== next_games.length)
             for (X = 0; X < display_games_box_arrangement[1]; X++) {
@@ -5625,53 +5619,53 @@ function Lobby() {
                     V = P;
                     var ba = Math.floor(na),
                         ca = Math.floor(U);
-                    if (null === next_games[V].ls) cH.fillStyle = oG, cH.fillRect(ba, ca, z, z);
+                    if (null === next_games[V].canvas) mainCanvasCtx.fillStyle = oG, mainCanvasCtx.fillRect(ba, ca, z, z);
                     else {
                         var pa = z / 128;
-                        cH.setTransform(pa, 0, 0, pa, ba, ca);
-                        cH.drawImage(next_games[V].ls, 0, 0);
-                        cH.setTransform(1, 0, 0, 1, 0, 0)
+                        mainCanvasCtx.setTransform(pa, 0, 0, pa, ba, ca);
+                        mainCanvasCtx.drawImage(next_games[V].canvas, 0, 0);
+                        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
                     }
                     if (game_selected === next_games[V].game_id) {
                         pa = ba;
                         var S = ca,
                             O = Math.floor(.2 * z),
                             T = Math.floor(.3 * O);
-                        cH.fillStyle = oQ;
-                        cH.fillRect(pa + z - O, S, O, O);
-                        cH.fillStyle = gH;
-                        cH.fillRect(pa + z - O, S, 2, O);
-                        cH.fillRect(pa + z - O, S + O - 2, O, 2);
-                        fq.mB(pa + z - O + T, S + T, O - 2 * T);
-                        cH.setTransform(1, 0, 0, 1, 0, 0);
-                        cH.lineWidth = 3;
-                        cH.fillStyle = oQ
-                    } else cH.fillStyle = oF;
+                        mainCanvasCtx.fillStyle = oQ;
+                        mainCanvasCtx.fillRect(pa + z - O, S, O, O);
+                        mainCanvasCtx.fillStyle = gH;
+                        mainCanvasCtx.fillRect(pa + z - O, S, 2, O);
+                        mainCanvasCtx.fillRect(pa + z - O, S + O - 2, O, 2);
+                        fq.drawShape(pa + z - O + T, S + T, O - 2 * T);
+                        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                        mainCanvasCtx.lineWidth = 3;
+                        mainCanvasCtx.fillStyle = oQ
+                    } else mainCanvasCtx.fillStyle = oF;
                     S = Math.floor(display_games_box_length / 4);
-                    cH.fillRect(ba, Math.floor(ca + .8 *
+                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 *
                         display_games_box_length), z, Math.floor(display_games_box_length / 5));
-                    cH.fillRect(ba, ca, S, S);
-                    cH.fillStyle = gH;
-                    cH.fillRect(ba, Math.floor(ca + .8 * display_games_box_length), z, 2);
-                    cH.fillRect(ba + S - 2, ca, 2, S);
-                    cH.fillRect(ba, ca + S - 2, S, 2);
-                    cH.font = C;
-                    cH.textBaseline = cI;
-                    cH.textAlign = mj;
-                    cH.fillStyle = od;
-                    cH.fillText(next_games[V].joined.toString(), Math.floor(ba + .07 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
-                    cH.textAlign = cJ, cH.fillStyle = oM, cH.fillText(next_games[V].game_id.toString(), Math.floor(ba + .5 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
-                    cH.textAlign = ol;
-                    cH.fillStyle = oY;
-                    cH.fillText(next_games[V].time_left.toString(), Math.floor(ba + .93 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
-                    cH.strokeStyle = oe;
-                    cH.strokeRect(ba, ca, z, z);
+                    mainCanvasCtx.fillRect(ba, ca, S, S);
+                    mainCanvasCtx.fillStyle = gH;
+                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 * display_games_box_length), z, 2);
+                    mainCanvasCtx.fillRect(ba + S - 2, ca, 2, S);
+                    mainCanvasCtx.fillRect(ba, ca + S - 2, S, 2);
+                    mainCanvasCtx.font = C;
+                    mainCanvasCtx.textBaseline = cI;
+                    mainCanvasCtx.textAlign = mj;
+                    mainCanvasCtx.fillStyle = od;
+                    mainCanvasCtx.fillText(next_games[V].joined.toString(), Math.floor(ba + .07 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.textAlign = cJ, mainCanvasCtx.fillStyle = oM, mainCanvasCtx.fillText(next_games[V].game_id.toString(), Math.floor(ba + .5 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.textAlign = ol;
+                    mainCanvasCtx.fillStyle = oY;
+                    mainCanvasCtx.fillText(next_games[V].time_left.toString(), Math.floor(ba + .93 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.strokeStyle = oe;
+                    mainCanvasCtx.strokeRect(ba, ca, z, z);
                     O = Math.floor(.16 * display_games_box_length);
                     pa = O / 48;
-                    cH.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
-                    E.length > next_games[V].game_mode && cH.drawImage(E[next_games[V].game_mode], 0, 0);
-                    cH.setTransform(1, 0, 0, 1, 0, 0);
-                    next_games[V].contest && (V = sprites.bz(4), pa = .5 * display_games_box_length / V.width, cH.setTransform(pa, 0, 0, pa, Math.floor(ba + (display_games_box_length - pa * V.width) / 2), Math.floor(ca + (display_games_box_length - pa * V.height) / 2)), cH.globalAlpha = .6, cH.drawImage(V, 0, 0), cH.globalAlpha = 1, cH.setTransform(1, 0, 0, 1, 0, 0));
+                    mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
+                    E.length > next_games[V].game_mode && mainCanvasCtx.drawImage(E[next_games[V].game_mode], 0, 0);
+                    mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    next_games[V].contest && (V = sprites.bz(4), pa = .5 * display_games_box_length / V.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (display_games_box_length - pa * V.width) / 2), Math.floor(ca + (display_games_box_length - pa * V.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(V, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
                     P++;
                     if (P >= next_games.length) return;
                     na += display_games_box_length + display_buffer_length
@@ -5690,7 +5684,7 @@ function kG() {
     this.cG = function() {
         jh.v6()
     };
-    this.c7 = function(g, k) {
+    this.clicked = function(g, k) {
         var n = jh.pR(g, k, 5, 2);
         5 === n ? reload_client() : 6 === n && (name_input.init(), jh.lo(g, k, !1), c4.c5 = !0)
     }
@@ -5698,13 +5692,13 @@ function kG() {
 
 function kH() {
     function g(n, l, x, t, z, y, A, B, C) {
-        cH.fillStyle = z;
-        cH.fillRect(n, l, x, t);
-        0 <= B && (cH.fillStyle = "rgba(" + 22 * B + "," + (110 - 22 * B) + ",0,0.75)", cH.fillRect(n, l, (1 + B) * x / 6, t));
-        0 < C && (cH.fillStyle = "rgba(255,255,255,0.3)", cH.fillRect(n, l, C * x / max_entities, t));
-        cH.strokeStyle = cK;
-        cH.strokeRect(n, l, x, t);
-        0 !== y && (cH.fillStyle = cK, cH.font = bt + Math.floor(y * t) + bu, cH.fillText(A, Math.floor(n + x / 2), Math.floor(l + .52 * t)))
+        mainCanvasCtx.fillStyle = z;
+        mainCanvasCtx.fillRect(n, l, x, t);
+        0 <= B && (mainCanvasCtx.fillStyle = "rgba(" + 22 * B + "," + (110 - 22 * B) + ",0,0.75)", mainCanvasCtx.fillRect(n, l, (1 + B) * x / 6, t));
+        0 < C && (mainCanvasCtx.fillStyle = "rgba(255,255,255,0.3)", mainCanvasCtx.fillRect(n, l, C * x / max_entities, t));
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(n, l, x, t);
+        0 !== y && (mainCanvasCtx.fillStyle = cK, mainCanvasCtx.font = bt + Math.floor(y * t) + bu, mainCanvasCtx.fillText(A, Math.floor(n + x / 2), Math.floor(l + .52 * t)))
     }
     var k = [0, 0, 0, 0];
     this.dz = [{
@@ -5745,20 +5739,19 @@ function kH() {
     };
     this.jM = function() {
         var n;
-        if (dr.ds) return dr.dt.xY;
+        if (customMap.ds) return customMap.dt.xY;
         var l = 0;
         for (n = this.dz.length - 1; 0 <= n; n--) l += this.dz[n].mv;
         return l
     };
     this.lo = function(n, l) {
-        return js.hidden && js.lo(n,
-            l) ? !0 : -1 === this.pR(n, l) ? !1 : !0
+        return js.hidden && js.lo(n, l) ? !0 : -1 === this.pR(n, l) ? !1 : !0
     };
     this.xZ = function() {
         websocket_manager.remote = 0;
         websocket_manager.rk(0, 3) && multi_out.single_loaded(0);
         aJ.vp();
-        if (dr.ds) dr.xb();
+        if (customMap.ds) customMap.xb();
         else {
             var n = this.dz.length - 2;
             n = 0 > n ? 7 : n;
@@ -5772,16 +5765,16 @@ function kH() {
     this.click = function(n, l) {
         return !1
     };
-    this.c7 = function(n, l) {
+    this.clicked = function(n, l) {
         if (cD.hidden || cC.mE[1].ih.hidden || cC.mE[2].ih.hidden) return !1;
-        if (js.hidden && !dr.ds) return js.c7(n, l);
+        if (js.hidden && !customMap.ds) return js.clicked(n, l);
         var x = this.pR(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.vu(), !0;
-        if (1 === x) return dr.ds ? (dr.pW(), c4.c5 = !0) : js.show(), !0;
+        if (1 === x) return customMap.ds ? (customMap.pW(), c4.c5 = !0) : js.show(), !0;
         if (2 === x) return this.tj(),
             this.xZ(), !0;
-        if (dr.ds) return !1;
+        if (customMap.ds) return !1;
         if (27 === x) return 8 > this.dz.length && (this.dz.push({
             bD: 0,
             mv: max_entities
@@ -5830,16 +5823,16 @@ function kH() {
     };
     this.cG = function() {
         var n;
-        cH.lineWidth = 2;
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
         var l = (k[2] - 2 * display_buffer_length) / 3,
             x = k[2] / 6;
         g(k[0],
             k[1], l, x, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
-        g(k[0] + l + display_buffer_length, k[1], l, x, "rgba(" + (dr.ds ? 128 : 0) + ",128,128,0.75)", .4, dr.ds ? "Reset" : "Maps", -1, -1);
+        g(k[0] + l + display_buffer_length, k[1], l, x, "rgba(" + (customMap.ds ? 128 : 0) + ",128,128,0.75)", .4, customMap.ds ? "Reset" : "Maps", -1, -1);
         g(k[0] + k[2] - l, k[1], l, x, "rgba(0,128,0,0.75)", .4, "Start", -1, -1);
-        if (!dr.ds) {
+        if (!customMap.ds) {
             var t = k[2] / 10;
             l = (k[2] - t - 2 * display_buffer_length) / 2;
             for (n = 0; n < this.dz.length; n++) {
@@ -5853,21 +5846,21 @@ function kH() {
                     display_buffer_length);
                 g(k[0], z, t, t, "rgba(128,128,20,0.75)", 0, null, -1, -1);
                 n = k[0];
-                cH.fillStyle = cK;
+                mainCanvasCtx.fillStyle = cK;
                 l = me(2, Math.floor(.5 * t));
                 l -= l % 2;
                 x = me(2, Math.floor(.1 * t));
                 x -= x % 2;
                 t = Math.floor((t - l) / 2);
                 var y = Math.floor(t + (l - x) / 2);
-                cH.fillRect(n + t, z + y, l, x);
-                cH.fillRect(n + y, z + t, x, l)
+                mainCanvasCtx.fillRect(n + t, z + y, l, x);
+                mainCanvasCtx.fillRect(n + y, z + t, x, l)
             }
             js.hidden && js.cG()
         }
     };
     this.xg = function(n) {
-        return 0 === n && 1 === this.dz[n].mv ? "You" : dG.dl[this.dz[n].bD]
+        return 0 === n && 1 === this.dz[n].mv ? "You" : dG.botDifficultyLabel[this.dz[n].bD]
     };
     this.xh = function(n) {
         return 1 === this.dz[n].mv ? "1 Player" : this.dz[n].mv + " Players"
@@ -5875,7 +5868,7 @@ function kH() {
 }
 
 function p5() {
-    this.c1 = this.b3 = 0;
+    this.width = this.b3 = 0;
     this.mE = null;
     this.init = function() {
         this.mE = [];
@@ -5899,20 +5892,20 @@ function p5() {
         });
         this.mE[2].ih.vE();
         this.b3 = this.mE.length;
-        this.c1 = 0
+        this.width = 0
     };
     this.rs = function() {
-        this.c1 = Math.floor((zoom ? .063 : .04) * bq);
-        this.c1 += 4 - this.c1 % 4;
+        this.width = Math.floor((zoom ? .063 : .04) * bq);
+        this.width += 4 - this.width % 4;
         this.mE[0].fJ = display_buffer_length;
-        this.mE[0].fK = cB - this.c1 - display_buffer_length;
-        for (var g = 1; g < this.b3; g++) this.mE[g].fJ = this.mE[g - 1].fJ + Math.floor(zoom ? 1.5 * display_buffer_length : 3.7 * display_buffer_length) + this.c1, this.mE[g].fK = this.mE[0].fK
+        this.mE[0].fK = cB - this.width - display_buffer_length;
+        for (var g = 1; g < this.b3; g++) this.mE[g].fJ = this.mE[g - 1].fJ + Math.floor(zoom ? 1.5 * display_buffer_length : 3.7 * display_buffer_length) + this.width, this.mE[g].fK = this.mE[0].fK
     };
     this.pR =
         function(g, k) {
             if (!sprites.bx()) return -1;
             for (var n = this.b3 - 1; 0 <= n; n--)
-                if (g >= this.mE[n].fJ && k >= this.mE[n].fK && g < this.mE[n].fJ + this.c1 && k < this.mE[n].fK + this.c1) return n;
+                if (g >= this.mE[n].fJ && k >= this.mE[n].fK && g < this.mE[n].fJ + this.width && k < this.mE[n].fK + this.width) return n;
             return -1
         };
     this.xk = function() {
@@ -5921,12 +5914,12 @@ function p5() {
         return !1
     };
     this.us = function() {
-        return this.mE[1].ih.hidden ? (this.mE[1].ih.c7(-5E3, -5E3, 0), !0) : this.mE[2].ih.hidden ? (this.mE[2].ih.c7(-5E3, -5E3), !0) : !1
+        return this.mE[1].ih.hidden ? (this.mE[1].ih.clicked(-5E3, -5E3, 0), !0) : this.mE[2].ih.hidden ? (this.mE[2].ih.clicked(-5E3, -5E3), !0) : !1
     };
-    this.c7 = function(g, k, n) {
+    this.clicked = function(g, k, n) {
         if (n) {
-            if (this.mE[1].ih.hidden) return this.mE[1].ih.c7(g, k, 0), !0;
-            if (this.mE[2].ih.hidden) return this.mE[2].ih.c7(g, k), !0
+            if (this.mE[1].ih.hidden) return this.mE[1].ih.clicked(g, k, 0), !0;
+            if (this.mE[2].ih.hidden) return this.mE[2].ih.clicked(g, k), !0
         }
         g = this.pR(g, k);
         if (n) {
@@ -5945,28 +5938,28 @@ function p5() {
     };
     this.cG = function() {
         if (sprites.bx()) {
-            cH.imageSmoothingEnabled = !0;
-            for (var g = this.b3 - 1; 0 <= g; g--) cH.fillStyle =
-                this.mE[g].m3 ? mb : hy, cH.fillRect(this.mE[g].fJ, this.mE[g].fK, this.c1, this.c1), 0 === g ? this.xm(g, sprites.bz(15)) : 1 === g ? this.xn() : 2 === g && this.xo(), cH.setTransform(1, 0, 0, 1, 0, 0), cH.lineWidth = oy, cH.strokeStyle = cK, cH.strokeRect(this.mE[g].fJ, this.mE[g].fK, this.c1, this.c1);
-            cH.imageSmoothingEnabled = !1
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            for (var g = this.b3 - 1; 0 <= g; g--) mainCanvasCtx.fillStyle =
+                this.mE[g].m3 ? mb : hy, mainCanvasCtx.fillRect(this.mE[g].fJ, this.mE[g].fK, this.width, this.width), 0 === g ? this.xm(g, sprites.bz(15)) : 1 === g ? this.xn() : 2 === g && this.xo(), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0), mainCanvasCtx.lineWidth = oy, mainCanvasCtx.strokeStyle = cK, mainCanvasCtx.strokeRect(this.mE[g].fJ, this.mE[g].fK, this.width, this.width);
+            mainCanvasCtx.imageSmoothingEnabled = !1
         }
     };
     this.xm = function(g, k) {
-        var n = .08 * this.c1,
-            l = (this.c1 - 2 * n) / k.width;
-        cH.setTransform(l, 0, 0, l, this.mE[g].fJ + n, this.mE[g].fK + (this.c1 - l * k.height) / 2);
-        cH.drawImage(k, 0, 0)
+        var n = .08 * this.width,
+            l = (this.width - 2 * n) / k.width;
+        mainCanvasCtx.setTransform(l, 0, 0, l, this.mE[g].fJ + n, this.mE[g].fK + (this.width - l * k.height) / 2);
+        mainCanvasCtx.drawImage(k, 0, 0)
     };
     this.xn = function() {
-        var g = .06 * this.c1,
-            k = (this.c1 - 2 * g) / a5.c1;
-        cH.setTransform(k, 0, 0, k, this.mE[1].fJ + g, this.mE[1].fK + g);
-        cH.drawImage(a5.l7[4], 0, 0)
+        var g = .06 * this.width,
+            k = (this.width - 2 * g) / a5.width;
+        mainCanvasCtx.setTransform(k, 0, 0, k, this.mE[1].fJ + g, this.mE[1].fK + g);
+        mainCanvasCtx.drawImage(a5.l7[4], 0, 0)
     };
     this.xo = function() {
-        cH.setTransform(1, 0, 0, 1, this.mE[2].fJ, this.mE[2].fK);
-        for (var g = this.c1 / 4, k = 3; 0 <= k; k--)
-            for (var n = 3; 0 <= n; n--) cH.fillStyle = "rgb(" + Math.floor(367 * (k + 1) * (n + 1) % 256) + "," + Math.floor(687 * (k + 1) * (n + 1) % 256) + "," + Math.floor(651 * (k + 1) * (n + 1) % 256) + ")", cH.fillRect(k * g, n * g, g, g)
+        mainCanvasCtx.setTransform(1, 0, 0, 1, this.mE[2].fJ, this.mE[2].fK);
+        for (var g = this.width / 4, k = 3; 0 <= k; k--)
+            for (var n = 3; 0 <= n; n--) mainCanvasCtx.fillStyle = "rgb(" + Math.floor(367 * (k + 1) * (n + 1) % 256) + "," + Math.floor(687 * (k + 1) * (n + 1) % 256) + "," + Math.floor(651 * (k + 1) * (n + 1) % 256) + ")", mainCanvasCtx.fillRect(k * g, n * g, g, g)
     };
     this.vy = function() {
         for (var g = 2; 1 <= g; g--)
@@ -6029,7 +6022,7 @@ function Name_input() {
         jk.cE(0, !1)
     };
     this.xs = function(t) {
-        return 0 === t ? jh.c1 : 1 === t ? Math.floor(.3 * jh.cw) : 2 === t ? jk.bz(0).input.style.font : username
+        return 0 === t ? jh.width : 1 === t ? Math.floor(.3 * jh.cw) : 2 === t ? jk.bz(0).input.style.font : username
     };
     this.wD = function() {
         username = jk.bz(0).input.value.trim();
@@ -6040,24 +6033,24 @@ function Name_input() {
             jk.bz(0).input.value = username
         }
     };
-    this.c7 = function(t, z) {
+    this.clicked = function(t, z) {
         c4.xt();
         1 === jh.pR(t, z, 1, 1) ? save_account() || vote() || (set_android_state(10), l() ? (this.tj(), save_username(username), dy.init()) : jj.vd(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
     };
     this.vs = function() {
-        save_account() || vote() || (set_android_state(10), void 0 !== username && names.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % websocket_manager.terriWsCount) : ji.vV(jt.xy - 1), l() ? sprites.bx() ? (this.tj(), save_username(username), dr.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
+        save_account() || vote() || (set_android_state(10), void 0 !== username && names.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % websocket_manager.terriWsCount) : ji.vV(jt.xy - 1), l() ? sprites.bx() ? (this.tj(), save_username(username), customMap.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
     };
     this.y2 = function() {
         return !cC.xk() && !cD.hidden && !nW.hidden
     };
     this.cG = function() {
         if (this.y2()) {
-            cH.imageSmoothingEnabled = !0;
+            mainCanvasCtx.imageSmoothingEnabled = !0;
             var t = sprites.lB("territorial.io"),
-                z = 1.1 * jh.c1 / t.width;
-            cH.setTransform(z, 0, 0, z, Math.floor((gE - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
-            cH.drawImage(t, 0, 0);
-            cH.setTransform(1, 0, 0, 1, 0, 0);
+                z = 1.1 * jh.width / t.width;
+            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((gE - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
+            mainCanvasCtx.drawImage(t, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             jh.v3()
         }
     };
@@ -6218,8 +6211,8 @@ function Pixel() {
         matrix_processor_init();
         if (team_game)
             for (var K, J = max_entities - 1; 0 <= J; J--) K = teams.im[teams.team_array[J]], D_then_index = divide_floor((x[K][3] + 1) * ce.random(), ce.value(100)), inner_red[J] = l[K][0] + D_then_index * x[K][0], inner_green[J] = l[K][1] + D_then_index * x[K][1], inner_blue[J] = l[K][2] + D_then_index * x[K][2];
-        else if (dr.ds && dr.dt.ya)
-            for (D_then_index = dr.dt.ya, K = entity_count - 1; 0 <= K; K--) inner_red[K] = 4 * D_then_index[K][0], inner_green[K] = 4 * D_then_index[K][1], inner_blue[K] = 4 * D_then_index[K][2];
+        else if (customMap.ds && customMap.dt.ya)
+            for (D_then_index = customMap.dt.ya, K = entity_count - 1; 0 <= K; K--) inner_red[K] = 4 * D_then_index[K][0], inner_green[K] = 4 * D_then_index[K][1], inner_blue[K] = 4 * D_then_index[K][2];
         else {
             for (K = max_entities - 1; K >= player_count; K--) inner_red[K] = 4 * divide_floor(64 * ce.random(), ce.value(100)), inner_green[K] = 4 * divide_floor(64 * ce.random(), ce.value(100)), inner_blue[K] = 4 * divide_floor(64 * ce.random(), ce.value(100));
             for (K = player_count - 1; 0 <= K; K--) inner_red[K] = 4 * D_then_index[K].color[0], inner_green[K] = 4 * D_then_index[K].color[1], inner_blue[K] = 4 * D_then_index[K].color[2]
@@ -6446,7 +6439,7 @@ function kk() {
     this.init = function() {
         k = 0
     };
-    this.dF = function() {
+    this.update = function() {
         if (0 !== k)
             if (0 === is_alive[my_id] || attacks.sent_boats_count(my_id) === attacks.ongoing_attack_count(my_id)) k = 0;
             else {
@@ -6486,7 +6479,7 @@ function fm(g) {
 }
 
 function zG(g) {
-    hu.lG(g) && spectators++;
+    hu.isHuman(g) && spectators++;
     var k = attacks.get_attackers(g);
     0 === k.length ? g === my_id && zM() : (zN(g, k), zO(g, k))
 }
@@ -6511,11 +6504,11 @@ function zQ(g) {
 function zO(g, k) {
     var n, l = k[zQ(k)];
     9 === gamemode && 1 === teams.team_array[g] && ce.dP(8) && e2.zS(l);
-    if (g === my_id) announcements.fl(l, 1), zM();
+    if (g === my_id) announcements.showGenericMessages(l, 1), zM();
     else {
         for (n = k.length - 1; 0 <= n; n--)
             if (k[n] === my_id) {
-                announcements.fl(g, 0);
+                announcements.showGenericMessages(g, 0);
                 return
             } g < player_count && announcements.ml(0, g, l)
     }
@@ -6539,90 +6532,90 @@ function zH(g) {
         }
 }
 
-function kq() {
-    function g(x) {
-        (x = x.target.files) && 0 < x.length && jv.zW(x[0])
+function LoadCustom() {
+    function onupload(file) {
+        (file = file.target.files) && 0 < file.length && loadCustom.checkFileType(file[0])
     }
 
-    function k(x) {
-        var t = new Image;
-        t.onload = n;
-        t.src = x.target.result
+    function onload(file) {
+        var img = new Image;
+        img.onload = imgLoaded;
+        img.src = file.target.result
     }
 
-    function n(x) {
-        var t = x.target;
-        x = t.width;
-        var z = t.height;
-        4096 < x || 4096 < z || 10 > x || 10 > z ? alert("Image w & h must be between 10 and 4096.") : (current_map = const_custom_map, x7 = 0, map_width = x, map_height = z, hs.width = map_width, hs.height = map_height, pl.drawImage(t, 0, 0), xI = pl.getImageData(0, 0, map_width, map_height).data)
+    function imgLoaded(imageThenWidth) {
+        var img = imageThenWidth.target;
+        imageThenWidth = img.width;
+        var imgHeight = img.height;
+        4096 < imageThenWidth || 4096 < imgHeight || 10 > imageThenWidth || 10 > imgHeight ? alert("Image width & height must be between 10 and 4096.") : (current_map = const_custom_map, x7 = 0, map_width = imageThenWidth, map_height = imgHeight, hs.width = map_width, hs.height = map_height, pl.drawImage(img, 0, 0), xI = pl.getImageData(0, 0, map_width, map_height).data)
     }
-    var l;
+    var uploader;
     this.init = function() {
-        l = document.createElement("input");
-        l.type = "file";
-        l.onchange = g
+        uploader = document.createElement("input");
+        uploader.type = "file";
+        uploader.onchange = onupload
     };
     this.u0 = function() {
-        l.click()
+        uploader.click()
     };
     this.zU = function(x) {
-        g(x)
+        onupload(x)
     };
-    this.zW = function(x) {
-        var t = x.name.split(".");
-        var z = t[t.length - 1].toLowerCase();
-        if ("json" === z) dr.za(x);
-        else if ("gif" === z || "jpg" === z || "jpeg" === z || "png" === z) dr.zb = t[0], z = new FileReader, z.onload = k, z.readAsDataURL(x)
+    this.checkFileType = function(file) {
+        var split_fileName = file.name.split(".");
+        var typeThenReader = split_fileName[split_fileName.length - 1].toLowerCase();
+        if ("json" === typeThenReader) customMap.readJSON(file);
+        else if ("gif" === typeThenReader || "jpg" === typeThenReader || "jpeg" === typeThenReader || "png" === typeThenReader) customMap.mapName = split_fileName[0], typeThenReader = new FileReader, typeThenReader.onload = onload, typeThenReader.readAsDataURL(file)
     };
     this.pb = function(x) {
         if (0 === aJ.pa() || 2 === aJ.pa()) x.stopPropagation(), x.preventDefault(), x.dataTransfer.dropEffect = "copy"
     };
     this.pc = function(x) {
-        if (0 === aJ.pa() || 2 === aJ.pa()) x.stopPropagation(), x.preventDefault(), (x = x.dataTransfer.files) && 0 < x.length && jv.zW(x[0])
+        if (0 === aJ.pa() || 2 === aJ.pa()) x.stopPropagation(), x.preventDefault(), (x = x.dataTransfer.files) && 0 < x.length && loadCustom.checkFileType(x[0])
     }
 }
 
-function ko() {
-    this.zh = null;
+function AntiFullsend() {
+    this.maxAmount = null;
     this.init = function() {
-        this.zh = 10 !== gamemode ? null : new Uint32Array(max_entities)
+        this.maxAmount = 10 !== gamemode ? null : new Uint32Array(max_entities)
     };
-    this.dF = function() {
-        10 === gamemode && this.zi()
+    this.update = function() {
+        10 === gamemode && this.calcMaxAmount()
     };
-    this.zi = function() {
-        var g, k = this.zh,
-            n = alive_entities,
-            l = troops;
-        for (g = alive_count - 1; 0 <= g; g--) {
-            var x = n[g];
-            if (!(x >= player_count)) {
-                var t = Math.max(divide_floor(l[x], 4), 2048);
-                var z = Math.max(ay.interest(x), 100);
-                k[x] += divide_floor(z * t, 1E4);
-                k[x] > t && (k[x] = t)
+    this.calcMaxAmount = function() {
+        var index, varMaxAmount = this.maxAmount,
+            varAliveEntities = alive_entities,
+            varTroops = troops;
+        for (index = alive_count - 1; 0 <= index; index--) {
+            var id = varAliveEntities[index];
+            if (!(id >= player_count)) {
+                var quarterAmount = Math.max(divide_floor(varTroops[id], 4), 2048);
+                var interest = Math.max(ay.interest(id), 100);
+                varMaxAmount[id] += divide_floor(interest * quarterAmount, 1E4);
+                varMaxAmount[id] > quarterAmount && (varMaxAmount[id] = quarterAmount)
             }
         }
     };
-    this.ts = function(g, k) {
-        if (k > this.zh[g]) return k = this.zh[g], this.zh[g] = 0, k;
-        this.zh[g] -= k;
-        return k
+    this.reduceAmount = function(author, amount) {
+        if (amount > this.maxAmount[author]) return amount = this.maxAmount[author], this.maxAmount[author] = 0, amount;
+        this.maxAmount[author] -= amount;
+        return amount
     }
 }
 
-function kr() {
+function CustomMap() {
     function g(z) {
-        dr.ds = !0;
-        dr.zo(JSON.parse(z.target.result));
-        dr.lJ()
+        customMap.ds = !0;
+        customMap.zo(JSON.parse(z.target.result));
+        customMap.lJ()
     }
 
     function k(z) {
         var y;
         if (22 >= z.length) return !1;
-        dr.dt.map_id = 0;
-        dr.dt.xB = 0;
+        customMap.dt.map_id = 0;
+        customMap.dt.xB = 0;
         xJ(0, 0);
         "data:image/png;base64," !== z.substring(0, 22) && (z = "data:image/png;base64," + z);
         var A = new Image;
@@ -6632,7 +6625,7 @@ function kr() {
             4096 < map_width || 4096 < map_height || 10 > map_width || 10 > map_height ? (xJ(0, 0), alert("Image w & h must be between 10 and 4096.")) : (current_map = const_custom_map, x7 = 0, hs.width = map_width, hs.height = map_height, pl.drawImage(A, 0, 0), y = pl.getImageData(0, 0, map_width, map_height), xI = y.data)
         };
         A.src = z;
-        dr.dt.zz = "";
+        customMap.dt.zz = "";
         return !0
     }
 
@@ -6658,7 +6651,7 @@ function kr() {
     }
     this.ds = !1;
     this.dt = null;
-    this.zb = "";
+    this.mapName = "";
     this.pW = function() {
         this.ds = !1;
         this.dt = null
@@ -6675,7 +6668,7 @@ function kr() {
             status: 0
         }]
     };
-    this.za = function(z) {
+    this.readJSON = function(z) {
         var y = new FileReader;
         y.onload = g;
         y.readAsText(z)
@@ -6691,7 +6684,7 @@ function kr() {
         this.dt.zm = x(z.selectableName, !1);
         this.dt.zj =
             x(z.selectableColor, !1);
-        this.zb = this.dt.zb = n(z.mapName, 1, 25, "Custom Map");
+        this.mapName = this.dt.mapName = n(z.mapName, 1, 25, "Custom Map");
         var y = this.dt;
         var A = z.description;
         var B;
@@ -6770,7 +6763,7 @@ function Attacks() {
         }
         B !== ongoing_attacks_count[y] && (C = remaining_troops[starting_index_in_attack_array(y) + B], this.remove_attack(y, B), this.set(y, C, max_entities))
     };
-    this.co = function(id, target) { //co is also used in other context, in this function check if attacking someone
+    this.check = function(id, target) {
         var index, starting_index = starting_index_in_attack_array(id);
         for (index = ongoing_attacks_count[id] - 1; 0 <= index; index--)
             if (0 === boat_ids[starting_index + index] && target_ids[starting_index + index] === target) return !0;
@@ -6837,13 +6830,13 @@ function Attacks() {
         remaining_troops[starting_index + ongoing_attacks_count[id]] = attack_amount;
         boat_ids[starting_index + ongoing_attacks_count[id]] = 0;
         ongoing_attacks_count[id]++;
-        id < player_count && (target === my_id ? announcements.fl(id, 5) : id === my_id && eA.mn(target))
+        id < player_count && (target === my_id ? announcements.showGenericMessages(id, 5) : id === my_id && eA.mn(target))
     };
-    this.tt = function(id, A, B) {
+    this.addBoat = function(id, amount, B) {
         var starting_index = starting_index_in_attack_array(id);
         is_alive[id] = 2;
         target_ids[starting_index + ongoing_attacks_count[id]] = 0;
-        remaining_troops[starting_index + ongoing_attacks_count[id]] = A;
+        remaining_troops[starting_index + ongoing_attacks_count[id]] = amount;
         boat_ids[starting_index + ongoing_attacks_count[id]] = B;
         ongoing_attacks_count[id]++
     };
@@ -6870,19 +6863,19 @@ function Attacks() {
 }
 
 function kN() {
-    var g, k, n, l, x, t;
+    var g, k, n, l, interests, const_maxEntities;
     this.init = function() {
         l = n = k = g = 10
     };
     this.a0I = function() {
-        t = 512;
-        x = new Uint16Array(t);
-        for (var z = 0; z < t; z++) x[z] = 100 + bl(divide_floor(25600 * z, t - 4), 9)
+        const_maxEntities = 512;
+        interests = new Uint16Array(const_maxEntities);
+        for (var id = 0; id < const_maxEntities; id++) interests[id] = 100 + bl(divide_floor(25600 * id, const_maxEntities - 4), 9)
     };
     this.sH = function() {
         return l
     };
-    this.dF = function() {
+    this.update = function() {
         if (0 >= --n) {
             n = g;
             var z, y = troops[my_id];
@@ -6890,34 +6883,34 @@ function kN() {
             for (z = alive_count - 1; 0 <= z; z--) {
                 var A = divide_floor(ay.interest(alive_entities[z]) * troops[alive_entities[z]], 1E4);
                 troops[alive_entities[z]] += 1 > A ? 1 : A;
-                ay.az(alive_entities[z])
+                ay.limitTroops(alive_entities[z])
             }
             statistics.numbers[9] += troops[my_id] - y;
             if (0 >= --l) {
                 l = k;
                 z = troops[my_id];
-                for (A = alive_count - 1; 0 <= A; A--) troops[alive_entities[A]] += land[alive_entities[A]], ay.az(alive_entities[A]);
+                for (A = alive_count - 1; 0 <= A; A--) troops[alive_entities[A]] += land[alive_entities[A]], ay.limitTroops(alive_entities[A]);
                 statistics.numbers[8] += troops[my_id] - z
             }
         }
     };
-    this.interest = function(z) {
-        var y = x[divide_floor((t - 1) * land[z], j9)];
+    this.interest = function(id) {
+        var interest = interests[divide_floor((const_maxEntities - 1) * land[id], j9)];
         if (1920 > c4.time_elapsed()) {
             var A = divide_floor(100 * (13440 - 6 * c4.time_elapsed()), 1920);
-            y = A > y ? A : y
+            interest = A > interest ? A : interest
         }
-        A = this.dJ(z);
-        troops[z] > A && (y -= divide_floor(2 * y * (troops[z] - A), A));
-        return 0 > y ? 0 : 700 < y ? 700 : y
+        A = this.dJ(id);
+        troops[id] > A && (interest -= divide_floor(2 * interest * (troops[id] - A), A));
+        return 0 > interest ? 0 : 700 < interest ? 700 : interest
     };
     this.dJ = function(z) {
         z = 100 * land[z];
         return z > jB ? jB : z
     };
-    this.az = function(z) {
-        var y = land[z] * max_troops_to_land_ratio;
-        troops[z] = troops[z] > troop_cap ? troop_cap : troops[z] > y ? y : troops[z]
+    this.limitTroops = function(id) {
+        var maxTroops = land[id] * max_troops_to_land_ratio;
+        troops[id] = troops[id] > troop_cap ? troop_cap : troops[id] > maxTroops ? maxTroops : troops[id]
     }
 }
 
@@ -6940,7 +6933,7 @@ function kO() {
         U = 1;
         R = P = 0;
         V.clearRect(0, 0, gE, cB);
-        for (var O = gC / g7, T = gD / g7, Y = (gE + gC) / g7, Z = (cB + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== is_alive[my_id] && hu.lG(my_id), za = alive_count - 1; 0 <= za; za--)
+        for (var O = gC / g7, T = gD / g7, Y = (gE + gC) / g7, Z = (cB + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== is_alive[my_id] && hu.isHuman(my_id), za = alive_count - 1; 0 <= za; za--)
             if (ia = alive_entities[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
                 la = Math.floor(gE * (E[ia] + G[ia] / 2 - O) / (Y - O));
                 ma = Math.floor(cB * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
@@ -6964,10 +6957,10 @@ function kO() {
                                 ta = va,
                                 ya = sa;
                             sa = ba[sa];
-                            var wa = .9 * ta / a5.c1,
-                                Ca = Math.floor(ra - .5 * wa * a5.c1 - .05 * ta);
+                            var wa = .9 * ta / a5.width,
+                                Ca = Math.floor(ra - .5 * wa * a5.width - .05 * ta);
                             V.globalAlpha = x(ta);
-                            for (var Ba = Math.floor(Aa - .5 * ta / D[ya] - .4 * ta - wa * a5.c1), xa = 0; 2 > xa; xa++) V.setTransform(wa, 0, 0, wa, Ba, Ca), V.drawImage(a5.l7[sa], 0, 0), Ba = Math.floor(Aa +
+                            for (var Ba = Math.floor(Aa - .5 * ta / D[ya] - .4 * ta - wa * a5.width), xa = 0; 2 > xa; xa++) V.setTransform(wa, 0, 0, wa, Ba, Ca), V.drawImage(a5.l7[sa], 0, 0), Ba = Math.floor(Aa +
                                 .5 * ta / D[ya] + .4 * ta);
                             V.globalAlpha = 1;
                             V.setTransform(1, 0, 0, 1, 0, 0);
@@ -6982,8 +6975,8 @@ function kO() {
                     ta = ia;
                     ya = -1;
                     for (qa = 4; 1 <= qa; qa--) 0 < ca[ta + qa * max_entities] && ya++;
-                    for (qa = 1; 5 > qa; qa++) 0 < ca[ta + qa * max_entities] && (sa = Aa, wa = qa, Ca = ta, Ba = ca[ta + qa * max_entities], xa = .8 * sa / a5.c1, V.setTransform(xa, 0, 0, xa, Math.floor(ra - .5 * xa *
-                        a5.c1 - .534 * ya * sa), Math.floor(va + 1.4 * xa * a5.c1)), V.globalAlpha = x(sa), V.drawImage(1 === wa ? a5.l7[ba[Ca + max_entities]] : 2 === wa && 255 > Ba ? hu.l5[2] : hu.l4[wa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), ya -= 2)
+                    for (qa = 1; 5 > qa; qa++) 0 < ca[ta + qa * max_entities] && (sa = Aa, wa = qa, Ca = ta, Ba = ca[ta + qa * max_entities], xa = .8 * sa / a5.width, V.setTransform(xa, 0, 0, xa, Math.floor(ra - .5 * xa *
+                        a5.width - .534 * ya * sa), Math.floor(va + 1.4 * xa * a5.width)), V.globalAlpha = x(sa), V.drawImage(1 === wa ? a5.l7[ba[Ca + max_entities]] : 2 === wa && 255 > Ba ? hu.l5[2] : hu.l4[wa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), ya -= 2)
                 }
                 qa = Math.floor(L * fa);
                 qa < M || (V.font = bt + qa + bu, V.fillText([7, 11].includes(gamemode) && font || gamemode == 8 ? nickname[ia] + (font ? ` (${ia})` : '') : eP.split_into_pieces(troops[ia]), la, ma + Math.floor(.78 * fa)))
@@ -7001,8 +6994,8 @@ function kO() {
     }
 
     function l(O, T, Y, Z, la) {
-        var ma = 1.2 * Y / a5.c1;
-        V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * a5.c1 - .8 * la * Y), Math.floor(T - 1.5 * ma * a5.c1));
+        var ma = 1.2 * Y / a5.width;
+        V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * a5.width - .8 * la * Y), Math.floor(T - 1.5 * ma * a5.width));
         V.globalAlpha = x(Y);
         V.drawImage(a5.l7[Z], 0, 0);
         V.globalAlpha = 1;
@@ -7107,7 +7100,7 @@ function kO() {
         0 === is_alive[O] || 4 !== T && 2 === player_status[O] || (O += T * max_entities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oD(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
     };
     this.cG = function() {
-        W && (1 !== U ? (cH.imageSmoothingEnabled = !0, cH.setTransform(U, 0, 0, U, 0, 0), cH.drawImage(X, -R / U, -P / U), cH.setTransform(1, 0, 0, 1, 0, 0)) : (cH.imageSmoothingEnabled = !1, cH.drawImage(X, -R, -P)))
+        W && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
     };
     this.rS = function(O, T) {
         R += O;
@@ -7128,7 +7121,7 @@ function kO() {
     this.gG = function(O) {
         return I[O]
     };
-    this.dF = function() {
+    this.update = function() {
         if (4 <= ++C) {
             var O, T;
             C = 0;
@@ -7232,9 +7225,9 @@ function kP() {
             for (l = x.length - 1; 0 <= l; l--) g[n] = g[n].replace(x[l], t[l])
     };
     this.jT = function() {
-        if (dr.ds && dr.dt.zn) {
+        if (customMap.ds && customMap.dt.zn) {
             var n;
-            for (n = player_count; n < max_entities; n++) nickname[n] = dr.dt.zn[n % entity_count]
+            for (n = player_count; n < max_entities; n++) nickname[n] = customMap.dt.zn[n % entity_count]
         } else if (9 === gamemode) {
             var l = ce.random(),
                 x = k.length,
@@ -7266,7 +7259,7 @@ function kp() {
         this.a1a = [];
         this.a1b = []
     };
-    this.dF = function() {
+    this.update = function() {
         0 <= this.a1a.length && this.a1c(this.a1a);
         0 <= this.a1b.length && this.a1c(this.a1b)
     };
@@ -7353,7 +7346,7 @@ function kn() {
                 }
         }
     };
-    this.dF = function() {
+    this.update = function() {
         singleplayer || (30 === this.nb && this.a1i(), this.nb = (this.nb + 1) % 60)
     };
     this.a1i = function() {
@@ -7362,7 +7355,7 @@ function kn() {
             var n = k[g];
             if (attacks.below_attack_cap(n)) {
                 var l = divide_floor(20 * troops[n], 100);
-                60 > l || (0 === pixels_bordering_land[n].length ? !dE.dF(n, 2) && team_game && dI(n, l, 0, 0) : team_game ? dT(n, l) : db(n, l))
+                60 > l || (0 === pixels_bordering_land[n].length ? !dE.update(n, 2) && team_game && dI(n, l, 0, 0) : team_game ? dT(n, l) : db(n, l))
             }
         }
     }
@@ -7397,7 +7390,7 @@ function Websocket_manager() {
     this.getEquivalentLobby = function() {
         return this.lobby < this.originCount ? this.lobby : this.lobby - this.lobbyCount
     };
-    this.dF = function() {
+    this.update = function() {
         for (var remote = this.terriWsCount - 1; 0 <= remote; remote--) this.is_open(remote) && c4.time > websockets_info[remote].time + 15E3 && multi_out.anti_disconnect_15s(remote, websockets_info[remote].a1q)
     };
     this.rk = function(remote, x) {
@@ -7482,8 +7475,8 @@ function troop_hash() {
     for (id = alive_count - 1; 0 <= id; id--) sum += troops[alive_entities[id]];
     return sum % 4096
 }
-var p7, cH, version, version_hash, r, s, pK, bq, gE, cB, device_pixel_ratio, host_name, is_ios, ios, droid, device_version, zoom, has_had_error_before = !1,
-    is_not_top_window, not_using_client, client_id, gy, so, h8, a5, statistics, hv, cookies_window, c4, teams, eT, cD, fi, vv, nW, uZ, time_hash, const_2_s52, error_line = 0,
+var mainCanvas, mainCanvasCtx, version, version_hash, r, s, pK, bq, gE, cB, device_pixel_ratio, host_name, is_ios, ios, droid, device_version, zoom, has_had_error_before = !1,
+    is_not_top_window, not_using_client, client_id, gy, so, h8, a5, statistics, hv, cookies_window, c4, teams, eT, cD, endGame, vv, nW, uZ, time_hash, const_2_s52, error_line = 0,
     error_message = "",
     start_function_called = !1;
 
@@ -7542,7 +7535,7 @@ function main() {
     uZ.init();
     cD = new u9;
     cD.init();
-    fi = new ib;
+    endGame = new EndGame;
     vv = new ut;
     nW = new ui;
     p3();
@@ -7551,12 +7544,12 @@ function main() {
     jm.init();
     jQ.init();
     aJ.init();
-    jv.init();
+    loadCustom.init();
     jt.init();
     websocket_manager.init();
     jg.init();
     jS.init();
-    p6();
+    addCanvasEventListeners();
     sprites.init();
     c4.c5 = !0;
     setTimeout(function() { xJ(2, 14071) }, 0)
@@ -7583,7 +7576,7 @@ function error_warning(error_message) {
 }
 
 function on_key_down(g) {
-    "ArrowLeft" === g.key ? gn.wE(3) : "ArrowUp" === g.key ? gn.wE(0) : "ArrowRight" === g.key ? gn.wE(1) : "ArrowDown" === g.key ? gn.wE(2) : "a" === g.key ? troopsBar.r5(.96875) : "d" === g.key ? troopsBar.r5(32 / 31) : "s" === g.key ? troopsBar.r5(.875) : "w" === g.key ? troopsBar.r5(8 / 7) : "1" === g.key ? troopsBar.r5(5 / 6) : "2" === g.key ? troopsBar.r5(1.2) : " " === g.key && intelliAttack.u0()
+    "ArrowLeft" === g.key ? gn.wE(3) : "ArrowUp" === g.key ? gn.wE(0) : "ArrowRight" === g.key ? gn.wE(1) : "ArrowDown" === g.key ? gn.wE(2) : "a" === g.key ? troopsBar.r5(.96875) : "d" === g.key ? troopsBar.r5(32 / 31) : "s" === g.key ? troopsBar.r5(.875) : "w" === g.key ? troopsBar.r5(8 / 7) : "1" === g.key ? troopsBar.r5(5 / 6) : "2" === g.key ? troopsBar.r5(1.2) : " " === g.key && intelliAttack.checkIntelli()
 }
 
 function on_visibility_change() {
@@ -7626,7 +7619,7 @@ function kQ() {
             mv: 14 + ce.cf(20)
         })
     };
-    this.dF = function() {
+    this.update = function() {
         if (9 === gamemode) {
             var k;
             for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].mv && (eA.n4(g[k].player, 0, 46), g.splice(k))
@@ -7648,7 +7641,7 @@ function xJ(g, k) {
         if (a2i(current_map)) a2j(n);
         else {
             var l = jm.bz(current_map);
-            map_width = l.c1;
+            map_width = l.width;
             map_height = l.cw;
             ce.jN(l.a1o);
             jn.jT([map_width, map_height, l.gO, l.gL]);
@@ -7688,7 +7681,7 @@ function a2r(g) {
 
 function a2P() {
     function g() {
-        xK.dF()
+        xK.update()
     }
 
     function k(l, x) {
@@ -7716,9 +7709,9 @@ function a2P() {
         jn.a2m()
     };
     this.init = function() {
-        7 === aJ.pa() || this.a30 || (this.a2z = !0, this.aA = 0, this.a2s = 1, this.a2x = [jm.bz(current_map).a31[0], jm.bz(current_map).a32[0]], this.font_color = [jm.bz(current_map).a33[3], jm.bz(current_map).a33[4], jm.bz(current_map).a33[5], jm.bz(current_map).a33[6]], this.a2t = jm.bz(current_map).a33[7], this.a2u = jm.bz(current_map).a33[8], this.a2v = jm.bz(current_map).a33[9], this.a2w = jm.bz(current_map).a33[10], this.a2z ? this.rf = setTimeout(g, 16) : this.dF())
+        7 === aJ.pa() || this.a30 || (this.a2z = !0, this.aA = 0, this.a2s = 1, this.a2x = [jm.bz(current_map).a31[0], jm.bz(current_map).a32[0]], this.font_color = [jm.bz(current_map).a33[3], jm.bz(current_map).a33[4], jm.bz(current_map).a33[5], jm.bz(current_map).a33[6]], this.a2t = jm.bz(current_map).a33[7], this.a2u = jm.bz(current_map).a33[8], this.a2v = jm.bz(current_map).a33[9], this.a2w = jm.bz(current_map).a33[10], this.a2z ? this.rf = setTimeout(g, 16) : this.update())
     };
-    this.dF = function() {
+    this.update = function() {
         if (8 === aJ.pa() && eV.gd()) this.rf = setTimeout(g, 16);
         else {
             if (0 === this.aA) {
@@ -7824,25 +7817,25 @@ function kR() {
     this.init = function() {
         g = Array(real_map_starting_index());
         g[0] = {
-            c1: [0, 5E3, 8E3, 1E4],
+            width: [0, 5E3, 8E3, 1E4],
             fB: [220, 250, 255, 220],
             n6: [190, 220, 0, 0],
             cm: [170, 200, 0, 0]
         };
         g[1] = {
-            c1: [0, 4E3, 5E3, 6E3, 1E4],
+            width: [0, 4E3, 5E3, 6E3, 1E4],
             fB: [25, 0, 100, 0, 25],
             n6: [25, 0, 0, 0, 25],
             cm: [25, 0, 0, 0, 25]
         };
         g[2] = {
-            c1: [0, 500, 2500, 2999, 3E3, 3200, 4200, 5200, 5700, 8800, 1E4],
+            width: [0, 500, 2500, 2999, 3E3, 3200, 4200, 5200, 5700, 8800, 1E4],
             fB: [15, 15, 70, 40, 40, 40, 252, 40, 40, 20, 30],
             n6: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
             cm: [120, 120, 220, 110, 40, 40, 217, 10, 10, 10, 10]
         };
         g[3] = {
-            c1: [0, 400, 1800, 2E3, 3200, 4500, 6E3, 7700, 8500, 9500, 1E4],
+            width: [0, 400, 1800, 2E3, 3200, 4500, 6E3, 7700, 8500, 9500, 1E4],
             fB: [10,
                 10, 20, 10, 30, 10, 16, 40, 55, 230, 230
             ],
@@ -7850,37 +7843,37 @@ function kR() {
             cm: [80, 80, 200, 10, 60, 10, 16, 40, 55, 230, 230]
         };
         g[4] = {
-            c1: [0, 300, 1400, 1700, 3E3, 4E3, 1E4],
+            width: [0, 300, 1400, 1700, 3E3, 4E3, 1E4],
             fB: [10, 10, 20, 10, 10, 170, 212],
             n6: [20, 20, 60, 100, 100, 110, 170],
             cm: [70, 70, 160, 30, 30, 60, 120]
         };
         g[5] = {
-            c1: [0, 1E3, 3E3, 3500, 4E3, 4500, 7E3, 7500, 8E3, 1E4],
+            width: [0, 1E3, 3E3, 3500, 4E3, 4500, 7E3, 7500, 8E3, 1E4],
             fB: [10, 10, 20, 10, 5, 10, 20, 5, 20, 25],
             n6: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
             cm: [80, 80, 200, 10, 5, 10, 20, 5, 20, 25]
         };
         g[6] = {
-            c1: [0, 700, 2650, 3200, 5E3, 8E3, 1E4],
+            width: [0, 700, 2650, 3200, 5E3, 8E3, 1E4],
             fB: [10, 10, 60, 255, 255, 200, 200],
             n6: [10, 10, 60, 255, 255, 200, 200],
             cm: [80, 80, 255, 255, 255, 200, 200]
         };
         g[7] = {
-            c1: [0, 400, 1999, 2E3, 3200, 4E3, 4700, 5500, 6500, 9500, 1E4],
+            width: [0, 400, 1999, 2E3, 3200, 4E3, 4700, 5500, 6500, 9500, 1E4],
             fB: [10, 10, 80, 255, 255, 55, 6, 70, 20, 155, 255],
             n6: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
             cm: [80, 80, 255, 235, 235, 55, 26, 10, 20, 155, 255]
         };
         g[8] = {
-            c1: [0, 700, 1300, 1900, 1901, 2500, 3400, 6E3, 1E4],
+            width: [0, 700, 1300, 1900, 1901, 2500, 3400, 6E3, 1E4],
             fB: [25, 30, 30, 30, 255, 255, 30, 40, 20],
             n6: [25, 30, 150, 150, 245, 245, 80, 150, 70],
             cm: [60, 170, 170, 170, 235, 235, 30, 40, 40]
         };
         g[9] = {
-            c1: [0, 400, 2009, 2010, 3300, 4E3, 5200, 6500, 8E3, 9500, 1E4],
+            width: [0, 400, 2009, 2010, 3300, 4E3, 5200, 6500, 8E3, 9500, 1E4],
             fB: [10, 10, 80, 255, 255, 55, 23, 36, 20, 155, 255],
             n6: [10, 10, 90, 245, 245,
                 170, 60, 160, 20, 155, 255
@@ -7897,7 +7890,7 @@ function kR() {
         });
         var k = pl.getImageData(0, 0, map_width, map_height);
         xI = k.data;
-        var n = g[current_map].c1,
+        var n = g[current_map].width,
             l = g[current_map].fB,
             x = g[current_map].n6,
             t = g[current_map].cm,
@@ -7919,7 +7912,7 @@ function kR() {
                     xI[4 * z + 3] = 255;
                     break
                 } pl.putImageData(k, 0, 0);
-        jm.a3W() && sprites.bx() && jm.a3W() && (n = sprites.lB("arena"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = 2.8, pl.scale(k, k), pl.drawImage(n, Math.floor((map_width / k - n.width) / 2), Math.floor(.5 * map_height / k - n.height / 2)), pl.restore(), n = sprites.lB("territorial.io"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = .87, pl.scale(k, k), pl.drawImage(n, Math.floor(.745 *
+        jm.isBA() && sprites.bx() && jm.isBA() && (n = sprites.lB("arena"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = 2.8, pl.scale(k, k), pl.drawImage(n, Math.floor((map_width / k - n.width) / 2), Math.floor(.5 * map_height / k - n.height / 2)), pl.restore(), n = sprites.lB("territorial.io"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = .87, pl.scale(k, k), pl.drawImage(n, Math.floor(.745 *
             (map_width / k - n.width)), Math.floor(.422 * map_height / k - n.height / 2)), pl.restore());
         vq = !0;
         c4.c5 = !0
@@ -7948,17 +7941,17 @@ function kR() {
 }
 
 function a2j(g) {
-    var k;
-    current_map === real_map_starting_index() ? k = "AJfAJ5976oBB6PH6eDBpz76eEBV5bcAUgAyMPbaA8C8A6BL5baBKYAKBAyLPbZBoVAUCA6A9PbZBoVAUDA6A8PbZBeWBUIPRZBeVBUGAKCPRZBeVAKCA9Az555zAUMAUBAV56BUUAKEA7A6P55xAoLA8PoMCABAoGAV6FwA6A8BB5oMB9AoCA6AV6FyAUNA7AUEO9BKRA6AV685nAKDAoCAUGAUGA6AeFO8BAQAKBR65sAoBAoDAeFAyEA9AKDOUIB6AUBR65sA9AeDAyGAoMOUHB7AKBR75qBADAoEA6AKBAeMOyDB9R85hAeIA7AoEAoIAURQL8FhAUDAUFA6AoEAeJAUTP9SB59Ah66AKBAoEAUCA8AoFAeIAeUP8SB59Ar6eBAKFAyMAoGAefP6SL6KEkUGAUCAUBAKIAoGAefP7SL5eCA7AX6eCAyDAUKAoGAUdQB8LyA6AUDAKCk9AoBBKDD7QB8VyAyDA6k8B8AKmQB8VvA9AeFk8AoBBeBD7QL8VtAKCA9AUGj8AKFAeCByDCyEA6QV8VoAUDAKCBABA6j8AoDAUEBUECyZAVsSfoAUBAKBAKCBABA6j7BADBeDDeSApqSfpA6AUJAKGjyNAUNAUiB7AKBA8J7A9DB8ppAyBB8ieCAoCAoMAozAUBBKLJeNC8SzpCrjAKIAUDAUGBUCFUBA9AeKIyEAURC6S6OUYhoCBUBBAJAUyAeKAKLIyZCf87O6AKCAKBB5h6A6BeBAe8A9oYCL87PKOh6A8BKCAe8e9eYB9S7PKNh7A8AeBA7AeCJKFAU8KVCB86PULBACg7A7AUCAUBALAAoCA7Ao7KWB7S7PeIBKEgyCA7AeBKeBCK67CUOS9PUIBUDgoEAUIALcGoWBV9L5oGBKEAyBAKEfKFAUEAKEALeGUWBV9L5yGA9AyEA7fKEAUFALmGASBp9VgAeOBKKAyDA8fAFALwF7B7B6TLgAoMBUCAoDA6AUJAUCe6AyBPK5yPB8TBgA9AKCAeMAUOAUJAUDBoEcKFAUBAKDAL5U5eNCB9BhBUDBKBByBBABAoNA5cAHAe78AK78FeLCL9BmA9AeBAKiAKFAoCA6A5cKIAK77Ae78FULCL9BnA9AonAoDAyHb7BUBH6AU8KzBKVS9N9BACEKCAyCA9b6I8Ao8exBAWS9OK67bKBA7I6Ao88EyJCp88OK68a8AeHIyFJArA9Cz87OU67AeBaeEA7A7AK76A6JUpA9Cz87OU7W6KEA8AeDH7A7JoEAKjA8Cz87OK7W6UDA9AUBAKBH9ApDDeJCp87OK7C6ABAeBBy8UBK6DKKCf87OA7M6ABAeCAoCA8TACAKbByQS9OA7M59AeCAeEAKFAKCTyZB6Bp9BqHC56AyCAeKAUCTyYB7BV9LoHg5oGAUDAUDAeDAf9yZB7A8TpoHg5eHAKEAKEAeCAV98CyRAp97N9HW5yMAKEAeBAV99C9VpqG8Z6AKDAeBA9AWFC9VVoG9aKBAgQC9VVdAUIHW57AKEV7DCLM9AeEH6aCSDCLM8I5Z8B9AWBC8VBbI6ZeMAKCA6AUDUUbVBeIg5UHAKDA6AoBU7C8U9NU8WsBAMVycU8No8MqBAOVocU8Ny8CqAoCAKRVocU8N7H8X8AKDAeRAKDVoLAUPU8N9H5X9AeBAKOA7AWOC8U8OA7gnAoQA7AWOC8U8OA7gnAUTAKBAoCVocU8OA7gmAUXAeBVodU8OK7MmAURWyMAeFAUHU8OK7C58WoMAyBA8AqIOK7C57WyMByEU7OK7M57AeBWAMB8AWGOK69Z9AUBWKMB9AMGOU66aABAWWBWaOe6q65WKLW7Oo6M66O9AK7KMW7Oy55a7AeCO9AK7AMW7O6Fq67PyCG7BgbO6FW68P6Ae6yNW8O7D9AKLa7P8Ae6eNW9O7DyHAq7B6AFGAMXLxB6AKCAKBAKIBKCbKEAf5oHAKCFeMXVzBAKA6dpuAeGBABAeEAKoBghPeBAKDez5UFA9BKCAylBqhuABAL56AUBAKJB7DyPXi59QKCBASAKCA9AoPB6Xs59PABB9EKHCCit7PKCCe6qitz5eFCK6Wjt6PeCCo6Mjt7R9F9X6tz8y5qltV66AKXFMmtf6ABAoECUxX8tV6KBAoDCowX8tV59AUhE7X8tf58AehE6X8tV58AoiE6X7tB6KDD6E6X5tB6AFDyvXsxQUFDUyXiyQeDDeyXYyRAECy5Wes9RAFC6FWdseBAp7AGC6FgcseBAV7eICU5qcs7RoGCU55W7sp8ADCKXAegW5seEAL76AySCoHC8W5seBAL8oCB8CUJCUBAqYsqFBKBBAKCKBAqYspGAe98A9AUKBoPAyCWisJeCA7A9J6BABA9ByCA6A6XOlAKEJUHAUMJ7A9AKHB6AKLAUUAWKsK9oXJyPFKDU9sK9oaJURFKCU8se9eaJUQaOnAeBJebJUQaEoAeBI9DA9USZ8sA9UfJeSZ7r9JefJeTZ6r8JUhJUVA7AMvr8AKCI8Do9oVAoFYsoI9Do9efYsmAUBI8Do9eeY5r6AoBI8Dy9odYsjJojJydYiiJodAoEJ7AKECMrq6AeEJydAeDKyVYYZAyBJ6D7KyUYYcJ9DfMB7YYdJ7DVPB5YidAKDJUgL7BgsrK9ehMUBAUEY5rA9yglsaAKCJ6DX7sYKUeCoDi8qpCDAZAhvqfEC9CoEi7qVGC7CyFi6qBICycA7G7AUBAM7YTLAYC9Ao58AUKAg7YSLKXDKDF9AeJAq7ERLKYDUBGKDA9Ag7EQLKYJ6AKLAq68p6LKXLADa8pzKCzKA8agmAV7pKC6K9AeCAW65X7Ap7fKCeBAN8WiAKCAz7LLCfCAM8MiA7RBNCfBA6b7XyBAKCAKBP7AoILeYKUFb7X8AL59AeJBoDJ6CVEA7b5pABAKLAo9yTAUBKyJbh99AeJBACJ9B9K8A6b6n7A6AyDAKIAK99CK6yBgqlAL59A6AUGAKGAe98CU66AhVX7AL5eDAeBAKBAyKA7J6Ce66ArUnUCAyEAUHBA96CU68A5f8neBAoGAUHAKFAK9oYHKFf7n7B6AK99Cy7KGE9AW65nzRCy76AewA5aX9VRAKCCy78AKxA6aD89AKELycM9A8BoCYN86AKCAKELeUAKKM9BALAWpmUFAeDALNB9AeJNeHBKCYD8KGAe6oBFKUAeGOADBKCYD8ALAKCAU58AyvCADAUrALAAoKAWomAOAe58AytCUCAKsAVAAW5h8AMAK6oEEAdEyCJ9Ag5X8BTDUtALAAW5X8pPDAwAK9ABA8AW5X7eDA9LefE8AU88AeGAg5X7eJAVPDBmAeFAq5X7VbC9OAEAUFZX7BdC8N7AUDAoCA5ZN7LbC9N7AeCAyCA5ZD66AUDMyeOAIAUFZD6pfDLpA8AKGY9j8AUDNUfOePY7j8N7DBrA7AKIY7j8N7DLrB6DABV5j9NygOeRC8AWPj8NyiOUSC7AgOj6NemOeSC6AgOjzhD9OoSC6AWOjzhEBsB8YN5zhEBwB5YD5zhELxBgojziEB5UKYD5ziEBBAUyBCnjzhELBAeyA9X9jzhELBAoCAKvA8X9j7NKpKKIE6A7YD57NAqKKKEyFYM88AK6piEesAK5oMEeFDUDU7jfiEerAU5eGAKIEKFDUDU7j6NKsEUCFUQEKFDeCU7cKBAUCG6NytEKCFKREUCD6AWGcADAKCG6NytEKCFKUH8AMGb9AeBAU66N6EyqAKaAKZCK76AMGcACG8N8EopAUaAKYC5cC8KCHLgAKBEooAeaAeBAKSC9b8cADG9NewEACC6A7Byeb8b8Ay68NovEKCC7A8Bydb7b8Ay66N6E7EKDC8AoSC9b6b7Ay68NyuEeCFKdb5b8Ao69NouEeCFUdFUFV7b9AU68AUBNeuEoCFUcFKGV7b9AK69AeCNKuEyBFobE9A8V6b9AK69AoBNKuKAbFAIV5b9AK69N6E6KKaFKBAUDV6jBjE6KKabhzNouKUWb6jVhE6KUXb5jACAVfE6KUXG7AMHi9G6AK69EpFCU67AWGi8G7AU68EpGCU6yDU6i8G6AemAUcEo8KBC6CA66AWGi8G6AenAyYEo8KBC7B9brwG7AenAeaEo78AoaBeBA5bryG6AKpAKbEy7yFC7BKDAg76jLjEo6oDAoKC8A8cr5oFALaEo6eTC8A6c5ZADKKEALeEA6eXCyGc5ZADKKEAVdEA6AbCyFc5Y9Ao99AUBAUCNykFygA6AyNA5c5Y9Ay96AoEN6D7FesBoEc5VeBD6A6JeEAfnAeBD7E6E7BeFcqJAziAoDOADAKmAUBD9FNBU7A7BoDL6AoDOyOAeVAUBD6F5eCDBKOAfQAoDO6BUGCUiE6AyGeCDBAOA6L6AKFO6BAHCeCAKaFA99AWKUUKByHAUCLUCAptBAHB8AoCAKBCyyKAEU8UUIByQAeBKoFALvA9AySAKBAeDAKBCozKUCU8UKJByXKB5oJA6B7AKJCotAKDK6AWGUKJBebJ7P6BUECoFAKNFBMAgEUKIBebJ8P6BeDAKDCAEAUMFLOAWDUAHBocJ7P7ByBAKDCKCAeJFKBAVPAWCUAFBycJ8P7E7AUBAe5VSA5UCAAeRC7J9F8AK99KzHAKJA6T9ToBCyZKKHAUyAK99KpHAUIA8AeBTf9oDCeXKeDA7E9ALAKfHAeHBV9f9yCCAYKoCA9FABDoBGo79AKWK9AeDAUCBV9V9yCB7AKBCfQFKBDoBGo7eCAUJB7LACAKQTgGAKHCfRFUCDeBGe7oRA9LyCAKPTgGAUGCVSFeBDeBGA7fvB6Tf9eBA8A6A6CBTFeCDUCEoBBo69PoNTp9UCA7A6A7B9L9FoCDUCEoBAeBBA6z59BV9p9UCA8AyGCLOAeBFoDDUBDoHAeCAUBBA6f6oBAUGTp9KCA9AyECpNF8AegAKlA6AKCAUBA9Gp68Az9p9KCBAEAoXLo58AegAemA8BA6p68AV97TKCBAEAoVL6F7AocAKCAooAoLGL7UBT8UeEAyTL6F7A6C7A9D9AUNF9RoBT7UoDAeUAyBAKEKy56BKYBASAoPAeNF7lqFD8KoxAoCBKYA9B9A6C6GAsA5g5U6EBBE8B7CyJCACC9GAsA6gqLD9J7E8B7CACAeIFe59EoGgqLEe9euB9B8AoDBACAKwE9AKJEoHggJE7JKtCASAyCBABAUuFADA8EoIgWHE9JepCeRB6AUCEo5UFA6EoIgWFFK9onCoQB7AUBEozA8AysA8EKBcCFFK9omCyQB6EoCAUzA8A6EoHEAEb8U6FA9ykC6B6B6EoCAU5eFA8EeHEAGb6UyyJ7DoaB7BysF8AeLEeHD8A8b5UU5U99DUbB7ByrF9AULEyHD6A9b5UUzKecC8B7BKPAKeHUvAylA6AUBbz99AUCE9KyaC9B7AoCAeQAUaHUCAUwAelAKCAq78T8AeCE8K6CyeB6AoEAUPAeZGyLAUwAUrAM78UAzK6CegByECKECe66BAGE6AXWUAyK7CUhByBAKBCKGCe6eNAyuANXT9A7AKrK7CKiD9AyYGUPAr7B97A7AopLAPD9D8AeaGUNA6A9AN6B9yIAopLoJEekAeaGUMA9A7AX6B98AUBAUDEVUAKtD6AeaC9AKgBULAeFD6A5f8UyqQ7DyDC8GAMB9D8A5f7UoqQ8DoEC8GALCAnA5f6UopQ9DoEC7GUJCKoA5f5UonRKiAecGoCC6EKEf5UenRegAocGoCC6kB98Ep7eBAKeAobGyBC7kB97Ef77DADC8GoCC6kL96AeCD6AKBR7DADC9GeDC6kL9KHAekR9DADC9JX6L9AHAelSAdAUeC9AU6N6L9AEA6AeBDf79DABDUWAyBAK6X6L89AyGAeBAeCC8P9A6Bo6eUA7G5kB9UBA7AeCAUCC9P6A7B6GKUA7G6kB99AeEAKCCV6UIB7GAUA6EeDCN6B76AKVAoGCL6eJB7GAUA6EKFCN6B6yBAKCAKCAeDCACAUBAyUQoJB7GATA7D9A7CN6B6yNB9AeBAeECKDAf5yLB7GASA8D7A9CN6B6eQB7AoCAUDDB5eLB7GARA8DyNCD6B6KTB6AeCAeFC9PKMB8F8B7A9DyOB9kB6ASB7AeDAUGDBxBUGAKNF7B8A8DoQB8kB6AQAeBByCAyCAygOUQA7AUNFyTA8DoSB7j9P8DUFAKMDfiCoWFoUA7DoVB5j9P6DoSDpgCyWFoUA6DyVB5j9PyiB7D6NUNAoICU5eHAKNA7DeWBr6B57DUQD7NKGAKJAKICe5eGAUNA6DoXBN6V59DKOD8NAFA7BeYFeGAUNA6DoXBD6foAKSDAOD9NAGA6BeYFeFAUOAokCeKkflA6B6DAOEBdA7AyMC6FUFAUOAelCoIkplA9BeeBepM9A9AUNC6FUEAeNAolC6A5kzkBKIDyLEVdCoaFUEAUPAeln6N6BACAeCA9AUaBAsNeUC6FKDAeQAUkn7NeBAUbAUQAeHA8EzgCKbFADAKRAUln7NodAUPAoHA8EzZAyCCKcE9AeBB7AUkn8NouAeHA8E6MyGAKUDAvAeCFiANysAoHA8E6MycC9E7AUDFiAN7EeCA7A9AeBEVYC9C9E7AUDFiAN6F6BKpMoiCytAUDFsANy57BKEAUjMojCysAKEFsANe59BUDAeJAKYMojCyrAUEFsANU6ANAKNCzYDyZEUCAo55oBdGUbC6MojCorAUEF5oBdGUaC7MekCKtAeEF5oBcGUbC7MohCosAeEF5oBcGUaC8MogC6EeDAe56oBdF9C7C9MobC8AKCEeDAe55oLeA7AUtDAeMyZC9EyEAe55oLeA9AKqCACA9DVYCyeEoEAU56oLgE6CUEA9DVXC6DAsAoCF6oLhCKBCeVAyJDVWC7CeGAKrAyBF7oLiCABCUWAyJDVVC7CUIAKbBAFG5oBlEAUA6BKgMAYB9AUBBKCC6IEAN9D8CAFBUgMAYB9BoCCo8YAOAkD9DLUCoTBoDCU8iANyDAKmD9DLTCoTBoDCA86n9NorEAfL8CeNAeDBoFB7I8n9NerEAhL8CUNCAFB7I8n9NUsD9DzTCANCAGB6I8n9NKtEofL9B7ByUA7By88n9M9E8EegL9ByFAeJCAFB6I9n8M7E9EogL9BoDA6AUCAyRAKCAoRI9n8M6FArDfTBoBA8AKEAoQAeBAoSI8n8M6E8EejL9BoBBeDB7A7CA87n8M9EyrDzTBoBBeDB7A8B8I9n7NKsEKkL9BoBBeEByJB7JD97MoGAUqEUlL8BUEBUEB7A8A8AKHJD97MoyEUmL7BKGBAGB6A9AyHAU9N97LyBAKCAe5UpD9L6BKIA9A6B6Lr97Lo6KUAUSD9L6BKJA8A8BVQn7Lo6AUAoRD9L6BKBAeHA6BAJDeBIh97LeCAK58CAEB6EBQB7A6AyMA6DeDIh96L9FyUAoQD9L7B7A7AeOAyhAy8N96MA5eUA6AUBBUnL7B6A9AKCAKNAohAy8D97L6F7CKLAUCAooL7BeOAUOA6DAGH9n7Le58CeQAeoL7BeNAUDAoFAUEAeeA6H9n7Le57CyQAKqL6B6BABAoFAoDAUCD6AK8D97LU57Co6LRB6A9AKEAyCA7L9n7LU57Ce6VRB6A9AKEBfUn7Le56CK6LUB7BoMKoIA7n8L6FUWGLUB6B6BLDppOFoXAeCF6L9B6B7A9H8AyVppNFedF8L9BoXAe7oLCEOLezDU58L8BoYAK7KQB9ppUC9AKDAKJDe58LeUEUCFARCENMAbBAHDU58LeWAKCA8AKcA6EyTB9pfRDAMAyfF9L6CebAKHA6EyUCYKL7B9AoEB8AKgF9L6CoZAeGA6EUYB9pVTBy6K6BPC6AKDB8A9AKGD8C8B8pfVAKDA7GU6LPDKQBACAylDAQpp9o6BQDKPB9D6DKOpz9o6BQDAPB8D7DUNp6TU6VPDAPB8D7DeMp7TU6LSC7BUUD6EyCp8TA6VUCoKCyfu9S6AKBGfQAeCCoJDAXvf8e68A6AVHDoEDeSv6R9HeEAo87AUEAoID6AUjBi8B78HyBA9IeMA6HUDAKKwL76JA79BoFHUDAUIwV7y9U69AKGB6Ao78As86Ro9o6ANAUQAU8ABw9Ro9o56B7AURAK76A6w8Ry9o5oSAKSAK77A6w7R7JU5UVAe9eIwz77AeBAUCIyzCUDJ7AY86Sy8yy6LSy8oz6LS6Iez6LS6IepAUCAKF6LS9IApAyF6LTK77EUFA56LTK77EKHAuLTU76EKIA56JTe7oqA8A56JTo7UqA8A66JTyDA7GKqAyI6KUy6KpA6A86KSoCBy6oqA6AuOSUHBU6eqA8AaPR8AUCBAHGer6aR8B7Ae6es6aR7IUt6bR7IKt6cR6H8AKBE66dRo79E86eRe79E86fRU8Av6gRK76AeCE66hQ9IAw6iQ7IUu6kQ6IUu6lQy87EQmQofAK6Ak6nQUdA7F9D56nQAKAUQAKBA9F8D56nP9A9BKIBe57DaqQAGBeIBoSAKBAKjDGsQAFB6AySA7BUiDQrSKFCKCA6AyEDUcAKD6rV6AyFAoBCUc6yV6AyOB6C865WkBAEAKZ655X7Aod66M6a69Z967W5967W5967W5967W5867g5867g5867g5767q56675Z6675Z5676Z5676Z5676Z5676Zu77U6AKu678UyFEk78UyID9679UyID768L9yBA8A8DABAu8qEA8C769WEA8Cu95UoICG99T7AKGA9B9699UoKB77AUoLB56dAe69UyMBucAe69QUCBUCC7B6BGbAe7B58BABAeEAyYCAI6ZAe7B57B6AeHCUXAabAe7L57B7AKJCQ5UEHB57C7CQ5UEHB56C8CQ5eDHB57AUBCoV65eEG9QAZB965oEG9QAZB965yDG9QKZAUBAKCBa5yDG9QKZAKGAKEA665yDG9QUmAk5yDHB56AUED8AkxAUEAe7B565oAeCALyA7HV575oA8AyBOKGHf585qA8AKEN9Ay7p585sBVmAy7p595sBVkAo76P95uBLjAo76P9AKCAUB5rA8N6AK78Q55sA6V6Q65tAKQAMCQ756AGT8RF58AKBAz96RP6AFTz7P6oBTz7b59Rl58Rv57R675z7975V7975V7875f8HzSlwSbxSbxSbxSbxSlwSvvS56ZApRSuYA6L7S66WA6L7S656yBFeJL7S656yBFeIL8S656yDE8A9MB8556yEEoNMB8t6yFEAPMV8t6KJD7B8MV8t56BokB6Mz8t5UQD7B6M6S65yAyIAUlB7M6S65yAyuB7M7S75xAovB7M7S65yAeuCLZS75xAUuB6AoBM6S75xAKvB6NL87596BzhS759oPNz8959UPNz89589B8Nz9FsAKrB9Np9PqAUpCLiTV6oClyCD9C9M8Tf6oCloCD8DVaTz6UCloCDomMp9p6oCleBDUqMf9p6yClUBDUrMV9p67AN97AKFEABAfWTj66AKFD8M8TACAZ6yDAUnM8TACAZ66ELeT556ypNB9j67ELeTZ67EVeTP6ytNB9F67EffTF66EpfTZMAyDAUpEzfTZHByoE6NL9jDBKFAUpEfhTjCA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6Ao8i58m7Ae8Y59m7AK8O6O67us67us65u6ui68r6AKau8q6AyEAUau9qUUCE69p9B8AeFB7u8qASAyEB6u6qUSA7AUQu6qyPC5u6qyQC5u5q8BoZuscByZuifBAcA8A5s9rKHDKIA5s8r6AUmAUCtO78ti78AeCs9v7AUDs9wiwwsvwiwwsuw6s5w5s6wsuw6s5w7AyBr8xslx5r5x9rY99rZCq8ysay6q6y6qtJqPMBeGoFgP6BWe5lPKQW65pO7B8W55rOoXV95zN7C7V655VbEMK55pZEWI557MKtU8557MKuUj66LowP6AeFA7DF69LKyPySCZ8VDFL5oWB858pBFVyC8B5588J7FpqAeEC9Bt89Jy68M6EAJ59e9o7BYEUD598Je7pU6sJU76AoOKQsJU96J96sJU96J66vJU96JkyJK97Ja5U89J9B6AK7k5o88J9BKHAeFA9AK5k5y88KAKC6AeDEu58I7KKBEAs658I6OeGAoh659Iz5yf66K86PeFA7B666y8z68Bk6y8z7KH668Iz7eF669IwwI58vIwyISzIS6K7S66G587U59X9AQhF8X8AeqAZ9U5qlAopAj9e5gkAypAj96E9X7A6EAD6BEgmA7D9AkBEWoA6D8AuED8YKHD7AkID5YKHD7AkJDqrA6D6AkKDWsA6D6AkLDCtA7DyD6MC8Y8A6DoD6OC5ZAHDUE6NCqzA8DAE6QCM5eJC8AkTB8ZoKC7AkUB6ZyKC6AuYA9Z8BAZA56ZA7Z9BAaA589KJC6A589UIC6Aw9eJCoE6bAM67A8CoE6bAW67A7CoE6bAg66A9CUF897A8CKE899A9B9AeDAUGAS9AJB7A9AKH889A9B6B8888BKOCI87BKOCI88BKMCI89BKKCS9KLA7Cc9ULA6Cw9Un89Uo89Kq889Em88E5887E688yu886E5887E6887Ew87E5887E5887Ew88E5886E6886E788ov88ow88ov88yv88ow88ew88ey88K5m8Az88Az88AzH" : current_map ===
-        real_map_starting_index() + 1 ? k = "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Fs69FKxJ6556KX78Fs7AxFATAK75558KX78Fi7KuFeSAU7t59KN8AzvKuFyQAU7t6BBmAxvetF7BoDHj6U99mUvvetF8BeEHZ6e98metvUvF9BUEHZ6e98monv7E7GKJAy7Z6o7UBC5mocAKGAUCv7C7IKHA6Hj6o7UCCr86B8BUCwKZIoGA6HZ66HUDCX88B6x7Ce8yFA6AeBG8567HUHB8nAHy6CA8yFA7AUCG8L6AOyHeIB5nUEy9B6I8AeJAUCG7L7AOyHyJBJIBe9ADA8AUDG6L8AOyH79aBK9UCA7AUEGzTAYxH99eAVBAyDG6L9AsvIJ99AAhAKHGpUA5s7IJ99AAoGpVA6sy8T99AAmAoCF9MUGsy8T99AAfAoJF8MeGsy8T99AAdA8A7F7MoFs6Id99AAcAyKF7MyEs6Id99AArF6M6AsuIx99AApFzdAYuI6999AAnFzcAYvI6999AAnFpcAeDAOrI6999AAmFpdAUEAOrI6999AAmFpdAoBAYrI6999AAlFpeAoBAYpI8999AAlFpeA6sU87999AAmFfeA7sU86999AAoFBgA7BACrK85999AAoE9NUJA7AsgIx99AAoEBpBKDA5re8x99AAqCACBpqB9ro8n99AAtB7AeMOeTr6IT99AAuAKDBKDAUBA9OoTr7H9999AA5yGA8A8OoUr8H5999AA59AoKAzuB7sU69999AA78AVwB7se58999AA9ABOyUso57999AChB8s9F8999ACgB6tK58999ACgB6tK59999ACgBs5U59999AA7eCP8Bi5U58999AA7eCB9AVnBO5U59999AA9oCN9BE5e59999AA9oBOAIt6F9999AA9eBOAHt7F9999AChA6t9GJ99AA7eBOUCBeGuAuAeK999AA7eFBKDMoEBAHuKuA6A6999AA7oGAyIMeFAUCAKBAeGuot999AA8yTMeKAeHuyu999AA8oSMeKAoFu8AoBEJ99AA8oSMULA6AO7KDAen999AA8eRMAOv8AKEEJ99AA8eRL8B5v8AeFD8999AA8eQL8Bs8AEAymAyB999AA76BpTBs8KEAeqAeC999AA7oOL9Bs8UDAyqAKE999AA7UOL9Bi8yCAypAeD999AA7UOL8BY87AeEEKDAn99AA7UNL7Bi88AeFET99AA77A9AUBL6Bs89AoEEd99AA76A9AUBLoNxeDAeq999AA77A6L8BtAET99AA79AzQB5yUo999AA8KBL6B6yon999AB9yUyen999AB9USy7ET99AB89B7zKo999AB87B7zon999AB8yRzyo999AB8oRzKCAKBAKn999AB8eSz8D9999AB8ATzyCAUk999AB8KUz6AUCDx99AB8KU5XDd99AB8UT5WDn99AB8KU5UAKCAKBDT99AB8AU5WAKDDT99AB78CFWAoCDT99AB78B85YAoDDJ99AB77B85ZAyCDJ99AB8KM5ZA8AKf999AB8UI5bAKCD8999AB8eD5eAKDD9999AB7yC5tD6999AB7eC5vEJ99AB67AjuEn99AHOEn99AHQET99AHQET99AHUD7999AHRAKDD6999AHLAeDD9999AHMAyCD7999AHNAyBD7999AHSAKCD5999AHTAUBD567UB999AAuD767UC999AAsAKBAyBDQ7UDAUD999AAoAyBDQ7UI999AAoAoDDQ7AF999AAtAKBAUBDa7ABAoC999AArAKCAKCDT99AHXAKDDJ99AHVAUDC8999AHZAKDC8999AHfC5999AHaAKDAKBC5999ABvAP8KCAoW999ABuAP8UDAKY999AHiCx99AHeAKECeyAT99AG76AKHCUsAoBA5999AG8KWEeEAUG999AG8eBAUSEUDAKG999AG76AKGAKEB8EADAUE999AG89CKlAUEAn99AG8oBAUU999AHmB9999AHkAKDBoDAd99AHmBUFA5999AHjBUDA9999AHkA9AeJ999AHhAKCA9AeJ999AHkBAIA6999AHgBKHA7999AHhAyCAoBAKCBT99AHfAUBAUHAUBBn99AHgAKCAUBAKDAKDBVoAn99AF96AKHBVpAn99AF9yBAeROAE999AF9KYOAD999AF9oZN6Ad99AF98CT99AHgAUCBn99AHtBn99AHuAKCAn99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AGIAd99AJ99AJ99AJ99AJ99ACdAd99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AH7oE999AH5eB999AJ99AJ99AFGAKBAT99AJ99AJ99AJ99AJ99AC9KB999AH5UBAoF999AHtAyCAd99AHtAyCAd99AHvAx99AHxA7AUC999AHlAUFA9AUF668Ad99AA6ABAeCAyJAeE668Ax99AA57AeCAKEA7AeBA7AQ67Ax99AA56AyFA6999AHrAKBAKDA7999AHwA88mAdFBHDAVgAxFA97FALfA5898AKHA969KEOAF899AKGA98kAxGBE89A8YeII7AnGBoCAs76B7TUOC8Bo8yF9EA9AKDAeCAKBvyUN6AUyCUVB6G7CxDA9AeCv7C7NUDE8DABAULB7AeED9AyNDw9yJAyCvydNADA7BoDAoEAyBAyDD7A8C7CKFAeEAeHBKr88ACA6BE8KbNAwAKoAKhB7CyKFABAc7UDAUCAKIAUBveCAycM6M9AKoA7F6AKE86yEAKLvoHAUhKoIAguAKE858AeCBO6yDA7Ee9yEAM6m58AoDA9u6AoGFo8g6686UCAoCAUGueGAU7o65bS69A6t7KoubyDAm6UGtVJD9c786yHszND7c886yHA6AOkL6DrABKC8sA7AoCoKFC6L9DhCBKD8cAUNB5n8A6CfUD5eAFAKGAcbA7BUPn7A7CBWDrP8aA9BUOAyCm8BUQMUggABAKCAwRBAFAUCB8AeCm6ByEAUIMUch58MAUCBADCyBAN8eSAUDA8MAZAKBiIMAKDBADCr8UbAKCAVWCXv799AoMBADCr7V58AKDB7jl99AyMBADC5c7AUOAUKAeEA6D7QUTj68RBKDCg8KDAeEBeKAKTCf69CD6ABAcIByDCWaAKLAKYAUOBoIEAHR8AUCBr6wAAeGByDCqjAecC6A5W6AKDBX76AKB78eIBUKAeZWAEA9AoUa7BD85777A8BeMAeaUeDBAFDC69BD8779UTAeZUeGA6AyOAKMbAMm9787AKCCKDCp96AUEA7AyHAKPAKDAq7AOnKDAR78AUBCyDCz9oDAUJA5d9Br9568yCA6AK8yLAUQAoXT7foNn667yIAeDAUBAKEIyGBALAySUXMBX9u79Cy96BeGCp95fUIn669oNG8AoTB6A8Cf9rQAN9969UCAKCByCBeCHAOA9Cf9bR68oDA7A6DACA6Ao8UbSvT68ABAyEBeEC6AUDA6FKGCUiR87S68oBA6CAeA7AUCA6AKUAeQA6AUBB6D7R87P6CA7GAFCU68B9A7AUCA8A6AKBA8D9R77W6DA9BABE6A8De5yRA9AoEA7AUEE9RbL6UA9AoKEAJB9A8Ae6yIB7Ao58RHI6cA8AoPA8AUHAUPBKSQB7KGAk9ulAeGBUJAUHAyRA7CL56R869QRAeLAoRAyZAyHA6A7AUXPp5yDB969aHAeZAKhCKGA6D7O8P6AUR69kEBAFAoKGUEAymOUBAf58AUL6896LKKnOKCAV7Q886FK8AyDBKOA9N8Ru8aMc9RQ8kEd8RQ8aBd8Q9AoD68F97Z6AKrQu9j9KHAM5yHDf587B59eKAM5eJCp6HF6IZeKCB5vJ6OZV777M6AAoMZp7RN577AKEBKQAyFZ6Q57QBKC56yRAeGA9az577VA9BF6KcAq77OvWA9AeDAj6q8AHCVp7Y585cKQA7JeND57YA8AZ6yEC5bzCB9DRa57oHCM5oGB7DeEGeVC97bAUB57UJB6Z9A8BUdA7GeWC87R588BASZ7EeJGoYC77I6AA9Cq5UmA8G7CoeCUF6696MAyiY7AeOB6A7G8CokA8A967a6C58B6Ao7AaE767k7MxFeFDAdE966668MpFyGC8C8F666D68" :
-        current_map === real_map_starting_index() + 2 ? k = "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" :
-        current_map === real_map_starting_index() + 3 ? (k = "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C9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo") : 
-        current_map === real_map_starting_index() + 4 && (k = "AKAAHHCBMP8LKDAerKyBsoVLL58LKCAetKeDseWK9QBOE6KeEsUWK9QLME8KKFsUVK9QfKE9KeCseUK7Q6LAx5wB9K6Q9K9FFvB9K6RLGFjtB9K7RVEFtsB8K8RfDFtsB8K8RpCFjtB8K9RfCFjtB7K9R8J8FjtB7LB8A9y5jtB7LB8U9e6FmB6LV8U9U6FmB6Lf8U9K6PlBzOSU9K6PlBoQAU96Se9U6KEAPfBoQAo9p8o9U6AEAZeBeUAK9p86JA685cBeUAU9f87I9HZYBUVAK9p88I8HjXBVQS8I9HPYBfPS8JK695YBVRS7JU685YBVSG8A7LU9K67GyGtoML9GUVA8Ae9U9U66GyGtoMMA56C8AyEJe9U6y6yGtoMGoDA6AKwFKnJo9U6y6yHteNGUEAoEE8E9EK9o9U6e66A8OeCe7BeqAKLAoCB6E7E6Ee9o9e6KRAKwA9OeEAKBeeOD8AoLCevEUuJo9e6AMBAtA9OoJd9BomAeNBACBesAUDDyyJU9e6AKBUtBBsA9d8BykAoNA9AePCUEAeFA7AUIC8FoHAK8e9o59A9BetBEzBykAeOC9CANAyCBUDAoPGABAo8e9o59A8BysBLaANXByjA6BKeB9CAVBe67IU9y59A6B7EUNL8BhSByiA7BKeB8CKYBA67IU96F8A6B7EyHMATfeKAoBDoJBKcB7CyWA8G8IU99FyGB7E6AzTA6AUQfAKAeBDyJBehA9C6J9IBAFyFB8E7ALWAoJBNKBKCAUhByDAeDDoFC9J9H7KU56AoTS6A7fALAUDDeJAUEAeDAUgAejJ8HzFF6AKBAKSS8A5fAQDeJAUEAeiAUpJ6AUFG8K6FyEB7S8A5fAQDoIAeDAUgA9BoBBeHAzCGzIFoEB8S9AhKB6DoJAUkB6A6AeLL7GfJFoEB9S9AXKB6DyoAUEAeBBoGAKLL7GVLFyCCFAB6DyyB6AeFAKDA6L7F8Lo5oCCi97B6DyeAUQDUGAyCLA5pRFoBCs96B6DydAyND8AKDAzLAKEEpUIE9yRDodAePQePA8B9Me8Y9URDorQ9A9BePM6IY9USDoqTyIM9Ii9KSDypUKBNA8i9KTDoohe8i9KUC9AUDD9doED7IE9UWC6AeCEC9oFD6GeBBACAi9eVC7AoCD9dyFD6FKCA9AKKx8CAcErBAUjFACA8AULx7B8DAriAxBeIx9B7AUBC8FrdE9BoFyKQAUCC8AeCE9g9E85VCAYAUHE8hAw5VCAYAUHDyHA5aoBG9E55VCKXAyEDyHAW68AK76D85UCKbAUDDyBAKGAW68Ao7el5UCKbAeEDyGAg67Ay7Ul5UBUBBKYAoEDyFAg68Ay6yCAem5UBUCBKYAeGDeFA5a7A6GAu5UBUCBKYAoFD6AKGa7A6F9E75UBeCB9B7AUIEC68Ay59E75UBeCBeDA7CenhUw5UCUDAeEA9CKmhKx5UCULA9CAmhA6ZICKNA8B9D8hK6PJCAQA8BUDAUkhe6PJBUCAySA7BeCAeWAeFAKDho6FKBUCAoVA6BUCAeWAeEAeDhe6FKBUDAoUAyNAeBCeDAyCAhhGPJBeCAoVAoMAoCCeCAyBArgGZJCAlAeECADAoCAXiGZJCAXA7A7AeEB9AoCKABX9F9zUVCUJAyEAeTAeCKKCX7GFMCKWA9AoGAUTAKFKACX7GFMCUVA9AoiJ8AglGZKCUVBADDyCAK9eEX8GjICUVBKCD9JUFX7G5y6CUWBABEA9eEX7G5y6CUXFU9UCXeCAU66y6CKRAoEFU9KBXo7PFCARAyDF5go7ZECASAeCF7go7tCCASGXXH7yATB9FeEA5X7AU8o77yAUB7EyBA9AeFXyEIo76yKUAoBAKBBK6MiAy8y76yKVAUEBK6CcBA87H5yUVAUEBK6CbBK86H6yUWAKFBA59W7BK87H6yUcBA59GUBQeMI7H6yUcAoCAo59GUBQeNI6H6yUcAUEAo59GKCQoNIy76yUcAUEAohAUaF9Af7AGIy76yUbAUGAehAKcF8Ap7AEI6H6yUjAU6o57Af7UCI7H6yUkAK6NYH6yUjAe59g6H5yUkAU59a7AK58H6yK98a6AK58H6yLEaKEFo76yLHZ9Ae5o76yKiAK7W58Ae5y76yKiAK7W58Ae5y76yK98AyEZ8Ao5o76yLBAeCAyDZKEFy75yLGAUGZeDFo75yLPZUDFo75yLVY6Ae5y7tBMKWA7V7Ay5e7tBMKVBCPAy5y7jAKoBB6CKNVUGF6HY99KeDByUB5VUGF6HFAKUEBoVB7VAGG7GE99KKFBoVB8VAFG9F8x9KAGByUCCHAy7K57x9J9A6B7B8CKoAyRALtAe7U57x9EKBF7AySB7CemA7ByCO6AK7e58x8D8Ay5yFCKPCokA8BoDWK57x8D8A7FeCC7AoCAKDAUZDeMBAGWK56x8D8A8IeBDogBoIA7WU55x8D8A8L9DAQA6A8We55x7D7BKCAzLC8DCaFi97D8B7LKbDCdD9AUKx7EoPK9CoeXUiA6APFE8B6K6B8DMkC8z7E8B9KoODqoB95WFUPK9AonYoO5XFUQPMyA55aFUPAeEO578K5UWO678A5UWO678A6oJO778A7ADO778CTC6Ab5gSC8AUEAltV8DyE7rV7D7AvqV7D7A67oTUCCemAbrS9AoY78f7UEA9A7C578f7KSC878f7ASDH8V6UFAKTDR8V6UZDR8V6UZDR8V6eYDR8V6eZC978f6eTAeDC978f6eTD578f6UTD678f6eRD778f66AeEA6D878gR78gQ78qQ78qQ78qQ78qR787Vl9CK79MI79qG79qE798UM58APpUC57AjpT8Z7A55pT6Z8A65rTg58A75qTfCAp5UH5pTfDAzyA75qTfDAyMAQ86TLWAQ86TBXAa8z9BXAk8z88MoE68z86MyE686SzZA5686SfaA6688R9M6A869B76M6A769V7pbA669p7fcA569z7VdAvAQ68mQSrP78rP78sP68rP78rP68sP68sPmvPmwPcxPS5yDApm86Vl866Nm68NZ8ABdLc58ABdpZ58ABdzY58ACd9L958ADd8L858UCd8L758eCd9L658eCezK58eDezI58oDeymAe66586AXFDyHAyBAUFFZ86AXIDKKAUKAoCEt88ANNCegEZ89AXNCKhEP9KBfyQD7EJIBonD89KBAqD7B7AS9oIE6DUSAc9yEFAeB9AdyC9B8AnzC6CAD9zBUEA7CeC95eJA6An99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99ACeAT99AT99AT98Ad97Ax96Ax97AT99AABAT99AJ99AJ99AH6AC997Ax9yF99yE996A55lAO57A55lAY56A55lAY56A5bUBaoCt7Aq7UCaUEt7Aq7KDBUBY8A5t6Aq7KKAyFYyEt6Aq7KKAoHYoCt8A5a9BUBA97EAyhAMiClEA6DKCWoBAKf7EA7C9AgYDo5yF6sA6C7AqaDo5eH6qA8C6AqaDy5UH6qA9CyEW6D6FKC6wA8CyEW6D7FAG6sA8CyEWynFAG6rA8CyCW6EKzA56qA7CyDWKv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");
-    k = names.iX(k);
+    var mapData;
+    current_map === real_map_starting_index() ? mapData = "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86fRU8Av6gRK76AeCE66hQ9IAw6iQ7IUu6kQ6IUu6lQy87EQmQofAK6Ak6nQUdA7F9D56nQAKAUQAKBA9F8D56nP9A9BKIBe57DaqQAGBeIBoSAKBAKjDGsQAFB6AySA7BUiDQrSKFCKCA6AyEDUcAKD6rV6AyFAoBCUc6yV6AyOB6C865WkBAEAKZ655X7Aod66M6a69Z967W5967W5967W5967W5867g5867g5867g5767q56675Z6675Z5676Z5676Z5676Z5676Zu77U6AKu678UyFEk78UyID9679UyID768L9yBA8A8DABAu8qEA8C769WEA8Cu95UoICG99T7AKGA9B9699UoKB77AUoLB56dAe69UyMBucAe69QUCBUCC7B6BGbAe7B58BABAeEAyYCAI6ZAe7B57B6AeHCUXAabAe7L57B7AKJCQ5UEHB57C7CQ5UEHB56C8CQ5eDHB57AUBCoV65eEG9QAZB965oEG9QAZB965yDG9QKZAUBAKCBa5yDG9QKZAKGAKEA665yDG9QUmAk5yDHB56AUED8AkxAUEAe7B565oAeCALyA7HV575oA8AyBOKGHf585qA8AKEN9Ay7p585sBVmAy7p595sBVkAo76P95uBLjAo76P9AKCAUB5rA8N6AK78Q55sA6V6Q65tAKQAMCQ756AGT8RF58AKBAz96RP6AFTz7P6oBTz7b59Rl58Rv57R675z7975V7975V7875f8HzSlwSbxSbxSbxSbxSlwSvvS56ZApRSuYA6L7S66WA6L7S656yBFeJL7S656yBFeIL8S656yDE8A9MB8556yEEoNMB8t6yFEAPMV8t6KJD7B8MV8t56BokB6Mz8t5UQD7B6M6S65yAyIAUlB7M6S65yAyuB7M7S75xAovB7M7S65yAeuCLZS75xAUuB6AoBM6S75xAKvB6NL87596BzhS759oPNz8959UPNz89589B8Nz9FsAKrB9Np9PqAUpCLiTV6oClyCD9C9M8Tf6oCloCD8DVaTz6UCloCDomMp9p6oCleBDUqMf9p6yClUBDUrMV9p67AN97AKFEABAfWTj66AKFD8M8TACAZ6yDAUnM8TACAZ66ELeT556ypNB9j67ELeTZ67EVeTP6ytNB9F67EffTF66EpfTZMAyDAUpEzfTZHByoE6NL9jDBKFAUpEfhTjCA9FKqNp9s97BeDAeeAUEAUEEziTADAY9ySDKJAouNf9AEAO96B7C7AKCAoCAyEEzhTAEAO96B7C6AULFLhS9MKEl6CKUAKCAUQE6Nf89MAIleWBoLB6EzhS9MeFleZA6B7B6EBlH8A7Ks9oBA6C9AKSB9DKCALoH6BLCxoEAevCUSAUCAeEOe7oPJ9xyEAUvCoQA8AzqGeFAoRJ9x7E9C6ByIA7OK6AJAUTJ8x8E6C8BeKApsGAeJ8x9EodBULAeGAVlF9DU96yArDKKBUEAyCN7F8De96x9EehA6ByMN6F7D7JZAEKnAUQBVjF7EA88yAoF8BpiF8EK86x9EK57B7NU58Eo8s98EAvAKHCBgF9E6IO96EKuAyECVfF9Fe7i9yrEyhAeBM6F9Fy7E9yrA8AKlEBXF9Fy7E9euAeFD6EfVF9F7G7xo5yiEzUF9F8G6xo56DexAUCAeBK8GA58G5xo6KbF9K7GK6A6Y9e6oYGpDGK6e58xoBAK6UYGpDGA6y56x8GKTHLBGA6y56x8GATHfAGA69FO99GKRH6J8F8Howx9GKPIA96F8H7E5XoBao6KPIK9y57IymXeIZ8GKOIo9e57I8DqhA9Z8GKOI6JK57I9DgeBg57GKOI6JK56JKfW8B7Z6GAOI8JA56JUdWyRAKCZ7GANJA89F6JecWUUaA6UKJe87FzCCCVCM6A6eIJ6AKDIK5zDB9WAWZABA9GyFKU8A5zEB7WKWY9AUJG6AfEAeBAoCG9FzGBqXCKMAMjAoGS7G7FzGBgZCAMAWiAoFS9G6FzJAeCAWbCKMAghT8G6F5ieWBKDXz98Go55ieWBAFXz98Ge5rtCUJAqjUo58FrvCAIA5XgGF8FrvCAHA6AeCW8U6F8F5i6CKGAoBAUBAqaU8F7F5ieYA6AoCA6W6U8F7FrrCyFAyCA6W7U7F7FrqC7AUHAUGW7U9Fy5rqD6AUGW6VA5y5q8yCF6DyBA7W6VK5o5q8oEFyjAKHW5VU5o5q8eJFKjAKHWqNFo5q8KMFAjAKHWqPFU5q8APE8EqYVo5U5q8AQE7EqYVyzFg8ATE6EUCAMWV6FA5g79CKtEgYV6FA5WFAeBAK68CosEeCAMVV7E9FWCBK6obEUrWqRE9FMDBy59C9EUrWgRE9FMCB6F6DynEoDAMSV7E9FB99CKwEenEoDAWQV6FAxT8CosE6D9EqWVyyE9T7C9D9E8D9EgWVozE9T6DyfFUnEgVVozE9TylC8FooEgUVe5UvT7D7C7FypEWTVyzE6T8D8Ce57EooV9Vo5UuT7EKUF8EypV7Vo5UuT7EKTGAuD9V7Ve5euT7EeRGKuD9V6VU5otT8EoQGKvD9VqNFosT9FACG8E9D9U8V7FyrUBUFKmU6V7F6Ef99MK5UoUgQF7Ef99MU5emUWPF9EMCMU5elUWPF9EMDMU5elUCOGKoUfXFelUCOGKoUfXFemT9VU6emUzXFesTgMGemUzXFowS8VK6omUpYFo5V8qJG6DoCAMFKyBB7FyuAeESfSAK9A66DqIKoCB7F6EyEAp8fQAo8y69DgKKeCB8Fy5p8VPAy77AKEHUhVBDAUVFU5z8LHAKEA9BeBFo8ygVLDAUVFU56SBCCALAexI9DWLJ7AeCAeNAeFFeuA6Ap78J8CyBAKHAyxI9DMMJoKBoDAy5oxAUFR6JomAKGE7JAfVK9oLByBA8FU57Ry9KxEe9eeVK9oMCyzFKGAL7K9ezBABDA9odVK9oOCyyFAEAL7e9U5oGA8Co96C9U8J6ByZFKxAUERK9e56AeJBAEA7J9C8UzAByZFK57Q9JK7eDAKCAyDKecUpBByaFA6B7K8z9KcUBEB6C7E9GL7A8B96C8AoBTVHB6C8E8Gp67IB96C8AeCGKDM6K8B7C9E8G6Qo78T8C8AUCGeBM6LAQC9E8G7Qe77T9DL77AUCMKPDAwG7Qe75UAeRfeByfE8G8QU7qADB7LgBokEo69Qe7MBDB7BiBelEo69Qe69UUeQ8N6BelEy69QU67UofAKDQfkBUmE6G9QK67UokQVjBUoE6HL58G5U6D6QfhBeoE7HV57GgHD6QACALhBerEy7V56GMJD6P9N7BerE6HV5y6CKDz59OAKEovHV5y57VUjP7OeIE6E8HL5o57UeCA7Dz57OeIE7E8HL5o55UUEA7Dz5zsA9E8E8HV5e5qCAeIDp56OyHFAwHL56FMBAoIDp56OyHFA66Ff57E9UKDBAiPpwA6FK66Ff59C8AUPUKEBAiPfyAo5e6y5p59CoKA6UeGBAhPWKGo56P9BKDA7V7A9BAhPCMGe59QAEXAJBKhO9Ve6U6B6KDXALA9DVxVy6A6L6KBXKOA7DVxP7Ae56F8GV6ACXKOA7DVvP8A6Fy56Gf6ABXKPA7DVvP7A8F9FU6V6ABXKOA8DLvP7BA59FK6LvA7AUGXAHAyDA8DLuP7BK59FU6BuCCcAKUDLuPyNGA5e58OAdAoFX7DBtP6B6GyvF7N8EClC9O6O8AKGB6G7AeBEo5zmD9X8C8O7O7Co7KuFflDgtC7O8O7Co7UvFLkC9ZAaO9OybHUwE9J6AKnC6ZeaO8F8AK87C7HewE8JyDAUBDyYZyaO8FeGBeFG9C7He5UsI7AUFA8AeCC8CyOAMoC6O8FAJBUGHAaHo5eqI6AoDB6AKDCKHAKUBAFX8DVrE7BUNAo7UYHo5opIoeB9A7AUXA8AWoDppE6BoNAo7UYHo56D8IefB9BKEB8Y9D7N8E6BoPAU7UYHy56D7IUgB6BeGB5ZKmN7E8By86Co76F6Dy8KKAKdA9BoFBC57D8N8E8Bo86Co79FohHyPAeiAePA6A5aKoN7E7Be87Ce8A56DK76ByCEeCBC69EAFAUBAfaE8BK87Ce8U56DA77E7B6A8a9EKCBLXE8BK88CK8o58C7H8DACBKUAq7U57MKvBA9AUI7F7Cy6ADByeAULd6F7MKvA9JKUJK5oYF9AeQEW97F8MAXAUZAy9UTJU56CU57AyQEM98GBTCKDCyEJUUJe5yXF6AyREM97GBTCADMUUJe56Ce5yFCUld6GLSOoVJoiAyRCU5yFByDAybAUIdy6LQO6CK9ohA6B8CK5yIBeFAeldo6VNO9CA9ehA8B8CA5yKBUFAekdo6VHAKCPUUJUhBKRB8FyNAUEAyFAUid6GfFP6CA9egBURB7FyNAUFAond8GfDP8CA9ydCALB8FeNAUGAeVAoOd8GpBP9CA96C7CUKCAzBoCA6AUVAoOMyBRU6pBP8CA98CyYA9CKyBoDC7AyOMyDRA6o99P9CLDB9C6A8CUyBoDC6A6BfZAf7A6o99P9CLEB8C6A8CeyEeEBpZAf7A6fAP9CLGB6C6A7CyyGBZAf7A6fAP9CLHByaA6C7FA59MoGQ8GfAP8CVIBoaA6C8FA58MoGQ8Go98P9CVIBobAycFK57BAELKFQ8Go96QKWK8BofAKcFU56AoKLUDQ9Go9z6UWK8Be56AoBFUjAKTAoKLoCIyDIK6o9z6UWK9BU5yFAK5UjAKgUUDAUBH8Gy9p6UWK9BU5yEAU5e66UeGH8Gy8UEA7QoVK9Be5yEAozF8AKEUyHH7G6IB76BAFA6K9By5oDAo5U5eGAqFAKBAo77Gy79R9A8A8AfKB8FUCAo5ezA8Aq87G6C8AotSKIMATF9FUwBAFc6G8BeBAKEA6A8EB88AVXB8F8FewAUBA7A7ce69BKKAKND6fySF7FoyA8A6ce7AKC9DNPB9F6E7AeEFAHA8cU7AIDUcf7B9F7EyFAoGAUqAyJcU7KHDyEAKUf7B9F8EoFAoHAK57cK7KFEoGAKLf7B9F9EoFAU66cK7UBE8AeGA8f8B8GAtHC8VfA5gKSGAtAoBGg8fgAXXB8GKsAeCGM8y66AN9ATGUBAelAKFGM8y66A9mUTG6Ey59cy6yLmKTGyjAKKB7AUocy6oMmURGyhA9AyRAUiAUFHKCVK6eNmUKHKhA6AUDAKBA7BeBDoDAy7ACVK6eNmUJHKrAyJD6AeGAeFHACBABUA6eNmKJHeqA6A8AKDDUDA6AoBHoBA9AWAGKQl9A9H7D9A7BUfAeIH7AKKAMAGKQl7BK78EAFBefAUHI9AV99GKQlyNH8EeCBefAUGJAET7GARlyNH8F8DADAo9UFT6GASlyMH9F7DADAe9eFT6F9B9loNH9F8DACA7JKBH9AVRF8CX7UNIAxA6AenAeDQeDL7F7Ch7UNIKZAKYAoDEABAp6UFL6F6C5lKMIUKB7CoEAUyP6A7Ly56C5geCEyKIyJAyBBoXAeCFf5eHLy56C7f8A6D7AeCBU96AyQB9AoHE9PKILy5ydf6A8DoFAKLH6AUUA8BoBAUPAyGE9NUEByHL6FoefyLCARAKKH7AUTBUOB6AyEFBfA6BeHL7FeiJ6AeBA6T8CASB6AeKH8AUMB9BURBKCE6NALA8A8D6AeBAK76FUkJURToVAUDBKRAeKH9AKLCyHB7FeBAzdBeEBAlA9HUyD9AeBIyXA6AKIA6BKEPo5oDA8JeaAyJAeHBeCDUGAzdCyoA7HeyE6AUDHoeAKGAUNAeMO9FeEA8JegBUGBeDDKEA7M8C6EUDHywFoKAK59HzsFeFA7JefBoFBoCELcC6EyBHywFyJAK57H9OU5VFDeOAokAKUM8C7MAvF8AoBAKCFy8VpFLFDoPAeSAeOAUUM7C8MAtG8EeBBA87CyCLKyJ7AUFD6BoDCABBeCCLaDBTEo69DoFAeGAo9AXAzJFA98AUED6CUBFLaDLSEo69DeHAUGAo9KWA6K8E8K8Dy7fZDVSEU7KfB8AU9eMAKFBKMAKmA7E9E7K8D6H7L9DpREU7ebLyJAKBB9A9A6DANFynLKjH6GUHAKDE6DpRD8AUBH7CpQA7C7AeIC6B7FylLyjHe58B9EUhL8D6IUCAUTMACEUWCA56DzQCUBBA7eCAK5yXD7DzSB9AKHAKEJePQyVCe5yhL8CUFAoXAKxF9CoiD6L9BeBAKHALDA7AUBQ9AeDA8AKFCo56DVTCKFAK7y59C7DUkL9BLQAV89AKBAoZF7DVSCKFAK76BAEEybC8EBSA9iA59DBTCK8KBBetC8C7EBSA9iA6AdL9CUoAUDAoNAKfEyeCKsL8A8iKNAUuC8L8CepAKDAotA8AygDKSE6L8A6ieLAexC7L6CotAetAyLDAhB6E6L8ArtA8A6FAbLyYH7AeHBARCyiAKDAy5fRAXvA7A7F6CLPC6HyCAyHAoBB8Co96u9AoIF7CBPC6JeBB8Co97u9AUJF9B8L6A9AKPLUYJ8v9B6AKrB7L7A7AePC8AUYAKJAUtCLCv8GKOL9AyFBybAU8UQK7v6GoNMAEA6BzMBo77AKdv6GoNMKDA6A7AUGEKBE9AKVBA79AUdv6GoNMKBA8A6AoFF7AKgAeVAKDAy78AUevo7AJMKBBADAyFCyBDACDKEK6Aoeve7UINUDA6AoYAU6UFKyDDi68V6AeHAe87A6KUFDs68V6AUJAUuAKoA6KKFD5u8V6AUJAomAUtA6KAGD5j6ALKV7AUKAe8oGJ6BAkjyHKqfAK8oGJUPD6jyKKNQAy9ASD7j6A7KXRAe9KUD5kKBKhRAe9AWDq9ADRWeAL78Cekc6A6RMeAV76CUmc6A6RMeAL76B8Eg8yHRYBCeqcyGR5n9CoqcyGR6eUBJyYEM86AL8NBAU96CUpu9eKCJ7CAqvg97AU97B9EY7y6UCXUCJ7B7Ei77d6AK97BUwv7nyKE9v7deBKKBAoCFY77ts77ts77t5v6X7A5Vi76XULA6A7A9A7A8AL7i78XKMAyYA7AL7Y78XKqAoERO78XUrAUGRD87AK9ChAKCE6RN87AU89X7AyGDV7h87Ao87ZyYRh88Ay85Z6B9R8m8A7Ig56BB87m7A9IM59Az89m8BK78aKBTX8yCAKMH5t6myDAUKH5Y9AMFm6AoBA8H7t5m6AyGAK76t7m6Ao8i58m7Ae8Y59m7AK8O6O67us67us65u6ui68r6AKau8q6AyEAUau9qUUCE69p9B8AeFB7u8qASAyEB6u6qUSA7AUQu6qyPC5u6qyQC5u5q8BoZuscByZuifBAcA8A5s9rKHDKIA5s8r6AUmAUCtO78ti78AeCs9v7AUDs9wiwwsvwiwwsuw6s5w5s6wsuw6s5w7AyBr8xslx5r5x9rY99rZCq8ysay6q6y6qtJqPMBeGoFgP6BWe5lPKQW65pO7B8W55rOoXV95zN7C7V655VbEMK55pZEWI557MKtU8557MKuUj66LowP6AeFA7DF69LKyPySCZ8VDFL5oWB858pBFVyC8B5588J7FpqAeEC9Bt89Jy68M6EAJ59e9o7BYEUD598Je7pU6sJU76AoOKQsJU96J96sJU96J66vJU96JkyJK97Ja5U89J9B6AK7k5o88J9BKHAeFA9AK5k5y88KAKC6AeDEu58I7KKBEAs658I6OeGAoh659Iz5yf66K86PeFA7B666y8z68Bk6y8z7KH668Iz7eF669IwwI58vIwyISzIS6K7S66G587U59X9AQhF8X8AeqAZ9U5qlAopAj9e5gkAypAj96E9X7A6EAD6BEgmA7D9AkBEWoA6D8AuED8YKHD7AkID5YKHD7AkJDqrA6D6AkKDWsA6D6AkLDCtA7DyD6MC8Y8A6DoD6OC5ZAHDUE6NCqzA8DAE6QCM5eJC8AkTB8ZoKC7AkUB6ZyKC6AuYA9Z8BAZA56ZA7Z9BAaA589KJC6A589UIC6Aw9eJCoE6bAM67A8CoE6bAW67A7CoE6bAg66A9CUF897A8CKE899A9B9AeDAUGAS9AJB7A9AKH889A9B6B8888BKOCI87BKOCI88BKMCI89BKKCS9KLA7Cc9ULA6Cw9Un89Uo89Kq889Em88E5887E688yu886E5887E6887Ew87E5887E5887Ew88E5886E6886E788ov88ow88ov88yv88ow88ew88ey88K5m8Az88Az88AzH" : current_map ===
+        real_map_starting_index() + 1 ? mapData = "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Fs69FKxJ6556KX78Fs7AxFATAK75558KX78Fi7KuFeSAU7t59KN8AzvKuFyQAU7t6BBmAxvetF7BoDHj6U99mUvvetF8BeEHZ6e98metvUvF9BUEHZ6e98monv7E7GKJAy7Z6o7UBC5mocAKGAUCv7C7IKHA6Hj6o7UCCr86B8BUCwKZIoGA6HZ66HUDCX88B6x7Ce8yFA6AeBG8567HUHB8nAHy6CA8yFA7AUCG8L6AOyHeIB5nUEy9B6I8AeJAUCG7L7AOyHyJBJIBe9ADA8AUDG6L8AOyH79aBK9UCA7AUEGzTAYxH99eAVBAyDG6L9AsvIJ99AAhAKHGpUA5s7IJ99AAoGpVA6sy8T99AAmAoCF9MUGsy8T99AAfAoJF8MeGsy8T99AAdA8A7F7MoFs6Id99AAcAyKF7MyEs6Id99AArF6M6AsuIx99AApFzdAYuI6999AAnFzcAYvI6999AAnFpcAeDAOrI6999AAmFpdAUEAOrI6999AAmFpdAoBAYrI6999AAlFpeAoBAYpI8999AAlFpeA6sU87999AAmFfeA7sU86999AAoFBgA7BACrK85999AAoE9NUJA7AsgIx99AAoEBpBKDA5re8x99AAqCACBpqB9ro8n99AAtB7AeMOeTr6IT99AAuAKDBKDAUBA9OoTr7H9999AA5yGA8A8OoUr8H5999AA59AoKAzuB7sU69999AA78AVwB7se58999AA9ABOyUso57999AChB8s9F8999ACgB6tK58999ACgB6tK59999ACgBs5U59999AA7eCP8Bi5U58999AA7eCB9AVnBO5U59999AA9oCN9BE5e59999AA9oBOAIt6F9999AA9eBOAHt7F9999AChA6t9GJ99AA7eBOUCBeGuAuAeK999AA7eFBKDMoEBAHuKuA6A6999AA7oGAyIMeFAUCAKBAeGuot999AA8yTMeKAeHuyu999AA8oSMeKAoFu8AoBEJ99AA8oSMULA6AO7KDAen999AA8eRMAOv8AKEEJ99AA8eRL8B5v8AeFD8999AA8eQL8Bs8AEAymAyB999AA76BpTBs8KEAeqAeC999AA7oOL9Bs8UDAyqAKE999AA7UOL9Bi8yCAypAeD999AA7UOL8BY87AeEEKDAn99AA7UNL7Bi88AeFET99AA77A9AUBL6Bs89AoEEd99AA76A9AUBLoNxeDAeq999AA77A6L8BtAET99AA79AzQB5yUo999AA8KBL6B6yon999AB9yUyen999AB9USy7ET99AB89B7zKo999AB87B7zon999AB8yRzyo999AB8oRzKCAKBAKn999AB8eSz8D9999AB8ATzyCAUk999AB8KUz6AUCDx99AB8KU5XDd99AB8UT5WDn99AB8KU5UAKCAKBDT99AB8AU5WAKDDT99AB78CFWAoCDT99AB78B85YAoDDJ99AB77B85ZAyCDJ99AB8KM5ZA8AKf999AB8UI5bAKCD8999AB8eD5eAKDD9999AB7yC5tD6999AB7eC5vEJ99AB67AjuEn99AHOEn99AHQET99AHQET99AHUD7999AHRAKDD6999AHLAeDD9999AHMAyCD7999AHNAyBD7999AHSAKCD5999AHTAUBD567UB999AAuD767UC999AAsAKBAyBDQ7UDAUD999AAoAyBDQ7UI999AAoAoDDQ7AF999AAtAKBAUBDa7ABAoC999AArAKCAKCDT99AHXAKDDJ99AHVAUDC8999AHZAKDC8999AHfC5999AHaAKDAKBC5999ABvAP8KCAoW999ABuAP8UDAKY999AHiCx99AHeAKECeyAT99AG76AKHCUsAoBA5999AG8KWEeEAUG999AG8eBAUSEUDAKG999AG76AKGAKEB8EADAUE999AG89CKlAUEAn99AG8oBAUU999AHmB9999AHkAKDBoDAd99AHmBUFA5999AHjBUDA9999AHkA9AeJ999AHhAKCA9AeJ999AHkBAIA6999AHgBKHA7999AHhAyCAoBAKCBT99AHfAUBAUHAUBBn99AHgAKCAUBAKDAKDBVoAn99AF96AKHBVpAn99AF9yBAeROAE999AF9KYOAD999AF9oZN6Ad99AF98CT99AHgAUCBn99AHtBn99AHuAKCAn99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AGIAd99AJ99AJ99AJ99AJ99ACdAd99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AH7oE999AH5eB999AJ99AJ99AFGAKBAT99AJ99AJ99AJ99AJ99AC9KB999AH5UBAoF999AHtAyCAd99AHtAyCAd99AHvAx99AHxA7AUC999AHlAUFA9AUF668Ad99AA6ABAeCAyJAeE668Ax99AA57AeCAKEA7AeBA7AQ67Ax99AA56AyFA6999AHrAKBAKDA7999AHwA88mAdFBHDAVgAxFA97FALfA5898AKHA969KEOAF899AKGA98kAxGBE89A8YeII7AnGBoCAs76B7TUOC8Bo8yF9EA9AKDAeCAKBvyUN6AUyCUVB6G7CxDA9AeCv7C7NUDE8DABAULB7AeED9AyNDw9yJAyCvydNADA7BoDAoEAyBAyDD7A8C7CKFAeEAeHBKr88ACA6BE8KbNAwAKoAKhB7CyKFABAc7UDAUCAKIAUBveCAycM6M9AKoA7F6AKE86yEAKLvoHAUhKoIAguAKE858AeCBO6yDA7Ee9yEAM6m58AoDA9u6AoGFo8g6686UCAoCAUGueGAU7o65bS69A6t7KoubyDAm6UGtVJD9c786yHszND7c886yHA6AOkL6DrABKC8sA7AoCoKFC6L9DhCBKD8cAUNB5n8A6CfUD5eAFAKGAcbA7BUPn7A7CBWDrP8aA9BUOAyCm8BUQMUggABAKCAwRBAFAUCB8AeCm6ByEAUIMUch58MAUCBADCyBAN8eSAUDA8MAZAKBiIMAKDBADCr8UbAKCAVWCXv799AoMBADCr7V58AKDB7jl99AyMBADC5c7AUOAUKAeEA6D7QUTj68RBKDCg8KDAeEBeKAKTCf69CD6ABAcIByDCWaAKLAKYAUOBoIEAHR8AUCBr6wAAeGByDCqjAecC6A5W6AKDBX76AKB78eIBUKAeZWAEA9AoUa7BD85777A8BeMAeaUeDBAFDC69BD8779UTAeZUeGA6AyOAKMbAMm9787AKCCKDCp96AUEA7AyHAKPAKDAq7AOnKDAR78AUBCyDCz9oDAUJA5d9Br9568yCA6AK8yLAUQAoXT7foNn667yIAeDAUBAKEIyGBALAySUXMBX9u79Cy96BeGCp95fUIn669oNG8AoTB6A8Cf9rQAN9969UCAKCByCBeCHAOA9Cf9bR68oDA7A6DACA6Ao8UbSvT68ABAyEBeEC6AUDA6FKGCUiR87S68oBA6CAeA7AUCA6AKUAeQA6AUBB6D7R87P6CA7GAFCU68B9A7AUCA8A6AKBA8D9R77W6DA9BABE6A8De5yRA9AoEA7AUEE9RbL6UA9AoKEAJB9A8Ae6yIB7Ao58RHI6cA8AoPA8AUHAUPBKSQB7KGAk9ulAeGBUJAUHAyRA7CL56R869QRAeLAoRAyZAyHA6A7AUXPp5yDB969aHAeZAKhCKGA6D7O8P6AUR69kEBAFAoKGUEAymOUBAf58AUL6896LKKnOKCAV7Q886FK8AyDBKOA9N8Ru8aMc9RQ8kEd8RQ8aBd8Q9AoD68F97Z6AKrQu9j9KHAM5yHDf587B59eKAM5eJCp6HF6IZeKCB5vJ6OZV777M6AAoMZp7RN577AKEBKQAyFZ6Q57QBKC56yRAeGA9az577VA9BF6KcAq77OvWA9AeDAj6q8AHCVp7Y585cKQA7JeND57YA8AZ6yEC5bzCB9DRa57oHCM5oGB7DeEGeVC97bAUB57UJB6Z9A8BUdA7GeWC87R588BASZ7EeJGoYC77I6AA9Cq5UmA8G7CoeCUF6696MAyiY7AeOB6A7G8CokA8A967a6C58B6Ao7AaE767k7MxFeFDAdE966668MpFyGC8C8F666D68" :
+        current_map === real_map_starting_index() + 2 ? mapData = "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" :
+        current_map === real_map_starting_index() + 3 ? (mapData = "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C9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo") : 
+        current_map === real_map_starting_index() + 4 && (mapData = "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okA8BoDWK57x8D8A7FeCC7AoCAKDAUZDeMBAGWK56x8D8A8IeBDogBoIA7WU55x8D8A8L9DAQA6A8We55x7D7BKCAzLC8DCaFi97D8B7LKbDCdD9AUKx7EoPK9CoeXUiA6APFE8B6K6B8DMkC8z7E8B9KoODqoB95WFUPK9AonYoO5XFUQPMyA55aFUPAeEO578K5UWO678A5UWO678A6oJO778A7ADO778CTC6Ab5gSC8AUEAltV8DyE7rV7D7AvqV7D7A67oTUCCemAbrS9AoY78f7UEA9A7C578f7KSC878f7ASDH8V6UFAKTDR8V6UZDR8V6UZDR8V6eYDR8V6eZC978f6eTAeDC978f6eTD578f6UTD678f6eRD778f66AeEA6D878gR78gQ78qQ78qQ78qQ78qR787Vl9CK79MI79qG79qE798UM58APpUC57AjpT8Z7A55pT6Z8A65rTg58A75qTfCAp5UH5pTfDAzyA75qTfDAyMAQ86TLWAQ86TBXAa8z9BXAk8z88MoE68z86MyE686SzZA5686SfaA6688R9M6A869B76M6A769V7pbA669p7fcA569z7VdAvAQ68mQSrP78rP78sP68rP78rP68sP68sPmvPmwPcxPS5yDApm86Vl866Nm68NZ8ABdLc58ABdpZ58ABdzY58ACd9L958ADd8L858UCd8L758eCd9L658eCezK58eDezI58oDeymAe66586AXFDyHAyBAUFFZ86AXIDKKAUKAoCEt88ANNCegEZ89AXNCKhEP9KBfyQD7EJIBonD89KBAqD7B7AS9oIE6DUSAc9yEFAeB9AdyC9B8AnzC6CAD9zBUEA7CeC95eJA6An99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99ACeAT99AT99AT98Ad97Ax96Ax97AT99AABAT99AJ99AJ99AH6AC997Ax9yF99yE996A55lAO57A55lAY56A55lAY56A5bUBaoCt7Aq7UCaUEt7Aq7KDBUBY8A5t6Aq7KKAyFYyEt6Aq7KKAoHYoCt8A5a9BUBA97EAyhAMiClEA6DKCWoBAKf7EA7C9AgYDo5yF6sA6C7AqaDo5eH6qA8C6AqaDy5UH6qA9CyEW6D6FKC6wA8CyEW6D7FAG6sA8CyEWynFAG6rA8CyCW6EKzA56qA7CyDWKv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");
+    mapData = names.iX(mapData);
     var n = jm.bz(current_map).a31,
         l = jm.bz(current_map).a32;
-    map_width = 1E3 * k[0] + k[1];
-    map_height = 1E3 * k[2] + k[3];
+    map_width = 1E3 * mapData[0] + mapData[1];
+    map_height = 1E3 * mapData[2] + mapData[3];
     hs = document.createElement("canvas");
     hs.width = map_width;
     hs.height = map_height;
@@ -7967,12 +7960,12 @@ function a2j(g) {
     });
     xH = pl.getImageData(0, 0, map_width, map_height);
     xI = xH.data;
-    for (var x = k.length, t = !0, z = 0, y = 4; y < x; y++)
+    for (var x = mapData.length, t = !0, z = 0, y = 4; y < x; y++)
         if (t) {
-            for (; 0 < k[y]--;) xI[z] = l[0], xI[z + 1] = l[1], xI[z + 2] = l[2], xI[z + 3] = 255, z += 4;
+            for (; 0 < mapData[y]--;) xI[z] = l[0], xI[z + 1] = l[1], xI[z + 2] = l[2], xI[z + 3] = 255, z += 4;
             t = !1
         } else {
-            for (; 0 < k[y]--;) xI[z] = n[0], xI[z + 1] = n[1], xI[z + 2] = n[2], xI[z + 3] = 255, z += 4;
+            for (; 0 < mapData[y]--;) xI[z] = n[0], xI[z + 1] = n[1], xI[z + 2] = n[2], xI[z + 3] = 255, z += 4;
             t = !0
         } pl.putImageData(xH, 0, 0);
     vq = !0;
@@ -7987,7 +7980,7 @@ function kS() {
         g = Array(const_custom_map);
         g[0] = {
             name: "White Arena",
-            c1: 230,
+            width: 230,
             cw: 230,
             gO: 1E3,
             gL: 2E3,
@@ -7996,7 +7989,7 @@ function kS() {
         };
         g[1] = {
             name: "Black Arena",
-            c1: 800,
+            width: 800,
             cw: 800,
             gO: 100,
             gL: 50,
@@ -8005,7 +7998,7 @@ function kS() {
         };
         g[2] = {
             name: "Island",
-            c1: 512,
+            width: 512,
             cw: 512,
             gO: 128,
             gL: 32,
@@ -8014,7 +8007,7 @@ function kS() {
         };
         g[3] = {
             name: "Mountains",
-            c1: 960,
+            width: 960,
             cw: 960,
             gO: 60,
             gL: 8,
@@ -8023,7 +8016,7 @@ function kS() {
         };
         g[4] = {
             name: "Desert",
-            c1: 900,
+            width: 900,
             cw: 900,
             gO: 100,
             gL: 5,
@@ -8032,7 +8025,7 @@ function kS() {
         };
         g[5] = {
             name: "Swamp",
-            c1: 1E3,
+            width: 1E3,
             cw: 1E3,
             gO: 100,
             gL: 40,
@@ -8041,7 +8034,7 @@ function kS() {
         };
         g[6] = {
             name: "Snow",
-            c1: 1E3,
+            width: 1E3,
             cw: 1E3,
             gO: 100,
             gL: 20,
@@ -8050,7 +8043,7 @@ function kS() {
         };
         g[7] = {
             name: "Cliffs",
-            c1: 1024,
+            width: 1024,
             cw: 1024,
             gO: 128,
             gL: 32,
@@ -8059,7 +8052,7 @@ function kS() {
         };
         g[8] = {
             name: "Pond",
-            c1: 820,
+            width: 820,
             cw: 820,
             gO: 200,
             gL: 100,
@@ -8068,7 +8061,7 @@ function kS() {
         };
         g[9] = {
             name: "Halo",
-            c1: 1024,
+            width: 1024,
             cw: 1024,
             gO: 128,
             gL: 32,
@@ -8111,26 +8104,26 @@ function kS() {
             per:1
         }
     };
-    this.a3W = function() {
+    this.isBA = function() {
         return 1 === current_map
     };
     this.bz = function(k) {
         return g[k]
     };
-    this.nF = function() {
-        return current_map === const_custom_map ? dr.zb : this.bz(current_map).name
+    this.getMapName = function() {
+        return current_map === const_custom_map ? customMap.mapName : this.bz(current_map).name
     }
 }
-var ht, pixel_rgba, jW, jX;
+var mapCanvas, pixel_rgba, mapCanvasCtx, jX;
 
-function jP() {
-    void 0 === ht && (ht = document.createElement("canvas"));
-    ht.width = map_width;
-    ht.height = map_height;
-    jW = ht.getContext("2d", {
+function loadMapCanvas() {
+    void 0 === mapCanvas && (mapCanvas = document.createElement("canvas"));
+    mapCanvas.width = map_width;
+    mapCanvas.height = map_height;
+    mapCanvasCtx = mapCanvas.getContext("2d", {
         alpha: !0
     });
-    jX = jW.getImageData(0, 0, map_width, map_height);
+    jX = mapCanvasCtx.getImageData(0, 0, map_width, map_height);
     pixel_rgba = jX.data
 }
 
@@ -8354,16 +8347,16 @@ function kl() {
 
     function l(y, A, B, C, E, F, G, N, I, D) {
         D = Math.floor(D * C);
-        cH.font = bt + D + bu;
+        mainCanvasCtx.font = bt + D + bu;
         N && (E += 80, F += 80, G += 80);
-        cH.fillStyle = "rgba(" + E + "," + F + "," + G + ",0.6)";
-        cH.fillRect(y, A, B, C);
-        cH.fillStyle = cK;
-        cH.fillRect(y, A, B, 2);
-        cH.fillRect(y, A + C - 2, B, 2);
-        cH.fillRect(y, A, 2, C);
-        cH.fillRect(y + B - 2, A, 2, C);
-        cH.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
+        mainCanvasCtx.fillStyle = "rgba(" + E + "," + F + "," + G + ",0.6)";
+        mainCanvasCtx.fillRect(y, A, B, C);
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillRect(y, A, B, 2);
+        mainCanvasCtx.fillRect(y, A + C - 2, B, 2);
+        mainCanvasCtx.fillRect(y, A, 2, C);
+        mainCanvasCtx.fillRect(y + B - 2, A, 2, C);
+        mainCanvasCtx.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
     }
     this.xy = 1;
     this.a0p = this.a4N = this.a1U = !1;
@@ -8470,7 +8463,7 @@ function kl() {
             !is_ios && 5 > device_version && (z[4].n6 = this.a0p ? 130 : 0);
             this.a4N && (vv.uu[2] = vv.uu[3] = vv.uu[4] = !1)
         };
-    this.c7 = function(y, A) {
+    this.clicked = function(y, A) {
         var B;
         if (!(7 <= aJ.pa())) {
             var C = n();
@@ -8504,8 +8497,8 @@ function kl() {
         var y;
         if (!(7 <= aJ.pa())) {
             var A = n();
-            cH.textAlign = cJ;
-            cH.textBaseline = cI;
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.textBaseline = cI;
             l(A.f7, A.f8, A.i4, A.nR, z[0].fB, z[0].n6, z[0].cm, 0 === x, z[0].name, .6);
             if (t) {
                 var B = z.length;
@@ -8564,7 +8557,7 @@ function kV() {
     this.f0 = function() {
         return g
     };
-    this.co = function(id, coord) {
+    this.check = function(id, coord) {
         var l;
         if (0 === pixels_bordering_water[id].length || !pixel.can_take(coord) || !pixel.is_neutral(coord) && pixel.owner(coord) === id) return !1;
         for (l = 21; 0 <= l; l--) {
@@ -8689,14 +8682,14 @@ function a2V() {
     };
     this.ik = function() {
         l = 31;
-        this.dF();
+        this.update();
         return this.get_largest_team()
     };
     this.get_largest_team = function() {
         for (var largest_team = 0, index = team_count; 0 < index; index--) team_total_land[index] > team_total_land[largest_team] && (largest_team = index);
         return largest_team
     };
-    this.dF = function() {
+    this.update = function() {
         if (team_game && 32 <= ++l) {
             l = 0;
             var index;
@@ -8709,7 +8702,7 @@ function a2V() {
         team_game && n && draw_pie_chart()
     };
     this.cG = function() {
-        team_game && cH.drawImage(z, m7, qU + 2 * m7)
+        team_game && mainCanvasCtx.drawImage(z, m7, qU + 2 * m7)
     }
 }
 
@@ -8773,12 +8766,12 @@ function kd() {
                     client_width > B && (B = client_width, droid.saveNumber(23, B));
                     client_height > C && (C = client_height, droid.saveNumber(24, C))
                 } else B = client_width, C = client_height;
-                client_width = p7.width;
-                client_height = p7.height;
-                B > client_width && (client_width = B, p7.width = B);
-                C > client_height && (client_height = C, p7.height = C);
-                p7.style.width = client_width + "px";
-                p7.style.height = client_height + "px";
+                client_width = mainCanvas.width;
+                client_height = mainCanvas.height;
+                B > client_width && (client_width = B, mainCanvas.width = B);
+                C > client_height && (client_height = C, mainCanvas.height = C);
+                mainCanvas.style.width = client_width + "px";
+                mainCanvas.style.height = client_height + "px";
                 B = !0
             } else B = !1;
             return B
@@ -8793,10 +8786,10 @@ function kd() {
         cB = s = client_height;
         pK = qn(r, s);
         bq = divide_floor(s + r, 2);
-        p7.width = client_width;
-        p7.height = client_height;
-        p7.style.width = B + "px";
-        p7.style.height = C + "px";
+        mainCanvas.width = client_width;
+        mainCanvas.height = client_height;
+        mainCanvas.style.width = B + "px";
+        mainCanvas.style.height = C + "px";
         return !0
     }
     var x = !1,
@@ -8806,16 +8799,16 @@ function kd() {
         z = 100;
         r = s = pK = gE = cB = bq = 0;
         device_pixel_ratio = 1;
-        p7 = document.getElementById("canvasA");
-        cH = p7.getContext("2d", {
+        mainCanvas = document.getElementById("canvasA");
+        mainCanvasCtx = mainCanvas.getContext("2d", {
             alpha: !1
         });
-        cH.imageSmoothingEnabled = !1;
+        mainCanvasCtx.imageSmoothingEnabled = !1;
         l();
         window.addEventListener("resize", g)
     };
-    this.dF = function() {
-        ju.dF();
+    this.update = function() {
+        ju.update();
         ++t >= z && k()
     };
     this.xl = function() {
@@ -8835,7 +8828,7 @@ function kX() {
         pixel.strong_is_boat(x, n) && pixel.revert_to_water(x)
     }
     var n, l, x, t, z, y, A, B, C, E, F;
-    this.dF = function(G, N, I, D, K) {
+    this.update = function(G, N, I, D, K) {
         C = G;
         F = N;
         n = I;
@@ -8856,7 +8849,7 @@ function kX() {
                         g(!0);
                         break a
                     }
-                    if (!ch(n, G)) {
+                    if (!isTeamate(n, G)) {
                         N = land[G] * max_troops_to_land_ratio - troops[G];
                         0 >= N || (N = l > N ? N : l, l -= N, n === my_id && (announcements.donate(N, G), statistics.numbers[16] += N), G === my_id && (announcements.receive_donate(N, n), statistics.numbers[10] += N), troops[G] += N);
                         g(!0);
@@ -8929,11 +8922,11 @@ function kY() {
     };
     this.hr = function() {
         var x = n ? 0 : -g;
-        a4M(x, x, map_width - 2 * x, map_height - 2 * x, gy.a5H, gy.a5I, gy.a5J, gy.a5K) || (cH.fillStyle = l, cH.fillRect(0, 0, gE, cB))
+        a4M(x, x, map_width - 2 * x, map_height - 2 * x, gy.a5H, gy.a5I, gy.a5J, gy.a5K) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, gE, cB))
     };
     this.cG = function() {
-        n || (a4L(0, -g, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && cH.drawImage(k[0], gy.a5L, gy.a5M - g), a4L(map_width, -g, g, map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && cH.drawImage(k[1], gy.a5L + map_width, gy.a5M - g), a4L(0, map_height, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && cH.drawImage(k[2], gy.a5L, gy.a5M + map_height), a4L(-g, -g, g,
-            map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && cH.drawImage(k[3], gy.a5L - g, gy.a5M - g))
+        n || (a4L(0, -g, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[0], gy.a5L, gy.a5M - g), a4L(map_width, -g, g, map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[1], gy.a5L + map_width, gy.a5M - g), a4L(0, map_height, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[2], gy.a5L, gy.a5M + map_height), a4L(-g, -g, g,
+            map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[3], gy.a5L - g, gy.a5M - g))
     }
 }
 
@@ -9023,7 +9016,7 @@ function Statistics() {
         this.a5a();
         this.a5b()
     };
-    this.dF = function() {
+    this.update = function() {
         0 < this.dV-- || this.a5c()
     };
     this.a5c = function() {
@@ -9051,7 +9044,7 @@ function Statistics() {
 }
 
 function a2S() {
-    this.bs = this.qK = this.a5g = this.a5f = this.xU = this.nS = this.nR = this.ue = this.ud = this.i5 = this.i4 = this.cw = this.c1 = 0;
+    this.bs = this.qK = this.a5g = this.a5f = this.xU = this.nS = this.nR = this.ue = this.ud = this.i5 = this.i4 = this.cw = this.width = 0;
     this.lt = ["Territory", "Balance", "Interest", "Numbers"];
     this.hidden = !1;
     this.a5h = -1;
@@ -9064,49 +9057,49 @@ function a2S() {
         this.lx()
     };
     this.lx = function() {
-        this.c1 = r < 1.618 * s ? r : 1.618 * s;
-        this.c1 = Math.floor((zoom && r < s ? 1 : zoom ? .8 : r < s ? .65 : .5) * this.c1);
-        this.qK = Math.floor(1 + .006 * this.c1);
-        this.c1 -= zoom && r < s ? 2 * m7 + this.qK : 0;
-        this.cw = Math.floor(this.c1 / 1.618);
+        this.width = r < 1.618 * s ? r : 1.618 * s;
+        this.width = Math.floor((zoom && r < s ? 1 : zoom ? .8 : r < s ? .65 : .5) * this.width);
+        this.qK = Math.floor(1 + .006 * this.width);
+        this.width -= zoom && r < s ? 2 * m7 + this.qK : 0;
+        this.cw = Math.floor(this.width / 1.618);
         this.i4 = Math.floor(1 + .02 *
-            this.c1);
-        this.nR = this.i5 = Math.floor(1 + .04 * this.c1);
-        this.nS = Math.floor(1 + .075 * this.c1);
-        this.a5f = Math.floor(this.c1 * (zoom ? .028 : .02));
+            this.width);
+        this.nR = this.i5 = Math.floor(1 + .04 * this.width);
+        this.nS = Math.floor(1 + .075 * this.width);
+        this.a5f = Math.floor(this.width * (zoom ? .028 : .02));
         this.a5f = 6 > this.a5f ? 6 : this.a5f;
-        this.a5g = Math.floor(.028 * this.c1);
+        this.a5g = Math.floor(.028 * this.width);
         this.a5g = 6 > this.a5g ? 6 : this.a5g;
         this.xU = this.cw - 2 * this.nR - this.nS;
         this.hidden && this.a5j()
     };
-    this.c7 = function(g, k) {
+    this.clicked = function(g, k) {
         if (!this.hidden) return !1;
         var n = g,
             l = k;
-        g -= divide_floor(gE - this.c1, 2);
+        g -= divide_floor(gE - this.width, 2);
         k -= divide_floor(cB - this.cw, 2);
-        if (0 > g || 0 > k || g >= this.c1 || k >= this.cw) {
-            if (1 < fq.c7(n, l)) return !0;
+        if (0 > g || 0 > k || g >= this.width || k >= this.cw) {
+            if (1 < fq.clicked(n, l)) return !0;
             this.end();
             return !0
         }
         if (k < this.cw - this.nS) return this.a5i = !0, this.a5h = (g - 2 * this.i4 - this.ud) / this.ue, !0;
-        n = Math.floor(g / (this.c1 / this.lt.length));
+        n = Math.floor(g / (this.width / this.lt.length));
         n = 0 > n ? 0 : n >= this.lt.length ? this.lt.length - 1 : n;
         n !== this.bs && (this.bs = n, this.a5j(), c4.c5 = !0);
         return !0
     };
-    this.a2O = function(){
+    this.printCoords = function(){
         var g = Math.floor((this.a5j_2[0] + gC) / g7),
             k = Math.floor((this.a5j_2[1] + gD) / g7);
         1 > g || 1 > k || g > map_width - 1 || k > map_height - 1 || console.log(g + " " + k)
     };
-    this.lo = function(g, k) {
+    this.lo = function (g, k) {
         this.a5j_2[0] = g;
         this.a5j_2[0] = k;
         if (this.hidden && this.a5i) {
-            g -= divide_floor(gE - this.c1, 2);
+            g -= divide_floor(gE - this.width, 2);
             var k = this.a5h;
             this.a5h = (g - 2 * this.i4 - this.ud) / this.ue;
             if (0 <= this.a5h && 1 >= this.a5h || 0 <= k && 1 >= k) c4.c5 = !0;
@@ -9129,7 +9122,7 @@ function a2S() {
     };
     this.a5j = function() {
         2 > this.bs ? this.ud = c2.measureText(eP.split_into_pieces(statistics.max[this.bs]), bt + this.a5f + bu) : 2 === this.bs && (this.ud = c2.measureText(eB.nI(6, 2), bt + this.a5f + bu));
-        this.ue = this.c1 - 2 * this.i4 - this.ud - this.i5
+        this.ue = this.width - 2 * this.i4 - this.ud - this.i5
     };
     this.bv = function() {
         this.hidden && this.a5j()
@@ -9138,137 +9131,136 @@ function a2S() {
         this.hidden && this.nY()
     };
     this.nY = function() {
-        var g = divide_floor(gE - this.c1, 2),
+        var g = divide_floor(gE - this.width, 2),
             k = divide_floor(cB - this.cw, 2);
-        cH.setTransform(1, 0, 0, 1, g, k);
-        cH.fillStyle = hy;
-        cH.fillRect(0, 0, this.c1, this.cw);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
         this.a5k();
-        cH.strokeRect(0, 0, this.c1, this.cw);
-        cH.textAlign = ol;
-        cH.font = bt + this.a5f + bu;
+        mainCanvasCtx.strokeRect(0, 0, this.width, this.cw);
+        mainCanvasCtx.textAlign = ol;
+        mainCanvasCtx.font = bt + this.a5f + bu;
         0 === this.bs ? this.a5l(statistics.a5X, g, k) : 1 === this.bs ? this.a5l(statistics.s8, g, k) : 2 === this.bs ? this.a5m(g, k) : 3 === this.bs && (this.a5n(g, k), this.a5o(g, k));
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.a5k = function() {
-        cH.lineWidth = this.qK;
-        cH.textBaseline = cI;
-        cH.textAlign = cJ;
-        cH.strokeStyle = cK;
-        cH.font = bt + this.a5g + bu;
-        var g = this.c1 / this.lt.length;
-        cH.fillStyle = oP;
-        cH.fillRect(this.bs * g, this.cw - this.nS, g, this.nS);
-        cH.fillStyle = cK;
-        for (var k = this.lt.length - 1; 0 <= k; k--) cH.strokeRect(k * g, this.cw - this.nS, g,
-            this.nS), cH.fillText(this.lt[k], (k + .5) * g, this.cw - .46 * this.nS)
+        mainCanvasCtx.lineWidth = this.qK;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.font = bt + this.a5g + bu;
+        var g = this.width / this.lt.length;
+        mainCanvasCtx.fillStyle = oP;
+        mainCanvasCtx.fillRect(this.bs * g, this.cw - this.nS, g, this.nS);
+        mainCanvasCtx.fillStyle = cK;
+        for (var k = this.lt.length - 1; 0 <= k; k--) mainCanvasCtx.strokeRect(k * g, this.cw - this.nS, g,
+            this.nS), mainCanvasCtx.fillText(this.lt[k], (k + .5) * g, this.cw - .46 * this.nS)
     };
     this.a5l = function(g, k, n) {
         var l = statistics.max[this.bs];
-        cH.setTransform(1, 0, 0, 1, k + 2 * this.i4 + this.ud, n + this.nR);
-        cH.lineWidth = 2;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, k + 2 * this.i4 + this.ud, n + this.nR);
+        mainCanvasCtx.lineWidth = 2;
         k = this.xU / Math.sqrt(l);
-        cH.beginPath();
-        cH.moveTo(this.ue, this.xU - k * Math.sqrt(g[statistics.m6 - 1]));
-        for (n = statistics.m6 - 2; 0 <= n; n--) cH.lineTo(n * this.ue / (statistics.m6 - 1), this.xU - k * Math.sqrt(g[n]));
-        cH.stroke();
-        g = this.mB(g, k, .5);
-        .95 > g && cH.fillText(eP.split_into_pieces(l), -this.i4, 0);
-        .05 < Math.abs(g - .5) && cH.fillText(eP.split_into_pieces(Math.floor(l / 4)), -this.i4, Math.floor(this.xU /2));
-        .05 < g && cH.fillText("0", -this.i4, this.xU)
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(this.ue, this.xU - k * Math.sqrt(g[statistics.m6 - 1]));
+        for (n = statistics.m6 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.ue / (statistics.m6 - 1), this.xU - k * Math.sqrt(g[n]));
+        mainCanvasCtx.stroke();
+        g = this.drawShape(g, k, .5);
+        .95 > g && mainCanvasCtx.fillText(eP.split_into_pieces(l), -this.i4, 0);
+        .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(eP.split_into_pieces(Math.floor(l / 4)), -this.i4, Math.floor(this.xU /2));
+        .05 < g && mainCanvasCtx.fillText("0", -this.i4, this.xU)
     };
     this.a5m = function(g, k) {
-        cH.setTransform(1, 0, 0, 1, g + 2 * this.i4 + this.ud, k + this.nR);
-        cH.lineWidth = 2;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + 2 * this.i4 + this.ud, k + this.nR);
+        mainCanvasCtx.lineWidth = 2;
         var n = this.xU / statistics.max[this.bs];
-        cH.beginPath();
-        cH.moveTo(this.ue, this.xU - n * statistics.tV[statistics.m6 - 1]);
-        for (var l = statistics.m6 - 2; 0 <= l; l--) cH.lineTo(l * this.ue / (statistics.m6 - 1), this.xU - n * statistics.tV[l]);
-        cH.stroke();
-        n = this.mB(statistics.tV, n, 1);
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(this.ue, this.xU - n * statistics.tV[statistics.m6 - 1]);
+        for (var l = statistics.m6 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.ue / (statistics.m6 - 1), this.xU - n * statistics.tV[l]);
+        mainCanvasCtx.stroke();
+        n = this.drawShape(statistics.tV, n, 1);
         l = statistics.max[this.bs] / 100;
-        .95 > n && cH.fillText(eB.nI(l, 2), -this.i4, 0);
-        .05 < Math.abs(n - .5) && cH.fillText(eB.nI(l / 2, 2), -this.i4, Math.floor(this.xU / 2));
-        .05 < n && cH.fillText(eB.nI(0,
+        .95 > n && mainCanvasCtx.fillText(eB.nI(l, 2), -this.i4, 0);
+        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nI(l / 2, 2), -this.i4, Math.floor(this.xU / 2));
+        .05 < n && mainCanvasCtx.fillText(eB.nI(0,
             2), -this.i4, this.xU)
     };
     this.a5n = function(g, k) {
         var n;
-        cH.setTransform(1, 0, 0, 1, g + .34 * this.c1, k + 2 * this.nR);
-        cH.textAlign = ol;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .34 * this.width, k + 2 * this.nR);
+        mainCanvasCtx.textAlign = ol;
         var l = this.cw - 4 * this.nR - this.nS;
-        for (n = 7; 0 <= n; n--) cH.fillText(statistics.description[n], 0, n * l / 7);
-        cH.setTransform(1, 0, 0, 1, g + .39 * this.c1, k + 2 * this.nR);
-        cH.textAlign = mj;
+        for (n = 7; 0 <= n; n--) mainCanvasCtx.fillText(statistics.description[n], 0, n * l / 7);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .39 * this.width, k + 2 * this.nR);
+        mainCanvasCtx.textAlign = mj;
         n = statistics.numbers[1];
-        cH.fillText(eB.nI(statistics.numbers[0] / (10 * (1 > n ? 1 : n)), 1), 0, 0);
-        for (n = 6; 1 <= n; n--) cH.fillText(statistics.numbers[n].toString(), 0, n * l / 7);
-        cH.fillText(eB.nI(100 * (1 - land[my_id] / statistics.numbers[7]), 0), 0, l)
+        mainCanvasCtx.fillText(eB.nI(statistics.numbers[0] / (10 * (1 > n ? 1 : n)), 1), 0, 0);
+        for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statistics.numbers[n].toString(), 0, n * l / 7);
+        mainCanvasCtx.fillText(eB.nI(100 * (1 - land[my_id] / statistics.numbers[7]), 0), 0, l)
     };
     this.a5o = function(g, k) {
         var n;
-        cH.setTransform(1, 0, 0, 1, g + .74 * this.c1,
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .74 * this.width,
             k + 2 * this.nR);
-        cH.textAlign = ol;
+        mainCanvasCtx.textAlign = ol;
         var l = this.cw - 4 * this.nR - this.nS;
-        cH.fillStyle = oL;
-        for (n = 2; 0 <= n; n--) cH.fillText(statistics.description[n + 8], 0, n * l / 9);
-        cH.fillStyle = oK;
-        cH.fillText(statistics.description[11], 0, 3 * l / 9);
-        cH.fillStyle = ob;
-        for (n = 8; 4 <= n; n--) cH.fillText(statistics.description[n + 8], 0, n * l / 9);
-        cH.fillStyle = oa;
-        cH.fillText(statistics.description[17], 0, 9 * l / 9);
-        cH.fillStyle = oL;
+        mainCanvasCtx.fillStyle = oL;
+        for (n = 2; 0 <= n; n--) mainCanvasCtx.fillText(statistics.description[n + 8], 0, n * l / 9);
+        mainCanvasCtx.fillStyle = oK;
+        mainCanvasCtx.fillText(statistics.description[11], 0, 3 * l / 9);
+        mainCanvasCtx.fillStyle = ob;
+        for (n = 8; 4 <= n; n--) mainCanvasCtx.fillText(statistics.description[n + 8], 0, n * l / 9);
+        mainCanvasCtx.fillStyle = oa;
+        mainCanvasCtx.fillText(statistics.description[17], 0, 9 * l / 9);
+        mainCanvasCtx.fillStyle = oL;
         n = eP.split_into_pieces(statistics.numbers[8] + statistics.numbers[9] + statistics.numbers[10] + statistics.numbers[11]);
-        var x = cH.measureText(n).width;
-        cH.setTransform(1, 0, 0, 1, g + .79 * this.c1 + x, k + 2 * this.nR);
-        cH.fillText(eP.split_into_pieces(statistics.numbers[8]), 0, 0);
-        cH.fillText(eP.split_into_pieces(statistics.numbers[9]), 0, 1 * l / 9);
-        cH.fillText(eP.split_into_pieces(statistics.numbers[10]), 0, 2 * l / 9);
-        cH.fillStyle = oK;
-        cH.fillText(n, 0, 3 * l / 9);
-        cH.fillStyle = ob;
+        var x = mainCanvasCtx.measureText(n).width;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .79 * this.width + x, k + 2 * this.nR);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[8]), 0, 0);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[9]), 0, 1 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[10]), 0, 2 * l / 9);
+        mainCanvasCtx.fillStyle = oK;
+        mainCanvasCtx.fillText(n, 0, 3 * l / 9);
+        mainCanvasCtx.fillStyle = ob;
         n = statistics.numbers[13] - attacks.total_troops_currently_attacking(my_id);
-        cH.fillText(eP.split_into_pieces(statistics.numbers[12]), 0, 4 * l / 9);
-        cH.fillText(eP.split_into_pieces(n), 0, 5 * l / 9);
-        cH.fillText(eP.split_into_pieces(statistics.numbers[14]), 0, 6 * l / 9);
-        cH.fillText(eP.split_into_pieces(statistics.numbers[15]), 0, 7 * l / 9);
-        cH.fillText(eP.split_into_pieces(statistics.numbers[16]), 0, 8 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[12]), 0, 4 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(n), 0, 5 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[14]), 0, 6 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[15]), 0, 7 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[16]), 0, 8 * l / 9);
         n = statistics.numbers[12] + n + statistics.numbers[14] + statistics.numbers[15] + statistics.numbers[16] + statistics.numbers[17];
-        cH.fillStyle = oa;
-        cH.fillText(eP.split_into_pieces(n), 0, l);
-        cH.fillStyle = cK
+        mainCanvasCtx.fillStyle = oa;
+        mainCanvasCtx.fillText(eP.split_into_pieces(n), 0, l);
+        mainCanvasCtx.fillStyle = cK
     };
-    this.mB = function(g, k, n) {
+    this.drawShape = function (g, k, n) {
         if (0 > this.a5h || 1 < this.a5h) return .25;
         var l = this.a5h * (statistics.m6 - 1),
-            x =
-            Math.floor(l),
+            x = Math.floor(l),
             t = g[x];
         t += (l - x) * (g[x < statistics.m6 - 1 ? x + 1 : x] - t);
-        cH.strokeStyle = of ;
+        mainCanvasCtx.strokeStyle = of ;
         .04 < this.a5h && this.a5u(0, this.xU - k * Math.pow(t, n), l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n));
         .04 < t / statistics.max[this.bs] && this.a5u(l * this.ue / (statistics.m6 - 1), this.xU, l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n));
-        cH.fillStyle = oW;
-        cH.beginPath();
-        cH.arc(l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
-        cH.fill();
+        mainCanvasCtx.fillStyle = oW;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
+        mainCanvasCtx.fill();
         g = this.a5h * c4.tick_interval();
         g = 0 === is_alive[my_id] ? Math.floor(g * eW.td) : Math.floor(g * c4.time_elapsed());
-        cH.fillStyle = cK;
-        cH.fillText(1 === n ? eB.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillText(1 === n ? eB.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
             -this.i4, this.xU - k * Math.pow(t, n));
-        cH.textAlign = cJ;
-        cH.fillText(eB.sH(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (zoom ? 2 : 0));
-        cH.textAlign = ol;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.fillText(eB.sH(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (zoom ? 2 : 0));
+        mainCanvasCtx.textAlign = ol;
         return k * Math.pow(t, n) / this.xU
     };
     this.a5u = function(g, k, n, l) {
-        cH.beginPath();
-        cH.moveTo(g, k);
-        cH.lineTo(n, l);
-        cH.stroke()
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(g, k);
+        mainCanvasCtx.lineTo(n, l);
+        mainCanvasCtx.stroke()
     }
 }
 
@@ -9311,12 +9303,12 @@ function Teams() {
     this.init = function(l) {
         this.team_array = new Uint8Array(max_entities);
         this.a62();
-        team_game && (dr.ds && dr.dt.zw ? this.yb() : 9 === gamemode ? this.a63() : this.dF(l))
+        team_game && (customMap.ds && customMap.dt.zw ? this.yb() : 9 === gamemode ? this.a63() : this.update(l))
     };
     this.yb = function() {
         var l, x = entity_count;
         this.im = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-        for (l = 0; l < x; l++) this.team_array[l] = dr.dt.zw[l]
+        for (l = 0; l < x; l++) this.team_array[l] = customMap.dt.zw[l]
     };
     this.a62 = function() {
         for (var l = this.im.length - 1; 0 <= l; l--) this.im[l] = l;
@@ -9330,7 +9322,7 @@ function Teams() {
         this.im[1] = 7;
         this.im[2] = 8
     };
-    this.dF = function(l) {
+    this.update = function(l) {
         var x =
             new Uint8Array(player_count),
             t = new Uint8Array(player_count),
@@ -9549,8 +9541,8 @@ function update_target_xy_minmax() {
     }
 }
 
-function ch(g, k) {
-    return 0 === teams.team_array[g] || teams.team_array[g] !== teams.team_array[k]
+function isTeamate(player1, player2) {
+    return 0 === teams.team_array[player1] || teams.team_array[player1] !== teams.team_array[player2]
 }
 
 function li(g, k) {
@@ -9612,7 +9604,7 @@ function a2T() {
         this.time = performance.now()
     };
     this.a2X = function() {
-        1 !== client_status || !singleplayer || fq.inMenu || in_spawn || fq.alterDisplay(); - 1 === this.a6Y && (this.a6Y = setInterval(k, 2E3))
+        1 !== client_status || !singleplayer || fq.menuOpen || in_spawn || fq.alterDisplay(); - 1 === this.a6Y && (this.a6Y = setInterval(k, 2E3))
     };
     this.xt = function() {
         this.c5 = !0; - 1 !== this.a6Y && (clearInterval(this.a6Y), this.a6Y = -1)
@@ -9632,19 +9624,19 @@ function a2T() {
         this.a6V = this.a6f
     };
     this.a6b = function() {
-        jf.dF();
-        ji.dF();
-        jq.dF();
-        websocket_manager.dF();
+        jf.update();
+        ji.update();
+        jq.update();
+        websocket_manager.update();
         eY.wS();
-        cD.dF();
+        cD.update();
         this.c5 && (this.c5 = !1, aJ.cG())
     };
     this.a6d = function() {
-        this.a6W.dF()
+        this.a6W.update()
     };
     this.a6f = function() {
-        this.a6X.dF()
+        this.a6X.update()
     };
     this.time_elapsed = function() {
         return singleplayer ? this.a6W.wP : this.a6X.wP
@@ -9659,9 +9651,9 @@ function a6c() {
     this.a5Y = 56;
     this.wP = this.bs = 0;
     this.a6g = !1;
-    this.dF = function() {
-        jq.dF();
-        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status || fq.inMenu ? e8() : (game_tick(), this.wP++, h8.tx()), this.bs++) : (fq.inMenu ? ec() : (c4.c5 = !0, ea()), this.bs = 0);
+    this.update = function() {
+        jq.update();
+        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status || fq.menuOpen ? e8() : (game_tick(), this.wP++, h8.tx()), this.bs++) : (fq.menuOpen ? ec() : (c4.c5 = !0, ea()), this.bs = 0);
         eU();
         c4.c5 && (c4.c5 = !1, hp())
     }
@@ -9690,11 +9682,11 @@ function a6e() {
         multi_in.a6j(k, g);
         g = (g + 1) % 8;
         eB.tY(this.wO);
-        this.wO === spawn_time ? (spawn.dF(), this.wP = this.bs = this.wO = 0, this.time = c4.time) : (this.wO++, eA.j4(), eA.eb(), h8.tx())
+        this.wO === spawn_time ? (spawn.update(), this.wP = this.bs = this.wO = 0, this.time = c4.time) : (this.wO++, eA.j4(), eA.eb(), h8.tx())
         if (typeof(script_spawn_tick) != 'undefined') script_spawn_tick(this.wO)
     };
-    this.dF = function() {
-        jq.dF();
+    this.update = function() {
+        jq.update();
         in_spawn ? (c4.c5 = eB.tY(-1) || c4.c5, ec()) : 0 === this.bs ? c4.time >= this.time && 
         (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status ? e8() : this.a6k(), this.bs++) : (c4.c5 = !0, ea(), this.bs = 0);
         eU();
@@ -9722,7 +9714,7 @@ function km() {
     }
     this.gW = 0;
     this.a6n = !0;
-    this.dF = function() {
+    this.update = function() {
         c4.time > this.gW && (this.gW = c4.time + 2500, this.a6o())
     };
     this.a6o = function() {
@@ -9842,7 +9834,7 @@ function Multi_in() {
                 message = aJ.pa();
                 8 !== message ? 10 === message && websocket_manager.a22(remote, 3243) : remote !== websocket_manager.remote ? websocket_manager.a22(remote, 3244) : 
                 0 === extractor(data, 1) ? c4.a6X.a6i(data) : (message = extractor(data, 2), 0 === message ? 3 !== data_length ? websocket_manager.a22(websocket_manager.remote, 3230) : 
-                (message = extractor(data, 9), y = extractor(data, 7), 0 !== is_alive[message] && 0 !== is_alive[my_id] && (y %= a5.a6, announcements.mr(message, my_id, y), 
+                (message = extractor(data, 9), y = extractor(data, 7), 0 !== is_alive[message] && 0 !== is_alive[my_id] && (y %= a5.a6, announcements.sentEmoji(message, my_id, y), 
                 eA.n4(message, 1, y))) : 1 === message ? 2 !== data_length ? websocket_manager.a22(websocket_manager.remote, 3235) : 
                 (message = extractor(data, 9), 0 !== is_alive[message] && 0 !== is_alive[my_id] && eQ.a1f(0, [message], !0) && announcements.la(message, 1)) : 
                 3 !== data_length ? websocket_manager.a22(websocket_manager.remote, 3236) : (message = extractor(data, 9), y = extractor(data, 9), 
@@ -9918,7 +9910,7 @@ function Multi_in() {
                     var C = extractor(x, 11);
                     single.fb(A, y, B, C)
                 } else 2 === y ? (B = extractor(x, 9), B = B === A ? max_entities : B, single.fe(A, B)) : 3 === y ? single.fh(A) : 4 === y ? (y = extractor(x, 7), eA.n4(A, 0, y)) : 5 ===
-                    y ? single.fp(A) : 6 === y ? single.fg(A, extractor(x, 1)) : 7 === y && single.ff(A, 1 + extractor(x, 11))
+                    y ? single.surrender(A) : 6 === y ? single.fg(A, extractor(x, 1)) : 7 === y && single.ff(A, 1 + extractor(x, 11))
             }
     }
 }
@@ -9947,17 +9939,17 @@ function kb() {
         g = 1;
         k = 0
     };
-    this.dF = function() {
+    this.update = function() {
         0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.c5 = !0)
     };
     this.cG = function() {
-        0 < g && (cH.fillStyle = "rgba(0,0,0," + g + ")", cH.fillRect(0, 0, gE, cB))
+        0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, gE, cB))
     }
 }
 
 function kg() {
     function g_2(k, n, l, x, t) {
-        k >= const_custom_map || (current_map === k && (cH.fillStyle = oI, cH.fillRect(n, l, x, t), cH.fillStyle = cK), cH.strokeRect(n, l, x, t), cH.fillText(jm.bz(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
+        k >= const_custom_map || (current_map === k && (mainCanvasCtx.fillStyle = oI, mainCanvasCtx.fillRect(n, l, x, t), mainCanvasCtx.fillStyle = cK), mainCanvasCtx.strokeRect(n, l, x, t), mainCanvasCtx.fillText(jm.bz(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
     }
     this.hidden = !1;
     this.xV = [0, 0, 0, 0];
@@ -9978,7 +9970,7 @@ function kg() {
     this.lo = function(g, k) {
         return g < this.xV[0] || k < this.xV[1] || g > this.xV[0] + this.xV[2] || k > this.xV[1] + this.xV[3] ? !1 : !0
     };
-    this.c7 = function(g, k) {
+    this.clicked = function(g, k) {
         var z = divide_floor(const_custom_map + const_custom_map % 2, 2);
         c4.c5 = !0;
         if (g < this.xV[0] || k < this.xV[1] || g > this.xV[0] + this.xV[2] || k > this.xV[1] + this.xV[3]) return this.hidden = !1, !0;
@@ -9996,24 +9988,24 @@ function kg() {
             z = divide_floor(const_custom_map + const_custom_map % 2, 2),
             n = (this.xV[3] - k - (z + 1) * display_buffer_length) / z,
             l = Math.floor((this.xV[2] - 3 * display_buffer_length) / 2);
-        cH.lineWidth = 2;
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
-        cH.font = bt + Math.floor(.48 * n) + bu;
-        cH.fillStyle = hy;
-        cH.fillRect(this.xV[0], this.xV[1], this.xV[2], this.xV[3]);
-        cH.fillStyle = oI;
-        cH.fillRect(this.xV[0], this.xV[1], this.xV[2], k);
-        cH.strokeStyle = cK;
-        cH.strokeRect(this.xV[0], this.xV[1], this.xV[2], this.xV[3]);
-        cH.fillStyle = cK;
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.font = bt + Math.floor(.48 * n) + bu;
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(this.xV[0], this.xV[1], this.xV[2], this.xV[3]);
+        mainCanvasCtx.fillStyle = oI;
+        mainCanvasCtx.fillRect(this.xV[0], this.xV[1], this.xV[2], k);
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(this.xV[0], this.xV[1], this.xV[2], this.xV[3]);
+        mainCanvasCtx.fillStyle = cK;
         for (g = z - 1; 0 <= g; g--) {
             var x = Math.floor(this.xV[1] + k + display_buffer_length + g * (n + display_buffer_length));
             g_2(g,this.xV[0] + display_buffer_length, x, l, n);
             g_2(g + z, this.xV[0] + l + 2 * display_buffer_length, x, l, n);
         }
-        fq.mB(Math.floor(this.xV[0] + this.xV[2] - .8 * k), Math.floor(this.xV[1] + .25 * k), Math.floor(.5 * k));
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        fq.drawShape(Math.floor(this.xV[0] + this.xV[2] - .8 * k), Math.floor(this.xV[1] + .25 * k), Math.floor(.5 * k));
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
 
@@ -10198,7 +10190,7 @@ function Multi_out() {
         websocket_manager.send(websocket_manager.remote, array)
     };
     this.send_emoji = function(emoji, target) {
-        announcements.mr(my_id, target, emoji);
+        announcements.sentEmoji(my_id, target, emoji);
         var array = new Uint8Array(3);
         mIndex = 0;
         fitter(array, 1, 1);
