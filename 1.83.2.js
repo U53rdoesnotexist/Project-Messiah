@@ -152,11 +152,11 @@ function reset_editing_matrix() {
 
 function return_remaining() {
     1 === attacks.ongoing_attack_count(prev_author) && au.av(prev_author);
-    if (prev_author !== my_id) troops[prev_author] += prev_remaining, ay.limitTroops(prev_author);
+    if (prev_author !== my_id) troops[prev_author] += prev_remaining, interest.limitTroops(prev_author);
     else {
         var old_troop = troops[prev_author];
         troops[prev_author] += prev_remaining;
-        ay.limitTroops(prev_author);
+        interest.limitTroops(prev_author);
         statistics.numbers[13] -= troops[prev_author] - old_troop
     }
     attacks.remove_attack(prev_author, prev_attack)
@@ -254,11 +254,11 @@ function prev_attack_remaining() {
 }
 
 function troops_needed_to_kill_target_troops_at_border() {
-    return divide_floor(prev_border_length * troops[prev_target], 1 + bj() * get_weighted_border_pixel_density())
+    return divide_floor(prev_border_length * troops[prev_target], 1 + estimateBorderLength() * get_weighted_border_pixel_density())
 }
 
-function bj() {
-    return Math.floor(2 + bl(divide_floor(land[prev_target], 100), 8))
+function estimateBorderLength() {
+    return Math.floor(2 + approximateSqrt(divide_floor(land[prev_target], 100), 8))
 }
 
 function get_weighted_border_pixel_density() {
@@ -330,33 +330,33 @@ function bm() {
 function cL(g, k, n, l) {
     var x = divide_floor(3 * troops[g], 256);
     l -= l >= divide_floor(troops[g], 2) ? x : 0;
-    cP(n, g);
+    takePixelsAndChangeToMoving(n, g);
     attacks.set(g, l, k);
     troops[g] -= l + x;
     au.cR(g, !1)
 }
 
-function cS(g, k) {
-    var n, l;
-    for (n = pixels_bordering_land[g].length - 1; 0 <= n; n--)
-        if (pixel.is_stationary_border(pixels_bordering_land[g][n]))
-            for (l = 3; 0 <= l; l--)
-                if (pixel.controlled_by_entity(pixels_bordering_land[g][n] + offset[l]) && pixel.owner(pixels_bordering_land[g][n] + offset[l]) === k) {
-                    editing_border_pixels[g].push(pixels_bordering_land[g][n]);
+function addTakableTargetPixelsToEditing(id, target) {
+    var index, side;
+    for (index = pixels_bordering_land[id].length - 1; 0 <= index; index--)
+        if (pixel.is_stationary_border(pixels_bordering_land[id][index]))
+            for (side = 3; 0 <= side; side--)
+                if (pixel.controlled_by_entity(pixels_bordering_land[id][index] + offset[side]) && pixel.owner(pixels_bordering_land[id][index] + offset[side]) === target) {
+                    editing_border_pixels[id].push(pixels_bordering_land[id][index]);
                     break
                 }
 }
 
-function cP(g, k) {
-    for (var n = editing_border_pixels[k].length - 1; n >= g; n--) pixel.change_to_moving_border(editing_border_pixels[k][n], k)
+function takePixelsAndChangeToMoving(pixelCount, id) {
+    for (var length = editing_border_pixels[id].length - 1; length >= pixelCount; length--) pixel.change_to_moving_border(editing_border_pixels[id][length], id)
 }
 
-function cX(g) {
-    for (var k, n = pixels_bordering_land[g].length - 1; 0 <= n; n--)
-        if (pixel.is_stationary_border(pixels_bordering_land[g][n]))
-            for (k = 3; 0 <= k; k--)
-                if (pixel.is_neutral(pixels_bordering_land[g][n] + offset[k])) {
-                    editing_border_pixels[g].push(pixels_bordering_land[g][n]);
+function addTakableNeutralPixelsToEditing(id) {
+    for (var side, index = pixels_bordering_land[id].length - 1; 0 <= index; index--)
+        if (pixel.is_stationary_border(pixels_bordering_land[id][index]))
+            for (side = 3; 0 <= side; side--)
+                if (pixel.is_neutral(pixels_bordering_land[id][index] + offset[side])) {
+                    editing_border_pixels[id].push(pixels_bordering_land[id][index]);
                     break
                 }
 }
@@ -438,9 +438,9 @@ function cv(g) {
     if (1 === cg) return k;
     var n = divide_floor(x_max[g] + x_min[g], 2),
         l = divide_floor(y_max[g] + y_min[g], 2),
-        x = d5(n - divide_floor(x_max[k] + x_min[k], 2)) + d5(l - divide_floor(y_max[k] + y_min[k], 2));
+        x = square(n - divide_floor(x_max[k] + x_min[k], 2)) + square(l - divide_floor(y_max[k] + y_min[k], 2));
     for (g = cg - 1; 1 <= g; g--) {
-        var t = d5(n - divide_floor(x_max[ci[g]] + x_min[ci[g]], 2)) + d5(l - divide_floor(y_max[ci[g]] + y_min[ci[g]], 2));
+        var t = square(n - divide_floor(x_max[ci[g]] + x_min[ci[g]], 2)) + square(l - divide_floor(y_max[ci[g]] + y_min[ci[g]], 2));
         t < x && (x = t, k = ci[g])
     }
     return k
@@ -464,9 +464,9 @@ function d9() {
 function dB(g, k) {
     team_game && (d7[g] = 0);
     if (attacks.below_attack_cap(g) && !(60 > k))
-        if (0 === pixels_bordering_land[g].length) dE.update(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], ay.dJ(g)));
+        if (0 === pixels_bordering_land[g].length) dE.update(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], interest.dJ(g)));
         else if (!(0 < pixels_bordering_water[g].length && ce.random() < ce.value(pixels_bordering_water[g].length > pixels_bordering_land[g].length ? 7 : 3) && dE.update(g, dG.cN[g - player_count]))) {
-        var n = ay.dJ(g);
+        var n = interest.dJ(g);
         troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
         team_game ? dK(g, k, dG.cN[g - player_count], n) : dL(g, k, dG.cN[g - player_count])
     }
@@ -510,18 +510,18 @@ function dR(g, k, n) {
         k = k > l ? k : l
     }
     l = editing_border_pixels[g].length;
-    cS(g, n);
+    addTakableTargetPixelsToEditing(g, n);
     cL(g, n, l, k)
 }
 
 function dN(g, k) {
     var n = max_entities,
         l = editing_border_pixels[g].length;
-    cX(g);
+    addTakableNeutralPixelsToEditing(g);
     return editing_border_pixels[g].length !== l ? (cL(g, n, l, k), !0) : !1
 }
 var dd = [60, 74, 112, 200, 256, 512];
-var bots_timing;
+var bots_timing; //temp
 function de() {
     var /*bots_timing, */bots_send_ratio, n, l, x, t;
     this.botDifficultyLabel = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
@@ -587,7 +587,7 @@ function e8() {
 }
 
 function game_tick() {
-    ay.update();
+    interest.update();
     antiFullsend.update();
     single.update();
     eH.update();
@@ -644,9 +644,9 @@ function ec() {
 }
 
 function ed() {
-    function g(A) {
-        var B;
-        for (B = l - 1; 0 <= B; B--) 0 === t[x[B]] && land[x[B]] >= A && attackProcessInit(x[B])
+    function g(thresholdLand) {
+        var id;
+        for (id = l - 1; 0 <= id; id--) 0 === t[x[id]] && land[x[id]] >= thresholdLand && attackProcessInit(x[id])
     }
 
     function k(A) {
@@ -781,11 +781,11 @@ function Single() {
         if (0 !== is_alive[attacker] && 2 !== player_status[k] && attacks.check(attacker, target)) {
             var troops_returned = attacks.get_troops_remaining_from_target(attacker, target);
             attacks.set_attack_troops_remaining_from_target(attacker, target, 0);
-            if (attacker !== my_id) troops[attacker] += troops_returned, ay.limitTroops(attacker);
+            if (attacker !== my_id) troops[attacker] += troops_returned, interest.limitTroops(attacker);
             else {
                 var previous_troops = troops[attacker];
                 troops[attacker] += troops_returned;
-                ay.limitTroops(attacker);
+                interest.limitTroops(attacker);
                 statistics.numbers[13] -= troops[attacker] - previous_troops
             }
         }
@@ -797,7 +797,7 @@ function Single() {
                 var troops_returned = attacks.get_attack_troops_remaining_from_attack_index(attacker, boat_index);
                 attacks.set_attack_troops_remaining_from_attack_index(attacker, boat_index, 0);
                 troops[attacker] += troops_returned;
-                ay.limitTroops(attacker)
+                interest.limitTroops(attacker)
             }
         }
     };
@@ -817,9 +817,9 @@ function Single() {
     this.fg = function(y, A) {
         1 === client_status && g(y, 6, 1, A, 0, 0)
     };
-    this.fh = function(y) {
-        1 === client_status && 0 !== is_alive[y] && 2 !== player_status[y] && (8 === gamemode ? endGame.gameEnd(1 - y) : this.fk(y));
-        announcements.showGenericMessages(y, 4)
+    this.fh = function(leaver) {
+        1 === client_status && 0 !== is_alive[leaver] && 2 !== player_status[leaver] && (8 === gamemode ? endGame.gameEnd(1 - leaver) : this.fk(leaver));
+        announcements.showGenericMessages(leaver, 4)
     };
     this.fk = function(y) {
         in_spawn ? (fm(y), fn()) : eI.fo(y)
@@ -1381,7 +1381,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     loadMapCanvas();
     jQ.jR();
     h8.init();
-    ay.init();
+    interest.init();
     d9();
     pixel.init(player_info);
     hq.init();
@@ -1443,7 +1443,7 @@ function leave_game() { //close is temp
     show_ad()
 }
 var dG, au, dE, eJ, single, eK, eV, j1, names, hu, fq, announcements, jf, eP, c2, troopsBar, gj, jg, eO, eM, eB, eW, 
-jh, ji, aJ, jj, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, ay, eA, jS, e2, jQ, jm, jn, gn, ez, ce, 
+jh, ji, aJ, jj, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, interest, eA, jS, e2, jQ, jm, jn, gn, ez, ce, 
 g1, hq, jo, multi_in, eX, multi_out, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, eI, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
 
 function construct() {
@@ -1482,7 +1482,7 @@ function construct() {
     pixel = new Pixel;
     user_settings = new User_settings;
     attacks = new Attacks;
-    ay = new kN;
+    interest = new Interest;
     eA = new kO;
     jS = new kP;
     e2 = new kQ;
@@ -1649,7 +1649,7 @@ function jy() {
         coord = pixel.to_coord(M, Q);
         if (in_spawn) return x[0] = !0, this.lg(L, H);
         x[1] = ez.check(my_id, coord);
-        if (pixel.is_neutral(R)) return target = max_entities, lh(my_id) ? x[0] = !0 : li(my_id, target) && (x[8] = !0), this.lg(L, H);
+        if (pixel.is_neutral(R)) return target = max_entities, bordersNeutral(my_id) ? x[0] = !0 : bordersTarget(my_id, target) && (x[8] = !0), this.lg(L, H);
         target = pixel.owner(R);
         if (target === my_id) {
             this.end();
@@ -1683,8 +1683,8 @@ function jy() {
                 Q = R
             }
             M[7] = Q;
-            lm(my_id,
-                target) ? x[0] = !0 : li(my_id, target) && (x[8] = !0);
+            bordersEntity(my_id,
+                target) ? x[0] = !0 : bordersTarget(my_id, target) && (x[8] = !0);
             return this.lg(L, H)
         }
         x[2] = team_game;
@@ -2024,7 +2024,7 @@ function Announcements() {
     this.mc = function() {
         if (peace.hidden) return peace.width;
         var H = F.length;
-        return 0 === H ? 0 : 1 === H ? F[0].md : me(F[0].md, F[1].md)
+        return 0 === H ? 0 : 1 === H ? F[0].md : max(F[0].md, F[1].md)
     };
     this.clicked = function(H, M) {
         for (var Q = y(), R, P = F.length - 1; 0 <= P; P--)
@@ -2990,10 +2990,10 @@ function Peace() {
                 F = 360;
                 var K = 0;
                 for (D = alive_count - 1; 0 <= D; D--) hu.isHuman(alive_entities[D]) && (K += land[alive_entities[D]]);
-                peace_requirement[0] = me(divide_floor(3 * K, 5), 1);
+                peace_requirement[0] = max(divide_floor(3 * K, 5), 1);
                 team_game && 9 !== gamemode && (peace_requirement[0] =
-                    qn(me(divide_floor(K * (100 - divide_floor(100 * eT.get_largest_team_total_land(), j9)), 100), 1), peace_requirement[0]));
-                peace_requirement[1] = me(K - peace_requirement[0], 1);
+                    min(max(divide_floor(K * (100 - divide_floor(100 * eT.get_largest_team_total_land(), j9)), 100), 1), peace_requirement[0]));
+                peace_requirement[1] = max(K - peace_requirement[0], 1);
                 N++
             }
         }
@@ -3252,7 +3252,7 @@ function k5() {
 function k6() {
     function g() {
         A = Math.floor(.2 * (zoom ? .07 : .035) * bq);
-        A = me(zoom ? 3 : 1, A);
+        A = max(zoom ? 3 : 1, A);
         var P = r / (t.length + B);
         A = P > A ? P : A;
         H = Math.floor((1 - B) * A);
@@ -3494,7 +3494,7 @@ function k6() {
         g()
     };
     this.rm = function() {
-        J || multi_out.ws_ready()
+        J || multi_out.requestGameInfo()
     };
     this.ro = function(P) {
         var U;
@@ -3621,7 +3621,7 @@ function k7() {
         z.fillStyle = oe;
         this.sF();
         this.sG();
-        z.fillStyle = troops[my_id] >= ay.dJ(my_id) ? oZ : cK;
+        z.fillStyle = troops[my_id] >= interest.dJ(my_id) ? oZ : cK;
         z.fillText(eP.split_into_pieces(A), Math.floor(k / 2), F);
         z.fillStyle = cK;
         z.fillRect(0, 0, k, 1);
@@ -3631,8 +3631,8 @@ function k7() {
     };
     this.sF =
         function() {
-            var G = Math.floor((ay.sH() - 1) * this.cw / 9);
-            G = qn(G, this.cw - l);
+            var G = Math.floor((interest.getInterestTicksRemaining() - 1) * this.cw / 9);
+            G = min(G, this.cw - l);
             z.fillRect(0, G, l, this.cw - G);
             z.fillRect(k - l, G, l, this.cw - G)
         };
@@ -3640,7 +3640,7 @@ function k7() {
         z.fillRect(l, this.cw - l, Math.floor((k - 2 * l) * troops[my_id] / x), l)
     };
     this.update = function() {
-        0 !== is_alive[my_id] && 2 !== player_status[my_id] && A !== troops[my_id] && (x = me(troops[my_id], x), B = troops[my_id] > A && 10 <= troops[my_id], A = troops[my_id], y = !0)
+        0 !== is_alive[my_id] && 2 !== player_status[my_id] && A !== troops[my_id] && (x = max(troops[my_id], x), B = troops[my_id] > A && 10 <= troops[my_id], A = troops[my_id], y = !0)
     };
     this.cG = function() {
         0 === is_alive[my_id] || in_spawn || 2 === player_status[my_id] || mainCanvasCtx.drawImage(t, this.fJ, n)
@@ -3873,12 +3873,12 @@ function k9() {
                 z.fillText(D[U], E, W);
                 z.textAlign = ol;
                 5 === U && 0 !== is_alive[my_id] &&
-                    troops[my_id] >= ay.dJ(my_id) ? (z.fillStyle = oi, z.fillText(k(U), eB.width - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.width - E, W)
+                    troops[my_id] >= interest.dJ(my_id) ? (z.fillStyle = oi, z.fillText(k(U), eB.width - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.width - E, W)
             } else P++
     }
 
     function k(P) {
-        return 3 > P ? K[P].toString() : 3 === P ? eB.nI(K[P] / 100, 2) : 4 === P ? eB.nI(K[P] / 100, 2) : 5 === P ? eB.nI(K[P] / 100, 2) : 7 > P ? eP.split_into_pieces(K[P]) : eB.sH(K[7])
+        return 3 > P ? K[P].toString() : 3 === P ? eB.nI(K[P] / 100, 2) : 4 === P ? eB.nI(K[P] / 100, 2) : 5 === P ? eB.nI(K[P] / 100, 2) : 7 > P ? eP.split_into_pieces(K[P]) : eB.getInterestTicksRemaining(K[7])
     }
 
     function n(P) {
@@ -3970,7 +3970,7 @@ function k9() {
     this.lX = function() {
         return K[7]
     };
-    this.sH = function(P) {
+    this.getInterestTicksRemaining = function(P) {
         var U = Math.floor(P / 1E3 / 60);
         P = Math.floor((P - 6E4 * U) / 1E3);
         return 10 > P ? U + ":0" + P : U + ":" + P
@@ -3986,7 +3986,7 @@ function k9() {
             var P = eT.get_largest_team_total_land();
             P >= R && l() ? (endGame.gameEnd(-1), n(eT.get_largest_team_total_land())) : n(P)
         } else P = land[orderedLand[0]], P >= R && l() && endGame.gameEnd(-1), n(P);
-        P = ay.interest(my_id);
+        P = interest.interest(my_id);
         P !== K[5] && (K[5] = P, I++);
         x();
         K[7] += c4.tick_interval();
@@ -4030,8 +4030,8 @@ function kA() {
     this.lx = function() {
         if (g) {
             n = zoom ? Math.floor(.69 * bq) : Math.floor(.5 * bq);
-            n = qn(n, me(r - 2 * m7, 10));
-            n = qn(n, Math.floor(3.57 * me(s - 2 * m7, 3)));
+            n = min(n, max(r - 2 * m7, 10));
+            n = min(n, Math.floor(3.57 * max(s - 2 * m7, 3)));
             l = Math.floor(.28 * n);
             A = document.createElement("canvas");
             A.width = n;
@@ -4162,9 +4162,9 @@ function single_attack(author, target, ratio) {
             var tax = divide_floor(3 * troops[author], 256);
             amount -= 500 <= ratio ? tax : 0;
             if (!(amount <= neutral_land_cost) && attacks.below_attack_cap(author)) {
-                var t = editing_border_pixels[author].length;
-                target === max_entities ? cX(author) : cS(author, target);
-                if (0 !== t || 0 !== editing_border_pixels[author].length) team_game && (d7[author] = 1), author === my_id && (statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio, statistics.numbers[1]++, statistics.numbers[12] += tax, statistics.numbers[13] += amount), cP(t, author), attacks.set(author, amount, target), troops[author] -= amount + tax, au.cR(author, !1)
+                var takablePixelsCount = editing_border_pixels[author].length;
+                target === max_entities ? addTakableNeutralPixelsToEditing(author) : addTakableTargetPixelsToEditing(author, target);
+                if (0 !== takablePixelsCount || 0 !== editing_border_pixels[author].length) team_game && (d7[author] = 1), author === my_id && (statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio, statistics.numbers[1]++, statistics.numbers[12] += tax, statistics.numbers[13] += amount), takePixelsAndChangeToMoving(takablePixelsCount, author), attacks.set(author, amount, target), troops[author] -= amount + tax, au.cR(author, !1)
             }
         }
     }
@@ -4265,38 +4265,66 @@ function IntelliAttack() {
         var myID = my_id;
         var targets = this.getBorderingEntities(myID, !team_game);
         this.removeAttackingTarget(myID, targets);
-        0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(myID, targets[0].player))
+        0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(myID, targets[0]))
     };
     this.doIntelliAttack = function(myID, target) {
         announcements.low_balance();
-        singleplayer ? single_attack(myID, target, troopsBar.AttackRatio()) : multi_out.attack(troopsBar.AttackRatio(), target === max_entities ? myID : target)
+        singleplayer ? single_attack(myID, target.player, target.ratio) : multi_out.attack(target.ratio, target === max_entities ? myID : target.player)
     };
-    this.sortTargets = function(targetValues) {
-        targetValues.sort(function(prev, next) {
-            return prev.value - next.value
+    this.sortTargets = function(targetPenalties) {
+        targetPenalties.sort(function(prev, next) {
+            return prev.peanlty - next.peanlty
         })
     };
     this.calcValue = function(targets) {
-        var index, targetValues = [],
+        var index, targetPenalties = [],
             targetsCount = targets.length;
         for (index = 0; index < targetsCount; index++) {
-            var id = targets[index];
-            if (id === max_entities) targetValues.push({
-                player: id,
-                value: 0
-            });
-            else {
-                var value = troops[id];
-                value += .1 * land[id] * (10 - ay.sH());
-                value += .5 * attacks.total_troops_currently_sent_away(id);
-                targetValues.push({
+            var id = targets[index], predDensity, mutualBorder = [], returnFactor = 0;
+            if (id != max_entities) {
+                predDensity = (id < player_count && bots_timing[id-player_count] < 10) ? 0.5 : density(id);
+                for (let index2 = 0; index2 < pixels_bordering_land[id].length; index2++) {
+                    for (let side = 0; side < 4; side++) {
+                        let coord = pixels_bordering_land[id][index2] + offset[side];
+                        if (pixel.strong_is_owner(my_id, coord) && !mutualBorder.includes(pixels_bordering_land[id][index2])) mutualBorder.push(pixels_bordering_land[id][index2])
+                        else if (pixel.is_neutral(coord) && bots_timing[id-player_count] < 10 && !returnFactor) returnFactor += 0.9*troops[id]/(troops[id] + attacks.total_troops_currently_attacking(id))
+                    }
+                }
+                for (let index2 = 0; index2 < attacks.ongoing_attack_count(id); index2++) {
+                    var return_probability;
+                    if (attacks.get_boat_id_from_attack_index(id, index) != 0) return_probability = 0
+                    else {
+                        var target2 = attacks.get_attack_target_from_attack_index(id, index2)
+                        if (target2 == 512) return_probability = 1
+                        else {
+                            var mutualBorder2 = [], borderRatio;
+                            for (let index3 = 0; index3 < pixels_bordering_land[target2].length; index3++) {
+                                for (let side = 0; side < 4; side++) {
+                                    let coord = pixels_bordering_land[target2][index3] + offset[side];
+                                    if (pixel.strong_is_owner(id, coord) && !mutualBorder2.includes(pixels_bordering_land[target2][index3])) mutualBorder2.push(pixels_bordering_land[target2][index3])
+                                }
+                            }
+                            borderRatio = mutualBorder2.length/pixels_bordering_land[id].length;
+                            return_probability = borderRatio <= 0.1 ? 1 - 3 * Math.sqrt(borderRatio) : 0
+                        }
+                    }
+                    returnFactor += return_probability * attacks.get_attack_troops_remaining_from_attack_index(id, index2) / (troops[id] + attacks.total_troops_currently_attacking(id))
+                }
+                targetPenalties.push({
                     player: id,
-                    value: value
+                    peanlty: 3 * predDensity - this.landWeighting(id) ** 1.8 - (mutualBorder.length/pixels_bordering_land[id].length) ** 0.5 + returnFactor,
+                    ratio: Math.round(Math.min(6 * mutualBorder.length * speed(my_id) * (100 - tick - (singleplayer ? 1 : 7 - (((cycle-1)*100 + tick - 1) % 7))), 2*(troops[id] + land[id])) / troops[my_id] * 1E3)
                 })
             }
         }
-        return targetValues
+        console.log(targetPenalties);
+        return targetPenalties
     };
+    this.landWeighting = function(id) {
+        var totalLand = 0, alive_bots = 0;;
+        alive_entities.forEach(e => e >= player_count && (totalLand += land[e], alive_bots++))
+        return totalLand == 0 ? 0 : land[id] * alive_bots / totalLand;
+    }
     this.removeAttackingTarget = function(myID, targets) {
         var index;
         for (index = targets.length - 1; 0 <= index; index--) attacks.check(myID, targets[index]) && targets.splice(index, 1)
@@ -4503,9 +4531,9 @@ function u9() {
         }
     };
     this.uh = function(l) {
-        var x = me(2, Math.floor(.06 * this.width));
+        var x = max(2, Math.floor(.06 * this.width));
         x -= x % 2;
-        var t = me(2, Math.floor(.01 * this.width));
+        var t = max(2, Math.floor(.01 * this.width));
         t -= t % 2;
         l = Math.floor(.82 * l);
         mainCanvasCtx.fillRect(x,
@@ -5528,7 +5556,7 @@ function Lobby() {
         var P, U;
         display_games_box_arrangement = [0, 0];
         G = [0, 0, 0, 0];
-        zoom ? (I = Math.floor(.8 * .4 * bq), D = Math.floor(.56 * I), G[0] = display_buffer_length, r < s ? (G[1] = D + 2 * display_buffer_length, G[2] = r - 3 * G[0], G[3] = uZ.to_y() - 3 * display_buffer_length - D, H = Math.floor(.95 * D), M = Math.floor((r - I - display_buffer_length) / 2), Q = Math.floor(display_buffer_length + D / 2)) : (G[1] = display_buffer_length, G[2] = r - 3 * display_buffer_length - I, G[3] = uZ.to_y() - 2 * display_buffer_length, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = me(D, H)), M = Math.floor(r - I / 2 - display_buffer_length), Q = Math.floor(display_buffer_length + D + (G[3] - D) / 2), Q = me(Q, Math.floor(D + 2 * display_buffer_length + H / 2)))) : (I = Math.floor(.2016 * bq), D = Math.floor(.56 *
+        zoom ? (I = Math.floor(.8 * .4 * bq), D = Math.floor(.56 * I), G[0] = display_buffer_length, r < s ? (G[1] = D + 2 * display_buffer_length, G[2] = r - 3 * G[0], G[3] = uZ.to_y() - 3 * display_buffer_length - D, H = Math.floor(.95 * D), M = Math.floor((r - I - display_buffer_length) / 2), Q = Math.floor(display_buffer_length + D / 2)) : (G[1] = display_buffer_length, G[2] = r - 3 * display_buffer_length - I, G[3] = uZ.to_y() - 2 * display_buffer_length, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = max(D, H)), M = Math.floor(r - I / 2 - display_buffer_length), Q = Math.floor(display_buffer_length + D + (G[3] - D) / 2), Q = max(Q, Math.floor(D + 2 * display_buffer_length + H / 2)))) : (I = Math.floor(.2016 * bq), D = Math.floor(.56 *
             I), G[2] = Math.floor(.5 * r), G[3] = Math.floor(.5 * s), G[1] = Math.floor(.45 * (s - G[3])), G[0] = Math.floor((r - G[2]) / 2), H = Math.floor(.75 * D), M = Math.floor(r / 2), Q = Math.floor(G[1] + G[3] + (s - G[3] - G[1]) / 2));
         L = bt + Math.floor(.65 * D / 4) + bu;
         for (P = U = 1; P * U < next_games.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
@@ -5847,9 +5875,9 @@ function kH() {
                 g(k[0], z, t, t, "rgba(128,128,20,0.75)", 0, null, -1, -1);
                 n = k[0];
                 mainCanvasCtx.fillStyle = cK;
-                l = me(2, Math.floor(.5 * t));
+                l = max(2, Math.floor(.5 * t));
                 l -= l % 2;
-                x = me(2, Math.floor(.1 * t));
+                x = max(2, Math.floor(.1 * t));
                 x -= x % 2;
                 t = Math.floor((t - l) / 2);
                 var y = Math.floor(t + (l - x) / 2);
@@ -6449,7 +6477,7 @@ function kk() {
                     if (x < max_entities && 0 === is_alive[x]) g(l);
                     else {
                         var t = n[l + 1];
-                        if (x >= max_entities && lh(my_id) || x < max_entities && lm(my_id, x)) singleplayer ? single_attack(my_id, x, t) : multi_out.attack(t, x === max_entities ? my_id : x), g(l)
+                        if (x >= max_entities && bordersNeutral(my_id) || x < max_entities && bordersEntity(my_id, x)) singleplayer ? single_attack(my_id, x, t) : multi_out.attack(t, x === max_entities ? my_id : x), g(l)
                     }
                 }
             }
@@ -6460,7 +6488,7 @@ function kk() {
             for (t = 0; t < k; t += 2)
                 if (n[t] === l) {
                     n[t + 1] += x;
-                    n[t + 1] = qn(n[t + 1], 1E3);
+                    n[t + 1] = min(n[t + 1], 1E3);
                     t = !0;
                     break a
                 } t = !1
@@ -6591,7 +6619,7 @@ function AntiFullsend() {
             var id = varAliveEntities[index];
             if (!(id >= player_count)) {
                 var quarterAmount = Math.max(divide_floor(varTroops[id], 4), 2048);
-                var interest = Math.max(ay.interest(id), 100);
+                var interest = Math.max(interest.interest(id), 100);
                 varMaxAmount[id] += divide_floor(interest * quarterAmount, 1E4);
                 varMaxAmount[id] > quarterAmount && (varMaxAmount[id] = quarterAmount)
             }
@@ -6862,18 +6890,18 @@ function Attacks() {
     }
 }
 
-function kN() {
-    var g, k, n, l, interests, const_maxEntities;
+function Interest() {
+    var g, k, n, remainingInterestTicks, interests, const_maxEntities;
     this.init = function() {
-        l = n = k = g = 10
+        remainingInterestTicks = n = k = g = 10
     };
     this.a0I = function() {
         const_maxEntities = 512;
         interests = new Uint16Array(const_maxEntities);
-        for (var id = 0; id < const_maxEntities; id++) interests[id] = 100 + bl(divide_floor(25600 * id, const_maxEntities - 4), 9)
+        for (var id = 0; id < const_maxEntities; id++) interests[id] = 100 + approximateSqrt(divide_floor(25600 * id, const_maxEntities - 4), 9)
     };
-    this.sH = function() {
-        return l
+    this.getInterestTicksRemaining = function() {
+        return remainingInterestTicks
     };
     this.update = function() {
         if (0 >= --n) {
@@ -6881,15 +6909,15 @@ function kN() {
             var z, y = troops[my_id];
             singleplayer && !team_game && 0 !== is_alive[0] && 0 === dy.dz[0].bD && (troops[0] += divide_floor(land[0], 6));
             for (z = alive_count - 1; 0 <= z; z--) {
-                var A = divide_floor(ay.interest(alive_entities[z]) * troops[alive_entities[z]], 1E4);
+                var A = divide_floor(interest.interest(alive_entities[z]) * troops[alive_entities[z]], 1E4);
                 troops[alive_entities[z]] += 1 > A ? 1 : A;
-                ay.limitTroops(alive_entities[z])
+                interest.limitTroops(alive_entities[z])
             }
             statistics.numbers[9] += troops[my_id] - y;
-            if (0 >= --l) {
-                l = k;
+            if (0 >= --remainingInterestTicks) {
+                remainingInterestTicks = k;
                 z = troops[my_id];
-                for (A = alive_count - 1; 0 <= A; A--) troops[alive_entities[A]] += land[alive_entities[A]], ay.limitTroops(alive_entities[A]);
+                for (A = alive_count - 1; 0 <= A; A--) troops[alive_entities[A]] += land[alive_entities[A]], interest.limitTroops(alive_entities[A]);
                 statistics.numbers[8] += troops[my_id] - z
             }
         }
@@ -7060,7 +7088,7 @@ function kO() {
         H = 1.8;
         K = Math.floor(.5 * pK);
         J = Math.floor(.2 * K);
-        M = 8 === gamemode ? jt.a0p ? 6 : 4 : jt.a0p ? 10 : 7;
+        M = 8 === gamemode ? jt.highResolution ? 6 : 4 : jt.highResolution ? 10 : 7;
         C = B = 0;
         E = new Uint16Array(max_entities);
         F = new Uint16Array(max_entities);
@@ -7241,7 +7269,7 @@ function kP() {
     };
     this.jU = function() {
         var n;
-        if (jt.a1U && !singleplayer) {
+        if (jt.hideNicknames && !singleplayer) {
             temp_nickname = Array(player_count);
             var l = player_count;
             var x = k.length;
@@ -7540,7 +7568,7 @@ function main() {
     nW = new ui;
     p3();
     ce.init();
-    ay.a0I();
+    interest.a0I();
     jm.init();
     jQ.init();
     aJ.init();
@@ -7819,19 +7847,19 @@ function kR() {
         g[0] = {
             width: [0, 5E3, 8E3, 1E4],
             fB: [220, 250, 255, 220],
-            n6: [190, 220, 0, 0],
+            value: [190, 220, 0, 0],
             cm: [170, 200, 0, 0]
         };
         g[1] = {
             width: [0, 4E3, 5E3, 6E3, 1E4],
             fB: [25, 0, 100, 0, 25],
-            n6: [25, 0, 0, 0, 25],
+            value: [25, 0, 0, 0, 25],
             cm: [25, 0, 0, 0, 25]
         };
         g[2] = {
             width: [0, 500, 2500, 2999, 3E3, 3200, 4200, 5200, 5700, 8800, 1E4],
             fB: [15, 15, 70, 40, 40, 40, 252, 40, 40, 20, 30],
-            n6: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
+            value: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
             cm: [120, 120, 220, 110, 40, 40, 217, 10, 10, 10, 10]
         };
         g[3] = {
@@ -7839,43 +7867,43 @@ function kR() {
             fB: [10,
                 10, 20, 10, 30, 10, 16, 40, 55, 230, 230
             ],
-            n6: [10, 10, 40, 50, 100, 40, 80, 120, 55, 230, 230],
+            value: [10, 10, 40, 50, 100, 40, 80, 120, 55, 230, 230],
             cm: [80, 80, 200, 10, 60, 10, 16, 40, 55, 230, 230]
         };
         g[4] = {
             width: [0, 300, 1400, 1700, 3E3, 4E3, 1E4],
             fB: [10, 10, 20, 10, 10, 170, 212],
-            n6: [20, 20, 60, 100, 100, 110, 170],
+            value: [20, 20, 60, 100, 100, 110, 170],
             cm: [70, 70, 160, 30, 30, 60, 120]
         };
         g[5] = {
             width: [0, 1E3, 3E3, 3500, 4E3, 4500, 7E3, 7500, 8E3, 1E4],
             fB: [10, 10, 20, 10, 5, 10, 20, 5, 20, 25],
-            n6: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
+            value: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
             cm: [80, 80, 200, 10, 5, 10, 20, 5, 20, 25]
         };
         g[6] = {
             width: [0, 700, 2650, 3200, 5E3, 8E3, 1E4],
             fB: [10, 10, 60, 255, 255, 200, 200],
-            n6: [10, 10, 60, 255, 255, 200, 200],
+            value: [10, 10, 60, 255, 255, 200, 200],
             cm: [80, 80, 255, 255, 255, 200, 200]
         };
         g[7] = {
             width: [0, 400, 1999, 2E3, 3200, 4E3, 4700, 5500, 6500, 9500, 1E4],
             fB: [10, 10, 80, 255, 255, 55, 6, 70, 20, 155, 255],
-            n6: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
+            value: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
             cm: [80, 80, 255, 235, 235, 55, 26, 10, 20, 155, 255]
         };
         g[8] = {
             width: [0, 700, 1300, 1900, 1901, 2500, 3400, 6E3, 1E4],
             fB: [25, 30, 30, 30, 255, 255, 30, 40, 20],
-            n6: [25, 30, 150, 150, 245, 245, 80, 150, 70],
+            value: [25, 30, 150, 150, 245, 245, 80, 150, 70],
             cm: [60, 170, 170, 170, 235, 235, 30, 40, 40]
         };
         g[9] = {
             width: [0, 400, 2009, 2010, 3300, 4E3, 5200, 6500, 8E3, 9500, 1E4],
             fB: [10, 10, 80, 255, 255, 55, 23, 36, 20, 155, 255],
-            n6: [10, 10, 90, 245, 245,
+            value: [10, 10, 90, 245, 245,
                 170, 60, 160, 20, 155, 255
             ],
             cm: [80, 80, 255, 235, 235, 55, 9, 72, 20, 155, 255]
@@ -7892,7 +7920,7 @@ function kR() {
         xI = k.data;
         var n = g[current_map].width,
             l = g[current_map].fB,
-            x = g[current_map].n6,
+            x = g[current_map].value,
             t = g[current_map].cm,
             z, y, A = jn.a35(),
             B = n.length - 2,
@@ -8274,37 +8302,37 @@ function kT() {
     }
 }
 
-function divide_floor(g, k) {
-    return Math.floor(g / k + 1 / (2 * k))
+function divide_floor(m, n) {
+    return Math.floor(m / n + 1 / (2 * n))
 }
 
 function yj(g, k) {
     return 0 <= g ? divide_floor(g, k) : -divide_floor(-g, k)
 }
 
-function d5(g) {
-    return g * g
+function square(n) {
+    return n * n
 }
 
-function me(g, k) {
-    return g > k ? g : k
+function max(m, n) {
+    return m > n ? m : n
 }
 
-function qn(g, k) {
-    return g < k ? g : k
+function min(m, n) {
+    return m < n ? m : n
 }
 
 function t7(g, k, n) {
     return k < g ? g : k > n ? n : k
 }
 
-function a4K(g, k) {
-    for (var n = divide_floor(g + 1, 2), l = 0; l < k; l++) n = divide_floor(n + divide_floor(g, n), 2);
-    return n
+function sqrtEstimation(value, maxIter) {
+    for (var estimate = divide_floor(value + 1, 2), index = 0; index < maxIter; index++) estimate = divide_floor(estimate + divide_floor(value, estimate), 2);
+    return estimate
 }
 
-function bl(g, k) {
-    return 1 > g ? 0 : a4K(g, k)
+function approximateSqrt(value, maxIter) {
+    return 1 > value ? 0 : sqrtEstimation(value, maxIter)
 }
 
 function a4L(g, k, n, l, x, t, z, y) {
@@ -8317,10 +8345,10 @@ function a4M(g, k, n, l, x, t, z, y) {
 
 function kl() {
     function g() {
-        vv.uu[2] = vv.uu[3] = vv.uu[4] = !jt.a4N;
-        var y = jt.a1U ? 1 : 0,
-            A = jt.a4N ? 1 : 0,
-            B = jt.a0p ? 1 : 0;
+        vv.uu[2] = vv.uu[3] = vv.uu[4] = !jt.hideLinks;
+        var y = jt.hideNicknames ? 1 : 0,
+            A = jt.hideLinks ? 1 : 0,
+            B = jt.highResolution ? 1 : 0;
         is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= device_version ? (droid.saveNumber(25, y), droid.saveNumber(26, A)) : (user_settings.set_setting(6, 4 * B + 2 * A + y), user_settings.format_settings())
     }
 
@@ -8359,7 +8387,7 @@ function kl() {
         mainCanvasCtx.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
     }
     this.xy = 1;
-    this.a0p = this.a4N = this.a1U = !1;
+    this.highResolution = this.hideLinks = this.hideNicknames = !1;
     var x = -1,
         t = !1,
         z = [];
@@ -8370,98 +8398,98 @@ function kl() {
                 name: "More",
                 id: 0,
                 fB: 140,
-                n6: 120,
+                value: 120,
                 cm: 0
             });
             z.push({
                 name: "Lobby 1",
                 id: 1,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             z.push({
                 name: "Hide Usernames",
                 id: 2,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             z.push({
                 name: "Hide Links",
                 id: 3,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             !is_ios && 5 > device_version && z.push({
                 name: "High Resolution",
                 id: 4,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             z.push({
                 name: "Tutorial",
                 id: 5,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             z.push({
                 name: "Player List",
                 id: 6,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             z.push({
                 name: "Clan List",
                 id: 7,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             z.push({
                 name: "Privacy Policy",
                 id: 8,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             !is_ios && 5 > device_version && z.push({
                 name: "Cookie Policy",
                 id: 9,
                 fB: 0,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
             z.push({
                 name: "Mod Settings",
                 id: 10,
                 fB: 140,
-                n6: 140,
+                value: 140,
                 cm: 250
             });
             z.push({
                 name: version,
                 id: 10,
                 fB: 90,
-                n6: 0,
+                value: 0,
                 cm: 0
             });
-            if (is_ios) this.a1U = ios.freeSpawn, this.a4N = ios.unlimitedTime, this.a0p = !1;
-            else if (5 <= device_version) this.a1U = 1 === droid.loadNumber(25), this.a4N = 1 === droid.loadNumber(26), this.a0p = !1;
+            if (is_ios) this.hideNicknames = ios.freeSpawn, this.hideLinks = ios.unlimitedTime, this.highResolution = !1;
+            else if (5 <= device_version) this.hideNicknames = 1 === droid.loadNumber(25), this.hideLinks = 1 === droid.loadNumber(26), this.highResolution = !1;
             else {
-                var y = user_settings.get_settings(6);
-                this.a1U = 1 === (y & 1);
-                this.a4N = 2 === (y & 2);
-                this.a0p = 4 === (y & 4)
+                var settings_6 = user_settings.get_settings(6);
+                this.hideNicknames = 1 === (settings_6 & 1);
+                this.hideLinks = 2 === (settings_6 & 2);
+                this.highResolution = 4 === (settings_6 & 4)
             }
-            z[2].n6 = this.a1U ? 130 : 0;
-            z[3].n6 = this.a4N ? 130 : 0;
-            !is_ios && 5 > device_version && (z[4].n6 = this.a0p ? 130 : 0);
-            this.a4N && (vv.uu[2] = vv.uu[3] = vv.uu[4] = !1)
+            z[2].value = this.hideNicknames ? 130 : 0;
+            z[3].value = this.hideLinks ? 130 : 0;
+            !is_ios && 5 > device_version && (z[4].value = this.highResolution ? 130 : 0);
+            this.hideLinks && (vv.uu[2] = vv.uu[3] = vv.uu[4] = !1)
         };
     this.clicked = function(y, A) {
         var B;
@@ -8470,7 +8498,7 @@ function kl() {
             if (t) {
                 for (B = 1; B < z.length; B++) 
                     if (k(y, A, C, B)) {
-                        return 1 === z[B].id ? (jt.xy = 1 === jt.xy ? 2 : 2 === jt.xy ? 3 : 3 === jt.xy ? websocket_manager.originCount : 1, z[1].name = "Lobby " + (jt.xy === websocket_manager.originCount ? "4 (1B)" : jt.xy), c4.c5 = !0) : 2 === z[B].id ? (jt.a1U = !jt.a1U, z[B].n6 = jt.a1U ? 130 : 0, g(), c4.c5 = !0) : 3 === z[B].id ? (jt.a4N = !jt.a4N, z[B].n6 = jt.a4N ? 130 : 0, g(), c4.c5 = !0) : 4 === z[B].id ? (jt.a0p = !jt.a0p, z[B].n6 = jt.a0p ? 130 : 0, g(), jq.xl(), c4.c5 = !0) : 5 === z[B].id ? (nW.init(ov, !0), nW.init(ov, !1)) : 6 === z[B].id ? (nW.init(ow[0], !0), nW.init(ow[0], !1)) : 7 === z[B].id ? (nW.init(ow[1], !0), nW.init(ow[1], !1)) : 8 === z[B].id ? (nW.init(ou, !0), nW.init(ou, !1)) : 9 === z[B].id ? (nW.init(nX, !0), nW.init(nX, !1)) : 10 === z[B].id && typeof(document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden, document.getElementById('hideMenuCheck').checked = !document.getElementById('hideMenuCheck').checked ,!0);
+                        return 1 === z[B].id ? (jt.xy = 1 === jt.xy ? 2 : 2 === jt.xy ? 3 : 3 === jt.xy ? websocket_manager.originCount : 1, z[1].name = "Lobby " + (jt.xy === websocket_manager.originCount ? "4 (1B)" : jt.xy), c4.c5 = !0) : 2 === z[B].id ? (jt.hideNicknames = !jt.hideNicknames, z[B].value = jt.hideNicknames ? 130 : 0, g(), c4.c5 = !0) : 3 === z[B].id ? (jt.hideLinks = !jt.hideLinks, z[B].value = jt.hideLinks ? 130 : 0, g(), c4.c5 = !0) : 4 === z[B].id ? (jt.highResolution = !jt.highResolution, z[B].value = jt.highResolution ? 130 : 0, g(), jq.xl(), c4.c5 = !0) : 5 === z[B].id ? (nW.init(ov, !0), nW.init(ov, !1)) : 6 === z[B].id ? (nW.init(ow[0], !0), nW.init(ow[0], !1)) : 7 === z[B].id ? (nW.init(ow[1], !0), nW.init(ow[1], !1)) : 8 === z[B].id ? (nW.init(ou, !0), nW.init(ou, !1)) : 9 === z[B].id ? (nW.init(nX, !0), nW.init(nX, !1)) : 10 === z[B].id && typeof(document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden, document.getElementById('hideMenuCheck').checked = !document.getElementById('hideMenuCheck').checked ,!0);
                     }
                 t = !1;
                 c4.c5 = !0;
@@ -8499,10 +8527,10 @@ function kl() {
             var A = n();
             mainCanvasCtx.textAlign = cJ;
             mainCanvasCtx.textBaseline = cI;
-            l(A.f7, A.f8, A.i4, A.nR, z[0].fB, z[0].n6, z[0].cm, 0 === x, z[0].name, .6);
+            l(A.f7, A.f8, A.i4, A.nR, z[0].fB, z[0].value, z[0].cm, 0 === x, z[0].name, .6);
             if (t) {
                 var B = z.length;
-                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nR - 2 * y, A.i5, A.nR, z[y].fB, z[y].n6, z[y].cm, x === y, z[y].name,
+                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nR - 2 * y, A.i5, A.nR, z[y].fB, z[y].value, z[y].cm, x === y, z[y].name,
                     y === B - 1 ? .32 : .45)
             }
         }
@@ -8758,7 +8786,7 @@ function kd() {
                 cB = client_height;
                 r = gE;
                 s = cB;
-                pK = qn(r, s);
+                pK = min(r, s);
                 bq = divide_floor(s + r, 2);
                 if (5 <= device_version) {
                     var B = droid.loadNumber(23);
@@ -8776,7 +8804,7 @@ function kd() {
             } else B = !1;
             return B
         }
-        jt.a0p ? (device_pixel_ratio = window.devicePixelRatio) || (device_pixel_ratio = 1) : device_pixel_ratio = 1;
+        jt.highResolution ? (device_pixel_ratio = window.devicePixelRatio) || (device_pixel_ratio = 1) : device_pixel_ratio = 1;
         B = n(document.documentElement.clientWidth);
         C = n(document.documentElement.clientHeight);
         client_width = Math.floor(.5 + device_pixel_ratio * B);
@@ -8784,7 +8812,7 @@ function kd() {
         if (client_width === gE && client_height === cB) return !1;
         gE = r = client_width;
         cB = s = client_height;
-        pK = qn(r, s);
+        pK = min(r, s);
         bq = divide_floor(s + r, 2);
         mainCanvas.width = client_width;
         mainCanvas.height = client_height;
@@ -9020,7 +9048,7 @@ function Statistics() {
         0 < this.dV-- || this.a5c()
     };
     this.a5c = function() {
-        0 !== is_alive[my_id] && (this.a5X[this.m6] = land[my_id], this.s8[this.m6] = troops[my_id], this.tV[this.m6] = ay.interest(my_id), this.a5d(this.m6), this.m6++, this.m6 === this.cV && this.a5e(), this.dV = this.a5Y - 1, hv.bv())
+        0 !== is_alive[my_id] && (this.a5X[this.m6] = land[my_id], this.s8[this.m6] = troops[my_id], this.tV[this.m6] = interest.interest(my_id), this.a5d(this.m6), this.m6++, this.m6 === this.cV && this.a5e(), this.dV = this.a5Y - 1, hv.bv())
     };
     this.a5e = function() {
         this.a5a();
@@ -9252,7 +9280,7 @@ function a2S() {
         mainCanvasCtx.fillText(1 === n ? eB.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
             -this.i4, this.xU - k * Math.pow(t, n));
         mainCanvasCtx.textAlign = cJ;
-        mainCanvasCtx.fillText(eB.sH(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (zoom ? 2 : 0));
+        mainCanvasCtx.fillText(eB.getInterestTicksRemaining(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (zoom ? 2 : 0));
         mainCanvasCtx.textAlign = ol;
         return k * Math.pow(t, n) / this.xU
     };
@@ -9293,9 +9321,7 @@ function Teams() {
         [255, 255, 0],
         [255, 0, 255],
         [0, 255, 255],
-        [255, 255,
-            255
-        ],
+        [255, 255, 255],
         [0, 0, 0]
     ];
     this.im = [0, 1, 2, 3, 4, 5, 6, 7, 8];
@@ -9323,8 +9349,7 @@ function Teams() {
         this.im[2] = 8
     };
     this.update = function(l) {
-        var x =
-            new Uint8Array(player_count),
+        var x = new Uint8Array(player_count),
             t = new Uint8Array(player_count),
             z = new Uint16Array(8),
             y = new Uint16Array(this.im.length);
@@ -9545,40 +9570,40 @@ function isTeamate(player1, player2) {
     return 0 === teams.team_array[player1] || teams.team_array[player1] !== teams.team_array[player2]
 }
 
-function li(g, k) {
-    var n, l = attacks.ongoing_attack_count(g);
-    for (n = 0; n < l; n++)
-        if (0 === attacks.get_boat_id_from_attack_index(g, n)) {
-            var x = attacks.get_attack_target_from_attack_index(g, n);
-            if (x === max_entities) {
-                if (k === max_entities) break;
-                if (lh(k)) return !0
-            } else if (k === max_entities) {
-                if (lh(x)) return !0
-            } else if (lm(k, x)) return !0
+function bordersTarget(id, target) {
+    var index, attackCount = attacks.ongoing_attack_count(id);
+    for (index = 0; index < attackCount; index++)
+        if (0 === attacks.get_boat_id_from_attack_index(id, index)) {
+            var attackTarget = attacks.get_attack_target_from_attack_index(id, index);
+            if (attackTarget === max_entities) {
+                if (target === max_entities) break;
+                if (bordersNeutral(target)) return !0
+            } else if (target === max_entities) {
+                if (bordersNeutral(attackTarget)) return !0
+            } else if (bordersEntity(target, attackTarget)) return !0
         } return !1
 }
 
-function lh(g) {
-    var k, n, l = pixels_bordering_land[g].length;
-    for (k = 3; 0 <= k; k--) {
-        var x = offset[k];
-        for (n = 0; n < l; n++)
-            if (pixel.is_neutral(pixels_bordering_land[g][n] + x)) return !0
+function bordersNeutral(id) {
+    var side, index, l = pixels_bordering_land[id].length;
+    for (side = 3; 0 <= side; side--) {
+        var mcDir = offset[side];
+        for (index = 0; index < l; index++)
+            if (pixel.is_neutral(pixels_bordering_land[id][index] + mcDir)) return !0
     }
     return !1
 }
 
-function lm(g, k) {
-    var n;
-    var l = pixels_bordering_land[g].length;
-    var x = pixels_bordering_land[k].length;
-    x < l && (l = g, g = k, k = l, l = x);
-    for (n = 3; 0 <= n; n--) {
-        var t = offset[n];
-        for (x = 0; x < l; x++) {
-            var z = pixels_bordering_land[g][x] + t;
-            if (pixel.controlled_by_entity(z) && pixel.owner(z) === k) return !0
+function bordersEntity(id1, id2) {
+    var side;
+    var border1Length = pixels_bordering_land[id1].length;
+    var border2LengthThenIndex = pixels_bordering_land[id2].length;
+    border2LengthThenIndex < border1Length && (border1Length = id1, id1 = id2, id2 = border1Length, border1Length = border2LengthThenIndex);
+    for (side = 3; 0 <= side; side--) {
+        var mcDir = offset[side];
+        for (border2LengthThenIndex = 0; border2LengthThenIndex < border1Length; border2LengthThenIndex++) {
+            var coord = pixels_bordering_land[id1][border2LengthThenIndex] + mcDir;
+            if (pixel.controlled_by_entity(coord) && pixel.owner(coord) === id2) return !0
         }
     }
     return !1
@@ -10034,7 +10059,7 @@ function Multi_out() {
         mIndex += format_length
     }
     var mIndex;
-    this.ws_ready = function() {
+    this.requestGameInfo = function() {
         var array = new Uint8Array(3);
         mIndex = 0;
         fitter(array, 1, 0);
@@ -10079,7 +10104,7 @@ function Multi_out() {
         fitter(array, 3, 1);
         fitter(array, 14, error_line);
         var keycode_msg = names.convert_to_keycode(error_message),
-            B = qn(keycode_msg.length, 77);
+            B = min(keycode_msg.length, 77);
         fitter(array, 7, B);
         for (z = 0; z < B; z++) fitter(array, 10, keycode_msg[z]);
         websocket_manager.send(remote_id, array)
@@ -10094,7 +10119,7 @@ function Multi_out() {
             fitter(array, 3, 7);
             fitter(array, 3, 2);
             format_password(array);
-            var A = me(name_input.vote_id.length - 20, 0);
+            var A = max(name_input.vote_id.length - 20, 0);
             for (array = name_input.vote_id.length - 1; array >= A; array--) fitter(array, 4, Math.abs(name_input.vote_id.charCodeAt(array) - 48) % 10);
             websocket_manager.send(remote_id, array)
         }

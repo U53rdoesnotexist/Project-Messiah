@@ -34,7 +34,7 @@ function Bots() {
                 this.wsGame = this.wsLobby;
                 this.wsLobby = null;
                 update_active_bots(1,1);
-                update_active_bots(1,-1);
+                update_active_bots(0,-1);
             }
             else {
                 this.wsGame = new WebSocket(`wss://${websocket_manager.origins[lobbi]}/s52/`);
@@ -211,7 +211,6 @@ function Bots() {
             }
         }
         this.wsss = [];
-        //document.getElementById('botsLobbyCount').innerText = '0';
     }
 }
 var bots;
