@@ -300,20 +300,20 @@ function bm() {
                 l: l,
                 font: t
             };
-            c4.c5 = !0
+            c4.canvasPendingUpdates = !0
         }
     };
     this.c6 = function() {
         return Math.floor(g * sprites.bz(13).height)
     };
     this.clicked = function(n, l) {
-        return !sprites.bx() || n < display_buffer_length || l < cB - cC.width -
-            g * sprites.bz(13).height - 2 * display_buffer_length || l > cB - cC.width - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * sprites.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * sprites.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * sprites.bz(13).width ? (cD.cE(1), !0) : !1
+        return !sprites.bx() || n < display_buffer_length || l < clientHeight - cC.width -
+            g * sprites.bz(13).height - 2 * display_buffer_length || l > clientHeight - cC.width - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * sprites.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * sprites.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * sprites.bz(13).width ? (cD.cE(1), !0) : !1
     };
     this.to_y = function() {
-        return Math.floor(cB - cC.width - g * sprites.bz(13).height - 2 * display_buffer_length)
+        return Math.floor(clientHeight - cC.width - g * sprites.bz(13).height - 2 * display_buffer_length)
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (sprites.bx()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             mainCanvasCtx.setTransform(g, 0, 0, g, display_buffer_length, this.to_y());
@@ -365,7 +365,7 @@ function cY(g, k) {
     var n, side;
     var borderPixelCount = pixels_bordering_land[g].length;
     var t = 256 <= borderPixelCount ? 12 : 32 <= borderPixelCount ? 6 : 1;
-    borderPixelCount = borderPixelCount - 1 - ce.cf(t);
+    borderPixelCount = borderPixelCount - 1 - fakeRandom.cf(t);
     cg = 0;
     a: for (; 0 <= borderPixelCount; borderPixelCount -= t)
         for (side = 3; 0 <= side; side--) {
@@ -447,7 +447,7 @@ function cv(g) {
 }
 
 function d6() {
-    return ci[ce.cf(cg)]
+    return ci[fakeRandom.cf(cg)]
 }
 var const_8, cg, ci, d7;
 
@@ -465,7 +465,7 @@ function dB(g, k) {
     team_game && (d7[g] = 0);
     if (attacks.below_attack_cap(g) && !(60 > k))
         if (0 === pixels_bordering_land[g].length) dE.update(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], interest.dJ(g)));
-        else if (!(0 < pixels_bordering_water[g].length && ce.random() < ce.value(pixels_bordering_water[g].length > pixels_bordering_land[g].length ? 7 : 3) && dE.update(g, dG.cN[g - player_count]))) {
+        else if (!(0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(pixels_bordering_water[g].length > pixels_bordering_land[g].length ? 7 : 3) && dE.update(g, dG.cN[g - player_count]))) {
         var n = interest.dJ(g);
         troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
         team_game ? dK(g, k, dG.cN[g - player_count], n) : dL(g, k, dG.cN[g - player_count])
@@ -473,7 +473,7 @@ function dB(g, k) {
 }
 
 function dK(g, k, n, l) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, max_entities, n)) : (ce.dP(dG.dQ[n]) ? l = cs(g) : (cp() && ce.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < pixels_bordering_water[g].length && ce.random() < ce.value(60) && dE.update(g, n) || (dG.dH(g - player_count, 200), dI(g, k, n, l))
+    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, max_entities, n)) : (fakeRandom.dP(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.update(g, n) || (dG.dH(g - player_count, 200), dI(g, k, n, l))
 }
 
 function dT(g, k) {
@@ -486,18 +486,18 @@ function dO(g, k, n) {
 
 function dI(g, k, n, l) {
     if (0 !== teams.team_array[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divide_floor(l, 2)))
-        for (n = ce.cf(alive_count), l = 0; l < alive_count; l++) {
+        for (n = fakeRandom.cf(alive_count), l = 0; l < alive_count; l++) {
             var x = alive_entities[(l + n) % alive_count];
             if (teams.team_array[x] === teams.team_array[g] && 1 === d7[x]) {
                 single_donate(g, x, k);
-                x < player_count && ce.random() < ce.value(10) && (d7[x] = 0);
+                x < player_count && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
                 break
             }
         }
 }
 
 function dL(g, k, n) {
-    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : ce.dP(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && ce.dP(dG.dS[n]) && cr(), dR(g, k, cv(g))))
+    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : fakeRandom.dP(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), dR(g, k, cv(g))))
 }
 
 function db(g, k) {
@@ -552,8 +552,8 @@ function de() {
             var y = 8 === gamemode ? 1 : 0;
             for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = y
         }
-        for (z = bot_count - 1; 0 <= z; z--) 2 >= this.cN[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 1E3) : 1 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (bots_send_ratio[z] = 1E3, n[z] = 870)) : 4 >= this.cN[z] ? (l[z] = 1 + ce.cf(20), t[z] = 250 + ce.cf(1501), x[z] = 500 + ce.cf(501), 3 === this.cN[z] ? (bots_send_ratio[z] = 600 + ce.cf(101), n[z] = 300 + ce.cf(401)) : (bots_send_ratio[z] = 300 + ce.cf(201), n[z] = 100 + ce.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
-            35 + ce.cf(16), bots_send_ratio[z] = 400 + ce.cf(101), n[z] = 50 + ce.cf(101)), bots_timing[z] = 1 + divide_floor(x[z] * ce.random(), 10 * ce.value(100))
+        for (z = bot_count - 1; 0 <= z; z--) 2 >= this.cN[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 1E3) : 1 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (bots_send_ratio[z] = 1E3, n[z] = 870)) : 4 >= this.cN[z] ? (l[z] = 1 + fakeRandom.cf(20), t[z] = 250 + fakeRandom.cf(1501), x[z] = 500 + fakeRandom.cf(501), 3 === this.cN[z] ? (bots_send_ratio[z] = 600 + fakeRandom.cf(101), n[z] = 300 + fakeRandom.cf(401)) : (bots_send_ratio[z] = 300 + fakeRandom.cf(201), n[z] = 100 + fakeRandom.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
+            35 + fakeRandom.cf(16), bots_send_ratio[z] = 400 + fakeRandom.cf(101), n[z] = 50 + fakeRandom.cf(101)), bots_timing[z] = 1 + divide_floor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
     };
     this.dw = function() {
         var z, y;
@@ -639,7 +639,7 @@ function ea() {
 }
 
 function ec() {
-    eA.eb() && (c4.c5 = !0);
+    eA.eb() && (c4.canvasPendingUpdates = !0);
     websocket_manager.update()
 }
 
@@ -692,8 +692,8 @@ function er() {
         l = 3;
         a: {
             for (var y = 40; 1 <= y; y--) {
-                x = x_min[z] + divide_floor(ce.random() * (x_max[z] - x_min[z] + 1), ce.value(100));
-                t = y_min[z] + divide_floor(ce.random() * (y_max[z] - y_min[z] + 1), ce.value(100));
+                x = x_min[z] + divide_floor(fakeRandom.random() * (x_max[z] - x_min[z] + 1), fakeRandom.value(100));
+                t = y_min[z] + divide_floor(fakeRandom.random() * (y_max[z] - y_min[z] + 1), fakeRandom.value(100));
                 var A = k(pixel.to_coord(x, t));
                 if (1 !== A) break a
             }
@@ -716,7 +716,7 @@ function er() {
     function n(y, A) {
         for (var B, C, E, F, G, N, I, D = y; D < y + 50 * A; D += A)
             if (B = x_min[z] - D, B = 1 > B ? 1 : B, C = y_min[z] - D, C = 1 >
-                C ? 1 : C, E = x_max[z] + D, E = E >= map_width - 1 ? map_width - 2 : E, F = y_max[z] + D, F = F >= map_height - 1 ? map_height - 2 : F, I = divide_floor(2 * ce.random() * (E - B + F - C), ce.value(100)), G = E - B, N = F - C, I <= G ? (x = B + I, t = C) : I <= G + N ? (x = E, t = C + I - G) : I <= 2 * G + N ? (x = B + I - G - N, t = F) : (x = B, t = C + I - 2 * G - N), B = k(pixel.to_coord(x, t)), 1 !== B) return B;
+                C ? 1 : C, E = x_max[z] + D, E = E >= map_width - 1 ? map_width - 2 : E, F = y_max[z] + D, F = F >= map_height - 1 ? map_height - 2 : F, I = divide_floor(2 * fakeRandom.random() * (E - B + F - C), fakeRandom.value(100)), G = E - B, N = F - C, I <= G ? (x = B + I, t = C) : I <= G + N ? (x = E, t = C + I - G) : I <= 2 * G + N ? (x = B + I - G - N, t = F) : (x = B, t = C + I - 2 * G - N), B = k(pixel.to_coord(x, t)), 1 !== B) return B;
         return 1
     }
     var l, x, t, z;
@@ -876,12 +876,12 @@ function fu() {
         k = k > 2 * n ? 1 : k;
         return B
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (!(40 > g7 || 0 === l)) {
             var B, C = gC / g7,
                 E = gD / g7,
-                F = (gE + gC) / g7,
-                G = (cB + gD) / g7;
+                F = (clientWidth + gC) / g7,
+                G = (clientHeight + gD) / g7;
             mainCanvasCtx.textAlign = cJ;
             mainCanvasCtx.textBaseline = cI;
             for (B = l - 1; 0 <= B; B--) {
@@ -891,8 +891,8 @@ function fu() {
                 if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== is_alive[D]) {
                     var K = Math.floor(.94 * g7 * eA.gG(D));
                     if (!(6 > K)) {
-                        N = Math.floor(gE * (N + .5 - C) / (F - C));
-                        I = Math.floor(cB * (I + .48 - E) / (G - E));
+                        N = Math.floor(clientWidth * (N + .5 - C) / (F - C));
+                        I = Math.floor(clientHeight * (I + .48 - E) / (G - E));
                         mainCanvasCtx.font = bt +
                             K + bu;
                         mainCanvasCtx.fillStyle = gH;
@@ -913,8 +913,8 @@ function gK() {
         t = z = x = 0;
         y = I / J;
         l = 1 / (J / I / 4);
-        A = (gE / 2 + gC) / g7;
-        B = (cB / 2 + gD) / g7;
+        A = (clientWidth / 2 + gC) / g7;
+        B = (clientHeight / 2 + gD) / g7;
         C = g7
     }
 
@@ -925,8 +925,8 @@ function gK() {
     function n(J, L, H, M) {
         E = (J + H + 1) / 2;
         F = (L + M + 1) / 2;
-        J = gE / (H - J + 1);
-        L = cB / (M - L + 1);
+        J = clientWidth / (H - J + 1);
+        L = clientHeight / (M - L + 1);
         G = .9 * (J < L ? J : L)
     }
     var l, x, t, z, y, A, B, C, E, F, G, N, I, D = !1,
@@ -949,8 +949,8 @@ function gK() {
             L = x_max[J] -
                 x_min[J] + 1;
             J = y_max[J] - y_min[J] + 1;
-            H = gE / L;
-            var Q = cB / J;
+            H = clientWidth / L;
+            var Q = clientHeight / J;
             G = H < Q ? H : Q;
             G *= 0 !== M ? M : 20 > L && 20 > J ? .5 : .9;
             k(.875);
@@ -970,8 +970,8 @@ function gK() {
     this.gf = function(J, L, H, M) {
         n(J, L, H, M);
         g7 = G;
-        gj.gw(E, gE / 2);
-        gj.gx(F, cB / 2);
+        gj.gw(E, clientWidth / 2);
+        gj.gx(F, clientHeight / 2);
         gy.gz()
     };
     this.h0 = function() {
@@ -992,12 +992,12 @@ function gK() {
             g7 = C * Math.pow(G / C, x);
             L = g7 / L;
             var M = 1 - (C * Math.pow(G / C, 1 - x) - C) / (G - C);
-            gj.gw(A + M * (E - A), gE / 2);
-            gj.gx(B + M * (F - B), cB / 2);
+            gj.gw(A + M * (E - A), clientWidth / 2);
+            gj.gx(B + M * (F - B), clientHeight / 2);
             eA.zoom(L, (J * L - gC) / (1 - L), (H * L - gD) / (1 - L));
             gy.gz();
             1 <= x && (D = !1, h8.h9 = !0);
-            c4.c5 = !0
+            c4.canvasPendingUpdates = !0
         }
     }
 }
@@ -1007,14 +1007,14 @@ function hA() {
         var I;
         a: {
             for (I = 0; 8 > I; I++)
-                if (t = divide_floor(y * ce.random(), ce.value(100)), z = divide_floor(A * ce.random(), ce.value(100)), k()) {
+                if (t = divide_floor(y * fakeRandom.random(), fakeRandom.value(100)), z = divide_floor(A * fakeRandom.random(), fakeRandom.value(100)), k()) {
                     I = !0;
                     break a
                 } I = !1
         }
         if (!I) a: {
-            var D, K, J, L;I = divide_floor(y * ce.random(), ce.value(100));
-            var H = divide_floor(A * ce.random(), ce.value(100));
+            var D, K, J, L;I = divide_floor(y * fakeRandom.random(), fakeRandom.value(100));
+            var H = divide_floor(A * fakeRandom.random(), fakeRandom.value(100));
             for (D = 40; 1 <= D; D--)
                 for (K = A - D; 0 <= K; K -= 40)
                     for (z = (K + H) % A, J = 40; 1 <= J; J--)
@@ -1145,14 +1145,14 @@ function hp() {
     mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0);
     mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
     mainCanvasCtx.drawImage(hs, gj.to_x(), gj.to_y());
-    eN.cG();
+    eN.drawImage();
     mainCanvasCtx.drawImage(mapCanvas, gj.to_x(), gj.to_y());
     mainCanvasCtx.imageSmoothingEnabled = !1;
-    hq.cG();
+    hq.drawImage();
     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-    eA.cG();
-    eK.cG();
-    canvas_hidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.cG(), eM.cG(), troopsBar.cG(), peace.cG(), eB.cG(), gj.cG(), c2.cG(), eT.cG(), eO.cG(), eP.cG(), fq.cG(), eW.cG(), hu.cG(), hv.cG(), eX.cG())
+    eA.drawImage();
+    eK.drawImage();
+    canvas_hidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.drawImage(), eM.drawImage(), troopsBar.drawImage(), peace.drawImage(), eB.drawImage(), gj.drawImage(), c2.drawImage(), eT.drawImage(), eO.drawImage(), eP.drawImage(), fq.drawImage(), eW.drawImage(), hu.drawImage(), hv.drawImage(), eX.drawImage())
 }
 
 function hw(g, k, n) {
@@ -1293,7 +1293,7 @@ function Names() {
     this.generate_origin_domain_names = function() {
         var index, origin_name = "";
         for (index = 0; 6 > index; index++) {
-            var z = 48 + ce.random() % 36;
+            var z = 48 + fakeRandom.random() % 36;
             z += 58 <= z ? 39 : 0;
             origin_name += String.fromCharCode(z)
         }
@@ -1318,7 +1318,7 @@ function EndGame() {
             announcements.iy(!0);
             eM.eb(!0);
             eB.eb(!0);
-            c4.c5 = !0;
+            c4.canvasPendingUpdates = !0;
             h8.iz();
             set_android_state(0)
         }
@@ -1327,7 +1327,7 @@ function EndGame() {
 
 function Spawn() {
     this.set = function(id, x_coord, y_coord) {
-        0 !== is_alive[id] && j1.hi(id, x_coord, y_coord) && (c4.c5 = !0)
+        0 !== is_alive[id] && j1.hi(id, x_coord, y_coord) && (c4.canvasPendingUpdates = !0)
     };
     this.update = function() {
         in_spawn = !1;
@@ -1370,7 +1370,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     bot_count = entity_count - player_count;
     spectators = 0;
     my_id = myid;
-    ce.jN(seed);
+    fakeRandom.jN(seed);
     create_info_arrays(player_info);
     e2.init();
     teams.init(player_info);
@@ -1387,7 +1387,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     hq.init();
     eT.init();
     dG.init();
-    jS.jT();
+    jS.fit();
     jS.jU();
     j1.init();
     jV();
@@ -1421,7 +1421,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     singleplayer ? c4.jY() : c4.jZ();
     ja();
     eX.init();
-    c4.c5 = !0;
+    c4.canvasPendingUpdates = !0;
     singleplayer && in_spawn || set_android_state(1)
 
     cycle = 1, tick = 0;
@@ -1443,7 +1443,7 @@ function leave_game() { //close is temp
     show_ad()
 }
 var dG, au, dE, eJ, single, eK, eV, j1, names, hu, fq, announcements, jf, eP, c2, troopsBar, gj, jg, eO, eM, eB, eW, 
-jh, ji, aJ, jj, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, interest, eA, jS, e2, jQ, jm, jn, gn, ez, ce, 
+jh, ji, aJ, showError, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, interest, eA, jS, e2, jQ, jm, jn, gn, ez, fakeRandom, 
 g1, hq, jo, multi_in, eX, multi_out, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, eI, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
 
 function construct() {
@@ -1472,8 +1472,8 @@ function construct() {
     jh = new kB;
     ji = new kC;
     aJ = new kD;
-    jj = new kE;
-    jj.jT();
+    showError = new ShowError;
+    showError.fit();
     jk = new kF;
     jl = new kG;
     dy = new kH;
@@ -1491,7 +1491,7 @@ function construct() {
     jn = new kT;
     gn = new kU;
     ez = new kV;
-    ce = new kW;
+    fakeRandom = new FakeRandom;
     g1 = new kX;
     hq = new kY;
     jo = new kZ;
@@ -1578,7 +1578,7 @@ function jy() {
     this.lD = function(L, H) {
         if (this.hidden()) {
             var M = this.clicked(L, H);
-            c4.c5 = 0 < M;
+            c4.canvasPendingUpdates = 0 < M;
             return 2 > M
         }
         return !1
@@ -1701,9 +1701,9 @@ function jy() {
             if (a5.lI(L, H)) return !1;
             a5.lK();
             t = !1;
-            return c4.c5 = !0
+            return c4.canvasPendingUpdates = !0
         }
-        return n(l(L, H)) ? !1 : (this.end(), c4.c5 = !0)
+        return n(l(L, H)) ? !1 : (this.end(), c4.canvasPendingUpdates = !0)
     };
     this.end = function() {
         var L;
@@ -1719,11 +1719,11 @@ function jy() {
             if (x[L]) return !0;
         return t
     };
-    this.cG = function() {
+    this.drawImage = function() {
         this.hidden() && this.lq()
     };
     this.lq = function() {
-        if (t) a5.cG();
+        if (t) a5.drawImage();
         else {
             var L = (A + N) / D;
             mainCanvasCtx.imageSmoothingEnabled = !0;
@@ -1806,7 +1806,7 @@ function jz() { //Added Mod Menu
         (this.menuOpen = !this.menuOpen) ? (canvas_hidden = !1, singleplayer && 1 === client_status && !in_spawn && (setTimeout(function() {
             h8.iz()
         }, 0), set_android_state(0))) : (y = -1, drawExitBut(), singleplayer && set_android_state(1));
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
     this.clicked = function(B, C) {
         var option = k(B, C);
@@ -1824,7 +1824,7 @@ function jz() { //Added Mod Menu
                 return 2;
             } else if (option === 3 && 2 <= statistics.m6 && !in_spawn) {
                 hv.alterDisplay();
-                c4.c5 = true;
+                c4.canvasPendingUpdates = true;
                 return 2;
             } else if (option === 4 && 2 <= statistics.m6 || option === 3 && 2 >= statistics.m6) {
                 typeof (document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden)
@@ -1851,10 +1851,10 @@ function jz() { //Added Mod Menu
         if (E === y) return -1 !== y;
         y = E;
         this.menuOpen || drawExitBut();
-        c4.c5 = !0;
+        c4.canvasPendingUpdates = !0;
         return -1 !== y
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (this.menuOpen) {
             var B = Math.floor(5.5 * l);
             mainCanvasCtx.setTransform(1, 0, 0, 1, m7, troopsBar.fK);
@@ -2030,10 +2030,10 @@ function Announcements() {
         for (var Q = y(), R, P = F.length - 1; 0 <= P; P--)
             if (R = Q - (P + 1) * G, M >= R && M < R + G) {
                 if (50 === F[P].id) {
-                    if (H >= gE - D - N - F[P].width) return H >= gE - D - N ? (P = F[P].player, this.la(P, 0), multi_out.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
+                    if (H >= clientWidth - D - N - F[P].width) return H >= clientWidth - D - N ? (P = F[P].player, this.la(P, 0), multi_out.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
                     break
                 }
-                if (H >= gE - F[P].width - N) return F[P].mZ && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mY && (Q = F[P].mY, F[P].mY = F[P].player, F[P].player = Q)), !0;
+                if (H >= clientWidth - F[P].width - N) return F[P].mZ && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mY && (Q = F[P].mY, F[P].mY = F[P].player, F[P].player = Q)), !0;
                 break
             } return !1
     };
@@ -2164,8 +2164,8 @@ function Announcements() {
             && announce(240, nickname[alive_entities[index]] + " joined the game.", 1, alive_entities[index], gH, "rgba(255,255,255,0.75)", -1, !0);
         this.iy(!1)
     };
-    this.cG = function() {
-        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (mainCanvasCtx.drawImage(F[Q].canvas, gE - F[Q].width - D - N, M), mainCanvasCtx.drawImage(L, gE - D - N, M)) : mainCanvasCtx.drawImage(F[Q].canvas, gE - F[Q].width - N, M)
+    this.drawImage = function() {
+        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (mainCanvasCtx.drawImage(F[Q].canvas, clientWidth - F[Q].width - D - N, M), mainCanvasCtx.drawImage(L, clientWidth - D - N, M)) : mainCanvasCtx.drawImage(F[Q].canvas, clientWidth - F[Q].width - N, M)
     }
 }
 
@@ -2192,30 +2192,30 @@ function Cookies_window() {
         if (!this.hidden) return !1;
         var n = this.nU(g, k);
         if (-1 === n) return !1;
-        0 === n ? (user_settings.nV(2), this.hidden = !1) : 1 === n ? nW.init(nX, !0) : 2 === n && (user_settings.nV(1), this.hidden = !1);
-        return c4.c5 = !0
+        0 === n ? (user_settings.nV(2), this.hidden = !1) : 1 === n ? openLinkBox.init(nX, !0) : 2 === n && (user_settings.nV(1), this.hidden = !1);
+        return c4.canvasPendingUpdates = !0
     };
     this.lo = function(g, k) {
         if (!this.hidden) return !1;
         var n = this.bs;
         this.bs = this.nU(g, k);
-        n !== this.bs && (c4.c5 = !0);
+        n !== this.bs && (c4.canvasPendingUpdates = !0);
         return -1 !== this.bs
     };
     this.nU = function(g, k) {
         g -= display_buffer_length;
-        k -= Math.floor(cB - this.cw - display_buffer_length);
+        k -= Math.floor(clientHeight - this.cw - display_buffer_length);
         if (0 > g || 0 > k || g >= this.width || k >= this.cw) return -1;
         var n = Math.floor((k - .5 * this.nR) / ((this.cw - this.nR) / this.lt.length));
         return 0 >
             n ? 0 : n >= this.lt.length ? this.lt.length - 1 : n
     };
-    this.cG = function() {
+    this.drawImage = function() {
         this.hidden && this.nY()
     };
     this.nY = function() {
         var g = display_buffer_length,
-            k = Math.floor(cB - this.cw - display_buffer_length);
+            k = Math.floor(clientHeight - this.cw - display_buffer_length);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
         mainCanvasCtx.fillStyle = hy;
         mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
@@ -2247,7 +2247,7 @@ function k1() {
         this.setTime()
     };
     this.update = function() {
-        this.setTime() && (c4.c5 = !0)
+        this.setTime() && (c4.canvasPendingUpdates = !0)
     };
     this.setTime = function() {
         var y = new Date;
@@ -2264,9 +2264,9 @@ function k1() {
             Math.floor(.4 * t);
         return !0
     };
-    this.cG = function() {
+    this.drawImage = function() {
         mainCanvasCtx.lineWidth = 1 + Math.floor(t / 15);
-        mainCanvasCtx.translate(gE - t, Math.floor(.5 * (cB + x)));
+        mainCanvasCtx.translate(clientWidth - t, Math.floor(.5 * (clientHeight + x)));
         mainCanvasCtx.rotate(-Math.PI / 2);
         mainCanvasCtx.fillStyle = cK;
         mainCanvasCtx.fillRect(0, 0, x, t);
@@ -2381,17 +2381,17 @@ function ni() {
     this.show = function(g, k) {
         if (1 > this.lf) return !1;
         this.nv = c4.time;
-        var n = Math.floor(gE / this.np);
+        var n = Math.floor(clientWidth / this.np);
         n = 3 > n ? 3 : n > this.nq ? this.nq : n;
         n = this.lf > n ? n : this.lf;
         var l = 1 + divide_floor(this.lf - 1, n),
             x = Math.floor(n * this.np),
             t = Math.floor(g - x / 2);
-        t = t + x > gE ? gE - x : t;
+        t = t + x > clientWidth ? clientWidth - x : t;
         t = 0 > t ? 0 : t;
         var z = Math.floor(k - this.np / 2);
         l = Math.floor(l * this.np);
-        z = z + l > cB ? cB - l : z;
+        z = z + l > clientHeight ? clientHeight - l : z;
         z = 0 > z ? 0 : z;
         this.f9 = t + x;
         this.fA = z + l;
@@ -2417,7 +2417,7 @@ function ni() {
     this.oD = function(g) {
         return g >= this.nk && g < this.nk + this.nl
     };
-    this.cG = function() {
+    this.drawImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
         for (var g = this.nt * this.no / 2, k = this.lf - 1; 0 <= k; k--) mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.nr[k] + g, this.ns[k] + g), mainCanvasCtx.drawImage(this.l7[this.nu[k]], 0, 0);
         mainCanvasCtx.imageSmoothingEnabled = !1;
@@ -2541,7 +2541,7 @@ function pN(g, k) {
     if (0 === client_status) aJ.clicked(g, k);
     else if (!(hv.clicked(g, k) || hu.lD(g, k) || eW.clicked(g, k) || eP.clicked(g, k))) {
         var n = fq.clicked(g, k);
-        2 === n || eM.clicked(g, k) || (gj.clicked(g, k) ? c4.c5 = !0 : troopsBar.pR(g, k) ? (gj.gk = !1, troopsBar.pS(g, k) && (c4.c5 = !0)) : announcements.clicked(g, k) || peace.clicked(g, k) || 0 === n && hu.lF(g, k))
+        2 === n || eM.clicked(g, k) || (gj.clicked(g, k) ? c4.canvasPendingUpdates = !0 : troopsBar.pR(g, k) ? (gj.gk = !1, troopsBar.pS(g, k) && (c4.canvasPendingUpdates = !0)) : announcements.clicked(g, k) || peace.clicked(g, k) || 0 === n && hu.lF(g, k))
     }
 }
 
@@ -2557,7 +2557,7 @@ function pF(g) {
 }
 
 function pT(g, k) {
-    0 === client_status ? aJ.lo(g, k) : hv.lo(g, k) || (hu.hidden() ? hu.lo(g, k) : fq.lo(g, k) || (troopsBar.pV ? troopsBar.lo(g, k) && (c4.c5 = !0) : (eM.lo(g, k), gj.gk && gj.lo(g, k) && (c4.c5 = !0))))
+    0 === client_status ? aJ.lo(g, k) : hv.lo(g, k) || (hu.hidden() ? hu.lo(g, k) : fq.lo(g, k) || (troopsBar.pV ? troopsBar.lo(g, k) && (c4.canvasPendingUpdates = !0) : (eM.lo(g, k), gj.gk && gj.lo(g, k) && (c4.canvasPendingUpdates = !0))))
 }
 
 function pC(g) {
@@ -2593,7 +2593,7 @@ function pJ(g) {
 }
 
 function pZ(g, k) {
-    0 === client_status ? aJ.click(g, k) : (eM.pX(g, k), hv.pX(), troopsBar.pY(), gj.gk = !1, hu.click(g, k) && (c4.c5 = !0))
+    0 === client_status ? aJ.click(g, k) : (eM.pX(g, k), hv.pX(), troopsBar.pY(), gj.gk = !1, hu.click(g, k) && (c4.canvasPendingUpdates = !0))
 }
 
 function pD(g) {
@@ -2603,7 +2603,7 @@ function pD(g) {
         n = Math.floor(device_pixel_ratio * g.clientY),
         l = g.deltaY;
     1 === g.deltaMode && (l *= 20);
-    0 === client_status ? aJ.pd(k, n, l) : eM.pd(k, n, l) || (troopsBar.pR(k, n) ? troopsBar.pd(l) && (c4.c5 = !0) : gj.pd(k, n, 2 * l) && (c4.c5 = !0))
+    0 === client_status ? aJ.pd(k, n, l) : eM.pd(k, n, l) || (troopsBar.pR(k, n) ? troopsBar.pd(l) && (c4.canvasPendingUpdates = !0) : gj.pd(k, n, 2 * l) && (c4.canvasPendingUpdates = !0))
 }
 
 function pe(g, k, n) {
@@ -2667,7 +2667,7 @@ function k2() {
     }
 
     function l(C) {
-        return eO.qF() ? gE - t[C].canvas.width - m7 : eO.fJ
+        return eO.qF() ? clientWidth - t[C].canvas.width - m7 : eO.fJ
     }
 
     function x(C) {
@@ -2756,7 +2756,7 @@ function k2() {
             for (--C; 0 <= C; C--) E = attacks.get_attack_troops_remaining_from_attack_index(my_id, C), t[C].cN !== E && (t[C].cN = E, t[C].pt = E > t[C].pt ? E : t[C].pt, t[C].po = !0)
         }
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (0 !== is_alive[my_id] && hu.isHuman(my_id) && !j8)
             for (var C = t.length - 1; 0 <= C; C--) mainCanvasCtx.drawImage(t[C].canvas, l(C), x(C))
     }
@@ -2845,10 +2845,10 @@ function k3() {
             if (4 === x) c4.time > J && (x = 0, 1 === client_status && c2.mz(jm.getMapName(), 3, 1, 9));
             else {
                 if (1 === x) 0 === t && (k(), t = 1E-4), t += .002 *
-                    (c4.time - K), 1 <= t && (z = 0, x = 2, t = 1), c4.c5 = !0;
+                    (c4.time - K), 1 <= t && (z = 0, x = 2, t = 1), c4.canvasPendingUpdates = !0;
                 else if (2 === x) {
                     if (z += (c4.time - K) / 1E3, z > l[0].gb || 1 < z && 1 < l.length) x = 3
-                } else 3 === x && (t -= .002 * (c4.time - K), 0 >= t && (t = 0, l.shift(), x = 0 < l.length ? 1 : 0), c4.c5 = !0);
+                } else 3 === x && (t -= .002 * (c4.time - K), 0 >= t && (t = 0, l.shift(), x = 0 < l.length ? 1 : 0), c4.canvasPendingUpdates = !0);
                 K = c4.time
             }
     };
@@ -2871,7 +2871,7 @@ function k3() {
         });
         0 === x && (t = 0, x = 1, K = c4.time)
     };
-    this.cG = function() {
+    this.drawImage = function() {
         0 !== x && 0 !== t && (1 > t ? (mainCanvasCtx.globalAlpha = t, g(), mainCanvasCtx.globalAlpha = 1) : g())
     }
 }
@@ -3013,7 +3013,7 @@ function Peace() {
             voter === my_id && (your_choice = choice ? 1 : -1)
         }
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (this.hidden) {
             var D = n();
             mainCanvasCtx.drawImage(x, r - this.width - m7, D)
@@ -3032,7 +3032,7 @@ function TroopsBar() {
         return "rgba(180,0," + I + ",0.75)"
     }
 
-    function k() {
+    function renderTroopBar() {
         A.clearRect(0, 0, x, troopsBar.cw);
         var I = Math.floor(attackFraction * (x - 2 * z));
         A.fillStyle = hy;
@@ -3057,13 +3057,12 @@ function TroopsBar() {
         A.fillText(eP.split_into_pieces(E), Math.floor(x / 2), Math.floor(.55 * troopsBar.cw))
     }
 
-    function n(I) {
-        if (1 < I && 0 === attackFraction) return attackFraction = .01, k(), !0;
-        if (1 < I &&
-            1 === attackFraction || 0 === attackFraction) return !1;
-        attackFraction *= I;
+    function multiplyAttackFraction(multiplier) {
+        if (1 < multiplier && 0 === attackFraction) return attackFraction = .01, renderTroopBar(), !0;
+        if (1 < multiplier && 1 === attackFraction || 0 === attackFraction) return !1;
+        attackFraction *= multiplier;
         attackFraction = 1 < attackFraction ? 1 : 0 > attackFraction ? 0 : attackFraction;
-        k();
+        renderTroopBar();
         return !0
     }
 
@@ -3072,7 +3071,7 @@ function TroopsBar() {
         attackFraction = (I - t - z) / (x - 2 * z);
         attackFraction = 0 > attackFraction ? 0 : attackFraction;
         attackFraction = 1 < attackFraction ? 1 : attackFraction;
-        return D !== attackFraction ? (k(), !0) : !1
+        return D !== attackFraction ? (renderTroopBar(), !0) : !1
     }
     var x, t, z, y, A, B, attackFraction, E, F, G, N = 11 / 12;
     this.init = function() {
@@ -3097,14 +3096,14 @@ function TroopsBar() {
         A.textBaseline = cI;
         A.textAlign = cJ;
         this.qu();
-        k()
+        renderTroopBar()
     };
     this.qu = function() {
-        t = zoom && r < .8 * s ? this.cw + 3 * m7 : Math.floor((gE - x) / 2);
-        this.fK = cB - this.cw - (zoom ? 2 : 1) * m7
+        t = zoom && r < .8 * s ? this.cw + 3 * m7 : Math.floor((clientWidth - x) / 2);
+        this.fK = clientHeight - this.cw - (zoom ? 2 : 1) * m7
     };
     this.eb = function() {
-        G && (G = !1, k())
+        G && (G = !1, renderTroopBar())
     };
     this.hidden = function() {
         return !(!B || fq.menuOpen && t < Math.floor(m7 + 5.5 * this.cw))
@@ -3127,18 +3126,18 @@ function TroopsBar() {
     };
     this.pS = function(I, D) {
         if (!this.hidden()) return !1;
-        if (I > t && I < t + z && D > troopsBar.fK) return n(N);
-        if (I > t + x - z && I < t + x && D > troopsBar.fK) return n(1 / N);
+        if (I > t && I < t + z && D > troopsBar.fK) return multiplyAttackFraction(N);
+        if (I > t + x - z && I < t + x && D > troopsBar.fK) return multiplyAttackFraction(1 / N);
         this.pV = !0;
         return l(I)
     };
-    this.r5 = function(I) {
-        0 !== client_status && this.hidden() && n(I) && (c4.c5 = !0)
+    this.changeAttackFraction = function(multiplier) {
+        0 !== client_status && this.hidden() && multiplyAttackFraction(multiplier) && (c4.canvasPendingUpdates = !0)
     };
     this.pd = function(I) {
         if (0 === I || !this.hidden()) return !1;
         0 < I ? (I = 400 / (400 + I), I = I < N ? N : I) : (I = (400 - I) / 400, I = I > 1 / N ? 1 / N : I);
-        return n(I)
+        return multiplyAttackFraction(I)
     };
     this.lo = function(I, D) {
         return this.pV ? l(I, D) : !1
@@ -3149,7 +3148,7 @@ function TroopsBar() {
     this.update = function() {
         this.hidden() && Math.floor(troops[my_id] * attackFraction) !== E && (G = !0)
     };
-    this.cG = function() {
+    this.drawImage = function() {
         this.hidden() && mainCanvasCtx.drawImage(y, t, this.fK)
     }
 }
@@ -3189,7 +3188,7 @@ function k5() {
         gD = g7 * y - A
     };
     this.clicked = function(y, A) {
-        if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pd(Math.floor(gE / 2), Math.floor(cB / 2), -200) : this.pd(Math.floor(gE / 2), Math.floor(cB / 2), 200);
+        if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pd(Math.floor(clientWidth / 2), Math.floor(clientHeight / 2), -200) : this.pd(Math.floor(clientWidth / 2), Math.floor(clientHeight / 2), 200);
         eV.h0() && (this.gk = !0, t = y, z = A);
         return !1
     };
@@ -3240,10 +3239,10 @@ function k5() {
         eA.rS(A, C)
     };
     this.qu = function() {
-        l = gE - n - m7;
-        x = Math.floor(cB / 2 - 1.25 * n)
+        l = clientWidth - n - m7;
+        x = Math.floor(clientHeight / 2 - 1.25 * n)
     };
-    this.cG = function() {
+    this.drawImage = function() {
         mainCanvasCtx.drawImage(g[0], l, x);
         mainCanvasCtx.drawImage(g[1], l, Math.floor(x + 3 * n / 2))
     }
@@ -3264,7 +3263,7 @@ function k6() {
         z = -20 > z ? -20 : z;
         z = z > (t.length - 15) * A ? (t.length - 15) * A : z;
         E = Math.floor(z / A);
-        F = E + Math.floor(gE / A);
+        F = E + Math.floor(clientWidth / A);
         F = F > t.length - 1 ? t.length - 1 : F;
         E = F < E ? F : E;
         E = 0 > E ? 0 : E;
@@ -3274,7 +3273,7 @@ function k6() {
     }
 
     function n(P) {
-        P = Math.floor((z + gE - P - B * A) / A);
+        P = Math.floor((z + clientWidth - P - B * A) / A);
         P = -1 > P ? -1 : -1 === P ? 0 : P > t.length - 1 ? -1 : P;
         return P !== G ? (G = P, -1 === M && 0 === G && J && (M = setInterval(x, 100)),
             !0) : !1
@@ -3282,7 +3281,7 @@ function k6() {
 
     function l(P) {
         var U = Math.floor(C * Math.pow(t[P], L));
-        mainCanvasCtx.fillRect(z + gE - (P + 1) * A, cB - U, H, U)
+        mainCanvasCtx.fillRect(z + clientWidth - (P + 1) * A, clientHeight - U, H, U)
     }
 
     function x() {
@@ -3295,7 +3294,7 @@ function k6() {
                 P += (U - Q) * t[1] / 864E5;
                 Q = -1
             }
-            0 < P && (t[0] += Math.floor(P), c4.c5 = !0)
+            0 < P && (t[0] += Math.floor(P), c4.canvasPendingUpdates = !0)
         }
     }
     var t, z, y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R;
@@ -3501,19 +3500,19 @@ function k6() {
         J = !0;
         for (U = 0; U < P.length; U++) t.unshift(P[U]);
         g();
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
     this.rs = function() {
         k()
     };
     this.lo = function(P, U) {
-        U > cB - .6 * y ? this.ri ? P !== K && (z += P - K, K = P, k(), n(P), this.ri = -1 !== G, c4.c5 = !0) : n(P) && (c4.c5 = !0) : this.pW()
+        U > clientHeight - .6 * y ? this.ri ? P !== K && (z += P - K, K = P, k(), n(P), this.ri = -1 !== G, c4.canvasPendingUpdates = !0) : n(P) && (c4.canvasPendingUpdates = !0) : this.pW()
     };
     this.pW = function() {
-        -1 !== G && (this.ri = !1, G = -1, c4.c5 = !0)
+        -1 !== G && (this.ri = !1, G = -1, c4.canvasPendingUpdates = !0)
     };
     this.pd = function(P, U) {
-        -1 !== G && (z += Math.floor(U), k(), n(P), c4.c5 = !0)
+        -1 !== G && (z += Math.floor(U), k(), n(P), c4.canvasPendingUpdates = !0)
     };
     this.clicked = function(P, U) {
         this.lo(P, U); - 1 !== G && (K = P, this.ri = !0)
@@ -3521,7 +3520,7 @@ function k6() {
     this.pX = function() {
         -1 !== G && (this.ri = !1)
     };
-    this.cG = function() {
+    this.drawImage = function() {
         mainCanvasCtx.fillStyle = of ;
         for (var P = F; P >= E; P--) l(P);
         J && 0 === E && (mainCanvasCtx.fillStyle = oV, l(0)); - 1 !== G && (mainCanvasCtx.fillStyle = oe, l(G));
@@ -3544,29 +3543,29 @@ function k6() {
             var V = Math.floor(mainCanvasCtx.measureText(P).width),
                 na = Math.floor(mainCanvasCtx.measureText(X).width),
                 ba = Math.floor(.5 * (V + N));
-            U = z + gE - (G + 1) * A;
-            U = U < ba ? ba : U > gE - ba ? gE - ba : U;
-            W = cB - Math.floor(C * Math.pow(t[G], L));
+            U = z + clientWidth - (G + 1) * A;
+            U = U < ba ? ba : U > clientWidth - ba ? clientWidth - ba : U;
+            W = clientHeight - Math.floor(C * Math.pow(t[G], L));
             var ca = Math.floor(1.1 * N),
-                pa = W > cB - ca ? cB - ca : W;
+                pa = W > clientHeight - ca ? clientHeight - ca : W;
             mainCanvasCtx.fillStyle = hy;
-            mainCanvasCtx.fillRect(gE - na - N, pa - ca, na + N, ca);
-            mainCanvasCtx.fillRect(U - ba, cB - ca, V + N, ca);
+            mainCanvasCtx.fillRect(clientWidth - na - N, pa - ca, na + N, ca);
+            mainCanvasCtx.fillRect(U - ba, clientHeight - ca, V + N, ca);
             mainCanvasCtx.fillStyle = cK;
             mainCanvasCtx.textAlign = ol;
-            mainCanvasCtx.fillText(X, Math.floor(gE - .5 * N), pa);
+            mainCanvasCtx.fillText(X, Math.floor(clientWidth - .5 * N), pa);
             X = pa - 2 * ca;
             V = -1;
             na = t.length - G - 1;
             for (ba = R.length - 1; 0 <= ba; ba--) na >= R[ba].b3 && na <= R[ba].pL && (-1 ===
-                V || R[ba].pL - R[ba].b3 < R[V].pL - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(mainCanvasCtx.measureText(R[V].mv).width), mainCanvasCtx.fillStyle = hy, mainCanvasCtx.fillRect(gE - na - N, X, na + N, ca), mainCanvasCtx.fillStyle = cK, mainCanvasCtx.fillText(R[V].mv, Math.floor(gE - .5 * N), X + ca));
+                V || R[ba].pL - R[ba].b3 < R[V].pL - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(mainCanvasCtx.measureText(R[V].mv).width), mainCanvasCtx.fillStyle = hy, mainCanvasCtx.fillRect(clientWidth - na - N, X, na + N, ca), mainCanvasCtx.fillStyle = cK, mainCanvasCtx.fillText(R[V].mv, Math.floor(clientWidth - .5 * N), X + ca));
             mainCanvasCtx.textAlign = cJ;
-            mainCanvasCtx.fillText(P, U, cB);
+            mainCanvasCtx.fillText(P, U, clientHeight);
             mainCanvasCtx.strokeStyle = nZ;
             mainCanvasCtx.lineWidth = 1;
             mainCanvasCtx.beginPath();
             mainCanvasCtx.moveTo(0, W);
-            mainCanvasCtx.lineTo(gE, W);
+            mainCanvasCtx.lineTo(clientWidth, W);
             mainCanvasCtx.closePath();
             mainCanvasCtx.stroke()
         }
@@ -3609,7 +3608,7 @@ function k7() {
         return zoom && r < 1.2 * s
     };
     this.qu = function() {
-        this.qF() ? this.fJ = gE - k - m7 : this.fJ = Math.floor(eM.sE() + (gE - eM.sE() - eB.width - k) / 2 - .5 * m7)
+        this.qF() ? this.fJ = clientWidth - k - m7 : this.fJ = Math.floor(eM.sE() + (clientWidth - eM.sE() - eB.width - k) / 2 - .5 * m7)
     };
     this.eb = function() {
         y && (y = !1, this.sD())
@@ -3642,7 +3641,7 @@ function k7() {
     this.update = function() {
         0 !== is_alive[my_id] && 2 !== player_status[my_id] && A !== troops[my_id] && (x = max(troops[my_id], x), B = troops[my_id] > A && 10 <= troops[my_id], A = troops[my_id], y = !0)
     };
-    this.cG = function() {
+    this.drawImage = function() {
         0 === is_alive[my_id] || in_spawn || 2 === player_status[my_id] || mainCanvasCtx.drawImage(t, this.fJ, n)
     }
 }
@@ -3813,7 +3812,7 @@ function k8() {
             if (oz) {
                 var T = t7(-1, pa, y);
                 T = T === y ? -1 : T;
-                X !== T && (X = T, g(), c4.c5 = !0)
+                X !== T && (X = T, g(), c4.canvasPendingUpdates = !0)
             }
             return !0
         }
@@ -3825,18 +3824,18 @@ function k8() {
             var Y = V;
             V += ca - T;
             V = t7(0, V, max_entities - y);
-            V !== Y && (ca = T, T = t7(-1, T, y), X = T = T !== y && z(S, O) ? T : -1, g(), c4.c5 = !0);
+            V !== Y && (ca = T, T = t7(-1, T, y), X = T = T !== y && z(S, O) ? T : -1, g(), c4.canvasPendingUpdates = !0);
             return !0
         }
         T = t7(-1, T, y);
         T = T === y || !z(S, O) || oz ? -1 : T;
-        return X !== T ? (X = T, g(), c4.c5 = !0) : !1
+        return X !== T ? (X = T, g(), c4.canvasPendingUpdates = !0) : !1
     };
     this.pX = function(S, O) {
         if (!ba) return !1;
         ba = !1;
         var T = t(O);
-        oz && -1 !== X && (X = -1, g(), c4.c5 = !0);
+        oz && -1 !== X && (X = -1, g(), c4.canvasPendingUpdates = !0);
         if (350 > c4.time - na && pa === T && (T = t7(-1, T, y), T = T !== y && z(S, O) ? T : -1, -1 !== T)) {
             var Y = orderedLand[T + V];
             T === y - 1 && sM[my_id] >= V + y - 1 && (Y = my_id);
@@ -3846,9 +3845,9 @@ function k8() {
     };
     this.pd = function(S, O,
         T) {
-        return ba ? !1 : z(S, O) ? (S = t(O), S = t7(-1, S, y), S = S === y || oz ? -1 : S, 0 < T ? V < max_entities - y && (V++, X = S, g(), c4.c5 = !0) : 0 < V && (V--, X = S, g(), c4.c5 = !0), !0) : !1
+        return ba ? !1 : z(S, O) ? (S = t(O), S = t7(-1, S, y), S = S === y || oz ? -1 : S, 0 < T ? V < max_entities - y && (V++, X = S, g(), c4.canvasPendingUpdates = !0) : 0 < V && (V--, X = S, g(), c4.canvasPendingUpdates = !0), !0) : !1
     };
-    this.cG = function() {
+    this.drawImage = function() {
         mainCanvasCtx.drawImage(A, m7, m7)
     }
 }
@@ -3955,7 +3954,7 @@ function k9() {
         g()
     };
     this.qu = function() {
-        y = gE - this.width - m7
+        y = clientWidth - this.width - m7
     };
     this.tK = function() {
         A = m7
@@ -3989,7 +3988,7 @@ function k9() {
         P = interest.interest(my_id);
         P !== K[5] && (K[5] = P, I++);
         x();
-        K[7] += c4.tick_interval();
+        K[7] += c4.getTickInterval();
         P = k(7);
         L !== P && (L = P, I += 100)
     };
@@ -4010,7 +4009,7 @@ function k9() {
         g();
         return H !== U
     };
-    this.cG = function() {
+    this.drawImage = function() {
         mainCanvasCtx.drawImage(t, y, A)
     }
 }
@@ -4072,24 +4071,24 @@ function kA() {
             (this.td = c4.time_elapsed()), y = E ? 1 : 0)
     };
     this.update = function() {
-        !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.c5 = !0)
+        !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.canvasPendingUpdates = !0)
     };
     this.clicked = function(C, E) {
         if (!g || 0 >= y) return !1;
-        C -= Math.floor((gE - n) / 2);
-        E -= cB - l - 2 * m7;
+        C -= Math.floor((clientWidth - n) / 2);
+        E -= clientHeight - l - 2 * m7;
         if (0 > C || 0 > E || C > n || E > l) return !1;
-        C > n - l / 3 && E < l / 3 && (g = !1, c4.c5 = !0);
+        C > n - l / 3 && E < l / 3 && (g = !1, c4.canvasPendingUpdates = !0);
         return !0
     };
-    this.cG = function() {
-        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((gE - n) / 2), cB - l - 2 * m7), mainCanvasCtx.globalAlpha = 1)
+    this.drawImage = function() {
+        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((clientWidth - n) / 2), clientHeight - l - 2 * m7), mainCanvasCtx.globalAlpha = 1)
     }
 }
 
 function ke() {
     function g(t, z, y, A, B, C, E) {
-        0 !== is_alive[t] && 0 !== land[t] && (y = gE * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = cB * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > gE || A > cB || y < -z || A < -z || (mainCanvasCtx.setTransform(g7 * E, 0, 0, g7 * E, y, A), mainCanvasCtx.drawImage(n[team_game ? teams.team_array[t] : t < player_count ? 1 : 0], 0, 0)))
+        0 !== is_alive[t] && 0 !== land[t] && (y = clientWidth * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = clientHeight * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > clientWidth || A > clientHeight || y < -z || A < -z || (mainCanvasCtx.setTransform(g7 * E, 0, 0, g7 * E, y, A), mainCanvasCtx.drawImage(n[team_game ? teams.team_array[t] : t < player_count ? 1 : 0], 0, 0)))
     }
     var k, n, l, x;
     this.init = function() {
@@ -4129,16 +4128,16 @@ function ke() {
         A.putImageData(B, 0, 0);
         return y
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (k) {
             var t;
             mainCanvasCtx.imageSmoothingEnabled = !0;
             mainCanvasCtx.globalAlpha = 1 - (160 < x ? (x - 160) / 190 : 0);
             var z = gC / g7,
                 y = gD / g7,
-                A = (gE + gC) /
+                A = (clientWidth + gC) /
                 g7,
-                B = (cB + gD) / g7;
+                B = (clientHeight + gD) / g7;
             var C = .25;
             var E = l * g7 * C;
             for (t = max_entities - 1; t >= player_count; t--) g(t, E, z, y, A, B, C);
@@ -4280,7 +4279,7 @@ function IntelliAttack() {
         var index, targetPenalties = [],
             targetsCount = targets.length;
         for (index = 0; index < targetsCount; index++) {
-            var id = targets[index], predDensity, mutualBorder = [], returnFactor = 0;
+            var id = targets[index], predDensity, mutualBorder = [], returnFactor = 0, time_left;
             if (id != max_entities) {
                 predDensity = (id < player_count && bots_timing[id-player_count] < 10) ? 0.5 : density(id);
                 for (let index2 = 0; index2 < pixels_bordering_land[id].length; index2++) {
@@ -4310,14 +4309,14 @@ function IntelliAttack() {
                     }
                     returnFactor += return_probability * attacks.get_attack_troops_remaining_from_attack_index(id, index2) / (troops[id] + attacks.total_troops_currently_attacking(id))
                 }
+                time_left = (100 - tick - (singleplayer ? 1 : 7 - (((cycle-1)*100 + tick - 1) % 7)));
                 targetPenalties.push({
                     player: id,
                     peanlty: 3 * predDensity - this.landWeighting(id) ** 1.8 - (mutualBorder.length/pixels_bordering_land[id].length) ** 0.5 + returnFactor,
-                    ratio: Math.round(Math.min(6 * mutualBorder.length * speed(my_id) * (100 - tick - (singleplayer ? 1 : 7 - (((cycle-1)*100 + tick - 1) % 7))), 2*(troops[id] + land[id])) / troops[my_id] * 1E3)
+                    ratio: Math.round(Math.min((6 + 2 * predDensity) * mutualBorder.length * speed(my_id) * (time_left <= 20 ? 20 : time_left), 2*(troops[id] + land[id])) / troops[my_id] * 1E3),
                 })
             }
         }
-        console.log(targetPenalties);
         return targetPenalties
     };
     this.landWeighting = function(id) {
@@ -4361,7 +4360,7 @@ function u9() {
     this.uI = .235;
     this.uJ = .9;
     this.uK = .08;
-    var g = ["Best Players", "Best Clans", "LEGENDS NEVER DIE", "THE NEVER ENDING WAR"],
+    var label_leaderboard = ["Best Players", "Best Clans", "LEGENDS NEVER DIE", "THE NEVER ENDING WAR"],
         k, n = [-1E6, -1E6];
     this.position = [0, 0];
     this.uP = [0, 0];
@@ -4375,8 +4374,8 @@ function u9() {
         this.uA = l;
         this.hidden = !0;
         this.bv();
-        name_input.tj();
-        c4.c5 = !0
+        name_input.hide();
+        c4.canvasPendingUpdates = !0
     };
     this.update = function() {
         this.hidden && this.bv()
@@ -4413,7 +4412,7 @@ function u9() {
         x = this.mE[l][0][0].name;
         1 === l && (x = "[" + x + "]");
         0 === B && uZ.br(l, x);
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
     this.uY = function(l) {
         this.mE[l][0].sort(function(x, t) {
@@ -4458,9 +4457,9 @@ function u9() {
     };
     this.clicked = function(l, x) {
         if (!this.hidden) return !1;
-        l -= (gE - this.width) / 2;
-        x -= (cB - this.cw) / 2;
-        if (0 > l || l > this.width || 0 > x || x > this.cw) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0;
+        l -= (clientWidth - this.width) / 2;
+        x -= (clientHeight - this.cw) / 2;
+        if (0 > l || l > this.width || 0 > x || x > this.cw) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.canvasPendingUpdates = !0;
         if (x < .3 * this.cw) var t = 1;
         else x < .85 * this.cw ? (t = (0 === this.uA ? 14.1 : 3) * (x - .3 * this.cw) / (.55 * this.cw), t = Math.floor(1 + t * t)) : t = 0 === this.uA ? 200 : 10;
         this.uP[this.uA] = l < this.width / 2 ? -t : t;
@@ -4469,7 +4468,7 @@ function u9() {
         websocket_manager.rk(0, 1 + this.uA) && multi_out.load_leaderboard(0, this.uA);
         return !0
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (this.hidden) {
             var l = this.uB *
                 this.width,
@@ -4478,7 +4477,7 @@ function u9() {
                 z = this.uG * t,
                 y = this.uD * this.width,
                 A = Math.floor(.25 * this.cw);
-            mainCanvasCtx.setTransform(1, 0, 0, 1, (gE - this.width) / 2, (cB - this.cw) / 2);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, (clientWidth - this.width) / 2, (clientHeight - this.cw) / 2);
             mainCanvasCtx.fillStyle = 0 === this.uA ? oc : oX;
             mainCanvasCtx.fillRect(0, 0, this.width, A);
             mainCanvasCtx.fillStyle = oH;
@@ -4487,9 +4486,9 @@ function u9() {
             mainCanvasCtx.font = k;
             mainCanvasCtx.textBaseline = cI;
             mainCanvasCtx.textAlign = cJ;
-            mainCanvasCtx.fillText(g[this.uA], Math.floor(this.width / 2), Math.floor(.135 * this.cw));
+            mainCanvasCtx.fillText(label_leaderboard[this.uA], Math.floor(this.width / 2), Math.floor(.135 * this.cw));
             mainCanvasCtx.font = bt + Math.floor(.025 * this.cw) + bu;
-            mainCanvasCtx.fillText(g[this.uA + 2], Math.floor(this.width / 2), Math.floor(.2125 * this.cw));
+            mainCanvasCtx.fillText(label_leaderboard[this.uA + 2], Math.floor(this.width / 2), Math.floor(.2125 * this.cw));
             mainCanvasCtx.beginPath();
             mainCanvasCtx.moveTo(this.width / 4, 0);
             mainCanvasCtx.lineTo(this.width / 2 - l, 0);
@@ -4509,8 +4508,7 @@ function u9() {
             mainCanvasCtx.lineTo(this.width / 2 - l, this.cw);
             mainCanvasCtx.lineTo(t, this.cw);
             mainCanvasCtx.lineTo(-z, this.cw + z);
-            mainCanvasCtx.lineTo(0,
-                this.cw - t);
+            mainCanvasCtx.lineTo(0, this.cw - t);
             mainCanvasCtx.lineTo(0, this.cw / 2 + l);
             mainCanvasCtx.lineTo(-x, this.cw / 2);
             mainCanvasCtx.lineTo(0, this.cw / 2 - l);
@@ -4548,15 +4546,15 @@ function u9() {
     }
 }
 
-function ui() {
-    var g, k, n, l, x, t, z, y, A, B, C, E, F;
+function OpenLinkBox() {
+    var g, k, n, l, x, t, z, y, A, B, C, var_link, linkBox;
     this.hidden = !1;
-    this.init = function(G, N) {
-        if (13 <= device_version) N ? E = G : E === G && droid.saveString(200, G);
-        else if (N) {
+    this.init = function(link, open) {
+        if (13 <= device_version) open ? var_link = link : var_link === link && droid.saveString(200, link);
+        else if (open) {
             (cC.mE[1].ih.hidden || cC.mE[2].ih.hidden) && cC.us();
-            name_input.tj();
-            E = G;
+            name_input.hide();
+            var_link = link;
             A = Math.floor((zoom ? r > s ? .6 : .45 : .4) * pK);
             n = A / sprites.bz(17).width;
             x = Math.floor(n * sprites.bz(17).height);
@@ -4565,41 +4563,41 @@ function ui() {
             y = Math.floor(2.5 * z);
             l = x + t + 3 * z;
             var I = bt + Math.floor(t / device_pixel_ratio) + bu;
-            B = Math.floor(device_pixel_ratio * c2.measureText(E, I));
+            B = Math.floor(device_pixel_ratio * c2.measureText(var_link, I));
             C = (B > A ? B : A) + 2 * y;
-            g = Math.floor((gE - C) / 2);
-            k = Math.floor((cB - l) / 2);
-            F = document.createElement("a");
-            F.appendChild(document.createTextNode(E));
-            F.title = E;
-            F.target = "blank";
-            F.href = E;
-            F.style.font = I;
-            F.style.textAlign = "center";
-            F.style.color = cK;
-            F.style.position = "absolute";
-            F.style.padding = "0px";
-            F.style.margin = "0px";
-            F.style.top = Math.floor((k + 2 * z + x) / device_pixel_ratio) + "px";
-            F.style.left = Math.floor((g + (C - B) / 2) / device_pixel_ratio) + "px";
-            document.body.appendChild(F);
+            g = Math.floor((clientWidth - C) / 2);
+            k = Math.floor((clientHeight - l) / 2);
+            linkBox = document.createElement("a");
+            linkBox.appendChild(document.createTextNode(var_link));
+            linkBox.title = var_link;
+            linkBox.target = "blank";
+            linkBox.href = var_link;
+            linkBox.style.font = I;
+            linkBox.style.textAlign = "center";
+            linkBox.style.color = cK;
+            linkBox.style.position = "absolute";
+            linkBox.style.padding = "0px";
+            linkBox.style.margin = "0px";
+            linkBox.style.top = Math.floor((k + 2 * z + x) / device_pixel_ratio) + "px";
+            linkBox.style.left = Math.floor((g + (C - B) / 2) / device_pixel_ratio) + "px";
+            document.body.appendChild(linkBox);
             this.hidden = !0;
-            c4.c5 = !0
+            c4.canvasPendingUpdates = !0
         }
     };
     this.end = function() {
         if (!this.hidden) return !1;
-        document.body.removeChild(F);
+        document.body.removeChild(linkBox);
         this.hidden = !1;
         return !0
     };
     this.clicked = function(G, N) {
         if (!this.hidden) return !1;
-        if (G < g || N < k || G > g + C || N > k + l) c4.c5 = !0, this.hidden = !1, document.body.removeChild(F),
+        if (G < g || N < k || G > g + C || N > k + l) c4.canvasPendingUpdates = !0, this.hidden = !1, document.body.removeChild(linkBox),
             0 === aJ.pa() && jk.cE(0, !0);
         return !0
     };
-    this.cG = function() {
+    this.drawImage = function() {
         this.hidden && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = hy, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = oy, mainCanvasCtx.strokeStyle = cK, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.bz(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
     }
 }
@@ -4611,8 +4609,7 @@ function ut() {
         l = [1, 1, 1, 1, 1],
         x = [!0, !0, !0, !0, !0];
     this.uu = [!0, !0, !0, !0, !0];
-    var t = null,
-        z;
+    var t = null, z;
     this.uv = function(y, A) {
         t = y;
         x = A;
@@ -4654,10 +4651,10 @@ function ut() {
         if (!t || !this.hidden()) return !1;
         var C;
         for (C = x.length - 1; 0 <= C; C--)
-            if (x[C] && this.uu[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return nW.init(z[C], B), !0;
+            if (x[C] && this.uu[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return openLinkBox.init(z[C], B), !0;
         return !1
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (t && this.hidden()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var y;
@@ -4779,17 +4776,17 @@ function kB() {
         this.rs()
     };
     this.rs = function() {
-        this.fK = Math.floor(.54 * cB);
-        this.uz[0].fJ = Math.floor(.5 * gE - .5 * this.width);
+        this.fK = Math.floor(.54 * clientHeight);
+        this.uz[0].fJ = Math.floor(.5 * clientWidth - .5 * this.width);
         this.uz[1].fJ = this.uz[0].fJ + this.uz[0].width + this.f6;
         this.uz[2].fJ = this.uz[3].fJ = this.uz[0].fJ;
         this.uz[4].fJ = this.uz[5].fJ = this.uz[0].fJ;
         this.uz[6].fJ = this.uz[1].fJ;
-        this.uz[0].fK = Math.floor(.54 * cB);
+        this.uz[0].fK = Math.floor(.54 * clientHeight);
         this.uz[1].fK = this.uz[0].fK;
-        this.uz[2].fK = Math.floor((cB - this.uz[2].cw - this.uz[3].cw - this.f6) / 2);
+        this.uz[2].fK = Math.floor((clientHeight - this.uz[2].cw - this.uz[3].cw - this.f6) / 2);
         this.uz[3].fK = this.uz[2].fK + this.uz[2].cw + this.f6;
-        this.uz[4].fK = Math.floor((cB -
+        this.uz[4].fK = Math.floor((clientHeight -
             this.uz[4].cw - this.uz[5].cw - this.f6) / 2);
         this.uz[5].fK = this.uz[6].fK = this.uz[4].fK + this.uz[4].cw + this.f6
     };
@@ -4809,7 +4806,7 @@ function kB() {
     this.lo = function(x, t, z) {
         var y = -1;
         0 === aJ.pa() ? y = this.pR(x, t, 0, 2) : 3 === aJ.pa() ? y = this.pR(x, t, 3, 1) : 5 === aJ.pa() && (y = this.pR(x, t, 5, 2));
-        k !== y && (k = y, z && (c4.c5 = !0));
+        k !== y && (k = y, z && (c4.canvasPendingUpdates = !0));
         return -1 !== y ? (jg.pW(), !0) : !1
     };
     this.pR = function(x, t, z, y) {
@@ -4855,18 +4852,18 @@ function v9() {
     };
     this.clicked = function(k, n) {
         this.vA = 0;
-        var l = (cB - this.cw) / 2;
-        k -= (gE - this.width) / 2;
+        var l = (clientHeight - this.cw) / 2;
+        k -= (clientWidth - this.width) / 2;
         n -= l;
-        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.cw - 1) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0, !1;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.cw - 1) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.canvasPendingUpdates = !0, !1;
         if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.cw - this.f6) return !0;
-        if (k < this.f6 + this.vB) return n < this.f6 + this.vB && 0 !== this.nu && (this.nu = 0, c4.c5 = !0), !0;
+        if (k < this.f6 + this.vB) return n < this.f6 + this.vB && 0 !== this.nu && (this.nu = 0, c4.canvasPendingUpdates = !0), !0;
         if (k < 2 * this.f6 + this.vB) return !0;
         k -= 2 * this.f6 + this.vB;
-        if (n < this.f6 + this.vD) return this.vA = 1, this.colors[this.nu][0] = g(256 * k / this.vC), c4.c5 = !0;
+        if (n < this.f6 + this.vD) return this.vA = 1, this.colors[this.nu][0] = g(256 * k / this.vC), c4.canvasPendingUpdates = !0;
         if (n < 2 * this.f6 + this.vD) return !0;
-        if (n < 2 * this.f6 + 2 * this.vD) return this.vA = 2, this.colors[this.nu][1] = g(256 * k / this.vC), c4.c5 = !0;
-        n >= 3 * this.f6 + 2 * this.vD && (this.vA = 3, this.colors[this.nu][2] = g(256 * k / this.vC), c4.c5 = !0);
+        if (n < 2 * this.f6 + 2 * this.vD) return this.vA = 2, this.colors[this.nu][1] = g(256 * k / this.vC), c4.canvasPendingUpdates = !0;
+        n >= 3 * this.f6 + 2 * this.vD && (this.vA = 3, this.colors[this.nu][2] = g(256 * k / this.vC), c4.canvasPendingUpdates = !0);
         return !0
     };
     this.vG = function() {
@@ -4878,13 +4875,13 @@ function v9() {
         save_colors(k)
     };
     this.lo = function(k) {
-        0 !== this.vA && (k -= 2 * this.f6 + this.vB + (gE - this.width) / 2, this.colors[this.nu][this.vA - 1] = g(256 * k / this.vC), c4.c5 = !0)
+        0 !== this.vA && (k -= 2 * this.f6 + this.vB + (clientWidth - this.width) / 2, this.colors[this.nu][this.vA - 1] = g(256 * k / this.vC), c4.canvasPendingUpdates = !0)
     };
     this.vJ = function() {
-        0 < this.vA && (this.vA = 0, this.vG(), this.vI(), c4.c5 = !0)
+        0 < this.vA && (this.vA = 0, this.vG(), this.vI(), c4.canvasPendingUpdates = !0)
     };
-    this.cG = function() {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, (gE - this.width) / 2, (cB - this.cw) / 2);
+    this.drawImage = function() {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, (clientWidth - this.width) / 2, (clientHeight - this.cw) / 2);
         mainCanvasCtx.fillStyle = hy;
         mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
         mainCanvasCtx.lineWidth = oy;
@@ -4929,11 +4926,11 @@ function kC() {
     }
 
     function n() {
-        0 === D ? jj.vd(3249) : (D === websocket_manager.terriWsCount - 1 && (D = -1), k())
+        0 === D ? showError.vd(3249) : (D === websocket_manager.terriWsCount - 1 && (D = -1), k())
     }
 
     function l(L, H, M) {
-        var Q = Math.floor((gE - y) / 2) + C,
+        var Q = Math.floor((clientWidth - y) / 2) + C,
             R = Q + Math.floor(M * (y - 2 * C));
         mainCanvasCtx.lineWidth = H;
         mainCanvasCtx.beginPath();
@@ -4952,7 +4949,7 @@ function kC() {
         E = "rgba(0,220,120,0.4)";
         F = "rgba(0,0,0,0.8)";
         this.lx();
-        c4.c5 = !0;
+        c4.canvasPendingUpdates = !0;
         D = 0;
         J = !1;
         k()
@@ -4976,24 +4973,24 @@ function kC() {
         6 !== aJ.pa() || J || (I = c4.time, J = !0, multi_out.join_lobby(L))
     };
     this.clicked = function(L, H) {
-        var M = Math.floor((gE - A) / 2),
-            Q = Math.floor(.5 * (cB - display_buffer_length - z - B)) + z + display_buffer_length;
+        var M = Math.floor((clientWidth - A) / 2),
+            Q = Math.floor(.5 * (clientHeight - display_buffer_length - z - B)) + z + display_buffer_length;
         return L > M && L < M + A && H > Q && H < Q + B ? (this.ve(), jh.lo(L, H, !1), !0) : !1
     };
     this.ve = function() {
         websocket_manager.vf(3260);
         name_input.init();
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
     this.update = function() {
-        6 === aJ.pa() && (J ? c4.time > I + 2E4 && jj.vd(3250) : c4.time > I + 2E4 && n(), 
+        6 === aJ.pa() && (J ? c4.time > I + 2E4 && showError.vd(3250) : c4.time > I + 2E4 && n(), 
         x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), 
         E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", 
-        F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.c5 = !0)
+        F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasPendingUpdates = !0)
     };
-    this.cG = function() {
-        var L = Math.floor((gE - A) / 2),
-            H = Math.floor(.5 * (cB - display_buffer_length - z - B)),
+    this.drawImage = function() {
+        var L = Math.floor((clientWidth - A) / 2),
+            H = Math.floor(.5 * (clientHeight - display_buffer_length - z - B)),
             M = x / 100;
         mainCanvasCtx.fillStyle = F;
         l(H, 3, 1);
@@ -5008,7 +5005,7 @@ function kC() {
         mainCanvasCtx.textBaseline = cI;
         mainCanvasCtx.font = G;
         mainCanvasCtx.fillStyle = cK;
-        mainCanvasCtx.fillText("Loading", Math.floor(.5 * gE), Math.floor(H + .58 * z));
+        mainCanvasCtx.fillText("Loading", Math.floor(.5 * clientWidth), Math.floor(H + .58 * z));
         H = H + z + display_buffer_length;
         M = A;
         var Q = B;
@@ -5043,10 +5040,10 @@ function kD() {
     };
     this.vp = function() {
         this.setState(8);
-        lobby.tj();
+        lobby.hide();
         cC.us();
         cD.hidden = !1;
-        nW.clicked(-1E3, -1E3)
+        openLinkBox.clicked(-1E3, -1E3)
     };
     this.us = function(k) {
         if (!vq) return !1;
@@ -5062,18 +5059,18 @@ function kD() {
         }
     };
     this.vr = function() {
-        return nW.end() || cC.us() ? !0 : cD.hidden ? (cD.hidden = !1, !0) : !1
+        return openLinkBox.end() || cC.us() ? !0 : cD.hidden ? (cD.hidden = !1, !0) : !1
     };
     this.aK =
         function() {
-            c4.c5 = !0;
-            8 === state ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.alterDisplay() : fq.alterDisplay() : 7 === state ? lobby.vt() : 6 === state ? ji.ve() : 3 === state ? jj.vu(0, 0) : 2 === state ? dy.vu() : 0 === state && (this.vr() || set_android_state(11))
+            c4.canvasPendingUpdates = !0;
+            8 === state ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.alterDisplay() : fq.alterDisplay() : 7 === state ? lobby.vt() : 6 === state ? ji.ve() : 3 === state ? showError.vu(0, 0) : 2 === state ? dy.vu() : 0 === state && (this.vr() || set_android_state(11))
         };
     this.clicked = function(k, n) {
-        if (!cookies_window.clicked(k, n) && vq && !(nW.clicked(k, n) || 6 === state && ji.clicked(k, n) || 2 === state && dy.clicked(k, n) || jt.clicked(k, n) || cD.clicked(k, n) || vv.clicked(k, n, !0) || cC.clicked(k, n, !0))) {
+        if (!cookies_window.clicked(k, n) && vq && !(openLinkBox.clicked(k, n) || 6 === state && ji.clicked(k, n) || 2 === state && dy.clicked(k, n) || jt.clicked(k, n) || cD.clicked(k, n) || vv.clicked(k, n, !0) || cC.clicked(k, n, !0))) {
             jg.clicked(k, n);
             if (0 === state) name_input.clicked(k, n);
-            else if (3 === state) jj.clicked(k, n);
+            else if (3 === state) showError.clicked(k, n);
             else if (5 === state) jl.clicked(k, n);
             else if (7 === state && lobby.clicked(k, n)) return;
             uZ.clicked(k, n)
@@ -5114,20 +5111,20 @@ function kD() {
         jh.rs();
         cC.rs();
         0 === state ? (jk.rs(0), jg.rs()) : 7 === state && lobby.lx();
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (8 !== state && 10 !== state) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             this.hr();
-            jg.cG();
-            jf.cG();
-            var k = Math.floor(.3 * cB),
+            jg.drawImage();
+            jf.drawImage();
+            var k = Math.floor(.3 * clientHeight),
                 n = sprites.lB("territorial.io"),
-                l = 1.75 * cB / n.width;
-            l = l * n.width < .98 * gE ? .98 * gE / n.width : l;
+                l = 1.75 * clientHeight / n.width;
+            l = l * n.width < .98 * clientWidth ? .98 * clientWidth / n.width : l;
             mainCanvasCtx.globalAlpha = .15;
-            var x = Math.floor(.5 * (gE - l * n.width));
+            var x = Math.floor(.5 * (clientWidth - l * n.width));
             x = Math.floor(x / l);
             k = Math.floor(k - .5 * n.height * l);
             k = Math.floor(k / l);
@@ -5135,15 +5132,15 @@ function kD() {
             mainCanvasCtx.drawImage(n, x, k);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             mainCanvasCtx.globalAlpha = 1;
-            vv.cG();
-            uZ.cG();
-            cC.cG();
-            jt.cG();
-            0 === state ? name_input.cG() : 2 === state ? dy.cG() : 3 === state ? jj.cG() : 5 === state ? jl.cG() : 6 === state ? ji.cG() : 7 === state && lobby.cG();
+            vv.drawImage();
+            uZ.drawImage();
+            cC.drawImage();
+            jt.drawImage();
+            0 === state ? name_input.drawImage() : 2 === state ? dy.drawImage() : 3 === state ? showError.drawImage() : 5 === state ? jl.drawImage() : 6 === state ? ji.drawImage() : 7 === state && lobby.drawImage();
             cC.vy();
-            cookies_window.cG();
-            cD.cG();
-            nW.cG()
+            cookies_window.drawImage();
+            cD.drawImage();
+            openLinkBox.drawImage()
         }
     };
     this.hr = function() {
@@ -5175,15 +5172,15 @@ function w1() {
         this.vA = !1
     };
     this.clicked = function(g, k, n) {
-        var l = (cB - this.cw) / 2;
-        g -= (gE - this.width) / 2;
+        var l = (clientHeight - this.cw) / 2;
+        g -= (clientWidth - this.width) / 2;
         k -= l;
-        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.cw - 1) return 0 === n && (this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.c5 = !0), !1;
+        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.cw - 1) return 0 === n && (this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.canvasPendingUpdates = !0), !1;
         l = Math.floor(this.width / this.nj);
         g = divide_floor(g, l) + this.nj * divide_floor(k, l);
         g = 0 > g ? 0 : g >= a5.nn ? a5.nn - 1 : g;
         if (0 ===
-            n || 1 === n && !a5.a7[g] || 2 === n && a5.a7[g]) this.w2 = !a5.a7[g], this.w3 = this.vA = !0, a5.a7[g] = !a5.a7[g], a5.o5(), c4.c5 = !0;
+            n || 1 === n && !a5.a7[g] || 2 === n && a5.a7[g]) this.w2 = !a5.a7[g], this.w3 = this.vA = !0, a5.a7[g] = !a5.a7[g], a5.o5(), c4.canvasPendingUpdates = !0;
         return !0
     };
     this.lo = function(g, k) {
@@ -5193,10 +5190,10 @@ function w1() {
         this.w3 && (save_emojis(), this.w3 = !1);
         this.vA = this.w3 = !1
     };
-    this.cG = function() {
+    this.drawImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
-        var g = (gE - this.width) / 2,
-            k = (cB - this.cw) / 2;
+        var g = (clientWidth - this.width) / 2,
+            k = (clientHeight - this.cw) / 2;
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
         mainCanvasCtx.fillStyle = hy;
         mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
@@ -5210,14 +5207,14 @@ function w1() {
     }
 }
 
-function kE() {
+function ShowError() {
     function g() {
         var t = aJ.pa();
-        0 === t ? name_input.tj() : 6 === t ? websocket_manager.vf(n) : 7 === t ? (lobby.tj(), websocket_manager.close(websocket_manager.lobby, 3240)) : 8 === t && (leave_game(), name_input.tj());
+        0 === t ? name_input.hide() : 6 === t ? websocket_manager.vf(n) : 7 === t ? (lobby.hide(), websocket_manager.close(websocket_manager.lobby, 3240)) : 8 === t && (leave_game(), name_input.hide());
         aJ.setState(3);
         jh.rs();
         jh.uz[2].na = k(n);
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     }
 
     function k(t) {
@@ -5227,7 +5224,7 @@ function kE() {
         return x + t
     }
     var n, l, x;
-    this.jT = function() {
+    this.fit = function() {
         l = [];
         l.push({
             l: "No Server Response",
@@ -5308,9 +5305,9 @@ function kE() {
     this.vu = function(t, z) {
         name_input.init();
         jh.lo(t, z, !1);
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
-    this.cG = function() {
+    this.drawImage = function() {
         jh.v5()
     }
 }
@@ -5355,8 +5352,8 @@ function kF() {
         return k[x]
     };
     this.rs = function(x) {
-        k[x].input.style.left = Math.floor((gE / device_pixel_ratio - (jh.width / device_pixel_ratio - 3) - 7) / 2) + "px";
-        0 === x && (k[x].input.style.bottom = Math.floor((cB - jh.fK + jh.f6) / device_pixel_ratio) + "px")
+        k[x].input.style.left = Math.floor((clientWidth / device_pixel_ratio - (jh.width / device_pixel_ratio - 3) - 7) / 2) + "px";
+        0 === x && (k[x].input.style.bottom = Math.floor((clientHeight - jh.fK + jh.f6) / device_pixel_ratio) + "px")
     };
     this.cE = function(x, t) {
         k[x].hidden !== t && ((k[x].hidden = t) ? document.body.appendChild(k[x].input) : document.body.removeChild(k[x].input))
@@ -5456,7 +5453,7 @@ function Lobby() {
                     x7 = pa;
                     next_games[P].canvas = S
                 }
-                c4.c5 = !0
+                c4.canvasPendingUpdates = !0
             }
         }
     }
@@ -5476,7 +5473,7 @@ function Lobby() {
             var display_games_box_x_min = games_display_box_init_x_min;
             for (display_games_rows = 0; display_games_rows < display_games_box_arrangement[0]; display_games_rows++) {
                 if (x_coord > display_games_box_x_min && x_coord < display_games_box_x_min + display_games_box_length && y_coord > display_games_box_y_min && y_coord < display_games_box_y_min + display_games_box_length){
-                    return multi_out.join_game(next_games[next_game_index].game_id), game_selected = next_games[next_game_index].game_id !== game_selected ? next_games[next_game_index].game_id : -1, c4.c5 = !0;
+                    return multi_out.join_game(next_games[next_game_index].game_id), game_selected = next_games[next_game_index].game_id !== game_selected ? next_games[next_game_index].game_id : -1, c4.canvasPendingUpdates = !0;
                 }
                 next_game_index++;
                 if (next_game_index >= next_games.length) return !1;
@@ -5540,15 +5537,15 @@ function Lobby() {
         g(8, a5.l7[27]);
         g(9, a5.l7[46]);
         g(10, a5.l7[36]);
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
     this.vt = function() {
-        this.tj();
+        this.hide();
         websocket_manager.vf(3240);
         name_input.init();
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
-    this.tj = function() {
+    this.hide = function() {
         next_games = [];
         E = []
     };
@@ -5595,7 +5592,7 @@ function Lobby() {
                     break
                 } if (next_games.length > R || next_games.length < R) R = next_games.length, this.lx();
         this.xE();
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
     this.xE = function() {
         for (var P = next_games.length - 1; 0 <= P; P--) null === next_games[P].canvas && setTimeout(n, 0)
@@ -5603,7 +5600,7 @@ function Lobby() {
     this.clicked = function(x_coord, y_coord) {
         return 4 * ((x_coord - M) * (x_coord - M) + (y_coord - Q) * (y_coord - Q)) <= H * H ? (this.vt(), jh.lo(x_coord, y_coord, !1), !0) : x(x_coord, y_coord)
     };
-    this.cG = function() {
+    this.drawImage = function() {
         var P = 0,
             U = display_games_box_init_y_min;
         mainCanvasCtx.imageSmoothingEnabled = !0;
@@ -5707,14 +5704,14 @@ function kG() {
     this.init = function(g, k) {
         aJ.setState(5);
         jh.lo(g, k, !1);
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
-    this.cG = function() {
+    this.drawImage = function() {
         jh.v6()
     };
     this.clicked = function(g, k) {
         var n = jh.pR(g, k, 5, 2);
-        5 === n ? reload_client() : 6 === n && (name_input.init(), jh.lo(g, k, !1), c4.c5 = !0)
+        5 === n ? reload_client() : 6 === n && (name_input.init(), jh.lo(g, k, !1), c4.canvasPendingUpdates = !0)
     }
 }
 
@@ -5737,9 +5734,9 @@ function kH() {
         js.hidden = !1;
         aJ.setState(2);
         this.lx();
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
-    this.tj = function() {};
+    this.hide = function() {};
     this.lx = function() {
         k[2] = Math.floor((zoom ? .49 : .4) * bq);
         k[1] = Math.floor((s - k[2] / 6 - this.dz.length * (display_buffer_length + k[2] / 10)) / 2);
@@ -5762,8 +5759,8 @@ function kH() {
         }
     };
     this.vu = function() {
-        c4.c5 = !0;
-        js.hidden ? js.hidden = !1 : (this.tj(), name_input.init())
+        c4.canvasPendingUpdates = !0;
+        js.hidden ? js.hidden = !1 : (this.hide(), name_input.init())
     };
     this.jM = function() {
         var n;
@@ -5799,24 +5796,24 @@ function kH() {
         var x = this.pR(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.vu(), !0;
-        if (1 === x) return customMap.ds ? (customMap.pW(), c4.c5 = !0) : js.show(), !0;
-        if (2 === x) return this.tj(),
+        if (1 === x) return customMap.ds ? (customMap.pW(), c4.canvasPendingUpdates = !0) : js.show(), !0;
+        if (2 === x) return this.hide(),
             this.xZ(), !0;
         if (customMap.ds) return !1;
         if (27 === x) return 8 > this.dz.length && (this.dz.push({
             bD: 0,
             mv: max_entities
-        }), this.xX(), this.lx(), c4.c5 = !0), !0;
+        }), this.xX(), this.lx(), c4.canvasPendingUpdates = !0), !0;
         var t = Math.floor((x - 3) / 3);
-        if (0 === x % 3) return 1 < this.dz.length && (this.dz.splice(t, 1), this.lx(), c4.c5 = !0), !0;
+        if (0 === x % 3) return 1 < this.dz.length && (this.dz.splice(t, 1), this.lx(), c4.canvasPendingUpdates = !0), !0;
         var z = (k[2] - k[2] / 10 - 2 * display_buffer_length) / 2;
         if (1 === x % 3) {
             if (0 === t && 1 === this.dz[t].mv) return !0;
             n < k[0] + k[2] - 1.5 * z - display_buffer_length ? this.dz[t].bD-- : this.dz[t].bD++;
             0 > this.dz[t].bD ? this.dz[t].bD = 5 : 5 < this.dz[t].bD && (this.dz[t].bD = 0);
-            return c4.c5 = !0
+            return c4.canvasPendingUpdates = !0
         }
-        c4.c5 = !0;
+        c4.canvasPendingUpdates = !0;
         var y = (n - (k[0] + k[2] - z)) / z - .5;
         y = Math.floor((0 > y ?
             -(y * y) : y * y) * max_entities);
@@ -5849,7 +5846,7 @@ function kH() {
         }
         return 8 > this.dz.length ? (A = k[1] + z + display_buffer_length + this.dz.length * (y + display_buffer_length), l < A || l > A + y || n > k[0] + y ? -1 : 27) : -1
     };
-    this.cG = function() {
+    this.drawImage = function() {
         var n;
         mainCanvasCtx.lineWidth = 2;
         mainCanvasCtx.textAlign = cJ;
@@ -5884,7 +5881,7 @@ function kH() {
                 mainCanvasCtx.fillRect(n + t, z + y, l, x);
                 mainCanvasCtx.fillRect(n + y, z + t, x, l)
             }
-            js.hidden && js.cG()
+            js.hidden && js.drawImage()
         }
     };
     this.xg = function(n) {
@@ -5926,7 +5923,7 @@ function p5() {
         this.width = Math.floor((zoom ? .063 : .04) * bq);
         this.width += 4 - this.width % 4;
         this.mE[0].fJ = display_buffer_length;
-        this.mE[0].fK = cB - this.width - display_buffer_length;
+        this.mE[0].fK = clientHeight - this.width - display_buffer_length;
         for (var g = 1; g < this.b3; g++) this.mE[g].fJ = this.mE[g - 1].fJ + Math.floor(zoom ? 1.5 * display_buffer_length : 3.7 * display_buffer_length) + this.width, this.mE[g].fK = this.mE[0].fK
     };
     this.pR =
@@ -5952,7 +5949,7 @@ function p5() {
         g = this.pR(g, k);
         if (n) {
             if (0 === g) return this.mE[g].m3 = !this.mE[g].m3, zoom = this.mE[g].m3, jq.xl(), save_options(this.mE[0].m3, !1), !0;
-            if (1 <= g && 3 > g) return this.mE[g].ih.init(), name_input.tj(), c4.c5 = !0
+            if (1 <= g && 3 > g) return this.mE[g].ih.init(), name_input.hide(), c4.canvasPendingUpdates = !0
         }
         return !1
     };
@@ -5964,7 +5961,7 @@ function p5() {
             if (this.mE[g].ih.hidden) return this.mE[g].ih.vJ(), !0;
         return !1
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (sprites.bx()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             for (var g = this.b3 - 1; 0 <= g; g--) mainCanvasCtx.fillStyle =
@@ -5992,7 +5989,7 @@ function p5() {
     this.vy = function() {
         for (var g = 2; 1 <= g; g--)
             if (this.mE[g].ih.hidden) {
-                this.mE[g].ih.cG();
+                this.mE[g].ih.drawImage();
                 break
             }
     }
@@ -6006,7 +6003,7 @@ function Name_input() {
         name_input.vote_id = split_names[1];
         display_username();
         websocket_manager.rk(0, 7) && multi_out.vote(0);
-        jj.vd(3252);
+        showError.vd(3252);
         return !0
     }
 
@@ -6019,13 +6016,13 @@ function Name_input() {
     function save_account() {
         if (0 !== username.indexOf("account ")) return !1;
         var split_names = username.split(" ");
-        if (2 !== split_names.length) return display_username(), jj.vd(3266), !0;
+        if (2 !== split_names.length) return display_username(), showError.vd(3266), !0;
         var password_max_limit = Math.floor(Math.pow(2, 48));
         split_names = parseInt(names.str_to_charcode(split_names[1]));
-        if (0 >= split_names || split_names >= password_max_limit) return display_username(), jj.vd(3266), !0;
-        if (save_password(split_names)) return display_username(), jj.vd(3231), !0;
+        if (0 >= split_names || split_names >= password_max_limit) return display_username(), showError.vd(3266), !0;
+        if (save_password(split_names)) return display_username(), showError.vd(3231), !0;
         display_username();
-        5 <= device_version ? jj.vd(3232) : (jj.vd(3265), cookies_window.hidden = !0, cookies_window.bs = -1);
+        5 <= device_version ? showError.vd(3232) : (showError.vd(3265), cookies_window.hidden = !0, cookies_window.bs = -1);
         return !0
     }
 
@@ -6046,7 +6043,7 @@ function Name_input() {
         cC.rs();
         void 0 === username && (username = get_username(), jk.bz(0).input.value = username, l())
     };
-    this.tj = function() {
+    this.hide = function() {
         jk.cE(0, !1)
     };
     this.xs = function(t) {
@@ -6063,20 +6060,20 @@ function Name_input() {
     };
     this.clicked = function(t, z) {
         c4.xt();
-        1 === jh.pR(t, z, 1, 1) ? save_account() || vote() || (set_android_state(10), l() ? (this.tj(), save_username(username), dy.init()) : jj.vd(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
+        1 === jh.pR(t, z, 1, 1) ? save_account() || vote() || (set_android_state(10), l() ? (this.hide(), save_username(username), dy.init()) : showError.vd(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
     };
     this.vs = function() {
-        save_account() || vote() || (set_android_state(10), void 0 !== username && names.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % websocket_manager.terriWsCount) : ji.vV(jt.xy - 1), l() ? sprites.bx() ? (this.tj(), save_username(username), customMap.pW(), ji.init()) : jj.vd(3228) : jj.vd(4214))
+        save_account() || vote() || (set_android_state(10), void 0 !== username && names.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % websocket_manager.terriWsCount) : ji.vV(jt.xy - 1), l() ? sprites.bx() ? (this.hide(), save_username(username), customMap.pW(), ji.init()) : showError.vd(3228) : showError.vd(4214))
     };
     this.y2 = function() {
-        return !cC.xk() && !cD.hidden && !nW.hidden
+        return !cC.xk() && !cD.hidden && !openLinkBox.hidden
     };
-    this.cG = function() {
+    this.drawImage = function() {
         if (this.y2()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var t = sprites.lB("territorial.io"),
                 z = 1.1 * jh.width / t.width;
-            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((gE - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
+            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((clientWidth - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
             mainCanvasCtx.drawImage(t, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             jh.v3()
@@ -6135,7 +6132,7 @@ function Sprites() {
                 n[t] = E
             }
             k--;
-            sprites.bx() && (uZ.bv(), hu.l3(), a5.init(), vv.uv([n[8], n[16], n[7], n[9], n[10]], [!is_ios, 0 === device_version, !0, !0, !0]), c4.c5 = !0, n[7] = x, n[8] = x, n[9] = x, n[10] = x)
+            sprites.bx() && (uZ.bv(), hu.l3(), a5.init(), vv.uv([n[8], n[16], n[7], n[9], n[10]], [!is_ios, 0 === device_version, !0, !0, !0]), c4.canvasPendingUpdates = !0, n[7] = x, n[8] = x, n[9] = x, n[10] = x)
         };
         n[t].src = A
     }
@@ -6238,11 +6235,11 @@ function Pixel() {
         this.font_color = new Uint8Array(max_entities);
         matrix_processor_init();
         if (team_game)
-            for (var K, J = max_entities - 1; 0 <= J; J--) K = teams.im[teams.team_array[J]], D_then_index = divide_floor((x[K][3] + 1) * ce.random(), ce.value(100)), inner_red[J] = l[K][0] + D_then_index * x[K][0], inner_green[J] = l[K][1] + D_then_index * x[K][1], inner_blue[J] = l[K][2] + D_then_index * x[K][2];
+            for (var K, J = max_entities - 1; 0 <= J; J--) K = teams.im[teams.team_array[J]], D_then_index = divide_floor((x[K][3] + 1) * fakeRandom.random(), fakeRandom.value(100)), inner_red[J] = l[K][0] + D_then_index * x[K][0], inner_green[J] = l[K][1] + D_then_index * x[K][1], inner_blue[J] = l[K][2] + D_then_index * x[K][2];
         else if (customMap.ds && customMap.dt.ya)
             for (D_then_index = customMap.dt.ya, K = entity_count - 1; 0 <= K; K--) inner_red[K] = 4 * D_then_index[K][0], inner_green[K] = 4 * D_then_index[K][1], inner_blue[K] = 4 * D_then_index[K][2];
         else {
-            for (K = max_entities - 1; K >= player_count; K--) inner_red[K] = 4 * divide_floor(64 * ce.random(), ce.value(100)), inner_green[K] = 4 * divide_floor(64 * ce.random(), ce.value(100)), inner_blue[K] = 4 * divide_floor(64 * ce.random(), ce.value(100));
+            for (K = max_entities - 1; K >= player_count; K--) inner_red[K] = 4 * divide_floor(64 * fakeRandom.random(), fakeRandom.value(100)), inner_green[K] = 4 * divide_floor(64 * fakeRandom.random(), fakeRandom.value(100)), inner_blue[K] = 4 * divide_floor(64 * fakeRandom.random(), fakeRandom.value(100));
             for (K = player_count - 1; 0 <= K; K--) inner_red[K] = 4 * D_then_index[K].color[0], inner_green[K] = 4 * D_then_index[K].color[1], inner_blue[K] = 4 * D_then_index[K].color[2]
         }
         for (D_then_index = max_entities - 1; 0 <= D_then_index; D_then_index--) {
@@ -6531,7 +6528,7 @@ function zQ(g) {
 
 function zO(g, k) {
     var n, l = k[zQ(k)];
-    9 === gamemode && 1 === teams.team_array[g] && ce.dP(8) && e2.zS(l);
+    9 === gamemode && 1 === teams.team_array[g] && fakeRandom.dP(8) && e2.zS(l);
     if (g === my_id) announcements.showGenericMessages(l, 1), zM();
     else {
         for (n = k.length - 1; 0 <= n; n--)
@@ -6946,8 +6943,8 @@ var font = true;
 
 function kO() {
     function g() {
-        X.width = gE;
-        X.height = cB;
+        X.width = clientWidth;
+        X.height = clientHeight;
         V = X.getContext("2d", {
             alpha: !0
         });
@@ -6960,11 +6957,11 @@ function kO() {
         W = !1;
         U = 1;
         R = P = 0;
-        V.clearRect(0, 0, gE, cB);
-        for (var O = gC / g7, T = gD / g7, Y = (gE + gC) / g7, Z = (cB + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== is_alive[my_id] && hu.isHuman(my_id), za = alive_count - 1; 0 <= za; za--)
+        V.clearRect(0, 0, clientWidth, clientHeight);
+        for (var O = gC / g7, T = gD / g7, Y = (clientWidth + gC) / g7, Z = (clientHeight + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== is_alive[my_id] && hu.isHuman(my_id), za = alive_count - 1; 0 <= za; za--)
             if (ia = alive_entities[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
-                la = Math.floor(gE * (E[ia] + G[ia] / 2 - O) / (Y - O));
-                ma = Math.floor(cB * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
+                la = Math.floor(clientWidth * (E[ia] + G[ia] / 2 - O) / (Y - O));
+                ma = Math.floor(clientHeight * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
                 V.font = oo[player_status[ia]] + fa * (font ? 1.5 : 1) + bu;
                 qa = V;
                 var ra = ia;
@@ -7127,7 +7124,7 @@ function kO() {
     this.n4 = function(O, T, Y) {
         0 === is_alive[O] || 4 !== T && 2 === player_status[O] || (O += T * max_entities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oD(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
     };
-    this.cG = function() {
+    this.drawImage = function() {
         W && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
     };
     this.rS = function(O, T) {
@@ -7241,40 +7238,39 @@ function kO() {
 }
 
 function kP() {
-    var g, k;
+    var sp_names, mp_names;
     this.init = function() {
-        var n, l;
-        g = "Abbasid Caliphate;Aceh s;Achaemenid Z;Afsharid z;Aghlabid Emirate;Ahom z;Akkadian Z;Aksumite Z;Akwamu;Alaouite z;Almohad Caliphate;Almoravid z;Angevin Z;Aq Qoyunlu;Armenian Z;Assyria;Ashanti Z;Austrian Z;Austria-Hungary;Ayyubid z;Aztec Z;Aulikara Z;Babylonian Z;Balhae;Banten s;S Banjar;Bamana Z;Bengal s;Benin Z;Kadamba z;Bornu Z;E Brazil;Britannic Z;British Z;British Raj;Bruneian Z;Bukhara Z;Burgundian State;Buyid z;Byzantine Z;Caliphate of C\u00f3rdoba;Cao Wei;Carthaginian Z;Cebu Rajahnate;Chagatai Khanate;Chalukya z;Chauhan z;Chav\u00edn Z;Chenla;Chera z;Chola z;Comanche Z;Congo Free State;Crimean Khanate;Dacian Z;Delhi s;Demak s;Durrani Z;Dutch Z;Egyptian Z;Elamite Z;Exarchate of Africa;Abyssinia;Fatimid Caliphate;First French Z;Frankish Z;Funan;Gallic Z;Gaza Z;Republic of Genoa;German Z;Ghana Z;Ghaznavid z;Ghurid z;Goguryeo;Goryeo;Gorkha Z;G\u00f6kt\u00fcrk Khaganate;Golden Horde;S Gowa;Seljuq Z;Gupta Z;Hafsid Y;Han z;Hanseatic League;E Harsha;Hephthalite Z;Hittite Z;Holy Roman Z;Hotak z;Hoysala Z;Hunnic Z;Husainid z;Idrisid z;Ilkhanate;K Israel;K Judah;Inca Z;Italian Z;E Japan;Jin z;Johor Z;Jolof Z;Joseon;Kaabu Z;Kachari Y;Kalmar Union;Kanem Z;Kanva z;Kara-Khanid Khanate;Kazakh Khanate;Khazar Khaganate;Khmer Z;Khilji z;Khwarazmian z;Kievan Rus';Konbaung z;Kong Z;Korean Z;Kushan Z;K Kush;Lakota;Latin Z;Later L\u00ea z;Liao z;Lodi s;Khmer Z;Macedonian Z;Majapahit Z;Mali Z;Malacca Z;Mamluk s;Manchukuo;Maratha Z;Marinid z;Massina Z;Mataram s;Mauretania;Mauryan Z;Median Z;Mlechchha z;Ming z;Mitanni Z;Mongol Z;Mughal Z;Nanda Z;Nguy\u1ec5n z;North Sea Z;E Nicaea;Numidia;Omani Z;Ottoman Z;Oyo Z;Pagan Z;Pahlavi z;Pala Z;Palmyrene Z;Parthian Z;Pontic Z;Portuguese Z;K Prussia;Ptolemaic Z;Qajar z;Qara Qoyunlu;Qin z;Qing z;Ramnad Sethupathis;Rashidun Caliphate;Rashtrakuta z;Roman Z;Rouran Khaganate;Rozwi Z;Rustamid z;Russian Z;Tsardom of Russia;Saadi z;Safavid z;Saffarid z;Sassanid z;Satavahana z;Samanid Z;Soviet Union;Saudeleur z;Duchy of Savoy;Seleucid Z;Serbian Z;Shu Han;Shang z;Siam Z;Sikh Z;Singhasari;Sokoto Caliphate;Song z;Songhai Z;Spanish Z;Srivijaya Z;Sui z;K Mysore;Shunga Z;S Sulu;Sumer;Sur Z;Swedish Z;Tahirid z;Tang z;T\u00e2y S\u01a1n z;S Ternate;E Thessalonica;German Reich;Tibetan Z;Tondo z;S Tidore;Timurid Z;K Tlemcen;E Trebizond;Toltec Z;Toungoo z;Toucouleur Z;Tu'i Tonga Z;Turgesh Khaganate;Umayyad Caliphate;Uyunid Emirate;Uyghur Khaganate;Uzbek Khanate;Vandal Y;Vijayanagara Z;Republic of Venice;Wari Z;Wassoulou Z;Wattasids;Western Roman Z;Eastern Wu;Western Xia z;Xin z;Yuan z;Zand z;Zhou z;Zulu Z;Yugoslavia;Kosovo;Sikkim;Kanem\u2013Bornu Z;Wadai Z;Ethiopian Z;Rozvi Z;Sasanian Z;E Vietnam;Shilluk Y;K Aksum;Gwiriko Y;Toro Y;Malindi Y;K Loango;K Mapungubwe;Ryukyu Y;K Cyprus;K Jerusalem;Garhwal Y;K Nepal;K Cambodia;Champa Y;Hanthawaddy Y;Phayao Y;K Sardinia;K Sicily;K Gwynedd;K Scotland;K Desmond;K Poland;K Hungary;K Croatia;K Bohemia;Albanian Y;K Georgia;K Portugal;Khanate of Sibir;K Romania;Cossack Hetmanate;Duchy of Bouillon;K Ireland;Lordship of Ireland;K Italy;Republic of Pisa;Idrisid z;Almoravid z;Almohad Caliphate;Marinid z;Wattasid z;Saadian z;Republic of Sal\u00e9;Rif Republic;K Kush;Makuria;Alodia;Ayyubid z;Mamluk s;Egypt Eyalet;K Fazughli;S Sennar;S Darfur;Mahdist State;S Egypt;K Egypt;Emirate of Cyrenaica;K Libya;Republic of Egypt;Republic of the Sudan;United Arab Republic;Libyan Arab Republic;Zirid z;Hafsid z;K Kuku;Regency of Algiers;Gurunsi;Liptako;Tenkodogo;Wogodogo;Yatenga;Bilanga;Bilayanga;Bongandini;Con;Macakoali;Piela;Nungu;K Sine;K Saloum;K Baol;K Cayor;K Waalo;Bundu;Bonoman;Gyaaman;Denkyira;Mankessim Y;K Dahomey;Oyo Z;K Nri;Aro Confederacy;Kwararafa;Biafra;Buganda;Bunyoro;Ankole;Busoga;Tanganyika;Kuba Y;K Luba;K Lunda;Yeke Y;K Ndongo;Kasanje Y;K Matamba;Mbunda Y;Chokwe Y;Kazembe Y;K Butua;Ndebele Y;Mthethwa Z;Bophuthatswana;Ciskei;Transkei;Venda;Rhodesia;Kart z;Nogai Horde;Khanate of Bukhara;Khanate of Khiva;Khamag Mongol;Northern Fujiwara;Kamakura Shogunate;Ashikaga Shogunate;Jaxa;Republic of Ezo;Jiangxi Soviet;Hunan Soviet;Guangzhou Commune;Gojoseon;Alaiye;Beylik of Bafra;Kara Koyunlu;Kars Republic;K Iraq;Arab Federation;Kar-Kiya z;Baduspanids;Marashiyan z;Afrasiyab z;Mihrabanid z;Safavid Iran;Sheikhdom of Kuwait;Bani Khalid Emirate;Emirate of Diriyah;Emirate of Najd;Muscat and Oman;Emirate of Riyadh;S Najd;K Hejaz;Fadhli s;Emirate of Beihan;Emirate of Dhala;S Lahej;Republic of Kuwait;K Cochin;Jaffna Y;Laur Y;Pandya z;Jaunpur s;Jaintia Y;Hyderabad State;Travancore;Udaipur State;Manikya z;Lan Xang;K Vientiane;K Champasak;Lao Issara;K Laos;Pyu States;Ava;Mon Ys;Pegu;K Mrauk U;Taungoo z;Shan States;Arakan;Raktamaritika;Singhanavati;Dvaravati;Ngoenyang;Hariphunchai;Tambralinga;Lavo Y;Langkasuka;Sukhothai Y;S Singora;Ayutthaya Y;Thonburi Y;Lan Na;Pattani Y;Jambi s;Palembang s;S Deli;S Langkat;S Serdang;S Cirebon;K Pajang;K Bali;Bima s;K Larantuka;K Banggai;Luwu;S Bone;Caucasian Albania;Kabardia;Circassia;K Abkhazia;Elisu s;Avar Khanate;Caucasian Imamate;K Imereti;K Kartli;K Kakheti;Crown of Aragon;Emirate of Granada;K Majorca;Crown of Castile;K Haiti;Cocoll\u00e1n;Zapotec Civilization;Mosquito Y;Somoza Regime;Iroquois Confederacy;Cherokee Nation;Vermont Republic;State of Muskogee;K Alo;K Sigave;K Fiji;K Nauru;K Chile;Muisca Confederation;El Stronato;K Chimor;Jungle Republic;Liga Federal;Supreme Junta;Weimar Republic;K Bavaria;Bremen;Frankfurt;Hamburg;K Hanover;Holstein;Lippe;Nassau;Oldenburg;Pomerania;Reuss;Saxe-Altenburg;Saxony;Schleswig;Waldeck;W\u00fcrttemberg;Helvetic Republic;Republic of Florence;Duchy of Urbino;Republic of Cospaia;Duchy of Lucca;Duchy of Mantua;Duchy of Milan;Papal States".split(";");
-        k =
-            "Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
-        var x = "K ; Y;E ; Z; z; s;S ".split(";"),
-            t = "Kingdom of ; Kingdom;Empire of ; Empire; Dynasty; Sultanate;Sultanate of ".split(";");
-        for (n = g.length - 1; 0 <= n; n--)
-            for (l = x.length - 1; 0 <= l; l--) g[n] = g[n].replace(x[l], t[l])
+        var index1, index2;
+        sp_names = "Abbasid Caliphate;Aceh s;Achaemenid Z;Afsharid z;Aghlabid Emirate;Ahom z;Akkadian Z;Aksumite Z;Akwamu;Alaouite z;Almohad Caliphate;Almoravid z;Angevin Z;Aq Qoyunlu;Armenian Z;Assyria;Ashanti Z;Austrian Z;Austria-Hungary;Ayyubid z;Aztec Z;Aulikara Z;Babylonian Z;Balhae;Banten s;S Banjar;Bamana Z;Bengal s;Benin Z;Kadamba z;Bornu Z;E Brazil;Britannic Z;British Z;British Raj;Bruneian Z;Bukhara Z;Burgundian State;Buyid z;Byzantine Z;Caliphate of C\u00f3rdoba;Cao Wei;Carthaginian Z;Cebu Rajahnate;Chagatai Khanate;Chalukya z;Chauhan z;Chav\u00edn Z;Chenla;Chera z;Chola z;Comanche Z;Congo Free State;Crimean Khanate;Dacian Z;Delhi s;Demak s;Durrani Z;Dutch Z;Egyptian Z;Elamite Z;Exarchate of Africa;Abyssinia;Fatimid Caliphate;First French Z;Frankish Z;Funan;Gallic Z;Gaza Z;Republic of Genoa;German Z;Ghana Z;Ghaznavid z;Ghurid z;Goguryeo;Goryeo;Gorkha Z;G\u00f6kt\u00fcrk Khaganate;Golden Horde;S Gowa;Seljuq Z;Gupta Z;Hafsid Y;Han z;Hanseatic League;E Harsha;Hephthalite Z;Hittite Z;Holy Roman Z;Hotak z;Hoysala Z;Hunnic Z;Husainid z;Idrisid z;Ilkhanate;K Israel;K Judah;Inca Z;Italian Z;E Japan;Jin z;Johor Z;Jolof Z;Joseon;Kaabu Z;Kachari Y;Kalmar Union;Kanem Z;Kanva z;Kara-Khanid Khanate;Kazakh Khanate;Khazar Khaganate;Khmer Z;Khilji z;Khwarazmian z;Kievan Rus';Konbaung z;Kong Z;Korean Z;Kushan Z;K Kush;Lakota;Latin Z;Later L\u00ea z;Liao z;Lodi s;Khmer Z;Macedonian Z;Majapahit Z;Mali Z;Malacca Z;Mamluk s;Manchukuo;Maratha Z;Marinid z;Massina Z;Mataram s;Mauretania;Mauryan Z;Median Z;Mlechchha z;Ming z;Mitanni Z;Mongol Z;Mughal Z;Nanda Z;Nguy\u1ec5n z;North Sea Z;E Nicaea;Numidia;Omani Z;Ottoman Z;Oyo Z;Pagan Z;Pahlavi z;Pala Z;Palmyrene Z;Parthian Z;Pontic Z;Portuguese Z;K Prussia;Ptolemaic Z;Qajar z;Qara Qoyunlu;Qin z;Qing z;Ramnad Sethupathis;Rashidun Caliphate;Rashtrakuta z;Roman Z;Rouran Khaganate;Rozwi Z;Rustamid z;Russian Z;Tsardom of Russia;Saadi z;Safavid z;Saffarid z;Sassanid z;Satavahana z;Samanid Z;Soviet Union;Saudeleur z;Duchy of Savoy;Seleucid Z;Serbian Z;Shu Han;Shang z;Siam Z;Sikh Z;Singhasari;Sokoto Caliphate;Song z;Songhai Z;Spanish Z;Srivijaya Z;Sui z;K Mysore;Shunga Z;S Sulu;Sumer;Sur Z;Swedish Z;Tahirid z;Tang z;T\u00e2y S\u01a1n z;S Ternate;E Thessalonica;German Reich;Tibetan Z;Tondo z;S Tidore;Timurid Z;K Tlemcen;E Trebizond;Toltec Z;Toungoo z;Toucouleur Z;Tu'i Tonga Z;Turgesh Khaganate;Umayyad Caliphate;Uyunid Emirate;Uyghur Khaganate;Uzbek Khanate;Vandal Y;Vijayanagara Z;Republic of Venice;Wari Z;Wassoulou Z;Wattasids;Western Roman Z;Eastern Wu;Western Xia z;Xin z;Yuan z;Zand z;Zhou z;Zulu Z;Yugoslavia;Kosovo;Sikkim;Kanem\u2013Bornu Z;Wadai Z;Ethiopian Z;Rozvi Z;Sasanian Z;E Vietnam;Shilluk Y;K Aksum;Gwiriko Y;Toro Y;Malindi Y;K Loango;K Mapungubwe;Ryukyu Y;K Cyprus;K Jerusalem;Garhwal Y;K Nepal;K Cambodia;Champa Y;Hanthawaddy Y;Phayao Y;K Sardinia;K Sicily;K Gwynedd;K Scotland;K Desmond;K Poland;K Hungary;K Croatia;K Bohemia;Albanian Y;K Georgia;K Portugal;Khanate of Sibir;K Romania;Cossack Hetmanate;Duchy of Bouillon;K Ireland;Lordship of Ireland;K Italy;Republic of Pisa;Idrisid z;Almoravid z;Almohad Caliphate;Marinid z;Wattasid z;Saadian z;Republic of Sal\u00e9;Rif Republic;K Kush;Makuria;Alodia;Ayyubid z;Mamluk s;Egypt Eyalet;K Fazughli;S Sennar;S Darfur;Mahdist State;S Egypt;K Egypt;Emirate of Cyrenaica;K Libya;Republic of Egypt;Republic of the Sudan;United Arab Republic;Libyan Arab Republic;Zirid z;Hafsid z;K Kuku;Regency of Algiers;Gurunsi;Liptako;Tenkodogo;Wogodogo;Yatenga;Bilanga;Bilayanga;Bongandini;Con;Macakoali;Piela;Nungu;K Sine;K Saloum;K Baol;K Cayor;K Waalo;Bundu;Bonoman;Gyaaman;Denkyira;Mankessim Y;K Dahomey;Oyo Z;K Nri;Aro Confederacy;Kwararafa;Biafra;Buganda;Bunyoro;Ankole;Busoga;Tanganyika;Kuba Y;K Luba;K Lunda;Yeke Y;K Ndongo;Kasanje Y;K Matamba;Mbunda Y;Chokwe Y;Kazembe Y;K Butua;Ndebele Y;Mthethwa Z;Bophuthatswana;Ciskei;Transkei;Venda;Rhodesia;Kart z;Nogai Horde;Khanate of Bukhara;Khanate of Khiva;Khamag Mongol;Northern Fujiwara;Kamakura Shogunate;Ashikaga Shogunate;Jaxa;Republic of Ezo;Jiangxi Soviet;Hunan Soviet;Guangzhou Commune;Gojoseon;Alaiye;Beylik of Bafra;Kara Koyunlu;Kars Republic;K Iraq;Arab Federation;Kar-Kiya z;Baduspanids;Marashiyan z;Afrasiyab z;Mihrabanid z;Safavid Iran;Sheikhdom of Kuwait;Bani Khalid Emirate;Emirate of Diriyah;Emirate of Najd;Muscat and Oman;Emirate of Riyadh;S Najd;K Hejaz;Fadhli s;Emirate of Beihan;Emirate of Dhala;S Lahej;Republic of Kuwait;K Cochin;Jaffna Y;Laur Y;Pandya z;Jaunpur s;Jaintia Y;Hyderabad State;Travancore;Udaipur State;Manikya z;Lan Xang;K Vientiane;K Champasak;Lao Issara;K Laos;Pyu States;Ava;Mon Ys;Pegu;K Mrauk U;Taungoo z;Shan States;Arakan;Raktamaritika;Singhanavati;Dvaravati;Ngoenyang;Hariphunchai;Tambralinga;Lavo Y;Langkasuka;Sukhothai Y;S Singora;Ayutthaya Y;Thonburi Y;Lan Na;Pattani Y;Jambi s;Palembang s;S Deli;S Langkat;S Serdang;S Cirebon;K Pajang;K Bali;Bima s;K Larantuka;K Banggai;Luwu;S Bone;Caucasian Albania;Kabardia;Circassia;K Abkhazia;Elisu s;Avar Khanate;Caucasian Imamate;K Imereti;K Kartli;K Kakheti;Crown of Aragon;Emirate of Granada;K Majorca;Crown of Castile;K Haiti;Cocoll\u00e1n;Zapotec Civilization;Mosquito Y;Somoza Regime;Iroquois Confederacy;Cherokee Nation;Vermont Republic;State of Muskogee;K Alo;K Sigave;K Fiji;K Nauru;K Chile;Muisca Confederation;El Stronato;K Chimor;Jungle Republic;Liga Federal;Supreme Junta;Weimar Republic;K Bavaria;Bremen;Frankfurt;Hamburg;K Hanover;Holstein;Lippe;Nassau;Oldenburg;Pomerania;Reuss;Saxe-Altenburg;Saxony;Schleswig;Waldeck;W\u00fcrttemberg;Helvetic Republic;Republic of Florence;Duchy of Urbino;Republic of Cospaia;Duchy of Lucca;Duchy of Mantua;Duchy of Milan;Papal States".split(";");
+        mp_names = "Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
+        var replace_chars = "K ; Y;E ; Z; z; s;S ".split(";"),
+            label_replacement = "Kingdom of ; Kingdom;Empire of ; Empire; Dynasty; Sultanate;Sultanate of ".split(";");
+        for (index1 = sp_names.length - 1; 0 <= index1; index1--)
+            for (index2 = replace_chars.length - 1; 0 <= index2; index2--) sp_names[index1] = sp_names[index1].replace(replace_chars[index2], label_replacement[index2])
     };
-    this.jT = function() {
+    this.fit = function() {
         if (customMap.ds && customMap.dt.zn) {
-            var n;
-            for (n = player_count; n < max_entities; n++) nickname[n] = customMap.dt.zn[n % entity_count]
+            var index;
+            for (index = player_count; index < max_entities; index++) nickname[index] = customMap.dt.zn[index % entity_count]
         } else if (9 === gamemode) {
-            var l = ce.random(),
-                x = k.length,
+            var fake_random = fakeRandom.random(),
+                x = mp_names.length,
                 t = player_count + e2.e3;
-            for (n = t - 1; n >= player_count; n--) nickname[n] = "[Bot] " + k[(n + l) % x];
-            for (n = t; n < max_entities; n++) nickname[n] = "[Zombie] " + k[(n + l) % x]
+            for (index = t - 1; index >= player_count; index--) nickname[index] = "[Bot] " + mp_names[(index + fake_random) % x];
+            for (index = t; index < max_entities; index++) nickname[index] = "[Zombie] " + mp_names[(index + fake_random) % x]
         } else if (singleplayer)
-            for (l = ce.random(), n = player_count; n < max_entities; n++) nickname[n] = g[(n + l) % max_entities];
+            for (fake_random = fakeRandom.random(), index = player_count; index < max_entities; index++) nickname[index] = sp_names[(index + fake_random) % max_entities];
         else
-            for (l = k.length, x = ce.random(), n = player_count; n < max_entities; n++) nickname[n] = "[Bot] " + k[(n + x) % l]
+            for (fake_random = mp_names.length, x = fakeRandom.random(), index = player_count; index < max_entities; index++) nickname[index] = "[Bot] " + mp_names[(index + x) % fake_random]
     };
     this.jU = function() {
         var n;
         if (jt.hideNicknames && !singleplayer) {
             temp_nickname = Array(player_count);
             var l = player_count;
-            var x = k.length;
-            var t = ce.a1W();
-            for (n = 0; n < l; n++) temp_nickname[n] = nickname[n], nickname[n] = k[(n + t) % x];
+            var x = mp_names.length;
+            var t = fakeRandom.a1W();
+            for (n = 0; n < l; n++) temp_nickname[n] = nickname[n], nickname[n] = mp_names[(n + t) % x];
             nickname[my_id] = temp_nickname[my_id]
         }
     }
@@ -7403,10 +7399,10 @@ function Websocket_manager() {
         var l;
         this.origins = Array(this.originCount);
         this.origins[0] = "territorial.io";
-        var x = ce.a1W(0);
-        ce.jN(0);
+        var x = fakeRandom.a1W(0);
+        fakeRandom.jN(0);
         for (l = 1; l < this.originCount; l++) this.origins[l] = names.generate_origin_domain_names() + ".com";
-        ce.jN(x);
+        fakeRandom.jN(x);
         websockets = Array(this.terriWsCount);
         websockets_info = Array(this.terriWsCount);
         for (l = this.terriWsCount - 1; 0 <= l; l--) websockets_info[l] = {
@@ -7456,7 +7452,7 @@ function Websocket_manager() {
         g(remote) && websockets[remote].close(reason)
     };
     this.a22 = function(l, x) {
-        jj.vd(x);
+        showError.vd(x);
         g(l) && websockets[l].close(x)
     };
     this.vf = function(l) {
@@ -7467,7 +7463,7 @@ function Websocket_manager() {
     };
     this.a24 = function(l, x) {
         websockets[l].end();
-        jj.init(l, x.code)
+        showError.init(l, x.code)
     }
 }
 var alive_entities, alive_count;
@@ -7503,8 +7499,8 @@ function troop_hash() {
     for (id = alive_count - 1; 0 <= id; id--) sum += troops[alive_entities[id]];
     return sum % 4096
 }
-var mainCanvas, mainCanvasCtx, version, version_hash, r, s, pK, bq, gE, cB, device_pixel_ratio, host_name, is_ios, ios, droid, device_version, zoom, has_had_error_before = !1,
-    is_not_top_window, not_using_client, client_id, gy, so, h8, a5, statistics, hv, cookies_window, c4, teams, eT, cD, endGame, vv, nW, uZ, time_hash, const_2_s52, error_line = 0,
+var mainCanvas, mainCanvasCtx, version, version_hash, r, s, pK, bq, clientWidth, clientHeight, device_pixel_ratio, host_name, is_ios, ios, droid, device_version, zoom, has_had_error_before = !1,
+    is_not_top_window, not_using_client, client_id, gy, so, h8, a5, statistics, hv, cookies_window, c4, teams, eT, cD, endGame, vv, openLinkBox, uZ, time_hash, const_2_s52, error_line = 0,
     error_message = "",
     start_function_called = !1;
 
@@ -7565,9 +7561,9 @@ function main() {
     cD.init();
     endGame = new EndGame;
     vv = new ut;
-    nW = new ui;
+    openLinkBox = new OpenLinkBox;
     p3();
-    ce.init();
+    fakeRandom.init();
     interest.a0I();
     jm.init();
     jQ.init();
@@ -7579,7 +7575,7 @@ function main() {
     jS.init();
     addCanvasEventListeners();
     sprites.init();
-    c4.c5 = !0;
+    c4.canvasPendingUpdates = !0;
     setTimeout(function() { xJ(2, 14071) }, 0)
 }
 
@@ -7604,7 +7600,7 @@ function error_warning(error_message) {
 }
 
 function on_key_down(g) {
-    "ArrowLeft" === g.key ? gn.wE(3) : "ArrowUp" === g.key ? gn.wE(0) : "ArrowRight" === g.key ? gn.wE(1) : "ArrowDown" === g.key ? gn.wE(2) : "a" === g.key ? troopsBar.r5(.96875) : "d" === g.key ? troopsBar.r5(32 / 31) : "s" === g.key ? troopsBar.r5(.875) : "w" === g.key ? troopsBar.r5(8 / 7) : "1" === g.key ? troopsBar.r5(5 / 6) : "2" === g.key ? troopsBar.r5(1.2) : " " === g.key && intelliAttack.checkIntelli()
+    "ArrowLeft" === g.key ? gn.wE(3) : "ArrowUp" === g.key ? gn.wE(0) : "ArrowRight" === g.key ? gn.wE(1) : "ArrowDown" === g.key ? gn.wE(2) : "a" === g.key ? troopsBar.changeAttackFraction(.96875) : "d" === g.key ? troopsBar.changeAttackFraction(32 / 31) : "s" === g.key ? troopsBar.changeAttackFraction(.875) : "w" === g.key ? troopsBar.changeAttackFraction(8 / 7) : "1" === g.key ? troopsBar.changeAttackFraction(5 / 6) : "2" === g.key ? troopsBar.changeAttackFraction(1.2) : " " === g.key ? intelliAttack.checkIntelli() : "c" === g.key && client_status != 0 && (hv.printCoords())
 }
 
 function on_visibility_change() {
@@ -7612,7 +7608,7 @@ function on_visibility_change() {
 }
 
 function on_key_up(g) {
-    400 > c4.time || (8 !== aJ.pa() && aJ.us(g) ? c4.c5 = !0 : "Escape" === g.key ? aJ.aK() : "ArrowLeft" === g.key ? gn.a2Y(3) : "ArrowUp" === g.key ? gn.a2Y(0) : "ArrowRight" === g.key ? gn.a2Y(1) : "ArrowDown" === g.key ? gn.a2Y(2) : "h" === g.key && 1 <= client_status && (canvas_hidden = !canvas_hidden, c4.c5 = !0))
+    400 > c4.time || (8 !== aJ.pa() && aJ.us(g) ? c4.canvasPendingUpdates = !0 : "Escape" === g.key ? aJ.aK() : "ArrowLeft" === g.key ? gn.a2Y(3) : "ArrowUp" === g.key ? gn.a2Y(0) : "ArrowRight" === g.key ? gn.a2Y(1) : "ArrowDown" === g.key ? gn.a2Y(2) : "h" === g.key && 1 <= client_status && (canvas_hidden = !canvas_hidden, c4.canvasPendingUpdates = !0))
 }
 
 function set_client_checks() {
@@ -7644,7 +7640,7 @@ function kQ() {
     this.zS = function(k) {
         g.push({
             player: k,
-            mv: 14 + ce.cf(20)
+            mv: 14 + fakeRandom.cf(20)
         })
     };
     this.update = function() {
@@ -7662,7 +7658,7 @@ function xJ(g, k) {
         var n = performance.now();
         vq = !1;
         xK.xL();
-        ce.jN(g);
+        fakeRandom.jN(g);
         current_map = g;
         x7 = k;
         a2h(g) && (jm.bz(g).a1o = k);
@@ -7671,8 +7667,8 @@ function xJ(g, k) {
             var l = jm.bz(current_map);
             map_width = l.width;
             map_height = l.cw;
-            ce.jN(l.a1o);
-            jn.jT([map_width, map_height, l.gO, l.gL]);
+            fakeRandom.jN(l.a1o);
+            jn.fit([map_width, map_height, l.gO, l.gL]);
             a2k();
             jQ.a2l();
             jn.a2m();
@@ -7743,10 +7739,10 @@ function a2P() {
         if (8 === aJ.pa() && eV.gd()) this.rf = setTimeout(g, 16);
         else {
             if (0 === this.aA) {
-                var l = ce.a1W();
-                ce.jN(jm.bz(current_map).a33[2]);
-                jn.jT([map_width, map_height, jm.bz(current_map).a33[0], jm.bz(current_map).a33[1]]);
-                ce.jN(l);
+                var l = fakeRandom.a1W();
+                fakeRandom.jN(jm.bz(current_map).a33[2]);
+                jn.fit([map_width, map_height, jm.bz(current_map).a33[0], jm.bz(current_map).a33[1]]);
+                fakeRandom.jN(l);
                 this.a2y = jn.a35();
                 this.aA++;
                 if (this.a2z) {
@@ -7767,7 +7763,7 @@ function a2P() {
                         var A = z;
                         (1 < t && n(x - 4) || t < map_width - 2 && n(x + 4) || 1 < A && n(x - 4 * map_width) || A < map_height - 2 && n(x + 4 * map_width)) && this.a38(y, z)
                     } this.a2s = l;
-            this.a2s >= map_height - 1 ? (pl.putImageData(xH, 0, 0, 1, 1, map_width - 2, map_height - 2), c4.c5 = !0, this.xL()) : this.a2z && (this.rf = setTimeout(g, 16))
+            this.a2s >= map_height - 1 ? (pl.putImageData(xH, 0, 0, 1, 1, map_width - 2, map_height - 2), c4.canvasPendingUpdates = !0, this.xL()) : this.a2z && (this.rf = setTimeout(g, 16))
         }
     };
     this.a37 = function(l, x, t) {
@@ -7943,7 +7939,7 @@ function kR() {
         jm.isBA() && sprites.bx() && jm.isBA() && (n = sprites.lB("arena"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = 2.8, pl.scale(k, k), pl.drawImage(n, Math.floor((map_width / k - n.width) / 2), Math.floor(.5 * map_height / k - n.height / 2)), pl.restore(), n = sprites.lB("territorial.io"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = .87, pl.scale(k, k), pl.drawImage(n, Math.floor(.745 *
             (map_width / k - n.width)), Math.floor(.422 * map_height / k - n.height / 2)), pl.restore());
         vq = !0;
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
     this.jR = function() {
         var k, n = 0;
@@ -7999,7 +7995,7 @@ function a2j(g) {
     vq = !0;
     a2n(g);
     xK.init();
-    c4.c5 = !0
+    c4.canvasPendingUpdates = !0
 }
 
 function kS() {
@@ -8158,7 +8154,7 @@ function loadMapCanvas() {
 function kT() {
     function g(J, L, H) {
         C[0] = J;
-        for (J = 1; J < H; J++) C[J] = C[J - 1] + L, 1E4 <= C[J] ? (C[J] = 9999, L = -L) : 0 > C[J] ? (C[J] = 0, L = -L) : (L += 16384 <= ce.random() ? B : -B, L = L < -A ? -A : L > A ? A : L)
+        for (J = 1; J < H; J++) C[J] = C[J - 1] + L, 1E4 <= C[J] ? (C[J] = 9999, L = -L) : 0 > C[J] ? (C[J] = 0, L = -L) : (L += 16384 <= fakeRandom.random() ? B : -B, L = L < -A ? -A : L > A ? A : L)
     }
 
     function k(J, L, H, M) {
@@ -8190,7 +8186,7 @@ function kT() {
         J[J.length - 1] = J[J.length - 3]
     }
     var x, t, z, y, A, B, C, E, F, G, N, I, D, K;
-    this.jT = function(J) {
+    this.fit = function(J) {
         t = J[0];
         z = J[1];
         A = J[2];
@@ -8208,8 +8204,8 @@ function kT() {
         D = new Int16Array(t);
         K = new Int16Array(z);
         J = y;
-        var L = ce.random() % 1E4,
-            H = ce.random() % (2 * A + 1) - A;
+        var L = fakeRandom.random() % 1E4,
+            H = fakeRandom.random() % (2 * A + 1) - A;
         g(L, H, J);
         J = K;
         L = C;
@@ -8219,7 +8215,7 @@ function kT() {
             !0, t);
         J = x[0];
         L = y;
-        H = ce.random() % (2 * A + 1) - A;
+        H = fakeRandom.random() % (2 * A + 1) - A;
         g(J, H, L);
         J = D;
         L = C;
@@ -8498,13 +8494,13 @@ function kl() {
             if (t) {
                 for (B = 1; B < z.length; B++) 
                     if (k(y, A, C, B)) {
-                        return 1 === z[B].id ? (jt.xy = 1 === jt.xy ? 2 : 2 === jt.xy ? 3 : 3 === jt.xy ? websocket_manager.originCount : 1, z[1].name = "Lobby " + (jt.xy === websocket_manager.originCount ? "4 (1B)" : jt.xy), c4.c5 = !0) : 2 === z[B].id ? (jt.hideNicknames = !jt.hideNicknames, z[B].value = jt.hideNicknames ? 130 : 0, g(), c4.c5 = !0) : 3 === z[B].id ? (jt.hideLinks = !jt.hideLinks, z[B].value = jt.hideLinks ? 130 : 0, g(), c4.c5 = !0) : 4 === z[B].id ? (jt.highResolution = !jt.highResolution, z[B].value = jt.highResolution ? 130 : 0, g(), jq.xl(), c4.c5 = !0) : 5 === z[B].id ? (nW.init(ov, !0), nW.init(ov, !1)) : 6 === z[B].id ? (nW.init(ow[0], !0), nW.init(ow[0], !1)) : 7 === z[B].id ? (nW.init(ow[1], !0), nW.init(ow[1], !1)) : 8 === z[B].id ? (nW.init(ou, !0), nW.init(ou, !1)) : 9 === z[B].id ? (nW.init(nX, !0), nW.init(nX, !1)) : 10 === z[B].id && typeof(document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden, document.getElementById('hideMenuCheck').checked = !document.getElementById('hideMenuCheck').checked ,!0);
+                        return 1 === z[B].id ? (jt.xy = 1 === jt.xy ? 2 : 2 === jt.xy ? 3 : 3 === jt.xy ? websocket_manager.originCount : 1, z[1].name = "Lobby " + (jt.xy === websocket_manager.originCount ? "4 (1B)" : jt.xy), c4.canvasPendingUpdates = !0) : 2 === z[B].id ? (jt.hideNicknames = !jt.hideNicknames, z[B].value = jt.hideNicknames ? 130 : 0, g(), c4.canvasPendingUpdates = !0) : 3 === z[B].id ? (jt.hideLinks = !jt.hideLinks, z[B].value = jt.hideLinks ? 130 : 0, g(), c4.canvasPendingUpdates = !0) : 4 === z[B].id ? (jt.highResolution = !jt.highResolution, z[B].value = jt.highResolution ? 130 : 0, g(), jq.xl(), c4.canvasPendingUpdates = !0) : 5 === z[B].id ? (openLinkBox.init(ov, !0), openLinkBox.init(ov, !1)) : 6 === z[B].id ? (openLinkBox.init(ow[0], !0), openLinkBox.init(ow[0], !1)) : 7 === z[B].id ? (openLinkBox.init(ow[1], !0), openLinkBox.init(ow[1], !1)) : 8 === z[B].id ? (openLinkBox.init(ou, !0), openLinkBox.init(ou, !1)) : 9 === z[B].id ? (openLinkBox.init(nX, !0), openLinkBox.init(nX, !1)) : 10 === z[B].id && typeof(document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden, document.getElementById('hideMenuCheck').checked = !document.getElementById('hideMenuCheck').checked ,!0);
                     }
                 t = !1;
-                c4.c5 = !0;
+                c4.canvasPendingUpdates = !0;
                 return !1
             }
-            return k(y, A, C, 0) ? (t = !0, c4.c5 = !0) : !1
+            return k(y, A, C, 0) ? (t = !0, c4.canvasPendingUpdates = !0) : !1
         }
     };
     this.lo = function(y, A) {
@@ -8518,10 +8514,10 @@ function kl() {
                 if (k(y, A, C, B)) {
                     x = B;
                     break
-                } E !== x && (c4.c5 = !0)
+                } E !== x && (c4.canvasPendingUpdates = !0)
         }
     };
-    this.cG = function() {
+    this.drawImage = function() {
         var y;
         if (!(7 <= aJ.pa())) {
             var A = n();
@@ -8555,7 +8551,7 @@ function kU() {
         if (-1 !== l)
             if (0 !== client_status && eV.h0()) {
                 for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gC += t[A], gD += z[A], eA.lo(t[A], z[A]), gj.rK());
-                y ? c4.c5 = !0 : gn.go()
+                y ? c4.canvasPendingUpdates = !0 : gn.go()
             } else gn.go()
     }
     var n = !1,
@@ -8729,29 +8725,29 @@ function a2V() {
     this.bv = function() {
         team_game && n && draw_pie_chart()
     };
-    this.cG = function() {
+    this.drawImage = function() {
         team_game && mainCanvasCtx.drawImage(z, m7, qU + 2 * m7)
     }
 }
 
-function kW() {
-    var g, k;
+function FakeRandom() {
+    var fake_random, array;
     this.init = function() {
-        k = Array(101);
-        for (var n = k.length - 1; 0 <= n; n--) k[n] = divide_floor(32768 * n, 100);
+        array = Array(101);
+        for (var index = array.length - 1; 0 <= index; index--) array[index] = divide_floor(32768 * index, 100);
         this.jN(0)
     };
-    this.value = function(n) {
-        return k[n]
+    this.value = function(index) {
+        return array[index]
     };
     this.a1W = function() {
-        return divide_floor(g - 1, 2)
+        return divide_floor(fake_random - 1, 2)
     };
     this.jN = function(n) {
-        g = 2 * n % 32768 + 1
+        fake_random = 2 * n % 32768 + 1
     };
     this.random = function() {
-        return g = 167 * g % 32768
+        return fake_random = 167 * fake_random % 32768
     };
     this.cf = function(n) {
         return divide_floor(n * this.random(), 32768)
@@ -8769,7 +8765,7 @@ function kd() {
     function k() {
         t = 0;
         z += 700 > z ? 200 : 0;
-        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), jg.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), troopsBar.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), eW.lx(), eT.lx(), gj.rK()) : (0 === aJ.pa() ? jk.cE(0, !0) : 2 === aJ.pa() ? dy.lx() : 3 === aJ.pa() && jj.lx(), aJ.vr(), aJ.vw()), c4.c5 = !0)
+        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), jg.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), troopsBar.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), eW.lx(), eT.lx(), gj.rK()) : (0 === aJ.pa() ? jk.cE(0, !0) : 2 === aJ.pa() ? dy.lx() : 3 === aJ.pa() && showError.lx(), aJ.vr(), aJ.vw()), c4.canvasPendingUpdates = !0)
     }
 
     function n(y) {
@@ -8781,11 +8777,11 @@ function kd() {
             var client_width = n(document.documentElement.clientWidth);
             var client_height = n(document.documentElement.clientHeight);
             device_pixel_ratio = 1;
-            if (client_width !== gE || client_height !== cB) {
-                gE = client_width;
-                cB = client_height;
-                r = gE;
-                s = cB;
+            if (client_width !== clientWidth || client_height !== clientHeight) {
+                clientWidth = client_width;
+                clientHeight = client_height;
+                r = clientWidth;
+                s = clientHeight;
                 pK = min(r, s);
                 bq = divide_floor(s + r, 2);
                 if (5 <= device_version) {
@@ -8809,9 +8805,9 @@ function kd() {
         C = n(document.documentElement.clientHeight);
         client_width = Math.floor(.5 + device_pixel_ratio * B);
         client_height = Math.floor(.5 + device_pixel_ratio * C);
-        if (client_width === gE && client_height === cB) return !1;
-        gE = r = client_width;
-        cB = s = client_height;
+        if (client_width === clientWidth && client_height === clientHeight) return !1;
+        clientWidth = r = client_width;
+        clientHeight = s = client_height;
         pK = min(r, s);
         bq = divide_floor(s + r, 2);
         mainCanvas.width = client_width;
@@ -8825,7 +8821,7 @@ function kd() {
     this.init = function() {
         t = 1;
         z = 100;
-        r = s = pK = gE = cB = bq = 0;
+        r = s = pK = clientWidth = clientHeight = bq = 0;
         device_pixel_ratio = 1;
         mainCanvas = document.getElementById("canvasA");
         mainCanvasCtx = mainCanvas.getContext("2d", {
@@ -8950,9 +8946,9 @@ function kY() {
     };
     this.hr = function() {
         var x = n ? 0 : -g;
-        a4M(x, x, map_width - 2 * x, map_height - 2 * x, gy.a5H, gy.a5I, gy.a5J, gy.a5K) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, gE, cB))
+        a4M(x, x, map_width - 2 * x, map_height - 2 * x, gy.a5H, gy.a5I, gy.a5J, gy.a5K) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, clientWidth, clientHeight))
     };
-    this.cG = function() {
+    this.drawImage = function() {
         n || (a4L(0, -g, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[0], gy.a5L, gy.a5M - g), a4L(map_width, -g, g, map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[1], gy.a5L + map_width, gy.a5M - g), a4L(0, map_height, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[2], gy.a5L, gy.a5M + map_height), a4L(-g, -g, g,
             map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[3], gy.a5L - g, gy.a5M - g))
     }
@@ -9032,14 +9028,14 @@ function Statistics() {
     this.s8 = new Uint32Array(this.cV);
     this.tV = new Uint16Array(this.cV);
     this.m6 = 0;
-    this.a5Y = 1;
+    this.tickInterval = 1;
     this.dV = 0;
     this.max = [0, 0, 0];
     this.numbers = 0;
     this.description = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
     this.init = function() {
         this.m6 = 0;
-        this.a5Y = 1;
+        this.tickInterval = 1;
         this.dV = 0;
         this.a5a();
         this.a5b()
@@ -9048,15 +9044,14 @@ function Statistics() {
         0 < this.dV-- || this.a5c()
     };
     this.a5c = function() {
-        0 !== is_alive[my_id] && (this.a5X[this.m6] = land[my_id], this.s8[this.m6] = troops[my_id], this.tV[this.m6] = interest.interest(my_id), this.a5d(this.m6), this.m6++, this.m6 === this.cV && this.a5e(), this.dV = this.a5Y - 1, hv.bv())
+        0 !== is_alive[my_id] && (this.a5X[this.m6] = land[my_id], this.s8[this.m6] = troops[my_id], this.tV[this.m6] = interest.interest(my_id), this.a5d(this.m6), this.m6++, this.m6 === this.cV && this.a5e(), this.dV = this.tickInterval - 1, hv.bv())
     };
     this.a5e = function() {
         this.a5a();
         this.a5d(0);
         this.m6 = 1 + divide_floor(this.cV, 2);
         for (var g = 1; g < this.m6; g++) this.a5X[g] = this.a5X[2 * g], this.s8[g] = this.s8[2 * g], this.tV[g] = this.tV[2 * g], this.a5d(g);
-        this.a5Y *=
-            2
+        this.tickInterval *= 2
     };
     this.a5a = function() {
         this.max[0] = this.max[1] = this.max[2] = 0
@@ -9105,8 +9100,8 @@ function a2S() {
         if (!this.hidden) return !1;
         var n = g,
             l = k;
-        g -= divide_floor(gE - this.width, 2);
-        k -= divide_floor(cB - this.cw, 2);
+        g -= divide_floor(clientWidth - this.width, 2);
+        k -= divide_floor(clientHeight - this.cw, 2);
         if (0 > g || 0 > k || g >= this.width || k >= this.cw) {
             if (1 < fq.clicked(n, l)) return !0;
             this.end();
@@ -9115,22 +9110,22 @@ function a2S() {
         if (k < this.cw - this.nS) return this.a5i = !0, this.a5h = (g - 2 * this.i4 - this.ud) / this.ue, !0;
         n = Math.floor(g / (this.width / this.lt.length));
         n = 0 > n ? 0 : n >= this.lt.length ? this.lt.length - 1 : n;
-        n !== this.bs && (this.bs = n, this.a5j(), c4.c5 = !0);
+        n !== this.bs && (this.bs = n, this.a5j(), c4.canvasPendingUpdates = !0);
         return !0
     };
-    this.printCoords = function(){
-        var g = Math.floor((this.a5j_2[0] + gC) / g7),
-            k = Math.floor((this.a5j_2[1] + gD) / g7);
-        1 > g || 1 > k || g > map_width - 1 || k > map_height - 1 || console.log(g + " " + k)
+    this.printCoords = function() {
+        var x_coord = Math.floor((this.a5j_2[0] + gC) / g7),
+            y_coord = Math.floor((this.a5j_2[1] + gD) / g7);
+        1 > x_coord || 1 > y_coord || x_coord > map_width - 1 || y_coord > map_height - 1 || console.log(x_coord + " " + y_coord)
     };
     this.lo = function (g, k) {
         this.a5j_2[0] = g;
         this.a5j_2[0] = k;
         if (this.hidden && this.a5i) {
-            g -= divide_floor(gE - this.width, 2);
+            g -= divide_floor(clientWidth - this.width, 2);
             var k = this.a5h;
             this.a5h = (g - 2 * this.i4 - this.ud) / this.ue;
-            if (0 <= this.a5h && 1 >= this.a5h || 0 <= k && 1 >= k) c4.c5 = !0;
+            if (0 <= this.a5h && 1 >= this.a5h || 0 <= k && 1 >= k) c4.canvasPendingUpdates = !0;
             return !0
         }
         return !1
@@ -9155,12 +9150,12 @@ function a2S() {
     this.bv = function() {
         this.hidden && this.a5j()
     };
-    this.cG = function() {
+    this.drawImage = function() {
         this.hidden && this.nY()
     };
     this.nY = function() {
-        var g = divide_floor(gE - this.width, 2),
-            k = divide_floor(cB - this.cw, 2);
+        var g = divide_floor(clientWidth - this.width, 2),
+            k = divide_floor(clientHeight - this.cw, 2);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
         mainCanvasCtx.fillStyle = hy;
         mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
@@ -9274,7 +9269,7 @@ function a2S() {
         mainCanvasCtx.beginPath();
         mainCanvasCtx.arc(l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
         mainCanvasCtx.fill();
-        g = this.a5h * c4.tick_interval();
+        g = this.a5h * c4.getTickInterval();
         g = 0 === is_alive[my_id] ? Math.floor(g * eW.td) : Math.floor(g * c4.time_elapsed());
         mainCanvasCtx.fillStyle = cK;
         mainCanvasCtx.fillText(1 === n ? eB.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
@@ -9610,34 +9605,34 @@ function bordersEntity(id1, id2) {
 }
 
 function a2T() {
-    function g() {
+    function animate() {
         c4.time = performance.now();
         c4.a6V();
-        window.requestAnimationFrame(g)
+        window.requestAnimationFrame(animate)
     }
 
     function k() {
         var n = performance.now();
         c4.time + 1500 < n && (c4.time = n, c4.a6V())
     }
-    this.c5 = !1;
+    this.canvasPendingUpdates = !1;
     this.a6X = this.a6W = this.a6V = null;
     this.time = 0;
     this.a6Y = -1;
     this.init = function() {
-        window.requestAnimationFrame(g);
+        window.requestAnimationFrame(animate);
         this.time = performance.now()
     };
     this.a2X = function() {
         1 !== client_status || !singleplayer || fq.menuOpen || in_spawn || fq.alterDisplay(); - 1 === this.a6Y && (this.a6Y = setInterval(k, 2E3))
     };
     this.xt = function() {
-        this.c5 = !0; - 1 !== this.a6Y && (clearInterval(this.a6Y), this.a6Y = -1)
+        this.canvasPendingUpdates = !0; - 1 !== this.a6Y && (clearInterval(this.a6Y), this.a6Y = -1)
     };
     this.jd = function() {
         this.a6V = this.a6b;
         this.a6W = null;
-        this.c5 = !0
+        this.canvasPendingUpdates = !0
     };
     this.jY = function() {
         this.a6W = new a6c;
@@ -9655,7 +9650,7 @@ function a2T() {
         websocket_manager.update();
         eY.wS();
         cD.update();
-        this.c5 && (this.c5 = !1, aJ.cG())
+        this.canvasPendingUpdates && (this.canvasPendingUpdates = !1, aJ.drawImage())
     };
     this.a6d = function() {
         this.a6W.update()
@@ -9666,27 +9661,27 @@ function a2T() {
     this.time_elapsed = function() {
         return singleplayer ? this.a6W.wP : this.a6X.wP
     };
-    this.tick_interval = function() {
+    this.getTickInterval = function() {
         return 56
     }
 }
 
 function a6c() {
     this.time = c4.time;
-    this.a5Y = 56;
+    this.tickInterval = 56;
     this.wP = this.bs = 0;
     this.a6g = !1;
     this.update = function() {
         jq.update();
-        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status || fq.menuOpen ? e8() : (game_tick(), this.wP++, h8.tx()), this.bs++) : (fq.menuOpen ? ec() : (c4.c5 = !0, ea()), this.bs = 0);
+        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.tickInterval * Math.floor(1 + (c4.time - this.time) / this.tickInterval), 2 === client_status || fq.menuOpen ? e8() : (game_tick(), this.wP++, h8.tx()), this.bs++) : (fq.menuOpen ? ec() : (c4.canvasPendingUpdates = !0, ea()), this.bs = 0);
         eU();
-        c4.c5 && (c4.c5 = !1, hp())
+        c4.canvasPendingUpdates && (c4.canvasPendingUpdates = !1, hp())
     }
 }
 
 function a6e() {
     this.time = c4.time;
-    this.a5Y = 56;
+    this.tickInterval = 56;
     this.wO = this.wP = this.bs = 0;
     this.a6h = null;
     this.a0j = 7;
@@ -9712,10 +9707,10 @@ function a6e() {
     };
     this.update = function() {
         jq.update();
-        in_spawn ? (c4.c5 = eB.tY(-1) || c4.c5, ec()) : 0 === this.bs ? c4.time >= this.time && 
-        (this.time += this.a5Y * Math.floor(1 + (c4.time - this.time) / this.a5Y), 2 === client_status ? e8() : this.a6k(), this.bs++) : (c4.c5 = !0, ea(), this.bs = 0);
+        in_spawn ? (c4.canvasPendingUpdates = eB.tY(-1) || c4.canvasPendingUpdates, ec()) : 0 === this.bs ? c4.time >= this.time && 
+        (this.time += this.tickInterval * Math.floor(1 + (c4.time - this.time) / this.tickInterval), 2 === client_status ? e8() : this.a6k(), this.bs++) : (c4.canvasPendingUpdates = !0, ea(), this.bs = 0);
         eU();
-        c4.c5 && (c4.c5 = !1, hp())
+        c4.canvasPendingUpdates && (c4.canvasPendingUpdates = !1, hp())
     };
     this.a6k = function() {
         if (this.wP !== 7 * this.wO) game_tick(), this.wP++, h8.tx();
@@ -9728,8 +9723,7 @@ function a6e() {
         }
     };
     this.a6m = function() {
-        return 0 < this.a6h.length ? (this.wO++, multi_in.a6j(this.a6h[0], g), g = (g +
-            1) % 8, this.a6h.shift(), !0) : !1
+        return 0 < this.a6h.length ? (this.wO++, multi_in.a6j(this.a6h[0], g), g = (g + 1) % 8, this.a6h.shift(), !0) : !1
     }
 }
 
@@ -9773,7 +9767,7 @@ function kZ() {
             k(z);
             z = g();
             gj.rL(Math.floor((n + x) / 2), Math.floor((l + t) / 2), z / y);
-            return c4.c5 = !0
+            return c4.canvasPendingUpdates = !0
         }
         return !1
     }
@@ -9948,8 +9942,8 @@ function a2Q() {
         this.a5M = gj.to_y();
         this.a5H = -this.a5L;
         this.a5I = -this.a5M;
-        this.a5J = gE / g7;
-        this.a5K = cB / g7;
+        this.a5J = clientWidth / g7;
+        this.a5K = clientHeight / g7;
         this.ty[0] = Math.floor(this.a5H);
         this.ty[1] = Math.floor(this.a5I);
         this.ty[2] = Math.floor(this.ty[0] + this.a5J + 1);
@@ -9965,10 +9959,10 @@ function kb() {
         k = 0
     };
     this.update = function() {
-        0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.c5 = !0)
+        0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.canvasPendingUpdates = !0)
     };
-    this.cG = function() {
-        0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, gE, cB))
+    this.drawImage = function() {
+        0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, clientWidth, clientHeight))
     }
 }
 
@@ -9981,7 +9975,7 @@ function kg() {
     this.show = function() {
         this.hidden = !0;
         this.lx();
-        c4.c5 = !0
+        c4.canvasPendingUpdates = !0
     };
     this.lx = function() {
         var g = divide_floor(const_custom_map + const_custom_map % 2, 2);
@@ -9997,7 +9991,7 @@ function kg() {
     };
     this.clicked = function(g, k) {
         var z = divide_floor(const_custom_map + const_custom_map % 2, 2);
-        c4.c5 = !0;
+        c4.canvasPendingUpdates = !0;
         if (g < this.xV[0] || k < this.xV[1] || g > this.xV[0] + this.xV[2] || k > this.xV[1] + this.xV[3]) return this.hidden = !1, !0;
         var n = Math.floor(.13 * this.xV[3]);
         if (k < this.xV[1] + n) return g > this.xV[0] + this.xV[2] - 1.2 * n && (this.hidden = !1), !0;
@@ -10008,7 +10002,7 @@ function kg() {
         xJ(n, Math.floor(16384 * Math.random()));
         return !0
     };
-    this.cG = function() {
+    this.drawImage = function() {
         var g, k = Math.floor(.13 * this.xV[3]),
             z = divide_floor(const_custom_map + const_custom_map % 2, 2),
             n = (this.xV[3] - k - (z + 1) * display_buffer_length) / z,
