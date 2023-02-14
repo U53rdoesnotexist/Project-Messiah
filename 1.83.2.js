@@ -365,7 +365,7 @@ function cY(g, k) {
     var n, side;
     var borderPixelCount = pixels_bordering_land[g].length;
     var t = 256 <= borderPixelCount ? 12 : 32 <= borderPixelCount ? 6 : 1;
-    borderPixelCount = borderPixelCount - 1 - fakeRandom.cf(t);
+    borderPixelCount = borderPixelCount - 1 - fakeRandom.generateRandomValue(t);
     cg = 0;
     a: for (; 0 <= borderPixelCount; borderPixelCount -= t)
         for (side = 3; 0 <= side; side--) {
@@ -447,7 +447,7 @@ function cv(g) {
 }
 
 function d6() {
-    return ci[fakeRandom.cf(cg)]
+    return ci[fakeRandom.generateRandomValue(cg)]
 }
 var const_8, cg, ci, d7;
 
@@ -464,16 +464,16 @@ function d9() {
 function dB(g, k) {
     team_game && (d7[g] = 0);
     if (attacks.below_attack_cap(g) && !(60 > k))
-        if (0 === pixels_bordering_land[g].length) dE.update(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], interest.dJ(g)));
+        if (0 === pixels_bordering_land[g].length) dE.update(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], interest.maxTroopsBeforeRedInterest(g)));
         else if (!(0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(pixels_bordering_water[g].length > pixels_bordering_land[g].length ? 7 : 3) && dE.update(g, dG.cN[g - player_count]))) {
-        var n = interest.dJ(g);
+        var n = interest.maxTroopsBeforeRedInterest(g);
         troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
         team_game ? dK(g, k, dG.cN[g - player_count], n) : dL(g, k, dG.cN[g - player_count])
     }
 }
 
 function dK(g, k, n, l) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, max_entities, n)) : (fakeRandom.dP(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.update(g, n) || (dG.dH(g - player_count, 200), dI(g, k, n, l))
+    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, max_entities, n)) : (fakeRandom.generateBoolean(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.generateBoolean(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.update(g, n) || (dG.dH(g - player_count, 200), dI(g, k, n, l))
 }
 
 function dT(g, k) {
@@ -486,7 +486,7 @@ function dO(g, k, n) {
 
 function dI(g, k, n, l) {
     if (0 !== teams.team_array[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divide_floor(l, 2)))
-        for (n = fakeRandom.cf(alive_count), l = 0; l < alive_count; l++) {
+        for (n = fakeRandom.generateRandomValue(alive_count), l = 0; l < alive_count; l++) {
             var x = alive_entities[(l + n) % alive_count];
             if (teams.team_array[x] === teams.team_array[g] && 1 === d7[x]) {
                 single_donate(g, x, k);
@@ -497,7 +497,7 @@ function dI(g, k, n, l) {
 }
 
 function dL(g, k, n) {
-    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : fakeRandom.dP(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), dR(g, k, cv(g))))
+    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : fakeRandom.generateBoolean(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && fakeRandom.generateBoolean(dG.dS[n]) && cr(), dR(g, k, cv(g))))
 }
 
 function db(g, k) {
@@ -552,8 +552,8 @@ function de() {
             var y = 8 === gamemode ? 1 : 0;
             for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = y
         }
-        for (z = bot_count - 1; 0 <= z; z--) 2 >= this.cN[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 1E3) : 1 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (bots_send_ratio[z] = 1E3, n[z] = 870)) : 4 >= this.cN[z] ? (l[z] = 1 + fakeRandom.cf(20), t[z] = 250 + fakeRandom.cf(1501), x[z] = 500 + fakeRandom.cf(501), 3 === this.cN[z] ? (bots_send_ratio[z] = 600 + fakeRandom.cf(101), n[z] = 300 + fakeRandom.cf(401)) : (bots_send_ratio[z] = 300 + fakeRandom.cf(201), n[z] = 100 + fakeRandom.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
-            35 + fakeRandom.cf(16), bots_send_ratio[z] = 400 + fakeRandom.cf(101), n[z] = 50 + fakeRandom.cf(101)), bots_timing[z] = 1 + divide_floor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
+        for (z = bot_count - 1; 0 <= z; z--) 2 >= this.cN[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 1E3) : 1 === this.cN[z] ? (bots_send_ratio[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (bots_send_ratio[z] = 1E3, n[z] = 870)) : 4 >= this.cN[z] ? (l[z] = 1 + fakeRandom.generateRandomValue(20), t[z] = 250 + fakeRandom.generateRandomValue(1501), x[z] = 500 + fakeRandom.generateRandomValue(501), 3 === this.cN[z] ? (bots_send_ratio[z] = 600 + fakeRandom.generateRandomValue(101), n[z] = 300 + fakeRandom.generateRandomValue(401)) : (bots_send_ratio[z] = 300 + fakeRandom.generateRandomValue(201), n[z] = 100 + fakeRandom.generateRandomValue(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
+            35 + fakeRandom.generateRandomValue(16), bots_send_ratio[z] = 400 + fakeRandom.generateRandomValue(101), n[z] = 50 + fakeRandom.generateRandomValue(101)), bots_timing[z] = 1 + divide_floor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
     };
     this.dw = function() {
         var z, y;
@@ -704,7 +704,7 @@ function er() {
 
     function k(y) {
         if (pixel.can_take(y) && (pixel.is_neutral(y) || pixel.owner(y) !== z && isTeamate(z, pixel.owner(y)))) {
-            if (ez.check(z, y)) return 2;
+            if (waterPixelChecker.check(z, y)) return 2;
             if (0 === l--) return 0
         }
         return 1
@@ -723,7 +723,7 @@ function er() {
         if (g()) {
             var B = divide_floor(dG.dn[A] * troops[z], 100);
             100 > B && 100 <= troops[z] && (B = 100);
-            if (100 <= B) return single_boat(z, ez.f0(), pixel.to_coord(x, t), B)
+            if (100 <= B) return single_boat(z, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x, t), B)
         }
         return !1
     }
@@ -758,20 +758,24 @@ function Single() {
         t = [];
         z = []
     };
-    this.update = function() {
+    this.update = function () {
         var y, A = k.length;
-        for (y = 0; y < A; y++)
+        for (y = 0; y < A; y++) {
             if (0 === n[y]) single_attack(k[y], x[y], l[y]);
             else if (1 === n[y]) this.send_boat(k[y], l[y], t[y], z[y]);
             else if (2 === n[y]) this.cancel(k[y], x[y]);
             else if (6 === n[y]) {
-            var B = k[y];
-            0 !== is_alive[B] && 2 !== player_status[k] && peace.single_vote_peace(B, 1 === x[y])
-        } else 7 === n[y] && this.cancel_boat(k[y], x[y]);
-        0 < A && this.init()
+                var B = k[y];
+                if (0 !== is_alive[B] && 2 !== player_status[k]) {
+                    peace.single_vote_peace(B, 1 === x[y]);
+                }
+            } else if (7 === n[y]) this.cancel_boat(k[y], x[y]);
+        }
+        if (0 < A) this.init();
     };
     this.send_boat = function(attacker, ratio, x_coord, y_coord) {
-        0 !== is_alive[attacker] && 2 !== player_status[k] && ez.check(attacker, pixel.to_coord(x_coord, y_coord)) && single_boat(attacker, ez.f0(), pixel.to_coord(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
+        0 !== is_alive[attacker] && 2 !== player_status[k] && waterPixelChecker.check(attacker, pixel.to_coord(x_coord, y_coord)) &&
+            single_boat(attacker, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
             attacker === my_id && (statistics.numbers[0] += ratio, statistics.numbers[1]++, statistics.numbers[2]++)
     };
     this.cancel = function(attacker, target) {
@@ -1310,7 +1314,7 @@ function EndGame() {
             } else team_game ? (winner = eT.ik(), k = teams.team_array[my_id] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : 
                 (winner = teams.il(teams.im[winner]), result = winner[0], 512 !== result && announcements.clan_points_won(winner[1])), announcements.resultTeam(k)) : 
                 (result = orderedLand[0], k = result === my_id, announcements.resultBR(result));
-            singleplayer || multi_out.upload_result(troop_hash(), result);
+            singleplayer || multiOut.upload_result(troop_hash(), result);
             eW.show(k, !1);
             announcements.iy(!0);
             eM.eb(!0);
@@ -1343,17 +1347,17 @@ var player_count, players_in_game, bot_count, spectators, max_entities = 512,
     entity_count = 512,
     max_troops_to_land_ratio = 150,
     singleplayer, j8, client_status = 0,
-    landPixels, troop_cap, jB, starting_troops = 512,
+    landPixels, troop_cap, maxTroopsBeforeRedInterest, starting_troops = 512,
     neutral_land_cost = 2,
-    my_id, canvas_hidden, in_spawn, free_spawn, team_game, team_count, gamemode, contest, spawn, points_1v1, spawn_time,
-    cycle, tick;;
+    my_id, canvas_hidden, in_spawn, free_spawn, team_game, team_count, gamemode, isContest, spawn, points_1v1, spawn_time,
+    cycle, tick;
 
-function game_init(seed, myid, player_info, game_mode, is_contest) {
+function game_init(param_seed, param_myID, param_playerInfo, param_gamemode, param_isContest) {
     j8 = canvas_hidden = !1;
-    gamemode = game_mode;
-    contest = is_contest;
+    gamemode = param_gamemode;
+    isContest = param_isContest;
     team_game = 7 > gamemode || 9 === gamemode;
-    players_in_game = player_count = player_info.length;
+    players_in_game = player_count = param_playerInfo.length;
     singleplayer = 1 === players_in_game;
     gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
     gamemode = 8 === gamemode && 2 !== player_count ? 7 : gamemode;
@@ -1366,21 +1370,21 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     singleplayer && (entity_count = dy.jM());
     bot_count = entity_count - player_count;
     spectators = 0;
-    my_id = myid;
-    fakeRandom.jN(seed);
-    create_info_arrays(player_info);
+    my_id = param_myID;
+    fakeRandom.changeNumber(param_seed);
+    create_info_arrays(param_playerInfo);
     e2.init();
-    teams.init(player_info);
+    teams.init(param_playerInfo);
     client_status = 1;
     troop_cap = 15E8;
-    jB = 1E9;
+    maxTroopsBeforeRedInterest = 1E9;
     statistics.init();
     loadMapCanvas();
     jQ.jR();
     h8.init();
     interest.init();
     d9();
-    pixel.init(player_info);
+    pixel.init(param_playerInfo);
     hq.init();
     eT.init();
     dG.init();
@@ -1414,7 +1418,7 @@ function game_init(seed, myid, player_info, game_mode, is_contest) {
     eI.init();
     eQ.init();
     eH.init();
-    8 === gamemode ? (points_1v1 = new Points_1v1, points_1v1.init(player_info)) : points_1v1 = null;
+    8 === gamemode ? (points_1v1 = new Points_1v1, points_1v1.init(param_playerInfo)) : points_1v1 = null;
     singleplayer ? c4.jY() : c4.jZ();
     ja();
     eX.init();
@@ -1431,7 +1435,7 @@ function ja() {
     eA.eb()
 }
 
-function leave_game() { //close is temp
+function leave_game() {
     websocket_manager.close(websocket_manager.remote, 3246);
     client_status = 0;
     c4.jd();
@@ -1440,8 +1444,8 @@ function leave_game() { //close is temp
     show_ad()
 }
 var dG, au, dE, eJ, single, eK, eV, j1, names, hu, fq, announcements, jf, eP, c2, troopsBar, gj, jg, eO, eM, eB, eW, 
-jh, ji, aJ, showError, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, interest, eA, jS, e2, jQ, jm, jn, gn, ez, fakeRandom, 
-g1, hq, jo, multi_in, eX, multi_out, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, eI, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
+jh, ji, aJ, showError, jk, jl, dy, name_input, sprites, pixel, user_settings, attacks, interest, eA, jS, e2, jQ, jm, jn, gn, waterPixelChecker, fakeRandom, 
+g1, hq, jo, multiIn, eX, multiOut, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, eI, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
 
 function construct() {
     dG = new de;
@@ -1487,14 +1491,14 @@ function construct() {
     jm = new kS;
     jn = new kT;
     gn = new kU;
-    ez = new kV;
+    waterPixelChecker = new WaterPixelChecker;
     fakeRandom = new FakeRandom;
     g1 = new kX;
     hq = new kY;
     jo = new kZ;
-    multi_in = new Multi_in;
+    multiIn = new MultiIn;
     eX = new kb;
-    multi_out = new Multi_out;
+    multiOut = new MultiOut;
     jq = new kd;
     eN = new ke;
     lobby = new Lobby;
@@ -1613,7 +1617,7 @@ function jy() {
         if (2 === M) {
             if (x[7]) {
                 for (M = K.length - 1; 0 <= M; M--) 0 === is_alive[K[M]] && K.splice(M, 1);
-                0 < K.length && (eQ.lQ(1, K, !0) && (announcements.request_attack(K, target), multi_out.request_attack(K, target)), K = []);
+                0 < K.length && (eQ.lQ(1, K, !0) && (announcements.request_attack(K, target), multiOut.request_attack(K, target)), K = []);
                 this.end();
                 return 1
             }
@@ -1623,13 +1627,13 @@ function jy() {
             this.end();
             if (this.isHuman(target) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.anti_boosting(), 1;
             announcements.low_balance();
-            singleplayer ? single_donate(my_id, target, divide_floor(troopsBar.AttackRatio() * troops[my_id], 1E3)) : multi_out.attack(troopsBar.AttackRatio(), target === max_entities ? my_id : target);
+            singleplayer ? single_donate(my_id, target, divide_floor(troopsBar.AttackRatio() * troops[my_id], 1E3)) : multiOut.attack(troopsBar.AttackRatio(), target === max_entities ? my_id : target);
             return 1
         }
-        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multi_out.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, target, troopsBar.AttackRatio()) : (!free_spawn || 300 < eB.lX()) && multi_out.attack(troopsBar.AttackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.AttackRatio())) : this.end(), 1;
-        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? single.send_boat(my_id, troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multi_out.pick_location(troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
+        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multiOut.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, target, troopsBar.AttackRatio()) : (!free_spawn || 300 < eB.lX()) && multiOut.attack(troopsBar.AttackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.AttackRatio())) : this.end(), 1;
+        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? single.send_boat(my_id, troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multiOut.pick_location(troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
         if (7 === M && x[4]) return this.end(), t = a5.show(L, H), 1;
-        if (8 === M) return x[5] ? (eQ.lQ(0, [target], !0) && (announcements.la(target, 0), multi_out.non_aggression(target)), this.end(), 1) : 0;
+        if (8 === M) return x[5] ? (eQ.lQ(0, [target], !0) && (announcements.la(target, 0), multiOut.non_aggression(target)), this.end(), 1) : 0;
         this.end();
         return 2
     };
@@ -1645,7 +1649,7 @@ function jy() {
         if (2 === client_status) return 1 <= a5.lf && (target = pixel.owner(R), this.isHuman(target)) ? (target === my_id && this.end(), x[4] = !0, this.lg(L, H)) : !1;
         coord = pixel.to_coord(M, Q);
         if (in_spawn) return x[0] = !0, this.lg(L, H);
-        x[1] = ez.check(my_id, coord);
+        x[1] = waterPixelChecker.check(my_id, coord);
         if (pixel.is_neutral(R)) return target = max_entities, bordersNeutral(my_id) ? x[0] = !0 : bordersTarget(my_id, target) && (x[8] = !0), this.lg(L, H);
         target = pixel.owner(R);
         if (target === my_id) {
@@ -1815,7 +1819,7 @@ function jz() { //Added Mod Menu
                 this.alterDisplay();
                 return 2;
             } else if (option === 2) {
-                if (this.canSurrender(my_id) && (singleplayer ? single.surrender(my_id) : multi_out.surrender())) {
+                if (this.canSurrender(my_id) && (singleplayer ? single.surrender(my_id) : multiOut.surrender())) {
                     this.alterDisplay();
                 }
                 return 2;
@@ -2027,7 +2031,7 @@ function Announcements() {
         for (var Q = y(), R, P = F.length - 1; 0 <= P; P--)
             if (R = Q - (P + 1) * G, M >= R && M < R + G) {
                 if (50 === F[P].id) {
-                    if (H >= clientWidth - D - N - F[P].width) return H >= clientWidth - D - N ? (P = F[P].player, this.la(P, 0), multi_out.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
+                    if (H >= clientWidth - D - N - F[P].width) return H >= clientWidth - D - N ? (P = F[P].player, this.la(P, 0), multiOut.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
                     break
                 }
                 if (H >= clientWidth - F[P].width - N) return F[P].mZ && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mY && (Q = F[P].mY, F[P].mY = F[P].player, F[P].player = Q)), !0;
@@ -2089,7 +2093,7 @@ function Announcements() {
         1 === websocket_manager.getEquivalentLobby() && (announce(0, H[0].name + ": " + points_1v1.round_elo(H[0].elo) + " -> " + M, 66, 0, cK, R[0], -1, !1), announce(0, H[1].name + ": " + points_1v1.round_elo(H[1].elo) + " -> " + Q, 66, 1, cK, R[1], -1, !1))
     };
     this.clan_points_won = function(clan) {
-        1 === websocket_manager.getEquivalentLobby() && announce(0, "[" + clan + "] has won " + player_count + (contest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hy, -1, !1)
+        1 === websocket_manager.getEquivalentLobby() && announce(0, "[" + clan + "] has won " + player_count + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hy, -1, !1)
     };
     this.la = function(H, M) {
         0 === M ? E(50, H) ? (announce(128, "You signed a non-aggression pact with " + nickname[H] + ".", 52, H, get_color_style(180, 255, 180), hy, -1, !0), eA.n4(H, 2, 255)) : announce(384, "You asked " + nickname[H] + " to sign a non-aggression pact.",
@@ -2157,8 +2161,10 @@ function Announcements() {
         index = 1 >= index ? 1 : index * index;
         for (H = F.length - 1; 0 <= H; H--) 0 < F[H].time && (F[H].time -= index, 0 >= F[H].time && F.splice(H, 1));
         if (128 !== J && (J++, !(128 > J)))
-            for (H = 5, index = alive_count - 1; 0 <= index; index--) 1 === player_status[alive_entities[index]] && 0 < H-- 
-            && announce(240, nickname[alive_entities[index]] + " joined the game.", 1, alive_entities[index], gH, "rgba(255,255,255,0.75)", -1, !0);
+            for (H = 5, index = alive_count - 1; 0 <= index; index--) {
+                if (1 === player_status[alive_entities[index]] && 0 < H--)
+                    announce(240, nickname[alive_entities[index]] + " joined the game.", 1, alive_entities[index], gH, "rgba(255,255,255,0.75)", -1, !0);
+            }
         this.iy(!1)
     };
     this.drawImage = function() {
@@ -2221,8 +2227,19 @@ function Cookies_window() {
         mainCanvasCtx.strokeStyle = cK;
         mainCanvasCtx.font = bt + this.by + bu;
         mainCanvasCtx.strokeRect(0, 0, this.width, this.cw);
-        for (var n = this.lt.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.i4, k + this.nR + n * (this.nR + this.nS)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.i5, this.nS), this.bs === n && (mainCanvasCtx.fillStyle =
-            nZ, mainCanvasCtx.fillRect(0, 0, this.i5, this.nS)), mainCanvasCtx.fillStyle = cK, mainCanvasCtx.fillText(this.lt[n], this.i5 / 2, .54 * this.nS), mainCanvasCtx.strokeRect(0, 0, this.i5, this.nS);
+
+        for (var n = this.lt.length - 1; n >= 0; n--) {
+            mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.i4, k + this.nR + n * (this.nR + this.nS));
+            mainCanvasCtx.fillStyle = this.colors[n];
+            mainCanvasCtx.fillRect(0, 0, this.i5, this.nS);
+            if (this.bs === n) {
+                mainCanvasCtx.fillStyle = nZ;
+                mainCanvasCtx.fillRect(0, 0, this.i5, this.nS);
+            }
+            mainCanvasCtx.fillStyle = cK;
+            mainCanvasCtx.fillText(this.lt[n], this.i5 / 2, 0.54 * this.nS);
+            mainCanvasCtx.strokeRect(0, 0, this.i5, this.nS);
+        }
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
@@ -2320,12 +2337,12 @@ function ni() {
             alpha: !0
         });
         x.clearRect(0, 0, this.width, this.width);
-        23 === k ? x.drawImage(hu.l5[2], 0, 0) : 36 === k ? x.drawImage(hu.l5[0], 0, 0) : 49 === k ? x.drawImage(hu.l5[1], 0, 0) : x.drawImage(n, this.width * g % (g === k ? this.nj * this.width : 4E3), g === k ? divide_floor(g, this.nj) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
+        23 === k ? x.drawImage(hu.l5[2], 0, 0) : 36 === k ? x.drawImage(hu.l5[0], 0, 0) : 49 === k ? x.drawImage(hu.l5[1], 0, 0) :
+            x.drawImage(n, this.width * g % (g === k ? this.nj * this.width : 4E3), g === k ? divide_floor(g, this.nj) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
         this.l7[k] = l
     };
     this.o0 = function() {
-        this.l7[this.a6 -
-            5] = this.l7[26];
+        this.l7[this.a6 - 5] = this.l7[26];
         this.l7[this.a6 - 4] = this.o1(this.a6 - 5, 2);
         this.l7[this.a6 - 1] = this.o1(this.a6 - 5, 1);
         this.l7[this.a6 - 8] = this.o1(this.a6 - 4, 1);
@@ -2403,7 +2420,7 @@ function ni() {
         for (var l = this.lf - 1; 0 <= l; l--)
             if (g >= this.nr[l] && k >= this.ns[l]) {
                 if (39 === this.nu[l]) return this.o6(), this.show(g, k), !0;
-                singleplayer ? eA.n4(my_id, 0, this.nu[l]) : target_id === my_id ? multi_out.self_emoji(this.nu[l]) : multi_out.send_emoji(this.nu[l], target_id);
+                singleplayer ? eA.n4(my_id, 0, this.nu[l]) : target_id === my_id ? multiOut.self_emoji(this.nu[l]) : multiOut.send_emoji(this.nu[l], target_id);
                 this.o5();
                 break
             } return !1
@@ -2416,7 +2433,10 @@ function ni() {
     };
     this.drawImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
-        for (var g = this.nt * this.no / 2, k = this.lf - 1; 0 <= k; k--) mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.nr[k] + g, this.ns[k] + g), mainCanvasCtx.drawImage(this.l7[this.nu[k]], 0, 0);
+        for (var g = this.nt * this.no / 2, k = this.lf - 1; 0 <= k; k--) {
+            mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.nr[k] + g, this.ns[k] + g);
+            mainCanvasCtx.drawImage(this.l7[this.nu[k]], 0, 0);
+        }
         mainCanvasCtx.imageSmoothingEnabled = !1;
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
@@ -2568,7 +2588,7 @@ function pA(g) {
 }
 
 function onclick(e) {
-    2 === aJ.pa() && dy.click(e.clientX, e.clientY)
+    2 === aJ.getState() && dy.click(e.clientX, e.clientY)
 }
 
 function pG(g) {
@@ -2706,8 +2726,8 @@ function k2() {
             var D = x(F);
             var K = t[F].canvas.width;
             if (E >= D - N && E <= D + A + N) {
-                if (C >= I - G && C <= I + A + G) return t[F].pu || (t[F].po = !0, t[F].pu = !0, 0 === t[F].id ? singleplayer ? single.cancel(my_id, t[F].cM) : multi_out.cancel(t[F].cM === max_entities ? my_id : t[F].cM) : singleplayer ? single.cancel_boat(my_id, t[F].id) : multi_out.cancel_boat(t[F].id)), !0;
-                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? single_attack(my_id, t[F].cM, troopsBar.AttackRatio()) : multi_out.attack(troopsBar.AttackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
+                if (C >= I - G && C <= I + A + G) return t[F].pu || (t[F].po = !0, t[F].pu = !0, 0 === t[F].id ? singleplayer ? single.cancel(my_id, t[F].cM) : multiOut.cancel(t[F].cM === max_entities ? my_id : t[F].cM) : singleplayer ? single.cancel_boat(my_id, t[F].id) : multiOut.cancel_boat(t[F].id)), !0;
+                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? single_attack(my_id, t[F].cM, troopsBar.AttackRatio()) : multiOut.attack(troopsBar.AttackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
             }
         }
         return !1
@@ -2962,7 +2982,7 @@ function Peace() {
         var choice = n();
         if (K < choice || K > choice + l) return !1;
         choice = D > r - m7 - this.width / 2;
-        singleplayer ? this.single_vote_peace(0, choice) : hu.isHuman(my_id) && 0 !== is_alive[my_id] && multi_out.vote_peace(choice);
+        singleplayer ? this.single_vote_peace(0, choice) : hu.isHuman(my_id) && 0 !== is_alive[my_id] && multiOut.vote_peace(choice);
         return !0
     };
     this.update = function() {
@@ -3282,7 +3302,7 @@ function k6() {
     }
 
     function x() {
-        8 === aJ.pa() && (G = -1);
+        8 === aJ.getState() && (G = -1);
         if (0 !== G) Q = (new Date).getTime(), clearInterval(M), M = -1;
         else {
             var P = t[1] / 864E3;
@@ -3490,7 +3510,7 @@ function k6() {
         g()
     };
     this.rm = function() {
-        J || multi_out.requestGameInfo()
+        J || multiOut.requestGameInfo()
     };
     this.ro = function(P) {
         var U;
@@ -3617,7 +3637,7 @@ function k7() {
         z.fillStyle = oe;
         this.sF();
         this.sG();
-        z.fillStyle = troops[my_id] >= interest.dJ(my_id) ? oZ : cK;
+        z.fillStyle = troops[my_id] >= interest.maxTroopsBeforeRedInterest(my_id) ? oZ : cK;
         z.fillText(eP.split_into_pieces(A), Math.floor(k / 2), F);
         z.fillStyle = cK;
         z.fillRect(0, 0, k, 1);
@@ -3869,7 +3889,7 @@ function k9() {
                 z.fillText(D[U], E, W);
                 z.textAlign = ol;
                 5 === U && 0 !== is_alive[my_id] &&
-                    troops[my_id] >= interest.dJ(my_id) ? (z.fillStyle = oi, z.fillText(k(U), eB.width - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.width - E, W)
+                    troops[my_id] >= interest.maxTroopsBeforeRedInterest(my_id) ? (z.fillStyle = oi, z.fillText(k(U), eB.width - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.width - E, W)
             } else P++
     }
 
@@ -3982,7 +4002,7 @@ function k9() {
             var P = eT.get_largest_team_total_land();
             P >= R && l() ? (endGame.gameEnd(-1), n(eT.get_largest_team_total_land())) : n(P)
         } else P = land[orderedLand[0]], P >= R && l() && endGame.gameEnd(-1), n(P);
-        P = interest.interest(my_id);
+        P = interest.interestRate(my_id);
         P !== K[5] && (K[5] = P, I++);
         x();
         K[7] += c4.getTickInterval();
@@ -4265,7 +4285,7 @@ function IntelliAttack() {
     };
     this.doIntelliAttack = function(myID, target) {
         announcements.low_balance();
-        singleplayer ? single_attack(myID, target.player, target.ratio) : multi_out.attack(target.ratio, target === max_entities ? myID : target.player)
+        singleplayer ? single_attack(myID, target.player, target.ratio) : multiOut.attack(target.ratio, target === max_entities ? myID : target.player)
     };
     this.sortTargets = function(targetPenalties) {
         targetPenalties.sort(function(prev, next) {
@@ -4378,7 +4398,7 @@ function u9() {
         this.hidden && this.bv()
     };
     this.bv = function() {
-        c4.time - 12E4 >= n[this.uA] && (n[this.uA] = c4.time, this.uP = [0, 0], websocket_manager.rk(0, 1 + this.uA) && multi_out.load_leaderboard(0, this.uA))
+        c4.time - 12E4 >= n[this.uA] && (n[this.uA] = c4.time, this.uP = [0, 0], websocket_manager.rk(0, 1 + this.uA) && multiOut.load_leaderboard(0, this.uA))
     };
     this.lx = function() {
         var l;
@@ -4416,7 +4436,7 @@ function u9() {
             return t.value - x.value
         })
     };
-    this.ua = function(l, x, t, z) {
+    this.updateAttribute = function(l, x, t, z) {
         if (this.mE && this.mE[l]) {
             var y, A = !1,
                 B = 383 / 384;
@@ -4456,13 +4476,13 @@ function u9() {
         if (!this.hidden) return !1;
         l -= (clientWidth - this.width) / 2;
         x -= (clientHeight - this.cw) / 2;
-        if (0 > l || l > this.width || 0 > x || x > this.cw) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.canvasPendingUpdates = !0;
+        if (0 > l || l > this.width || 0 > x || x > this.cw) return this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0;
         if (x < .3 * this.cw) var t = 1;
         else x < .85 * this.cw ? (t = (0 === this.uA ? 14.1 : 3) * (x - .3 * this.cw) / (.55 * this.cw), t = Math.floor(1 + t * t)) : t = 0 === this.uA ? 200 : 10;
         this.uP[this.uA] = l < this.width / 2 ? -t : t;
         if (n[this.uA] + 50 > c4.time) return !0;
         n[this.uA] = c4.time;
-        websocket_manager.rk(0, 1 + this.uA) && multi_out.load_leaderboard(0, this.uA);
+        websocket_manager.rk(0, 1 + this.uA) && multiOut.load_leaderboard(0, this.uA);
         return !0
     };
     this.drawImage = function() {
@@ -4591,7 +4611,7 @@ function OpenLinkBox() {
     this.clicked = function(G, N) {
         if (!this.hidden) return !1;
         if (G < g || N < k || G > g + C || N > k + l) c4.canvasPendingUpdates = !0, this.hidden = !1, document.body.removeChild(linkBox),
-            0 === aJ.pa() && jk.cE(0, !0);
+            0 === aJ.getState() && jk.cE(0, !0);
         return !0
     };
     this.drawImage = function() {
@@ -4642,7 +4662,7 @@ function ut() {
         }
     };
     this.hidden = function() {
-        return !(7 === aJ.pa() && zoom)
+        return !(7 === aJ.getState() && zoom)
     };
     this.clicked = function(y, A, B) {
         if (!t || !this.hidden()) return !1;
@@ -4802,7 +4822,7 @@ function kB() {
     };
     this.lo = function(x, t, z) {
         var y = -1;
-        0 === aJ.pa() ? y = this.pR(x, t, 0, 2) : 3 === aJ.pa() ? y = this.pR(x, t, 3, 1) : 5 === aJ.pa() && (y = this.pR(x, t, 5, 2));
+        0 === aJ.getState() ? y = this.pR(x, t, 0, 2) : 3 === aJ.getState() ? y = this.pR(x, t, 3, 1) : 5 === aJ.getState() && (y = this.pR(x, t, 5, 2));
         k !== y && (k = y, z && (c4.canvasPendingUpdates = !0));
         return -1 !== y ? (jg.pW(), !0) : !1
     };
@@ -4852,7 +4872,7 @@ function v9() {
         var l = (clientHeight - this.cw) / 2;
         k -= (clientWidth - this.width) / 2;
         n -= l;
-        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.cw - 1) return this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.canvasPendingUpdates = !0, !1;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.cw - 1) return this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0, !1;
         if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.cw - this.f6) return !0;
         if (k < this.f6 + this.vB) return n < this.f6 + this.vB && 0 !== this.nu && (this.nu = 0, c4.canvasPendingUpdates = !0), !0;
         if (k < 2 * this.f6 + this.vB) return !0;
@@ -4919,7 +4939,7 @@ function kC() {
     function k() {
         D++;
         I = c4.time;
-        websocket_manager.rk(g(), 4) && (J = !0, multi_out.join_lobby(g()))
+        websocket_manager.rk(g(), 4) && (J = !0, multiOut.join_lobby(g()))
     }
 
     function n() {
@@ -4967,7 +4987,7 @@ function kC() {
         L === g() && (J = !1, n())
     };
     this.rm = function(L) {
-        6 !== aJ.pa() || J || (I = c4.time, J = !0, multi_out.join_lobby(L))
+        6 !== aJ.getState() || J || (I = c4.time, J = !0, multiOut.join_lobby(L))
     };
     this.clicked = function(L, H) {
         var M = Math.floor((clientWidth - A) / 2),
@@ -4980,7 +5000,7 @@ function kC() {
         c4.canvasPendingUpdates = !0
     };
     this.update = function() {
-        6 === aJ.pa() && (J ? c4.time > I + 2E4 && showError.displayError(3250) : c4.time > I + 2E4 && n(), 
+        6 === aJ.getState() && (J ? c4.time > I + 2E4 && showError.displayError(3250) : c4.time > I + 2E4 && n(), 
         x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), 
         E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", 
         F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasPendingUpdates = !0)
@@ -5032,7 +5052,7 @@ function kD() {
     this.setState = function(newState) {
         state = newState
     };
-    this.pa = function() {
+    this.getState = function() {
         return state
     };
     this.vp = function() {
@@ -5172,7 +5192,7 @@ function w1() {
         var l = (clientHeight - this.cw) / 2;
         g -= (clientWidth - this.width) / 2;
         k -= l;
-        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.cw - 1) return 0 === n && (this.hidden = !1, 0 === aJ.pa() && jk.cE(0, !0), c4.canvasPendingUpdates = !0), !1;
+        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.cw - 1) return 0 === n && (this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0), !1;
         l = Math.floor(this.width / this.nj);
         g = divide_floor(g, l) + this.nj * divide_floor(k, l);
         g = 0 > g ? 0 : g >= a5.nn ? a5.nn - 1 : g;
@@ -5206,7 +5226,7 @@ function w1() {
 
 function ShowError() {
     function g() {
-        var t = aJ.pa();
+        var t = aJ.getState();
         0 === t ? name_input.hide() : 6 === t ? websocket_manager.vf(n) : 7 === t ? (lobby.hide(), websocket_manager.close(websocket_manager.lobby, 3240)) : 8 === t && (leave_game(), name_input.hide());
         aJ.setState(3);
         jh.rs();
@@ -5271,7 +5291,7 @@ function ShowError() {
     };
     this.init = function(t, z) {
         n = z;
-        var y = aJ.pa();
+        var y = aJ.getState();
         if (6 === y) {
             if (4211 === z) {
                 jl.init(0, 0);
@@ -5291,7 +5311,7 @@ function ShowError() {
     };
     this.displayError = function(t) {
         n = t;
-        8 === aJ.pa() ? announcements.error(k(t)) : g()
+        8 === aJ.getState() ? announcements.error(k(t)) : g()
     };
     this.lx = function() {
         jh.uz[2].na = k(n)
@@ -5361,14 +5381,14 @@ function kF() {
 }
 
 function ki() {
-    this.my_id = this.wG = 0;
+    this.my_id = this.gameHash = 0;
     var g, k, n, l;
     this.init = function(x) {
-        if (7 === aJ.pa()) {
+        if (7 === aJ.getState()) {
             g = x;
             k = 0;
             n = c4.time + 4500;
-            l = multi_in.getRemote(g) ? 2 : 0;
+            l = multiIn.getRemote(g) ? 2 : 0;
             aJ.setState(10);
             mainCanvasCtx.imageSmoothingEnabled = !0;
             aJ.hr();
@@ -5383,7 +5403,7 @@ function ki() {
         0 < l && c4.time > n && (l--, n += 4500, 0 === c4.wO && 0 === c4.wP && (0 === l && websocket_manager.remote < websocket_manager.originCount && (websocket_manager.remote += websocket_manager.lobbyCount), websocket_manager.rk(websocket_manager.remote, 5)))
     };
     this.wS = function() {
-        10 === aJ.pa() && (k++, 2 <= k && (multi_in.wT(g), g = null))
+        10 === aJ.getState() && (k++, 2 <= k && (multiIn.extract_game_data(g), g = null))
     }
 }
 
@@ -5409,14 +5429,14 @@ function Lobby() {
     }
 
     function n() {
-        if (7 === aJ.pa()) {
-            for (var P = -1, U = next_games.length - 1; 0 <= U; U--)
-                if (null === next_games[U].canvas) {
+        if (7 === aJ.getState()) {
+            for (var P = -1, U = lobbyGames.length - 1; 0 <= U; U--)
+                if (null === lobbyGames[U].canvas) {
                     P = U;
                     break
                 } if (-1 !== P) {
-                U = l(next_games[P].map_id, next_games[P].xB);
-                if (null !== U) next_games[P].canvas = U;
+                U = getGameCanvas(lobbyGames[P].map_id, lobbyGames[P].xB);
+                if (null !== U) lobbyGames[P].canvas = U;
                 else {
                     U = map_width;
                     var W = map_height,
@@ -5425,8 +5445,8 @@ function Lobby() {
                         na = xH,
                         ba = xI,
                         ca = current_map,
-                        pa = x7;
-                    xJ(next_games[P].map_id, next_games[P].seed);
+                        pa = seed;
+                    xJ(lobbyGames[P].map_id, lobbyGames[P].seed);
                     xK.xL();
                     var S = document.createElement("canvas");
                     S.width = 128;
@@ -5447,45 +5467,45 @@ function Lobby() {
                     xH = na;
                     xI = ba;
                     current_map = ca;
-                    x7 = pa;
-                    next_games[P].canvas = S
+                    seed = pa;
+                    lobbyGames[P].canvas = S
                 }
                 c4.canvasPendingUpdates = !0
             }
         }
     }
 
-    function l(P, U) {
-        for (var W = next_games.length - 1; 0 <= W; W--)
-            if (null !== next_games[W].canvas && next_games[W].map_id === P && next_games[W].seed === U) return next_games[W].canvas;
+    function getGameCanvas(param_mapID, param_seed) {
+        for (var index = lobbyGames.length - 1; 0 <= index; index--)
+            if (null !== lobbyGames[index].canvas && lobbyGames[index].map_id === param_mapID && lobbyGames[index].seed === param_seed) return lobbyGames[index].canvas;
         return null
     }
 
     function x(x_coord, y_coord) {
         var display_games_rows, display_games_columns;
-        if (0 === next_games.length) return !1;
-        var next_game_index = 0;
+        if (0 === lobbyGames.length) return !1;
+        var lobbyGame_index = 0;
         var display_games_box_y_min = display_games_box_init_y_min;
         for (display_games_columns = 0; display_games_columns < display_games_box_arrangement[1]; display_games_columns++) {
             var display_games_box_x_min = games_display_box_init_x_min;
             for (display_games_rows = 0; display_games_rows < display_games_box_arrangement[0]; display_games_rows++) {
                 if (x_coord > display_games_box_x_min && x_coord < display_games_box_x_min + display_games_box_length && y_coord > display_games_box_y_min && y_coord < display_games_box_y_min + display_games_box_length){
-                    return multi_out.join_game(next_games[next_game_index].game_id), game_selected = next_games[next_game_index].game_id !== game_selected ? next_games[next_game_index].game_id : -1, c4.canvasPendingUpdates = !0;
+                    return multiOut.join_game(lobbyGames[lobbyGame_index].game_id), game_selected = lobbyGames[lobbyGame_index].game_id !== game_selected ? lobbyGames[lobbyGame_index].game_id : -1, c4.canvasPendingUpdates = !0;
                 }
-                next_game_index++;
-                if (next_game_index >= next_games.length) return !1;
+                lobbyGame_index++;
+                if (lobbyGame_index >= lobbyGames.length) return !1;
                 display_games_box_x_min += display_games_box_length + display_buffer_length
             }
             display_games_box_y_min += display_games_box_length + display_buffer_length
         }
         return !1
     }
-    var display_games_box_length, z, display_games_box_arrangement, games_display_box_init_x_min, display_games_box_init_y_min, C, E, next_games, G, game_selected, I, D, status_display_label = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
-        J = [0, 0, 0, 0],
+    var display_games_box_length, z, display_games_box_arrangement, games_display_box_init_x_min, display_games_box_init_y_min, C, E, lobbyGames, G, game_selected, I, D, label_displayLobbyStats = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
+        lobbyStats = [0, 0, 0, 0],
         L, H, M, Q, R;
     //The bottom 3 functions are Added
-    this.get_next_games = function() {
-        return next_games;
+    this.get_lobbyGames = function() {
+        return lobbyGames;
     }
     this.get_game_selected = function() {
         return game_selected;
@@ -5497,7 +5517,7 @@ function Lobby() {
         R = 0;
         game_selected = -1;
         aJ.setState(7);
-        next_games = [];
+        lobbyGames = [];
         this.lx();
         var P;
         E = Array(11);
@@ -5543,17 +5563,53 @@ function Lobby() {
         c4.canvasPendingUpdates = !0
     };
     this.hide = function() {
-        next_games = [];
+        lobbyGames = [];
         E = []
     };
     this.lx = function() {
         var P, U;
         display_games_box_arrangement = [0, 0];
         G = [0, 0, 0, 0];
-        zoom ? (I = Math.floor(.8 * .4 * bq), D = Math.floor(.56 * I), G[0] = display_buffer_length, r < s ? (G[1] = D + 2 * display_buffer_length, G[2] = r - 3 * G[0], G[3] = uZ.to_y() - 3 * display_buffer_length - D, H = Math.floor(.95 * D), M = Math.floor((r - I - display_buffer_length) / 2), Q = Math.floor(display_buffer_length + D / 2)) : (G[1] = display_buffer_length, G[2] = r - 3 * display_buffer_length - I, G[3] = uZ.to_y() - 2 * display_buffer_length, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = max(D, H)), M = Math.floor(r - I / 2 - display_buffer_length), Q = Math.floor(display_buffer_length + D + (G[3] - D) / 2), Q = max(Q, Math.floor(D + 2 * display_buffer_length + H / 2)))) : (I = Math.floor(.2016 * bq), D = Math.floor(.56 *
-            I), G[2] = Math.floor(.5 * r), G[3] = Math.floor(.5 * s), G[1] = Math.floor(.45 * (s - G[3])), G[0] = Math.floor((r - G[2]) / 2), H = Math.floor(.75 * D), M = Math.floor(r / 2), Q = Math.floor(G[1] + G[3] + (s - G[3] - G[1]) / 2));
+        if (zoom) {
+            I = Math.floor(.8 * .4 * bq);
+            D = Math.floor(.56 * I);
+            G[0] = display_buffer_length;
+
+            if (r < s) {
+                G[1] = D + 2 * display_buffer_length;
+                G[2] = r - 3 * G[0];
+                G[3] = uZ.to_y() - 3 * display_buffer_length - D;
+                H = Math.floor(.95 * D);
+                M = Math.floor((r - I - display_buffer_length) / 2);
+                Q = Math.floor(display_buffer_length + D / 2);
+            } else {
+                G[1] = display_buffer_length;
+                G[2] = r - 3 * display_buffer_length - I;
+                G[3] = uZ.to_y() - 2 * display_buffer_length;
+                H = Math.floor(.8 * I);
+
+                if (G[3] - D < I) {
+                    H = Math.floor(.8 * (G[3] - D));
+                    H = Math.max(D, H);
+                }
+
+                M = Math.floor(r - I / 2 - display_buffer_length);
+                Q = Math.floor(display_buffer_length + D + (G[3] - D) / 2);
+                Q = Math.max(Q, Math.floor(D + 2 * display_buffer_length + H / 2));
+            }
+        } else {
+            I = Math.floor(.2016 * bq);
+            D = Math.floor(.56 * I);
+            G[2] = Math.floor(.5 * r);
+            G[3] = Math.floor(.5 * s);
+            G[1] = Math.floor(.45 * (s - G[3]));
+            G[0] = Math.floor((r - G[2]) / 2);
+            H = Math.floor(.75 * D);
+            M = Math.floor(r / 2);
+            Q = Math.floor(G[1] + G[3] + (s - G[3] - G[1]) / 2);
+        }
         L = bt + Math.floor(.65 * D / 4) + bu;
-        for (P = U = 1; P * U < next_games.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
+        for (P = U = 1; P * U < lobbyGames.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
         var W = (G[2] - (P - 1) * display_buffer_length) / P;
         var X = (G[3] - (U - 1) * display_buffer_length) / U;
         display_games_box_length = W < X ? W : X;
@@ -5564,35 +5620,35 @@ function Lobby() {
         games_display_box_init_x_min = G[0] + Math.floor((G[2] - display_games_box_arrangement[0] * display_games_box_length - (display_games_box_arrangement[0] - 1) * display_buffer_length) / 2);
         display_games_box_init_y_min = G[1] + Math.floor((G[3] - display_games_box_arrangement[1] * display_games_box_length - (display_games_box_arrangement[1] - 1) * display_buffer_length) / 2)
     };
-    this.ua = function(P, U) {
-        var W, X = next_games.length;
-        J = P;
-        for (W = 0; W < U.length; W++) {
-            var V = l(U[W].map_id, U[W].x7);
-            next_games.push({
-                game_id: U[W].id,
-                game_mode: U[W].game_mode,
-                contest: U[W].contest,
-                map_id: U[W].map_id,
-                seed: U[W].x7,
-                joined: U[W].xC,
-                time_left: U[W].time_left,
-                maximum_players: U[W].maximum_players,
-                canvas: V
+    this.updateAttribute = function(param_lobbyStats, param_lobbyGames) {
+        var index, lobbyGamesCount = lobbyGames.length;
+        lobbyStats = param_lobbyStats;
+        for (index = 0; index < param_lobbyGames.length; index++) {
+            var gamePreviewCanvas = getGameCanvas(param_lobbyGames[index].map_id, param_lobbyGames[index].seed);
+            lobbyGames.push({
+                game_id: param_lobbyGames[index].id,
+                game_mode: param_lobbyGames[index].game_mode,
+                contest: param_lobbyGames[index].contest,
+                map_id: param_lobbyGames[index].map_id,
+                seed: param_lobbyGames[index].seed,
+                join_count: param_lobbyGames[index].join_count,
+                time_left: param_lobbyGames[index].time_left,
+                maximum_players: param_lobbyGames[index].maximum_players,
+                canvas: gamePreviewCanvas
             })
         }
-        for (W = X - 1; 0 <= W; W--) next_games.shift();
+        for (index = lobbyGamesCount - 1; 0 <= index; index--) lobbyGames.shift();
         if (-1 !== game_selected)
-            for (V = game_selected, game_selected = -1, W = next_games.length - 1; 0 <= W; W--)
-                if (next_games[W].game_id === V) {
-                    game_selected = V;
+            for (gamePreviewCanvas = game_selected, game_selected = -1, index = lobbyGames.length - 1; 0 <= index; index--)
+                if (lobbyGames[index].game_id === gamePreviewCanvas) {
+                    game_selected = gamePreviewCanvas;
                     break
-                } if (next_games.length > R || next_games.length < R) R = next_games.length, this.lx();
+                } if (lobbyGames.length > R || lobbyGames.length < R) R = lobbyGames.length, this.lx();
         this.xE();
         c4.canvasPendingUpdates = !0
     };
     this.xE = function() {
-        for (var P = next_games.length - 1; 0 <= P; P--) null === next_games[P].canvas && setTimeout(n, 0)
+        for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
     };
     this.clicked = function(x_coord, y_coord) {
         return 4 * ((x_coord - M) * (x_coord - M) + (y_coord - Q) * (y_coord - Q)) <= H * H ? (this.vt(), jh.lo(x_coord, y_coord, !1), !0) : x(x_coord, y_coord)
@@ -5627,28 +5683,28 @@ function Lobby() {
         mainCanvasCtx.textBaseline = cI;
         W = Math.floor(.04 * I);
         X = Math.floor(.08 * D);
-        for (var V = 3; 0 <= V; V--) {
-            var na = Math.floor(display_buffer_length + (V + 1) * (D + 2 * X) / 5 - X);
+        for (var index = 3; 0 <= index; index--) {
+            var na = Math.floor(display_buffer_length + (index + 1) * (D + 2 * X) / 5 - X);
             mainCanvasCtx.textAlign = mj;
-            mainCanvasCtx.fillText(status_display_label[V], r - I - display_buffer_length + W, na);
+            mainCanvasCtx.fillText(label_displayLobbyStats[index], r - I - display_buffer_length + W, na);
             mainCanvasCtx.textAlign = ol;
-            mainCanvasCtx.fillText(eP.split_into_pieces(J[V]), r - display_buffer_length - W, na)
+            mainCanvasCtx.fillText(eP.split_into_pieces(lobbyStats[index]), r - display_buffer_length - W, na)
         }
-        if (0 !== next_games.length)
+        if (0 !== lobbyGames.length)
             for (X = 0; X < display_games_box_arrangement[1]; X++) {
                 na = games_display_box_init_x_min;
                 for (W = 0; W < display_games_box_arrangement[0]; W++) {
-                    V = P;
+                    index = P;
                     var ba = Math.floor(na),
                         ca = Math.floor(U);
-                    if (null === next_games[V].canvas) mainCanvasCtx.fillStyle = oG, mainCanvasCtx.fillRect(ba, ca, z, z);
+                    if (null === lobbyGames[index].canvas) mainCanvasCtx.fillStyle = oG, mainCanvasCtx.fillRect(ba, ca, z, z);
                     else {
                         var pa = z / 128;
                         mainCanvasCtx.setTransform(pa, 0, 0, pa, ba, ca);
-                        mainCanvasCtx.drawImage(next_games[V].canvas, 0, 0);
+                        mainCanvasCtx.drawImage(lobbyGames[index].canvas, 0, 0);
                         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
                     }
-                    if (game_selected === next_games[V].game_id) {
+                    if (game_selected === lobbyGames[index].game_id) {
                         pa = ba;
                         var S = ca,
                             O = Math.floor(.2 * z),
@@ -5675,21 +5731,21 @@ function Lobby() {
                     mainCanvasCtx.textBaseline = cI;
                     mainCanvasCtx.textAlign = mj;
                     mainCanvasCtx.fillStyle = od;
-                    mainCanvasCtx.fillText(next_games[V].joined.toString(), Math.floor(ba + .07 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
-                    mainCanvasCtx.textAlign = cJ, mainCanvasCtx.fillStyle = oM, mainCanvasCtx.fillText(next_games[V].game_id.toString(), Math.floor(ba + .5 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.fillText(lobbyGames[index].join_count.toString(), Math.floor(ba + .07 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.textAlign = cJ, mainCanvasCtx.fillStyle = oM, mainCanvasCtx.fillText(lobbyGames[index].game_id.toString(), Math.floor(ba + .5 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
                     mainCanvasCtx.textAlign = ol;
                     mainCanvasCtx.fillStyle = oY;
-                    mainCanvasCtx.fillText(next_games[V].time_left.toString(), Math.floor(ba + .93 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.fillText(lobbyGames[index].time_left.toString(), Math.floor(ba + .93 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
                     mainCanvasCtx.strokeStyle = oe;
                     mainCanvasCtx.strokeRect(ba, ca, z, z);
                     O = Math.floor(.16 * display_games_box_length);
                     pa = O / 48;
                     mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
-                    E.length > next_games[V].game_mode && mainCanvasCtx.drawImage(E[next_games[V].game_mode], 0, 0);
+                    E.length > lobbyGames[index].game_mode && mainCanvasCtx.drawImage(E[lobbyGames[index].game_mode], 0, 0);
                     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-                    next_games[V].contest && (V = sprites.bz(4), pa = .5 * display_games_box_length / V.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (display_games_box_length - pa * V.width) / 2), Math.floor(ca + (display_games_box_length - pa * V.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(V, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
+                    lobbyGames[index].contest && (index = sprites.bz(4), pa = .5 * display_games_box_length / index.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (display_games_box_length - pa * index.width) / 2), Math.floor(ca + (display_games_box_length - pa * index.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(index, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
                     P++;
-                    if (P >= next_games.length) return;
+                    if (P >= lobbyGames.length) return;
                     na += display_games_box_length + display_buffer_length
                 }
                 U += display_games_box_length + display_buffer_length
@@ -5771,7 +5827,7 @@ function kH() {
     };
     this.xZ = function() {
         websocket_manager.remote = 0;
-        websocket_manager.rk(0, 3) && multi_out.single_loaded(0);
+        websocket_manager.rk(0, 3) && multiOut.single_loaded(0);
         aJ.vp();
         if (customMap.ds) customMap.xb();
         else {
@@ -5999,7 +6055,7 @@ function Name_input() {
         if (2 !== split_names.length) return !1;
         name_input.vote_id = split_names[1];
         display_username();
-        websocket_manager.rk(0, 7) && multi_out.vote(0);
+        websocket_manager.rk(0, 7) && multiOut.vote(0);
         showError.displayError(3252);
         return !0
     }
@@ -6471,7 +6527,7 @@ function kk() {
                     if (x < max_entities && 0 === is_alive[x]) g(l);
                     else {
                         var t = n[l + 1];
-                        if (x >= max_entities && bordersNeutral(my_id) || x < max_entities && bordersEntity(my_id, x)) singleplayer ? single_attack(my_id, x, t) : multi_out.attack(t, x === max_entities ? my_id : x), g(l)
+                        if (x >= max_entities && bordersNeutral(my_id) || x < max_entities && bordersEntity(my_id, x)) singleplayer ? single_attack(my_id, x, t) : multiOut.attack(t, x === max_entities ? my_id : x), g(l)
                     }
                 }
             }
@@ -6525,7 +6581,7 @@ function zQ(g) {
 
 function zO(g, k) {
     var n, l = k[zQ(k)];
-    9 === gamemode && 1 === teams.team_array[g] && fakeRandom.dP(8) && e2.zS(l);
+    9 === gamemode && 1 === teams.team_array[g] && fakeRandom.generateBoolean(8) && e2.zS(l);
     if (g === my_id) announcements.showGenericMessages(l, 1), zM();
     else {
         for (n = k.length - 1; 0 <= n; n--)
@@ -6569,7 +6625,7 @@ function LoadCustom() {
         var img = imageThenWidth.target;
         imageThenWidth = img.width;
         var imgHeight = img.height;
-        4096 < imageThenWidth || 4096 < imgHeight || 10 > imageThenWidth || 10 > imgHeight ? alert("Image width & height must be between 10 and 4096.") : (current_map = const_custom_map, x7 = 0, map_width = imageThenWidth, map_height = imgHeight, hs.width = map_width, hs.height = map_height, pl.drawImage(img, 0, 0), xI = pl.getImageData(0, 0, map_width, map_height).data)
+        4096 < imageThenWidth || 4096 < imgHeight || 10 > imageThenWidth || 10 > imgHeight ? alert("Image width & height must be between 10 and 4096.") : (current_map = const_custom_map, seed = 0, map_width = imageThenWidth, map_height = imgHeight, hs.width = map_width, hs.height = map_height, pl.drawImage(img, 0, 0), xI = pl.getImageData(0, 0, map_width, map_height).data)
     }
     var uploader;
     this.init = function() {
@@ -6590,10 +6646,10 @@ function LoadCustom() {
         else if ("gif" === typeThenReader || "jpg" === typeThenReader || "jpeg" === typeThenReader || "png" === typeThenReader) customMap.mapName = split_fileName[0], typeThenReader = new FileReader, typeThenReader.onload = onload, typeThenReader.readAsDataURL(file)
     };
     this.pb = function(x) {
-        if (0 === aJ.pa() || 2 === aJ.pa()) x.stopPropagation(), x.preventDefault(), x.dataTransfer.dropEffect = "copy"
+        if (0 === aJ.getState() || 2 === aJ.getState()) x.stopPropagation(), x.preventDefault(), x.dataTransfer.dropEffect = "copy"
     };
     this.pc = function(x) {
-        if (0 === aJ.pa() || 2 === aJ.pa()) x.stopPropagation(), x.preventDefault(), (x = x.dataTransfer.files) && 0 < x.length && loadCustom.checkFileType(x[0])
+        if (0 === aJ.getState() || 2 === aJ.getState()) x.stopPropagation(), x.preventDefault(), (x = x.dataTransfer.files) && 0 < x.length && loadCustom.checkFileType(x[0])
     }
 }
 
@@ -6613,7 +6669,7 @@ function AntiFullsend() {
             var id = varAliveEntities[index];
             if (!(id >= player_count)) {
                 var quarterAmount = Math.max(divide_floor(varTroops[id], 4), 2048);
-                var varInterest = Math.max(interest.interest(id), 100);
+                var varInterest = Math.max(interest.interestRate(id), 100);
                 varMaxAmount[id] += divide_floor(varInterest * quarterAmount, 1E4);
                 varMaxAmount[id] > quarterAmount && (varMaxAmount[id] = quarterAmount)
             }
@@ -6644,7 +6700,7 @@ function CustomMap() {
         A.onload = function() {
             map_width = A.width;
             map_height = A.height;
-            4096 < map_width || 4096 < map_height || 10 > map_width || 10 > map_height ? (xJ(0, 0), alert("Image w & h must be between 10 and 4096.")) : (current_map = const_custom_map, x7 = 0, hs.width = map_width, hs.height = map_height, pl.drawImage(A, 0, 0), y = pl.getImageData(0, 0, map_width, map_height), xI = y.data)
+            4096 < map_width || 4096 < map_height || 10 > map_width || 10 > map_height ? (xJ(0, 0), alert("Image w & h must be between 10 and 4096.")) : (current_map = const_custom_map, seed = 0, hs.width = map_width, hs.height = map_height, pl.drawImage(A, 0, 0), y = pl.getImageData(0, 0, map_width, map_height), xI = y.data)
         };
         A.src = z;
         customMap.dt.zz = "";
@@ -6885,50 +6941,51 @@ function Attacks() {
 }
 
 function Interest() {
-    var g, k, n, remainingInterestTicks, interests, const_maxEntities;
+    var ticksPerInterestTick, interestTicksPerCycle, remainingTicksForInterest, remainingInterestTicks, discrete_Interest_array, const_maxEntities;
     this.init = function() {
-        remainingInterestTicks = n = k = g = 10
+        remainingInterestTicks = remainingTicksForInterest = interestTicksPerCycle = ticksPerInterestTick = 10
     };
     this.a0I = function() {
         const_maxEntities = 512;
-        interests = new Uint16Array(const_maxEntities);
-        for (var id = 0; id < const_maxEntities; id++) interests[id] = 100 + approximateSqrt(divide_floor(25600 * id, const_maxEntities - 4), 9)
+        discrete_Interest_array = new Uint16Array(const_maxEntities);
+        for (var index = 0; index < const_maxEntities; index++) discrete_Interest_array[index] = 100 + approximateSqrt(divide_floor(25600 * index, const_maxEntities - 4), 9)
     };
     this.getInterestTicksRemaining = function() {
         return remainingInterestTicks
     };
+    this.temp = () => discrete_Interest_array
     this.update = function() {
-        if (0 >= --n) {
-            n = g;
-            var z, y = troops[my_id];
+        if (0 >= --remainingTicksForInterest) {
+            remainingTicksForInterest = ticksPerInterestTick;
+            var index, myTroops = troops[my_id];
             singleplayer && !team_game && 0 !== is_alive[0] && 0 === dy.dz[0].bD && (troops[0] += divide_floor(land[0], 6));
-            for (z = alive_count - 1; 0 <= z; z--) {
-                var A = divide_floor(interest.interest(alive_entities[z]) * troops[alive_entities[z]], 1E4);
-                troops[alive_entities[z]] += 1 > A ? 1 : A;
-                interest.limitTroops(alive_entities[z])
+            for (index = alive_count - 1; 0 <= index; index--) {
+                var interestThenIndex = divide_floor(interest.interestRate(alive_entities[index]) * troops[alive_entities[index]], 1E4);
+                troops[alive_entities[index]] += 1 > interestThenIndex ? 1 : interestThenIndex;
+                interest.limitTroops(alive_entities[index])
             }
-            statistics.numbers[9] += troops[my_id] - y;
+            statistics.numbers[9] += troops[my_id] - myTroops;
             if (0 >= --remainingInterestTicks) {
-                remainingInterestTicks = k;
-                z = troops[my_id];
-                for (A = alive_count - 1; 0 <= A; A--) troops[alive_entities[A]] += land[alive_entities[A]], interest.limitTroops(alive_entities[A]);
-                statistics.numbers[8] += troops[my_id] - z
+                remainingInterestTicks = interestTicksPerCycle;
+                index = troops[my_id];
+                for (interestThenIndex = alive_count - 1; 0 <= interestThenIndex; interestThenIndex--) troops[alive_entities[interestThenIndex]] += land[alive_entities[interestThenIndex]], interest.limitTroops(alive_entities[interestThenIndex]);
+                statistics.numbers[8] += troops[my_id] - index
             }
         }
     };
-    this.interest = function(id) {
-        var interest = interests[divide_floor((const_maxEntities - 1) * land[id], landPixels)];
+    this.interestRate = function(id) {
+        var interest = discrete_Interest_array[divide_floor((const_maxEntities - 1) * land[id], landPixels)];
         if (1920 > c4.ticksElapsed()) {
-            var A = divide_floor(100 * (13440 - 6 * c4.ticksElapsed()), 1920);
-            interest = A > interest ? A : interest
+            var newInterestRateThenMaxTroops = divide_floor(100 * (13440 - 6 * c4.ticksElapsed()), 1920);
+            interest = newInterestRateThenMaxTroops > interest ? newInterestRateThenMaxTroops : interest
         }
-        A = this.dJ(id);
-        troops[id] > A && (interest -= divide_floor(2 * interest * (troops[id] - A), A));
+        newInterestRateThenMaxTroops = this.maxTroopsBeforeRedInterest(id);
+        troops[id] > newInterestRateThenMaxTroops && (interest -= divide_floor(2 * interest * (troops[id] - newInterestRateThenMaxTroops), newInterestRateThenMaxTroops));
         return 0 > interest ? 0 : 700 < interest ? 700 : interest
     };
-    this.dJ = function(z) {
-        z = 100 * land[z];
-        return z > jB ? jB : z
+    this.maxTroopsBeforeRedInterest = function(idThenMaxTroops) {
+        idThenMaxTroops = 100 * land[idThenMaxTroops];
+        return idThenMaxTroops > maxTroopsBeforeRedInterest ? maxTroopsBeforeRedInterest : idThenMaxTroops
     };
     this.limitTroops = function(id) {
         var maxTroops = land[id] * max_troops_to_land_ratio;
@@ -7266,7 +7323,7 @@ function kP() {
             temp_nickname = Array(player_count);
             var l = player_count;
             var x = mp_names.length;
-            var t = fakeRandom.a1W();
+            var t = fakeRandom.getMiddleValue();
             for (n = 0; n < l; n++) temp_nickname[n] = nickname[n], nickname[n] = mp_names[(n + t) % x];
             nickname[my_id] = temp_nickname[my_id]
         }
@@ -7396,10 +7453,10 @@ function Websocket_manager() {
         var index;
         this.origins = Array(this.originCount);
         this.origins[0] = "territorial.io";
-        var x = fakeRandom.a1W(0);
-        fakeRandom.jN(0);
+        var x = fakeRandom.getMiddleValue(0);
+        fakeRandom.changeNumber(0);
         for (index = 1; index < this.originCount; index++) this.origins[index] = names.generate_origin_domain_names() + ".com";
-        fakeRandom.jN(x);
+        fakeRandom.changeNumber(x);
         websockets = Array(this.terriWsCount);
         websockets_info = Array(this.terriWsCount);
         for (index = this.terriWsCount - 1; 0 <= index; index--) websockets_info[index] = {
@@ -7412,7 +7469,7 @@ function Websocket_manager() {
         return this.lobby < this.originCount ? this.lobby : this.lobby - this.lobbyCount
     };
     this.update = function() {
-        for (var remote = this.terriWsCount - 1; 0 <= remote; remote--) this.is_open(remote) && c4.time > websockets_info[remote].time + 15E3 && multi_out.anti_disconnect_15s(remote, websockets_info[remote].a1q)
+        for (var remote = this.terriWsCount - 1; 0 <= remote; remote--) this.is_open(remote) && c4.time > websockets_info[remote].time + 15E3 && multiOut.anti_disconnect_15s(remote, websockets_info[remote].a1q)
     };
     this.rk = function(remote, x) {
         if (!websockets_info[remote].wsObjCreated) return this.a1t(remote, x), !1;
@@ -7432,7 +7489,7 @@ function Websocket_manager() {
         g(l) && websockets[l].a1v(x)
     };
     this.a1y = function(remote, generic_param_or_leaderboard_page) {
-        0 === generic_param_or_leaderboard_page ? jg.rm() : 3 > generic_param_or_leaderboard_page ? multi_out.load_leaderboard(remote, generic_param_or_leaderboard_page - 1) : 3 === generic_param_or_leaderboard_page ? multi_out.single_loaded(remote) : 4 === generic_param_or_leaderboard_page ? ji.rm(remote) : 5 === generic_param_or_leaderboard_page ? remote === this.remote && multi_out.multi_loaded() : 6 === generic_param_or_leaderboard_page ? multi_out.upload_error(remote) : 7 === generic_param_or_leaderboard_page && multi_out.vote(remote)
+        0 === generic_param_or_leaderboard_page ? jg.rm() : 3 > generic_param_or_leaderboard_page ? multiOut.load_leaderboard(remote, generic_param_or_leaderboard_page - 1) : 3 === generic_param_or_leaderboard_page ? multiOut.single_loaded(remote) : 4 === generic_param_or_leaderboard_page ? ji.rm(remote) : 5 === generic_param_or_leaderboard_page ? remote === this.remote && multiOut.multi_loaded() : 6 === generic_param_or_leaderboard_page ? multiOut.upload_error(remote) : 7 === generic_param_or_leaderboard_page && multiOut.vote(remote)
     };
     this.is_open = function(l) {
         return websockets_info[l].wsObjCreated && websockets[l].is_open()
@@ -7589,7 +7646,7 @@ function check_not_top_window() {
 }
 
 function on_error(error) {
-    has_had_error_before || (has_had_error_before = !0, error.message ? (error_line = error.lineno, error_message = error.message, websocket_manager.rk(0, 6) && multi_out.upload_error(0), error = "[A_ERROR " + error_line + "][" + error_message + "]", error_warning(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
+    has_had_error_before || (has_had_error_before = !0, error.message ? (error_line = error.lineno, error_message = error.message, websocket_manager.rk(0, 6) && multiOut.upload_error(0), error = "[A_ERROR " + error_line + "][" + error_message + "]", error_warning(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
 }
 
 function error_warning(error_message) {
@@ -7605,7 +7662,7 @@ function on_visibility_change() {
 }
 
 function on_key_up(g) {
-    400 > c4.time || (8 !== aJ.pa() && aJ.us(g) ? c4.canvasPendingUpdates = !0 : "Escape" === g.key ? aJ.aK() : "ArrowLeft" === g.key ? gn.a2Y(3) : "ArrowUp" === g.key ? gn.a2Y(0) : "ArrowRight" === g.key ? gn.a2Y(1) : "ArrowDown" === g.key ? gn.a2Y(2) : "h" === g.key && 1 <= client_status && (canvas_hidden = !canvas_hidden, c4.canvasPendingUpdates = !0))
+    400 > c4.time || (8 !== aJ.getState() && aJ.us(g) ? c4.canvasPendingUpdates = !0 : "Escape" === g.key ? aJ.aK() : "ArrowLeft" === g.key ? gn.a2Y(3) : "ArrowUp" === g.key ? gn.a2Y(0) : "ArrowRight" === g.key ? gn.a2Y(1) : "ArrowDown" === g.key ? gn.a2Y(2) : "h" === g.key && 1 <= client_status && (canvas_hidden = !canvas_hidden, c4.canvasPendingUpdates = !0))
 }
 
 function set_client_checks() {
@@ -7637,7 +7694,7 @@ function kQ() {
     this.zS = function(k) {
         g.push({
             player: k,
-            mv: 14 + fakeRandom.cf(20)
+            mv: 14 + fakeRandom.generateRandomValue(20)
         })
     };
     this.update = function() {
@@ -7647,24 +7704,24 @@ function kQ() {
         }
     }
 }
-var map_width, map_height, hs, pl, xH, xI, current_map, x7, vq, const_custom_map = 15, xK;
+var map_width, map_height, hs, pl, xH, xI, current_map, seed, vq, const_custom_map = 15, xK;
 
-function xJ(mapID, k) {
-    mapID %= const_custom_map;
-    if (mapID !== current_map || notBAnorRealMap(current_map) && k !== x7) {
+function xJ(param_mapID, k) {
+    param_mapID %= const_custom_map;
+    if (param_mapID !== current_map || notBAnorRealMap(current_map) && k !== seed) {
         var n = performance.now();
         vq = !1;
         xK.xL();
-        fakeRandom.jN(mapID);
-        current_map = mapID;
-        x7 = k;
-        notBAnorRealMap(mapID) && (jm.bz(mapID).a1o = k);
+        fakeRandom.changeNumber(param_mapID);
+        current_map = param_mapID;
+        seed = k;
+        notBAnorRealMap(param_mapID) && (jm.bz(param_mapID).a1o = k);
         if (isRealMap(current_map)) a2j(n);
         else {
             var l = jm.bz(current_map);
             map_width = l.width;
             map_height = l.cw;
-            fakeRandom.jN(l.a1o);
+            fakeRandom.changeNumber(l.a1o);
             jn.fit([map_width, map_height, l.gO, l.gL]);
             a2k();
             jQ.a2l();
@@ -7730,16 +7787,16 @@ function a2P() {
         jn.a2m()
     };
     this.init = function() {
-        7 === aJ.pa() || this.a30 || (this.a2z = !0, this.aA = 0, this.a2s = 1, this.a2x = [jm.bz(current_map).a31[0], jm.bz(current_map).a32[0]], this.font_color = [jm.bz(current_map).a33[3], jm.bz(current_map).a33[4], jm.bz(current_map).a33[5], jm.bz(current_map).a33[6]], this.a2t = jm.bz(current_map).a33[7], this.a2u = jm.bz(current_map).a33[8], this.a2v = jm.bz(current_map).a33[9], this.a2w = jm.bz(current_map).a33[10], this.a2z ? this.rf = setTimeout(g, 16) : this.update())
+        7 === aJ.getState() || this.a30 || (this.a2z = !0, this.aA = 0, this.a2s = 1, this.a2x = [jm.bz(current_map).a31[0], jm.bz(current_map).a32[0]], this.font_color = [jm.bz(current_map).a33[3], jm.bz(current_map).a33[4], jm.bz(current_map).a33[5], jm.bz(current_map).a33[6]], this.a2t = jm.bz(current_map).a33[7], this.a2u = jm.bz(current_map).a33[8], this.a2v = jm.bz(current_map).a33[9], this.a2w = jm.bz(current_map).a33[10], this.a2z ? this.rf = setTimeout(g, 16) : this.update())
     };
     this.update = function() {
-        if (8 === aJ.pa() && eV.gd()) this.rf = setTimeout(g, 16);
+        if (8 === aJ.getState() && eV.gd()) this.rf = setTimeout(g, 16);
         else {
             if (0 === this.aA) {
-                var l = fakeRandom.a1W();
-                fakeRandom.jN(jm.bz(current_map).a33[2]);
+                var l = fakeRandom.getMiddleValue();
+                fakeRandom.changeNumber(jm.bz(current_map).a33[2]);
                 jn.fit([map_width, map_height, jm.bz(current_map).a33[0], jm.bz(current_map).a33[1]]);
-                fakeRandom.jN(l);
+                fakeRandom.changeNumber(l);
                 this.a2y = jn.a35();
                 this.aA++;
                 if (this.a2z) {
@@ -8486,7 +8543,7 @@ function kl() {
         };
     this.clicked = function(y, A) {
         var B;
-        if (!(7 <= aJ.pa())) {
+        if (!(7 <= aJ.getState())) {
             var C = n();
             if (t) {
                 for (B = 1; B < z.length; B++) 
@@ -8502,7 +8559,7 @@ function kl() {
     };
     this.lo = function(y, A) {
         var B;
-        if (!(7 <= aJ.pa())) {
+        if (!(7 <= aJ.getState())) {
             var C = n();
             var E = x;
             var F = t ? z.length - 1 : 1;
@@ -8516,7 +8573,7 @@ function kl() {
     };
     this.drawImage = function() {
         var y;
-        if (!(7 <= aJ.pa())) {
+        if (!(7 <= aJ.getState())) {
             var A = n();
             mainCanvasCtx.textAlign = cJ;
             mainCanvasCtx.textBaseline = cI;
@@ -8573,49 +8630,57 @@ function kU() {
     }
 }
 
-function kV() {
-    var g;
-    this.f0 = function() {
-        return g
+function WaterPixelChecker() {
+    let closestWaterPixel;
+
+    this.getClosestWaterPixel = function () {
+        return closestWaterPixel;
     };
-    this.check = function(id, coord) {
-        var l;
-        if (0 === pixels_bordering_water[id].length || !pixel.can_take(coord) || !pixel.is_neutral(coord) && pixel.owner(coord) === id) return !1;
-        for (l = 21; 0 <= l; l--) {
-            if (21 === l) {
-                var x = pixels_bordering_water[id],
-                    t = coord,
-                    z = pixel.to_x(t);
-                t = pixel.to_y(t);
-                var y = 0;
-                var A = pixel.to_x(x[0]);
-                var B = pixel.to_y(x[0]);
-                A = Math.abs(A - z) + Math.abs(B - t);
-                for (B = x.length - 1; 1 <= B; B--) {
-                    var C = pixel.to_x(x[B]);
-                    var E = pixel.to_y(x[B]);
-                    C = Math.abs(C - z) + Math.abs(E - t);
-                    C < A && (A = C, y = B)
+
+    this.check = function (id, targetCoord) {
+        let index1;
+        if (0 === pixels_bordering_water[id].length || !pixel.can_take(targetCoord) || !pixel.is_neutral(targetCoord) && pixel.owner(targetCoord) === id) return !1;
+        for (index1 = 21; 0 <= index1; index1--) {
+            if (21 === index1) {
+                let pixelX = pixel.to_x(pixels_bordering_water[id][0]);
+                let pixelY = pixel.to_y(pixels_bordering_water[id][0]);
+                let targetX = pixel.to_x(targetCoord);
+                let targetY = pixel.to_y(targetCoord);
+                let dist = Math.abs(pixelX - targetX) + Math.abs(pixelY - targetY);
+                for (let index2 = pixels_bordering_water[id].length - 1; 1 <= index2; index2--) {
+                    let nextWaterX = pixel.to_x(pixels_bordering_water[id][index2]);
+                    let nextWaterY = pixel.to_y(pixels_bordering_water[id][index2]);
+                    let newDist = Math.abs(nextWaterX - targetX) + Math.abs(nextWaterY - targetCoord);
+                    newDist < dist && (dist = newDist, closestWaterPixel = pixels_bordering_water[id][index2])
                 }
-                g = x[y]
-            } else g = pixels_bordering_water[id][divide_floor(l * pixels_bordering_water[id].length, 21)];
-            a: {
-                B = g;y = coord;x = pixel.to_x(B);z = pixel.to_y(B);t = pixel.to_x(y);y = pixel.to_y(y);A = Math.abs(t -
-                    x) + Math.abs(y - z);
-                if (!(2 > A))
-                    for (C = B, B = 0; B < A; B++)
-                        if (C = Math.abs(t - pixel.to_x(C)) >= Math.abs(y - pixel.to_y(C)) ? C + offset[t > x ? 1 : 3] : C + offset[y > z ? 2 : 0], !pixel.is_water(C)) {
-                            if (pixel.can_take(C)) {
-                                if (0 === B || B + 20 < A) break;
-                                x = !0;
-                                break a
+            } else closestWaterPixel = pixels_bordering_water[id][divide_floor(index1 * pixels_bordering_water[id].length, 21)];
+            let foundPixel = false;
+            {
+                let waterPixel = closestWaterPixel;
+                let pixelX = pixel.to_x(waterPixel);
+                let pixelY = pixel.to_y(waterPixel);
+                let targetX = pixel.to_x(targetCoord);
+                let targetY = pixel.to_y(targetCoord);
+                let distance = Math.abs(targetX - pixelX) + Math.abs(targetY - pixelY);
+                if (!(2 > distance))
+                    for (let currentPixel = waterPixel, index2 = 0; index2 < distance; index2++) {
+                        currentPixel = Math.abs(targetX - pixel.to_x(currentPixel)) >= Math.abs(targetY - pixel.to_y(currentPixel)) ?
+                            currentPixel + offset[targetX > pixelX ? 1 : 3] : currentPixel + offset[targetY > pixelY ? 2 : 0];
+                        if (!pixel.is_water(currentPixel)) {
+                            if (pixel.can_take(currentPixel)) {
+                                if (0 === index2 || index2 + 20 < distance) {
+                                    foundPixel = true;
+                                    break;
+                                }
+                            } else {
+                                break;
                             }
-                            break
-                        } x = !1
+                        }
+                    }
             }
-            if (x) return !0
+            if (foundPixel) return !0;
         }
-        return !1
+        return !1;
     }
 }
 
@@ -8728,29 +8793,29 @@ function a2V() {
 }
 
 function FakeRandom() {
-    var fake_random, array;
+    var number, array;
     this.init = function() {
         array = Array(101);
         for (var index = array.length - 1; 0 <= index; index--) array[index] = divide_floor(32768 * index, 100);
-        this.jN(0)
+        this.changeNumber(0)
     };
     this.value = function(index) {
         return array[index]
     };
-    this.a1W = function() {
-        return divide_floor(fake_random - 1, 2)
+    this.getMiddleValue = function() {
+        return divide_floor(number - 1, 2)
     };
-    this.jN = function(n) {
-        fake_random = 2 * n % 32768 + 1
+    this.changeNumber = function(param) {
+        number = 2 * param % 32768 + 1
     };
     this.random = function() {
-        return fake_random = 167 * fake_random % 32768
+        return number = 167 * number % 32768
     };
-    this.cf = function(n) {
-        return divide_floor(n * this.random(), 32768)
+    this.generateRandomValue = function (maxLimit) {
+        return divide_floor(maxLimit * this.random(), 32768)
     };
-    this.dP = function(n) {
-        return 0 !== n && this.random() < this.value(n)
+    this.generateBoolean = function(index) {
+        return 0 !== index && this.random() < this.value(index)
     }
 }
 
@@ -8762,7 +8827,7 @@ function kd() {
     function k() {
         t = 0;
         z += 700 > z ? 200 : 0;
-        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), jg.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), troopsBar.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), eW.lx(), eT.lx(), gj.rK()) : (0 === aJ.pa() ? jk.cE(0, !0) : 2 === aJ.pa() ? dy.lx() : 3 === aJ.pa() && showError.lx(), aJ.vr(), aJ.vw()), c4.canvasPendingUpdates = !0)
+        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), jg.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), troopsBar.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), eW.lx(), eT.lx(), gj.rK()) : (0 === aJ.getState() ? jk.cE(0, !0) : 2 === aJ.getState() ? dy.lx() : 3 === aJ.getState() && showError.lx(), aJ.vr(), aJ.vw()), c4.canvasPendingUpdates = !0)
     }
 
     function n(y) {
@@ -8965,7 +9030,7 @@ function Terri_ws() {
 
     function onread() {
         unread_messages--;
-        multi_in.decrypt_data(remote, new Uint8Array(data_reader.result));
+        multiIn.extract_data(remote, new Uint8Array(data_reader.result));
         0 < unread_messages && (data_reader.readAsArrayBuffer(B[0]), B.shift())
     }
 
@@ -9041,7 +9106,7 @@ function Statistics() {
         0 < this.dV-- || this.a5c()
     };
     this.a5c = function() {
-        0 !== is_alive[my_id] && (this.a5X[this.m6] = land[my_id], this.s8[this.m6] = troops[my_id], this.tV[this.m6] = interest.interest(my_id), this.a5d(this.m6), this.m6++, this.m6 === this.cV && this.a5e(), this.dV = this.tickInterval - 1, hv.bv())
+        0 !== is_alive[my_id] && (this.a5X[this.m6] = land[my_id], this.s8[this.m6] = troops[my_id], this.tV[this.m6] = interest.interestRate(my_id), this.a5d(this.m6), this.m6++, this.m6 === this.cV && this.a5e(), this.dV = this.tickInterval - 1, hv.bv())
     };
     this.a5e = function() {
         this.a5a();
@@ -9691,12 +9756,12 @@ function a6e() {
     this.a6i = function(k) {
         if (in_spawn) this.tY(k);
         else if (this.a6h.push(k), 2 === client_status) {
-            for (k = 0; k < this.a6h.length; k++) multi_in.a6j(this.a6h[k], g), g = (g + 1) % 8;
+            for (k = 0; k < this.a6h.length; k++) multiIn.a6j(this.a6h[k], g), g = (g + 1) % 8;
             this.a6h = []
         }
     };
     this.tY = function(k) {
-        multi_in.a6j(k, g);
+        multiIn.a6j(k, g);
         g = (g + 1) % 8;
         eB.tY(this.wO);
         this.wO === spawn_time ? (spawn.update(), this.wP = this.bs = this.wO = 0, this.time = c4.time) : (this.wO++, eA.j4(), eA.eb(), h8.tx())
@@ -9720,13 +9785,13 @@ function a6e() {
         }
     };
     this.a6m = function() {
-        return 0 < this.a6h.length ? (this.wO++, multi_in.a6j(this.a6h[0], g), g = (g + 1) % 8, this.a6h.shift(), !0) : !1
+        return 0 < this.a6h.length ? (this.wO++, multiIn.a6j(this.a6h[0], g), g = (g + 1) % 8, this.a6h.shift(), !0) : !1
     }
 }
 
 function km() {
     function g(k, n) {
-        8 !== aJ.pa() || 0 !== n && n !== gamemode || singleplayer || announcements.n0(k)
+        8 !== aJ.getState() || 0 !== n && n !== gamemode || singleplayer || announcements.n0(k)
     }
     this.gW = 0;
     this.a6n = !0;
@@ -9770,8 +9835,8 @@ function kZ() {
     }
 }
 
-function Multi_in() {
-    function decrypt_names(x, t) {
+function MultiIn() {
+    function extract_names(x, t) {
         for (var z = Array(x), y = 0; y < x; y++) z[y] = extractor(t, 10);
         return names.iU(z)
     }
@@ -9782,7 +9847,7 @@ function Multi_in() {
         return data
     }
     var data_length, starting_index;
-    this.decrypt_data = function(remote, data) {
+    this.extract_data = function(remote, data) {
         starting_index = 0;
         data_length = data.length;
         if (0 === data_length) websocket_manager.errorClose(remote, 3205);
@@ -9792,43 +9857,43 @@ function Multi_in() {
                 message = extractor(data, 2);
                 if (0 === message) {
                     if (0 === extractor(data, 1)) {
-                        if (0 === remote && 8 !== aJ.pa() && !(4 > data_length)) {
-                            uZ.br(0, decrypt_names(extractor(data, 5), data));
-                            uZ.br(1, "[" + decrypt_names(extractor(data, 3), data) + "]");
-                            var y = extractor(data, 12),
+                        if (0 === remote && 8 !== aJ.getState() && !(4 > data_length)) {
+                            uZ.br(0, extract_names(extractor(data, 5), data));
+                            uZ.br(1, "[" + extract_names(extractor(data, 3), data) + "]");
+                            var unknownOrLobbyStats = extractor(data, 12),
                                 A = extractor(data, 6),
-                                B = Array(y);
-                            for (message = 0; message < y; message++) B[message] = extractor(data, A);
+                                B = Array(unknownOrLobbyStats);
+                            for (message = 0; message < unknownOrLobbyStats; message++) B[message] = extractor(data, A);
                             jg.ro(B)
                         }
                     } else {
-                        if (8 !== aJ.pa())
+                        if (8 !== aJ.getState())
                             if (3 > data_length) websocket_manager.errorClose(remote, 3208);
                             else {
-                                y = extractor(data, 1);
+                                unknownOrLobbyStats = extractor(data, 1);
                                 A = extractor(data, 16);
                                 B = extractor(data, 4);
                                 var players_or_games = [];
                                 for (message = 0; message < B; message++) {
                                     var E = extractor(data, 14);
                                     var F = extractor(data, 5);
-                                    F = decrypt_names(F, data);
+                                    F = extract_names(F, data);
                                     players_or_games.push({
                                         name: F,
                                         elo: E
                                     })
                                 }
-                                0 === y ? cD.uS(0, players_or_games, 10, 1, .36, .55, A) : cD.uS(1, players_or_games, 100, 2, .47, .5, A)
+                                0 === unknownOrLobbyStats ? cD.uS(0, players_or_games, 10, 1, .36, .55, A) : cD.uS(1, players_or_games, 100, 2, .47, .5, A)
                             }
                     }
                 }
                 else if (1 === message) {
                     if (remote !== websocket_manager.lobby) websocket_manager.close(remote, 3239);
-                    else if (6 === aJ.pa() && lobby.init(), 7 !== aJ.pa()) websocket_manager.close(remote, 3251);
+                    else if (6 === aJ.getState() && lobby.init(), 7 !== aJ.getState()) websocket_manager.close(remote, 3251);
                     else {
-                        y = [0, 0, 0, 0];
+                        unknownOrLobbyStats = [0, 0, 0, 0];
                         A = extractor(data, 6);
-                        for (message = 0; 4 > message; message++) y[message] = extractor(data, A);
+                        for (message = 0; 4 > message; message++) unknownOrLobbyStats[message] = extractor(data, A);
                         B = extractor(data, 4);
                         players_or_games = [];
                         for (message = 0; message < B; message++) players_or_games.push({
@@ -9836,76 +9901,130 @@ function Multi_in() {
                             game_mode: extractor(data, 4),
                             contest: 1 === extractor(data, 1),
                             map_id: extractor(data, 6),
-                            x7: extractor(data, 14),
-                            xC: extractor(data, A),
+                            seed: extractor(data, 14),
+                            join_count: extractor(data, A),
                             maximum_players: extractor(data, 9) + 1,
                             time_left: extractor(data, 10)
                         });
-                        lobby.ua(y, players_or_games)
+                        lobby.updateAttribute(unknownOrLobbyStats, players_or_games)
                     }
                 } 
                 else 2 !== message && 3 !== message || eY.init(data);
 
             } else if (1 === message) {
-                message = aJ.pa();
-                8 !== message ? 10 === message && websocket_manager.errorClose(remote, 3243) : remote !== websocket_manager.remote ? websocket_manager.errorClose(remote, 3244) : 
-                0 === extractor(data, 1) ? c4.a6X.a6i(data) : (message = extractor(data, 2), 0 === message ? 3 !== data_length ? websocket_manager.errorClose(websocket_manager.remote, 3230) : 
-                (message = extractor(data, 9), y = extractor(data, 7), 0 !== is_alive[message] && 0 !== is_alive[my_id] && (y %= a5.a6, announcements.sentEmoji(message, my_id, y), 
-                eA.n4(message, 1, y))) : 1 === message ? 2 !== data_length ? websocket_manager.errorClose(websocket_manager.remote, 3235) : 
-                (message = extractor(data, 9), 0 !== is_alive[message] && 0 !== is_alive[my_id] && eQ.a1f(0, [message], !0) && announcements.la(message, 1)) : 
-                3 !== data_length ? websocket_manager.errorClose(websocket_manager.remote, 3236) : (message = extractor(data, 9), y = extractor(data, 9), 
-                0 !== is_alive[message] && 0 !== is_alive[y] && 0 !== is_alive[my_id] && eQ.a1f(1, [message], !0) && 
-                (eA.n4(message, 3, 96), eA.n4(y, 4, 96), announcements.requested_attack(message, y))))
+                message = aJ.getState();
+                if (8 !== message) {
+                    if (10 === message) {
+                        websocket_manager.errorClose(remote, 3243);
+                    }
+                } else {
+                    if (remote !== websocket_manager.remote) {
+                        websocket_manager.errorClose(remote, 3244);
+                    } else {
+                        if (0 === extractor(data, 1)) {
+                            c4.a6X.a6i(data);
+                        } else {
+                            message = extractor(data, 2);
+                            if (0 === message) {
+                                if (3 !== data_length) {
+                                    websocket_manager.errorClose(websocket_manager.remote, 3230);
+                                } else {
+                                    message = extractor(data, 9);
+                                    unknownOrLobbyStats = extractor(data, 7);
+                                    if (0 !== is_alive[message] && 0 !== is_alive[my_id]) {
+                                        unknownOrLobbyStats %= a5.a6;
+                                        announcements.sentEmoji(message, my_id, unknownOrLobbyStats);
+                                        eA.n4(message, 1, unknownOrLobbyStats);
+                                    }
+                                }
+                            } else if (1 === message) {
+                                if (2 !== data_length) {
+                                    websocket_manager.errorClose(websocket_manager.remote, 3235);
+                                } else {
+                                    message = extractor(data, 9);
+                                    if (0 !== is_alive[message] && 0 !== is_alive[my_id]) {
+                                        eQ.a1f(0, [message], !0) && announcements.la(message, 1);
+                                    }
+                                }
+                            } else if (3 !== data_length) {
+                                websocket_manager.errorClose(websocket_manager.remote, 3236);
+                            } else {
+                                message = extractor(data, 9);
+                                unknownOrLobbyStats = extractor(data, 9);
+                                if (0 !== is_alive[message] && 0 !== is_alive[unknownOrLobbyStats] && 0 !== is_alive[my_id]) {
+                                    if (eQ.a1f(1, [message], !0)) {
+                                        eA.n4(message, 3, 96);
+                                        eA.n4(unknownOrLobbyStats, 4, 96);
+                                        announcements.requested_attack(message, unknownOrLobbyStats);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
+
         }
     };
-    this.wT = function(x) {
+    this.extract_game_data = function(data) {
         starting_index = 1;
-        data_length = x.length;
-        if (2 === extractor(x, 2)) {
+        data_length = data.length;
+        if (2 === extractor(data, 2)) {
             starting_index += 20;
-            for (var t = extractor(x, 9), z = extractor(x, 14), y = extractor(x, 4), A = 1 === extractor(x, 1), B = extractor(x, 6), C = extractor(x, 14), E = extractor(x, 9) + 1, status = [], status_then_color, color_then_elo, nick, D = 0; D < E; D++) status_then_color = extractor(x, 1), color_then_elo = [extractor(x, 6), extractor(x, 6), extractor(x, 6)], nick = decrypt_names(extractor(x, 5), x), status.push({
-                name: nick,
-                color: color_then_elo,
-                status: status_then_color
-            });
+            var varMyID = extractor(data, 9), varGameSeed = extractor(data, 14), varGamemode = extractor(data, 4),
+                varIsContest = 1 === extractor(data, 1), varMapID = extractor(data, 6), C = extractor(data, 14),
+                varPlayerCount = extractor(data, 9) + 1, varPlayerInfoThenStatus = [], status_then_color, color_then_elo, nick;
+            for (var index = 0; index < varPlayerCount; index++) {
+                status_then_color = extractor(data, 1);
+                color_then_elo = [extractor(data, 6), extractor(data, 6), extractor(data, 6)];
+                nick = extract_names(extractor(data, 5), data);
+                varPlayerInfoThenStatus.push({
+                    name: nick,
+                    color: color_then_elo,
+                    status: status_then_color
+                });
+            };
             aJ.vp();
-            xJ(B, C);
-            1 === status.length && dy.xW(y);
-            game_init(z, t, status, y, A)
+            xJ(varMapID, C);
+            1 === varPlayerInfoThenStatus.length && dy.xW(varGamemode);
+            game_init(varGameSeed, varMyID, varPlayerInfoThenStatus, varGamemode, varIsContest)
         } else {
             starting_index += 20;
-            t = extractor(x, 1);
-            z = extractor(x, 14);
-            y = extractor(x, 4);
-            A = 1 === extractor(x, 1);
-            B = extractor(x, 6);
-            C = extractor(x, 14);
-            E = [];
-            for (D = 0; 2 > D; D++) status = extractor(x, 1), status_then_color = [extractor(x, 6), extractor(x, 6), extractor(x, 6)], color_then_elo = extractor(x, 14), nick = decrypt_names(extractor(x, 5), x), E.push({
-                name: nick,
-                color: status_then_color,
-                elo: color_then_elo,
-                status: status
-            });
+            varMyID = extractor(data, 1);
+            varGameSeed = extractor(data, 14);
+            varGamemode = extractor(data, 4);
+            varIsContest = 1 === extractor(data, 1);
+            varMapID = extractor(data, 6);
+            C = extractor(data, 14);
+            varPlayerCount = [];
+            for (index = 0; 2 > index; index++) {
+                varPlayerInfoThenStatus = extractor(data, 1), status_then_color = [extractor(data, 6), extractor(data, 6), extractor(data, 6)];
+                color_then_elo = extractor(data, 14), nick = extract_names(extractor(data, 5), data);
+                varPlayerCount.push({
+                    name: nick,
+                    color: status_then_color,
+                    elo: color_then_elo,
+                    status: varPlayerInfoThenStatus
+                });
+            };
             aJ.vp();
-            xJ(B, C);
-            game_init(z, t, E, y, A)
+            xJ(varMapID, C);
+            game_init(varGameSeed, varMyID, varPlayerCount, varGamemode, varIsContest)
         }
     };
 
     this.getRemote = function(data) {
         starting_index = 1;
         data_length = data.length;
-        var t = extractor(data, 2),
+        var check_1v1 = extractor(data, 2),
             remote = extractor(data, 10);
         websocket_manager.lobby > websocket_manager.lobbyCount && (remote += websocket_manager.lobbyCount);
         if (websocket_manager.lobby === remote) return websocket_manager.remote = remote, !1;
         websocket_manager.close(websocket_manager.lobby, 3247);
         websocket_manager.remote = remote;
-        eY.wG = extractor(data, 10);
-        eY.my_id = extractor(data, 2 === t ? 9 : 1);
-        websocket_manager.rk(remote, 5) && multi_out.multi_loaded();
+        eY.gameHash = extractor(data, 10);
+        eY.my_id = extractor(data, 2 === check_1v1 ? 9 : 1);
+        websocket_manager.rk(remote, 5) && multiOut.multi_loaded();
         return !0
     };
     this.a6j = function(x, t) {
@@ -10026,7 +10145,7 @@ function kg() {
     }
 }
 
-function Multi_out() {
+function MultiOut() {
     function format_password(array) {
         var password = load_password(),
             password_hash = Math.floor(password / 16777216);
@@ -10139,7 +10258,7 @@ function Multi_out() {
         fitter(array, 1, 0);
         fitter(array, 3, 6);
         fitter(array, 8, websocket_manager.getEquivalentLobby());
-        fitter(array, 10, eY.wG);
+        fitter(array, 10, eY.gameHash);
         fitter(array, 9, eY.my_id);
         fitter(array, 10, time_hash);
         fitter(array, 14, version_hash);
