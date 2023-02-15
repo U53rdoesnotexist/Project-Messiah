@@ -108,7 +108,7 @@ function Bots() {
     }
 
     function join_lobby(ws) {
-        var name_keycodes = names.convert_to_keycode(ws.name),
+        var name_keycodes = characters.convertToCharCode(ws.name),
             name_length = name_keycodes.length;
         message = new Uint8Array(get_message_size(105 + 10 * name_length));
         mIndex = 0;
@@ -184,7 +184,7 @@ function Bots() {
         if (!document.getElementById('spamEmojiCheck').checked) return 0
         var available_bots = this.wsss.filter(intWs => intWs.wsGame != null && intWs.wsGame.readyState == intWs.wsGame.OPEN);
         if (target == 512) {
-            var id = 0, index = player_count >= 15 ? 15 : playercount;
+            var id = 0, index = player_count >= 15 ? 15 : player_count;
             available_bots.forEach(function(intWs) {
                 while (id < index) {
                     send_emoji(emoji, id);

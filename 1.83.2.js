@@ -124,7 +124,7 @@ function attackProcessInit(idThenIndex) {
     prev_border_taken = !1;
     set_border_to_inner();
     set_takeable_land_to_border();
-    for (idThenIndex = attacks.ongoing_attack_count(prev_author) - 1; 0 <= idThenIndex; idThenIndex--) 0 === attacks.get_boat_id_from_attack_index(prev_author, idThenIndex) && (prev_attack = idThenIndex, start_testing_taking_process());
+    for (idThenIndex = attacks.getCurrentAttackCount(prev_author) - 1; 0 <= idThenIndex; idThenIndex--) 0 === attacks.get_boat_id_from_attack_index(prev_author, idThenIndex) && (prev_attack = idThenIndex, start_testing_taking_process());
     prev_border_taken && update_taken_pixel_arrays()
 }
 
@@ -151,7 +151,7 @@ function reset_editing_matrix() {
 }
 
 function return_remaining() {
-    1 === attacks.ongoing_attack_count(prev_author) && au.av(prev_author);
+    1 === attacks.getCurrentAttackCount(prev_author) && au.av(prev_author);
     if (prev_author !== my_id) troops[prev_author] += prev_remaining, interest.limitTroops(prev_author);
     else {
         var old_troop = troops[prev_author];
@@ -802,11 +802,9 @@ function Single() {
                     peace.single_vote_peace(author, 1 === actionParam2[index]);
                 }
             } else if (7 === actionsType[index]) this.cancel_boat(authors[index], actionParam2[index]);
+            if (typeof (logs) != 'undefined') logs.push([author[index], actionsType[index], actionParam1[index], actionParam2[index], actionParam3[index], actionParam4[index],])
         }
-        if (0 < actionsCount) {
-            if (typeof (logs) != ;)
-            this.init();
-        }
+        if (0 < actionsCount) this.init();
     };
     this.send_boat = function(attacker, ratio, x_coord, y_coord) {
         0 !== is_alive[attacker] && 2 !== player_status[authors] && waterPixelChecker.check(attacker, pixel.to_coord(x_coord, y_coord)) &&
@@ -1660,11 +1658,11 @@ function jy() {
             this.end();
             if (this.isHuman(target) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.anti_boosting(), 1;
             announcements.low_balance();
-            singleplayer ? single_donate(my_id, target, divide_floor(troopsBar.AttackRatio() * troops[my_id], 1E3)) : multiOut.attack(troopsBar.AttackRatio(), target === max_entities ? my_id : target);
+            singleplayer ? single_donate(my_id, target, divide_floor(troopsBar.attackRatio() * troops[my_id], 1E3)) : multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target);
             return 1
         }
-        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multiOut.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, target, troopsBar.AttackRatio()) : (!free_spawn || 300 < eB.lX()) && multiOut.attack(troopsBar.AttackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.AttackRatio())) : this.end(), 1;
-        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? single.send_boat(my_id, troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multiOut.pick_location(troopsBar.AttackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
+        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multiOut.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, target, troopsBar.attackRatio()) : (!free_spawn || 300 < eB.lX()) && multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.attackRatio())) : this.end(), 1;
+        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? single.send_boat(my_id, troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multiOut.pick_location(troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
         if (7 === M && x[4]) return this.end(), t = a5.show(L, H), 1;
         if (8 === M) return x[5] ? (eQ.lQ(0, [target], !0) && (announcements.la(target, 0), multiOut.non_aggression(target)), this.end(), 1) : 0;
         this.end();
@@ -2760,14 +2758,14 @@ function k2() {
             var K = t[F].canvas.width;
             if (E >= D - N && E <= D + A + N) {
                 if (C >= I - G && C <= I + A + G) return t[F].pu || (t[F].po = !0, t[F].pu = !0, 0 === t[F].id ? singleplayer ? single.cancel(my_id, t[F].cM) : multiOut.cancel(t[F].cM === max_entities ? my_id : t[F].cM) : singleplayer ? single.cancel_boat(my_id, t[F].id) : multiOut.cancel_boat(t[F].id)), !0;
-                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? single_attack(my_id, t[F].cM, troopsBar.AttackRatio()) : multiOut.attack(troopsBar.AttackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
+                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? single_attack(my_id, t[F].cM, troopsBar.attackRatio()) : multiOut.attack(troopsBar.attackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
             }
         }
         return !1
     };
     this.update = function() {
         if (2 !== client_status && 0 !== is_alive[my_id] && !j8 && hu.isHuman(my_id)) {
-            var C = attacks.ongoing_attack_count(my_id);
+            var C = attacks.getCurrentAttackCount(my_id);
             b: if (t.length !== C) var E = !0;
                 else {
                     for (E = C - 1; 0 <= E; E--)
@@ -3167,7 +3165,7 @@ function TroopsBar() {
     this.qj = function() {
         B = !1
     };
-    this.AttackRatio = function() {
+    this.attackRatio = function() {
         var ratio = Math.floor(1E3 * attackFraction);
         return 0 >= ratio ? 1 : 1E3 < ratio ? 1E3 : ratio
     };
@@ -4331,7 +4329,7 @@ function IntelliAttack() {
     };
     this.startIntelli = function() {
         var myID = my_id;
-        var targets = this.getBorderingEntities(myID, !team_game);
+        var targets = this.getBorderingEntities(myID, !team_game).filter(target => target != max_entities);
         this.removeAttackingTarget(myID, targets);
         0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(myID, targets[0]))
     };
@@ -4358,7 +4356,7 @@ function IntelliAttack() {
                         else if (pixel.is_neutral(coord) && bots_timing[id-player_count] < 10 && !returnFactor) returnFactor += 0.9*troops[id]/(troops[id] + attacks.total_troops_currently_attacking(id))
                     }
                 }
-                for (let index2 = 0; index2 < attacks.ongoing_attack_count(id); index2++) {
+                for (let index2 = 0; index2 < attacks.getCurrentAttackCount(id); index2++) {
                     var return_probability;
                     if (attacks.get_boat_id_from_attack_index(id, index) != 0) return_probability = 0
                     else {
@@ -6568,7 +6566,7 @@ function kk() {
     };
     this.update = function() {
         if (0 !== k)
-            if (0 === is_alive[my_id] || attacks.sent_boats_count(my_id) === attacks.ongoing_attack_count(my_id)) k = 0;
+            if (0 === is_alive[my_id] || attacks.sent_boats_count(my_id) === attacks.getCurrentAttackCount(my_id)) k = 0;
             else {
                 var l;
                 for (l = k - 2; 0 <= l; l -= 2) {
@@ -6868,39 +6866,39 @@ function Attacks() {
     function starting_index_in_attack_array(id) {
         return id < player_count ? player_attack_limit * id : player_attack_limit * player_count + bot_attack_limit * (id - player_count)
     }
-    var player_attack_limit, bot_attack_limit, ongoing_attacks_count, target_ids, remaining_troops, boat_ids;
+    var player_attack_limit, bot_attack_limit, currentAttackCount, target_ids, remaining_troops, boat_ids;
     this.init = function() {
         player_attack_limit = 16 > player_count ? 12 : 8;
         bot_attack_limit = 4;
         var array_length = starting_index_in_attack_array(max_entities);
-        ongoing_attacks_count = new Uint8Array(max_entities);
+        currentAttackCount = new Uint8Array(max_entities);
         target_ids = new Uint16Array(array_length);
         remaining_troops = new Uint32Array(array_length);
         boat_ids = new Uint16Array(array_length)
     };
     this.reset_attack_count = function(id) {
-        ongoing_attacks_count[id] = 0
+        currentAttackCount[id] = 0
     };
     this.zP = function(y, A) {
         var B;
         a: {
             var C = starting_index_in_attack_array(y);
-            for (B = ongoing_attacks_count[y] - 1; 0 <= B; B--)
-                if (0 === boat_ids[C + B] && target_ids[C + B] === A) break a; B = ongoing_attacks_count[y]
+            for (B = currentAttackCount[y] - 1; 0 <= B; B--)
+                if (0 === boat_ids[C + B] && target_ids[C + B] === A) break a; B = currentAttackCount[y]
         }
-        B !== ongoing_attacks_count[y] && (C = remaining_troops[starting_index_in_attack_array(y) + B], this.remove_attack(y, B), this.set(y, C, max_entities))
+        B !== currentAttackCount[y] && (C = remaining_troops[starting_index_in_attack_array(y) + B], this.remove_attack(y, B), this.set(y, C, max_entities))
     };
     this.check = function(id, target) {
         var index, starting_index = starting_index_in_attack_array(id);
-        for (index = ongoing_attacks_count[id] - 1; 0 <= index; index--)
+        for (index = currentAttackCount[id] - 1; 0 <= index; index--)
             if (0 === boat_ids[starting_index + index] && target_ids[starting_index + index] === target) return !0;
         return !1
     };
     this.below_attack_cap = function(id) {
-        return id < player_count ? ongoing_attacks_count[id] < player_attack_limit : ongoing_attacks_count[id] < bot_attack_limit
+        return id < player_count ? currentAttackCount[id] < player_attack_limit : currentAttackCount[id] < bot_attack_limit
     };
-    this.ongoing_attack_count = function(id) {
-        return ongoing_attacks_count[id]
+    this.getCurrentAttackCount = function(id) {
+        return currentAttackCount[id]
     };
     this.get_attack_target_from_attack_index = function(id, attack_index) {
         return target_ids[starting_index_in_attack_array(id) + attack_index]
@@ -6910,7 +6908,7 @@ function Attacks() {
     };
     this.find_boat_index_from_boat_id = function(id, boat_id) {
         var index, starting_index = starting_index_in_attack_array(id);
-        for (index = ongoing_attacks_count[id] - 1; 0 <= index; index--)
+        for (index = currentAttackCount[id] - 1; 0 <= index; index--)
             if (boat_ids[starting_index + index] === boat_id) return index;
         return -1
     };
@@ -6919,28 +6917,28 @@ function Attacks() {
     };
     this.get_troops_remaining_from_target = function(id, target) {
         var index, starting_index = starting_index_in_attack_array(id);
-        for (index = ongoing_attacks_count[id] - 1; 0 <= index; index--)
+        for (index = currentAttackCount[id] - 1; 0 <= index; index--)
             if (0 === boat_ids[starting_index + index] && target_ids[starting_index + index] === target) return remaining_troops[starting_index + index];
         return 0
     };
     this.total_troops_currently_sent_away = function(id_then_index) {
         var starting_index = starting_index_in_attack_array(id_then_index), sum = 0;
-        for (id_then_index = ongoing_attacks_count[id_then_index] - 1; 0 <= id_then_index; id_then_index--) sum += remaining_troops[starting_index + id_then_index];
+        for (id_then_index = currentAttackCount[id_then_index] - 1; 0 <= id_then_index; id_then_index--) sum += remaining_troops[starting_index + id_then_index];
         return sum
     };
     this.total_troops_currently_attacking = function(id_then_index) {
         var starting_index = starting_index_in_attack_array(id_then_index), sum = 0;
-        for (id_then_index = ongoing_attacks_count[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 === boat_ids[starting_index + id_then_index] && (sum += remaining_troops[starting_index + id_then_index]);
+        for (id_then_index = currentAttackCount[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 === boat_ids[starting_index + id_then_index] && (sum += remaining_troops[starting_index + id_then_index]);
         return sum
     };
     this.sent_boats_count = function(id_then_index) {
         var starting_index = starting_index_in_attack_array(id_then_index), sum = 0;
-        for (id_then_index = ongoing_attacks_count[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 < boat_ids[starting_index + id_then_index] && sum++;
+        for (id_then_index = currentAttackCount[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 < boat_ids[starting_index + id_then_index] && sum++;
         return sum
     };
     this.set_attack_troops_remaining_from_target = function(id_then_index, target, attack_troops_remaining) {
         var C = starting_index_in_attack_array(id_then_index);
-        for (id_then_index = ongoing_attacks_count[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 === boat_ids[C + id_then_index] && target_ids[C + id_then_index] === target && (remaining_troops[C + id_then_index] = attack_troops_remaining)
+        for (id_then_index = currentAttackCount[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 === boat_ids[C + id_then_index] && target_ids[C + id_then_index] === target && (remaining_troops[C + id_then_index] = attack_troops_remaining)
     };
     this.set_attack_troops_remaining_from_attack_index = function(id, attack_index, attack_troops_remaining) {
         remaining_troops[starting_index_in_attack_array(id) + attack_index] = attack_troops_remaining
@@ -6948,38 +6946,38 @@ function Attacks() {
     this.set = function(id, attack_amount, target) { 
         var index, starting_index = starting_index_in_attack_array(id);
         target === my_id && statistics.numbers[id < player_count ? 6 : 5]++;
-        for (index = ongoing_attacks_count[id] - 1; 0 <= index; index--)
+        for (index = currentAttackCount[id] - 1; 0 <= index; index--)
             if (0 === boat_ids[starting_index + index] && target_ids[starting_index + index] === target) {
                 remaining_troops[starting_index + index] += attack_amount;
                 remaining_troops[starting_index + index] = remaining_troops[starting_index + index] > troop_cap ? troop_cap : remaining_troops[starting_index + index];
                 return
-            } target_ids[starting_index + ongoing_attacks_count[id]] = target;
-        remaining_troops[starting_index + ongoing_attacks_count[id]] = attack_amount;
-        boat_ids[starting_index + ongoing_attacks_count[id]] = 0;
-        ongoing_attacks_count[id]++;
+            } target_ids[starting_index + currentAttackCount[id]] = target;
+        remaining_troops[starting_index + currentAttackCount[id]] = attack_amount;
+        boat_ids[starting_index + currentAttackCount[id]] = 0;
+        currentAttackCount[id]++;
         id < player_count && (target === my_id ? announcements.showGenericMessages(id, 5) : id === my_id && eA.mn(target))
     };
     this.addBoat = function(id, amount, B) {
         var starting_index = starting_index_in_attack_array(id);
         is_alive[id] = 2;
-        target_ids[starting_index + ongoing_attacks_count[id]] = 0;
-        remaining_troops[starting_index + ongoing_attacks_count[id]] = amount;
-        boat_ids[starting_index + ongoing_attacks_count[id]] = B;
-        ongoing_attacks_count[id]++
+        target_ids[starting_index + currentAttackCount[id]] = 0;
+        remaining_troops[starting_index + currentAttackCount[id]] = amount;
+        boat_ids[starting_index + currentAttackCount[id]] = B;
+        currentAttackCount[id]++
     };
     this.remove_attack = function(id, attack_index) {
         var index;
-        if (0 !== ongoing_attacks_count[id]) {
+        if (0 !== currentAttackCount[id]) {
             var starting_index = starting_index_in_attack_array(id);
-            ongoing_attacks_count[id]--;
-            for (index = attack_index; index < ongoing_attacks_count[id]; index++) target_ids[starting_index + index] = target_ids[starting_index + index + 1], remaining_troops[starting_index + index] = remaining_troops[starting_index + index + 1], boat_ids[starting_index + index] = boat_ids[starting_index + index + 1]
+            currentAttackCount[id]--;
+            for (index = attack_index; index < currentAttackCount[id]; index++) target_ids[starting_index + index] = target_ids[starting_index + index + 1], remaining_troops[starting_index + index] = remaining_troops[starting_index + index + 1], boat_ids[starting_index + index] = boat_ids[starting_index + index + 1]
         }
     };
     this.get_attackers = function(target) {
         var entity_index, attacks_index, attackers = [];
         for (entity_index = alive_count - 1; 0 <= entity_index; entity_index--) {
             var starting_index = starting_index_in_attack_array(alive_entities[entity_index]);
-            for (attacks_index = ongoing_attacks_count[alive_entities[entity_index]] - 1; 0 <= attacks_index; attacks_index--)
+            for (attacks_index = currentAttackCount[alive_entities[entity_index]] - 1; 0 <= attacks_index; attacks_index--)
                 if (0 === boat_ids[starting_index + attacks_index] && target_ids[starting_index + attacks_index] === target) {
                     attackers.push(alive_entities[entity_index]);
                     break
@@ -9686,7 +9684,7 @@ function isTeamate(player1, player2) {
 }
 
 function bordersTarget(id, target) {
-    var index, attackCount = attacks.ongoing_attack_count(id);
+    var index, attackCount = attacks.getCurrentAttackCount(id);
     for (index = 0; index < attackCount; index++)
         if (0 === attacks.get_boat_id_from_attack_index(id, index)) {
             var attackTarget = attacks.get_attack_target_from_attack_index(id, index);
@@ -10443,3 +10441,20 @@ function MultiOut() {
 
 aiCommand746(0)
 setTimeout(start, 1E4);
+
+function script_game_tick() {
+    console.log(tick + (cycle-1)*100, troops[my_id], land[my_id], interest.interestRate(my_id)/1E4, Math.floor(Math.sqrt(land[my_id]/2)),
+    pixels_bordering_land[my_id].length, attacks.getCurrentAttackCount(my_id) == 1 ? attacks.get_troops_remaining_from_target(my_id, max_entities) : 0)
+    var ratio = 0, latency = singleplayer ? 1 : 8,
+        timings = [71, 76, 74, 72, 70],
+        ratios = [282, 345, 321, 307, 320];
+        keybinds = [[0, -5, 3], [0, 2, -2], [4, -6, 0], [-3, 4, -1], [1, -2, 4]]
+    
+    for (index = 0; index <= 4; index++) {
+        if (cycle == index + 1 && tick == timings[index] - latency) {
+            troopsBar.changeAttackFraction((6/5)**keybinds[index][0] * (8/7)**keybinds[index][1] * (32/31)**keybinds[index][2]);
+            ratio = troopsBar.attackRatio(); //ratios[index]
+            singleplayer ? single_attack(my_id, max_entities, ratio) : multiOut.attack(ratio, my_id)
+        }
+    }
+}
