@@ -62,7 +62,7 @@ function distance(x,y) {
     return (x**2 + y**2) ** 0.5
 }
 
-function speed(id) {
+function getSpeed(id) {
 	return land[id] < 1E3 ? 1 / 4 : land[id] < 1E4 ? 1 / 3 : land[id] < 6E4 ? 1 / 2 : land[id] < 16E4 ? 1 : land[id] < 32E4 ? 2 : 3
 }
 

@@ -31,10 +31,10 @@ function load_password() {
 }
 
 function set_zoom() {
-    if (is_ios) zoom = ios.zoom || r < s;
+    if (is_ios) zoom = ios.zoom || clientWidth2 < clientHeight2;
     else if (12 <= device_version) {
-        var stored_zoom = droid.loadNumber(21); - 1 === stored_zoom ? (zoom = 100 >= droid.getNumber(0) || r < s, droid.saveNumber(21, zoom ? 1 : 0)) : zoom = 1 === stored_zoom || r < s
-    } else 5 <= device_version ? (stored_zoom = droid.loadNumber(1), 2 === stored_zoom ? (zoom = !0, droid.saveNumber(1, zoom ? 1 : 0)) : zoom = 1 === stored_zoom) : zoom = 0 === user_settings.get_settings(4) || r < s
+        var stored_zoom = droid.loadNumber(21); - 1 === stored_zoom ? (zoom = 100 >= droid.getNumber(0) || clientWidth2 < clientHeight2, droid.saveNumber(21, zoom ? 1 : 0)) : zoom = 1 === stored_zoom || clientWidth2 < clientHeight2
+    } else 5 <= device_version ? (stored_zoom = droid.loadNumber(1), 2 === stored_zoom ? (zoom = !0, droid.saveNumber(1, zoom ? 1 : 0)) : zoom = 1 === stored_zoom) : zoom = 0 === user_settings.get_settings(4) || clientWidth2 < clientHeight2
 }
 
 function get_emojis() {
@@ -58,17 +58,55 @@ function save_username(name) {
 
 function save_password(password) {
     password = characters.charcode_to_str(password.toString());
-    return is_ios ? (ios.password = password, window.webkit.messageHandlers.iosCommandA.postMessage("password " + password), !0) : 12 <= device_version ? (droid.saveString(22, password), !0) : 5 <= device_version ? !1 : 2 === user_settings.a0() ? (user_settings.set_setting(9, password), user_settings.format_settings(), !0) : !1
+    if (is_ios) {
+        ios.password = password;
+        window.webkit.messageHandlers.iosCommandA.postMessage("password " + password);
+        return true;
+    } else if (12 <= device_version) {
+        droid.saveString(22, password);
+        return true;
+    } else if (5 <= device_version) return false;
+    else if (2 === user_settings.a0()) {
+        user_settings.set_setting(9, password);
+        user_settings.format_settings();
+        return true;
+    } else return false;
 }
 
-function save_options(zoom, sound) {
-    is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (zoom ? 1 : 0)), window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (sound ? 1 : 0))) : 12 <= device_version ? (droid.saveNumber(22, sound ? 1 : 0), droid.saveNumber(21, zoom ? 1 : 0)) : 5 <= device_version ? (droid.saveNumber(1, zoom ? 1 : 0), droid.saveNumber(11, sound ? 1 : 0)) : (user_settings.set_setting(2, sound ? 1 : 0), user_settings.set_setting(4, zoom ? 0 : 1), user_settings.format_settings())
+function save_options(param_zoom, param_sound) {
+    if (is_ios) {
+        window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (param_zoom ? 1 : 0));
+        window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (param_sound ? 1 : 0));
+    } else if (12 <= device_version) {
+        droid.saveNumber(22, param_sound ? 1 : 0);
+        droid.saveNumber(21, param_zoom ? 1 : 0);
+    } else if (5 <= device_version) {
+        droid.saveNumber(1, param_zoom ? 1 : 0);
+        droid.saveNumber(11, param_sound ? 1 : 0);
+    } else {
+        user_settings.set_setting(2, param_sound ? 1 : 0);
+        user_settings.set_setting(4, param_zoom ? 0 : 1);
+        user_settings.format_settings();
+    }
 }
 
 function save_emojis() {
-    for (var emoji_str = "", index = 0; index < a5.a6; index += 2) emoji_str += a5.a7[index] || a5.a7[index + 1] ? a5.a7[index] && !a5.a7[index + 1] ? "1" : !a5.a7[index] && a5.a7[index + 1] ? "2" : "3" : "0";
-    is_ios ? window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + emoji_str) : 5 <= device_version ? droid.saveString(1, emoji_str) : (user_settings.set_setting(7, emoji_str), user_settings.format_settings())
+    var emoji_str = "";
+    for (var index = 0; index < a5.a6; index += 2) {
+        if (a5.a7[index] || a5.a7[index + 1]) {
+            if (a5.a7[index] && !a5.a7[index + 1]) emoji_str += "1";
+            else if (!a5.a7[index] && a5.a7[index + 1]) emoji_str += "2";
+            else emoji_str += "3";
+        } else emoji_str += "0";
+    }
+    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + emoji_str);
+    else if (5 <= device_version) droid.saveString(1, emoji_str);
+    else {
+        user_settings.set_setting(7, emoji_str);
+        user_settings.format_settings();
+    }
 }
+
 
 function save_colors(colors) {
     if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("colors " + colors);
@@ -151,7 +189,7 @@ function reset_editing_matrix() {
 }
 
 function return_remaining() {
-    1 === attacks.getCurrentAttackCount(prev_author) && au.av(prev_author);
+    1 === attacks.getCurrentAttackCount(prev_author) && speed.removeEntry(prev_author);
     if (prev_author !== my_id) troops[prev_author] += prev_remaining, interest.limitTroops(prev_author);
     else {
         var old_troop = troops[prev_author];
@@ -278,7 +316,7 @@ function bm() {
     var g = 1,
         k = [null, null];
     this.init = function() {
-        g = .72 * (zoom ? .0011 : .001) * bq;
+        g = .72 * (zoom ? .0011 : .001) * averageWindowLength;
         for (var n = 1; 0 <= n; n--) k[n] && this.br(n, k[n].l)
     };
     this.br = function(n, l) {
@@ -307,11 +345,11 @@ function bm() {
         return Math.floor(g * sprites.bz(13).height)
     };
     this.clicked = function(n, l) {
-        return !sprites.bx() || n < display_buffer_length || l < clientHeight - cC.width -
-            g * sprites.bz(13).height - 2 * display_buffer_length || l > clientHeight - cC.width - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * sprites.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * sprites.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * sprites.bz(13).width ? (cD.cE(1), !0) : !1
+        return !sprites.bx() || n < display_buffer_length || l < clientHeight1 - mainSettings.width -
+            g * sprites.bz(13).height - 2 * display_buffer_length || l > clientHeight1 - mainSettings.width - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * sprites.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * sprites.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * sprites.bz(13).width ? (cD.cE(1), !0) : !1
     };
     this.to_y = function() {
-        return Math.floor(clientHeight - cC.width - g * sprites.bz(13).height - 2 * display_buffer_length)
+        return Math.floor(clientHeight1 - mainSettings.width - g * sprites.bz(13).height - 2 * display_buffer_length)
     };
     this.drawImage = function() {
         if (sprites.bx()) {
@@ -327,13 +365,13 @@ function bm() {
     }
 }
 
-function cL(g, k, n, l) {
-    var x = divide_floor(3 * troops[g], 256);
-    l -= l >= divide_floor(troops[g], 2) ? x : 0;
-    takePixelsAndChangeToMoving(n, g);
-    attacks.set(g, l, k);
-    troops[g] -= l + x;
-    au.cR(g, !1)
+function cL(id, target, pixelCount, amount) {
+    var tax = divide_floor(3 * troops[id], 256);
+    amount -= amount >= divide_floor(troops[id], 2) ? tax : 0;
+    takePixelsAndChangeToMoving(pixelCount, id);
+    attacks.set(id, amount, target);
+    troops[id] -= amount + tax;
+    speed.cR(id, !1)
 }
 
 function addTakableTargetPixelsToEditing(id, target) {
@@ -625,7 +663,7 @@ function game_tick() {
     eH.update();
     humanBots.update();
     eJ.update();
-    au.update();
+    speed.update();
     eK.update();
     checkDeathAndAlive();
     eM.update();
@@ -672,47 +710,47 @@ function ec() {
     websocket_manager.update()
 }
 
-function ed() {
-    function higherSpeed(thresholdLand) {
+function Speed() {
+    function checkHigherSpeed(thresholdLand) {
         var idIndex;
-        for (idIndex = l - 1; 0 <= idIndex; idIndex--) 0 === t[x[idIndex]] && land[x[idIndex]] >= thresholdLand && attackProcessInit(x[idIndex])
+        for (idIndex = attackerCount - 1; 0 <= idIndex; idIndex--) 0 === intervalsLeft[attackers[idIndex]] && land[attackers[idIndex]] >= thresholdLand && attackProcessInit(attackers[idIndex])
     }
 
-    function speed(id) {
-        t[id] = 10 === t[id] ? n : 1E3 > land[id] ? 3 : 1E4 > land[id] ? 2 : 6E4 > land[id] ? 1 : 0
+    function setSpeedInterval(id) {
+        intervalsLeft[id] = 10 === intervalsLeft[id] ? newAttackIntervalsLeft : 1E3 > land[id] ? 3 : 1E4 > land[id] ? 2 : 6E4 > land[id] ? 1 : 0
     }
-    var n, l, x, t, z, y;
+    var newAttackIntervalsLeft, attackerCount, attackers, intervalsLeft, old_AttackLoses, old_myTroops;
     this.init = function() {
-        z = y = 0;
-        n = 6;
-        l = 0;
-        x = new Uint16Array(max_entities);
-        t = new Uint8Array(max_entities)
+        old_AttackLoses = old_myTroops = 0;
+        newAttackIntervalsLeft = 6;
+        attackerCount = 0;
+        attackers = new Uint16Array(max_entities);
+        intervalsLeft = new Uint8Array(max_entities)
     };
     this.update = function() {
-        var A;
-        z = statistics.numbers[13];
-        y = troops[my_id];
-        for (A = l - 1; 0 <= A; A--) 10 === t[x[A]] ? speed(x[A]) : 0 === t[x[A]]-- && (speed(x[A]), attackProcessInit(x[A]));
-        16E4 <= land[orderedLand[0]] && (higherSpeed(16E4), 3E5 <= land[orderedLand[0]] && higherSpeed(3E5));
+        var index;
+        old_AttackLoses = statistics.numbers[13];
+        old_myTroops = troops[my_id];
+        for (index = attackerCount - 1; 0 <= index; index--) 10 === intervalsLeft[attackers[index]] ? setSpeedInterval(attackers[index]) : 0 === intervalsLeft[attackers[index]]-- && (setSpeedInterval(attackers[index]), attackProcessInit(attackers[index]));
+        16E4 <= land[orderedLand[0]] && (checkHigherSpeed(16E4), 3E5 <= land[orderedLand[0]] && checkHigherSpeed(3E5));
         land[my_id] > statistics.numbers[7] && (statistics.numbers[7] = land[my_id]);
-        statistics.numbers[14] += y - troops[my_id] + z - statistics.numbers[13]
+        statistics.numbers[14] += old_myTroops - troops[my_id] + old_AttackLoses - statistics.numbers[13]
     };
-    this.av = function(A) {
-        var B;
-        for (B = l - 1; 0 <= B; B--)
-            if (A === x[B]) {
-                l--;
-                for (A = B; A < l; A++) x[A] = x[A + 1];
+    this.removeEntry = function(id) {
+        var index;
+        for (index = attackerCount - 1; 0 <= index; index--)
+            if (id === attackers[index]) {
+                attackerCount--;
+                for (id = index; id < attackerCount; id++) attackers[id] = attackers[id + 1];
                 break
             }
     };
-    this.cR = function(A, B) {
-        var C;
-        for (C = l - 1; 0 <= C; C--)
-            if (A === x[C]) return;
-        x[l++] = A;
-        t[A] = B ? 2 : 10
+    this.cR = function(id, shortAttack) {
+        var index;
+        for (index = attackerCount - 1; 0 <= index; index--)
+            if (id === attackers[index]) return;
+        attackers[attackerCount++] = id;
+        intervalsLeft[id] = shortAttack ? 2 : 10
     }
 }
 
@@ -885,7 +923,7 @@ function fu() {
     this.update = function() {
         for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, g1.update(B, z[B], x[B], y[B], A[B]))
     };
-    this.av = function(B, C) {
+    this.removeEntry = function(B, C) {
         var E;
         for (E = l - 1; 0 <= E; E--)
             if (B === x[E] && C === z[E]) {
@@ -915,8 +953,8 @@ function fu() {
         if (!(40 > g7 || 0 === l)) {
             var B, C = gC / g7,
                 E = gD / g7,
-                F = (clientWidth + gC) / g7,
-                G = (clientHeight + gD) / g7;
+                F = (clientWidth1 + gC) / g7,
+                G = (clientHeight1 + gD) / g7;
             mainCanvasCtx.textAlign = cJ;
             mainCanvasCtx.textBaseline = cI;
             for (B = l - 1; 0 <= B; B--) {
@@ -926,8 +964,8 @@ function fu() {
                 if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== is_alive[D]) {
                     var K = Math.floor(.94 * g7 * eA.gG(D));
                     if (!(6 > K)) {
-                        N = Math.floor(clientWidth * (N + .5 - C) / (F - C));
-                        I = Math.floor(clientHeight * (I + .48 - E) / (G - E));
+                        N = Math.floor(clientWidth1 * (N + .5 - C) / (F - C));
+                        I = Math.floor(clientHeight1 * (I + .48 - E) / (G - E));
                         mainCanvasCtx.font = bt +
                             K + bu;
                         mainCanvasCtx.fillStyle = gH;
@@ -948,8 +986,8 @@ function gK() {
         t = z = x = 0;
         y = I / J;
         l = 1 / (J / I / 4);
-        A = (clientWidth / 2 + gC) / g7;
-        B = (clientHeight / 2 + gD) / g7;
+        A = (clientWidth1 / 2 + gC) / g7;
+        B = (clientHeight1 / 2 + gD) / g7;
         C = g7
     }
 
@@ -960,8 +998,8 @@ function gK() {
     function n(J, L, H, M) {
         E = (J + H + 1) / 2;
         F = (L + M + 1) / 2;
-        J = clientWidth / (H - J + 1);
-        L = clientHeight / (M - L + 1);
+        J = clientWidth1 / (H - J + 1);
+        L = clientHeight1 / (M - L + 1);
         G = .9 * (J < L ? J : L)
     }
     var l, x, t, z, y, A, B, C, E, F, G, N, I, D = !1,
@@ -984,8 +1022,8 @@ function gK() {
             L = x_max[J] -
                 x_min[J] + 1;
             J = y_max[J] - y_min[J] + 1;
-            H = clientWidth / L;
-            var Q = clientHeight / J;
+            H = clientWidth1 / L;
+            var Q = clientHeight1 / J;
             G = H < Q ? H : Q;
             G *= 0 !== M ? M : 20 > L && 20 > J ? .5 : .9;
             k(.875);
@@ -1005,8 +1043,8 @@ function gK() {
     this.gf = function(J, L, H, M) {
         n(J, L, H, M);
         g7 = G;
-        gj.gw(E, clientWidth / 2);
-        gj.gx(F, clientHeight / 2);
+        gj.gw(E, clientWidth1 / 2);
+        gj.gx(F, clientHeight1 / 2);
         gy.gz()
     };
     this.h0 = function() {
@@ -1027,8 +1065,8 @@ function gK() {
             g7 = C * Math.pow(G / C, x);
             L = g7 / L;
             var M = 1 - (C * Math.pow(G / C, 1 - x) - C) / (G - C);
-            gj.gw(A + M * (E - A), clientWidth / 2);
-            gj.gx(B + M * (F - B), clientHeight / 2);
+            gj.gw(A + M * (E - A), clientWidth1 / 2);
+            gj.gx(B + M * (F - B), clientHeight1 / 2);
             eA.zoom(L, (J * L - gC) / (1 - L), (H * L - gD) / (1 - L));
             gy.gz();
             1 <= x && (D = !1, h8.h9 = !0);
@@ -1442,7 +1480,7 @@ function game_init(param_seed, param_myID, param_playerInfo, param_gamemode, par
     gameResultBox.init();
     processAction.init();
     eK.init();
-    au.init();
+    speed.init();
     eJ.init();
     matrix_processor_init();
     attacks.init();
@@ -1476,13 +1514,13 @@ function leave_game() {
     set_android_state(0);
     show_ad()
 }
-var dG, au, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopsBar, gj, playtime, eO, eM, eB, gameResultBox, 
+var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopsBar, gj, playtime, eO, eM, eB, gameResultBox, 
 jh, ji, aJ, showError, jk, jl, singleMenu, name_input, sprites, pixel, user_settings, attacks, interest, eA, nickNames, e2, jQ, jm, jn, gn, waterPixelChecker, fakeRandom, 
 g1, hq, jo, multiIn, eX, multiOut, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, humanBots, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
 
 function construct() {
     dG = new de;
-    au = new ed;
+    speed = new Speed;
     dE = new er;
     eJ = new fC;
     processAction = new ProcessAction;
@@ -1600,7 +1638,7 @@ function jy() {
         I = [];
         this.l5 = [];
         var L = sprites.bz(3).height;
-        A = Math.floor((zoom ? .075 : .0468) * bq);
+        A = Math.floor((zoom ? .075 : .0468) * averageWindowLength);
         D = A / L;
         N = Math.floor(A / 3);
         g([0, 1, 2, 3, 7, 4, 5, 6], this.l4, L, "rgba(0,180,0,0.6)");
@@ -1672,7 +1710,7 @@ function jy() {
     };
     this.click = function(L, H) {
         if (this.hidden() || 2 === player_status[my_id] || 0 === is_alive[my_id] && !in_spawn) return !1;
-        var M = (zoom ? .0288 : .0144) * bq;
+        var M = (zoom ? .0288 : .0144) * averageWindowLength;
         if (Math.abs(L - B) > M || Math.abs(H - C) > M || (new Date).getTime() > E + 425) return !1;
         M = Math.floor((L + gC) / g7);
         var Q = Math.floor((H + gD) / g7);
@@ -1933,13 +1971,13 @@ function Announcements() {
     var g, k, n, l, x, display_label_leave_plural, display_label_leave_mono;
 
     function y() {
-        return troopsBar.mf(announcements.mc()) ? peace.hidden ? troopsBar.fK - troopsBar.cw - 2 * N : troopsBar.fK - N : peace.hidden ? s - troopsBar.cw - (zoom ? 3 : 2) * N : s - N
+        return troopsBar.mf(announcements.mc()) ? peace.hidden ? troopsBar.fK - troopsBar.cw - 2 * N : troopsBar.fK - N : peace.hidden ? clientHeight2 - troopsBar.cw - (zoom ? 3 : 2) * N : clientHeight2 - N
     }
 
     function announce(displayTime, message, messageID, hoverTo, P, U, W, X) {
         var isEmoji = 1E3 <= messageID;
         var messageWidth = Math.floor(c2.measureText(message, announcements.c0) + 1.5 * I + (isEmoji ? G : 1.5 * I));
-        if (messageWidth + N > r && !isEmoji && 50 !== messageID && 20 < message.length) {
+        if (messageWidth + N > clientWidth2 && !isEmoji && 50 !== messageID && 20 < message.length) {
             var ba = Math.floor(.5 * message.length);
             announce(displayTime, message.substring(0, ba), messageID, hoverTo, P, U, W, X);
             announce(displayTime, message.substring(ba), messageID, hoverTo, P, U, W, X)
@@ -2027,7 +2065,7 @@ function Announcements() {
     };
     this.lx = function() {
         var H;
-        G = Math.floor((zoom ? .031 : .0249) * bq);
+        G = Math.floor((zoom ? .031 : .0249) * averageWindowLength);
         G = 10 > G ? 10 : G;
         this.by = Math.floor(2 * G / 3);
         this.c0 = bt + this.by + bu;
@@ -2064,10 +2102,10 @@ function Announcements() {
         for (var Q = y(), R, P = F.length - 1; 0 <= P; P--)
             if (R = Q - (P + 1) * G, M >= R && M < R + G) {
                 if (50 === F[P].id) {
-                    if (H >= clientWidth - D - N - F[P].width) return H >= clientWidth - D - N ? (P = F[P].player, this.la(P, 0), multiOut.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
+                    if (H >= clientWidth1 - D - N - F[P].width) return H >= clientWidth1 - D - N ? (P = F[P].player, this.la(P, 0), multiOut.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
                     break
                 }
-                if (H >= clientWidth - F[P].width - N) return F[P].mZ && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mY && (Q = F[P].mY, F[P].mY = F[P].player, F[P].player = Q)), !0;
+                if (H >= clientWidth1 - F[P].width - N) return F[P].mZ && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mY && (Q = F[P].mY, F[P].mY = F[P].player, F[P].player = Q)), !0;
                 break
             } return !1
     };
@@ -2201,7 +2239,7 @@ function Announcements() {
         this.iy(!1)
     };
     this.drawImage = function() {
-        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (mainCanvasCtx.drawImage(F[Q].canvas, clientWidth - F[Q].width - D - N, M), mainCanvasCtx.drawImage(L, clientWidth - D - N, M)) : mainCanvasCtx.drawImage(F[Q].canvas, clientWidth - F[Q].width - N, M)
+        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (mainCanvasCtx.drawImage(F[Q].canvas, clientWidth1 - F[Q].width - D - N, M), mainCanvasCtx.drawImage(L, clientWidth1 - D - N, M)) : mainCanvasCtx.drawImage(F[Q].canvas, clientWidth1 - F[Q].width - N, M)
     }
 }
 
@@ -2216,7 +2254,7 @@ function Cookies_window() {
         this.hidden = 5 > device_version && !is_ios && 0 === user_settings.a0();
     };
     this.lx = function() {
-        this.width = Math.floor(2.8 * Math.floor((zoom ? .09 : .062) * bq));
+        this.width = Math.floor(2.8 * Math.floor((zoom ? .09 : .062) * averageWindowLength));
         this.cw = Math.floor(1 * this.width);
         this.i4 = Math.floor(.06 * this.width);
         this.i5 = this.width - 2 * this.i4;
@@ -2240,7 +2278,7 @@ function Cookies_window() {
     };
     this.nU = function(g, k) {
         g -= display_buffer_length;
-        k -= Math.floor(clientHeight - this.cw - display_buffer_length);
+        k -= Math.floor(clientHeight1 - this.cw - display_buffer_length);
         if (0 > g || 0 > k || g >= this.width || k >= this.cw) return -1;
         var n = Math.floor((k - .5 * this.nR) / ((this.cw - this.nR) / this.lt.length));
         return 0 >
@@ -2251,7 +2289,7 @@ function Cookies_window() {
     };
     this.nY = function() {
         var g = display_buffer_length,
-            k = Math.floor(clientHeight - this.cw - display_buffer_length);
+            k = Math.floor(clientHeight1 - this.cw - display_buffer_length);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
         mainCanvasCtx.fillStyle = hy;
         mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
@@ -2287,7 +2325,7 @@ function k1() {
         this.setTime()
     };
     this.lx = function() {
-        x = Math.floor((zoom ? .53 : .36) * bq);
+        x = Math.floor((zoom ? .53 : .36) * averageWindowLength);
         t = Math.floor(.065 * x);
         z = bt + Math.floor(.9 * t) + bu;
         l--;
@@ -2313,7 +2351,7 @@ function k1() {
     };
     this.drawImage = function() {
         mainCanvasCtx.lineWidth = 1 + Math.floor(t / 15);
-        mainCanvasCtx.translate(clientWidth - t, Math.floor(.5 * (clientHeight + x)));
+        mainCanvasCtx.translate(clientWidth1 - t, Math.floor(.5 * (clientHeight1 + x)));
         mainCanvasCtx.rotate(-Math.PI / 2);
         mainCanvasCtx.fillStyle = cK;
         mainCanvasCtx.fillRect(0, 0, x, t);
@@ -2421,24 +2459,24 @@ function ni() {
     };
     this.nx = function() {
         this.no = Math.floor((zoom ? .075 :
-            .0468) * bq);
+            .0468) * averageWindowLength);
         this.zoom = this.no / this.width;
         this.np = (1 + this.nt) * this.no
     };
     this.show = function(g, k) {
         if (1 > this.lf) return !1;
         this.nv = c4.time;
-        var n = Math.floor(clientWidth / this.np);
+        var n = Math.floor(clientWidth1 / this.np);
         n = 3 > n ? 3 : n > this.nq ? this.nq : n;
         n = this.lf > n ? n : this.lf;
         var l = 1 + divide_floor(this.lf - 1, n),
             x = Math.floor(n * this.np),
             t = Math.floor(g - x / 2);
-        t = t + x > clientWidth ? clientWidth - x : t;
+        t = t + x > clientWidth1 ? clientWidth1 - x : t;
         t = 0 > t ? 0 : t;
         var z = Math.floor(k - this.np / 2);
         l = Math.floor(l * this.np);
-        z = z + l > clientHeight ? clientHeight - l : z;
+        z = z + l > clientHeight1 ? clientHeight1 - l : z;
         z = 0 > z ? 0 : z;
         this.f9 = t + x;
         this.fA = z + l;
@@ -2540,14 +2578,14 @@ var gH = "rgb(0,0,0)",
     ou = "https://territorial.io/privacy_policy",
     ov = "https://territorial.io/tutorial",
     ow = ["https://territorial.io/players", "https://territorial.io/clans"],
-    m7, ox, display_buffer_length, oy, isTouch, p0, p1, cC, 
+    m7, ox, display_buffer_length, oy, isTouch, p0, p1, mainSettings, 
     ws_strings = ["wss://", "/s50/", "/s51/", "/s52/"];
 
 function p3() {
     p4();
     oy = 3;
-    cC = new p5;
-    cC.init()
+    mainSettings = new MainSettings;
+    mainSettings.init()
 }
 
 function addCanvasEventListeners() {
@@ -2567,11 +2605,11 @@ function addCanvasEventListeners() {
 }
 
 function p4() {
-    display_buffer_length = Math.floor((zoom ? .02 : .01152) * bq);
+    display_buffer_length = Math.floor((zoom ? .02 : .01152) * averageWindowLength);
     display_buffer_length = 2 > display_buffer_length ? 2 : display_buffer_length;
-    m7 = Math.floor((zoom ? .0114 : .01296) * bq);
+    m7 = Math.floor((zoom ? .0114 : .01296) * averageWindowLength);
     m7 = 2 > m7 ? 2 : m7;
-    ox = Math.floor(.005 * pK);
+    ox = Math.floor(.005 * shorterWindowLength);
     ox = 1 > ox ? 1 : ox
 }
 
@@ -2717,7 +2755,7 @@ function k2() {
     }
 
     function l(C) {
-        return eO.qF() ? clientWidth - t[C].canvas.width - m7 : eO.fJ
+        return eO.qF() ? clientWidth1 - t[C].canvas.width - m7 : eO.fJ
     }
 
     function x(C) {
@@ -2874,7 +2912,7 @@ function k3() {
     };
     this.lx = function() {
         var L;
-        y = Math.floor((zoom ? .0725 : .058) * bq);
+        y = Math.floor((zoom ? .0725 : .058) * averageWindowLength);
         B[0] = Math.floor(.85 * C[0] * y);
         B[1] = Math.floor(.85 * C[1] * y);
         A[0] = bt + B[0] + bu;
@@ -2958,7 +2996,7 @@ function Peace() {
     }
 
     function n() {
-        return troopsBar.mf(announcements.mc()) ? troopsBar.fK - l - m7 : s - l - (zoom ? 2 : 1) * m7
+        return troopsBar.mf(announcements.mc()) ? troopsBar.fK - l - m7 : clientHeight2 - l - (zoom ? 2 : 1) * m7
     }
     var l, x, t, z, your_choice, peace_progress, peace_requirement, voter_list, has_voted, F, G, N, I;
     this.init = function() {
@@ -3011,10 +3049,10 @@ function Peace() {
         }
     };
     this.clicked = function(D, K) {
-        if (D < r - this.width - m7) return !1;
+        if (D < clientWidth2 - this.width - m7) return !1;
         var choice = n();
         if (K < choice || K > choice + l) return !1;
-        choice = D > r - m7 - this.width / 2;
+        choice = D > clientWidth2 - m7 - this.width / 2;
         singleplayer ? this.single_vote_peace(0, choice) : hu.isHuman(my_id) && 0 !== is_alive[my_id] && multiOut.vote_peace(choice);
         return !0
     };
@@ -3066,7 +3104,7 @@ function Peace() {
     this.drawImage = function() {
         if (this.hidden) {
             var D = n();
-            mainCanvasCtx.drawImage(x, r - this.width - m7, D)
+            mainCanvasCtx.drawImage(x, clientWidth2 - this.width - m7, D)
         }
     }
 }
@@ -3133,7 +3171,7 @@ function TroopsBar() {
         this.lx()
     };
     this.lx = function() {
-        zoom && r < .8 * s ? (this.cw = Math.floor(.0536 * bq), x = r - 4 * m7 - this.cw) : (x = Math.floor((zoom ? .65 : .389) * bq), x += 12 - x % 12, this.cw = Math.floor(x / 12));
+        zoom && clientWidth2 < .8 * clientHeight2 ? (this.cw = Math.floor(.0536 * averageWindowLength), x = clientWidth2 - 4 * m7 - this.cw) : (x = Math.floor((zoom ? .65 : .389) * averageWindowLength), x += 12 - x % 12, this.cw = Math.floor(x / 12));
         z = Math.floor(3 * this.cw / 2);
         F = bt + Math.floor(.5 * this.cw) + bu;
         y = document.createElement("canvas");
@@ -3149,8 +3187,8 @@ function TroopsBar() {
         renderTroopBar()
     };
     this.qu = function() {
-        t = zoom && r < .8 * s ? this.cw + 3 * m7 : Math.floor((clientWidth - x) / 2);
-        this.fK = clientHeight - this.cw - (zoom ? 2 : 1) * m7
+        t = zoom && clientWidth2 < .8 * clientHeight2 ? this.cw + 3 * m7 : Math.floor((clientWidth1 - x) / 2);
+        this.fK = clientHeight1 - this.cw - (zoom ? 2 : 1) * m7
     };
     this.eb = function() {
         G && (G = !1, renderTroopBar())
@@ -3159,7 +3197,7 @@ function TroopsBar() {
         return !(!B || fq.menuOpen && t < Math.floor(m7 + 5.5 * this.cw))
     };
     this.mf = function(I) {
-        return this.hidden() ? t + x > r - I - m7 : !1
+        return this.hidden() ? t + x > clientWidth2 - I - m7 : !1
     };
     this.cE = function() {
         B = !0
@@ -3215,7 +3253,7 @@ function k5() {
         this.lx()
     };
     this.lx = function() {
-        n = Math.floor((zoom ? .072 : .0502) * bq);
+        n = Math.floor((zoom ? .072 : .0502) * averageWindowLength);
         n = 8 > n ? 8 : n;
         for (var y = 1; 0 <= y; y--) g[y] = document.createElement("canvas"), g[y].width = n, g[y].height = n, k[y] = g[y].getContext("2d", {
             alpha: !0
@@ -3238,7 +3276,7 @@ function k5() {
         gD = g7 * y - A
     };
     this.clicked = function(y, A) {
-        if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pd(Math.floor(clientWidth / 2), Math.floor(clientHeight / 2), -200) : this.pd(Math.floor(clientWidth / 2), Math.floor(clientHeight / 2), 200);
+        if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pd(Math.floor(clientWidth1 / 2), Math.floor(clientHeight1 / 2), -200) : this.pd(Math.floor(clientWidth1 / 2), Math.floor(clientHeight1 / 2), 200);
         eV.h0() && (this.gk = !0, t = y, z = A);
         return !1
     };
@@ -3274,14 +3312,14 @@ function k5() {
         gj.rK()
     };
     this.rK = function() {
-        var y = r / 16,
+        var y = clientWidth2 / 16,
             A = 0,
-            B = s / 16,
+            B = clientHeight2 / 16,
             C = 0;
-        gC < -r + y && (A = -r + y - gC);
+        gC < -clientWidth2 + y && (A = -clientWidth2 + y - gC);
         gC > g7 * map_width - y && (A = g7 * map_width - y -
             gC);
-        gD < -s + B && (C = -s + B - gD);
+        gD < -clientHeight2 + B && (C = -clientHeight2 + B - gD);
         gD > g7 * map_height - B && (C = g7 * map_height - B - gD);
         gC += A;
         gD += C;
@@ -3289,8 +3327,8 @@ function k5() {
         eA.rS(A, C)
     };
     this.qu = function() {
-        l = clientWidth - n - m7;
-        x = Math.floor(clientHeight / 2 - 1.25 * n)
+        l = clientWidth1 - n - m7;
+        x = Math.floor(clientHeight1 / 2 - 1.25 * n)
     };
     this.drawImage = function() {
         mainCanvasCtx.drawImage(g[0], l, x);
@@ -3300,9 +3338,9 @@ function k5() {
 
 function Playtime() {
     function g() {
-        A = Math.floor(.2 * (zoom ? .07 : .035) * bq);
+        A = Math.floor(.2 * (zoom ? .07 : .035) * averageWindowLength);
         A = max(zoom ? 3 : 1, A);
-        var P = r / (playTime.length + B);
+        var P = clientWidth2 / (playTime.length + B);
         A = P > A ? P : A;
         H = Math.floor((1 - B) * A);
         z = 0;
@@ -3313,7 +3351,7 @@ function Playtime() {
         z = -20 > z ? -20 : z;
         z = z > (playTime.length - 15) * A ? (playTime.length - 15) * A : z;
         E = Math.floor(z / A);
-        F = E + Math.floor(clientWidth / A);
+        F = E + Math.floor(clientWidth1 / A);
         F = F > playTime.length - 1 ? playTime.length - 1 : F;
         E = F < E ? F : E;
         E = 0 > E ? 0 : E;
@@ -3323,14 +3361,14 @@ function Playtime() {
     }
 
     function n(P) {
-        P = Math.floor((z + clientWidth - P - B * A) / A);
+        P = Math.floor((z + clientWidth1 - P - B * A) / A);
         P = -1 > P ? -1 : -1 === P ? 0 : P > playTime.length - 1 ? -1 : P;
         return P !== G ? (G = P, -1 === M && 0 === G && playtimeUpdated && (M = setInterval(addCurrentPlayTime, 100)), !0) : !1
     }
 
     function l(P) {
         var U = Math.floor(C * Math.pow(playTime[P], L));
-        mainCanvasCtx.fillRect(z + clientWidth - (P + 1) * A, clientHeight - U, H, U)
+        mainCanvasCtx.fillRect(z + clientWidth1 - (P + 1) * A, clientHeight1 - U, H, U)
     }
 
     function addCurrentPlayTime() {
@@ -3539,8 +3577,8 @@ function Playtime() {
         websocket_manager.rk(0, 0)
     };
     this.lx = function() {
-        y = Math.floor(.15 * s);
-        N = Math.floor((zoom ? .018 : .0137) * bq);
+        y = Math.floor(.15 * clientHeight2);
+        N = Math.floor((zoom ? .018 : .0137) * averageWindowLength);
         N = 10 > N ? 10 : N;
         I = bt + N + bu;
         g()
@@ -3559,7 +3597,7 @@ function Playtime() {
         k()
     };
     this.lo = function(P, U) {
-        U > clientHeight - .6 * y ? this.ri ? P !== K && (z += P - K, K = P, k(), n(P), this.ri = -1 !== G, c4.canvasPendingUpdates = !0) : n(P) && (c4.canvasPendingUpdates = !0) : this.pW()
+        U > clientHeight1 - .6 * y ? this.ri ? P !== K && (z += P - K, K = P, k(), n(P), this.ri = -1 !== G, c4.canvasPendingUpdates = !0) : n(P) && (c4.canvasPendingUpdates = !0) : this.pW()
     };
     this.pW = function() {
         -1 !== G && (this.ri = !1, G = -1, c4.canvasPendingUpdates = !0)
@@ -3596,17 +3634,17 @@ function Playtime() {
             var V = Math.floor(mainCanvasCtx.measureText(P).width),
                 na = Math.floor(mainCanvasCtx.measureText(X).width),
                 ba = Math.floor(.5 * (V + N));
-            U = z + clientWidth - (G + 1) * A;
-            U = U < ba ? ba : U > clientWidth - ba ? clientWidth - ba : U;
-            W = clientHeight - Math.floor(C * Math.pow(playTime[G], L));
+            U = z + clientWidth1 - (G + 1) * A;
+            U = U < ba ? ba : U > clientWidth1 - ba ? clientWidth1 - ba : U;
+            W = clientHeight1 - Math.floor(C * Math.pow(playTime[G], L));
             var ca = Math.floor(1.1 * N),
-                pa = W > clientHeight - ca ? clientHeight - ca : W;
+                pa = W > clientHeight1 - ca ? clientHeight1 - ca : W;
             mainCanvasCtx.fillStyle = hy;
-            mainCanvasCtx.fillRect(clientWidth - na - N, pa - ca, na + N, ca);
-            mainCanvasCtx.fillRect(U - ba, clientHeight - ca, V + N, ca);
+            mainCanvasCtx.fillRect(clientWidth1 - na - N, pa - ca, na + N, ca);
+            mainCanvasCtx.fillRect(U - ba, clientHeight1 - ca, V + N, ca);
             mainCanvasCtx.fillStyle = cK;
             mainCanvasCtx.textAlign = ol;
-            mainCanvasCtx.fillText(X, Math.floor(clientWidth - .5 * N), pa);
+            mainCanvasCtx.fillText(X, Math.floor(clientWidth1 - .5 * N), pa);
             X = pa - 2 * ca;
             V = -1;
             na = playTime.length - G - 1;
@@ -3614,17 +3652,17 @@ function Playtime() {
             if (-1 !== V) {
                 na = Math.floor(mainCanvasCtx.measureText(R[V].group).width);
                 mainCanvasCtx.fillStyle = hy;
-                mainCanvasCtx.fillRect(clientWidth - na - N, X, na + N, ca);
+                mainCanvasCtx.fillRect(clientWidth1 - na - N, X, na + N, ca);
                 mainCanvasCtx.fillStyle = cK;
-                mainCanvasCtx.fillText(R[V].group, Math.floor(clientWidth - .5 * N), X + ca);
+                mainCanvasCtx.fillText(R[V].group, Math.floor(clientWidth1 - .5 * N), X + ca);
             }
             mainCanvasCtx.textAlign = cJ;
-            mainCanvasCtx.fillText(P, U, clientHeight);
+            mainCanvasCtx.fillText(P, U, clientHeight1);
             mainCanvasCtx.strokeStyle = nZ;
             mainCanvasCtx.lineWidth = 1;
             mainCanvasCtx.beginPath();
             mainCanvasCtx.moveTo(0, W);
-            mainCanvasCtx.lineTo(clientWidth, W);
+            mainCanvasCtx.lineTo(clientWidth1, W);
             mainCanvasCtx.closePath();
             mainCanvasCtx.stroke()
         }
@@ -3644,7 +3682,7 @@ function k7() {
         this.lx()
     };
     this.lx = function() {
-        k = Math.floor((zoom ? .305 : .24) * bq);
+        k = Math.floor((zoom ? .305 : .24) * averageWindowLength);
         this.cw = Math.floor(.5 + .13 * k);
         k = Math.floor(6 * this.cw);
         g = bt + Math.floor(.8 * this.cw) + bu;
@@ -3664,10 +3702,10 @@ function k7() {
         this.sD()
     };
     this.qF = function() {
-        return zoom && r < 1.2 * s
+        return zoom && clientWidth2 < 1.2 * clientHeight2
     };
     this.qu = function() {
-        this.qF() ? this.fJ = clientWidth - k - m7 : this.fJ = Math.floor(eM.sE() + (clientWidth - eM.sE() - eB.width - k) / 2 - .5 * m7)
+        this.qF() ? this.fJ = clientWidth1 - k - m7 : this.fJ = Math.floor(eM.sE() + (clientWidth1 - eM.sE() - eB.width - k) / 2 - .5 * m7)
     };
     this.eb = function() {
         y && (y = !1, this.sD())
@@ -3809,7 +3847,7 @@ function k8() {
             } g()
     };
     this.lx = function(S) {
-        zoom ? (sI = Math.floor(.335 * bq), qU = Math.floor(y * sI / 8)) : (sI = Math.floor(.27 * bq), qU = Math.floor(y * sI / 10));
+        zoom ? (sI = Math.floor(.335 * averageWindowLength), qU = Math.floor(y * sI / 8)) : (sI = Math.floor(.27 * averageWindowLength), qU = Math.floor(y * sI / 10));
         sI = Math.floor(.97 * sI);
         A = document.createElement("canvas");
         A.width = sI;
@@ -3989,7 +4027,7 @@ function k9() {
     };
     this.lx = function() {
         this.width = Math.floor((zoom ?
-            .1646 : .126) * bq);
+            .1646 : .126) * averageWindowLength);
         this.cw = Math.floor(1.18 * this.width);
         B = Math.floor(.04 * this.width);
         E = Math.floor(.05 * this.width);
@@ -4013,7 +4051,7 @@ function k9() {
         g()
     };
     this.qu = function() {
-        y = clientWidth - this.width - m7
+        y = clientWidth1 - this.width - m7
     };
     this.tK = function() {
         A = m7
@@ -4086,9 +4124,9 @@ function GameResultBox() {
     };
     this.lx = function() {
         if (g) {
-            n = zoom ? Math.floor(.69 * bq) : Math.floor(.5 * bq);
-            n = min(n, max(r - 2 * m7, 10));
-            n = min(n, Math.floor(3.57 * max(s - 2 * m7, 3)));
+            n = zoom ? Math.floor(.69 * averageWindowLength) : Math.floor(.5 * averageWindowLength);
+            n = min(n, max(clientWidth2 - 2 * m7, 10));
+            n = min(n, Math.floor(3.57 * max(clientHeight2 - 2 * m7, 3)));
             l = Math.floor(.28 * n);
             A = document.createElement("canvas");
             A.width = n;
@@ -4132,20 +4170,20 @@ function GameResultBox() {
     };
     this.clicked = function(C, E) {
         if (!g || 0 >= y) return !1;
-        C -= Math.floor((clientWidth - n) / 2);
-        E -= clientHeight - l - 2 * m7;
+        C -= Math.floor((clientWidth1 - n) / 2);
+        E -= clientHeight1 - l - 2 * m7;
         if (0 > C || 0 > E || C > n || E > l) return !1;
         C > n - l / 3 && E < l / 3 && (g = !1, c4.canvasPendingUpdates = !0);
         return !0
     };
     this.drawImage = function() {
-        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((clientWidth - n) / 2), clientHeight - l - 2 * m7), mainCanvasCtx.globalAlpha = 1)
+        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((clientWidth1 - n) / 2), clientHeight1 - l - 2 * m7), mainCanvasCtx.globalAlpha = 1)
     }
 }
 
 function ke() {
     function g(t, z, y, A, B, C, E) {
-        0 !== is_alive[t] && 0 !== land[t] && (y = clientWidth * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = clientHeight * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > clientWidth || A > clientHeight || y < -z || A < -z || (mainCanvasCtx.setTransform(g7 * E, 0, 0, g7 * E, y, A), mainCanvasCtx.drawImage(n[team_game ? teams.team_array[t] : t < player_count ? 1 : 0], 0, 0)))
+        0 !== is_alive[t] && 0 !== land[t] && (y = clientWidth1 * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = clientHeight1 * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > clientWidth1 || A > clientHeight1 || y < -z || A < -z || (mainCanvasCtx.setTransform(g7 * E, 0, 0, g7 * E, y, A), mainCanvasCtx.drawImage(n[team_game ? teams.team_array[t] : t < player_count ? 1 : 0], 0, 0)))
     }
     var k, n, l, x;
     this.init = function() {
@@ -4192,9 +4230,9 @@ function ke() {
             mainCanvasCtx.globalAlpha = 1 - (160 < x ? (x - 160) / 190 : 0);
             var z = gC / g7,
                 y = gD / g7,
-                A = (clientWidth + gC) /
+                A = (clientWidth1 + gC) /
                 g7,
-                B = (clientHeight + gD) / g7;
+                B = (clientHeight1 + gD) / g7;
             var C = .25;
             var E = l * g7 * C;
             for (t = max_entities - 1; t >= player_count; t--) g(t, E, z, y, A, B, C);
@@ -4231,7 +4269,7 @@ function processAttack(author, target, ratio) {
                     takePixelsAndChangeToMoving(takablePixelsCount, author);
                     attacks.set(author, amount, target);
                     troops[author] -= amount + tax;
-                    au.cR(author, !1)
+                    speed.cR(author, !1)
                 }
             }
         }
@@ -4417,7 +4455,7 @@ function IntelliAttack() {
 
 function u9() {
     this.hidden = !1;
-    this.mE = null;
+    this.buttons = null;
     this.uA = 0;
     this.cw = this.width = null;
     this.uB = .013;
@@ -4434,7 +4472,7 @@ function u9() {
     this.position = [0, 0];
     this.uP = [0, 0];
     this.init = function() {
-        this.mE = [null, null];
+        this.buttons = [null, null];
         this.hidden = !1;
         this.uA = 0;
         this.lx()
@@ -4454,9 +4492,9 @@ function u9() {
     };
     this.lx = function() {
         var l;
-        this.width = this.uR(zoom ? .85 : .66, .75, r, s);
+        this.width = this.uR(zoom ? .85 : .66, .75, clientWidth2, clientHeight2);
         this.cw = Math.floor(this.width / .75);
-        for (l = 1; 0 <= l; l--) this.mE[l] && (this.mE[l][4] = bt + Math.floor(this.mE[l][5] * this.cw / 10) + bu);
+        for (l = 1; 0 <= l; l--) this.buttons[l] && (this.buttons[l][4] = bt + Math.floor(this.buttons[l][5] * this.cw / 10) + bu);
         k = bt + Math.floor(.1 * this.cw) + bu
     };
     this.uR = function(l, x, t, z) {
@@ -4476,42 +4514,42 @@ function u9() {
             value: x[y].elo / t,
             colorIndex: x[y].colorIndex
         }, z[0].push(A);
-        this.mE[l] = z;
+        this.buttons[l] = z;
         this.uY(l);
-        x = this.mE[l][0][0].name;
+        x = this.buttons[l][0][0].name;
         1 === l && (x = "[" + x + "]");
         0 === B && uZ.br(l, x);
         c4.canvasPendingUpdates = !0
     };
     this.uY = function(l) {
-        this.mE[l][0].sort(function(x, t) {
+        this.buttons[l][0].sort(function(x, t) {
             return t.value - x.value
         })
     };
     this.updateAttribute = function(l, x, t, z) {
-        if (this.mE && this.mE[l]) {
+        if (this.buttons && this.buttons[l]) {
             var y, A = !1,
                 B = 383 / 384;
             if (0 === l) {
-                for (y = 0; y < this.mE[l][0].length; y++)
-                    if (x === this.mE[l][0][y].name && t > .99 * this.mE[l][0][y].value && t < 1.01 * this.mE[l][0][y].value) {
-                        this.mE[l][0][y].value =
+                for (y = 0; y < this.buttons[l][0].length; y++)
+                    if (x === this.buttons[l][0][y].name && t > .99 * this.buttons[l][0][y].value && t < 1.01 * this.buttons[l][0][y].value) {
+                        this.buttons[l][0][y].value =
                             z;
                         A = !0;
                         break
-                    } A || this.mE[l][0].push({
+                    } A || this.buttons[l][0].push({
                     name: x,
                     value: z
                 })
             } else {
-                for (y = 0; y < this.mE[l][0].length; y++)
-                    if (x === this.mE[l][0][y].name) {
-                        this.mE[l][0][y].value += 32 < this.mE[l][0][y].value ? (64 - this.mE[l][0][y].value) / 256 : .25;
-                        this.mE[l][0][y].value *= 1 / B;
+                for (y = 0; y < this.buttons[l][0].length; y++)
+                    if (x === this.buttons[l][0][y].name) {
+                        this.buttons[l][0][y].value += 32 < this.buttons[l][0][y].value ? (64 - this.buttons[l][0][y].value) / 256 : .25;
+                        this.buttons[l][0][y].value *= 1 / B;
                         A = !0;
                         break
-                    } for (y = 0; y < this.mE[l][0].length; y++) this.mE[l][0][y].value *= B;
-                A || this.mE[l][0].push({
+                    } for (y = 0; y < this.buttons[l][0].length; y++) this.buttons[l][0][y].value *= B;
+                A || this.buttons[l][0].push({
                     name: x,
                     value: .25
                 })
@@ -4526,8 +4564,8 @@ function u9() {
     };
     this.clicked = function(l, x) {
         if (!this.hidden) return !1;
-        l -= (clientWidth - this.width) / 2;
-        x -= (clientHeight - this.cw) / 2;
+        l -= (clientWidth1 - this.width) / 2;
+        x -= (clientHeight1 - this.cw) / 2;
         if (0 > l || l > this.width || 0 > x || x > this.cw) return this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0;
         if (x < .3 * this.cw) var t = 1;
         else x < .85 * this.cw ? (t = (0 === this.uA ? 14.1 : 3) * (x - .3 * this.cw) / (.55 * this.cw), t = Math.floor(1 + t * t)) : t = 0 === this.uA ? 200 : 10;
@@ -4546,7 +4584,7 @@ function u9() {
                 z = this.uG * t,
                 y = this.uD * this.width,
                 A = Math.floor(.25 * this.cw);
-            mainCanvasCtx.setTransform(1, 0, 0, 1, (clientWidth - this.width) / 2, (clientHeight - this.cw) / 2);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, (clientWidth1 - this.width) / 2, (clientHeight1 - this.cw) / 2);
             mainCanvasCtx.fillStyle = 0 === this.uA ? oc : oX;
             mainCanvasCtx.fillRect(0, 0, this.width, A);
             mainCanvasCtx.fillStyle = oH;
@@ -4592,7 +4630,7 @@ function u9() {
             mainCanvasCtx.lineTo(this.width - y, y);
             mainCanvasCtx.lineTo(this.width / 4, y);
             mainCanvasCtx.fill();
-            this.mE[this.uA] && this.ug(A);
+            this.buttons[this.uA] && this.ug(A);
             this.uh(A);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
@@ -4609,8 +4647,8 @@ function u9() {
         mainCanvasCtx.fillRect(Math.floor(this.width - x - x + (x - t) / 2), Math.floor(l - (x - t) / 2), t, x)
     };
     this.ug = function(l) {
-        mainCanvasCtx.font = this.mE[this.uA][4];
-        for (var x, t = this.mE[this.uA][1] - 1; 0 <= t; t--) mainCanvasCtx.textAlign = ol, x = Math.floor(this.uK * this.cw + l + t * ((1 - 2 * this.uK) * this.cw - l) / 9), mainCanvasCtx.fillText(this.mE[this.uA][0][t].value.toFixed(this.mE[this.uA][3]), Math.floor(this.uJ * this.width), x), mainCanvasCtx.fillText(t + 1 + this.mE[this.uA][6] + ".", Math.floor(this.uH * this.width), x), mainCanvasCtx.textAlign = mj, mainCanvasCtx.fillText(this.mE[this.uA][0][t].name,
+        mainCanvasCtx.font = this.buttons[this.uA][4];
+        for (var x, t = this.buttons[this.uA][1] - 1; 0 <= t; t--) mainCanvasCtx.textAlign = ol, x = Math.floor(this.uK * this.cw + l + t * ((1 - 2 * this.uK) * this.cw - l) / 9), mainCanvasCtx.fillText(this.buttons[this.uA][0][t].value.toFixed(this.buttons[this.uA][3]), Math.floor(this.uJ * this.width), x), mainCanvasCtx.fillText(t + 1 + this.buttons[this.uA][6] + ".", Math.floor(this.uH * this.width), x), mainCanvasCtx.textAlign = mj, mainCanvasCtx.fillText(this.buttons[this.uA][0][t].name,
             Math.floor(this.uI * this.width), x)
     }
 }
@@ -4621,10 +4659,10 @@ function OpenLinkBox() {
     this.init = function(link, open) {
         if (13 <= device_version) open ? var_link = link : var_link === link && droid.saveString(200, link);
         else if (open) {
-            (cC.mE[1].ih.hidden || cC.mE[2].ih.hidden) && cC.us();
+            (mainSettings.buttons[1].buttonPanel.hidden || mainSettings.buttons[2].buttonPanel.hidden) && mainSettings.us();
             name_input.hide();
             var_link = link;
-            A = Math.floor((zoom ? r > s ? .6 : .45 : .4) * pK);
+            A = Math.floor((zoom ? clientWidth2 > clientHeight2 ? .6 : .45 : .4) * shorterWindowLength);
             n = A / sprites.bz(17).width;
             x = Math.floor(n * sprites.bz(17).height);
             t = Math.floor(.4 * x);
@@ -4634,8 +4672,8 @@ function OpenLinkBox() {
             var I = bt + Math.floor(t / device_pixel_ratio) + bu;
             B = Math.floor(device_pixel_ratio * c2.measureText(var_link, I));
             C = (B > A ? B : A) + 2 * y;
-            g = Math.floor((clientWidth - C) / 2);
-            k = Math.floor((clientHeight - l) / 2);
+            g = Math.floor((clientWidth1 - C) / 2);
+            k = Math.floor((clientHeight1 - l) / 2);
             linkBox = document.createElement("a");
             linkBox.appendChild(document.createTextNode(var_link));
             linkBox.title = var_link;
@@ -4687,7 +4725,7 @@ function ut() {
     };
     this.init = function() {
         if (sprites.bx()) {
-            var y = Math.floor((zoom ? .261 : .195) * bq);
+            var y = Math.floor((zoom ? .261 : .195) * averageWindowLength);
             var A = Math.floor(.9 * y),
                 B = Math.floor(.17 * A);
             g = zoom ? 2 * m7 : m7;
@@ -4765,7 +4803,7 @@ function kB() {
         l = "rgba(255,255,255,0.16)";
         this.uz = Array(7);
         this.cw = Math.floor((zoom ?
-            .123 : .093) * bq);
+            .123 : .093) * averageWindowLength);
         this.width = Math.floor((zoom ? 3.96 : 4.2) * this.cw);
         this.f6 = Math.floor(.025 * this.width);
         var x = Math.floor(.26 * this.cw),
@@ -4845,17 +4883,17 @@ function kB() {
         this.rs()
     };
     this.rs = function() {
-        this.fK = Math.floor(.54 * clientHeight);
-        this.uz[0].fJ = Math.floor(.5 * clientWidth - .5 * this.width);
+        this.fK = Math.floor(.54 * clientHeight1);
+        this.uz[0].fJ = Math.floor(.5 * clientWidth1 - .5 * this.width);
         this.uz[1].fJ = this.uz[0].fJ + this.uz[0].width + this.f6;
         this.uz[2].fJ = this.uz[3].fJ = this.uz[0].fJ;
         this.uz[4].fJ = this.uz[5].fJ = this.uz[0].fJ;
         this.uz[6].fJ = this.uz[1].fJ;
-        this.uz[0].fK = Math.floor(.54 * clientHeight);
+        this.uz[0].fK = Math.floor(.54 * clientHeight1);
         this.uz[1].fK = this.uz[0].fK;
-        this.uz[2].fK = Math.floor((clientHeight - this.uz[2].cw - this.uz[3].cw - this.f6) / 2);
+        this.uz[2].fK = Math.floor((clientHeight1 - this.uz[2].cw - this.uz[3].cw - this.f6) / 2);
         this.uz[3].fK = this.uz[2].fK + this.uz[2].cw + this.f6;
-        this.uz[4].fK = Math.floor((clientHeight -
+        this.uz[4].fK = Math.floor((clientHeight1 -
             this.uz[4].cw - this.uz[5].cw - this.f6) / 2);
         this.uz[5].fK = this.uz[6].fK = this.uz[4].fK + this.uz[4].cw + this.f6
     };
@@ -4880,14 +4918,13 @@ function kB() {
     };
     this.pR = function(x, t, z, y) {
         for (var A = z; A < z + y; A++)
-            if (x >= this.uz[A].fJ && t >= this.uz[A].fK && x <= this.uz[A].fJ + this.uz[A].width &&
-                t <= this.uz[A].fK + this.uz[A].cw) return A;
+            if (x >= this.uz[A].fJ && t >= this.uz[A].fK && x <= this.uz[A].fJ + this.uz[A].width && t <= this.uz[A].fK + this.uz[A].cw) return A;
         return -1
     }
 }
 
-function v9() {
-    function g(k) {
+function Colors() {
+    function getBoundedValue(k) {
         return 0 > k ? 0 : 255 < k ? 255 : Math.floor(k)
     }
     this.cw = this.width = 0;
@@ -4895,7 +4932,7 @@ function v9() {
     this.vD = this.vC = this.vB = this.nu = this.f6 = this.vA = 0;
     this.colors = null;
     this.init = function() {
-        r < 2 * s ? this.width = Math.floor((zoom ? .94 : .4) * r) : (this.cw = Math.floor((zoom ? .88 : .4) * s), this.width = Math.floor(2 * this.cw));
+        clientWidth2 < 2 * clientHeight2 ? this.width = Math.floor((zoom ? .94 : .4) * clientWidth2) : (this.cw = Math.floor((zoom ? .88 : .4) * clientHeight2), this.width = Math.floor(2 * this.cw));
         this.cw = this.width / 2;
         this.f6 = this.cw / 16;
         this.hidden = !0;
@@ -4911,9 +4948,9 @@ function v9() {
         ];
         var k = get_colors().split("");
         if (6 !== k.length)
-            for (k = 2; 0 <= k; k--) this.colors[0][k] = g(256 * Math.random());
+            for (k = 2; 0 <= k; k--) this.colors[0][k] = getBoundedValue(256 * Math.random());
         else
-            for (var n = 2; 0 <= n; n--) this.colors[0][n] = g(4 * (10 * parseInt(k[2 * n]) + parseInt(k[2 * n + 1])));
+            for (var n = 2; 0 <= n; n--) this.colors[0][n] = getBoundedValue(4 * (10 * parseInt(k[2 * n]) + parseInt(k[2 * n + 1])));
         this.vG()
     };
     this.get_rgb_64 = function() {
@@ -4921,42 +4958,41 @@ function v9() {
     };
     this.clicked = function(k, n) {
         this.vA = 0;
-        var l = (clientHeight - this.cw) / 2;
-        k -= (clientWidth - this.width) / 2;
+        var l = (clientHeight1 - this.cw) / 2;
+        k -= (clientWidth1 - this.width) / 2;
         n -= l;
         if (0 > k || 0 > n || k >= this.width - 1 || n >= this.cw - 1) return this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0, !1;
         if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.cw - this.f6) return !0;
         if (k < this.f6 + this.vB) return n < this.f6 + this.vB && 0 !== this.nu && (this.nu = 0, c4.canvasPendingUpdates = !0), !0;
         if (k < 2 * this.f6 + this.vB) return !0;
         k -= 2 * this.f6 + this.vB;
-        if (n < this.f6 + this.vD) return this.vA = 1, this.colors[this.nu][0] = g(256 * k / this.vC), c4.canvasPendingUpdates = !0;
+        if (n < this.f6 + this.vD) return this.vA = 1, this.colors[this.nu][0] = getBoundedValue(256 * k / this.vC), c4.canvasPendingUpdates = !0;
         if (n < 2 * this.f6 + this.vD) return !0;
-        if (n < 2 * this.f6 + 2 * this.vD) return this.vA = 2, this.colors[this.nu][1] = g(256 * k / this.vC), c4.canvasPendingUpdates = !0;
-        n >= 3 * this.f6 + 2 * this.vD && (this.vA = 3, this.colors[this.nu][2] = g(256 * k / this.vC), c4.canvasPendingUpdates = !0);
+        if (n < 2 * this.f6 + 2 * this.vD) return this.vA = 2, this.colors[this.nu][1] = getBoundedValue(256 * k / this.vC), c4.canvasPendingUpdates = !0;
+        n >= 3 * this.f6 + 2 * this.vD && (this.vA = 3, this.colors[this.nu][2] = getBoundedValue(256 * k / this.vC), c4.canvasPendingUpdates = !0);
         return !0
     };
     this.vG = function() {
         for (var k = 2; 0 <= k; k--) this.colors[0][k] =
-            g(this.colors[0][k])
+            getBoundedValue(this.colors[0][k])
     };
     this.vI = function() {
         for (var k = "", n, l = 0; 3 > l; l++) n = divide_floor(this.colors[0][l], 4), 10 > n && (k += "0"), k += n.toString();
         save_colors(k)
     };
     this.lo = function(k) {
-        0 !== this.vA && (k -= 2 * this.f6 + this.vB + (clientWidth - this.width) / 2, this.colors[this.nu][this.vA - 1] = g(256 * k / this.vC), c4.canvasPendingUpdates = !0)
+        0 !== this.vA && (k -= 2 * this.f6 + this.vB + (clientWidth1 - this.width) / 2, this.colors[this.nu][this.vA - 1] = getBoundedValue(256 * k / this.vC), c4.canvasPendingUpdates = !0)
     };
     this.vJ = function() {
         0 < this.vA && (this.vA = 0, this.vG(), this.vI(), c4.canvasPendingUpdates = !0)
     };
     this.drawImage = function() {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, (clientWidth - this.width) / 2, (clientHeight - this.cw) / 2);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, (clientWidth1 - this.width) / 2, (clientHeight1 - this.cw) / 2);
         mainCanvasCtx.fillStyle = hy;
         mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
         mainCanvasCtx.lineWidth = oy;
         mainCanvasCtx.strokeStyle = cK;
-        mainCanvasCtx.strokeRect(-1,
-            -1, this.width + 2, this.cw + 2);
+        mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.cw + 2);
         mainCanvasCtx.font = bt + Math.floor(.8 * this.vB) + bu;
         mainCanvasCtx.textBaseline = cI;
         mainCanvasCtx.textAlign = cJ;
@@ -4999,7 +5035,7 @@ function kC() {
     }
 
     function l(L, H, M) {
-        var Q = Math.floor((clientWidth - y) / 2) + C,
+        var Q = Math.floor((clientWidth1 - y) / 2) + C,
             R = Q + Math.floor(M * (y - 2 * C));
         mainCanvasCtx.lineWidth = H;
         mainCanvasCtx.beginPath();
@@ -5024,7 +5060,7 @@ function kC() {
         k()
     };
     this.lx = function() {
-        y = Math.floor((zoom ? .5 : .25) * bq);
+        y = Math.floor((zoom ? .5 : .25) * averageWindowLength);
         A = y + 12;
         z = Math.floor(.125 * y);
         C = 3 * z;
@@ -5042,8 +5078,8 @@ function kC() {
         6 !== aJ.getState() || J || (I = c4.time, J = !0, multiOut.join_lobby(L))
     };
     this.clicked = function(L, H) {
-        var M = Math.floor((clientWidth - A) / 2),
-            Q = Math.floor(.5 * (clientHeight - display_buffer_length - z - B)) + z + display_buffer_length;
+        var M = Math.floor((clientWidth1 - A) / 2),
+            Q = Math.floor(.5 * (clientHeight1 - display_buffer_length - z - B)) + z + display_buffer_length;
         return L > M && L < M + A && H > Q && H < Q + B ? (this.ve(), jh.lo(L, H, !1), !0) : !1
     };
     this.ve = function() {
@@ -5058,8 +5094,8 @@ function kC() {
         F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasPendingUpdates = !0)
     };
     this.drawImage = function() {
-        var L = Math.floor((clientWidth - A) / 2),
-            H = Math.floor(.5 * (clientHeight - display_buffer_length - z - B)),
+        var L = Math.floor((clientWidth1 - A) / 2),
+            H = Math.floor(.5 * (clientHeight1 - display_buffer_length - z - B)),
             M = x / 100;
         mainCanvasCtx.fillStyle = F;
         l(H, 3, 1);
@@ -5074,7 +5110,7 @@ function kC() {
         mainCanvasCtx.textBaseline = cI;
         mainCanvasCtx.font = G;
         mainCanvasCtx.fillStyle = cK;
-        mainCanvasCtx.fillText("Loading", Math.floor(.5 * clientWidth), Math.floor(H + .58 * z));
+        mainCanvasCtx.fillText("Loading", Math.floor(.5 * clientWidth1), Math.floor(H + .58 * z));
         H = H + z + display_buffer_length;
         M = A;
         var Q = B;
@@ -5110,7 +5146,7 @@ function kD() {
     this.vp = function() {
         this.setState(8);
         lobby.hide();
-        cC.us();
+        mainSettings.us();
         cD.hidden = !1;
         openLinkBox.clicked(-1E3, -1E3)
     };
@@ -5128,7 +5164,7 @@ function kD() {
         }
     };
     this.vr = function() {
-        return openLinkBox.end() || cC.us() ? !0 : cD.hidden ? (cD.hidden = !1, !0) : !1
+        return openLinkBox.end() || mainSettings.us() ? !0 : cD.hidden ? (cD.hidden = !1, !0) : !1
     };
     this.aK =
         function() {
@@ -5136,7 +5172,7 @@ function kD() {
             8 === state ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.alterDisplay() : fq.alterDisplay() : 7 === state ? lobby.vt() : 6 === state ? ji.ve() : 3 === state ? showError.vu(0, 0) : 2 === state ? singleMenu.vu() : 0 === state && (this.vr() || set_android_state(11))
         };
     this.clicked = function(k, n) {
-        if (!cookies_window.clicked(k, n) && vq && !(openLinkBox.clicked(k, n) || 6 === state && ji.clicked(k, n) || 2 === state && singleMenu.clicked(k, n) || jt.clicked(k, n) || cD.clicked(k, n) || vv.clicked(k, n, !0) || cC.clicked(k, n, !0))) {
+        if (!cookies_window.clicked(k, n) && vq && !(openLinkBox.clicked(k, n) || 6 === state && ji.clicked(k, n) || 2 === state && singleMenu.clicked(k, n) || jt.clicked(k, n) || cD.clicked(k, n) || vv.clicked(k, n, !0) || mainSettings.clicked(k, n, !0))) {
             playtime.clicked(k, n);
             if (0 === state) name_input.clicked(k, n);
             else if (3 === state) showError.clicked(k, n);
@@ -5152,16 +5188,15 @@ function kD() {
                 playtime.pW();
                 return
             }
-            if (2 ===
-                state && singleMenu.lo(k, n)) {
+            if (2 === state && singleMenu.lo(k, n)) {
                 playtime.pW();
                 return
             }
-            if (0 <= cC.pR(k, n)) {
+            if (0 <= mainSettings.pR(k, n)) {
                 playtime.pW();
                 return
             }
-            if (cC.lo(k, n)) {
+            if (mainSettings.lo(k, n)) {
                 playtime.pW();
                 return
             }
@@ -5171,14 +5206,14 @@ function kD() {
     };
     this.click = function(k, n) {
         playtime.pX();
-        cC.vJ() || vv.clicked(k, n, !1) || cC.clicked(k, n, !1)
+        mainSettings.vJ() || vv.clicked(k, n, !1) || mainSettings.clicked(k, n, !1)
     };
     this.pd = function(k, n, l) {
-        cC.mE[1].ih.hidden || 0 === state && playtime.pd(k, l)
+        mainSettings.buttons[1].buttonPanel.hidden || 0 === state && playtime.pd(k, l)
     };
     this.vw = function() {
         jh.rs();
-        cC.rs();
+        mainSettings.rs();
         0 === state ? (jk.rs(0), playtime.rs()) : 7 === state && lobby.lx();
         c4.canvasPendingUpdates = !0
     };
@@ -5188,12 +5223,12 @@ function kD() {
             this.hr();
             playtime.drawImage();
             jf.drawImage();
-            var k = Math.floor(.3 * clientHeight),
+            var k = Math.floor(.3 * clientHeight1),
                 n = sprites.lB("territorial.io"),
-                l = 1.75 * clientHeight / n.width;
-            l = l * n.width < .98 * clientWidth ? .98 * clientWidth / n.width : l;
+                l = 1.75 * clientHeight1 / n.width;
+            l = l * n.width < .98 * clientWidth1 ? .98 * clientWidth1 / n.width : l;
             mainCanvasCtx.globalAlpha = .15;
-            var x = Math.floor(.5 * (clientWidth - l * n.width));
+            var x = Math.floor(.5 * (clientWidth1 - l * n.width));
             x = Math.floor(x / l);
             k = Math.floor(k - .5 * n.height * l);
             k = Math.floor(k / l);
@@ -5203,10 +5238,10 @@ function kD() {
             mainCanvasCtx.globalAlpha = 1;
             vv.drawImage();
             uZ.drawImage();
-            cC.drawImage();
+            mainSettings.drawImage();
             jt.drawImage();
             0 === state ? name_input.drawImage() : 2 === state ? singleMenu.drawImage() : 3 === state ? showError.drawImage() : 5 === state ? jl.drawImage() : 6 === state ? ji.drawImage() : 7 === state && lobby.drawImage();
-            cC.vy();
+            mainSettings.vy();
             cookies_window.drawImage();
             cD.drawImage();
             openLinkBox.drawImage()
@@ -5214,35 +5249,35 @@ function kD() {
     };
     this.hr = function() {
         if (vq) {
-            var k = r / map_width,
-                n = s / map_height;
+            var k = clientWidth2 / map_width,
+                n = clientHeight2 / map_height;
             k = k > n ? k : n;
-            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((r - k * map_width) /
-                2), Math.floor((s - k * map_height) / 2));
+            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((clientWidth2 - k * map_width) /
+                2), Math.floor((clientHeight2 - k * map_height) / 2));
             mainCanvasCtx.drawImage(hs, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             mainCanvasCtx.fillStyle = oG
         } else mainCanvasCtx.fillStyle = gH;
-        mainCanvasCtx.fillRect(0, 0, r, s)
+        mainCanvasCtx.fillRect(0, 0, clientWidth2, clientHeight2)
     }
 }
 
-function w1() {
+function Emojis() {
     this.cw = this.width = 0;
     this.hidden = !1;
     this.nj = 10;
     this.bB = .12;
     this.w3 = this.w2 = this.vA = !1;
     this.init = function() {
-        this.width = r < 1 * s ? Math.floor((zoom ? .94 : .6) * r) : Math.floor((zoom ? .94 : .6) * s);
+        this.width = clientWidth2 < 1 * clientHeight2 ? Math.floor((zoom ? .94 : .6) * clientWidth2) : Math.floor((zoom ? .94 : .6) * clientHeight2);
         this.width -= this.width % this.nj;
         this.cw = 1 * this.width;
         this.hidden = !0;
         this.vA = !1
     };
     this.clicked = function(g, k, n) {
-        var l = (clientHeight - this.cw) / 2;
-        g -= (clientWidth - this.width) / 2;
+        var l = (clientHeight1 - this.cw) / 2;
+        g -= (clientWidth1 - this.width) / 2;
         k -= l;
         if (0 > g || 0 > k || g >= this.width - 1 || k >= this.cw - 1) return 0 === n && (this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0), !1;
         l = Math.floor(this.width / this.nj);
@@ -5261,8 +5296,8 @@ function w1() {
     };
     this.drawImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
-        var g = (clientWidth - this.width) / 2,
-            k = (clientHeight - this.cw) / 2;
+        var g = (clientWidth1 - this.width) / 2,
+            k = (clientHeight1 - this.cw) / 2;
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
         mainCanvasCtx.fillStyle = hy;
         mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
@@ -5421,8 +5456,8 @@ function kF() {
         return k[x]
     };
     this.rs = function(x) {
-        k[x].input.style.left = Math.floor((clientWidth / device_pixel_ratio - (jh.width / device_pixel_ratio - 3) - 7) / 2) + "px";
-        0 === x && (k[x].input.style.bottom = Math.floor((clientHeight - jh.fK + jh.f6) / device_pixel_ratio) + "px")
+        k[x].input.style.left = Math.floor((clientWidth1 / device_pixel_ratio - (jh.width / device_pixel_ratio - 3) - 7) / 2) + "px";
+        0 === x && (k[x].input.style.bottom = Math.floor((clientHeight1 - jh.fK + jh.f6) / device_pixel_ratio) + "px")
     };
     this.cE = function(x, t) {
         k[x].hidden !== t && ((k[x].hidden = t) ? document.body.appendChild(k[x].input) : document.body.removeChild(k[x].input))
@@ -5445,8 +5480,8 @@ function ki() {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             aJ.hr();
             x = sprites.lB("loading");
-            var t = (zoom ? .396 : .25) * bq / x.width;
-            mainCanvasCtx.setTransform(t, 0, 0, t, Math.floor((r - t * x.width) / 2), Math.floor((s - t * x.height) / 2));
+            var t = (zoom ? .396 : .25) * averageWindowLength / x.width;
+            mainCanvasCtx.setTransform(t, 0, 0, t, Math.floor((clientWidth2 - t * x.width) / 2), Math.floor((clientHeight2 - t * x.height) / 2));
             mainCanvasCtx.drawImage(x, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
@@ -5623,20 +5658,20 @@ function Lobby() {
         display_games_box_arrangement = [0, 0];
         G = [0, 0, 0, 0];
         if (zoom) {
-            I = Math.floor(.8 * .4 * bq);
+            I = Math.floor(.8 * .4 * averageWindowLength);
             D = Math.floor(.56 * I);
             G[0] = display_buffer_length;
 
-            if (r < s) {
+            if (clientWidth2 < clientHeight2) {
                 G[1] = D + 2 * display_buffer_length;
-                G[2] = r - 3 * G[0];
+                G[2] = clientWidth2 - 3 * G[0];
                 G[3] = uZ.to_y() - 3 * display_buffer_length - D;
                 H = Math.floor(.95 * D);
-                M = Math.floor((r - I - display_buffer_length) / 2);
+                M = Math.floor((clientWidth2 - I - display_buffer_length) / 2);
                 Q = Math.floor(display_buffer_length + D / 2);
             } else {
                 G[1] = display_buffer_length;
-                G[2] = r - 3 * display_buffer_length - I;
+                G[2] = clientWidth2 - 3 * display_buffer_length - I;
                 G[3] = uZ.to_y() - 2 * display_buffer_length;
                 H = Math.floor(.8 * I);
 
@@ -5645,20 +5680,20 @@ function Lobby() {
                     H = Math.max(D, H);
                 }
 
-                M = Math.floor(r - I / 2 - display_buffer_length);
+                M = Math.floor(clientWidth2 - I / 2 - display_buffer_length);
                 Q = Math.floor(display_buffer_length + D + (G[3] - D) / 2);
                 Q = Math.max(Q, Math.floor(D + 2 * display_buffer_length + H / 2));
             }
         } else {
-            I = Math.floor(.2016 * bq);
+            I = Math.floor(.2016 * averageWindowLength);
             D = Math.floor(.56 * I);
-            G[2] = Math.floor(.5 * r);
-            G[3] = Math.floor(.5 * s);
-            G[1] = Math.floor(.45 * (s - G[3]));
-            G[0] = Math.floor((r - G[2]) / 2);
+            G[2] = Math.floor(.5 * clientWidth2);
+            G[3] = Math.floor(.5 * clientHeight2);
+            G[1] = Math.floor(.45 * (clientHeight2 - G[3]));
+            G[0] = Math.floor((clientWidth2 - G[2]) / 2);
             H = Math.floor(.75 * D);
-            M = Math.floor(r / 2);
-            Q = Math.floor(G[1] + G[3] + (s - G[3] - G[1]) / 2);
+            M = Math.floor(clientWidth2 / 2);
+            Q = Math.floor(G[1] + G[3] + (clientHeight2 - G[3] - G[1]) / 2);
         }
         L = bt + Math.floor(.65 * D / 4) + bu;
         for (P = U = 1; P * U < lobbyGames.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
@@ -5725,11 +5760,11 @@ function Lobby() {
         mainCanvasCtx.drawImage(sprites.bz(0), 0, 0);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
         mainCanvasCtx.fillStyle = oG;
-        mainCanvasCtx.fillRect(r - I - display_buffer_length, display_buffer_length, I, D);
-        0 <= game_selected ? (mainCanvasCtx.fillStyle = oO, mainCanvasCtx.fillRect(r - I -
-            display_buffer_length, display_buffer_length, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = oj, mainCanvasCtx.fillRect(r - I - display_buffer_length, display_buffer_length + Math.floor(.25 * D), I, Math.floor(.25 * D)));
+        mainCanvasCtx.fillRect(clientWidth2 - I - display_buffer_length, display_buffer_length, I, D);
+        0 <= game_selected ? (mainCanvasCtx.fillStyle = oO, mainCanvasCtx.fillRect(clientWidth2 - I -
+            display_buffer_length, display_buffer_length, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = oj, mainCanvasCtx.fillRect(clientWidth2 - I - display_buffer_length, display_buffer_length + Math.floor(.25 * D), I, Math.floor(.25 * D)));
         mainCanvasCtx.strokeStyle = cK;
-        mainCanvasCtx.strokeRect(r - I - display_buffer_length, display_buffer_length, I, D);
+        mainCanvasCtx.strokeRect(clientWidth2 - I - display_buffer_length, display_buffer_length, I, D);
         mainCanvasCtx.fillStyle = cK;
         mainCanvasCtx.font = L;
         mainCanvasCtx.textBaseline = cI;
@@ -5738,9 +5773,9 @@ function Lobby() {
         for (var index = 3; 0 <= index; index--) {
             var na = Math.floor(display_buffer_length + (index + 1) * (D + 2 * X) / 5 - X);
             mainCanvasCtx.textAlign = mj;
-            mainCanvasCtx.fillText(label_displayLobbyStats[index], r - I - display_buffer_length + W, na);
+            mainCanvasCtx.fillText(label_displayLobbyStats[index], clientWidth2 - I - display_buffer_length + W, na);
             mainCanvasCtx.textAlign = ol;
-            mainCanvasCtx.fillText(eP.split_into_pieces(lobbyStats[index]), r - display_buffer_length - W, na)
+            mainCanvasCtx.fillText(eP.split_into_pieces(lobbyStats[index]), clientWidth2 - display_buffer_length - W, na)
         }
         if (0 !== lobbyGames.length)
             for (X = 0; X < display_games_box_arrangement[1]; X++) {
@@ -5843,9 +5878,9 @@ function SingleMenu() {
     };
     this.hide = function() {};
     this.lx = function() {
-        k[2] = Math.floor((zoom ? .49 : .4) * bq);
-        k[1] = Math.floor((s - k[2] / 6 - this.botSettings.length * (display_buffer_length + k[2] / 10)) / 2);
-        k[0] = Math.floor((r - k[2]) / 2);
+        k[2] = Math.floor((zoom ? .49 : .4) * averageWindowLength);
+        k[1] = Math.floor((clientHeight2 - k[2] / 6 - this.botSettings.length * (display_buffer_length + k[2] / 10)) / 2);
+        k[0] = Math.floor((clientWidth2 - k[2]) / 2);
         js.hidden && js.lx()
     };
     this.xW = function(n) {
@@ -5887,7 +5922,7 @@ function SingleMenu() {
             n = 0 > n ? 7 : n;
             game_init(Math.floor(16384 * Math.random()), 0, [{
                 name: name_input.get_username(),
-                color: cC.mE[2].ih.get_rgb_64(),
+                color: mainSettings.buttons[2].buttonPanel.get_rgb_64(),
                 status: 0
             }], n, !1)
         }
@@ -5896,7 +5931,7 @@ function SingleMenu() {
         return !1
     };
     this.clicked = function(n, l) {
-        if (cD.hidden || cC.mE[1].ih.hidden || cC.mE[2].ih.hidden) return !1;
+        if (cD.hidden || mainSettings.buttons[1].buttonPanel.hidden || mainSettings.buttons[2].buttonPanel.hidden) return !1;
         if (js.hidden && !customMap.ds) return js.clicked(n, l);
         var x = this.pR(n, l);
         if (-1 === x) return !1;
@@ -5994,104 +6029,116 @@ function SingleMenu() {
     }
 }
 
-function p5() {
+function MainSettings() {
     this.width = this.b3 = 0;
-    this.mE = null;
+    this.buttons = null;
     this.init = function() {
-        this.mE = [];
-        this.mE.push({
+        this.buttons = [];
+        this.buttons.push({
             fJ: 0,
             fK: 0,
-            m3: zoom,
-            ih: null
+            active: zoom,
+            buttonPanel: null
         });
-        this.mE.push({
+        this.buttons.push({
             fJ: 0,
             fK: 0,
-            m3: !1,
-            ih: new w1
+            active: !1,
+            buttonPanel: new Emojis
         });
-        this.mE.push({
+        this.buttons.push({
             fJ: 0,
             fK: 0,
-            m3: !1,
-            ih: new v9
+            active: !1,
+            buttonPanel: new Colors
         });
-        this.mE[2].ih.vE();
-        this.b3 = this.mE.length;
+        this.buttons[2].buttonPanel.vE();
+        this.b3 = this.buttons.length;
         this.width = 0
     };
     this.rs = function() {
-        this.width = Math.floor((zoom ? .063 : .04) * bq);
+        this.width = Math.floor((zoom ? .063 : .04) * averageWindowLength);
         this.width += 4 - this.width % 4;
-        this.mE[0].fJ = display_buffer_length;
-        this.mE[0].fK = clientHeight - this.width - display_buffer_length;
-        for (var g = 1; g < this.b3; g++) this.mE[g].fJ = this.mE[g - 1].fJ + Math.floor(zoom ? 1.5 * display_buffer_length : 3.7 * display_buffer_length) + this.width, this.mE[g].fK = this.mE[0].fK
+        this.buttons[0].fJ = display_buffer_length;
+        this.buttons[0].fK = clientHeight1 - this.width - display_buffer_length;
+        for (var g = 1; g < this.b3; g++) this.buttons[g].fJ = this.buttons[g - 1].fJ + Math.floor(zoom ? 1.5 * display_buffer_length : 3.7 * display_buffer_length) + this.width, this.buttons[g].fK = this.buttons[0].fK
     };
-    this.pR =
-        function(g, k) {
+    this.pR = function(g, k) {
             if (!sprites.bx()) return -1;
-            for (var n = this.b3 - 1; 0 <= n; n--)
-                if (g >= this.mE[n].fJ && k >= this.mE[n].fK && g < this.mE[n].fJ + this.width && k < this.mE[n].fK + this.width) return n;
+            for (var index = this.b3 - 1; 0 <= index; index--)
+                if (g >= this.buttons[index].fJ && k >= this.buttons[index].fK && g < this.buttons[index].fJ + this.width && k < this.buttons[index].fK + this.width) return index;
             return -1
         };
     this.xk = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.mE[g].ih.hidden) return !0;
+            if (this.buttons[g].buttonPanel.hidden) return !0;
         return !1
     };
     this.us = function() {
-        return this.mE[1].ih.hidden ? (this.mE[1].ih.clicked(-5E3, -5E3, 0), !0) : this.mE[2].ih.hidden ? (this.mE[2].ih.clicked(-5E3, -5E3), !0) : !1
+        return this.buttons[1].buttonPanel.hidden ? (this.buttons[1].buttonPanel.clicked(-5E3, -5E3, 0), !0) : this.buttons[2].buttonPanel.hidden ? (this.buttons[2].buttonPanel.clicked(-5E3, -5E3), !0) : !1
     };
     this.clicked = function(g, k, n) {
         if (n) {
-            if (this.mE[1].ih.hidden) return this.mE[1].ih.clicked(g, k, 0), !0;
-            if (this.mE[2].ih.hidden) return this.mE[2].ih.clicked(g, k), !0
+            if (this.buttons[1].buttonPanel.hidden) return this.buttons[1].buttonPanel.clicked(g, k, 0), !0;
+            if (this.buttons[2].buttonPanel.hidden) return this.buttons[2].buttonPanel.clicked(g, k), !0
         }
         g = this.pR(g, k);
         if (n) {
-            if (0 === g) return this.mE[g].m3 = !this.mE[g].m3, zoom = this.mE[g].m3, jq.xl(), save_options(this.mE[0].m3, !1), !0;
-            if (1 <= g && 3 > g) return this.mE[g].ih.init(), name_input.hide(), c4.canvasPendingUpdates = !0
+            if (0 === g) return this.buttons[g].active = !this.buttons[g].active, zoom = this.buttons[g].active, jq.xl(), save_options(this.buttons[0].active, !1), !0;
+            if (1 <= g && 3 > g) return this.buttons[g].buttonPanel.init(), name_input.hide(), c4.canvasPendingUpdates = !0
         }
         return !1
     };
     this.lo = function(g, k) {
-        return this.mE[1].ih.hidden ? (this.mE[1].ih.lo(g, k), !0) : this.mE[2].ih.hidden ? (this.mE[2].ih.lo(g), !0) : !1
+        return this.buttons[1].buttonPanel.hidden ? (this.buttons[1].buttonPanel.lo(g, k), !0) : this.buttons[2].buttonPanel.hidden ? (this.buttons[2].buttonPanel.lo(g), !0) : !1
     };
     this.vJ = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.mE[g].ih.hidden) return this.mE[g].ih.vJ(), !0;
+            if (this.buttons[g].buttonPanel.hidden) return this.buttons[g].buttonPanel.vJ(), !0;
         return !1
     };
     this.drawImage = function() {
         if (sprites.bx()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            for (var g = this.b3 - 1; 0 <= g; g--) mainCanvasCtx.fillStyle =
-                this.mE[g].m3 ? mb : hy, mainCanvasCtx.fillRect(this.mE[g].fJ, this.mE[g].fK, this.width, this.width), 0 === g ? this.xm(g, sprites.bz(15)) : 1 === g ? this.xn() : 2 === g && this.xo(), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0), mainCanvasCtx.lineWidth = oy, mainCanvasCtx.strokeStyle = cK, mainCanvasCtx.strokeRect(this.mE[g].fJ, this.mE[g].fK, this.width, this.width);
+            for (var g = this.b3 - 1; 0 <= g; g--) {
+                mainCanvasCtx.fillStyle = this.buttons[g].active ? mb : hy;
+                mainCanvasCtx.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+                if (0 === g) {
+                    this.xm(g, sprites.bz(15));
+                } else if (1 === g) {
+                    this.xn();
+                } else if (2 === g) {
+                    this.xo();
+                }
+                mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                mainCanvasCtx.lineWidth = oy;
+                mainCanvasCtx.strokeStyle = cK;
+                mainCanvasCtx.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+            }
             mainCanvasCtx.imageSmoothingEnabled = !1
         }
     };
     this.xm = function(g, k) {
         var n = .08 * this.width,
             l = (this.width - 2 * n) / k.width;
-        mainCanvasCtx.setTransform(l, 0, 0, l, this.mE[g].fJ + n, this.mE[g].fK + (this.width - l * k.height) / 2);
+        mainCanvasCtx.setTransform(l, 0, 0, l, this.buttons[g].fJ + n, this.buttons[g].fK + (this.width - l * k.height) / 2);
         mainCanvasCtx.drawImage(k, 0, 0)
     };
     this.xn = function() {
         var g = .06 * this.width,
             k = (this.width - 2 * g) / a5.width;
-        mainCanvasCtx.setTransform(k, 0, 0, k, this.mE[1].fJ + g, this.mE[1].fK + g);
+        mainCanvasCtx.setTransform(k, 0, 0, k, this.buttons[1].fJ + g, this.buttons[1].fK + g);
         mainCanvasCtx.drawImage(a5.l7[4], 0, 0)
     };
     this.xo = function() {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, this.mE[2].fJ, this.mE[2].fK);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, this.buttons[2].fJ, this.buttons[2].fK);
         for (var g = this.width / 4, k = 3; 0 <= k; k--)
             for (var n = 3; 0 <= n; n--) mainCanvasCtx.fillStyle = "rgb(" + Math.floor(367 * (k + 1) * (n + 1) % 256) + "," + Math.floor(687 * (k + 1) * (n + 1) % 256) + "," + Math.floor(651 * (k + 1) * (n + 1) % 256) + ")", mainCanvasCtx.fillRect(k * g, n * g, g, g)
     };
     this.vy = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.mE[g].ih.hidden) {
-                this.mE[g].ih.drawImage();
+            if (this.buttons[g].buttonPanel.hidden) {
+                this.buttons[g].buttonPanel.drawImage();
                 break
             }
     }
@@ -6142,7 +6189,7 @@ function Name_input() {
         jk.cE(0, !0);
         jk.rs(0);
         jf.init();
-        cC.rs();
+        mainSettings.rs();
         void 0 === username && (username = get_username(), jk.bz(0).input.value = username, l())
     };
     this.hide = function() {
@@ -6168,14 +6215,14 @@ function Name_input() {
         save_account() || vote() || (set_android_state(10), void 0 !== username && characters.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % websocket_manager.terriWsCount) : ji.vV(jt.xy - 1), l() ? sprites.bx() ? (this.hide(), save_username(username), customMap.pW(), ji.init()) : showError.displayError(3228) : showError.displayError(4214))
     };
     this.y2 = function() {
-        return !cC.xk() && !cD.hidden && !openLinkBox.hidden
+        return !mainSettings.xk() && !cD.hidden && !openLinkBox.hidden
     };
     this.drawImage = function() {
         if (this.y2()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var t = sprites.lB("territorial.io"),
                 z = 1.1 * jh.width / t.width;
-            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((clientWidth - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
+            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((clientWidth1 - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
             mainCanvasCtx.drawImage(t, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             jh.v3()
@@ -6481,10 +6528,10 @@ function User_settings() {
 
     function settings_init() {
         settings_array[0] = "Player " + Math.floor(1E3 * Math.random());
-        settings_array[1] = r < s ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
+        settings_array[1] = clientWidth2 < clientHeight2 ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
         settings_array[2] = 1;
         settings_array[3] = 1;
-        settings_array[4] = r < s ? 0 : 1;
+        settings_array[4] = clientWidth2 < clientHeight2 ? 0 : 1;
         settings_array[5] = 0;
         settings_array[6] = "000"; 
         settings_array[7] = "0"; //Emoji
@@ -6600,7 +6647,7 @@ function fm(id) {
     checkKillers(id);
     revertNeutralLand(id);
     removeArrayInfo(id);
-    au.av(id);
+    speed.removeEntry(id);
     eK.g3(id);
     attacks.reset_attack_count(id)
 }
@@ -6785,7 +6832,7 @@ function CustomMap() {
     };
     this.xb = function() {
         this.dt.ya &&
-            this.dt.zj && (this.dt.ya[0] = cC.mE[2].ih.get_rgb_64());
+            this.dt.zj && (this.dt.ya[0] = mainSettings.buttons[2].buttonPanel.get_rgb_64());
         game_init(this.dt.zk, 0, this.zl(), this.dt.game_mode, !1)
     };
     this.zl = function() {
@@ -7045,8 +7092,8 @@ var font = true;
 
 function kO() {
     function g() {
-        X.width = clientWidth;
-        X.height = clientHeight;
+        X.width = clientWidth1;
+        X.height = clientHeight1;
         V = X.getContext("2d", {
             alpha: !0
         });
@@ -7059,11 +7106,11 @@ function kO() {
         W = !1;
         U = 1;
         R = P = 0;
-        V.clearRect(0, 0, clientWidth, clientHeight);
-        for (var O = gC / g7, T = gD / g7, Y = (clientWidth + gC) / g7, Z = (clientHeight + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== is_alive[my_id] && hu.isHuman(my_id), za = alive_count - 1; 0 <= za; za--)
+        V.clearRect(0, 0, clientWidth1, clientHeight1);
+        for (var O = gC / g7, T = gD / g7, Y = (clientWidth1 + gC) / g7, Z = (clientHeight1 + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== is_alive[my_id] && hu.isHuman(my_id), za = alive_count - 1; 0 <= za; za--)
             if (ia = alive_entities[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
-                la = Math.floor(clientWidth * (E[ia] + G[ia] / 2 - O) / (Y - O));
-                ma = Math.floor(clientHeight * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
+                la = Math.floor(clientWidth1 * (E[ia] + G[ia] / 2 - O) / (Y - O));
+                ma = Math.floor(clientHeight1 * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
                 V.font = oo[player_status[ia]] + fa * (font ? 1.5 : 1) + bu;
                 qa = V;
                 var ra = ia;
@@ -7185,7 +7232,7 @@ function kO() {
         Q = .88;
         L = .5;
         H = 1.8;
-        K = Math.floor(.5 * pK);
+        K = Math.floor(.5 * shorterWindowLength);
         J = Math.floor(.2 * K);
         M = 8 === gamemode ? jt.highResolution ? 6 : 4 : jt.highResolution ? 10 : 7;
         C = B = 0;
@@ -7610,7 +7657,7 @@ function troop_hash() {
     for (id = alive_count - 1; 0 <= id; id--) sum += troops[alive_entities[id]];
     return sum % 4096
 }
-var mainCanvas, mainCanvasCtx, version, version_hash, r, s, pK, bq, clientWidth, clientHeight, device_pixel_ratio, host_name, is_ios, ios, droid, device_version, zoom, has_had_error_before = !1,
+var mainCanvas, mainCanvasCtx, version, version_hash, clientWidth2, clientHeight2, shorterWindowLength, averageWindowLength, clientWidth1, clientHeight1, device_pixel_ratio, host_name, is_ios, ios, droid, device_version, zoom, has_had_error_before = !1,
     is_not_top_window, not_using_client, client_id, gy, so, h8, a5, statistics, hv, cookies_window, c4, teams, eT, cD, endGame, vv, openLinkBox, uZ, time_hash, const_2_s52, error_line = 0,
     error_message = "",
     start_function_called = !1;
@@ -7954,19 +8001,19 @@ function kR() {
         g[0] = {
             width: [0, 5E3, 8E3, 1E4],
             fB: [220, 250, 255, 220],
-            value: [190, 220, 0, 0],
+            n6: [190, 220, 0, 0],
             cm: [170, 200, 0, 0]
         };
         g[1] = {
             width: [0, 4E3, 5E3, 6E3, 1E4],
             fB: [25, 0, 100, 0, 25],
-            value: [25, 0, 0, 0, 25],
+            n6: [25, 0, 0, 0, 25],
             cm: [25, 0, 0, 0, 25]
         };
         g[2] = {
             width: [0, 500, 2500, 2999, 3E3, 3200, 4200, 5200, 5700, 8800, 1E4],
             fB: [15, 15, 70, 40, 40, 40, 252, 40, 40, 20, 30],
-            value: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
+            n6: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
             cm: [120, 120, 220, 110, 40, 40, 217, 10, 10, 10, 10]
         };
         g[3] = {
@@ -7974,43 +8021,43 @@ function kR() {
             fB: [10,
                 10, 20, 10, 30, 10, 16, 40, 55, 230, 230
             ],
-            value: [10, 10, 40, 50, 100, 40, 80, 120, 55, 230, 230],
+            n6: [10, 10, 40, 50, 100, 40, 80, 120, 55, 230, 230],
             cm: [80, 80, 200, 10, 60, 10, 16, 40, 55, 230, 230]
         };
         g[4] = {
             width: [0, 300, 1400, 1700, 3E3, 4E3, 1E4],
             fB: [10, 10, 20, 10, 10, 170, 212],
-            value: [20, 20, 60, 100, 100, 110, 170],
+            n6: [20, 20, 60, 100, 100, 110, 170],
             cm: [70, 70, 160, 30, 30, 60, 120]
         };
         g[5] = {
             width: [0, 1E3, 3E3, 3500, 4E3, 4500, 7E3, 7500, 8E3, 1E4],
             fB: [10, 10, 20, 10, 5, 10, 20, 5, 20, 25],
-            value: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
+            n6: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
             cm: [80, 80, 200, 10, 5, 10, 20, 5, 20, 25]
         };
         g[6] = {
             width: [0, 700, 2650, 3200, 5E3, 8E3, 1E4],
             fB: [10, 10, 60, 255, 255, 200, 200],
-            value: [10, 10, 60, 255, 255, 200, 200],
+            n6: [10, 10, 60, 255, 255, 200, 200],
             cm: [80, 80, 255, 255, 255, 200, 200]
         };
         g[7] = {
             width: [0, 400, 1999, 2E3, 3200, 4E3, 4700, 5500, 6500, 9500, 1E4],
             fB: [10, 10, 80, 255, 255, 55, 6, 70, 20, 155, 255],
-            value: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
+            n6: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
             cm: [80, 80, 255, 235, 235, 55, 26, 10, 20, 155, 255]
         };
         g[8] = {
             width: [0, 700, 1300, 1900, 1901, 2500, 3400, 6E3, 1E4],
             fB: [25, 30, 30, 30, 255, 255, 30, 40, 20],
-            value: [25, 30, 150, 150, 245, 245, 80, 150, 70],
+            n6: [25, 30, 150, 150, 245, 245, 80, 150, 70],
             cm: [60, 170, 170, 170, 235, 235, 30, 40, 40]
         };
         g[9] = {
             width: [0, 400, 2009, 2010, 3300, 4E3, 5200, 6500, 8E3, 9500, 1E4],
             fB: [10, 10, 80, 255, 255, 55, 23, 36, 20, 155, 255],
-            value: [10, 10, 90, 245, 245,
+            n6: [10, 10, 90, 245, 245,
                 170, 60, 160, 20, 155, 255
             ],
             cm: [80, 80, 255, 235, 235, 55, 9, 72, 20, 155, 255]
@@ -8027,7 +8074,7 @@ function kR() {
         xI = k.data;
         var n = g[current_map].width,
             l = g[current_map].fB,
-            x = g[current_map].value,
+            x = g[current_map].n6,
             t = g[current_map].cm,
             z, y, A = jn.a35(),
             B = n.length - 2,
@@ -8467,15 +8514,15 @@ function kl() {
 
     function n() {
         var y = Math.floor((zoom ? .145 : .09) *
-                bq),
+                averageWindowLength),
             A = Math.floor(1.5 * y),
-            B = Math.floor(.065 * (zoom ? .53 : .36) * bq);
+            B = Math.floor(.065 * (zoom ? .53 : .36) * averageWindowLength);
         return {
-            f7: r - y - B,
+            f7: clientWidth2 - y - B,
             f8: display_buffer_length,
             i4: y,
             nR: Math.floor(.35 * y),
-            f9: r - A - B,
+            f9: clientWidth2 - A - B,
             i5: A
         }
     }
@@ -8505,84 +8552,84 @@ function kl() {
                 name: "More",
                 id: 0,
                 fB: 140,
-                value: 120,
+                n6: 120,
                 cm: 0
             });
             z.push({
                 name: "Lobby 1",
                 id: 1,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             z.push({
                 name: "Hide Usernames",
                 id: 2,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             z.push({
                 name: "Hide Links",
                 id: 3,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             !is_ios && 5 > device_version && z.push({
                 name: "High Resolution",
                 id: 4,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             z.push({
                 name: "Tutorial",
                 id: 5,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             z.push({
                 name: "Player List",
                 id: 6,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             z.push({
                 name: "Clan List",
                 id: 7,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             z.push({
                 name: "Privacy Policy",
                 id: 8,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             !is_ios && 5 > device_version && z.push({
                 name: "Cookie Policy",
                 id: 9,
                 fB: 0,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             z.push({
                 name: "Mod Settings",
                 id: 10,
                 fB: 140,
-                value: 140,
+                n6: 140,
                 cm: 250
             });
             z.push({
                 name: version,
                 id: 10,
                 fB: 90,
-                value: 0,
+                n6: 0,
                 cm: 0
             });
             if (is_ios) this.hideNicknames = ios.freeSpawn, this.hideLinks = ios.unlimitedTime, this.highResolution = !1;
@@ -8593,9 +8640,9 @@ function kl() {
                 this.hideLinks = 2 === (settings_6 & 2);
                 this.highResolution = 4 === (settings_6 & 4)
             }
-            z[2].value = this.hideNicknames ? 130 : 0;
-            z[3].value = this.hideLinks ? 130 : 0;
-            !is_ios && 5 > device_version && (z[4].value = this.highResolution ? 130 : 0);
+            z[2].n6 = this.hideNicknames ? 130 : 0;
+            z[3].n6 = this.hideLinks ? 130 : 0;
+            !is_ios && 5 > device_version && (z[4].n6 = this.highResolution ? 130 : 0);
             this.hideLinks && (vv.uu[2] = vv.uu[3] = vv.uu[4] = !1)
         };
     this.clicked = function(y, A) {
@@ -8605,7 +8652,7 @@ function kl() {
             if (t) {
                 for (B = 1; B < z.length; B++) 
                     if (k(y, A, C, B)) {
-                        return 1 === z[B].id ? (jt.xy = 1 === jt.xy ? 2 : 2 === jt.xy ? 3 : 3 === jt.xy ? websocket_manager.originCount : 1, z[1].name = "Lobby " + (jt.xy === websocket_manager.originCount ? "4 (1B)" : jt.xy), c4.canvasPendingUpdates = !0) : 2 === z[B].id ? (jt.hideNicknames = !jt.hideNicknames, z[B].value = jt.hideNicknames ? 130 : 0, g(), c4.canvasPendingUpdates = !0) : 3 === z[B].id ? (jt.hideLinks = !jt.hideLinks, z[B].value = jt.hideLinks ? 130 : 0, g(), c4.canvasPendingUpdates = !0) : 4 === z[B].id ? (jt.highResolution = !jt.highResolution, z[B].value = jt.highResolution ? 130 : 0, g(), jq.xl(), c4.canvasPendingUpdates = !0) : 5 === z[B].id ? (openLinkBox.init(ov, !0), openLinkBox.init(ov, !1)) : 6 === z[B].id ? (openLinkBox.init(ow[0], !0), openLinkBox.init(ow[0], !1)) : 7 === z[B].id ? (openLinkBox.init(ow[1], !0), openLinkBox.init(ow[1], !1)) : 8 === z[B].id ? (openLinkBox.init(ou, !0), openLinkBox.init(ou, !1)) : 9 === z[B].id ? (openLinkBox.init(nX, !0), openLinkBox.init(nX, !1)) : 10 === z[B].id && typeof(document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden, document.getElementById('hideMenuCheck').checked = !document.getElementById('hideMenuCheck').checked ,!0);
+                        return 1 === z[B].id ? (jt.xy = 1 === jt.xy ? 2 : 2 === jt.xy ? 3 : 3 === jt.xy ? websocket_manager.originCount : 1, z[1].name = "Lobby " + (jt.xy === websocket_manager.originCount ? "4 (1B)" : jt.xy), c4.canvasPendingUpdates = !0) : 2 === z[B].id ? (jt.hideNicknames = !jt.hideNicknames, z[B].n6 = jt.hideNicknames ? 130 : 0, g(), c4.canvasPendingUpdates = !0) : 3 === z[B].id ? (jt.hideLinks = !jt.hideLinks, z[B].n6 = jt.hideLinks ? 130 : 0, g(), c4.canvasPendingUpdates = !0) : 4 === z[B].id ? (jt.highResolution = !jt.highResolution, z[B].n6 = jt.highResolution ? 130 : 0, g(), jq.xl(), c4.canvasPendingUpdates = !0) : 5 === z[B].id ? (openLinkBox.init(ov, !0), openLinkBox.init(ov, !1)) : 6 === z[B].id ? (openLinkBox.init(ow[0], !0), openLinkBox.init(ow[0], !1)) : 7 === z[B].id ? (openLinkBox.init(ow[1], !0), openLinkBox.init(ow[1], !1)) : 8 === z[B].id ? (openLinkBox.init(ou, !0), openLinkBox.init(ou, !1)) : 9 === z[B].id ? (openLinkBox.init(nX, !0), openLinkBox.init(nX, !1)) : 10 === z[B].id && typeof(document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden, document.getElementById('hideMenuCheck').checked = !document.getElementById('hideMenuCheck').checked ,!0);
                     }
                 t = !1;
                 c4.canvasPendingUpdates = !0;
@@ -8634,10 +8681,10 @@ function kl() {
             var A = n();
             mainCanvasCtx.textAlign = cJ;
             mainCanvasCtx.textBaseline = cI;
-            l(A.f7, A.f8, A.i4, A.nR, z[0].fB, z[0].value, z[0].cm, 0 === x, z[0].name, .6);
+            l(A.f7, A.f8, A.i4, A.nR, z[0].fB, z[0].n6, z[0].cm, 0 === x, z[0].name, .6);
             if (t) {
                 var B = z.length;
-                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nR - 2 * y, A.i5, A.nR, z[y].fB, z[y].value, z[y].cm, x === y, z[y].name,
+                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nR - 2 * y, A.i5, A.nR, z[y].fB, z[y].n6, z[y].cm, x === y, z[y].name,
                     y === B - 1 ? .32 : .45)
             }
         }
@@ -8650,7 +8697,7 @@ function kU() {
         l = -1;
         x = Array(4);
         for (var y = 3; 0 <= y; y--) x[y] = !1;
-        y = Math.floor(1 + .02 * pK);
+        y = Math.floor(1 + .02 * shorterWindowLength);
         t = Array(4);
         z = Array(4);
         z[1] = z[3] = t[0] = t[2] = 0;
@@ -8817,7 +8864,7 @@ function a2V() {
         return x
     };
     this.lx = function() {
-        team_game && (x = Math.floor(.18 * pK), x += x % 2, t = Math.floor(7 * x / 8), 
+        team_game && (x = Math.floor(.18 * shorterWindowLength), x += x % 2, t = Math.floor(7 * x / 8), 
         z = z ? z : document.createElement("canvas"), z.width = x, z.height = x, y = z.getContext("2d", { alpha: !0 }), y.lineWidth = 2, y.strokeStyle = cK, draw_pie_chart())
     };
     this.get_largest_team_total_land = function() {
@@ -8893,28 +8940,28 @@ function kd() {
 
     function l() {
         if (5 <= device_version) {
-            var client_width = n(document.documentElement.clientWidth);
-            var client_height = n(document.documentElement.clientHeight);
+            var varClientWidth = n(document.documentElement.clientWidth);
+            var varClientHeight = n(document.documentElement.clientHeight);
             device_pixel_ratio = 1;
-            if (client_width !== clientWidth || client_height !== clientHeight) {
-                clientWidth = client_width;
-                clientHeight = client_height;
-                r = clientWidth;
-                s = clientHeight;
-                pK = min(r, s);
-                bq = divide_floor(s + r, 2);
+            if (varClientWidth !== clientWidth1 || varClientHeight !== clientHeight1) {
+                clientWidth1 = varClientWidth;
+                clientHeight1 = varClientHeight;
+                clientWidth2 = clientWidth1;
+                clientHeight2 = clientHeight1;
+                shorterWindowLength = min(clientWidth2, clientHeight2);
+                averageWindowLength = divide_floor(clientHeight2 + clientWidth2, 2);
                 if (5 <= device_version) {
                     var B = droid.loadNumber(23);
                     var C = droid.loadNumber(24);
-                    client_width > B && (B = client_width, droid.saveNumber(23, B));
-                    client_height > C && (C = client_height, droid.saveNumber(24, C))
-                } else B = client_width, C = client_height;
-                client_width = mainCanvas.width;
-                client_height = mainCanvas.height;
-                B > client_width && (client_width = B, mainCanvas.width = B);
-                C > client_height && (client_height = C, mainCanvas.height = C);
-                mainCanvas.style.width = client_width + "px";
-                mainCanvas.style.height = client_height + "px";
+                    varClientWidth > B && (B = varClientWidth, droid.saveNumber(23, B));
+                    varClientHeight > C && (C = varClientHeight, droid.saveNumber(24, C))
+                } else B = varClientWidth, C = varClientHeight;
+                varClientWidth = mainCanvas.width;
+                varClientHeight = mainCanvas.height;
+                B > varClientWidth && (varClientWidth = B, mainCanvas.width = B);
+                C > varClientHeight && (varClientHeight = C, mainCanvas.height = C);
+                mainCanvas.style.width = varClientWidth + "px";
+                mainCanvas.style.height = varClientHeight + "px";
                 B = !0
             } else B = !1;
             return B
@@ -8922,15 +8969,15 @@ function kd() {
         jt.highResolution ? (device_pixel_ratio = window.devicePixelRatio) || (device_pixel_ratio = 1) : device_pixel_ratio = 1;
         B = n(document.documentElement.clientWidth);
         C = n(document.documentElement.clientHeight);
-        client_width = Math.floor(.5 + device_pixel_ratio * B);
-        client_height = Math.floor(.5 + device_pixel_ratio * C);
-        if (client_width === clientWidth && client_height === clientHeight) return !1;
-        clientWidth = r = client_width;
-        clientHeight = s = client_height;
-        pK = min(r, s);
-        bq = divide_floor(s + r, 2);
-        mainCanvas.width = client_width;
-        mainCanvas.height = client_height;
+        varClientWidth = Math.floor(.5 + device_pixel_ratio * B);
+        varClientHeight = Math.floor(.5 + device_pixel_ratio * C);
+        if (varClientWidth === clientWidth1 && varClientHeight === clientHeight1) return !1;
+        clientWidth1 = clientWidth2 = varClientWidth;
+        clientHeight1 = clientHeight2 = varClientHeight;
+        shorterWindowLength = min(clientWidth2, clientHeight2);
+        averageWindowLength = divide_floor(clientHeight2 + clientWidth2, 2);
+        mainCanvas.width = varClientWidth;
+        mainCanvas.height = varClientHeight;
         mainCanvas.style.width = B + "px";
         mainCanvas.style.height = C + "px";
         return !0
@@ -8940,7 +8987,7 @@ function kd() {
     this.init = function() {
         t = 1;
         z = 100;
-        r = s = pK = clientWidth = clientHeight = bq = 0;
+        clientWidth2 = clientHeight2 = shorterWindowLength = clientWidth1 = clientHeight1 = averageWindowLength = 0;
         device_pixel_ratio = 1;
         mainCanvas = document.getElementById("canvasA");
         mainCanvasCtx = mainCanvas.getContext("2d", {
@@ -8962,7 +9009,7 @@ function kd() {
 
 function kX() {
     function g(G) {
-        eK.av(n, F);
+        eK.removeEntry(n, F);
         attacks.remove_attack(n, E);
         G && (troops[n] += l)
     }
@@ -8980,7 +9027,7 @@ function kX() {
         A = pixel.to_x(K);
         B = pixel.to_y(K);
         t = x = pixel.to_coord(z, y);
-        E = attacks.find_boat_index_from_boat_id(n, F); - 1 === E ? (k(), eK.av(n, F), G = !1) : (l = attacks.get_attack_troops_remaining_from_attack_index(n, E), G = !0);
+        E = attacks.find_boat_index_from_boat_id(n, F); - 1 === E ? (k(), eK.removeEntry(n, F), G = !1) : (l = attacks.get_attack_troops_remaining_from_attack_index(n, E), G = !0);
         if (G && (k(), G = divide_floor(l, 128), G = 1 > G ? 1 : G, l -= G, n === my_id && (statistics.numbers[15] += G), l <= neutral_land_cost ? (n === my_id && (statistics.numbers[15] += l), g(!1), G = !1) : (attacks.set_attack_troops_remaining_from_attack_index(n, E, l), G = !0), G))
             if (G = pixel.to_coord(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.to_x(x), y = pixel.to_y(x),
                 eK.g0(C, x), G = pixel.can_take(x) ? !1 : !0, G) pixel.is_water(x) && pixel.change_to_boat(x, n);
@@ -8999,7 +9046,12 @@ function kX() {
                         break a
                     }
                 }
-                n === my_id && (statistics.numbers[13] += l);eK.av(n, F);attacks.remove_attack(n, E);editing_border_pixels[n].push(t);attacks.set(n, l, G);au.cR(n, !0)
+                n === my_id && (statistics.numbers[13] += l);
+                eK.removeEntry(n, F);
+                attacks.remove_attack(n, E);
+                editing_border_pixels[n].push(t);
+                attacks.set(n, l, G);
+                speed.cR(n, !0)
             }
     };
     this.g4 = function(G, N) {
@@ -9065,7 +9117,7 @@ function kY() {
     };
     this.hr = function() {
         var x = n ? 0 : -g;
-        a4M(x, x, map_width - 2 * x, map_height - 2 * x, gy.a5H, gy.a5I, gy.a5J, gy.a5K) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, clientWidth, clientHeight))
+        a4M(x, x, map_width - 2 * x, map_height - 2 * x, gy.a5H, gy.a5I, gy.a5J, gy.a5K) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, clientWidth1, clientHeight1))
     };
     this.drawImage = function() {
         n || (a4L(0, -g, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[0], gy.a5L, gy.a5M - g), a4L(map_width, -g, g, map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[1], gy.a5L + map_width, gy.a5M - g), a4L(0, map_height, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[2], gy.a5L, gy.a5M + map_height), a4L(-g, -g, g,
@@ -9199,10 +9251,10 @@ function a2S() {
         this.lx()
     };
     this.lx = function() {
-        this.width = r < 1.618 * s ? r : 1.618 * s;
-        this.width = Math.floor((zoom && r < s ? 1 : zoom ? .8 : r < s ? .65 : .5) * this.width);
+        this.width = clientWidth2 < 1.618 * clientHeight2 ? clientWidth2 : 1.618 * clientHeight2;
+        this.width = Math.floor((zoom && clientWidth2 < clientHeight2 ? 1 : zoom ? .8 : clientWidth2 < clientHeight2 ? .65 : .5) * this.width);
         this.qK = Math.floor(1 + .006 * this.width);
-        this.width -= zoom && r < s ? 2 * m7 + this.qK : 0;
+        this.width -= zoom && clientWidth2 < clientHeight2 ? 2 * m7 + this.qK : 0;
         this.cw = Math.floor(this.width / 1.618);
         this.i4 = Math.floor(1 + .02 *
             this.width);
@@ -9219,8 +9271,8 @@ function a2S() {
         if (!this.hidden) return !1;
         var n = g,
             l = k;
-        g -= divide_floor(clientWidth - this.width, 2);
-        k -= divide_floor(clientHeight - this.cw, 2);
+        g -= divide_floor(clientWidth1 - this.width, 2);
+        k -= divide_floor(clientHeight1 - this.cw, 2);
         if (0 > g || 0 > k || g >= this.width || k >= this.cw) {
             if (1 < fq.clicked(n, l)) return !0;
             this.end();
@@ -9241,7 +9293,7 @@ function a2S() {
         this.mouseCoords[0] = xCoord;
         this.mouseCoords[0] = yCoord;
         if (this.hidden && this.a5i) {
-            xCoord -= divide_floor(clientWidth - this.width, 2);
+            xCoord -= divide_floor(clientWidth1 - this.width, 2);
             var yCoord = this.a5h;
             this.a5h = (xCoord - 2 * this.i4 - this.ud) / this.ue;
             if (0 <= this.a5h && 1 >= this.a5h || 0 <= yCoord && 1 >= yCoord) c4.canvasPendingUpdates = !0;
@@ -9273,8 +9325,8 @@ function a2S() {
         this.hidden && this.nY()
     };
     this.nY = function() {
-        var g = divide_floor(clientWidth - this.width, 2),
-            k = divide_floor(clientHeight - this.cw, 2);
+        var g = divide_floor(clientWidth1 - this.width, 2),
+            k = divide_floor(clientHeight1 - this.cw, 2);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
         mainCanvasCtx.fillStyle = hy;
         mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
@@ -10125,8 +10177,8 @@ function a2Q() {
         this.a5M = gj.to_y();
         this.a5H = -this.a5L;
         this.a5I = -this.a5M;
-        this.a5J = clientWidth / g7;
-        this.a5K = clientHeight / g7;
+        this.a5J = clientWidth1 / g7;
+        this.a5K = clientHeight1 / g7;
         this.ty[0] = Math.floor(this.a5H);
         this.ty[1] = Math.floor(this.a5I);
         this.ty[2] = Math.floor(this.ty[0] + this.a5J + 1);
@@ -10145,7 +10197,7 @@ function kb() {
         0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.canvasPendingUpdates = !0)
     };
     this.drawImage = function() {
-        0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, clientWidth, clientHeight))
+        0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, clientWidth1, clientHeight1))
     }
 }
 
@@ -10162,12 +10214,12 @@ function kg() {
     };
     this.lx = function() {
         var g = divide_floor(const_custom_map + const_custom_map % 2, 2);
-        g = s - g * display_buffer_length;
-        this.xV[2] = zoom ? Math.floor(.75 * pK) : Math.floor(.5 * pK);
+        g = clientHeight2 - g * display_buffer_length;
+        this.xV[2] = zoom ? Math.floor(.75 * shorterWindowLength) : Math.floor(.5 * shorterWindowLength);
         this.xV[3] = Math.floor(1.2 * this.xV[2]);
         this.xV[3] > g && (this.xV[3] = g, this.xV[2] = Math.floor(g / 1.2));
-        this.xV[0] = Math.floor((r - this.xV[2]) / 2);
-        this.xV[1] = Math.floor((s - this.xV[3]) / 2)
+        this.xV[0] = Math.floor((clientWidth2 - this.xV[2]) / 2);
+        this.xV[1] = Math.floor((clientHeight2 - this.xV[3]) / 2)
     };
     this.lo = function(g, k) {
         return g < this.xV[0] || k < this.xV[1] || g > this.xV[0] + this.xV[2] || k > this.xV[1] + this.xV[3] ? !1 : !0
@@ -10231,9 +10283,9 @@ function MultiOut() {
         return divide_floor(size, 8) + (0 < size % 8 ? 1 : 0)
     }
 
-    function fitter(array, format_length, data) {
-        for (var byte_index, B, index = mIndex; index < mIndex + format_length; index++) byte_index = divide_floor(index, 8), B = 7 - index % 8, array[byte_index] |= (data >> format_length - (index - mIndex + 1) & 1) << B;
-        mIndex += format_length
+    function fitter(array, formatLength, data) {
+        for (var byteIndex, B, index = mIndex; index < mIndex + formatLength; index++) byteIndex = divide_floor(index, 8), B = 7 - index % 8, array[byteIndex] |= (data >> formatLength - (index - mIndex + 1) & 1) << B;
+        mIndex += formatLength
     }
     var mIndex;
     this.requestPlaytimes = function() {
@@ -10252,7 +10304,7 @@ function MultiOut() {
         fitter(array, 1, 0);
         fitter(array, 3, 1);
         fitter(array, 10, time_hash);
-        var rgb_then_index = cC.mE[2].ih.get_rgb_64();
+        var rgb_then_index = mainSettings.buttons[2].buttonPanel.get_rgb_64();
         fitter(array, 6, rgb_then_index[0]);
         fitter(array, 6, rgb_then_index[1]);
         fitter(array, 6, rgb_then_index[2]);
