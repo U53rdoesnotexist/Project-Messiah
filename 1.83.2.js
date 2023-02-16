@@ -489,7 +489,7 @@ function dI(g, k, n, l) {
         for (n = fakeRandom.generateRandomValue(alive_count), l = 0; l < alive_count; l++) {
             var x = alive_entities[(l + n) % alive_count];
             if (teams.team_array[x] === teams.team_array[g] && 1 === d7[x]) {
-                single_donate(g, x, k);
+                processDonation(g, x, k);
                 x < player_count && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
                 break
             }
@@ -621,7 +621,7 @@ function e8() {
 function game_tick() {
     interest.update();
     antiFullsend.update();
-    single.update();
+    processAction.update();
     eH.update();
     humanBots.update();
     eJ.update();
@@ -755,7 +755,7 @@ function er() {
         if (g()) {
             var B = divide_floor(dG.dn[A] * troops[z], 100);
             100 > B && 100 <= troops[z] && (B = 100);
-            if (100 <= B) return single_boat(z, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x, t), B)
+            if (100 <= B) return processSendBoat(z, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x, t), B)
         }
         return !1
     }
@@ -777,7 +777,7 @@ function fC() {
     }
 }
 
-function Single() {
+function ProcessAction() {
     function addAction(author, type, param1, param2, param3, param4) {
         0 < param1 && 1E3 >= param1 && (authors.push(author), actionsType.push(type), actionParam1.push(param1), actionParam2.push(param2), actionParam3.push(param3), actionParam4.push(param4))
     }
@@ -793,25 +793,27 @@ function Single() {
     this.update = function () {
         var index, actionsCount = authors.length;
         for (index = 0; index < actionsCount; index++) {
-            if (0 === actionsType[index]) single_attack(authors[index], actionParam2[index], actionParam1[index]);
-            else if (1 === actionsType[index]) this.send_boat(authors[index], actionParam1[index], actionParam3[index], actionParam4[index]);
-            else if (2 === actionsType[index]) this.cancel(authors[index], actionParam2[index]);
+            if (0 === actionsType[index]) processAttack(authors[index], actionParam2[index], actionParam1[index]);
+            else if (1 === actionsType[index]) this.processSendBoat(authors[index], actionParam1[index], actionParam3[index], actionParam4[index]);
+            else if (2 === actionsType[index]) this.processCancel(authors[index], actionParam2[index]);
             else if (6 === actionsType[index]) {
                 var author = authors[index];
                 if (0 !== is_alive[author] && 2 !== player_status[authors]) {
                     peace.single_vote_peace(author, 1 === actionParam2[index]);
                 }
-            } else if (7 === actionsType[index]) this.cancel_boat(authors[index], actionParam2[index]);
-            if (typeof (logs) != 'undefined') logs.push([author[index], actionsType[index], actionParam1[index], actionParam2[index], actionParam3[index], actionParam4[index],])
+            } else if (7 === actionsType[index]) this.processCancelBoat(authors[index], actionParam2[index]);
+            if (typeof (logs) != 'undefined') {
+                logs.push([(cycle - 1) * 100 + tick, authors[index], actionsType[index], actionParam1[index], actionParam2[index], actionParam3[index], actionParam4[index]]);
+            }
         }
         if (0 < actionsCount) this.init();
     };
-    this.send_boat = function(attacker, ratio, x_coord, y_coord) {
+    this.processSendBoat = function(attacker, ratio, x_coord, y_coord) {
         0 !== is_alive[attacker] && 2 !== player_status[authors] && waterPixelChecker.check(attacker, pixel.to_coord(x_coord, y_coord)) &&
-            single_boat(attacker, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
+            processSendBoat(attacker, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
             attacker === my_id && (statistics.numbers[0] += ratio, statistics.numbers[1]++, statistics.numbers[2]++)
     };
-    this.cancel = function(attacker, target) {
+    this.processCancel = function(attacker, target) {
         if (0 !== is_alive[attacker] && 2 !== player_status[authors] && attacks.check(attacker, target)) {
             var troops_returned = attacks.get_troops_remaining_from_target(attacker, target);
             attacks.set_attack_troops_remaining_from_target(attacker, target, 0);
@@ -824,7 +826,7 @@ function Single() {
             }
         }
     };
-    this.cancel_boat = function(attacker, boat_id) {
+    this.processCancelBoat = function(attacker, boat_id) {
         if (0 !== is_alive[attacker] && 2 !== player_status[authors]) {
             var boat_index = attacks.find_boat_index_from_boat_id(attacker, boat_id);
             if (-1 !== boat_index) {
@@ -838,8 +840,8 @@ function Single() {
     this.commenceAttack = function (id, ratio, target) {
         1 === client_status && addAction(id, 0, ratio, target, 0, 0)
     };
-    this.commencePickLocation = function (id, const_1000, xCoord, yCoord) {
-        1 === client_status && (in_spawn ? spawn.set(id, xCoord, yCoord) : addAction(id, 1, const_1000, 0, xCoord, yCoord))
+    this.commencePickLocation = function (id, ratio, xCoord, yCoord) {
+        1 === client_status && (in_spawn ? spawn.set(id, xCoord, yCoord) : addAction(id, 1, ratio, 0, xCoord, yCoord))
     };
     this.commenceCancel = function (id, target) {
         1 === client_status && addAction(id, 2, 1, target, 0, 0)
@@ -1381,7 +1383,7 @@ var player_count, players_in_game, bot_count, spectators, max_entities = 512,
     landPixels, troop_cap, maxTroopsBeforeRedInterest, starting_troops = 512,
     neutral_land_cost = 2,
     my_id, canvas_hidden, in_spawn, free_spawn, team_game, team_count, gamemode, isContest, spawn, points_1v1, spawn_time,
-    cycle, tick;
+    cycle, tick, logs;
 
 function game_init(param_seed, param_myID, param_playerInfo, param_gamemode, param_isContest) {
     j8 = canvas_hidden = !1;
@@ -1438,7 +1440,7 @@ function game_init(param_seed, param_myID, param_playerInfo, param_gamemode, par
     eP.init();
     hu.init();
     gameResultBox.init();
-    single.init();
+    processAction.init();
     eK.init();
     au.init();
     eJ.init();
@@ -1456,7 +1458,7 @@ function game_init(param_seed, param_myID, param_playerInfo, param_gamemode, par
     c4.canvasPendingUpdates = !0;
     singleplayer && in_spawn || set_android_state(1)
 
-    cycle = 1, tick = 0;
+    cycle = 1, tick = 0, logs = [];
     if (typeof(script_game_init) != 'undefined') script_game_init()
 }
 
@@ -1474,7 +1476,7 @@ function leave_game() {
     set_android_state(0);
     show_ad()
 }
-var dG, au, dE, eJ, single, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopsBar, gj, playtime, eO, eM, eB, gameResultBox, 
+var dG, au, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopsBar, gj, playtime, eO, eM, eB, gameResultBox, 
 jh, ji, aJ, showError, jk, jl, singleMenu, name_input, sprites, pixel, user_settings, attacks, interest, eA, nickNames, e2, jQ, jm, jn, gn, waterPixelChecker, fakeRandom, 
 g1, hq, jo, multiIn, eX, multiOut, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, humanBots, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
 
@@ -1483,7 +1485,7 @@ function construct() {
     au = new ed;
     dE = new er;
     eJ = new fC;
-    single = new Single;
+    processAction = new ProcessAction;
     eK = new fu;
     eV = new gK;
     j1 = new hA;
@@ -1658,11 +1660,11 @@ function jy() {
             this.end();
             if (this.isHuman(target) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.anti_boosting(), 1;
             announcements.low_balance();
-            singleplayer ? single_donate(my_id, target, divide_floor(troopsBar.attackRatio() * troops[my_id], 1E3)) : multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target);
+            singleplayer ? processDonation(my_id, target, divide_floor(troopsBar.attackRatio() * troops[my_id], 1E3)) : multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target);
             return 1
         }
-        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multiOut.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? single_attack(my_id, target, troopsBar.attackRatio()) : (!free_spawn || 300 < eB.lX()) && multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.attackRatio())) : this.end(), 1;
-        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? single.send_boat(my_id, troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multiOut.pick_location(troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
+        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multiOut.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? processAttack(my_id, target, troopsBar.attackRatio()) : (!free_spawn || 300 < eB.lX()) && multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.attackRatio())) : this.end(), 1;
+        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? processAction.processSendBoat(my_id, troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multiOut.pick_location(troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
         if (7 === M && x[4]) return this.end(), t = a5.show(L, H), 1;
         if (8 === M) return x[5] ? (eQ.lQ(0, [target], !0) && (announcements.la(target, 0), multiOut.non_aggression(target)), this.end(), 1) : 0;
         this.end();
@@ -1850,7 +1852,7 @@ function jz() { //Added Mod Menu
                 this.alterDisplay();
                 return 2;
             } else if (option === 2) {
-                if (this.canSurrender(my_id) && (singleplayer ? single.surrender(my_id) : multiOut.surrender())) {
+                if (this.canSurrender(my_id) && (singleplayer ? processAction.surrender(my_id) : multiOut.surrender())) {
                     this.alterDisplay();
                 }
                 return 2;
@@ -2127,8 +2129,8 @@ function Announcements() {
         1 === websocket_manager.getEquivalentLobby() && announce(0, "[" + clan + "] has won " + player_count + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hy, -1, !1)
     };
     this.la = function(H, M) {
-        0 === M ? E(50, H) ? (announce(128, "You signed a non-aggression pact with " + nickname[H] + ".", 52, H, get_color_style(180, 255, 180), hy, -1, !0), eA.n4(H, 2, 255)) : announce(384, "You asked " + nickname[H] + " to sign a non-aggression pact.",
-            51, H, get_color_style(210, 210, 255), hy, -1, !0) : E(51, H) ? (announce(128, nickname[H] + " accepted the non-aggression pact.", 52, H, cK, "rgba(60,120,10,0.9)", -1, !0), eA.n4(H, 2, 255)) : (announce(384, nickname[H] + " requests a non-aggression pact.", 50, H, cK, "rgba(90,90,90,0.9)", -1, !0), eA.n4(H, 2, 96))
+        0 === M ? E(50, H) ? (announce(128, "You signed a non-aggression pact with " + nickname[H] + ".", 52, H, get_color_style(180, 255, 180), hy, -1, !0), eA.showLandEmoji(H, 2, 255)) : announce(384, "You asked " + nickname[H] + " to sign a non-aggression pact.",
+            51, H, get_color_style(210, 210, 255), hy, -1, !0) : E(51, H) ? (announce(128, nickname[H] + " accepted the non-aggression pact.", 52, H, cK, "rgba(60,120,10,0.9)", -1, !0), eA.showLandEmoji(H, 2, 255)) : (announce(384, nickname[H] + " requests a non-aggression pact.", 50, H, cK, "rgba(90,90,90,0.9)", -1, !0), eA.showLandEmoji(H, 2, 96))
     };
     this.request_attack = function(friends, target) {
         var Q = "You ", index;
@@ -2451,7 +2453,7 @@ function ni() {
         for (var l = this.lf - 1; 0 <= l; l--)
             if (g >= this.nr[l] && k >= this.ns[l]) {
                 if (39 === this.nu[l]) return this.o6(), this.show(g, k), !0;
-                singleplayer ? eA.n4(my_id, 0, this.nu[l]) : target_id === my_id ? multiOut.self_emoji(this.nu[l]) : multiOut.send_emoji(this.nu[l], target_id);
+                singleplayer ? eA.showLandEmoji(my_id, 0, this.nu[l]) : target_id === my_id ? multiOut.self_emoji(this.nu[l]) : multiOut.send_emoji(this.nu[l], target_id);
                 this.o5();
                 break
             } return !1
@@ -2757,8 +2759,8 @@ function k2() {
             var D = x(F);
             var K = t[F].canvas.width;
             if (E >= D - N && E <= D + A + N) {
-                if (C >= I - G && C <= I + A + G) return t[F].pu || (t[F].po = !0, t[F].pu = !0, 0 === t[F].id ? singleplayer ? single.cancel(my_id, t[F].cM) : multiOut.cancel(t[F].cM === max_entities ? my_id : t[F].cM) : singleplayer ? single.cancel_boat(my_id, t[F].id) : multiOut.cancel_boat(t[F].id)), !0;
-                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? single_attack(my_id, t[F].cM, troopsBar.attackRatio()) : multiOut.attack(troopsBar.attackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
+                if (C >= I - G && C <= I + A + G) return t[F].pu || (t[F].po = !0, t[F].pu = !0, 0 === t[F].id ? singleplayer ? processAction.processCancel(my_id, t[F].cM) : multiOut.cancel(t[F].cM === max_entities ? my_id : t[F].cM) : singleplayer ? processAction.processCancelBoat(my_id, t[F].id) : multiOut.cancel_boat(t[F].id)), !0;
+                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? processAttack(my_id, t[F].cM, troopsBar.attackRatio()) : multiOut.attack(troopsBar.attackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
             }
         }
         return !1
@@ -4206,11 +4208,11 @@ function ke() {
     }
 }
 
-function single_attack(author, target, ratio) {
+function processAttack(author, target, ratio) {
     if (!(0 === is_alive[author] || 0 > ratio || 1E3 < ratio || 2 === player_status[author])) {
         var amount = divide_floor(ratio * troops[author], 1E3);
         10 === gamemode && target < player_count && 2 !== player_status[target] && (amount = antiFullsend.reduceAmount(author, amount));
-        if (team_game && target < max_entities && !isTeamate(author, target)) single_donate(author, target, amount);
+        if (team_game && target < max_entities && !isTeamate(author, target)) processDonation(author, target, amount);
         else {
             target < max_entities && 0 === is_alive[target] && (target = max_entities);
             var tax = divide_floor(3 * troops[author], 256);
@@ -4236,7 +4238,7 @@ function single_attack(author, target, ratio) {
     }
 }
 
-function single_boat(author, startingCoord, targetCoordThenTax, amount) {
+function processSendBoat(author, startingCoord, targetCoordThenTax, amount) {
     10 === gamemode && author < player_count && (amount = antiFullsend.reduceAmount(author, amount));
     if (amount <= neutral_land_cost || !attacks.below_attack_cap(author)) return !1;
     startingCoord = eK.cR(author, startingCoord, targetCoordThenTax);
@@ -4249,7 +4251,7 @@ function single_boat(author, startingCoord, targetCoordThenTax, amount) {
     return !0
 }
 
-function single_donate(donator, target, amount) {
+function processDonation(donator, target, amount) {
     if (!(!team_game || 0 === is_alive[donator] || 0 === is_alive[target] || 0 > amount || amount > troops[donator] || donator === target || isTeamate(donator, target) || donator < player_count && target < player_count && 7 > gamemode && 1071 > c4.ticksElapsed())) {
         var tax = divide_floor(troops[donator], 16);
         amount -= amount >= divide_floor(troops[donator], 2) ? tax : 0;
@@ -4335,7 +4337,7 @@ function IntelliAttack() {
     };
     this.doIntelliAttack = function(myID, target) {
         announcements.low_balance();
-        singleplayer ? single_attack(myID, target.player, target.ratio) : multiOut.attack(target.ratio, target === max_entities ? myID : target.player)
+        singleplayer ? processAttack(myID, target.player, target.ratio) : multiOut.attack(target.ratio, target === max_entities ? myID : target.player)
     };
     this.sortTargets = function(targetPenalties) {
         targetPenalties.sort(function(prev, next) {
@@ -6574,7 +6576,7 @@ function kk() {
                     if (x < max_entities && 0 === is_alive[x]) g(l);
                     else {
                         var t = n[l + 1];
-                        if (x >= max_entities && bordersNeutral(my_id) || x < max_entities && bordersEntity(my_id, x)) singleplayer ? single_attack(my_id, x, t) : multiOut.attack(t, x === max_entities ? my_id : x), g(l)
+                        if (x >= max_entities && bordersNeutral(my_id) || x < max_entities && bordersEntity(my_id, x)) singleplayer ? processAttack(my_id, x, t) : multiOut.attack(t, x === max_entities ? my_id : x), g(l)
                     }
                 }
             }
@@ -6594,52 +6596,52 @@ function kk() {
     }
 }
 
-function fm(g) {
-    zG(g);
-    zH(g);
-    zI(g);
-    au.av(g);
-    eK.g3(g);
-    attacks.reset_attack_count(g)
+function fm(id) {
+    checkKillers(id);
+    revertNeutralLand(id);
+    removeArrayInfo(id);
+    au.av(id);
+    eK.g3(id);
+    attacks.reset_attack_count(id)
 }
 
-function zG(g) {
-    hu.isHuman(g) && spectators++;
-    var k = attacks.get_attackers(g);
-    0 === k.length ? g === my_id && zM() : (zN(g, k), zO(g, k))
+function checkKillers(id) {
+    hu.isHuman(id) && spectators++;
+    var killers = attacks.get_attackers(id);
+    0 === killers.length ? id === my_id && setDefeat() : (setSpillOvers(id, killers), announceEraser(id, killers))
 }
 
-function zM() {
+function setDefeat() {
     statistics.numbers[17] += troops[my_id] + attacks.total_troops_currently_sent_away(my_id);
     gameResultBox.show(!1, !1);
     eB.tK()
 }
 
-function zN(g, k) {
-    var n;
-    for (n = k.length - 1; 0 <= n; n--) attacks.zP(k[n], g)
+function setSpillOvers(id, killers) {
+    var index;
+    for (index = killers.length - 1; 0 <= index; index--) attacks.spillOverAttack(killers[index], id)
 }
 
-function zQ(g) {
-    var k, n = 0;
-    for (k = g.length - 1; 1 <= k; k--) land[g[k]] > land[g[n]] && (n = k);
-    return n
+function getLargestKillerIndex(killers) {
+    var index, largestKillerIndex = 0;
+    for (index = killers.length - 1; 1 <= index; index--) land[killers[index]] > land[killers[largestKillerIndex]] && (largestKillerIndex = index);
+    return largestKillerIndex
 }
 
-function zO(g, k) {
-    var n, l = k[zQ(k)];
-    9 === gamemode && 1 === teams.team_array[g] && fakeRandom.generateBoolean(8) && e2.zS(l);
-    if (g === my_id) announcements.showGenericMessages(l, 1), zM();
+function announceEraser(id, killers) {
+    var index, largestKiller = killers[getLargestKillerIndex(killers)];
+    9 === gamemode && 1 === teams.team_array[id] && fakeRandom.generateBoolean(8) && e2.zS(largestKiller);
+    if (id === my_id) announcements.showGenericMessages(largestKiller, 1), setDefeat();
     else {
-        for (n = k.length - 1; 0 <= n; n--)
-            if (k[n] === my_id) {
-                announcements.showGenericMessages(g, 0);
+        for (index = killers.length - 1; 0 <= index; index--)
+            if (killers[index] === my_id) {
+                announcements.showGenericMessages(id, 0);
                 return
-            } g < player_count && announcements.ml(0, g, l)
+            } id < player_count && announcements.ml(0, id, largestKiller)
     }
 }
 
-function zI(g) {
+function removeArrayInfo(g) {
     is_alive[g] = troops[g] = 0;
     editing_border_pixels[g] = null;
     pixels_bordering_land[g] = null;
@@ -6648,12 +6650,12 @@ function zI(g) {
     humanBots.onLeave(g)
 }
 
-function zH(g) {
-    var k, n;
-    for (k = x_max[g]; k >= x_min[g]; k--)
-        for (n = y_max[g]; n >= y_min[g]; n--) {
-            var l = 4 * (n * map_width + k);
-            pixel.strong_is_owner(g, l) && (pixel.revert_to_neutral(l), land[g]--)
+function revertNeutralLand(id) {
+    var xIndex, yIndex;
+    for (xIndex = x_max[id]; xIndex >= x_min[id]; xIndex--)
+        for (yIndex = y_max[id]; yIndex >= y_min[id]; yIndex--) {
+            var coord = 4 * (yIndex * map_width + xIndex);
+            pixel.strong_is_owner(id, coord) && (pixel.revert_to_neutral(coord), land[id]--)
         }
 }
 
@@ -6879,14 +6881,14 @@ function Attacks() {
     this.reset_attack_count = function(id) {
         currentAttackCount[id] = 0
     };
-    this.zP = function(y, A) {
-        var B;
+    this.spillOverAttack = function (id, target) {
+        var index;
         a: {
-            var C = starting_index_in_attack_array(y);
-            for (B = currentAttackCount[y] - 1; 0 <= B; B--)
-                if (0 === boat_ids[C + B] && target_ids[C + B] === A) break a; B = currentAttackCount[y]
+            var startingIndexThenTroops = starting_index_in_attack_array(id);
+            for (index = currentAttackCount[id] - 1; 0 <= index; index--)
+                if (0 === boat_ids[startingIndexThenTroops + index] && target_ids[startingIndexThenTroops + index] === target) break a; index = currentAttackCount[id]
         }
-        B !== currentAttackCount[y] && (C = remaining_troops[starting_index_in_attack_array(y) + B], this.remove_attack(y, B), this.set(y, C, max_entities))
+        index !== currentAttackCount[id] && (startingIndexThenTroops = remaining_troops[starting_index_in_attack_array(id) + index], this.remove_attack(id, index), this.set(id, startingIndexThenTroops, max_entities))
     };
     this.check = function(id, target) {
         var index, starting_index = starting_index_in_attack_array(id);
@@ -6957,12 +6959,12 @@ function Attacks() {
         currentAttackCount[id]++;
         id < player_count && (target === my_id ? announcements.showGenericMessages(id, 5) : id === my_id && eA.mn(target))
     };
-    this.addBoat = function(id, amount, B) {
+    this.addBoat = function(id, amount, boatID) {
         var starting_index = starting_index_in_attack_array(id);
         is_alive[id] = 2;
         target_ids[starting_index + currentAttackCount[id]] = 0;
         remaining_troops[starting_index + currentAttackCount[id]] = amount;
-        boat_ids[starting_index + currentAttackCount[id]] = B;
+        boat_ids[starting_index + currentAttackCount[id]] = boatID;
         currentAttackCount[id]++
     };
     this.remove_attack = function(id, attack_index) {
@@ -6992,7 +6994,7 @@ function Interest() {
     this.init = function() {
         remainingInterestTicks = remainingTicksForInterest = interestTicksPerCycle = ticksPerInterestTick = 10
     };
-    this.a0I = function() {
+    this.createDiscreteInterestArray = function() {
         const_maxEntities = 512;
         discrete_Interest_array = new Uint16Array(const_maxEntities);
         for (var index = 0; index < const_maxEntities; index++) discrete_Interest_array[index] = 100 + approximateSqrt(divide_floor(25600 * index, const_maxEntities - 4), 9)
@@ -7000,7 +7002,6 @@ function Interest() {
     this.getInterestTicksRemaining = function() {
         return remainingInterestTicks
     };
-    this.temp = () => discrete_Interest_array
     this.update = function() {
         if (0 >= --remainingTicksForInterest) {
             remainingTicksForInterest = ticksPerInterestTick;
@@ -7222,8 +7223,8 @@ function kO() {
         for (var O = na = 0; O < player_count; O++) 3 !== x_max[O] - x_min[O] || 3 !== y_max[O] - y_min[O] ?
             (E[O] = x_min[O] + (x_max[O] !== x_min[O] ? 1 : 0), F[O] = y_min[O], G[O] = 1, N[O] = 1) : (E[O] = x_min[O], F[O] = y_min[O] + 1, G[O] = 4, N[O] = 2)
     };
-    this.n4 = function(O, T, Y) {
-        0 === is_alive[O] || 4 !== T && 2 === player_status[O] || (O += T * max_entities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oD(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
+    this.showLandEmoji = function(id, type, emoji) {
+        0 === is_alive[id] || 4 !== type && 2 === player_status[id] || (id += type * max_entities, 0 === type ? ba[id] === emoji && 0 < ca[id] ? ca[id] = 0 : (ba[id] = emoji, ca[id] = a5.oD(emoji) ? 255 : 64) : 1 === type ? (ca[id] = 64, ba[id] = emoji) : ca[id] = emoji)
     };
     this.drawImage = function() {
         W && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
@@ -7674,7 +7675,7 @@ function main() {
     openLinkBox = new OpenLinkBox;
     p3();
     fakeRandom.init();
-    interest.a0I();
+    interest.createDiscreteInterestArray();
     jm.init();
     jQ.init();
     aJ.init();
@@ -7747,16 +7748,16 @@ function kQ() {
             this.e4[5] = bot_count
         }
     };
-    this.zS = function(k) {
+    this.zS = function(killer) {
         g.push({
-            player: k,
+            player: killer,
             group: 14 + fakeRandom.generateRandomValue(20)
         })
     };
     this.update = function() {
         if (9 === gamemode) {
             var k;
-            for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].group && (eA.n4(g[k].player, 0, 46), g.splice(k))
+            for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].group && (eA.showLandEmoji(g[k].player, 0, 46), g.splice(k))
         }
     }
 }
@@ -9990,7 +9991,7 @@ function MultiIn() {
                                     if (0 !== is_alive[message] && 0 !== is_alive[my_id]) {
                                         timeStampCountOrLobbyStats %= a5.a6;
                                         announcements.sentEmoji(message, my_id, timeStampCountOrLobbyStats);
-                                        eA.n4(message, 1, timeStampCountOrLobbyStats);
+                                        eA.showLandEmoji(message, 1, timeStampCountOrLobbyStats);
                                     }
                                 }
                             } else if (1 === message) {
@@ -10009,8 +10010,8 @@ function MultiIn() {
                                 timeStampCountOrLobbyStats = extractor(data, 9);
                                 if (0 !== is_alive[message] && 0 !== is_alive[timeStampCountOrLobbyStats] && 0 !== is_alive[my_id]) {
                                     if (eQ.a1f(1, [message], !0)) {
-                                        eA.n4(message, 3, 96);
-                                        eA.n4(timeStampCountOrLobbyStats, 4, 96);
+                                        eA.showLandEmoji(message, 3, 96);
+                                        eA.showLandEmoji(timeStampCountOrLobbyStats, 4, 96);
                                         announcements.requested_attack(message, timeStampCountOrLobbyStats);
                                     }
                                 }
@@ -10095,23 +10096,23 @@ function MultiIn() {
                     data = extractor(message, 10);
                     var target = extractor(message, 9);
                     target = target === author ? max_entities : target;
-                    single.commenceAttack(author, data, target)
+                    processAction.commenceAttack(author, data, target)
                 } else if (1 === data) {
                     data = extractor(message, 10);
                     target = extractor(message, 11);
                     var C = extractor(message, 11);
-                    single.commencePickLocation(author, data, target, C)
+                    processAction.commencePickLocation(author, data, target, C)
                 } else if (2 === data) {
                     target = extractor(message, 9);
                     target = target === author ? max_entities : target;
-                    single.commenceCancel(author, target);
-                } else if (3 === data) single.onLeave(author)
+                    processAction.commenceCancel(author, target);
+                } else if (3 === data) processAction.onLeave(author)
                 else if (4 === data) {
                     data = extractor(message, 7);
-                    eA.n4(author, 0, data);
-                } else if (5 === data) single.surrender(author)
-                else if (6 === data) single.commencePeace(author, extractor(message, 1))
-                else if (7 === data) single.commenceCancelBoat(author, 1 + extractor(message, 11))
+                    eA.showLandEmoji(author, 0, data);
+                } else if (5 === data) processAction.surrender(author)
+                else if (6 === data) processAction.commencePeace(author, extractor(message, 1))
+                else if (7 === data) processAction.commenceCancelBoat(author, 1 + extractor(message, 11))
             }
     }
 }
@@ -10441,20 +10442,3 @@ function MultiOut() {
 
 aiCommand746(0)
 setTimeout(start, 1E4);
-
-function script_game_tick() {
-    console.log(tick + (cycle-1)*100, troops[my_id], land[my_id], interest.interestRate(my_id)/1E4, Math.floor(Math.sqrt(land[my_id]/2)),
-    pixels_bordering_land[my_id].length, attacks.getCurrentAttackCount(my_id) == 1 ? attacks.get_troops_remaining_from_target(my_id, max_entities) : 0)
-    var ratio = 0, latency = singleplayer ? 1 : 8,
-        timings = [71, 76, 74, 72, 70],
-        ratios = [282, 345, 321, 307, 320];
-        keybinds = [[0, -5, 3], [0, 2, -2], [4, -6, 0], [-3, 4, -1], [1, -2, 4]]
-    
-    for (index = 0; index <= 4; index++) {
-        if (cycle == index + 1 && tick == timings[index] - latency) {
-            troopsBar.changeAttackFraction((6/5)**keybinds[index][0] * (8/7)**keybinds[index][1] * (32/31)**keybinds[index][2]);
-            ratio = troopsBar.attackRatio(); //ratios[index]
-            singleplayer ? single_attack(my_id, max_entities, ratio) : multiOut.attack(ratio, my_id)
-        }
-    }
-}

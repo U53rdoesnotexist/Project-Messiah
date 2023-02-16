@@ -65,3 +65,10 @@ function distance(x,y) {
 function speed(id) {
 	return land[id] < 1E3 ? 1 / 4 : land[id] < 1E4 ? 1 / 3 : land[id] < 6E4 ? 1 / 2 : land[id] < 16E4 ? 1 : land[id] < 32E4 ? 2 : 3
 }
+
+function readLog(index) {
+    if (logs != null && logs.length > index) {
+        var log = logs[index]
+        return `Tick: ${log[0]}, Author: ${log[1]}, Action: ${log[2]}, Param1: ${log[3]}, Param2: ${log[4]}, Param3: ${log[5]}, Param4: ${log[6]}.`
+    }
+}
