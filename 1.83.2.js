@@ -399,19 +399,19 @@ function addTakableNeutralPixelsToEditing(id) {
                 }
 }
 
-function cY(g, k) {
+function cY(id, k) {
     var n, side;
-    var borderPixelCount = pixels_bordering_land[g].length;
-    var t = 256 <= borderPixelCount ? 12 : 32 <= borderPixelCount ? 6 : 1;
-    borderPixelCount = borderPixelCount - 1 - fakeRandom.generateRandomValue(t);
+    var borderPixelCount = pixels_bordering_land[id].length;
+    var pixelInterval = 256 <= borderPixelCount ? 12 : 32 <= borderPixelCount ? 6 : 1;
+    borderPixelCount = borderPixelCount - 1 - fakeRandom.generateRandomValue(pixelInterval);
     cg = 0;
-    a: for (; 0 <= borderPixelCount; borderPixelCount -= t)
+    a: for (; 0 <= borderPixelCount; borderPixelCount -= pixelInterval)
         for (side = 3; 0 <= side; side--) {
-            var z = pixel.is_neutral(pixels_bordering_land[g][borderPixelCount] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[g][borderPixelCount] + offset[side]);
-            if (z === max_entities || pixel.controlled_by_entity(pixels_bordering_land[g][borderPixelCount] + offset[side]) && z !== g && (k || isTeamate(g, z))) {
+            var owner = pixel.is_neutral(pixels_bordering_land[id][borderPixelCount] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[id][borderPixelCount] + offset[side]);
+            if (owner === max_entities || pixel.controlled_by_entity(pixels_bordering_land[id][borderPixelCount] + offset[side]) && owner !== id && (k || isTeamate(id, owner))) {
                 for (n = cg - 1; 0 <= n; n--)
-                    if (ci[n] === z) continue a;
-                ci[cg] = z;
+                    if (ci[n] === owner) continue a;
+                ci[cg] = owner;
                 if (++cg >= const_8) return !0
             }
         }
@@ -499,43 +499,43 @@ function d9() {
     d7 = team_game ? new Uint8Array(max_entities) : null
 }
 
-function dB(g, k) {
-    team_game && (d7[g] = 0);
-    if (attacks.below_attack_cap(g) && !(60 > k))
-        if (0 === pixels_bordering_land[g].length) dE.update(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], interest.maxTroopsBeforeRedInterest(g)));
-        else if (!(0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(pixels_bordering_water[g].length > pixels_bordering_land[g].length ? 7 : 3) && dE.update(g, dG.cN[g - player_count]))) {
-        var n = interest.maxTroopsBeforeRedInterest(g);
-        troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
-        team_game ? dK(g, k, dG.cN[g - player_count], n) : dL(g, k, dG.cN[g - player_count])
+function startBotAttackProcess(id, amount) {
+    team_game && (d7[id] = 0);
+    if (attacks.below_attack_cap(id) && !(60 > amount))
+        if (0 === pixels_bordering_land[id].length) botSendBoat.update(id, botEngine.difficultyArray[id - player_count]) || (botEngine.setTiming(id - player_count, 200), startBotDonationProcess(id, amount, botEngine.difficultyArray[id - player_count], interest.maxTroopsBeforeRedInterest(id)));
+        else if (!(0 < pixels_bordering_water[id].length && fakeRandom.random() < fakeRandom.value(pixels_bordering_water[id].length > pixels_bordering_land[id].length ? 7 : 3) && botSendBoat.update(id, botEngine.difficultyArray[id - player_count]))) {
+        var maxTroops = interest.maxTroopsBeforeRedInterest(id);
+        troops[id] > maxTroops && amount < troops[id] - maxTroops && (amount = troops[id] - maxTroops);
+        team_game ? dK(id, amount, botEngine.difficultyArray[id - player_count], maxTroops) : dL(id, amount, botEngine.difficultyArray[id - player_count])
     }
 }
 
-function dK(g, k, n, l) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, max_entities, n)) : (fakeRandom.generateBoolean(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.generateBoolean(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.update(g, n) || (dG.dH(g - player_count, 200), dI(g, k, n, l))
+function dK(id, amount, n, maxTroops) {
+    cY(id, !1) || ck(id, !1) ? (d7[id] = 1, cn(id) || (cl() ? (dN(id, amount), dO(id, max_entities, n)) : (fakeRandom.generateBoolean(botEngine.dQ[n]) ? maxTroops = cs(id) : (cp() && fakeRandom.generateBoolean(botEngine.dS[n]) && cr(), maxTroops = cv(id)), dR(id, amount, maxTroops), dO(id, maxTroops, n)))) : 0 < pixels_bordering_water[id].length && fakeRandom.random() < fakeRandom.value(60) && botSendBoat.update(id, n) || (botEngine.setTiming(id - player_count, 200), startBotDonationProcess(id, amount, n, maxTroops))
 }
 
 function dT(g, k) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cl() ? dN(g, k) : dR(g, k, d6())) : dI(g, k, 0, 0)
+    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cl() ? dN(g, k) : dR(g, k, d6())) : startBotDonationProcess(g, k, 0, 0)
 }
 
 function dO(g, k, n) {
-    3 <= n && 2142 < c4.ticksElapsed() && (k === max_entities || troops[k] < divide_floor(troops[g], 20)) && dG.dH(g - player_count, 25)
+    3 <= n && 2142 < c4.ticksElapsed() && (k === max_entities || troops[k] < divide_floor(troops[g], 20)) && botEngine.setTiming(g - player_count, 25)
 }
 
-function dI(g, k, n, l) {
-    if (0 !== teams.team_array[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divide_floor(l, 2)))
-        for (n = fakeRandom.generateRandomValue(alive_count), l = 0; l < alive_count; l++) {
-            var x = alive_entities[(l + n) % alive_count];
-            if (teams.team_array[x] === teams.team_array[g] && 1 === d7[x]) {
-                processDonation(g, x, k);
+function startBotDonationProcess(id, amount, difficulty, maxTroopsThenIndex) {
+    if (0 !== teams.team_array[id] && !(5 === difficulty && troops[id] < maxTroopsThenIndex || 4 === difficulty && troops[id] < divide_floor(maxTroopsThenIndex, 2)))
+        for (difficulty = fakeRandom.generateRandomValue(alive_count), maxTroopsThenIndex = 0; maxTroopsThenIndex < alive_count; maxTroopsThenIndex++) {
+            var x = alive_entities[(maxTroopsThenIndex + difficulty) % alive_count];
+            if (teams.team_array[x] === teams.team_array[id] && 1 === d7[x]) {
+                processDonation(id, x, amount);
                 x < player_count && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
                 break
             }
         }
 }
 
-function dL(g, k, n) {
-    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : fakeRandom.generateBoolean(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && fakeRandom.generateBoolean(dG.dS[n]) && cr(), dR(g, k, cv(g))))
+function dL(id, amount, n) {
+    !cY(id, !0) && !ck(id, !0) || cn(id) || (cl() ? dN(id, amount) : fakeRandom.generateBoolean(botEngine.dQ[n]) ? dR(id, amount, cs(id)) : (cp() && fakeRandom.generateBoolean(botEngine.dS[n]) && cr(), dR(id, amount, cv(id))))
 }
 
 function db(g, k) {
@@ -560,7 +560,7 @@ function dN(g, k) {
 }
 var dd = [60, 74, 112, 200, 256, 512];
 var bots_timing; //temp
-function de() {
+function BotEngine() {
     var /*bots_timing, */bots_send_ratio, n, l, x, t;
     this.botDifficultyLabel = "Retarded;Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
     this.dm = [97, 95, 93, 90, 87, 84];
@@ -568,83 +568,83 @@ function de() {
     this.dn = [85, 70, 65, 30, 7, 3];
     this.dQ = [0, 0, 0, 0, 50, 90];
     this.init = function() {
-        var z;
+        var botIndex;
         bots_timing = new Uint8Array(bot_count);
         bots_send_ratio = new Uint16Array(bot_count);
         n = new Uint16Array(bot_count);
         l = new Uint8Array(bot_count);
-        this.cN = new Uint8Array(bot_count);
+        this.difficultyArray = new Uint8Array(bot_count);
         x = new Uint16Array(bot_count);
         t = new Uint16Array(bot_count);
         if (customMap.ds) {
-            if (customMap.dt.du)
-                for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = customMap.dt.du[z + 1]
+            if (customMap.dt.difficulty)
+                for (botIndex = bot_count - 1; 0 <= botIndex; botIndex--) this.difficultyArray[botIndex] = customMap.dt.difficulty[botIndex + 1]
         } else if (9 === gamemode) this.dw();
         else if (singleplayer)
             if (team_game)
-                for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = singleMenu.botSettings[teams.team_array[z + player_count] - 1].difficulty;
+                for (botIndex = bot_count - 1; 0 <= botIndex; botIndex--) this.difficultyArray[botIndex] = singleMenu.botSettings[teams.team_array[botIndex + player_count] - 1].difficulty;
             else
-                for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = singleMenu.botSettings[0].difficulty;
+                for (botIndex = bot_count - 1; 0 <= botIndex; botIndex--) this.difficultyArray[botIndex] = singleMenu.botSettings[0].difficulty;
         else {
             var y = 8 === gamemode ? 1 : 0;
-            for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = y
+            for (botIndex = bot_count - 1; 0 <= botIndex; botIndex--) this.difficultyArray[botIndex] = y
         }
-        for (z = bot_count - 1; 0 <= z; z--) {
-            if (2 >= this.cN[z]) {
-                l[z] = 5;
-                x[z] = t[z] = 1040;
-                if (0 === this.cN[z]) {
-                    bots_send_ratio[z] = 1E3;
-                    n[z] = 1E3;
-                } else if (1 === this.cN[z]) {
-                    bots_send_ratio[z] = 1E3;
-                    n[z] = 920;
-                    x[z] = t[z] = 1100;
+        for (botIndex = bot_count - 1; 0 <= botIndex; botIndex--) {
+            if (2 >= this.difficultyArray[botIndex]) {
+                l[botIndex] = 5;
+                x[botIndex] = t[botIndex] = 1040;
+                if (0 === this.difficultyArray[botIndex]) {
+                    bots_send_ratio[botIndex] = 1E3;
+                    n[botIndex] = 1E3;
+                } else if (1 === this.difficultyArray[botIndex]) {
+                    bots_send_ratio[botIndex] = 1E3;
+                    n[botIndex] = 920;
+                    x[botIndex] = t[botIndex] = 1100;
                 } else {
-                    bots_send_ratio[z] = 1E3;
-                    n[z] = 870;
+                    bots_send_ratio[botIndex] = 1E3;
+                    n[botIndex] = 870;
                 }
-            } else if (4 >= this.cN[z]) {
-                l[z] = 1 + fakeRandom.generateRandomValue(20);
-                t[z] = 250 + fakeRandom.generateRandomValue(1501);
-                x[z] = 500 + fakeRandom.generateRandomValue(501);
-                if (3 === this.cN[z]) {
-                    bots_send_ratio[z] = 600 + fakeRandom.generateRandomValue(101);
-                    n[z] = 300 + fakeRandom.generateRandomValue(401);
+            } else if (4 >= this.difficultyArray[botIndex]) {
+                l[botIndex] = 1 + fakeRandom.generateRandomValue(20);
+                t[botIndex] = 250 + fakeRandom.generateRandomValue(1501);
+                x[botIndex] = 500 + fakeRandom.generateRandomValue(501);
+                if (3 === this.difficultyArray[botIndex]) {
+                    bots_send_ratio[botIndex] = 600 + fakeRandom.generateRandomValue(101);
+                    n[botIndex] = 300 + fakeRandom.generateRandomValue(401);
                 } else {
-                    bots_send_ratio[z] = 300 + fakeRandom.generateRandomValue(201);
-                    n[z] = 100 + fakeRandom.generateRandomValue(201);
+                    bots_send_ratio[botIndex] = 300 + fakeRandom.generateRandomValue(201);
+                    n[botIndex] = 100 + fakeRandom.generateRandomValue(201);
                 }
             } else {
-                x[z] = 1E3;
-                t[z] = 1E3;
-                l[z] = 35 + fakeRandom.generateRandomValue(16);
-                bots_send_ratio[z] = 400 + fakeRandom.generateRandomValue(101);
-                n[z] = 50 + fakeRandom.generateRandomValue(101);
+                x[botIndex] = 1E3;
+                t[botIndex] = 1E3;
+                l[botIndex] = 35 + fakeRandom.generateRandomValue(16);
+                bots_send_ratio[botIndex] = 400 + fakeRandom.generateRandomValue(101);
+                n[botIndex] = 50 + fakeRandom.generateRandomValue(101);
             }
-            bots_timing[z] = 1 + divide_floor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100));
+            bots_timing[botIndex] = 1 + divide_floor(x[botIndex] * fakeRandom.random(), 10 * fakeRandom.value(100));
         }
     };
-    this.dw = function() {
-        var z, y;
-        var A = e2.e3;
-        for (z = A - 1; 0 <= z; z--) this.cN[z] = 5;
-        for (y = 0; 6 > y; y++)
-            if (0 < e2.e4[y]) {
-                for (z = A + e2.e4[y] - 1; z >= A; z--) this.cN[z] = y;
-                A += e2.e4[y]
+    this.setZombieDifficulty = function() {
+        var index, diffIndex;
+        var allyBots = e2.e3;
+        for (index = allyBots - 1; 0 <= index; index--) this.difficultyArray[index] = 5;
+        for (diffIndex = 0; 6 > diffIndex; diffIndex++)
+            if (0 < e2.e4[diffIndex]) {
+                for (index = allyBots + e2.e4[diffIndex] - 1; index >= allyBots; index--) this.difficultyArray[index] = diffIndex;
+                allyBots += e2.e4[diffIndex]
             }
     };
-    this.dH = function(z, y) {
-        0 <= z && (bots_timing[z] = y)
+    this.setTiming = function(botID, timing) {
+        0 <= botID && (bots_timing[botID] = timing)
     };
-    this.update = function(id) {
-        if (0 === --bots_timing[id]) {
-            x[id] !== t[id] && (x[id] += x[id] < t[id] ? 3 : -3);
-            bots_send_ratio[id] !== n[id] && (bots_send_ratio[id] += bots_send_ratio[id] < n[id] ? l[id] : -l[id], bots_send_ratio[id] = Math.abs(bots_send_ratio[id] - n[id]) <= l[id] ? n[id] : bots_send_ratio[id]);
-            bots_timing[id] = divide_floor(x[id], 10);
-            var y = id + player_count;
-            dB(y, divide_floor(bots_send_ratio[id] * troops[y], 1E3))
+    this.update = function(botID) {
+        if (0 === --bots_timing[botID]) {
+            x[botID] !== t[botID] && (x[botID] += x[botID] < t[botID] ? 3 : -3);
+            bots_send_ratio[botID] !== n[botID] && (bots_send_ratio[botID] += bots_send_ratio[botID] < n[botID] ? l[botID] : -l[botID], bots_send_ratio[botID] = Math.abs(bots_send_ratio[botID] - n[botID]) <= l[botID] ? n[botID] : bots_send_ratio[botID]);
+            bots_timing[botID] = divide_floor(x[botID], 10);
+            var id = botID + player_count;
+            startBotAttackProcess(id, divide_floor(bots_send_ratio[botID] * troops[id], 1E3))
         }
     }
 }
@@ -652,7 +652,7 @@ function de() {
 function e8() {
     announcements.update();
     eA.update();
-    eB.eC();
+    currentStatistics.eC();
     websocket_manager.update()
 }
 
@@ -669,7 +669,7 @@ function game_tick() {
     eM.update();
     e2.update();
     eA.update();
-    eB.update();
+    currentStatistics.update();
     eN.update();
     eO.update();
     eP.update();
@@ -697,7 +697,7 @@ function eU() {
 function ea() {
     eM.eb(!1);
     eP.eb();
-    eB.eb(!1);
+    currentStatistics.eb(!1);
     eO.eb();
     troopsBar.eb();
     peace.eb();
@@ -754,7 +754,7 @@ function Speed() {
     }
 }
 
-function er() {
+function BotSendBoat() {
     function g() {
         l = 3;
         a: {
@@ -791,7 +791,7 @@ function er() {
         z = y;
         if (0 === pixels_bordering_water[z].length) return !1;
         if (g()) {
-            var B = divide_floor(dG.dn[A] * troops[z], 100);
+            var B = divide_floor(botEngine.dn[A] * troops[z], 100);
             100 > B && 100 <= troops[z] && (B = 100);
             if (100 <= B) return processSendBoat(z, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x, t), B)
         }
@@ -811,7 +811,7 @@ function fC() {
             if (0 === is_alive[k[n] + player_count]) {
                 var l = n;
                 for (g--; l < g; l++) k[l] = k[l + 1]
-            } else dG.update(k[n])
+            } else botEngine.update(k[n])
     }
 }
 
@@ -1125,7 +1125,7 @@ function hA() {
 
     function l(I, D) {
         is_alive[G] = 1;
-        troops[G] = G < player_count ? starting_troops : dd[dG.cN[G - player_count]];
+        troops[G] = G < player_count ? starting_troops : dd[botEngine.difficultyArray[G - player_count]];
         x_min[G] = I + 10;
         y_min[G] = D + 10;
         y_max[G] = x_max[G] = 0;
@@ -1225,7 +1225,7 @@ function hp() {
     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
     eA.drawImage();
     eK.drawImage();
-    canvas_hidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.drawImage(), eM.drawImage(), troopsBar.drawImage(), peace.drawImage(), eB.drawImage(), gj.drawImage(), c2.drawImage(), eT.drawImage(), eO.drawImage(), eP.drawImage(), fq.drawImage(), gameResultBox.drawImage(), hu.drawImage(), hv.drawImage(), eX.drawImage())
+    canvas_hidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.drawImage(), eM.drawImage(), troopsBar.drawImage(), peace.drawImage(), currentStatistics.drawImage(), gj.drawImage(), c2.drawImage(), eT.drawImage(), eO.drawImage(), eP.drawImage(), fq.drawImage(), gameResultBox.drawImage(), hu.drawImage(), hv.drawImage(), eX.drawImage())
 }
 
 function hw(g, k, n) {
@@ -1389,7 +1389,7 @@ function EndGame() {
             gameResultBox.show(k, !1);
             announcements.iy(!0);
             eM.eb(!0);
-            eB.eb(!0);
+            currentStatistics.eb(!0);
             c4.canvasPendingUpdates = !0;
             h8.iz();
             set_android_state(0)
@@ -1404,7 +1404,7 @@ function Spawn() {
     this.update = function() {
         in_spawn = !1;
         for (var g = 0; g < player_count; g++) 0 !== is_alive[g] && 0 === land[g] && j1.ho(g);
-        0 !== is_alive[my_id] ? (statistics.numbers[7] = land[my_id], statistics.numbers[8] = troops[my_id], troopsBar.cE(), eB.j2(), eV.gf(x_min[my_id] - 5, y_min[my_id] - 5, x_max[my_id] + 5, y_max[my_id] + 5), eX.init()) : gameResultBox.show(!1, !1);
+        0 !== is_alive[my_id] ? (statistics.numbers[7] = land[my_id], statistics.numbers[8] = troops[my_id], troopsBar.cE(), currentStatistics.j2(), eV.gf(x_min[my_id] - 5, y_min[my_id] - 5, x_max[my_id] + 5, y_max[my_id] + 5), eX.init()) : gameResultBox.show(!1, !1);
         announcements.j3(18);
         eA.j4();
         eA.eb();
@@ -1458,7 +1458,7 @@ function game_init(param_seed, param_myID, param_playerInfo, param_gamemode, par
     pixel.init(param_playerInfo);
     hq.init();
     eT.init();
-    dG.init();
+    botEngine.init();
     nickNames.fit();
     nickNames.hideNicknames();
     j1.init();
@@ -1471,7 +1471,7 @@ function game_init(param_seed, param_myID, param_playerInfo, param_gamemode, par
     troopsBar.init();
     peace.init();
     eO.init();
-    eB.init();
+    currentStatistics.init();
     fq.init();
     c2.init();
     announcements.init();
@@ -1514,14 +1514,14 @@ function leave_game() {
     set_android_state(0);
     show_ad()
 }
-var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopsBar, gj, playtime, eO, eM, eB, gameResultBox, 
+var botEngine, speed, botSendBoat, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopsBar, gj, playtime, eO, eM, currentStatistics, gameResultBox, 
 jh, ji, aJ, showError, jk, jl, singleMenu, name_input, sprites, pixel, user_settings, attacks, interest, eA, nickNames, e2, jQ, jm, jn, gn, waterPixelChecker, fakeRandom, 
 g1, hq, jo, multiIn, eX, multiOut, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, humanBots, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
 
 function construct() {
-    dG = new de;
+    botEngine = new BotEngine;
     speed = new Speed;
-    dE = new er;
+    botSendBoat = new BotSendBoat;
     eJ = new fC;
     processAction = new ProcessAction;
     eK = new fu;
@@ -1539,7 +1539,7 @@ function construct() {
     playtime = new Playtime;
     eO = new k7;
     eM = new k8;
-    eB = new k9;
+    currentStatistics = new CurrentStatistics;
     gameResultBox = new GameResultBox;
     jh = new kB;
     ji = new kC;
@@ -1701,7 +1701,7 @@ function jy() {
             singleplayer ? processDonation(my_id, target, divide_floor(troopsBar.attackRatio() * troops[my_id], 1E3)) : multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target);
             return 1
         }
-        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multiOut.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? processAttack(my_id, target, troopsBar.attackRatio()) : (!free_spawn || 300 < eB.lX()) && multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.attackRatio())) : this.end(), 1;
+        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multiOut.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? processAttack(my_id, target, troopsBar.attackRatio()) : (!free_spawn || 300 < currentStatistics.lX()) && multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.attackRatio())) : this.end(), 1;
         if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? processAction.processSendBoat(my_id, troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multiOut.pick_location(troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
         if (7 === M && x[4]) return this.end(), t = a5.show(L, H), 1;
         if (8 === M) return x[5] ? (eQ.lQ(0, [target], !0) && (announcements.la(target, 0), multiOut.non_aggression(target)), this.end(), 1) : 0;
@@ -2046,11 +2046,11 @@ function Announcements() {
         F = [];
         this.lx();
         in_spawn && this.showGenericMessages(0, 18);
-        var display_label_map_land_info = "Map: " + jm.getMapName() + "   Pixels: " + eP.split_into_pieces(jQ.totalNonBorderPixels) + "   Land: " + eP.split_into_pieces(jQ.landPixels) + " (" + eB.nI(100 * jQ.landPixels / jQ.totalNonBorderPixels, 1) + ")",
+        var display_label_map_land_info = "Map: " + jm.getMapName() + "   Pixels: " + eP.split_into_pieces(jQ.totalNonBorderPixels) + "   Land: " + eP.split_into_pieces(jQ.landPixels) + " (" + currentStatistics.nI(100 * jQ.landPixels / jQ.totalNonBorderPixels, 1) + ")",
             display_label_map_special_info = "";
         0 < jQ.waterPixels && (display_label_map_special_info += "Water: " + eP.split_into_pieces(jQ.waterPixels) +
-            " (" + eB.nI(100 * jQ.waterPixels / jQ.totalNonBorderPixels, 1) + ")");
-        0 < jQ.mountainPixels && (display_label_map_special_info += 0 < jQ.waterPixels ? "   " : "", display_label_map_special_info += "Mountains: " + eP.split_into_pieces(jQ.mountainPixels) + " (" + eB.nI(100 * jQ.mountainPixels / jQ.totalNonBorderPixels, 1) + ")");
+            " (" + currentStatistics.nI(100 * jQ.waterPixels / jQ.totalNonBorderPixels, 1) + ")");
+        0 < jQ.mountainPixels && (display_label_map_special_info += 0 < jQ.waterPixels ? "   " : "", display_label_map_special_info += "Mountains: " + eP.split_into_pieces(jQ.mountainPixels) + " (" + currentStatistics.nI(100 * jQ.mountainPixels / jQ.totalNonBorderPixels, 1) + ")");
         announce(340, display_label_map_land_info, 6, 0, get_color_style(215, 245, 255), hy, -1, !1);
         0 < display_label_map_special_info.length && announce(340, display_label_map_special_info, 6, 0, get_color_style(215, 245, 255), hy, -1, !1);
         10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, get_color_style(235, 255, 120), hy, -1, !1);
@@ -2711,10 +2711,10 @@ function k2() {
         pe(t[C].hx, E, A);
         E > z + 2 * A && (t[C].hx.fillRect(E - z - A, 0, 1, A), t[C].hx.fillText(nickname[t[C].cM], Math.floor((E - z) / 2), Math.floor(.57 * A)));
         var F = 0 !== t[C].id ? 0 : A;
-        t[C].hx.fillText(eP.split_into_pieces(t[C].cN), Math.floor(E - z / 2 - F), Math.floor(.57 * A));
+        t[C].hx.fillText(eP.split_into_pieces(t[C].difficultyArray), Math.floor(E - z / 2 - F), Math.floor(.57 * A));
         t[C].hx.fillStyle = oe;
         t[C].hx.fillRect(Math.floor(E -
-            z - F), A - B, Math.floor(z * t[C].cN / t[C].pt), B);
+            z - F), A - B, Math.floor(z * t[C].difficultyArray / t[C].pt), B);
         0 === t[C].id ? (k(C, E), t[C].hx.strokeStyle = oR, t[C].hx.fillRect(A, 0, 1, A), E -= A, t[C].hx.beginPath(), t[C].hx.moveTo(Math.floor(.3 * A + E), Math.floor(A / 2)), t[C].hx.lineTo(Math.floor(A - .3 * A + E), Math.floor(A / 2)), t[C].hx.stroke(), t[C].hx.beginPath(), t[C].hx.moveTo(Math.floor(A / 2 + E), Math.floor(.3 * A)), t[C].hx.lineTo(Math.floor(A / 2 + E), Math.floor(A - .3 * A)), t[C].hx.stroke()) : k(C, 2 * A)
     }
 
@@ -2759,7 +2759,7 @@ function k2() {
     }
 
     function x(C) {
-        return Math.floor(2 * m7 + (eO.qF() ? eB.cw + m7 : 0) + eO.cw + 1.3 * C * A)
+        return Math.floor(2 * m7 + (eO.qF() ? currentStatistics.cw + m7 : 0) + eO.cw + 1.3 * C * A)
     }
     var t, z, y, A, B;
     this.init = function() {
@@ -2828,7 +2828,7 @@ function k2() {
                         } F = attacks.get_attack_troops_remaining_from_attack_index(my_id, E);
                     N = {
                         cM: I,
-                        cN: F,
+                        difficultyArray: F,
                         pt: F,
                         id: N,
                         po: !0,
@@ -2841,7 +2841,7 @@ function k2() {
                 }
                 t = G
             }
-            for (--C; 0 <= C; C--) E = attacks.get_attack_troops_remaining_from_attack_index(my_id, C), t[C].cN !== E && (t[C].cN = E, t[C].pt = E > t[C].pt ? E : t[C].pt, t[C].po = !0)
+            for (--C; 0 <= C; C--) E = attacks.get_attack_troops_remaining_from_attack_index(my_id, C), t[C].difficultyArray !== E && (t[C].difficultyArray = E, t[C].pt = E > t[C].pt ? E : t[C].pt, t[C].po = !0)
         }
     };
     this.drawImage = function() {
@@ -3705,7 +3705,7 @@ function k7() {
         return zoom && clientWidth2 < 1.2 * clientHeight2
     };
     this.qu = function() {
-        this.qF() ? this.fJ = clientWidth1 - k - m7 : this.fJ = Math.floor(eM.sE() + (clientWidth1 - eM.sE() - eB.width - k) / 2 - .5 * m7)
+        this.qF() ? this.fJ = clientWidth1 - k - m7 : this.fJ = Math.floor(eM.sE() + (clientWidth1 - eM.sE() - currentStatistics.width - k) / 2 - .5 * m7)
     };
     this.eb = function() {
         y && (y = !1, this.sD())
@@ -3949,39 +3949,45 @@ function k8() {
     }
 }
 
-function k9() {
+function CurrentStatistics() {
     function g() {
-        z.clearRect(0, 0, eB.width, eB.cw);
+        z.clearRect(0, 0, currentStatistics.width, currentStatistics.cw);
         z.fillStyle = hy;
-        z.fillRect(0, 0, eB.width, eB.cw);
+        z.fillRect(0, 0, currentStatistics.width, currentStatistics.cw);
         z.fillStyle = oN;
-        z.fillRect(0, eB.cw - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * eB.width), B);
+        z.fillRect(0, currentStatistics.cw - B - 1, Math.floor((0 < H ? H : Math.sqrt(display_statistics[4] / display_statistics[3])) * currentStatistics.width), B);
         z.fillStyle = cK;
-        z.fillRect(0, 0, eB.width, 1);
-        z.fillRect(0, 0, 1, eB.cw);
-        z.fillRect(eB.width - 1, 0, 1, eB.cw);
-        z.fillRect(0, eB.cw - 1, eB.width, 1);
-        z.fillRect(0, eB.cw - B - 1, eB.width, 1);
-        for (var P = 0, U = 0; U < D.length; U++)
+        z.fillRect(0, 0, currentStatistics.width, 1);
+        z.fillRect(0, 0, 1, currentStatistics.cw);
+        z.fillRect(currentStatistics.width - 1, 0, 1, currentStatistics.cw);
+        z.fillRect(0, currentStatistics.cw - 1, currentStatistics.width, 1);
+        z.fillRect(0, currentStatistics.cw - B - 1, currentStatistics.width, 1);
+        for (var P = 0, U = 0; U < display_label.length; U++)
             if (J[U]) {
                 z.textAlign = mj;
-                var W = Math.floor((C - B + 2 * F) * (U - P + 1) / (D.length + 1) - .7 * F);
-                z.fillText(D[U], E, W);
+                var W = Math.floor((C - B + 2 * F) * (U - P + 1) / (display_label.length + 1) - .7 * F);
+                z.fillText(display_label[U], E, W);
                 z.textAlign = ol;
-                5 === U && 0 !== is_alive[my_id] &&
-                    troops[my_id] >= interest.maxTroopsBeforeRedInterest(my_id) ? (z.fillStyle = oi, z.fillText(k(U), eB.width - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.width - E, W)
+                if (5 === U && 0 !== is_alive[my_id] && troops[my_id] >= interest.maxTroopsBeforeRedInterest(my_id)) {
+                    z.fillStyle = oi;
+                    z.fillText(k(U), currentStatistics.width - E, W);
+                    z.fillStyle = cK;
+                } else z.fillText(k(U), currentStatistics.width - E, W)
             } else P++
     }
 
     function k(P) {
-        return 3 > P ? K[P].toString() : 3 === P ? eB.nI(K[P] / 100, 2) : 4 === P ? eB.nI(K[P] / 100, 2) : 5 === P ? eB.nI(K[P] / 100, 2) : 7 > P ? eP.split_into_pieces(K[P]) : eB.getInterestTicksRemaining(K[7])
+        if (P < 3) return display_statistics[P].toString();
+        else if (P === 3 || P === 4 || P === 5) return currentStatistics.nI(display_statistics[P] / 100, 2);
+        else if (P < 7) return eP.split_into_pieces(display_statistics[P]);
+        else return currentStatistics.getInterestTicksRemaining(display_statistics[7]);
     }
 
     function n(P) {
         P = divide_floor(1E4 * P, landPixels);
         8 === gamemode && (0 === is_alive[0] ? endGame.gameEnd(1) : 0 === is_alive[1] && endGame.gameEnd(0));
-        P >= K[3] && (endGame.gameEnd(-1), K[4] = -1);
-        K[4] !== P && (I++, K[4] = P)
+        P >= display_statistics[3] && (endGame.gameEnd(-1), display_statistics[4] = -1);
+        display_statistics[4] !== P && (I++, display_statistics[4] = P)
     }
 
     function l() {
@@ -3990,36 +3996,35 @@ function k9() {
         return !0
     }
 
-    function x() {
-        land[my_id] !== K[6] && (K[6] = land[my_id],
-            I++)
+    function updateIncomeDisplay() {
+        land[my_id] !== display_statistics[6] && (display_statistics[6] = land[my_id], I++)
     }
-    var t, z, y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R;
+    var t, z, y, A, B, C, E, F, G, N, I, display_label, display_statistics, J, L, H, M, Q, endGameThreshold;
     this.init = function() {
         H = M = 0;
-        D = Array(8);
-        D[0] = "Humans";
-        D[1] = singleplayer ? "Players" : "Bots";
-        D[2] = "Spectators";
-        D[3] = "Threshold";
-        D[4] = "Occupation";
-        D[5] = "Interest";
-        D[6] = "Income";
-        D[7] = "Time";
-        R = landPixels - divide_floor(landPixels, 100);
-        K = Array(D.length);
-        K[0] = singleplayer ? 0 : player_count;
-        K[1] = singleplayer ? alive_count : bot_count;
-        K[2] = spectators;
-        K[3] = 1E4;
-        K[4] = divide_floor(1E4 * land[0], landPixels);
-        K[5] = 700;
-        K[6] = 0;
-        x();
-        K[7] = 0;
+        display_label = Array(8);
+        display_label[0] = "Humans";
+        display_label[1] = singleplayer ? "Players" : "Bots";
+        display_label[2] = "Spectators";
+        display_label[3] = "Threshold";
+        display_label[4] = "Occupation";
+        display_label[5] = "Interest";
+        display_label[6] = "Income";
+        display_label[7] = "Time";
+        endGameThreshold = landPixels - divide_floor(landPixels, 100);
+        display_statistics = Array(display_label.length);
+        display_statistics[0] = singleplayer ? 0 : player_count;
+        display_statistics[1] = singleplayer ? alive_count : bot_count;
+        display_statistics[2] = spectators;
+        display_statistics[3] = 1E4;
+        display_statistics[4] = divide_floor(1E4 * land[0], landPixels);
+        display_statistics[5] = 700;
+        display_statistics[6] = 0;
+        updateIncomeDisplay();
+        display_statistics[7] = 0;
         L = k(6);
-        J = Array(D.length);
-        for (var P = D.length - 1; 0 <= P; P--) J[P] = !0;
+        J = Array(display_label.length);
+        for (var P = display_label.length - 1; 0 <= P; P--) J[P] = !0;
         Q = 0;
         singleplayer ? (J[0] = !1, J[2] = !1, J[3] = !1, Q = 3) : (J[3] = !1, Q = 1);
         I = 0;
@@ -4033,8 +4038,8 @@ function k9() {
         E = Math.floor(.05 * this.width);
         F = .04 * this.width;
         C = this.cw;
-        this.cw -= Math.floor(Q * (this.cw - 2 * B) / D.length);
-        N = Math.floor(.55 * (C - B) / D.length);
+        this.cw -= Math.floor(Q * (this.cw - 2 * B) / display_label.length);
+        N = Math.floor(.55 * (C - B) / display_label.length);
         G = bt + N + bu;
         t = document.createElement("canvas");
         t.width = this.width;
@@ -4063,7 +4068,7 @@ function k9() {
         0 < I && (P || 12 > so && 100 <= I || 12 <= so) && (I = 0, g())
     };
     this.lX = function() {
-        return K[7]
+        return display_statistics[7]
     };
     this.getInterestTicksRemaining = function(P) {
         var U = Math.floor(P / 1E3 / 60);
@@ -4074,22 +4079,22 @@ function k9() {
         return P.toFixed(U) + "%"
     };
     this.update = function() {
-        J[0] && players_in_game - spectators !== K[0] && (K[0] = players_in_game - spectators, I++);
-        alive_count - K[0] !== K[1] && (K[1] = alive_count - K[0], I++);
+        J[0] && players_in_game - spectators !== display_statistics[0] && (display_statistics[0] = players_in_game - spectators, I++);
+        alive_count - display_statistics[0] !== display_statistics[1] && (display_statistics[1] = alive_count - display_statistics[0], I++);
         this.eC();
         if (team_game) {
             var P = eT.get_largest_team_total_land();
-            P >= R && l() ? (endGame.gameEnd(-1), n(eT.get_largest_team_total_land())) : n(P)
-        } else P = land[orderedLand[0]], P >= R && l() && endGame.gameEnd(-1), n(P);
+            P >= endGameThreshold && l() ? (endGame.gameEnd(-1), n(eT.get_largest_team_total_land())) : n(P)
+        } else P = land[orderedLand[0]], P >= endGameThreshold && l() && endGame.gameEnd(-1), n(P);
         P = interest.interestRate(my_id);
-        P !== K[5] && (K[5] = P, I++);
-        x();
-        K[7] += c4.getTickInterval();
+        P !== display_statistics[5] && (display_statistics[5] = P, I++);
+        updateIncomeDisplay();
+        display_statistics[7] += c4.getTickInterval();
         P = k(7);
         L !== P && (L = P, I += 100)
     };
     this.eC = function() {
-        J[2] && spectators !== K[2] && (K[2] = spectators, I++)
+        J[2] && spectators !== display_statistics[2] && (display_statistics[2] = spectators, I++)
     };
     this.tY = function(P) {
         if (P === spawn_time) return H = 0, g(), !1;
@@ -6022,7 +6027,7 @@ function SingleMenu() {
         }
     };
     this.xg = function(teamID) {
-        return 0 === teamID && 1 === this.botSettings[teamID].group ? "You" : dG.botDifficultyLabel[this.botSettings[teamID].difficulty+1]
+        return 0 === teamID && 1 === this.botSettings[teamID].group ? "You" : botEngine.botDifficultyLabel[this.botSettings[teamID].difficulty+1]
     };
     this.xh = function(n) {
         return 1 === this.botSettings[n].group ? "1 Player" : this.botSettings[n].group + " Players"
@@ -6661,7 +6666,7 @@ function checkKillers(id) {
 function setDefeat() {
     statistics.numbers[17] += troops[my_id] + attacks.total_troops_currently_sent_away(my_id);
     gameResultBox.show(!1, !1);
-    eB.tK()
+    currentStatistics.tK()
 }
 
 function setSpillOvers(id, killers) {
@@ -6871,7 +6876,7 @@ function CustomMap() {
         this.dt.hH = t(z.playerX, this.dt.xY, 4096, 16);
         this.dt.hS = t(z.playerY, this.dt.xY, 4096, 16);
         this.dt.zw = t(z.playerTeam, this.dt.xY, 8, 8);
-        this.dt.du = t(z.playerStrength, this.dt.xY, 5, 8);
+        this.dt.difficulty = t(z.playerStrength, this.dt.xY, 5, 8);
         y = this.dt;
         A = z.playerColor;
         B = this.dt.xY;
@@ -7505,7 +7510,7 @@ function HumanBots() {
         spectators++;
         player_status[id] = 2;
         pixel.font_color[id] = (pixel.font_color[id] + 2) % 4;
-        id === my_id && (gameResultBox.show(!1, !1), eB.tK());
+        id === my_id && (gameResultBox.show(!1, !1), currentStatistics.tK());
         eA.mn(id)
     };
     this.onLeave = function(g) {
@@ -7528,7 +7533,7 @@ function HumanBots() {
             var n = k[g];
             if (attacks.below_attack_cap(n)) {
                 var amount = divide_floor(20 * troops[n], 100);
-                60 > amount || (0 === pixels_bordering_land[n].length ? !dE.update(n, 2) && team_game && dI(n, amount, 0, 0) : team_game ? dT(n, amount) : db(n, amount))
+                60 > amount || (0 === pixels_bordering_land[n].length ? !botSendBoat.update(n, 2) && team_game && startBotDonationProcess(n, amount, 0, 0) : team_game ? dT(n, amount) : db(n, amount))
             }
         }
     }
@@ -8735,56 +8740,55 @@ function kU() {
 }
 
 function WaterPixelChecker() {
-    let closestWaterPixel;
+    var closestWaterPixel;
 
     this.getClosestWaterPixel = function () {
         return closestWaterPixel;
     };
 
-    this.check = function (id, targetCoord) {
-        let index1;
+    this.check = function(id, targetCoord) {
+        var pathIndex;
         if (0 === pixels_bordering_water[id].length || !pixel.can_take(targetCoord) || !pixel.is_neutral(targetCoord) && pixel.owner(targetCoord) === id) return !1;
-        for (index1 = 21; 0 <= index1; index1--) {
-            if (21 === index1) {
-                let pixelX = pixel.to_x(pixels_bordering_water[id][0]);
-                let pixelY = pixel.to_y(pixels_bordering_water[id][0]);
-                let targetX = pixel.to_x(targetCoord);
-                let targetY = pixel.to_y(targetCoord);
-                let dist = Math.abs(pixelX - targetX) + Math.abs(pixelY - targetY);
-                for (let index2 = pixels_bordering_water[id].length - 1; 1 <= index2; index2--) {
-                    let nextWaterX = pixel.to_x(pixels_bordering_water[id][index2]);
-                    let nextWaterY = pixel.to_y(pixels_bordering_water[id][index2]);
-                    let newDist = Math.abs(nextWaterX - targetX) + Math.abs(nextWaterY - targetCoord);
-                    newDist < dist && (dist = newDist, closestWaterPixel = pixels_bordering_water[id][index2])
+        for (pathIndex = 21; 0 <= pathIndex; pathIndex--) {
+            if (21 === pathIndex) {
+                var param1 = pixels_bordering_water[id],
+                    param2 = targetCoord,
+                    param3 = pixel.to_x(param2);
+                param2 = pixel.to_y(param2);
+                var y = 0;
+                var A = pixel.to_x(param1[0]);
+                var B = pixel.to_y(param1[0]);
+                A = Math.abs(A - param3) + Math.abs(B - param2);
+                for (B = param1.length - 1; 1 <= B; B--) {
+                    var C = pixel.to_x(param1[B]);
+                    var E = pixel.to_y(param1[B]);
+                    C = Math.abs(C - param3) + Math.abs(E - param2);
+                    C < A && (A = C, y = B)
                 }
-            } else closestWaterPixel = pixels_bordering_water[id][divide_floor(index1 * pixels_bordering_water[id].length, 21)];
-            let foundPixel = false;
-            {
-                let waterPixel = closestWaterPixel;
-                let pixelX = pixel.to_x(waterPixel);
-                let pixelY = pixel.to_y(waterPixel);
-                let targetX = pixel.to_x(targetCoord);
-                let targetY = pixel.to_y(targetCoord);
-                let distance = Math.abs(targetX - pixelX) + Math.abs(targetY - pixelY);
-                if (!(2 > distance))
-                    for (let currentPixel = waterPixel, index2 = 0; index2 < distance; index2++) {
-                        currentPixel = Math.abs(targetX - pixel.to_x(currentPixel)) >= Math.abs(targetY - pixel.to_y(currentPixel)) ?
-                            currentPixel + offset[targetX > pixelX ? 1 : 3] : currentPixel + offset[targetY > pixelY ? 2 : 0];
-                        if (!pixel.is_water(currentPixel)) {
-                            if (pixel.can_take(currentPixel)) {
-                                if (0 === index2 || index2 + 20 < distance) {
-                                    foundPixel = true;
-                                    break;
-                                }
-                            } else {
-                                break;
+                closestWaterPixel = param1[y]
+            } else closestWaterPixel = pixels_bordering_water[id][divide_floor(pathIndex * pixels_bordering_water[id].length, 21)];
+            a: {
+                B = closestWaterPixel;
+                y = targetCoord;
+                param1 = pixel.to_x(B);
+                param3 = pixel.to_y(B);
+                param2 = pixel.to_x(y);
+                y = pixel.to_y(y);
+                A = Math.abs(param2 - param1) + Math.abs(y - param3);
+                if (!(2 > A))
+                    for (C = B, B = 0; B < A; B++)
+                        if (C = Math.abs(param2 - pixel.to_x(C)) >= Math.abs(y - pixel.to_y(C)) ? C + offset[param2 > param1 ? 1 : 3] : C + offset[y > param3 ? 2 : 0], !pixel.is_water(C)) {
+                            if (pixel.can_take(C)) {
+                                if (0 === B || B + 20 < A) break;
+                                param1 = !0;
+                                break a
                             }
-                        }
-                    }
+                            break
+                        } param1 = !1
             }
-            if (foundPixel) return !0;
+            if (param1) return !0
         }
-        return !1;
+        return !1
     }
 }
 
@@ -8931,7 +8935,7 @@ function kd() {
     function k() {
         t = 0;
         z += 700 > z ? 200 : 0;
-        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), playtime.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), troopsBar.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), gameResultBox.lx(), eT.lx(), gj.rK()) : (0 === aJ.getState() ? jk.cE(0, !0) : 2 === aJ.getState() ? singleMenu.lx() : 3 === aJ.getState() && showError.lx(), aJ.vr(), aJ.vw()), c4.canvasPendingUpdates = !0)
+        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), playtime.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), currentStatistics.lx(), gj.lx(), troopsBar.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), gameResultBox.lx(), eT.lx(), gj.rK()) : (0 === aJ.getState() ? jk.cE(0, !0) : 2 === aJ.getState() ? singleMenu.lx() : 3 === aJ.getState() && showError.lx(), aJ.vr(), aJ.vw()), c4.canvasPendingUpdates = !0)
     }
 
     function n(y) {
@@ -9315,7 +9319,7 @@ function a2S() {
         this.a5h = -1
     };
     this.a5j = function() {
-        2 > this.bs ? this.ud = c2.measureText(eP.split_into_pieces(statistics.max[this.bs]), bt + this.a5f + bu) : 2 === this.bs && (this.ud = c2.measureText(eB.nI(6, 2), bt + this.a5f + bu));
+        2 > this.bs ? this.ud = c2.measureText(eP.split_into_pieces(statistics.max[this.bs]), bt + this.a5f + bu) : 2 === this.bs && (this.ud = c2.measureText(currentStatistics.nI(6, 2), bt + this.a5f + bu));
         this.ue = this.width - 2 * this.i4 - this.ud - this.i5
     };
     this.bv = function() {
@@ -9374,9 +9378,9 @@ function a2S() {
         mainCanvasCtx.stroke();
         n = this.drawShape(statistics.tV, n, 1);
         l = statistics.max[this.bs] / 100;
-        .95 > n && mainCanvasCtx.fillText(eB.nI(l, 2), -this.i4, 0);
-        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nI(l / 2, 2), -this.i4, Math.floor(this.xU / 2));
-        .05 < n && mainCanvasCtx.fillText(eB.nI(0,
+        .95 > n && mainCanvasCtx.fillText(currentStatistics.nI(l, 2), -this.i4, 0);
+        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(currentStatistics.nI(l / 2, 2), -this.i4, Math.floor(this.xU / 2));
+        .05 < n && mainCanvasCtx.fillText(currentStatistics.nI(0,
             2), -this.i4, this.xU)
     };
     this.a5n = function(g, k) {
@@ -9388,9 +9392,9 @@ function a2S() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .39 * this.width, k + 2 * this.nR);
         mainCanvasCtx.textAlign = mj;
         n = statistics.numbers[1];
-        mainCanvasCtx.fillText(eB.nI(statistics.numbers[0] / (10 * (1 > n ? 1 : n)), 1), 0, 0);
+        mainCanvasCtx.fillText(currentStatistics.nI(statistics.numbers[0] / (10 * (1 > n ? 1 : n)), 1), 0, 0);
         for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statistics.numbers[n].toString(), 0, n * l / 7);
-        mainCanvasCtx.fillText(eB.nI(100 * (1 - land[my_id] / statistics.numbers[7]), 0), 0, l)
+        mainCanvasCtx.fillText(currentStatistics.nI(100 * (1 - land[my_id] / statistics.numbers[7]), 0), 0, l)
     };
     this.a5o = function(g, k) {
         var n;
@@ -9443,10 +9447,10 @@ function a2S() {
         g = this.a5h * c4.getTickInterval();
         g = 0 === is_alive[my_id] ? Math.floor(g * gameResultBox.td) : Math.floor(g * c4.ticksElapsed());
         mainCanvasCtx.fillStyle = cK;
-        mainCanvasCtx.fillText(1 === n ? eB.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
+        mainCanvasCtx.fillText(1 === n ? currentStatistics.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
             -this.i4, this.xU - k * Math.pow(t, n));
         mainCanvasCtx.textAlign = cJ;
-        mainCanvasCtx.fillText(eB.getInterestTicksRemaining(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (zoom ? 2 : 0));
+        mainCanvasCtx.fillText(currentStatistics.getInterestTicksRemaining(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (zoom ? 2 : 0));
         mainCanvasCtx.textAlign = ol;
         return k * Math.pow(t, n) / this.xU
     };
@@ -9872,13 +9876,13 @@ function a6e() {
     this.tY = function(k) {
         multiIn.commenceActions(k, g);
         g = (g + 1) % 8;
-        eB.tY(this.wO);
+        currentStatistics.tY(this.wO);
         this.wO === spawn_time ? (spawn.update(), this.wP = this.bs = this.wO = 0, this.time = c4.time) : (this.wO++, eA.j4(), eA.eb(), h8.tx())
         if (typeof(script_spawn_tick) != 'undefined') script_spawn_tick(this.wO)
     };
     this.update = function() {
         jq.update();
-        in_spawn ? (c4.canvasPendingUpdates = eB.tY(-1) || c4.canvasPendingUpdates, ec()) : 0 === this.bs ? c4.time >= this.time && 
+        in_spawn ? (c4.canvasPendingUpdates = currentStatistics.tY(-1) || c4.canvasPendingUpdates, ec()) : 0 === this.bs ? c4.time >= this.time && 
         (this.time += this.tickInterval * Math.floor(1 + (c4.time - this.time) / this.tickInterval), 2 === client_status ? e8() : this.a6k(), this.bs++) : (c4.canvasPendingUpdates = !0, ea(), this.bs = 0);
         eU();
         c4.canvasPendingUpdates && (c4.canvasPendingUpdates = !1, hp())
