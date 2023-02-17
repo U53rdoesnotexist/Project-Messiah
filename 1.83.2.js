@@ -1,0 +1,10493 @@
+function get_username() {
+    if (is_ios) return ios.username;
+    if (12 <= device_version) {
+        var username = droid.loadString(20);
+        "" === username && (username = "Android User " + Math.floor(1E3 * Math.random()), droid.saveString(20, username))
+    } else 5 <= device_version ? (username = droid.loadString(0), "" === username && (username = "Player " + Math.floor(1E3 * Math.random()), droid.saveString(0, username))) : username = user_settings.get_settings(0);
+    return username
+}
+
+function set_client_id() {
+    client_id = Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1));
+    if (is_ios) client_id = ios.id;
+    else if (12 <= device_version) {
+        var old_client_id = droid.loadNumber(20); - 1 === old_client_id ? droid.saveNumber(20, client_id) : client_id = old_client_id
+    } else 5 <= device_version ? (old_client_id = droid.loadNumber(2), 2 === old_client_id ? droid.saveNumber(2, client_id + 3) : client_id = old_client_id - 3) : client_id = user_settings.get_settings(1)
+}
+
+function load_password() {
+    var password = 0;
+    if (is_ios) password = ios.password;
+    else if (12 <= device_version) password = droid.loadString(22);
+    else {
+        if (5 <= device_version) return password;
+        password = user_settings.get_settings(9)
+    }
+    var password_max_limit = Math.floor(Math.pow(2, 48));
+    password = Math.floor(parseInt(characters.str_to_charcode(password)));
+    if (0 < password && password < password_max_limit) return password;
+    password = Math.floor(1 + (password_max_limit - 1) * Math.random());
+    return save_password(password) ? password : 0
+}
+
+function set_zoom() {
+    if (is_ios) zoom = ios.zoom || clientWidth2 < clientHeight2;
+    else if (12 <= device_version) {
+        var stored_zoom = droid.loadNumber(21); - 1 === stored_zoom ? (zoom = 100 >= droid.getNumber(0) || clientWidth2 < clientHeight2, droid.saveNumber(21, zoom ? 1 : 0)) : zoom = 1 === stored_zoom || clientWidth2 < clientHeight2
+    } else 5 <= device_version ? (stored_zoom = droid.loadNumber(1), 2 === stored_zoom ? (zoom = !0, droid.saveNumber(1, zoom ? 1 : 0)) : zoom = 1 === stored_zoom) : zoom = 0 === user_settings.get_settings(4) || clientWidth2 < clientHeight2
+}
+
+function get_emojis() {
+    return is_ios ? ios.emojis : 5 <= device_version ? droid.loadString(1) : user_settings.get_settings(7)
+}
+
+function get_colors() {
+    return is_ios ? ios.colors : 12 <= device_version ? droid.loadString(21) : 5 <= device_version ? droid.loadString(2) : user_settings.get_settings(8)
+}
+
+function save_username(name) {
+    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("username " + name);
+    else if (12 <= device_version) droid.saveString(20, name), droid.setState(10);
+    else if (5 <= device_version) droid.saveString(0, name);
+    else {
+        if (3 > name.length || 0 <= name.indexOf(";")) name = "Player 666";
+        user_settings.set_setting(0, name);
+        user_settings.format_settings()
+    }
+}
+
+function save_password(password) {
+    password = characters.charcode_to_str(password.toString());
+    if (is_ios) {
+        ios.password = password;
+        window.webkit.messageHandlers.iosCommandA.postMessage("password " + password);
+        return true;
+    } else if (12 <= device_version) {
+        droid.saveString(22, password);
+        return true;
+    } else if (5 <= device_version) return false;
+    else if (2 === user_settings.a0()) {
+        user_settings.set_setting(9, password);
+        user_settings.format_settings();
+        return true;
+    } else return false;
+}
+
+function save_options(param_zoom, param_sound) {
+    if (is_ios) {
+        window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (param_zoom ? 1 : 0));
+        window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (param_sound ? 1 : 0));
+    } else if (12 <= device_version) {
+        droid.saveNumber(22, param_sound ? 1 : 0);
+        droid.saveNumber(21, param_zoom ? 1 : 0);
+    } else if (5 <= device_version) {
+        droid.saveNumber(1, param_zoom ? 1 : 0);
+        droid.saveNumber(11, param_sound ? 1 : 0);
+    } else {
+        user_settings.set_setting(2, param_sound ? 1 : 0);
+        user_settings.set_setting(4, param_zoom ? 0 : 1);
+        user_settings.format_settings();
+    }
+}
+
+function save_emojis() {
+    var emoji_str = "";
+    for (var index = 0; index < a5.a6; index += 2) {
+        if (a5.a7[index] || a5.a7[index + 1]) {
+            if (a5.a7[index] && !a5.a7[index + 1]) emoji_str += "1";
+            else if (!a5.a7[index] && a5.a7[index + 1]) emoji_str += "2";
+            else emoji_str += "3";
+        } else emoji_str += "0";
+    }
+    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + emoji_str);
+    else if (5 <= device_version) droid.saveString(1, emoji_str);
+    else {
+        user_settings.set_setting(7, emoji_str);
+        user_settings.format_settings();
+    }
+}
+
+
+function save_colors(colors) {
+    if (is_ios) window.webkit.messageHandlers.iosCommandA.postMessage("colors " + colors);
+    else {
+        if (12 <= device_version) droid.saveString(21, colors);
+        else if (5 <= device_version) {
+            droid.saveString(2, colors);
+            return
+        }
+        user_settings.set_setting(8, colors);
+        user_settings.format_settings()
+    }
+}
+
+function set_android_state(state) {
+    is_ios || 5 <= device_version && droid.setState(state)
+}
+
+function show_ad() {
+    is_ios ? window.webkit.messageHandlers.iosCommandA.postMessage("show ad 1800000") : 12 <= device_version && droid.presentAd(18E5)
+}
+
+function reload_client() {
+    is_ios ? location.reload() : 7 <= device_version ? droid.setState(5) : location.reload()
+}
+
+function set_android_html_header() {
+    14 > device_version || droid.saveString(23, '<!DOCTYPE html>\n<html lang="aG">\n' + document.getElementsByTagName("html")[0].innerHTML + "\n</html>")
+}
+
+self.aiCommand746 = function(option) {
+    0 === option ? start() : 1 !== option || 14 > device_version || aJ.aK()
+};
+
+var prev_attack, prev_author, prev_remaining, prev_remaining_per_pixel, prev_target, prev_border_length, prev_array_max_length, prev_border_land, prev_land_gain, prev_inner, offset, editing_matrix, prev_border_taken;
+
+function matrix_processor_init() {
+    prev_border_length = 0;
+    prev_array_max_length = 2048;
+    prev_border_land = new Uint32Array(4 * prev_array_max_length);
+    prev_land_gain = 0;
+    prev_inner = new Uint32Array(prev_array_max_length);
+    offset = new Int32Array(4);
+    offset[0] = -4 * map_width;
+    offset[1] = 4;
+    offset[2] = -offset[0];
+    offset[3] = -offset[1];
+    editing_matrix = new Uint8Array(map_width * map_height)
+}
+
+function attackProcessInit(idThenIndex) {
+    prev_author = idThenIndex;
+    prev_border_taken = !1;
+    set_border_to_inner();
+    set_takeable_land_to_border();
+    for (idThenIndex = attacks.getCurrentAttackCount(prev_author) - 1; 0 <= idThenIndex; idThenIndex--) 0 === attacks.get_boat_id_from_attack_index(prev_author, idThenIndex) && (prev_attack = idThenIndex, start_testing_taking_process());
+    prev_border_taken && update_taken_pixel_arrays()
+}
+
+function update_taken_pixel_arrays() {
+    update_editing_border_pixels();
+    update_pixels_bordering_terrain()
+}
+
+function start_testing_taking_process() {
+    prev_target = attacks.get_attack_target_from_attack_index(prev_author, prev_attack);
+    prev_remaining = attacks.get_attack_troops_remaining_from_attack_index(prev_author, prev_attack);
+    mark_possible_expansion();
+    0 === prev_border_length ? return_remaining() : (reset_editing_matrix(), can_take_marked_pixels() ? try_take_marked_pixels() : return_remaining())
+}
+
+function can_take_marked_pixels() {
+    prev_remaining_per_pixel = divide_floor(prev_remaining, prev_border_length);
+    return prev_remaining_per_pixel > neutral_land_cost
+}
+
+function reset_editing_matrix() {
+    var index;
+    for (index = prev_border_length - 1; 0 <= index; index--) editing_matrix[divide_floor(prev_border_land[index], 4)] = 0
+}
+
+function return_remaining() {
+    1 === attacks.getCurrentAttackCount(prev_author) && speed.removeEntry(prev_author);
+    if (prev_author !== my_id) troops[prev_author] += prev_remaining, interest.limitTroops(prev_author);
+    else {
+        var old_troop = troops[prev_author];
+        troops[prev_author] += prev_remaining;
+        interest.limitTroops(prev_author);
+        statistics.numbers[13] -= troops[prev_author] - old_troop
+    }
+    attacks.remove_attack(prev_author, prev_attack)
+}
+
+function set_border_to_inner() {
+    var border_length = editing_border_pixels[prev_author].length;
+    border_length = border_length > prev_array_max_length ? prev_array_max_length : border_length;
+    prev_land_gain = 0;
+    for (--border_length; 0 <= border_length; border_length--) prev_inner[prev_land_gain++] = editing_border_pixels[prev_author][border_length]
+}
+
+function set_takeable_land_to_border() {
+    var border_pixel;
+    for (border_pixel = editing_border_pixels[prev_author].length - 1; 0 <= border_pixel; border_pixel--) pixel.can_take(editing_border_pixels[prev_author][border_pixel]) && pixel.change_to_border(editing_border_pixels[prev_author][border_pixel], prev_author);
+    editing_border_pixels[prev_author] = []
+}
+
+function mark_possible_expansion() {
+    prev_border_length = 0;
+    prev_target === max_entities ? mark_possible_neutral_expansion() : mark_possible_entity_expansion()
+}
+
+function mark_possible_entity_expansion() {
+    var side, index;
+    for (side = 3; 0 <= side; side--)
+        for (index = prev_land_gain - 1; 0 <= index; index--) {
+            var entity_coord = prev_inner[index] + offset[side];
+            var coord_index = divide_floor(entity_coord, 4);
+            0 === editing_matrix[coord_index] && pixel.controlled_by_entity(entity_coord) && pixel.owner(entity_coord) === prev_target && (editing_matrix[coord_index] = 1, prev_border_land[prev_border_length++] = entity_coord)
+        }
+}
+
+function mark_possible_neutral_expansion() {
+    var side, index;
+    for (side = 3; 0 <= side; side--)
+        for (index = prev_land_gain - 1; 0 <= index; index--) {
+            var neutral_coord = prev_inner[index] + offset[side];
+            var coord_index = divide_floor(neutral_coord, 4);
+            0 === editing_matrix[coord_index] && pixel.is_neutral(neutral_coord) && (editing_matrix[coord_index] = 1, prev_border_land[prev_border_length++] = neutral_coord)
+        }
+}
+
+function try_take_marked_pixels() {
+    still_can_take_marked_pixels() ? (take_border(), prev_target !== max_entities && update_target_pixel_arrays()) : return_remaining()
+}
+
+function update_target_pixel_arrays() {
+    deduct_target_land();
+    remove_pixels_bordering_terrain_for_target(pixels_bordering_land[prev_target]);
+    remove_pixels_bordering_terrain_for_target(pixels_bordering_water[prev_target]);
+    remove_taken_pixels_in_editing_border_pixels(editing_border_pixels[prev_target]);
+    construct_new_border_terrain(pixels_bordering_water[prev_target]);
+    construct_new_border_terrain(pixels_bordering_mountain[prev_target]);
+    convert_prev_inner_to_border();
+    update_target_xy_minmax()
+}
+
+function take_border() {
+    prev_border_taken = !0;
+    attacks.set_attack_troops_remaining_from_attack_index(prev_author, prev_attack, prev_remaining);
+    land[prev_author] += prev_border_length;
+    update_author_xy_minmax();
+    construct_new_border_land()
+}
+
+function still_can_take_marked_pixels() {
+    return prev_target === max_entities ? deduct_troops_taking_border() : deduct_troops_killing_target_and_taking_border()
+}
+
+function deduct_troops_killing_target_and_taking_border() {
+    var troops_needed_to_take_base_border = prev_border_length * neutral_land_cost,
+        total_troops_needed_to_take_border = troops_needed_to_kill_target_troops_at_border(),
+        remaining = prev_attack_remaining();
+    total_troops_needed_to_take_border = troops_needed_to_take_base_border + 2 * total_troops_needed_to_take_border + remaining;
+    var temp_prev_remaining = prev_remaining_per_pixel * prev_border_length;
+    if (temp_prev_remaining > total_troops_needed_to_take_border) return prev_remaining -= total_troops_needed_to_take_border, kill_all_troops(total_troops_needed_to_take_border - troops_needed_to_take_base_border, remaining), !0;
+    prev_remaining -= temp_prev_remaining;
+    kill_all_troops(temp_prev_remaining - troops_needed_to_take_base_border, remaining);
+    return !1
+}
+
+function kill_all_troops(troops_needed_to_kill_target_troops, remaining_troops) {
+    if (0 < remaining_troops)
+        if (troops_needed_to_kill_target_troops >= remaining_troops) attacks.set_attack_troops_remaining_from_target(prev_target, prev_author, 0), troops_needed_to_kill_target_troops -= remaining_troops;
+        else {
+            attacks.set_attack_troops_remaining_from_target(prev_target, prev_author, remaining_troops - troops_needed_to_kill_target_troops);
+            return
+        } troops_needed_to_kill_target_troops = divide_floor(troops_needed_to_kill_target_troops, 2);
+    troops[prev_target] = troops[prev_target] >= troops_needed_to_kill_target_troops ? troops[prev_target] - troops_needed_to_kill_target_troops : 0
+}
+
+function prev_attack_remaining() {
+    return attacks.get_troops_remaining_from_target(prev_target, prev_author)
+}
+
+function troops_needed_to_kill_target_troops_at_border() {
+    return divide_floor(prev_border_length * troops[prev_target], 1 + estimateBorderLength() * get_weighted_border_pixel_density())
+}
+
+function estimateBorderLength() {
+    return Math.floor(2 + approximateSqrt(divide_floor(land[prev_target], 100), 8))
+}
+
+function get_weighted_border_pixel_density() {
+    return pixels_bordering_land[prev_target].length + divide_floor(pixels_bordering_water[prev_target].length + pixels_bordering_mountain[prev_target].length, 50)
+}
+
+function deduct_troops_taking_border() {
+    prev_remaining -= prev_border_length * neutral_land_cost;
+    return !0
+}
+
+function construct_new_border_land() {
+    for (var index = prev_border_length - 1; 0 <= index; index--) editing_border_pixels[prev_author].push(prev_border_land[index]), pixels_bordering_land[prev_author].push(prev_border_land[index]), pixel.change_to_border(prev_border_land[index], prev_author)
+}
+
+function bm() {
+    var g = 1,
+        k = [null, null];
+    this.init = function() {
+        g = .72 * (zoom ? .0011 : .001) * averageWindowLength;
+        for (var n = 1; 0 <= n; n--) k[n] && this.br(n, k[n].l)
+    };
+    this.br = function(n, l) {
+        k[n] = {
+            l: l,
+            font: bt + 10 + bu
+        };
+        this.bv(n)
+    };
+    this.bv = function(n) {
+        if (sprites.bx() && k[n]) {
+            var l = k[n].l,
+                x = Math.floor(.15 * g * sprites.bz(13).height),
+                t = bt + x + bu,
+                z = c2.measureText(l, t),
+                y = .8 * g * sprites.bz(13).width;
+            z > y && (x = Math.floor(x * y / z), t = bt + x + bu);
+            k[n] = {
+                l: l,
+                font: t
+            };
+            c4.canvasPendingUpdates = !0
+        }
+    };
+    this.c6 = function() {
+        return Math.floor(g * sprites.bz(13).height)
+    };
+    this.clicked = function(n, l) {
+        return !sprites.bx() || n < display_buffer_length || l < clientHeight1 - mainSettings.width -
+            g * sprites.bz(13).height - 2 * display_buffer_length || l > clientHeight1 - mainSettings.width - 2 * display_buffer_length ? !1 : n < display_buffer_length + g * sprites.bz(13).width ? (cD.cE(0), !0) : n < 2 * display_buffer_length + g * sprites.bz(13).width ? !1 : n < 2 * display_buffer_length + 2 * g * sprites.bz(13).width ? (cD.cE(1), !0) : !1
+    };
+    this.to_y = function() {
+        return Math.floor(clientHeight1 - mainSettings.width - g * sprites.bz(13).height - 2 * display_buffer_length)
+    };
+    this.drawImage = function() {
+        if (sprites.bx()) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.setTransform(g, 0, 0, g, display_buffer_length, this.to_y());
+            mainCanvasCtx.drawImage(sprites.bz(14), 0, 0);
+            mainCanvasCtx.setTransform(g, 0, 0, g, 2 * display_buffer_length + g * sprites.bz(13).width, this.to_y());
+            mainCanvasCtx.drawImage(sprites.bz(13), 0, 0);
+            for (var n = 1; 0 <= n; n--) k[n] && (mainCanvasCtx.setTransform(1, 0, 0, 1, (1 + n) * display_buffer_length + n * g *
+                sprites.bz(13).width, this.to_y()), mainCanvasCtx.font = k[n].font, mainCanvasCtx.textBaseline = cI, mainCanvasCtx.textAlign = cJ, mainCanvasCtx.fillStyle = cK, mainCanvasCtx.fillText(k[n].l, .5 * g * sprites.bz(13).width, .86 * g * sprites.bz(13).height));
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+        }
+    }
+}
+
+function cL(id, target, pixelCount, amount) {
+    var tax = divide_floor(3 * troops[id], 256);
+    amount -= amount >= divide_floor(troops[id], 2) ? tax : 0;
+    takePixelsAndChangeToMoving(pixelCount, id);
+    attacks.set(id, amount, target);
+    troops[id] -= amount + tax;
+    speed.cR(id, !1)
+}
+
+function addTakableTargetPixelsToEditing(id, target) {
+    var index, side;
+    for (index = pixels_bordering_land[id].length - 1; 0 <= index; index--)
+        if (pixel.is_stationary_border(pixels_bordering_land[id][index]))
+            for (side = 3; 0 <= side; side--)
+                if (pixel.controlled_by_entity(pixels_bordering_land[id][index] + offset[side]) && pixel.owner(pixels_bordering_land[id][index] + offset[side]) === target) {
+                    editing_border_pixels[id].push(pixels_bordering_land[id][index]);
+                    break
+                }
+}
+
+function takePixelsAndChangeToMoving(pixelCount, id) {
+    for (var length = editing_border_pixels[id].length - 1; length >= pixelCount; length--) pixel.change_to_moving_border(editing_border_pixels[id][length], id)
+}
+
+function addTakableNeutralPixelsToEditing(id) {
+    for (var side, index = pixels_bordering_land[id].length - 1; 0 <= index; index--)
+        if (pixel.is_stationary_border(pixels_bordering_land[id][index]))
+            for (side = 3; 0 <= side; side--)
+                if (pixel.is_neutral(pixels_bordering_land[id][index] + offset[side])) {
+                    editing_border_pixels[id].push(pixels_bordering_land[id][index]);
+                    break
+                }
+}
+
+function cY(g, k) {
+    var n, side;
+    var borderPixelCount = pixels_bordering_land[g].length;
+    var t = 256 <= borderPixelCount ? 12 : 32 <= borderPixelCount ? 6 : 1;
+    borderPixelCount = borderPixelCount - 1 - fakeRandom.generateRandomValue(t);
+    cg = 0;
+    a: for (; 0 <= borderPixelCount; borderPixelCount -= t)
+        for (side = 3; 0 <= side; side--) {
+            var z = pixel.is_neutral(pixels_bordering_land[g][borderPixelCount] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[g][borderPixelCount] + offset[side]);
+            if (z === max_entities || pixel.controlled_by_entity(pixels_bordering_land[g][borderPixelCount] + offset[side]) && z !== g && (k || isTeamate(g, z))) {
+                for (n = cg - 1; 0 <= n; n--)
+                    if (ci[n] === z) continue a;
+                ci[cg] = z;
+                if (++cg >= const_8) return !0
+            }
+        }
+    return 0 < cg
+}
+
+function ck(id, k) {
+    var index, side;
+    cg = 0;
+    for (index = pixels_bordering_land[id].length - 1; 0 <= index; index--)
+        for (side = 3; 0 <= side; side--) {
+            var owner = pixel.is_neutral(pixels_bordering_land[id][index] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[id][index] + offset[side]);
+            if (owner === max_entities || pixel.controlled_by_entity(pixels_bordering_land[id][index] + offset[side]) && owner !== id && (k || isTeamate(id, owner))) return ci[cg++] = owner, !0
+        }
+    return !1
+}
+
+function cl() {
+    var g;
+    for (g = cg - 1; 0 <= g; g--)
+        if (ci[g] === max_entities) {
+            for (cg--; g < cg; g++) ci[g] = ci[g + 1];
+            return !0
+        } return !1
+}
+
+function cn(g) {
+    var k, n;
+    for (k = cg - 1; 0 <= k; k--)
+        if (attacks.check(g, ci[k]))
+            for (cg--, n = k; n < cg; n++) ci[n] = ci[n + 1];
+    return 0 === cg
+}
+
+function cp() {
+    var g;
+    for (g = cg - 1; 0 <= g; g--)
+        if (ci[g] >= player_count) return !0;
+    return !1
+}
+
+function cr() {
+    var g, k;
+    for (g = cg - 1; 0 <= g; g--)
+        if (ci[g] < player_count)
+            for (cg--, k = g; k < cg; k++) ci[k] = ci[k + 1];
+    return 0 < cg
+}
+
+function cs(g) {
+    var k, n = ci[0],
+        l = troops[n] + attacks.get_troops_remaining_from_target(n, g);
+    for (k = cg - 1; 1 <= k; k--) {
+        var x = troops[ci[k]] + attacks.get_troops_remaining_from_target(ci[k], g);
+        x < l && (n = ci[k], l = x)
+    }
+    return n
+}
+
+function cv(g) {
+    var k = ci[0];
+    if (1 === cg) return k;
+    var n = divide_floor(x_max[g] + x_min[g], 2),
+        l = divide_floor(y_max[g] + y_min[g], 2),
+        x = square(n - divide_floor(x_max[k] + x_min[k], 2)) + square(l - divide_floor(y_max[k] + y_min[k], 2));
+    for (g = cg - 1; 1 <= g; g--) {
+        var t = square(n - divide_floor(x_max[ci[g]] + x_min[ci[g]], 2)) + square(l - divide_floor(y_max[ci[g]] + y_min[ci[g]], 2));
+        t < x && (x = t, k = ci[g])
+    }
+    return k
+}
+
+function d6() {
+    return ci[fakeRandom.generateRandomValue(cg)]
+}
+var const_8, cg, ci, d7;
+
+function d8() {
+    const_8 = 8;
+    cg = 0;
+    ci = new Uint16Array(const_8)
+}
+
+function d9() {
+    d7 = team_game ? new Uint8Array(max_entities) : null
+}
+
+function dB(g, k) {
+    team_game && (d7[g] = 0);
+    if (attacks.below_attack_cap(g) && !(60 > k))
+        if (0 === pixels_bordering_land[g].length) dE.update(g, dG.cN[g - player_count]) || (dG.dH(g - player_count, 200), dI(g, k, dG.cN[g - player_count], interest.maxTroopsBeforeRedInterest(g)));
+        else if (!(0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(pixels_bordering_water[g].length > pixels_bordering_land[g].length ? 7 : 3) && dE.update(g, dG.cN[g - player_count]))) {
+        var n = interest.maxTroopsBeforeRedInterest(g);
+        troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
+        team_game ? dK(g, k, dG.cN[g - player_count], n) : dL(g, k, dG.cN[g - player_count])
+    }
+}
+
+function dK(g, k, n, l) {
+    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, max_entities, n)) : (fakeRandom.generateBoolean(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.generateBoolean(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < pixels_bordering_water[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.update(g, n) || (dG.dH(g - player_count, 200), dI(g, k, n, l))
+}
+
+function dT(g, k) {
+    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cl() ? dN(g, k) : dR(g, k, d6())) : dI(g, k, 0, 0)
+}
+
+function dO(g, k, n) {
+    3 <= n && 2142 < c4.ticksElapsed() && (k === max_entities || troops[k] < divide_floor(troops[g], 20)) && dG.dH(g - player_count, 25)
+}
+
+function dI(g, k, n, l) {
+    if (0 !== teams.team_array[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divide_floor(l, 2)))
+        for (n = fakeRandom.generateRandomValue(alive_count), l = 0; l < alive_count; l++) {
+            var x = alive_entities[(l + n) % alive_count];
+            if (teams.team_array[x] === teams.team_array[g] && 1 === d7[x]) {
+                processDonation(g, x, k);
+                x < player_count && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
+                break
+            }
+        }
+}
+
+function dL(g, k, n) {
+    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : fakeRandom.generateBoolean(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && fakeRandom.generateBoolean(dG.dS[n]) && cr(), dR(g, k, cv(g))))
+}
+
+function db(g, k) {
+    if (cY(g, !0) || ck(g, !0)) cl() ? dN(g, k) : dR(g, k, d6())
+}
+
+function dR(g, k, n) {
+    if (divide_floor(troops[g], 8) > troops[n]) {
+        var l = divide_floor(11 * troops[n], 5);
+        k = k > l ? k : l
+    }
+    l = editing_border_pixels[g].length;
+    addTakableTargetPixelsToEditing(g, n);
+    cL(g, n, l, k)
+}
+
+function dN(g, k) {
+    var n = max_entities,
+        l = editing_border_pixels[g].length;
+    addTakableNeutralPixelsToEditing(g);
+    return editing_border_pixels[g].length !== l ? (cL(g, n, l, k), !0) : !1
+}
+var dd = [60, 74, 112, 200, 256, 512];
+var bots_timing; //temp
+function de() {
+    var /*bots_timing, */bots_send_ratio, n, l, x, t;
+    this.botDifficultyLabel = "Retarded;Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
+    this.dm = [97, 95, 93, 90, 87, 84];
+    this.dS = [98, 95, 90, 40, 20, 0];
+    this.dn = [85, 70, 65, 30, 7, 3];
+    this.dQ = [0, 0, 0, 0, 50, 90];
+    this.init = function() {
+        var z;
+        bots_timing = new Uint8Array(bot_count);
+        bots_send_ratio = new Uint16Array(bot_count);
+        n = new Uint16Array(bot_count);
+        l = new Uint8Array(bot_count);
+        this.cN = new Uint8Array(bot_count);
+        x = new Uint16Array(bot_count);
+        t = new Uint16Array(bot_count);
+        if (customMap.ds) {
+            if (customMap.dt.du)
+                for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = customMap.dt.du[z + 1]
+        } else if (9 === gamemode) this.dw();
+        else if (singleplayer)
+            if (team_game)
+                for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = singleMenu.botSettings[teams.team_array[z + player_count] - 1].difficulty;
+            else
+                for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = singleMenu.botSettings[0].difficulty;
+        else {
+            var y = 8 === gamemode ? 1 : 0;
+            for (z = bot_count - 1; 0 <= z; z--) this.cN[z] = y
+        }
+        for (z = bot_count - 1; 0 <= z; z--) {
+            if (2 >= this.cN[z]) {
+                l[z] = 5;
+                x[z] = t[z] = 1040;
+                if (0 === this.cN[z]) {
+                    bots_send_ratio[z] = 1E3;
+                    n[z] = 1E3;
+                } else if (1 === this.cN[z]) {
+                    bots_send_ratio[z] = 1E3;
+                    n[z] = 920;
+                    x[z] = t[z] = 1100;
+                } else {
+                    bots_send_ratio[z] = 1E3;
+                    n[z] = 870;
+                }
+            } else if (4 >= this.cN[z]) {
+                l[z] = 1 + fakeRandom.generateRandomValue(20);
+                t[z] = 250 + fakeRandom.generateRandomValue(1501);
+                x[z] = 500 + fakeRandom.generateRandomValue(501);
+                if (3 === this.cN[z]) {
+                    bots_send_ratio[z] = 600 + fakeRandom.generateRandomValue(101);
+                    n[z] = 300 + fakeRandom.generateRandomValue(401);
+                } else {
+                    bots_send_ratio[z] = 300 + fakeRandom.generateRandomValue(201);
+                    n[z] = 100 + fakeRandom.generateRandomValue(201);
+                }
+            } else {
+                x[z] = 1E3;
+                t[z] = 1E3;
+                l[z] = 35 + fakeRandom.generateRandomValue(16);
+                bots_send_ratio[z] = 400 + fakeRandom.generateRandomValue(101);
+                n[z] = 50 + fakeRandom.generateRandomValue(101);
+            }
+            bots_timing[z] = 1 + divide_floor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100));
+        }
+    };
+    this.dw = function() {
+        var z, y;
+        var A = e2.e3;
+        for (z = A - 1; 0 <= z; z--) this.cN[z] = 5;
+        for (y = 0; 6 > y; y++)
+            if (0 < e2.e4[y]) {
+                for (z = A + e2.e4[y] - 1; z >= A; z--) this.cN[z] = y;
+                A += e2.e4[y]
+            }
+    };
+    this.dH = function(z, y) {
+        0 <= z && (bots_timing[z] = y)
+    };
+    this.update = function(id) {
+        if (0 === --bots_timing[id]) {
+            x[id] !== t[id] && (x[id] += x[id] < t[id] ? 3 : -3);
+            bots_send_ratio[id] !== n[id] && (bots_send_ratio[id] += bots_send_ratio[id] < n[id] ? l[id] : -l[id], bots_send_ratio[id] = Math.abs(bots_send_ratio[id] - n[id]) <= l[id] ? n[id] : bots_send_ratio[id]);
+            bots_timing[id] = divide_floor(x[id], 10);
+            var y = id + player_count;
+            dB(y, divide_floor(bots_send_ratio[id] * troops[y], 1E3))
+        }
+    }
+}
+
+function e8() {
+    announcements.update();
+    eA.update();
+    eB.eC();
+    websocket_manager.update()
+}
+
+function game_tick() {
+    interest.update();
+    antiFullsend.update();
+    processAction.update();
+    eH.update();
+    humanBots.update();
+    eJ.update();
+    speed.update();
+    eK.update();
+    checkDeathAndAlive();
+    eM.update();
+    e2.update();
+    eA.update();
+    eB.update();
+    eN.update();
+    eO.update();
+    eP.update();
+    announcements.update();
+    eQ.update();
+    troopsBar.update();
+    peace.update();
+    statistics.update();
+    eT.update();
+    websocket_manager.update()
+
+    tick = (c4.ticksElapsed() + 1) % 100;
+    if (!tick) cycle ++;
+    if (typeof(script_game_tick) != 'undefined') script_game_tick()
+}
+
+function eU() {
+    eV.update();
+    gameResultBox.update();
+    c2.update();
+    eX.update();
+    eY.eZ()
+}
+
+function ea() {
+    eM.eb(!1);
+    eP.eb();
+    eB.eb(!1);
+    eO.eb();
+    troopsBar.eb();
+    peace.eb();
+    eA.eb();
+    eT.bv()
+}
+
+function ec() {
+    eA.eb() && (c4.canvasPendingUpdates = !0);
+    websocket_manager.update()
+}
+
+function Speed() {
+    function checkHigherSpeed(thresholdLand) {
+        var idIndex;
+        for (idIndex = attackerCount - 1; 0 <= idIndex; idIndex--) 0 === intervalsLeft[attackers[idIndex]] && land[attackers[idIndex]] >= thresholdLand && attackProcessInit(attackers[idIndex])
+    }
+
+    function setSpeedInterval(id) {
+        intervalsLeft[id] = 10 === intervalsLeft[id] ? newAttackIntervalsLeft : 1E3 > land[id] ? 3 : 1E4 > land[id] ? 2 : 6E4 > land[id] ? 1 : 0
+    }
+    var newAttackIntervalsLeft, attackerCount, attackers, intervalsLeft, old_AttackLoses, old_myTroops;
+    this.init = function() {
+        old_AttackLoses = old_myTroops = 0;
+        newAttackIntervalsLeft = 6;
+        attackerCount = 0;
+        attackers = new Uint16Array(max_entities);
+        intervalsLeft = new Uint8Array(max_entities)
+    };
+    this.update = function() {
+        var index;
+        old_AttackLoses = statistics.numbers[13];
+        old_myTroops = troops[my_id];
+        for (index = attackerCount - 1; 0 <= index; index--) 10 === intervalsLeft[attackers[index]] ? setSpeedInterval(attackers[index]) : 0 === intervalsLeft[attackers[index]]-- && (setSpeedInterval(attackers[index]), attackProcessInit(attackers[index]));
+        16E4 <= land[orderedLand[0]] && (checkHigherSpeed(16E4), 3E5 <= land[orderedLand[0]] && checkHigherSpeed(3E5));
+        land[my_id] > statistics.numbers[7] && (statistics.numbers[7] = land[my_id]);
+        statistics.numbers[14] += old_myTroops - troops[my_id] + old_AttackLoses - statistics.numbers[13]
+    };
+    this.removeEntry = function(id) {
+        var index;
+        for (index = attackerCount - 1; 0 <= index; index--)
+            if (id === attackers[index]) {
+                attackerCount--;
+                for (id = index; id < attackerCount; id++) attackers[id] = attackers[id + 1];
+                break
+            }
+    };
+    this.cR = function(id, shortAttack) {
+        var index;
+        for (index = attackerCount - 1; 0 <= index; index--)
+            if (id === attackers[index]) return;
+        attackers[attackerCount++] = id;
+        intervalsLeft[id] = shortAttack ? 2 : 10
+    }
+}
+
+function er() {
+    function g() {
+        l = 3;
+        a: {
+            for (var y = 40; 1 <= y; y--) {
+                x = x_min[z] + divide_floor(fakeRandom.random() * (x_max[z] - x_min[z] + 1), fakeRandom.value(100));
+                t = y_min[z] + divide_floor(fakeRandom.random() * (y_max[z] - y_min[z] + 1), fakeRandom.value(100));
+                var A = k(pixel.to_coord(x, t));
+                if (1 !== A) break a
+            }
+            A = 1
+        }
+        if (0 === A) return !1;
+        if (2 === A) return !0;
+        A = n(1, 1);
+        return 0 === A ? !1 : 2 === A ? !0 : 2 === n(54, 4)
+    }
+
+    function k(y) {
+        if (pixel.can_take(y) && (pixel.is_neutral(y) || pixel.owner(y) !== z && isTeamate(z, pixel.owner(y)))) {
+            if (waterPixelChecker.check(z, y)) return 2;
+            if (0 === l--) return 0
+        }
+        return 1
+    }
+
+    function n(y, A) {
+        for (var B, C, E, F, G, N, I, D = y; D < y + 50 * A; D += A)
+            if (B = x_min[z] - D, B = 1 > B ? 1 : B, C = y_min[z] - D, C = 1 >
+                C ? 1 : C, E = x_max[z] + D, E = E >= map_width - 1 ? map_width - 2 : E, F = y_max[z] + D, F = F >= map_height - 1 ? map_height - 2 : F, I = divide_floor(2 * fakeRandom.random() * (E - B + F - C), fakeRandom.value(100)), G = E - B, N = F - C, I <= G ? (x = B + I, t = C) : I <= G + N ? (x = E, t = C + I - G) : I <= 2 * G + N ? (x = B + I - G - N, t = F) : (x = B, t = C + I - 2 * G - N), B = k(pixel.to_coord(x, t)), 1 !== B) return B;
+        return 1
+    }
+    var l, x, t, z;
+    this.update = function(y, A) {
+        z = y;
+        if (0 === pixels_bordering_water[z].length) return !1;
+        if (g()) {
+            var B = divide_floor(dG.dn[A] * troops[z], 100);
+            100 > B && 100 <= troops[z] && (B = 100);
+            if (100 <= B) return processSendBoat(z, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x, t), B)
+        }
+        return !1
+    }
+}
+
+function fC() {
+    var g, k;
+    this.init = function() {
+        g = bot_count;
+        k = new Uint16Array(bot_count);
+        for (var n = bot_count - 1; 0 <= n; n--) k[n] = n
+    };
+    this.update = function() {
+        for (var n = g - 1; 0 <= n; n--)
+            if (0 === is_alive[k[n] + player_count]) {
+                var l = n;
+                for (g--; l < g; l++) k[l] = k[l + 1]
+            } else dG.update(k[n])
+    }
+}
+
+function ProcessAction() {
+    function addAction(author, type, param1, param2, param3, param4) {
+        0 < param1 && 1E3 >= param1 && (authors.push(author), actionsType.push(type), actionParam1.push(param1), actionParam2.push(param2), actionParam3.push(param3), actionParam4.push(param4))
+    }
+    var authors, actionsType, actionParam1, actionParam2, actionParam3, actionParam4;
+    this.init = function() {
+        authors = [];
+        actionsType = [];
+        actionParam1 = [];
+        actionParam2 = [];
+        actionParam3 = [];
+        actionParam4 = []
+    };
+    this.update = function () {
+        var index, actionsCount = authors.length;
+        for (index = 0; index < actionsCount; index++) {
+            if (0 === actionsType[index]) processAttack(authors[index], actionParam2[index], actionParam1[index]);
+            else if (1 === actionsType[index]) this.processSendBoat(authors[index], actionParam1[index], actionParam3[index], actionParam4[index]);
+            else if (2 === actionsType[index]) this.processCancel(authors[index], actionParam2[index]);
+            else if (6 === actionsType[index]) {
+                var author = authors[index];
+                if (0 !== is_alive[author] && 2 !== player_status[authors]) {
+                    peace.single_vote_peace(author, 1 === actionParam2[index]);
+                }
+            } else if (7 === actionsType[index]) this.processCancelBoat(authors[index], actionParam2[index]);
+            if (typeof (logs) != 'undefined') {
+                logs.push([(cycle - 1) * 100 + tick, authors[index], actionsType[index], actionParam1[index], actionParam2[index], actionParam3[index], actionParam4[index]]);
+            }
+        }
+        if (0 < actionsCount) this.init();
+    };
+    this.processSendBoat = function(attacker, ratio, x_coord, y_coord) {
+        0 !== is_alive[attacker] && 2 !== player_status[authors] && waterPixelChecker.check(attacker, pixel.to_coord(x_coord, y_coord)) &&
+            processSendBoat(attacker, waterPixelChecker.getClosestWaterPixel(), pixel.to_coord(x_coord, y_coord), divide_floor(ratio * troops[attacker], 1E3)) && 
+            attacker === my_id && (statistics.numbers[0] += ratio, statistics.numbers[1]++, statistics.numbers[2]++)
+    };
+    this.processCancel = function(attacker, target) {
+        if (0 !== is_alive[attacker] && 2 !== player_status[authors] && attacks.check(attacker, target)) {
+            var troops_returned = attacks.get_troops_remaining_from_target(attacker, target);
+            attacks.set_attack_troops_remaining_from_target(attacker, target, 0);
+            if (attacker !== my_id) troops[attacker] += troops_returned, interest.limitTroops(attacker);
+            else {
+                var previous_troops = troops[attacker];
+                troops[attacker] += troops_returned;
+                interest.limitTroops(attacker);
+                statistics.numbers[13] -= troops[attacker] - previous_troops
+            }
+        }
+    };
+    this.processCancelBoat = function(attacker, boat_id) {
+        if (0 !== is_alive[attacker] && 2 !== player_status[authors]) {
+            var boat_index = attacks.find_boat_index_from_boat_id(attacker, boat_id);
+            if (-1 !== boat_index) {
+                var troops_returned = attacks.get_attack_troops_remaining_from_attack_index(attacker, boat_index);
+                attacks.set_attack_troops_remaining_from_attack_index(attacker, boat_index, 0);
+                troops[attacker] += troops_returned;
+                interest.limitTroops(attacker)
+            }
+        }
+    };
+    this.commenceAttack = function (id, ratio, target) {
+        1 === client_status && addAction(id, 0, ratio, target, 0, 0)
+    };
+    this.commencePickLocation = function (id, ratio, xCoord, yCoord) {
+        1 === client_status && (in_spawn ? spawn.set(id, xCoord, yCoord) : addAction(id, 1, ratio, 0, xCoord, yCoord))
+    };
+    this.commenceCancel = function (id, target) {
+        1 === client_status && addAction(id, 2, 1, target, 0, 0)
+    };
+    this.commenceCancelBoat = function (id, boatID) {
+        1 === client_status && addAction(id, 7, 1, boatID, 0, 0)
+    };
+    this.commencePeace = function (id, choice) {
+        1 === client_status && addAction(id, 6, 1, choice, 0, 0)
+    };
+    this.onLeave = function(leaver) {
+        1 === client_status && 0 !== is_alive[leaver] && 2 !== player_status[leaver] && (8 === gamemode ? endGame.gameEnd(1 - leaver) : this.commenceLeave(leaver));
+        announcements.showGenericMessages(leaver, 4)
+    };
+    this.commenceLeave = function (leaver) {
+        in_spawn ? (fm(leaver), checkShiftAliveEntities()) : humanBots.turnToBot(leaver)
+    };
+    this.surrender = function(id) {
+        0 !== is_alive[id] && 2 !== player_status[id] && fq.canSurrender(id) && (1 === alive_count ? endGame.gameEnd(id) : (announcements.showGenericMessages(id, id === my_id ? 21 : 22), 8 === gamemode ? endGame.gameEnd(1 - id) : singleplayer ? (fm(id), checkShiftAliveEntities(), in_spawn && spawn.update()) : this.commenceLeave(id)))
+    }
+}
+
+function fu() {
+    function g(B) {
+        for (l--; B < l; B++) x[B] = x[B + 1], t[B] = t[B + 1], z[B] = z[B + 1], y[B] = y[B + 1], A[B] = A[B + 1]
+    }
+    var k, n, l, x, t, z, y, A;
+    this.init = function() {
+        k = 1;
+        l = 0;
+        n = 2 * max_entities;
+        x = new Uint16Array(n);
+        t = new Uint8Array(n);
+        z = new Uint16Array(n);
+        y = new Uint32Array(n);
+        A = new Uint32Array(n)
+    };
+    this.g0 = function(B, C) {
+        y[B] = C
+    };
+    this.update = function() {
+        for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, g1.update(B, z[B], x[B], y[B], A[B]))
+    };
+    this.removeEntry = function(B, C) {
+        var E;
+        for (E = l - 1; 0 <= E; E--)
+            if (B === x[E] && C === z[E]) {
+                g(E);
+                break
+            }
+    };
+    this.g3 = function(B) {
+        var C;
+        for (C =
+            l - 1; 0 <= C; C--) B === x[C] && (g1.g4(B, y[C]), g(C))
+    };
+    this.cR = function(B, C, E) {
+        if (l >= n) return 0;
+        x[l] = B;
+        t[l] = 0;
+        z[l] = k;
+        y[l] = C;
+        A[l] = E;
+        B = k;
+        k++;
+        l++;
+        k = k > 2 * n ? 1 : k;
+        return B
+    };
+    this.drawImage = function() {
+        if (!(40 > g7 || 0 === l)) {
+            var B, C = gC / g7,
+                E = gD / g7,
+                F = (clientWidth1 + gC) / g7,
+                G = (clientHeight1 + gD) / g7;
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.textBaseline = cI;
+            for (B = l - 1; 0 <= B; B--) {
+                var N = pixel.to_x(y[B]);
+                var I = pixel.to_y(y[B]);
+                var D = x[B];
+                if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== is_alive[D]) {
+                    var K = Math.floor(.94 * g7 * eA.gG(D));
+                    if (!(6 > K)) {
+                        N = Math.floor(clientWidth1 * (N + .5 - C) / (F - C));
+                        I = Math.floor(clientHeight1 * (I + .48 - E) / (G - E));
+                        mainCanvasCtx.font = bt +
+                            K + bu;
+                        mainCanvasCtx.fillStyle = gH;
+                        mainCanvasCtx.fillText(nickname[D], N, I);
+                        var J = Math.floor(.57 * K);
+                        6 > J || (D = attacks.get_attack_troops_remaining_from_attack_index(D, attacks.find_boat_index_from_boat_id(D, z[B])), mainCanvasCtx.font = bt + J + bu, mainCanvasCtx.fillText(eP.split_into_pieces(D), N, I + Math.floor(.82 * K)))
+                    }
+                }
+            }
+        }
+    }
+}
+
+function gK() {
+    function g(J) {
+        N = c4.time;
+        I = 33;
+        t = z = x = 0;
+        y = I / J;
+        l = 1 / (J / I / 4);
+        A = (clientWidth1 / 2 + gC) / g7;
+        B = (clientHeight1 / 2 + gD) / g7;
+        C = g7
+    }
+
+    function k(J) {
+        .125 > Math.abs(Math.log(G / C)) && (G = J * C)
+    }
+
+    function n(J, L, H, M) {
+        E = (J + H + 1) / 2;
+        F = (L + M + 1) / 2;
+        J = clientWidth1 / (H - J + 1);
+        L = clientHeight1 / (M - L + 1);
+        G = .9 * (J < L ? J : L)
+    }
+    var l, x, t, z, y, A, B, C, E, F, G, N, I, D = !1,
+        K = !1;
+    this.gd = function() {
+        return D
+    };
+    this.ge = function() {
+        g(1);
+        this.gf(0, 0, map_width - 1, map_height - 1);
+        in_spawn || this.gg(my_id, 3E3, !0, .3)
+    };
+    this.gg = function(J, L, H, M) {
+        if (!(canvas_hidden || D && !H && K || 0 === land[J])) {
+            gj.gk = !1;
+            K = H;
+            g(L);
+            E = (x_min[J] + x_max[J] + 1) / 2;
+            F = (y_min[J] + y_max[J] + 1) / 2;
+            L = x_max[J] -
+                x_min[J] + 1;
+            J = y_max[J] - y_min[J] + 1;
+            H = clientWidth1 / L;
+            var Q = clientHeight1 / J;
+            G = H < Q ? H : Q;
+            G *= 0 !== M ? M : 20 > L && 20 > J ? .5 : .9;
+            k(.875);
+            D = !0;
+            gn.go()
+        }
+    };
+    this.gp = function(J) {
+        gj.gk = !1;
+        K = !0;
+        g(J);
+        n(0, 0, map_width - 1, map_height - 1);
+        k(.875);
+        D = !0;
+        gn.go()
+    };
+    this.gf = function(J, L, H, M) {
+        n(J, L, H, M);
+        g7 = G;
+        gj.gw(E, clientWidth1 / 2);
+        gj.gx(F, clientHeight1 / 2);
+        gy.gz()
+    };
+    this.h0 = function() {
+        if (D && K) return !1;
+        D = !1;
+        return !0
+    };
+    this.update = function() {
+        if (D) {
+            .5 > x ? z < y && (z += y * l, t = x) : x > 1 - t && (z -= y * l, z = z < y * l ? y * l : z);
+            N = N >= c4.time ? c4.time - 1 : N;
+            var J = c4.time - N;
+            1E3 < J ? x = 1 : (x += z * J / I, x = 1 < x ? 1 : x);
+            N = c4.time;
+            var L = g7;
+            J = gC;
+            var H = gD;
+            g7 = C * Math.pow(G / C, x);
+            L = g7 / L;
+            var M = 1 - (C * Math.pow(G / C, 1 - x) - C) / (G - C);
+            gj.gw(A + M * (E - A), clientWidth1 / 2);
+            gj.gx(B + M * (F - B), clientHeight1 / 2);
+            eA.zoom(L, (J * L - gC) / (1 - L), (H * L - gD) / (1 - L));
+            gy.gz();
+            1 <= x && (D = !1, h8.h9 = !0);
+            c4.canvasPendingUpdates = !0
+        }
+    }
+}
+
+function hA() {
+    function g() {
+        var I;
+        a: {
+            for (I = 0; 8 > I; I++)
+                if (t = divide_floor(y * fakeRandom.random(), fakeRandom.value(100)), z = divide_floor(A * fakeRandom.random(), fakeRandom.value(100)), k()) {
+                    I = !0;
+                    break a
+                } I = !1
+        }
+        if (!I) a: {
+            var D, K, J, L;I = divide_floor(y * fakeRandom.random(), fakeRandom.value(100));
+            var H = divide_floor(A * fakeRandom.random(), fakeRandom.value(100));
+            for (D = 40; 1 <= D; D--)
+                for (K = A - D; 0 <= K; K -= 40)
+                    for (z = (K + H) % A, J = 40; 1 <= J; J--)
+                        for (L = y - J; 0 <= L; L -= 40)
+                            if (t = (L + I) % y, k()) {
+                                I = !0;
+                                break a
+                            } I = !1
+        }
+        return I
+    }
+
+    function k() {
+        var I, D;
+        var K = divide_floor(B - F, 2);
+        var J = E + z * B + K,
+            L = C + t * B + K;
+        for (I = J + F - 1; I >= J; I--)
+            for (D = L + F - 1; D >= L; D--)
+                if (K = pixel.to_coord(D, I), !pixel.can_take(K) ||
+                    pixel.is_stationary_border(K)) return !1;
+        return !0
+    }
+
+    function n() {
+        is_alive[G] = 0;
+        troops[G] = 0;
+        land[G] = temp_land[G] = 0;
+        editing_border_pixels[G] = [];
+        pixels_bordering_land[G] = [];
+        pixels_bordering_water[G] = [];
+        pixels_bordering_mountain[G] = [];
+        x_min[G] = y_min[G] = x_max[G] = y_max[G] = 0
+    }
+
+    function l(I, D) {
+        is_alive[G] = 1;
+        troops[G] = G < player_count ? starting_troops : dd[dG.cN[G - player_count]];
+        x_min[G] = I + 10;
+        y_min[G] = D + 10;
+        y_max[G] = x_max[G] = 0;
+        var K, J;
+        for (K = I; K < I + 4; K++)
+            for (J = D; J < D + 4; J++)
+                if (K > I && K < I + 3 || J > D && J < D + 3) {
+                    var L = pixel.to_coord(K, J);
+                    pixel.can_take(L) && (x_min[G] = K < x_min[G] ? K : x_min[G], x_max[G] = K > x_max[G] ? K : x_max[G], y_min[G] = J < y_min[G] ? J : y_min[G], y_max[G] = J > y_max[G] ? J : y_max[G], N[land[G]] = L, land[G]++, pixel.change_to_inner(L, G))
+                } temp_land[G] = land[G];
+        for (L = land[G] - 1; 0 <= L; L--) pixel.can_expand_from_here(N[L], G) ? (pixel.change_to_border(N[L],
+            G), pixels_bordering_land[G].push(N[L])) : pixel.borders_water(N[L]) ? (pixel.change_to_border(N[L], G), pixels_bordering_water[G].push(N[L])) : pixel.borders_mountain(N[L]) && (pixel.change_to_border(N[L], G), pixels_bordering_mountain[G].push(N[L]))
+    }
+
+    function x(I, D) {
+        var K, J;
+        for (J = D; J > D - 6; J--)
+            for (K = I; K > I - 6; K--) {
+                var L = pixel.to_coord(K, J);
+                if (pixel.is_stationary_border(L)) return !1
+            }
+        return !0
+    }
+    var t, z, y, A, B, C, E, F, G, N;
+    this.init = function() {
+        var I;
+        N = Array(12);
+        F = 6;
+        B = 10;
+        y = divide_floor(map_width, B);
+        A = divide_floor(map_height, B);
+        C = divide_floor(map_width - B * y, 2);
+        E = divide_floor(map_height - B * A, 2);
+        if (in_spawn)
+            for (I = 0; I < player_count; I++) G = I, n(), is_alive[G] = 1;
+        if (customMap.ds && customMap.dt.hH)
+            for (G = 0; G < max_entities; G++) {
+                if (1 !== is_alive[G]) {
+                    if (G < entity_count) {
+                        var D = customMap.dt.hH[G] + 1;
+                        I = customMap.dt.hS[G] + 1;
+                        3 < D && D < map_width - 5 && 3 < I && I < map_height - 5 &&
+                            pixel.can_take(pixel.to_coord(D, I)) && x(D + 3, I + 3) ? (D += 1, I += 1, n(), l(D - 2, I - 2), I = !0) : I = !1;
+                        if (I) continue;
+                        if (g()) {
+                            D = C + t * B + divide_floor(B, 2);
+                            I = E + z * B + divide_floor(B, 2);
+                            n();
+                            l(D - 2, I - 2);
+                            continue
+                        }
+                    }
+                    n()
+                }
+            } else
+                for (G = 0; G < max_entities; G++) 1 !== is_alive[G] && (G < entity_count && g() ? (D = C + t * B + divide_floor(B, 2), I = E + z * B + divide_floor(B, 2), n(), l(D - 2, I - 2)) : n());
+        statistics.numbers[7] = land[my_id];
+        statistics.numbers[8] = troops[my_id]
+    };
+    this.hi = function(I, D, K) {
+        var J, L;
+        G = I;
+        for (J = 0; 20 > J; J++)
+            for (I = D + J; I >= D - J; I--)
+                for (L = K + J; L >= K - J; L--)
+                    if ((I === D + J || I === D - J || L === K + J || L === K - J) && 3 < I && I < map_width - 5 && 3 < L && L < map_height - 5 && pixel.can_take(pixel.to_coord(I, L)) && x(I + 3, L + 3)) {
+                        if (0 < land[G]) {
+                            for (K = x_max[G]; K >=
+                                x_min[G]; K--)
+                                for (D = y_max[G]; D >= y_min[G]; D--) J = 4 * (D * map_width + K), pixel.strong_is_owner(G, J) && (pixel.revert_to_neutral(J), land[G]--);
+                            n()
+                        }
+                        l(I - 1, L - 1);
+                        return !0
+                    } return !1
+    };
+    this.ho = function(I) {
+        G = I;
+        if (g()) {
+            I = C + t * B + divide_floor(B, 2);
+            var D = E + z * B + divide_floor(B, 2);
+            n();
+            l(I - 2, D - 2)
+        } else n()
+    }
+}
+
+function hp() {
+    hq.hr();
+    mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0);
+    mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
+    mainCanvasCtx.drawImage(hs, gj.to_x(), gj.to_y());
+    eN.drawImage();
+    mainCanvasCtx.drawImage(mapCanvas, gj.to_x(), gj.to_y());
+    mainCanvasCtx.imageSmoothingEnabled = !1;
+    hq.drawImage();
+    mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+    eA.drawImage();
+    eK.drawImage();
+    canvas_hidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.drawImage(), eM.drawImage(), troopsBar.drawImage(), peace.drawImage(), eB.drawImage(), gj.drawImage(), c2.drawImage(), eT.drawImage(), eO.drawImage(), eP.drawImage(), fq.drawImage(), gameResultBox.drawImage(), hu.drawImage(), hv.drawImage(), eX.drawImage())
+}
+
+function hw(g, k, n) {
+    g.clearRect(0, 0, k, n);
+    g.fillStyle = hy;
+    g.fillRect(0, 0, k, n)
+}
+
+function hz(g, k, n, l) {
+    g.fillStyle = cK;
+    g.fillRect(0, 0, k, l);
+    g.fillRect(0, 0, l, n);
+    g.fillRect(k - l, 0, l, n);
+    g.fillRect(0, n - l, k, l)
+}
+
+function i1(g, k, n, l, x, t, z) {
+    g.fillStyle = cK;
+    t = Math.floor(l * t);
+    t += (t - x) % 2;
+    var y = Math.floor((t - x) / 2);
+    l = Math.floor((l - t) / 2);
+    g.fillRect(k + l, n + l + y, t, x);
+    z && g.fillRect(k + l + y, n + l, x, t)
+}
+
+function Points_1v1() {
+    this.players = null;
+    this.init = function(player_info) {
+        this.players = player_info;
+        announcements.new_1v1(this.players)
+    };
+    this.calculate_new_elo = function(winner) {
+        var elo_change_then_loser_new_elo = 8 / (1 + Math.pow(2, (this.players[winner].elo - this.players[1 - winner].elo) / 10 / 32));
+        elo_change_then_loser_new_elo = Math.floor(10 * elo_change_then_loser_new_elo + .5);
+        var winner_new_elo = this.round_elo(this.players[winner].elo + elo_change_then_loser_new_elo+1);
+        elo_change_then_loser_new_elo = this.round_elo(this.players[1 - winner].elo - elo_change_then_loser_new_elo);
+        0 === winner ? announcements.result_1v1(this.players, winner_new_elo, elo_change_then_loser_new_elo, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : 
+            announcements.result_1v1(this.players, elo_change_then_loser_new_elo, winner_new_elo, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
+    };
+    this.round_elo = function(elo) {
+        elo = 0 > elo ? 0 : 16E3 < elo ? 16E3 : elo;
+        return 16E3 <= elo ? "Unknown" : (elo / 10).toFixed(1)
+    }
+}
+
+function Characters() {
+    function g(x) {
+        for (var t = k.length - 1; 0 <= t; t--)
+            if (x >= k[t] && x < n[t]) return t;
+        return -1
+    }
+    var k, n, l;
+    (function() {
+        k = [32, 65, 191, 913, 931];
+        n = [64, 127, 688, 930, 1155];
+        l = Array(k.length + 1);
+        for (var x = 0; x < l.length; x++) {
+            l[x] = 0;
+            for (var t = x - 1; 0 <= t; t--) l[x] += n[t] - k[t]
+        }
+    })();
+    this.iN = function(x) {
+        x = x.trim();
+        if (0 === x.indexOf("Bot ") || 0 === x.indexOf("[Bot] ")) x = !1;
+        else a: {
+            x = x.trim();
+            var t = x.length;
+            if (3 > t || 20 < t) x = !1;
+            else {
+                for (var z = 0, y, A = 0; A < t; A++)
+                    if (y = x.charCodeAt(A), z += 65 <= y && 90 >= y || 1040 <= y && 1071 >= y ? 1 : 0, -1 === g(y)) {
+                        x = !1;
+                        break a
+                    } x = 3 < z && z > Math.floor(t / 2) ? !1 : !0
+            }
+        }
+        return x
+    };
+    this.convertToCharCode = function(string) {
+        string = string.trim();
+        for (var t = string.length, z = [], y, A = 0; A < t; A++) {
+            y = string.charCodeAt(A);
+            var B = g(y);
+            z.push(l[B] + y - k[B])
+        }
+        return z
+    };
+    this.convertToString = function(charCodes) {
+        for (var varName = "", nameLength = charCodes.length, y, index = 0; index < nameLength; index++)
+            for (y = 1; y < l.length; y++)
+                if (charCodes[index] < l[y]) {
+                    y = k[y - 1] + charCodes[index] - l[y - 1];
+                    varName += String.fromCharCode(y);
+                    break
+                } return varName
+    };
+    this.iV = function(x) {
+        x = this.convertToCharCode(x);
+        for (var t = "", z = 0; z < x.length; z++) t += 10 > x[z] ? "00" : 100 > x[z] ? "0" : "", t += x[z].toString(10);
+        return t
+    };
+    this.iW = function(x) {
+        for (var t = Array(Math.floor(x.length / 3)), z = 0; z < x.length; z += 3) t[Math.floor(z / 3)] = parseInt(x.substring(z, z + 3));
+        return this.convertToString(t)
+    };
+    this.charcode_to_str = function(x) {
+        var t, z = [x.length];
+        for (t = 0; t < x.length; t++) z[t] = x.charCodeAt(t) - 48;
+        var y = "";
+        for (t = 0; t < x.length; t++)
+            if (t === x.length - 1 || 51 < 10 * z[t] + z[t + 1]) y += z[t].toString();
+            else {
+                var A = 10 * z[t] + z[t + 1];
+                y += String.fromCharCode(A + (26 > A ? 65 : 71));
+                t++
+            } return y
+    };
+    this.str_to_charcode = function(x) {
+        for (var t = "", z, y = 0; y < x.length; y++) z = x.charCodeAt(y), 48 <= z && 58 > z ? t += String.fromCharCode(z) : 65 <= z && 75 > z ? t += "0" + (z - 65).toString() : 75 <= z && 91 > z ?
+            t += (z - 65).toString() : 97 <= z && 123 > z && (t += (z - 71).toString());
+        return t
+    };
+    this.iX = function(x) {
+        var t = x.length,
+            z, y = [];
+        for (z = 0; z < t; z++) {
+            var A = x.charCodeAt(z);
+            58 > A ? y.push(x[z]) : (A = 91 > A ? A - 65 : A - 71, y.push(String(divide_floor(A, 10))), y.push(String(A - 10 * divide_floor(A, 10))))
+        }
+        t = y.length - 2;
+        A = 0;
+        x = [];
+        for (z = 0; z < t; z += 3) x[A++] = parseInt(y[z] + y[z + 1] + y[z + 2]);
+        return x
+    };
+    this.generate_origin_domain_names = function() {
+        var index, origin_name = "";
+        for (index = 0; 6 > index; index++) {
+            var z = 48 + fakeRandom.random() % 36;
+            z += 58 <= z ? 39 : 0;
+            origin_name += String.fromCharCode(z)
+        }
+        return origin_name
+    }
+}
+
+function EndGame() {
+    this.gameEnd = function(winner) {
+        if (2 === client_status) var k = !0;
+        else peace.iv(), client_status = 2, spectators = players_in_game, k = !1;
+        if (!k) {
+            if (8 === gamemode) {
+                var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
+                (k = winner === my_id) ? announcements.showGenericMessages(winner, 2): announcements.showGenericMessages(1 - my_id, 3);
+                points_1v1.calculate_new_elo(winner)
+            } else team_game ? (winner = eT.ik(), k = teams.team_array[my_id] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : 
+                (winner = teams.il(teams.im[winner]), result = winner[0], 512 !== result && announcements.clan_points_won(winner[1])), announcements.resultTeam(k)) : 
+                (result = orderedLand[0], k = result === my_id, announcements.resultBR(result));
+            singleplayer || multiOut.upload_result(troop_hash(), result);
+            gameResultBox.show(k, !1);
+            announcements.iy(!0);
+            eM.eb(!0);
+            eB.eb(!0);
+            c4.canvasPendingUpdates = !0;
+            h8.iz();
+            set_android_state(0)
+        }
+    }
+}
+
+function Spawn() {
+    this.set = function(id, x_coord, y_coord) {
+        0 !== is_alive[id] && j1.hi(id, x_coord, y_coord) && (c4.canvasPendingUpdates = !0)
+    };
+    this.update = function() {
+        in_spawn = !1;
+        for (var g = 0; g < player_count; g++) 0 !== is_alive[g] && 0 === land[g] && j1.ho(g);
+        0 !== is_alive[my_id] ? (statistics.numbers[7] = land[my_id], statistics.numbers[8] = troops[my_id], troopsBar.cE(), eB.j2(), eV.gf(x_min[my_id] - 5, y_min[my_id] - 5, x_max[my_id] + 5, y_max[my_id] + 5), eX.init()) : gameResultBox.show(!1, !1);
+        announcements.j3(18);
+        eA.j4();
+        eA.eb();
+        spawn = null;
+        h8.j5 = !0;
+        h8.j6();
+        singleplayer && set_android_state(1)
+    }
+}
+var player_count, players_in_game, bot_count, spectators, max_entities = 512,
+    entity_count = 512,
+    max_troops_to_land_ratio = 150,
+    singleplayer, j8, client_status = 0,
+    landPixels, troop_cap, maxTroopsBeforeRedInterest, starting_troops = 512,
+    neutral_land_cost = 2,
+    my_id, canvas_hidden, in_spawn, free_spawn, team_game, team_count, gamemode, isContest, spawn, points_1v1, spawn_time,
+    cycle, tick, logs;
+
+function game_init(param_seed, param_myID, param_playerInfo, param_gamemode, param_isContest) {
+    j8 = canvas_hidden = !1;
+    gamemode = param_gamemode;
+    isContest = param_isContest;
+    team_game = 7 > gamemode || 9 === gamemode;
+    players_in_game = player_count = param_playerInfo.length;
+    singleplayer = 1 === players_in_game;
+    gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
+    gamemode = 8 === gamemode && 2 !== player_count ? 7 : gamemode;
+    team_count = 9 === gamemode ? 2 : gamemode + 2;
+    spawn_time = 2 >= player_count ? 30 : 50 >= player_count ? 40 : 50;
+    free_spawn = customMap.ds && !customMap.dt.jL ? in_spawn = !1 : in_spawn = team_game || 100 > player_count;
+    spawn = in_spawn ? new Spawn : null;
+    starting_troops = 512;
+    entity_count = max_entities;
+    singleplayer && (entity_count = singleMenu.jM());
+    bot_count = entity_count - player_count;
+    spectators = 0;
+    my_id = param_myID;
+    fakeRandom.changeNumber(param_seed);
+    create_info_arrays(param_playerInfo);
+    e2.init();
+    teams.init(param_playerInfo);
+    client_status = 1;
+    troop_cap = 15E8;
+    maxTroopsBeforeRedInterest = 1E9;
+    statistics.init();
+    loadMapCanvas();
+    jQ.jR();
+    h8.init();
+    interest.init();
+    d9();
+    pixel.init(param_playerInfo);
+    hq.init();
+    eT.init();
+    dG.init();
+    nickNames.fit();
+    nickNames.hideNicknames();
+    j1.init();
+    updateAlive();
+    eN.init();
+    hv.init();
+    mapCanvasCtx.putImageData(jX, 0, 0);
+    eM.init();
+    gj.init();
+    troopsBar.init();
+    peace.init();
+    eO.init();
+    eB.init();
+    fq.init();
+    c2.init();
+    announcements.init();
+    eP.init();
+    hu.init();
+    gameResultBox.init();
+    processAction.init();
+    eK.init();
+    speed.init();
+    eJ.init();
+    matrix_processor_init();
+    attacks.init();
+    eA.init();
+    antiFullsend.init();
+    humanBots.init();
+    eQ.init();
+    eH.init();
+    8 === gamemode ? (points_1v1 = new Points_1v1, points_1v1.init(param_playerInfo)) : points_1v1 = null;
+    singleplayer ? c4.jY() : c4.jZ();
+    ja();
+    eX.init();
+    c4.canvasPendingUpdates = !0;
+    singleplayer && in_spawn || set_android_state(1)
+
+    cycle = 1, tick = 0, logs = [];
+    if (typeof(script_game_init) != 'undefined') script_game_init()
+}
+
+function ja() {
+    eV.ge();
+    0 === is_alive[my_id] && gameResultBox.show(!1, !0);
+    eA.eb()
+}
+
+function leave_game() {
+    websocket_manager.close(websocket_manager.remote, 3246);
+    client_status = 0;
+    c4.jd();
+    name_input.init();
+    set_android_state(0);
+    show_ad()
+}
+var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopsBar, gj, playtime, eO, eM, eB, gameResultBox, 
+jh, ji, aJ, showError, jk, jl, singleMenu, name_input, sprites, pixel, user_settings, attacks, interest, eA, nickNames, e2, jQ, jm, jn, gn, waterPixelChecker, fakeRandom, 
+g1, hq, jo, multiIn, eX, multiOut, jq, eN, lobby, js, peace, eY, websocket_manager, eH, jt, ju, humanBots, antiFullsend, eQ, loadCustom, customMap, intelliAttack;
+
+function construct() {
+    dG = new de;
+    speed = new Speed;
+    dE = new er;
+    eJ = new fC;
+    processAction = new ProcessAction;
+    eK = new fu;
+    eV = new gK;
+    j1 = new hA;
+    characters = new Characters;
+    hu = new jy;
+    fq = new jz;
+    announcements = new Announcements;
+    jf = new k1;
+    eP = new k2;
+    c2 = new k3;
+    troopsBar = new TroopsBar;
+    gj = new k5;
+    playtime = new Playtime;
+    eO = new k7;
+    eM = new k8;
+    eB = new k9;
+    gameResultBox = new GameResultBox;
+    jh = new kB;
+    ji = new kC;
+    aJ = new kD;
+    showError = new ShowError;
+    showError.fit();
+    jk = new kF;
+    jl = new kG;
+    singleMenu = new SingleMenu;
+    name_input = new Name_input;
+    sprites = new Sprites;
+    pixel = new Pixel;
+    user_settings = new User_settings;
+    attacks = new Attacks;
+    interest = new Interest;
+    eA = new kO;
+    nickNames = new NickNames;
+    e2 = new kQ;
+    jQ = new kR;
+    jm = new kS;
+    jn = new kT;
+    gn = new kU;
+    waterPixelChecker = new WaterPixelChecker;
+    fakeRandom = new FakeRandom;
+    g1 = new kX;
+    hq = new kY;
+    jo = new kZ;
+    multiIn = new MultiIn;
+    eX = new kb;
+    multiOut = new MultiOut;
+    jq = new kd;
+    eN = new ke;
+    lobby = new Lobby;
+    js = new kg;
+    peace = new Peace;
+    eY = new ki;
+    websocket_manager = new Websocket_manager;
+    eH = new kk;
+    jt = new kl;
+    ju = new km;
+    humanBots = new HumanBots;
+    antiFullsend = new AntiFullsend;
+    eQ = new kp;
+    loadCustom = new LoadCustom;
+    customMap = new CustomMap;
+    intelliAttack = new IntelliAttack
+}
+
+function jy() {
+    function g(L, H, M, Q) {
+        for (var R, P = 0; P < L.length; P++) {
+            H.push(document.createElement("canvas"));
+            H[P].width = M;
+            H[P].height = M;
+            R = H[P].getContext("2d", {
+                alpha: !0
+            });
+            var U = M,
+                W = R;
+            W.fillStyle = Q;
+            W.beginPath();
+            W.arc(Math.floor(U / 2), Math.floor(U / 2), Math.floor(.47 * U), 0, 2 * Math.PI);
+            W.fill();
+            6 === L[P] ? R.drawImage(sprites.bz(19), 0, 0) : 7 === L[P] ? R.drawImage(sprites.lB("emojis"), -4 * M, 0) : R.drawImage(sprites.bz(3), -L[P] * M, 0)
+        }
+    }
+
+    function k(L) {
+        for (var H = K.length - 1; 0 <= H; H--)
+            if (K[H] === L) return !0;
+        return !1
+    }
+
+    function n(L) {
+        return -1 === L ||
+            0 === L || 6 === L || !x[5] && (8 === L || !x[4] && 7 === L) || !x[7] && (2 === L || !x[6] && 1 === L) || 3 === L && !x[2] || 5 === L && !x[1] && !x[5] && !x[7] ? !1 : !0
+    }
+
+    function l(L, H) {
+        return L < z - A - N || L > z + 2 * A + N || H < y - A - N || H > y + 2 * A + N ? -1 : 3 * (H < y - N / 2 ? 0 : H < y + A + N / 2 ? 1 : 2) + (L < z - N / 2 ? 0 : L < z + A + N / 2 ? 1 : 2)
+    }
+    var x = [],
+        t, z, y, A, B, C, E, target, coord, N, I, D, K, J;
+    this.l2 = [];
+    this.init = function() {
+        K = [];
+        x = [];
+        t = !1;
+        B = C = z = y = E = 0;
+        this.l3();
+        for (var L = this.l4.length - 1; 0 <= L; L--) x.push(!1);
+        x.push(!1)
+    };
+    this.l3 = function() {
+        this.l4 = [];
+        I = [];
+        this.l5 = [];
+        var L = sprites.bz(3).height;
+        A = Math.floor((zoom ? .075 : .0468) * averageWindowLength);
+        D = A / L;
+        N = Math.floor(A / 3);
+        g([0, 1, 2, 3, 7, 4, 5, 6], this.l4, L, "rgba(0,180,0,0.6)");
+        g([0, 4, 5], I, L, "rgba(200,0,0,0.6)");
+        g([0, 2, 4], this.l5, L, "rgba(0,0,0,0.6)");
+        g([0, 5], this.l2, L, "rgba(200,200,0,0.6)");
+        this.l4[6] = this.l2[1]
+    };
+    this.lD = function(L, H) {
+        if (this.hidden()) {
+            var M = this.clicked(L, H);
+            c4.canvasPendingUpdates = 0 < M;
+            return 2 > M
+        }
+        return !1
+    };
+    this.lF = function(L, H) {
+        this.hidden() || (B = L, C = H, E = (new Date).getTime())
+    };
+    this.isHuman = function(id) {
+        return id < player_count && 2 !== player_status[id]
+    };
+    this.clicked = function(L, H) {
+        C = B = -1E3;
+        if (2 === player_status[my_id] || 0 === is_alive[my_id] && !in_spawn) return this.end(), 1;
+        if (t) {
+            this.end();
+            if (a5.lI(L, H)) a5.lJ(L, H, target) && (t = !0);
+            else return a5.lK(), 2;
+            return 1
+        }
+        var M = l(L, H);
+        if (!n(M) || 0 === M || 6 === M || !x[2] && 3 === M) return this.end(), 2;
+        if (1 === M) {
+            if (x[6]) {
+                M = (new Date).getTime();
+                M > J + 4E3 && (K = []);
+                J = M;
+                if (k(target)) return this.end(), 1;
+                K.push(target);
+                16 < K.length && K.shift();
+                this.end();
+                return 1
+            }
+            return 0
+        }
+        if (2 === M) {
+            if (x[7]) {
+                for (M = K.length - 1; 0 <= M; M--) 0 === is_alive[K[M]] && K.splice(M, 1);
+                0 < K.length && (eQ.lQ(1, K, !0) && (announcements.request_attack(K, target), multiOut.request_attack(K, target)), K = []);
+                this.end();
+                return 1
+            }
+            return 0
+        }
+        if (3 === M) {
+            this.end();
+            if (this.isHuman(target) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.anti_boosting(), 1;
+            announcements.low_balance();
+            singleplayer ? processDonation(my_id, target, divide_floor(troopsBar.attackRatio() * troops[my_id], 1E3)) : multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target);
+            return 1
+        }
+        if (4 === M) return x[0] ? in_spawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.to_x(coord), pixel.to_y(coord)), spawn.update()) : multiOut.pick_location(1E3, pixel.to_x(coord), pixel.to_y(coord))) : (this.end(), announcements.low_balance(), singleplayer ? processAttack(my_id, target, troopsBar.attackRatio()) : (!free_spawn || 300 < eB.lX()) && multiOut.attack(troopsBar.attackRatio(), target === max_entities ? my_id : target)) : x[8] ? (this.end(), eH.lZ(target, troopsBar.attackRatio())) : this.end(), 1;
+        if (5 === M) return x[1] ? (this.end(), announcements.low_balance(), singleplayer ? processAction.processSendBoat(my_id, troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)) : multiOut.pick_location(troopsBar.attackRatio(), pixel.to_x(coord), pixel.to_y(coord)), 1) : 0;
+        if (7 === M && x[4]) return this.end(), t = a5.show(L, H), 1;
+        if (8 === M) return x[5] ? (eQ.lQ(0, [target], !0) && (announcements.la(target, 0), multiOut.non_aggression(target)), this.end(), 1) : 0;
+        this.end();
+        return 2
+    };
+    this.click = function(L, H) {
+        if (this.hidden() || 2 === player_status[my_id] || 0 === is_alive[my_id] && !in_spawn) return !1;
+        var M = (zoom ? .0288 : .0144) * averageWindowLength;
+        if (Math.abs(L - B) > M || Math.abs(H - C) > M || (new Date).getTime() > E + 425) return !1;
+        M = Math.floor((L + gC) / g7);
+        var Q = Math.floor((H + gD) / g7);
+        if (1 > M || 1 > Q || M >= map_width - 1 || Q >= map_height - 1) return !1;
+        var R = Q * map_width * 4 + 4 * M;
+        if (!pixel.can_take(R)) return !1;
+        if (2 === client_status) return 1 <= a5.lf && (target = pixel.owner(R), this.isHuman(target)) ? (target === my_id && this.end(), x[4] = !0, this.lg(L, H)) : !1;
+        coord = pixel.to_coord(M, Q);
+        if (in_spawn) return x[0] = !0, this.lg(L, H);
+        x[1] = waterPixelChecker.check(my_id, coord);
+        if (pixel.is_neutral(R)) return target = max_entities, bordersNeutral(my_id) ? x[0] = !0 : bordersTarget(my_id, target) && (x[8] = !0), this.lg(L, H);
+        target = pixel.owner(R);
+        if (target === my_id) {
+            this.end();
+            if (0 === a5.lf) return !1;
+            x[4] = !0;
+            return this.lg(L, H)
+        }
+        M = x;
+        Q = target;
+        Q = hu.isHuman(Q) && !k(Q) && eQ.lQ(1, [Q], !1);
+        M[6] = Q;
+        x[4] = 1 <= a5.lf && this.isHuman(target);
+        if (isTeamate(target, my_id)) {
+            x[5] = this.isHuman(target) && !eA.lk(target) && eQ.lQ(0, [target], !1);
+            M = x;
+            Q = target;
+            if (0 === K.length) Q = !1;
+            else if ((new Date).getTime() > J + 4E3) K = [], Q = !1;
+            else {
+                if (R = !k(Q)) {
+                    b: {
+                        if (team_game)
+                            for (R = K.length - 1; 0 <= R; R--)
+                                if (!isTeamate(Q, K[R])) {
+                                    Q = !0;
+                                    break b
+                                } Q = !1
+                    }
+                    R = !Q
+                }
+                Q = R
+            }
+            M[7] = Q;
+            bordersEntity(my_id,
+                target) ? x[0] = !0 : bordersTarget(my_id, target) && (x[8] = !0);
+            return this.lg(L, H)
+        }
+        x[2] = team_game;
+        return this.lg(L, H)
+    };
+    this.lg = function(L, H) {
+        z = L - Math.floor(A / 2);
+        y = H - Math.floor(A / 2);
+        return this.hidden()
+    };
+    this.lo = function(L, H) {
+        if (!this.hidden()) return !1;
+        if (t) {
+            if (a5.lI(L, H)) return !1;
+            a5.lK();
+            t = !1;
+            return c4.canvasPendingUpdates = !0
+        }
+        return n(l(L, H)) ? !1 : (this.end(), c4.canvasPendingUpdates = !0)
+    };
+    this.end = function() {
+        var L;
+        for (L = x.length - 1; 0 <= L; L--) x[L] = !1;
+        t = !1
+    };
+    this.lp = function() {
+        this.end()
+    };
+    this.hidden = function() {
+        var L;
+        for (L = x.length - 1; 0 <= L; L--)
+            if (x[L]) return !0;
+        return t
+    };
+    this.drawImage = function() {
+        this.hidden() && this.lq()
+    };
+    this.lq = function() {
+        if (t) a5.drawImage();
+        else {
+            var L = (A + N) / D;
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.setTransform(D, 0, 0, D, z, y);
+            x[0] ? in_spawn ? mainCanvasCtx.drawImage(this.l4[3], 0, 0) : mainCanvasCtx.drawImage(this.l4[0], 0, 0) : x[8] ? mainCanvasCtx.drawImage(this.l2[0], 0, 0) : mainCanvasCtx.drawImage(I[0], 0, 0);
+            x[1] && mainCanvasCtx.drawImage(this.l4[1], L, 0);
+            x[2] && mainCanvasCtx.drawImage(this.l4[2], -L, 0);
+            x[4] && mainCanvasCtx.drawImage(this.l4[4], 0, L);
+            x[5] && mainCanvasCtx.drawImage(this.l4[5], L, L);
+            x[6] && mainCanvasCtx.drawImage(this.l4[6], 0, -L);
+            x[7] && mainCanvasCtx.drawImage(this.l4[7], L, -L);
+            mainCanvasCtx.imageSmoothingEnabled = !1;
+            mainCanvasCtx.setTransform(1,
+                0, 0, 1, 0, 0)
+        }
+    }
+}
+
+function jz() { //Added Mod Menu
+    function drawExitBut() {
+        var B = x.getContext("2d", {
+            alpha: !0
+        });
+        B.clearRect(0, 0, l, l);
+        B.fillStyle = lz;
+        B.fillRect(0, 0, l, l);
+        0 === y && (B.fillStyle = m0, B.fillRect(0, 0, l, l));
+        B.fillStyle = cK;
+        B.fillRect(0, 0, l, 1);
+        B.fillRect(0, 0, 1, l);
+        B.fillRect(0, l - 1, l, 1);
+        B.fillRect(l - 1, 0, 1, l);
+        var C = .9 * l / sprites.bz(0).width;
+        B.imageSmoothingEnabled = !0;
+        B.setTransform(C, 0, 0, C, Math.floor((l - C * sprites.bz(0).width) / 2), Math.floor((l - C * sprites.bz(0).height) / 2));
+        B.drawImage(sprites.bz(0), 0, 0);
+        B.setTransform(1, 0, 0, 1, 0, 0)
+    }
+
+    function k(B, C) {
+        if (!fq.menuOpen) return B <= l + m7 && C >= troopsBar.fK ? 0 : -1;
+        if (B <= 4 * l + m7) {
+            if (C >= troopsBar.fK) return 0;
+            if (C >= troopsBar.fK - l - A * m7) return 2;
+            if (C >= troopsBar.fK - 2 * (l + A * m7)) return 3;
+            if (C >= troopsBar.fK - (in_spawn ? 2 : 3) * (l + A * m7)) return 4; //Added
+        } else if (B <= 7 * l + m7 && C >= troopsBar.fK - l - A * m7) return 1;
+        return -1
+    }
+
+    function drawOptionsBut(option, style) {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, m7, troopsBar.fK - option * A * m7 - option * l);
+        mainCanvasCtx.fillStyle = lz;
+        mainCanvasCtx.fillRect(0, 0, 4 * l, l);
+        y === option + 1 && style === cK && (mainCanvasCtx.fillStyle = m0, mainCanvasCtx.fillRect(0, 0, 4 * l, l));
+        mainCanvasCtx.fillStyle = style;
+        mainCanvasCtx.fillRect(0, 0, 4 * l, 1);
+        mainCanvasCtx.fillRect(0, 0, 1, l);
+        mainCanvasCtx.fillRect(4 * l, 0, 1, l);
+        mainCanvasCtx.fillRect(0, l - 1, 4 * l, 1);
+        mainCanvasCtx.fillText(z[option == 2 && 2 >= statistics.m6 ? 3 : option], 2 * l, .54 * l)
+    }
+    var l, x, t, z = ["Quit Game", "Surrender",  "Statistics", "Mod Settings"],
+        y, A;
+    this.init = function() {
+        y = -1;
+        this.menuOpen = !1;
+        A = zoom ? 1.2 : .6;
+        this.lx()
+    };
+    this.lx = function() {
+        l = troopsBar.cw;
+        x = document.createElement("canvas");
+        x.width = l;
+        x.height = l;
+        t = bt + Math.floor((zoom ? .5 : .45) * l) + bu;
+        drawExitBut()
+    };
+    this.alterDisplay = function() {
+        (this.menuOpen = !this.menuOpen) ? (canvas_hidden = !1, singleplayer && 1 === client_status && !in_spawn && (setTimeout(function() {
+            h8.iz()
+        }, 0), set_android_state(0))) : (y = -1, drawExitBut(), singleplayer && set_android_state(1));
+        c4.canvasPendingUpdates = !0
+    };
+    this.clicked = function(B, C) {
+        var option = k(B, C);
+        if (this.menuOpen) {
+            if (option === 0) {
+                leave_game();
+                return 2;
+            } else if (option === 1) {
+                this.alterDisplay();
+                return 2;
+            } else if (option === 2) {
+                if (this.canSurrender(my_id) && (singleplayer ? processAction.surrender(my_id) : multiOut.surrender())) {
+                    this.alterDisplay();
+                }
+                return 2;
+            } else if (option === 3 && 2 <= statistics.m6 && !in_spawn) {
+                hv.alterDisplay();
+                c4.canvasPendingUpdates = true;
+                return 2;
+            } else if (option === 4 && 2 <= statistics.m6 || option === 3 && 2 >= statistics.m6) {
+                typeof (document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden)
+                return 2;
+            } else {
+                if (!hv.hidden && (!singleplayer || in_spawn)) {
+                    this.alterDisplay();
+                    return 2;
+                } else {
+                    return 1;
+                }
+            }
+        } else {
+            if (option === 0) {
+                this.alterDisplay();
+                return 2;
+            } else {
+                return 0;
+            }
+          }
+    };
+    this.lo = function(B, C) {
+        var E = k(B, C);
+        if (E === y) return -1 !== y;
+        y = E;
+        this.menuOpen || drawExitBut();
+        c4.canvasPendingUpdates = !0;
+        return -1 !== y
+    };
+    this.drawImage = function() {
+        if (this.menuOpen) {
+            var B = Math.floor(5.5 * l);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, m7, troopsBar.fK);
+            mainCanvasCtx.fillStyle = lz;
+            mainCanvasCtx.fillRect(0, 0, B, l);
+            0 === y ? (mainCanvasCtx.fillStyle = m0, mainCanvasCtx.fillRect(0, 0, 4 * l, l)) : 1 === y && (mainCanvasCtx.fillStyle = m0, mainCanvasCtx.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
+            mainCanvasCtx.fillStyle = cK;
+            mainCanvasCtx.fillRect(0, 0, B, 1);
+            mainCanvasCtx.fillRect(0, 0, 1, l);
+            mainCanvasCtx.fillRect(4 * l, 0, 1, l);
+            mainCanvasCtx.fillRect(0, l - 1, B, 1);
+            mainCanvasCtx.fillRect(B - 1, 0, 1, l);
+            mainCanvasCtx.font = t;
+            mainCanvasCtx.textBaseline = cI;
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.fillText(z[0], 2 * l, .54 * l);
+            B = .4 * l;
+            fq.drawShape(m7 + 4 * l + (1.5 * l - B) / 2, troopsBar.fK + .3 * l, B);
+            drawOptionsBut(1, fq.canSurrender(my_id) ? cK : mD);
+            2 <= statistics.m6 && drawOptionsBut(2, cK);
+            drawOptionsBut(2 >= statistics.m6 ? 2 : 3, cK); //Added
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+        } else mainCanvasCtx.drawImage(x, m7, troopsBar.fK)
+    };
+    this.canSurrender = function(id) {
+        return 0 !== is_alive[id] && 2 !== client_status && hu.isHuman(id)
+    };
+    this.drawShape = function(B, C, E) {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, B, C);
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(0, 0);
+        mainCanvasCtx.lineTo(E, E);
+        mainCanvasCtx.moveTo(0, E);
+        mainCanvasCtx.lineTo(E, 0);
+        mainCanvasCtx.stroke()
+    }
+}
+
+function Announcements() {
+    var g, k, n, l, x, display_label_leave_plural, display_label_leave_mono;
+
+    function y() {
+        return troopsBar.mf(announcements.mc()) ? peace.hidden ? troopsBar.fK - troopsBar.cw - 2 * N : troopsBar.fK - N : peace.hidden ? clientHeight2 - troopsBar.cw - (zoom ? 3 : 2) * N : clientHeight2 - N
+    }
+
+    function announce(displayTime, message, messageID, hoverTo, P, U, W, X) {
+        var isEmoji = 1E3 <= messageID;
+        var messageWidth = Math.floor(c2.measureText(message, announcements.c0) + 1.5 * I + (isEmoji ? G : 1.5 * I));
+        if (messageWidth + N > clientWidth2 && !isEmoji && 50 !== messageID && 20 < message.length) {
+            var ba = Math.floor(.5 * message.length);
+            announce(displayTime, message.substring(0, ba), messageID, hoverTo, P, U, W, X);
+            announce(displayTime, message.substring(ba), messageID, hoverTo, P, U, W, X)
+        } else {
+            var emojiID = messageID - 1E3;
+            ba = messageWidth + (50 === messageID ? D : 0);
+            var messageCanvas = document.createElement("canvas");
+            messageCanvas.width = messageWidth;
+            messageCanvas.height = G;
+            var S = messageCanvas.getContext("2d", {alpha: !0});
+            S.font = announcements.c0;
+            S.textBaseline = cI;
+            S.textAlign = mj;
+            S.clearRect(0, 0, messageWidth, G);
+            S.fillStyle = U;
+            S.fillRect(0, 0, messageWidth, G);
+            S.fillStyle = P;
+            S.fillText(message, Math.floor(1.5 * I), Math.floor(G / 2));
+            isEmoji && (isEmoji = G / a5.width, S.imageSmoothingEnabled = !0, S.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - G, 0), S.drawImage(a5.l7[emojiID], 0, 0));
+            F.unshift({
+                time: displayTime,
+                l: message,
+                id: messageID,
+                player: hoverTo,
+                canvas: messageCanvas,
+                mW: P,
+                mX: U,
+                width: messageWidth,
+                md: ba,
+                mY: W,
+                mZ: X
+            })
+        }
+    }
+
+    function B(H, M) {
+        var Q, R = 0,
+            P = F.length;
+        for (Q = 0; Q < P; Q++)
+            if (F[Q].id === H && (R++, R >= M)) {
+                F.splice(Q, 1);
+                break
+            }
+    }
+
+    function get_color_style(H, M, Q) {
+        return "rgb(" + H + "," + M + "," + Q + ")"
+    }
+
+    function E(H, M) {
+        var Q, R = !1;
+        for (Q = F.length - 1; 0 <= Q; Q--) F[Q].id !== H || M !== max_entities && F[Q].player !== M || (F.splice(Q, 1), R = !0);
+        return R
+    }
+    var F, G, N, I, D, K, J, L;
+    this.init = function() {
+        J = 0;
+        K = zoom ? 7 : 12;
+        g = [0, 0, 0];
+        k = [0, 0, 0];
+        n = [220, 180, 180];
+        l = [0, 0, 0];
+        x = [0, 0, 0];
+        display_label_leave_plural = [" were conquered.", " left the game.", " surrendered."];
+        display_label_leave_mono = [" was conquered by ", " left the game.", " surrendered."];
+        F = [];
+        this.lx();
+        in_spawn && this.showGenericMessages(0, 18);
+        var display_label_map_land_info = "Map: " + jm.getMapName() + "   Pixels: " + eP.split_into_pieces(jQ.totalNonBorderPixels) + "   Land: " + eP.split_into_pieces(jQ.landPixels) + " (" + eB.nI(100 * jQ.landPixels / jQ.totalNonBorderPixels, 1) + ")",
+            display_label_map_special_info = "";
+        0 < jQ.waterPixels && (display_label_map_special_info += "Water: " + eP.split_into_pieces(jQ.waterPixels) +
+            " (" + eB.nI(100 * jQ.waterPixels / jQ.totalNonBorderPixels, 1) + ")");
+        0 < jQ.mountainPixels && (display_label_map_special_info += 0 < jQ.waterPixels ? "   " : "", display_label_map_special_info += "Mountains: " + eP.split_into_pieces(jQ.mountainPixels) + " (" + eB.nI(100 * jQ.mountainPixels / jQ.totalNonBorderPixels, 1) + ")");
+        announce(340, display_label_map_land_info, 6, 0, get_color_style(215, 245, 255), hy, -1, !1);
+        0 < display_label_map_special_info.length && announce(340, display_label_map_special_info, 6, 0, get_color_style(215, 245, 255), hy, -1, !1);
+        10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, get_color_style(235, 255, 120), hy, -1, !1);
+        this.mR()
+    };
+    this.mR = function() {
+        var H;
+        if (customMap.ds) {
+            var M = customMap.dt.mS.length;
+            for (H = 0; H < M; H++) announce(400, customMap.dt.mS[H], 6, 0, get_color_style(255, 255, 255), hy, -1, !1)
+        }
+    };
+    this.lx = function() {
+        var H;
+        G = Math.floor((zoom ? .031 : .0249) * averageWindowLength);
+        G = 10 > G ? 10 : G;
+        this.by = Math.floor(2 * G / 3);
+        this.c0 = bt + this.by + bu;
+        N = m7;
+        I = Math.floor(G / 5);
+        if (0 < F.length) {
+            var M = F;
+            F = [];
+            for (H = M.length - 1; 0 <= H; H--) announce(M[H].time, M[H].l, M[H].id, M[H].player, M[H].mW, M[H].mX, M[H].mY, M[H].mZ)
+        }
+        this.ma()
+    };
+    this.ma = function() {
+        L = document.createElement("canvas");
+        D = c2.measureText("Accept", this.c0) + 5 * I;
+        L.height = G;
+        L.width = D;
+        var H = L.getContext("2d", { alpha: !0 });
+        H.font = this.c0;
+        H.textBaseline = cI;
+        H.textAlign = cJ;
+        H.clearRect(0, 0, D, G);
+        H.fillStyle = mb;
+        H.fillRect(0, 0, D, G);
+        H.fillStyle = cK;
+        H.fillText("Accept", Math.floor(D / 2), Math.floor(G / 2))
+    };
+    this.mc = function() {
+        if (peace.hidden) return peace.width;
+        var H = F.length;
+        return 0 === H ? 0 : 1 === H ? F[0].md : max(F[0].md, F[1].md)
+    };
+    this.clicked = function(H, M) {
+        for (var Q = y(), R, P = F.length - 1; 0 <= P; P--)
+            if (R = Q - (P + 1) * G, M >= R && M < R + G) {
+                if (50 === F[P].id) {
+                    if (H >= clientWidth1 - D - N - F[P].width) return H >= clientWidth1 - D - N ? (P = F[P].player, this.la(P, 0), multiOut.non_aggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
+                    break
+                }
+                if (H >= clientWidth1 - F[P].width - N) return F[P].mZ && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mY && (Q = F[P].mY, F[P].mY = F[P].player, F[P].player = Q)), !0;
+                break
+            } return !1
+    };
+    this.j3 = function(H) {
+        for (var M = F.length - 1; 0 <= M; M--) F[M].id === H && (F[M].time = 1)
+    };
+    this.showGenericMessages = function(id, type) {
+        0 === type ? (statistics.numbers[id < player_count ? 4 : 3]++, c2.set(id, 0), announce(zoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", hy, -1, !1)) : 
+        1 === type ? (E(50, max_entities), c2.set(id, 1), announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+        2 === type ? (c2.set(id, 2), announce(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+        3 === type ? (c2.set(id, 2), announce(0, nickname[id] + " won the game.", 0, id, cK, hy, -1, !0), eV.gg(id, 2700, !0, 0)) : 
+        4 === type ? (players_in_game--, spectators--, this.ml(1, id, id)) : 
+        5 === type ? 2 !== player_status[id] && hu.isHuman(my_id) && (B(1, 5), eA.mn(id) ? 
+            announce(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, get_color_style(255, 200, 180), hy, -1, !0) : 
+            announce(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", hy, -1, !0)) : 
+        18 === type ? announce(255, "Choose your start position!", 18, 0, cK, hy, -1, !1) : 
+        21 === type ? announce(220, "You surrendered!", type, 0, "rgb(255,40,40)", hy, -1, !1) : 
+        22 === type && this.ml(2, id, id)
+    };
+    this.error = function(error_code) {
+        announce(200, "Error [" + error_code + "]", 94, 0, cK, mq, -1, !1)
+    };
+    this.resultBR = function(winner) {
+        c2.set(winner, 2);
+        100 > player_count ? announce(0, nickname[winner] + " won the game.", 3, winner, cK, hy, -1, !0) : 
+            announce(0, nickname[winner] + " has been immortalized!", 3, winner, cK, hy, -1, !0);
+        eV.gg(winner, 2700, !0, 0)
+    };
+    this.sentEmoji = function(author, target, emoji) {
+        author === my_id ? announce(175, " Message to " + nickname[target] + ": ", 1E3 + emoji, target, get_color_style(200, 255, 210), hy, -1, !0) : this.receivedEmoji(author, emoji)
+    };
+    this.receivedEmoji = function(author, emoji) {
+        var Q, R = 0;
+        announce(175, nickname[author] + ": ", 1E3 + emoji, author, cK, "rgba(5,60,25,0.9)", -1, !0);
+        for (Q = 0; Q < F.length; Q++)
+            if (1E3 <= F[Q].id && F[Q].player === author && (R++, 3 < R)) {
+                F.splice(Q, 1);
+                break
+            }
+    };
+    this.resultTeam = function(result_then_message) {
+        var M = teams.im[eT.get_largest_team()];
+        result_then_message ? (9 === gamemode ? (result_then_message = "The Resistance defeated the virus.", c2.mz("The Resistance", 2, 1, 12)) : result_then_message = "Congratulations! Team " + teams.label_team_color[M] + " has won the game!", announce(0, result_then_message, 40, 0, "rgb(10,220,10)", hy, -1, !1)) : 
+        (9 === gamemode ? (result_then_message = "Mankind lost the war against the virus.", c2.mz("The Virus", 2, 0, 16)) : result_then_message = "Our alliance has been defeated!", announce(0, result_then_message, 41, 0, "rgb(200,80,80)", hy, -1, !1));
+        9 !== gamemode && c2.mz("Team " + teams.label_team_color[M], 2, 1, 12);
+        eV.gp(2700)
+    };
+    this.new_1v1 = function(player_info) {
+        announce(300, player_info[0].name + " [" + points_1v1.round_elo(player_info[0].elo) + "] vs " + player_info[1].name + " [" + points_1v1.round_elo(player_info[1].elo) + "]", 65, 0, gH, "rgba(100,255,255,0.75)", -1, !1)
+    };
+    this.n0 = function(H) {
+        announce(200, H, 0, 0, "rgb(40,255,200)",
+            "rgba(10,60,40,0.9)", -1, !1)
+    };
+    this.result_1v1 = function(H, M, Q, R) {
+        1 === websocket_manager.getEquivalentLobby() && (announce(0, H[0].name + ": " + points_1v1.round_elo(H[0].elo) + " -> " + M, 66, 0, cK, R[0], -1, !1), announce(0, H[1].name + ": " + points_1v1.round_elo(H[1].elo) + " -> " + Q, 66, 1, cK, R[1], -1, !1))
+    };
+    this.clan_points_won = function(clan) {
+        1 === websocket_manager.getEquivalentLobby() && announce(0, "[" + clan + "] has won " + player_count + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hy, -1, !1)
+    };
+    this.la = function(H, M) {
+        0 === M ? E(50, H) ? (announce(128, "You signed a non-aggression pact with " + nickname[H] + ".", 52, H, get_color_style(180, 255, 180), hy, -1, !0), eA.showLandEmoji(H, 2, 255)) : announce(384, "You asked " + nickname[H] + " to sign a non-aggression pact.",
+            51, H, get_color_style(210, 210, 255), hy, -1, !0) : E(51, H) ? (announce(128, nickname[H] + " accepted the non-aggression pact.", 52, H, cK, "rgba(60,120,10,0.9)", -1, !0), eA.showLandEmoji(H, 2, 255)) : (announce(384, nickname[H] + " requests a non-aggression pact.", 50, H, cK, "rgba(90,90,90,0.9)", -1, !0), eA.showLandEmoji(H, 2, 96))
+    };
+    this.request_attack = function(friends, target) {
+        var Q = "You ", index;
+        a: {
+            for (index = friends.length - 1; 0 <= index; index--)
+                if (2 * land[friends[index]] > land[my_id]) {
+                    index = !1;
+                    break a
+                } index = !0
+        }
+        index ? (Q += "ordered ", index = get_color_style(255, 235, 210)) : (Q += "asked ", index = get_color_style(210, 255, 210));
+        1 < friends.length ? announce(230, Q + friends.length + " players to attack " + nickname[target] + ".", 66, target, index, hy, -1, !0) 
+        : announce(230, Q + nickname[friends[0]] + " to attack " + nickname[target] + ".", 66, friends[0], index, hy, target, !0)
+    };
+    this.requested_attack = function(friend, target) {
+        land[friend] > 2 * land[my_id] ? announce(230, nickname[friend] + " orders you to attack " + nickname[target] + "!", 66, friend, cK, "rgba(90,50,5,0.9)", target, !0) 
+        : announce(230, nickname[friend] + " asks you to attack " + nickname[target] + ".", 66, friend, cK, "rgba(75,65,5,0.9)", target, !0)
+    };
+    this.n9 = function(H, M) {
+        E(H, M)
+    };
+    this.low_balance = function() {
+        100 <= troops[my_id] || announce(80, "Your balance is too low!", 9, 0, cK, hy, -1, !1)
+    };
+    this.anti_boosting = function() {
+        announce(80, "Boosting is disallowed in the first minute!", 9, 0, cK, hy, -1, !1)
+    };
+    this.donate = function(H, M) {
+        2 !== player_status[my_id] && announce(200, "You exported " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", hy, -1, !0)
+    };
+    this.receive_donate = function(H, M) {
+        if (2 !== player_status[my_id]) {
+            var Q = 2 === player_status[M] || M >= player_count;
+            var R = 200 - 20 * F.length;
+            announce(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + eP.split_into_pieces(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, gH, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
+            B(31, zoom ? 4 : 6)
+        }
+    };
+    this.iy = function(H) {
+        var M, Q = c4.ticksElapsed();
+        for (M = 2; 0 <= M; M--) 0 < l[M] && (H || x[M] < Q - 220) && this.nN(M)
+    };
+    this.nN = function(H) {
+        var leftCountOrMessage = l[H];
+        var firstLeft = g[H];
+        l[H] = 0;
+        1 === leftCountOrMessage ? (leftCountOrMessage = nickname[firstLeft] + display_label_leave_mono[H], 0 === H && (leftCountOrMessage += nickname[k[H]] + "."), announce(n[H], leftCountOrMessage, 7, k[H], cK, hy, -1, !0)) 
+        : 2 <= leftCountOrMessage && (leftCountOrMessage = nickname[firstLeft] + " and " + (leftCountOrMessage - 1) + " other player" + (2 === leftCountOrMessage ? "" : "s") + display_label_leave_plural[H], announce(n[H], leftCountOrMessage, 7, firstLeft, cK, hy, -1, !1))
+    };
+    this.ml = function(H, M, Q) {
+        var R = c4.ticksElapsed(),
+            P = l[H] + 1;
+        l[H]++;
+        g[H] = M;
+        k[H] = Q;
+        1 === P && (x[H] = R);
+        1 === P && (32 > players_in_game || 2 === client_status) ? this.nN(H) : 1 < P && (x[H] < R - 140 || 2 === client_status) && this.nN(H)
+    };
+    this.update = function() {
+        var H, index = F.length - K;
+        index = 1 >= index ? 1 : index * index;
+        for (H = F.length - 1; 0 <= H; H--) 0 < F[H].time && (F[H].time -= index, 0 >= F[H].time && F.splice(H, 1));
+        if (128 !== J && (J++, !(128 > J)))
+            for (H = 5, index = alive_count - 1; 0 <= index; index--) {
+                if (1 === player_status[alive_entities[index]] && 0 < H--)
+                    announce(240, nickname[alive_entities[index]] + " joined the game.", 1, alive_entities[index], gH, "rgba(255,255,255,0.75)", -1, !0);
+            }
+        this.iy(!1)
+    };
+    this.drawImage = function() {
+        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (mainCanvasCtx.drawImage(F[Q].canvas, clientWidth1 - F[Q].width - D - N, M), mainCanvasCtx.drawImage(L, clientWidth1 - D - N, M)) : mainCanvasCtx.drawImage(F[Q].canvas, clientWidth1 - F[Q].width - N, M)
+    }
+}
+
+function Cookies_window() {
+    this.by = this.nS = this.nR = this.i4 = this.cw = this.width = 0;
+    this.bs = -1;
+    this.lt = ["Accept Cookies", "More Information", "Decline"];
+    this.colors = ["rgba(0,255,0,0.4)", "rgba(0,0,255,0.4)", "rgba(255,0,0,0.4)"];
+    this.hidden = !1;
+    this.init = function() {
+        this.lx();
+        this.hidden = 5 > device_version && !is_ios && 0 === user_settings.a0();
+    };
+    this.lx = function() {
+        this.width = Math.floor(2.8 * Math.floor((zoom ? .09 : .062) * averageWindowLength));
+        this.cw = Math.floor(1 * this.width);
+        this.i4 = Math.floor(.06 * this.width);
+        this.i5 = this.width - 2 * this.i4;
+        this.nR = this.i4;
+        this.nS = (this.cw - (this.lt.length + 1) * this.nR) / this.lt.length;
+        this.by = Math.floor(.3 * this.nS)
+    };
+    this.clicked = function(g, k) {
+        if (!this.hidden) return !1;
+        var n = this.nU(g, k);
+        if (-1 === n) return !1;
+        0 === n ? (user_settings.nV(2), this.hidden = !1) : 1 === n ? openLinkBox.init(nX, !0) : 2 === n && (user_settings.nV(1), this.hidden = !1);
+        return c4.canvasPendingUpdates = !0
+    };
+    this.lo = function(g, k) {
+        if (!this.hidden) return !1;
+        var n = this.bs;
+        this.bs = this.nU(g, k);
+        n !== this.bs && (c4.canvasPendingUpdates = !0);
+        return -1 !== this.bs
+    };
+    this.nU = function(g, k) {
+        g -= display_buffer_length;
+        k -= Math.floor(clientHeight1 - this.cw - display_buffer_length);
+        if (0 > g || 0 > k || g >= this.width || k >= this.cw) return -1;
+        var n = Math.floor((k - .5 * this.nR) / ((this.cw - this.nR) / this.lt.length));
+        return 0 >
+            n ? 0 : n >= this.lt.length ? this.lt.length - 1 : n
+    };
+    this.drawImage = function() {
+        this.hidden && this.nY()
+    };
+    this.nY = function() {
+        var g = display_buffer_length,
+            k = Math.floor(clientHeight1 - this.cw - display_buffer_length);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.font = bt + this.by + bu;
+        mainCanvasCtx.strokeRect(0, 0, this.width, this.cw);
+
+        for (var n = this.lt.length - 1; n >= 0; n--) {
+            mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.i4, k + this.nR + n * (this.nR + this.nS));
+            mainCanvasCtx.fillStyle = this.colors[n];
+            mainCanvasCtx.fillRect(0, 0, this.i5, this.nS);
+            if (this.bs === n) {
+                mainCanvasCtx.fillStyle = nZ;
+                mainCanvasCtx.fillRect(0, 0, this.i5, this.nS);
+            }
+            mainCanvasCtx.fillStyle = cK;
+            mainCanvasCtx.fillText(this.lt[n], this.i5 / 2, 0.54 * this.nS);
+            mainCanvasCtx.strokeRect(0, 0, this.i5, this.nS);
+        }
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    }
+}
+
+function k1() {
+    function g(y) {
+        return 10 > y ? "0" + y : String(y)
+    }
+    var k, n, l, x, t, z;
+    this.init = function() {
+        void 0 === x && this.lx();
+        this.setTime()
+    };
+    this.lx = function() {
+        x = Math.floor((zoom ? .53 : .36) * averageWindowLength);
+        t = Math.floor(.065 * x);
+        z = bt + Math.floor(.9 * t) + bu;
+        l--;
+        this.setTime()
+    };
+    this.update = function() {
+        this.setTime() && (c4.canvasPendingUpdates = !0)
+    };
+    this.setTime = function() {
+        var y = new Date;
+        var A = y.getUTCMinutes(),
+            B = y.getUTCSeconds();
+        n = 3600 - 60 * A - B;
+        n %= 900;
+        k = "Next Contest: " + g(Math.floor(n / 60)) + ":" + g(n % 60);
+        y = l;
+        l = 60 * A + B;
+        if (y === l) return !1;
+        x = c2.measureText(k, z);
+        x +=
+            Math.floor(.4 * t);
+        return !0
+    };
+    this.drawImage = function() {
+        mainCanvasCtx.lineWidth = 1 + Math.floor(t / 15);
+        mainCanvasCtx.translate(clientWidth1 - t, Math.floor(.5 * (clientHeight1 + x)));
+        mainCanvasCtx.rotate(-Math.PI / 2);
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillRect(0, 0, x, t);
+        mainCanvasCtx.strokeStyle = gH;
+        mainCanvasCtx.strokeRect(0, 0, x, t + 10);
+        mainCanvasCtx.fillStyle = gH;
+        mainCanvasCtx.font = z;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.fillText(k, Math.floor(x / 2), Math.floor(.59 * t));
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    }
+}
+
+function ni() {
+    this.nj = 10;
+    this.nl = this.nk = 50;
+    this.nm = 8;
+    this.nn = this.nk + this.nl;
+    this.a6 = this.nk + this.nl + this.nm;
+    this.width = 72;
+    this.np = this.no = 0;
+    this.l7 = Array(this.a6);
+    this.nq = 8;
+    this.nr = Array(this.nk + this.nl);
+    this.ns = Array(this.nk + this.nl);
+    this.fA = this.f9 = 0;
+    this.zoom = 1;
+    this.nt = .2;
+    this.lf = 0;
+    this.nu = this.a7 = null;
+    this.nv = 0;
+    this.init = function() {
+        var g;
+        this.a7 = Array(this.a6);
+        this.nu = Array(this.a6);
+        var k = sprites.lB("emojis");
+        this.nx();
+        for (g = this.lf = 0; g < this.nk; g++) this.ny(g, g, k);
+        k = sprites.lB("flags");
+        for (g = 0; g < this.nl; g++) this.ny(g,
+            this.nk + g, k);
+        this.o0();
+        this.l7[26] = this.o1(25, 2);
+        this.o2()
+    };
+    this.ny = function(g, k, n) {
+        this.a7[k] = !1;
+        this.nu[k] = 0;
+        var l = document.createElement("canvas");
+        l.width = this.width;
+        l.height = this.width;
+        var x = l.getContext("2d", {
+            alpha: !0
+        });
+        x.clearRect(0, 0, this.width, this.width);
+        23 === k ? x.drawImage(hu.l5[2], 0, 0) : 36 === k ? x.drawImage(hu.l5[0], 0, 0) : 49 === k ? x.drawImage(hu.l5[1], 0, 0) :
+            x.drawImage(n, this.width * g % (g === k ? this.nj * this.width : 4E3), g === k ? divide_floor(g, this.nj) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
+        this.l7[k] = l
+    };
+    this.o0 = function() {
+        this.l7[this.a6 - 5] = this.l7[26];
+        this.l7[this.a6 - 4] = this.o1(this.a6 - 5, 2);
+        this.l7[this.a6 - 1] = this.o1(this.a6 - 5, 1);
+        this.l7[this.a6 - 8] = this.o1(this.a6 - 4, 1);
+        this.l7[this.a6 - 3] = this.l7[39];
+        this.l7[this.a6 - 2] = this.o1(this.a6 - 3, 1);
+        this.l7[this.a6 - 7] = this.o1(this.a6 - 2, 1);
+        this.l7[this.a6 - 6] = this.o1(this.a6 - 7, 1)
+    };
+    this.o1 = function(g, k) {
+        var n = document.createElement("canvas");
+        n.width = this.width;
+        n.height = this.width;
+        var l = n.getContext("2d", {
+            alpha: !0
+        });
+        l.clearRect(0, 0, this.width, this.width);
+        l.rotate(k * Math.PI / 2);
+        l.drawImage(this.l7[g], 1 === k ?
+            0 : -this.width, -this.width);
+        return n
+    };
+    this.o2 = function() {
+        var g = get_emojis().split("");
+        if (2 * g.length !== this.a6) this.lf = 0;
+        else {
+            for (var k = 0; k < this.a6; k += 2) {
+                var n = parseInt(g[Math.floor(k / 2)]);
+                this.a7[k] = 1 === n % 2;
+                this.a7[k + 1] = 1 < n
+            }
+            this.o5()
+        }
+    };
+    this.o5 = function() {
+        for (var g = this.lf = 0; g < this.a6; g++) this.a7[g] && (this.nu[this.lf++] = g)
+    };
+    this.lK = function() {
+        8 === this.lf && this.nu[0] === this.nn && this.o5()
+    };
+    this.o6 = function() {
+        this.lf = this.nm;
+        for (var g = 0; g < this.nm; g++) this.nu[g] = this.nn + g
+    };
+    this.nx = function() {
+        this.no = Math.floor((zoom ? .075 :
+            .0468) * averageWindowLength);
+        this.zoom = this.no / this.width;
+        this.np = (1 + this.nt) * this.no
+    };
+    this.show = function(g, k) {
+        if (1 > this.lf) return !1;
+        this.nv = c4.time;
+        var n = Math.floor(clientWidth1 / this.np);
+        n = 3 > n ? 3 : n > this.nq ? this.nq : n;
+        n = this.lf > n ? n : this.lf;
+        var l = 1 + divide_floor(this.lf - 1, n),
+            x = Math.floor(n * this.np),
+            t = Math.floor(g - x / 2);
+        t = t + x > clientWidth1 ? clientWidth1 - x : t;
+        t = 0 > t ? 0 : t;
+        var z = Math.floor(k - this.np / 2);
+        l = Math.floor(l * this.np);
+        z = z + l > clientHeight1 ? clientHeight1 - l : z;
+        z = 0 > z ? 0 : z;
+        this.f9 = t + x;
+        this.fA = z + l;
+        for (x = 0; x < this.lf; x++) this.nr[x] = Math.floor(t + x % n * this.np), this.ns[x] = Math.floor(z + divide_floor(x, n) * this.np);
+        return !0
+    };
+    this.lI = function(g, k) {
+        return !(g < this.nr[0] || k < this.ns[0] || g >= this.f9 || k >= this.fA)
+    };
+    this.lJ = function(g, k, target_id) {
+        if (target_id === my_id && this.nv + 190 > c4.time) return !1;
+        for (var l = this.lf - 1; 0 <= l; l--)
+            if (g >= this.nr[l] && k >= this.ns[l]) {
+                if (39 === this.nu[l]) return this.o6(), this.show(g, k), !0;
+                singleplayer ? eA.showLandEmoji(my_id, 0, this.nu[l]) : target_id === my_id ? multiOut.self_emoji(this.nu[l]) : multiOut.send_emoji(this.nu[l], target_id);
+                this.o5();
+                break
+            } return !1
+    };
+    this.oC = function(g) {
+        return 16 > g || 40 <= g && 47 > g
+    };
+    this.oD = function(g) {
+        return g >= this.nk && g < this.nk + this.nl
+    };
+    this.drawImage = function() {
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        for (var g = this.nt * this.no / 2, k = this.lf - 1; 0 <= k; k--) {
+            mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.nr[k] + g, this.ns[k] + g);
+            mainCanvasCtx.drawImage(this.l7[this.nu[k]], 0, 0);
+        }
+        mainCanvasCtx.imageSmoothingEnabled = !1;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    };
+    this.oE = function(g, k, n) {
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, g, k);
+        mainCanvasCtx.drawImage(this.l7[n], 0, 0);
+        mainCanvasCtx.imageSmoothingEnabled = !1;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    }
+}
+var gH = "rgb(0,0,0)",
+    oF = "rgba(0,0,0,0.7)",
+    oG = "rgba(0,0,0,0.5)",
+    lz = "rgba(0,0,0,0.5)",
+    hy = "rgba(0,0,0,0.75)",
+    oH = "rgba(0,0,0,0.85)",
+    oI = "rgba(0,96,96,0.75)",
+    oJ = "rgb(255,255,255)",
+    mD = "rgb(128,128,128)",
+    oK = "rgb(30,255,30)",
+    oL = "rgb(0,200,0)",
+    oM = "rgb(0,255,0)",
+    oN = "rgba(0,255,0,0.6)",
+    oO = "rgba(0,255,0,0.5)",
+    oP = "rgba(0,200,0,0.5)",
+    mb = "rgba(0,100,0,0.75)",
+    oQ = "rgba(0,40,0,0.8)",
+    oR = "rgb(128,255,128)",
+    oS = "rgba(255,255,150,0.2)",
+    oT = "rgba(0,255,0,0.3)",
+    m0 = "rgba(255,255,255,0.3)",
+    oU = "rgba(0,40,90,0.75)",
+    oV = "rgba(220,0,0,0.6)",
+    oW = "rgba(255,100,100,0.8)",
+    mq = "rgba(100,0,0,0.85)",
+    oX = "rgba(60,0,0,0.85)",
+    oY = "rgb(255,120,120)",
+    oZ = "rgb(255,160,160)",
+    oa = "rgb(255,70,70)",
+    ob = "rgb(230,0,0)",
+    oc = "rgba(0,60,60,0.85)",
+    od = "rgb(160,160,255)",
+    cK = "rgb(255,255,255)",
+    oe = "rgba(255,255,255,0.6)",
+    of = "rgba(255,255,255,0.4)",
+    nZ = "rgba(255,255,255,0.25)",
+    og = "rgba(255,255,255,0.85)",
+    oh = "rgba(255,255,255,0.75)",
+    oi = "rgb(255,120,100)",
+    oj = "rgba(255,255,0,0.5)",
+    cI = "middle",
+    ok = "bottom",
+    cJ = "center",
+    mj = "left",
+    ol = "right",
+    bt = "bold ",
+    om = "italic ",
+    on = "normal ",
+    bu = "px Arial",
+    oo = [bt, om + bt, bt],
+    op = "https://play.google.com/store/apps/details?id=territorial.io",
+    oq = "https://apps.apple.com/app/id1581110913",
+    or = "https://www.youtube.com/watch?v=toZTQ8aRdFc",
+    os = "https://discord.gg/pthqvpTXmh",
+    ot = "https://www.instagram.com/davidtschacher/",
+    nX = "https://territorial.io/cookie_policy",
+    ou = "https://territorial.io/privacy_policy",
+    ov = "https://territorial.io/tutorial",
+    ow = ["https://territorial.io/players", "https://territorial.io/clans"],
+    m7, ox, display_buffer_length, oy, isTouch, p0, p1, mainSettings, 
+    ws_strings = ["wss://", "/s50/", "/s51/", "/s52/"];
+
+function p3() {
+    p4();
+    oy = 3;
+    mainSettings = new MainSettings;
+    mainSettings.init()
+}
+
+function addCanvasEventListeners() {
+    mainCanvas.addEventListener("mousedown", onMouseDown);
+    mainCanvas.addEventListener("mousemove", onMouseMove);
+    mainCanvas.addEventListener("mouseup", onMouseUp);
+    mainCanvas.addEventListener("click", onClick);
+    mainCanvas.addEventListener("mouseleave", onMouseLeave);
+    mainCanvas.addEventListener("wheel", onWheel);
+    mainCanvas.addEventListener("touchstart", onTouchStart);
+    mainCanvas.addEventListener("touchmove", onTouchMove);
+    mainCanvas.addEventListener("touchend", onTouchEnd);
+    mainCanvas.addEventListener("touchcancel", onTouchCancel);
+    mainCanvas.addEventListener("dragover", onDragOver);
+    mainCanvas.addEventListener("drop", onDrop);
+    isTouch = !1
+}
+
+function p4() {
+    display_buffer_length = Math.floor((zoom ? .02 : .01152) * averageWindowLength);
+    display_buffer_length = 2 > display_buffer_length ? 2 : display_buffer_length;
+    m7 = Math.floor((zoom ? .0114 : .01296) * averageWindowLength);
+    m7 = 2 > m7 ? 2 : m7;
+    ox = Math.floor(.005 * shorterWindowLength);
+    ox = 1 > ox ? 1 : ox
+}
+
+function onMouseDown(e) {
+    e.preventDefault();
+    isTouch || (websocket_manager.pM(websocket_manager.remote), pN(Math.floor(device_pixel_ratio * e.clientX), Math.floor(device_pixel_ratio * e.clientY)))
+}
+
+function onTouchStart(g) {
+    g.preventDefault();
+    websocket_manager.pM(websocket_manager.remote);
+    isTouch = !0;
+    0 < g.touches.length && (p0 = Math.floor(device_pixel_ratio * g.touches[0].clientX), p1 = Math.floor(device_pixel_ratio * g.touches[0].clientY), jo.pP(g) || pN(p0, p1))
+}
+
+function pN(g, k) {
+    if (0 === client_status) aJ.clicked(g, k);
+    else if (!(hv.clicked(g, k) || hu.lD(g, k) || gameResultBox.clicked(g, k) || eP.clicked(g, k))) {
+        var n = fq.clicked(g, k);
+        2 === n || eM.clicked(g, k) || (gj.clicked(g, k) ? c4.canvasPendingUpdates = !0 : troopsBar.pR(g, k) ? (gj.gk = !1, troopsBar.pS(g, k) && (c4.canvasPendingUpdates = !0)) : announcements.clicked(g, k) || peace.clicked(g, k) || 0 === n && hu.lF(g, k))
+    }
+}
+
+function onMouseMove(g) {
+    isTouch = !1;
+    g.preventDefault();
+    pT(Math.floor(device_pixel_ratio * g.clientX), Math.floor(device_pixel_ratio * g.clientY))
+}
+
+function onTouchMove(g) {
+    g.preventDefault();
+    0 < g.touches.length && (p0 = Math.floor(device_pixel_ratio * g.touches[0].clientX), p1 = Math.floor(device_pixel_ratio * g.touches[0].clientY), jo.pU(g) || pT(p0, p1))
+}
+
+function pT(g, k) {
+    0 === client_status ? aJ.lo(g, k) : hv.lo(g, k) || (hu.hidden() ? hu.lo(g, k) : fq.lo(g, k) || (troopsBar.pV ? troopsBar.lo(g, k) && (c4.canvasPendingUpdates = !0) : (eM.lo(g, k), gj.gk && gj.lo(g, k) && (c4.canvasPendingUpdates = !0))))
+}
+
+function onMouseLeave(g) {
+    g.preventDefault();
+    0 === client_status ? (aJ.click(-1024, -1024), playtime.pW()) : (eM.pX(-1024, -1024), fq.lo(-1024, -1024), troopsBar.pY(), gj.gk && (gj.gk = !1))
+}
+
+function onMouseUp(g) {
+    g.preventDefault();
+    isTouch || pZ(Math.floor(device_pixel_ratio * g.clientX), Math.floor(device_pixel_ratio * g.clientY))
+}
+
+function onClick(e) {
+    2 === aJ.getState() && singleMenu.click(e.clientX, e.clientY)
+}
+
+function onTouchEnd(g) {
+    g.preventDefault();
+    g && g.touches && 0 < g.touches.length && 0 !== client_status ? gj.gk = !1 : pZ(p0, p1)
+}
+
+function onTouchCancel(g) {
+    g.preventDefault();
+    pZ(p0, p1)
+}
+
+function onDragOver(g) {
+    loadCustom.pb(g)
+}
+
+function onDrop(g) {
+    loadCustom.pc(g)
+}
+
+function pZ(g, k) {
+    0 === client_status ? aJ.click(g, k) : (eM.pX(g, k), hv.pX(), troopsBar.pY(), gj.gk = !1, hu.click(g, k) && (c4.canvasPendingUpdates = !0))
+}
+
+function onWheel(g) {
+    g.preventDefault();
+    websocket_manager.pM(websocket_manager.remote);
+    var k = Math.floor(device_pixel_ratio * g.clientX),
+        n = Math.floor(device_pixel_ratio * g.clientY),
+        l = g.deltaY;
+    1 === g.deltaMode && (l *= 20);
+    0 === client_status ? aJ.pd(k, n, l) : eM.pd(k, n, l) || (troopsBar.pR(k, n) ? troopsBar.pd(l) && (c4.canvasPendingUpdates = !0) : gj.pd(k, n, 2 * l) && (c4.canvasPendingUpdates = !0))
+}
+
+function pe(g, k, n) {
+    g.fillStyle = cK;
+    g.fillRect(0, 0, k, 1);
+    g.fillRect(0, n - 1, k, 1);
+    g.fillRect(0, 0, 1, n);
+    g.fillRect(k - 1, 0, 1, n)
+}
+
+function k2() {
+    function g(C) {
+        var E = t[C].canvas.width;
+        t[C].hx.clearRect(0, 0, E, A);
+        t[C].hx.fillStyle = 0 !== t[C].id ? "rgba(33,33,120,0.83)" : t[C].cM === max_entities ? "rgba(88,88,88,0.83)" : t[C].cM < player_count ? "rgba(100,70,33,0.83)" : "rgba(33,100,80,0.83)";
+        t[C].hx.fillRect(0, 0, E, A);
+        pe(t[C].hx, E, A);
+        E > z + 2 * A && (t[C].hx.fillRect(E - z - A, 0, 1, A), t[C].hx.fillText(nickname[t[C].cM], Math.floor((E - z) / 2), Math.floor(.57 * A)));
+        var F = 0 !== t[C].id ? 0 : A;
+        t[C].hx.fillText(eP.split_into_pieces(t[C].cN), Math.floor(E - z / 2 - F), Math.floor(.57 * A));
+        t[C].hx.fillStyle = oe;
+        t[C].hx.fillRect(Math.floor(E -
+            z - F), A - B, Math.floor(z * t[C].cN / t[C].pt), B);
+        0 === t[C].id ? (k(C, E), t[C].hx.strokeStyle = oR, t[C].hx.fillRect(A, 0, 1, A), E -= A, t[C].hx.beginPath(), t[C].hx.moveTo(Math.floor(.3 * A + E), Math.floor(A / 2)), t[C].hx.lineTo(Math.floor(A - .3 * A + E), Math.floor(A / 2)), t[C].hx.stroke(), t[C].hx.beginPath(), t[C].hx.moveTo(Math.floor(A / 2 + E), Math.floor(.3 * A)), t[C].hx.lineTo(Math.floor(A / 2 + E), Math.floor(A - .3 * A)), t[C].hx.stroke()) : k(C, 2 * A)
+    }
+
+    function k(C, E) {
+        t[C].hx.strokeStyle = t[C].pu ? mD : oZ;
+        t[C].hx.fillStyle = cK;
+        t[C].hx.fillRect(E - A, 0,
+            1, A);
+        var F = Math.floor(A / 12);
+        t[C].hx.lineWidth = 3 > F ? 3 : F;
+        t[C].hx.lineCap = "round";
+        E = A + 1;
+        t[C].hx.beginPath();
+        t[C].hx.moveTo(Math.floor(E - .35 * A), Math.floor(.35 * A));
+        t[C].hx.lineTo(Math.floor(E - A + .35 * A), Math.floor(A - .35 * A));
+        t[C].hx.stroke();
+        t[C].hx.beginPath();
+        t[C].hx.moveTo(Math.floor(E - A + .35 * A), Math.floor(.35 * A));
+        t[C].hx.lineTo(Math.floor(E - .35 * A), Math.floor(A - .35 * A));
+        t[C].hx.stroke()
+    }
+
+    function n(C) {
+        C.canvas = document.createElement("canvas");
+        pl.font = y;
+        var E = z;
+        C.cM < max_entities && 0 === C.id && (E += Math.floor(pl.measureText(nickname[C.cM] + "000").width));
+        E += A;
+        0 === C.id && (E += A);
+        C.canvas.width = E;
+        C.canvas.height = A;
+        C.hx = C.canvas.getContext("2d", {
+            alpha: !0
+        });
+        C.hx.font = y;
+        C.hx.textBaseline = cI;
+        C.hx.textAlign = cJ
+    }
+
+    function l(C) {
+        return eO.qF() ? clientWidth1 - t[C].canvas.width - m7 : eO.fJ
+    }
+
+    function x(C) {
+        return Math.floor(2 * m7 + (eO.qF() ? eB.cw + m7 : 0) + eO.cw + 1.3 * C * A)
+    }
+    var t, z, y, A, B;
+    this.init = function() {
+        t = [];
+        this.lx()
+    };
+    this.lx = function() {
+        y = announcements.c0;
+        A = announcements.by + 5;
+        A = Math.floor(1.25 * A);
+        zoom && (A = Math.floor(1.25 * A));
+        B = Math.floor(.15 * A);
+        pl.font = y;
+        z = Math.floor(pl.measureText("02 000 000 0000").width);
+        for (var C = t.length - 1; 0 <= C; C--) n(t[C]), g(C)
+    };
+    this.eb = function() {
+        for (var C = t.length - 1; 0 <= C; C--) t[C].po && (t[C].po = !1, g(C))
+    };
+    this.split_into_pieces = function(C) {
+        if (1E3 > C) return 0 > C ? "-" + this.split_into_pieces(Math.abs(C)) : C.toString();
+        var E = Math.floor(Math.log(C + .5) / Math.log(10)) + 1,
+            F = Math.floor((E - 1) / 3);
+        C = C.toString();
+        for (var G = C.substring(E - 3, E), N = 1; N < F; N++) G = C.substring(E - 3 * (N + 1), E - 3 * N) + " " + G;
+        return C.substring(0, E - 3 * F) + " " + G
+    };
+    this.clicked = function(C, E) {
+        if (2 === client_status || 0 === is_alive[my_id] || j8 || !hu.isHuman(my_id)) return !1;
+        var F, G = zoom ? A : 0,
+            N = zoom ? Math.floor(.15 * A) : 0;
+        for (F = t.length -
+            1; 0 <= F; F--) {
+            var I = l(F);
+            var D = x(F);
+            var K = t[F].canvas.width;
+            if (E >= D - N && E <= D + A + N) {
+                if (C >= I - G && C <= I + A + G) return t[F].pu || (t[F].po = !0, t[F].pu = !0, 0 === t[F].id ? singleplayer ? processAction.processCancel(my_id, t[F].cM) : multiOut.cancel(t[F].cM === max_entities ? my_id : t[F].cM) : singleplayer ? processAction.processCancelBoat(my_id, t[F].id) : multiOut.cancel_boat(t[F].id)), !0;
+                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? processAttack(my_id, t[F].cM, troopsBar.attackRatio()) : multiOut.attack(troopsBar.attackRatio(), t[F].cM === max_entities ? my_id : t[F].cM), !0
+            }
+        }
+        return !1
+    };
+    this.update = function() {
+        if (2 !== client_status && 0 !== is_alive[my_id] && !j8 && hu.isHuman(my_id)) {
+            var C = attacks.getCurrentAttackCount(my_id);
+            b: if (t.length !== C) var E = !0;
+                else {
+                    for (E = C - 1; 0 <= E; E--)
+                        if (t[E].id !== attacks.get_boat_id_from_attack_index(my_id,
+                                E) || t[E].cM !== attacks.get_attack_target_from_attack_index(my_id, E)) {
+                            E = !0;
+                            break b
+                        } E = !1
+                }
+            if (E) {
+                var F, G = [];
+                E = 0;
+                b: for (; E < C; E++) {
+                    var N = attacks.get_boat_id_from_attack_index(my_id, E);
+                    var I = attacks.get_attack_target_from_attack_index(my_id, E);
+                    for (F = 0; F < t.length; F++)
+                        if (t[F].id === N && t[F].cM === I) {
+                            G.push(t.splice(F, 1)[0]);
+                            continue b
+                        } F = attacks.get_attack_troops_remaining_from_attack_index(my_id, E);
+                    N = {
+                        cM: I,
+                        cN: F,
+                        pt: F,
+                        id: N,
+                        po: !0,
+                        pu: !1,
+                        canvas: null,
+                        hx: null
+                    };
+                    n(N);
+                    G.push(N)
+                }
+                t = G
+            }
+            for (--C; 0 <= C; C--) E = attacks.get_attack_troops_remaining_from_attack_index(my_id, C), t[C].cN !== E && (t[C].cN = E, t[C].pt = E > t[C].pt ? E : t[C].pt, t[C].po = !0)
+        }
+    };
+    this.drawImage = function() {
+        if (0 !== is_alive[my_id] && hu.isHuman(my_id) && !j8)
+            for (var C = t.length - 1; 0 <= C; C--) mainCanvasCtx.drawImage(t[C].canvas, l(C), x(C))
+    }
+}
+
+function k3() {
+    function g() {
+        mainCanvasCtx.drawImage(I, m7 + (team_game ? m7 + eT.qT() : 0), qU + 2 * m7)
+    }
+
+    function k() {
+        I.width = l[0].width + G;
+        I.height = y + G;
+        D = I.getContext("2d", {
+            alpha: !0
+        });
+        D.clearRect(0, 0, l[0].width + G, y + G);
+        D.translate(Math.floor(G / 2), Math.floor(G / 2));
+        D.lineWidth = G;
+        D.fillStyle = 1 === l[0].qR ? og : hy;
+        n();
+        D.fill();
+        D.strokeStyle = 1 === l[0].qR ? gH : cK;
+        n();
+        D.stroke();
+        D.textAlign = cJ;
+        D.textBaseline = cI;
+        D.fillStyle = 1 === l[0].qR ? gH : cK;
+        D.font = A[0];
+        D.fillText(E[l[0].qQ], Math.floor(l[0].width / 2), Math.floor(.72 * C[0] * y));
+        D.font = A[1];
+        D.fillText(l[0].l,
+            Math.floor(l[0].width / 2), Math.floor((C[0] + .48 * C[1]) * y))
+    }
+
+    function n() {
+        D.beginPath();
+        D.moveTo(N, 0);
+        D.lineTo(l[0].width - N, 0);
+        D.lineTo(l[0].width, N);
+        D.lineTo(l[0].width, y - N);
+        D.lineTo(l[0].width - N, y);
+        D.lineTo(N, y);
+        D.lineTo(0, y - N);
+        D.lineTo(0, N);
+        D.closePath()
+    }
+    var l, x, t, z, y, A, B, C, E, F, G, N, I, D, K, J;
+    this.init = function() {
+        K = 0;
+        x = 4;
+        t = z = 0;
+        l = [];
+        A = Array(2);
+        B = Array(2);
+        C = Array(2);
+        E = ["YOU CONQUERED", "YOU WERE CONQUERED BY", "THE GAME WAS WON BY", "MAP:"];
+        C[0] = .3;
+        C[1] = .7;
+        F = Array(4);
+        I = document.createElement("canvas");
+        J = c4.time +
+            2E3;
+        this.lx()
+    };
+    this.lx = function() {
+        var L;
+        y = Math.floor((zoom ? .0725 : .058) * averageWindowLength);
+        B[0] = Math.floor(.85 * C[0] * y);
+        B[1] = Math.floor(.85 * C[1] * y);
+        A[0] = bt + B[0] + bu;
+        A[1] = bt + B[1] + bu;
+        for (L = F.length - 1; 0 <= L; L--) F[L] = this.measureText(E[L] + "000", A[0]);
+        G = Math.floor(1 + .05 * y);
+        N = Math.floor(.2 * y);
+        if (0 < l.length) {
+            for (L = l.length - 1; 0 <= L; L--) {
+                var H = this.measureText(l[L].l + "00", A[1]);
+                l[L].width = H < F[L] ? F[L] : H
+            }
+            k()
+        }
+    };
+    this.update = function() {
+        if (0 !== x)
+            if (4 === x) c4.time > J && (x = 0, 1 === client_status && c2.mz(jm.getMapName(), 3, 1, 9));
+            else {
+                if (1 === x) 0 === t && (k(), t = 1E-4), t += .002 *
+                    (c4.time - K), 1 <= t && (z = 0, x = 2, t = 1), c4.canvasPendingUpdates = !0;
+                else if (2 === x) {
+                    if (z += (c4.time - K) / 1E3, z > l[0].gb || 1 < z && 1 < l.length) x = 3
+                } else 3 === x && (t -= .002 * (c4.time - K), 0 >= t && (t = 0, l.shift(), x = 0 < l.length ? 1 : 0), c4.canvasPendingUpdates = !0);
+                K = c4.time
+            }
+    };
+    this.measureText = function(L, H) {
+        mainCanvasCtx.font = H;
+        return Math.floor(mainCanvasCtx.measureText(L).width)
+    };
+    this.set = function(L, H) {
+        this.mz(nickname[L], H, 1, 0 === H ? 3 : 7)
+    };
+    this.mz = function(L, H, M, Q) {
+        var R = this.measureText(L + "00", A[1]);
+        R = R < F[H] ? F[H] : R;
+        l.push({
+            l: L,
+            width: R,
+            qQ: H,
+            qR: M,
+            gb: Q
+        });
+        0 === x && (t = 0, x = 1, K = c4.time)
+    };
+    this.drawImage = function() {
+        0 !== x && 0 !== t && (1 > t ? (mainCanvasCtx.globalAlpha = t, g(), mainCanvasCtx.globalAlpha = 1) : g())
+    }
+}
+
+function Peace() {
+    function g() {
+        var D = peace.width;
+        has_voted = !1;
+        hw(t, D, l);
+        var K = Math.floor(D / 2);
+        1 === your_choice ? (t.fillStyle = oN, t.fillRect(K, 0, K, l)) : -1 === your_choice && (t.fillStyle = oV, t.fillRect(0, 0, K, l));
+        hz(t, D, l, 2);
+        K = Math.floor(.25 * l);
+        K = 2 > K ? 2 : K;
+        t.fillStyle = oh;
+        var J = Math.floor((l - 4) * peace_progress[1] / peace_requirement[1]);
+        0 < J && t.fillRect(2, l - 2 - J, K, J);
+        J = Math.floor((l - 4) * peace_progress[0] / peace_requirement[0]);
+        0 < J && t.fillRect(D - 2 - K, l - 2 - J, K, J);
+        K = Math.floor(l / 8);
+        K = 2 > K ? 2 : K;
+        i1(t, Math.floor(.4 * l), 0, l, K, .5, !1);
+        i1(t, Math.floor(D - 1.4 * l), 0, l, K, .5, !0);
+        t.drawImage(z, Math.floor((D - z.width) / 2), 3)
+    }
+
+    function k() {
+        has_voted = !0;
+        F = 140;
+        your_choice = 0;
+        voter_list = [];
+        peace.hidden = !1;
+        peace_progress[0] = peace_progress[1] = 0
+    }
+
+    function n() {
+        return troopsBar.mf(announcements.mc()) ? troopsBar.fK - l - m7 : clientHeight2 - l - (zoom ? 2 : 1) * m7
+    }
+    var l, x, t, z, your_choice, peace_progress, peace_requirement, voter_list, has_voted, F, G, N, I;
+    this.init = function() {
+        N = I = 0;
+        has_voted = this.hidden = !1;
+        F = 140;
+        your_choice = 0;
+        peace_progress = [0, 0];
+        peace_requirement = [1, 1];
+        voter_list = [];
+        G = new Uint32Array(10);
+        this.lx()
+    };
+    this.lx = function() {
+        l = troopsBar.cw;
+        this.width = 4 * l;
+        this.qf();
+        x = document.createElement("canvas");
+        x.width = this.width;
+        x.height = l;
+        t = x.getContext("2d", { alpha: !0 });
+        g()
+    };
+    this.eb = function() {
+        has_voted && g()
+    };
+    this.qf = function() {
+        var D = l - 6;
+        D = 6 > D ? 6 : D;
+        if (void 0 === z || z.width !== D) {
+            z = document.createElement("canvas");
+            z.width = D;
+            z.height = D;
+            var K = z.getContext("2d", { alpha: !0 });
+            K.clearRect(0, 0, D, D);
+            var J = Math.floor(D / 8);
+            J = 1 > J ? 1 : J;
+            K.lineWidth = J;
+            K.strokeStyle = cK;
+            var L = Math.floor(D / 2);
+            D = Math.floor((D - J) / 2);
+            K.beginPath();
+            K.arc(L, L, D, 0, 2 * Math.PI);
+            K.moveTo(L, L - D);
+            K.lineTo(L, L + D);
+            K.moveTo(L + Math.cos(.78 * Math.PI) * D, L + Math.cos(.28 * Math.PI) * D);
+            K.lineTo(L, L);
+            K.lineTo(L + Math.cos(.22 * Math.PI) * D, L + Math.cos(1.72 * Math.PI) * D);
+            K.stroke()
+        }
+    };
+    this.clicked = function(D, K) {
+        if (D < clientWidth2 - this.width - m7) return !1;
+        var choice = n();
+        if (K < choice || K > choice + l) return !1;
+        choice = D > clientWidth2 - m7 - this.width / 2;
+        singleplayer ? this.single_vote_peace(0, choice) : hu.isHuman(my_id) && 0 !== is_alive[my_id] && multiOut.vote_peace(choice);
+        return !0
+    };
+    this.update = function() {
+        if (0 < I) I--, 0 === I && k();
+        else if (this.hidden) {
+            F--;
+            var D;
+            if (D = 270 === F && 2 <= N) a: {
+                for (D = alive_count - 1; 0 <= D; D--)
+                    if (hu.isHuman(alive_entities[D])) {
+                        D = !1;
+                        break a
+                    } D = !0
+            }
+            D && (has_voted = !0, peace_progress[0] += peace_requirement[0]);
+            180 === F && 3 * peace_progress[0] < peace_requirement[0] ? k() : peace_progress[0] >= peace_requirement[0] ? endGame.gameEnd(-1) : peace_progress[1] >= peace_requirement[1] ? I = 4 : 0 >= F && k()
+        } else {
+            for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[orderedLand[D]]) && (F = 140), G[D] = land[orderedLand[D]];
+            D = 0 >= --F ? !0 : !1;
+            if (D) {
+                this.hidden = !0;
+                F = 360;
+                var K = 0;
+                for (D = alive_count - 1; 0 <= D; D--) hu.isHuman(alive_entities[D]) && (K += land[alive_entities[D]]);
+                peace_requirement[0] = max(divide_floor(3 * K, 5), 1);
+                team_game && 9 !== gamemode && (peace_requirement[0] =
+                    min(max(divide_floor(K * (100 - divide_floor(100 * eT.get_largest_team_total_land(), landPixels)), 100), 1), peace_requirement[0]));
+                peace_requirement[1] = max(K - peace_requirement[0], 1);
+                N++
+            }
+        }
+    };
+    this.iv = function() {
+        this.hidden && peace_progress[0] < peace_requirement[0] && k()
+    };
+    this.single_vote_peace = function(voter, choice) {
+        var index_then_voting_power;
+        if (this.hidden) {
+            for (index_then_voting_power = voter_list.length - 1; 0 <= index_then_voting_power; index_then_voting_power--)
+                if (voter_list[index_then_voting_power] === voter) return;
+            voter_list.push(voter);
+            has_voted = !0;
+            index_then_voting_power = singleplayer ? peace_requirement[0] : land[voter];
+            choice ? peace_progress[0] += index_then_voting_power : peace_progress[1] += index_then_voting_power;
+            voter === my_id && (your_choice = choice ? 1 : -1)
+        }
+    };
+    this.drawImage = function() {
+        if (this.hidden) {
+            var D = n();
+            mainCanvasCtx.drawImage(x, clientWidth2 - this.width - m7, D)
+        }
+    }
+}
+
+function TroopsBar() {
+    function g() {
+        if (attackFraction < 1 / 3) {
+            var I = Math.floor(540 * attackFraction);
+            return "rgba(" + I + ",180,0,0.75)"
+        }
+        if (attackFraction < 2 / 3) return I = Math.floor(540 * (attackFraction - 1 / 3)), "rgba(180," + (180 - I) + ",0,0.75)";
+        I = Math.floor(540 * (attackFraction - 2 / 3));
+        return "rgba(180,0," + I + ",0.75)"
+    }
+
+    function renderTroopBar() {
+        A.clearRect(0, 0, x, troopsBar.cw);
+        var I = Math.floor(attackFraction * (x - 2 * z));
+        A.fillStyle = hy;
+        A.fillRect(0, 0, z, troopsBar.cw);
+        A.fillRect(z + I, 0, x - z - I, troopsBar.cw);
+        A.fillStyle = g();
+        A.fillRect(z, 0, I, troopsBar.cw);
+        A.fillStyle = cK;
+        A.fillRect(0, 0, x, 1);
+        A.fillRect(0, troopsBar.cw - 1, x, 1);
+        A.fillRect(0, 0, 1, troopsBar.cw);
+        A.fillRect(z, 0, 1, troopsBar.cw);
+        A.fillRect(z + I, 0, 1, troopsBar.cw);
+        A.fillRect(x - z, 0, 1, troopsBar.cw);
+        A.fillRect(x - 1, 0, 1, troopsBar.cw);
+        I = 1 + Math.floor(.0625 * troopsBar.cw);
+        var D = 1 + Math.floor(.3 * troopsBar.cw);
+        A.fillRect(Math.floor(.25 * troopsBar.cw) + D, Math.floor((troopsBar.cw - I) / 2), troopsBar.cw - 2 * D, I);
+        A.fillRect(Math.floor(x - 1.25 * troopsBar.cw) + D, Math.floor((troopsBar.cw - I) / 2), troopsBar.cw - 2 * D - D % 2, I);
+        A.fillRect(Math.floor(x - 1.25 * troopsBar.cw) + Math.floor((troopsBar.cw - I) / 2), D, I, troopsBar.cw - 2 * D - D % 2);
+        E = Math.floor(troops[my_id] * attackFraction);
+        A.fillText(eP.split_into_pieces(E), Math.floor(x / 2), Math.floor(.55 * troopsBar.cw))
+    }
+
+    function multiplyAttackFraction(multiplier) {
+        if (1 < multiplier && 0 === attackFraction) return attackFraction = .01, renderTroopBar(), !0;
+        if (1 < multiplier && 1 === attackFraction || 0 === attackFraction) return !1;
+        attackFraction *= multiplier;
+        attackFraction = 1 < attackFraction ? 1 : 0 > attackFraction ? 0 : attackFraction;
+        renderTroopBar();
+        return !0
+    }
+
+    function l(I) {
+        var D = attackFraction;
+        attackFraction = (I - t - z) / (x - 2 * z);
+        attackFraction = 0 > attackFraction ? 0 : attackFraction;
+        attackFraction = 1 < attackFraction ? 1 : attackFraction;
+        return D !== attackFraction ? (renderTroopBar(), !0) : !1
+    }
+    var x, t, z, y, A, B, attackFraction, E, F, G, N = 11 / 12;
+    this.init = function() {
+        B = !in_spawn;
+        G = !1;
+        attackFraction = .5;
+        E = 0;
+        this.pV = !1;
+        this.lx()
+    };
+    this.lx = function() {
+        zoom && clientWidth2 < .8 * clientHeight2 ? (this.cw = Math.floor(.0536 * averageWindowLength), x = clientWidth2 - 4 * m7 - this.cw) : (x = Math.floor((zoom ? .65 : .389) * averageWindowLength), x += 12 - x % 12, this.cw = Math.floor(x / 12));
+        z = Math.floor(3 * this.cw / 2);
+        F = bt + Math.floor(.5 * this.cw) + bu;
+        y = document.createElement("canvas");
+        y.width = x;
+        y.height = this.cw;
+        A = y.getContext("2d", {
+            alpha: !0
+        });
+        A.font = F;
+        A.textBaseline = cI;
+        A.textAlign = cJ;
+        this.qu();
+        renderTroopBar()
+    };
+    this.qu = function() {
+        t = zoom && clientWidth2 < .8 * clientHeight2 ? this.cw + 3 * m7 : Math.floor((clientWidth1 - x) / 2);
+        this.fK = clientHeight1 - this.cw - (zoom ? 2 : 1) * m7
+    };
+    this.eb = function() {
+        G && (G = !1, renderTroopBar())
+    };
+    this.hidden = function() {
+        return !(!B || fq.menuOpen && t < Math.floor(m7 + 5.5 * this.cw))
+    };
+    this.mf = function(I) {
+        return this.hidden() ? t + x > clientWidth2 - I - m7 : !1
+    };
+    this.cE = function() {
+        B = !0
+    };
+    this.qj = function() {
+        B = !1
+    };
+    this.attackRatio = function() {
+        var ratio = Math.floor(1E3 * attackFraction);
+        return 0 >= ratio ? 1 : 1E3 < ratio ? 1E3 : ratio
+    };
+    this.pR = function(I, D) {
+        return this.hidden() && I > t && I < t + x && D > this.fK
+    };
+    this.pS = function(I, D) {
+        if (!this.hidden()) return !1;
+        if (I > t && I < t + z && D > troopsBar.fK) return multiplyAttackFraction(N);
+        if (I > t + x - z && I < t + x && D > troopsBar.fK) return multiplyAttackFraction(1 / N);
+        this.pV = !0;
+        return l(I)
+    };
+    this.changeAttackFraction = function(multiplier) {
+        0 !== client_status && this.hidden() && multiplyAttackFraction(multiplier) && (c4.canvasPendingUpdates = !0)
+    };
+    this.pd = function(I) {
+        if (0 === I || !this.hidden()) return !1;
+        0 < I ? (I = 400 / (400 + I), I = I < N ? N : I) : (I = (400 - I) / 400, I = I > 1 / N ? 1 / N : I);
+        return multiplyAttackFraction(I)
+    };
+    this.lo = function(I, D) {
+        return this.pV ? l(I, D) : !1
+    };
+    this.pY = function() {
+        this.pV = !1
+    };
+    this.update = function() {
+        this.hidden() && Math.floor(troops[my_id] * attackFraction) !== E && (G = !0)
+    };
+    this.drawImage = function() {
+        this.hidden() && mainCanvasCtx.drawImage(y, t, this.fK)
+    }
+}
+var g7, gC, gD;
+
+function k5() {
+    var g, k, n, l, x, t, z;
+    this.init = function() {
+        g = Array(2);
+        k = Array(2);
+        this.gk = !1;
+        z = t = gD = gC = 0;
+        g7 = 1;
+        this.lx()
+    };
+    this.lx = function() {
+        n = Math.floor((zoom ? .072 : .0502) * averageWindowLength);
+        n = 8 > n ? 8 : n;
+        for (var y = 1; 0 <= y; y--) g[y] = document.createElement("canvas"), g[y].width = n, g[y].height = n, k[y] = g[y].getContext("2d", {
+            alpha: !0
+        });
+        this.qu();
+        y = Math.floor(1 + n / 20);
+        for (var A = 1; 0 <= A; A--) k[A].clearRect(0, 0, n, n), k[A].fillStyle = oF, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].fill(), k[A].lineWidth = y, k[A].fillStyle = oJ, k[A].strokeStyle =
+            oJ, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), i1(k[A], 0, 0, n, y, .3, 0 === A)
+    };
+    this.to_x = function() {
+        return -gC / g7
+    };
+    this.to_y = function() {
+        return -gD / g7
+    };
+    this.gw = function(y, A) {
+        gC = g7 * y - A
+    };
+    this.gx = function(y, A) {
+        gD = g7 * y - A
+    };
+    this.clicked = function(y, A) {
+        if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pd(Math.floor(clientWidth1 / 2), Math.floor(clientHeight1 / 2), -200) : this.pd(Math.floor(clientWidth1 / 2), Math.floor(clientHeight1 / 2), 200);
+        eV.h0() && (this.gk = !0, t = y, z = A);
+        return !1
+    };
+    this.lo = function(y, A) {
+        if (!eV.h0()) return !0;
+        var B = gC,
+            C = gD,
+            E = t - y,
+            F = z - A;
+        gC += E;
+        gD += F;
+        eA.lo(E, F);
+        this.rK();
+        t = y;
+        z = A;
+        return B !== gC || C !== gD
+    };
+    this.pd = function(y, A, B) {
+        if (!eV.h0()) return !0;
+        if (0 < B) B = 450 / (450 + B), B = .5 > B ? .5 : B;
+        else if (0 > B) B = (450 - B) / 450, B = 2 < B ? 2 : B;
+        else return !1;
+        this.rL(y, A, B);
+        return !0
+    };
+    this.rL = function(y, A, B) {
+        B = 1024 < B * g7 ? 1024 / g7 : B;
+        B = .125 > B * g7 ? .125 / g7 : B;
+        eA.zoom(B, y, A);
+        g7 *= B;
+        gC = (gC + y) * B - y;
+        gD = (gD + A) * B - A;
+        gj.rK()
+    };
+    this.rK = function() {
+        var y = clientWidth2 / 16,
+            A = 0,
+            B = clientHeight2 / 16,
+            C = 0;
+        gC < -clientWidth2 + y && (A = -clientWidth2 + y - gC);
+        gC > g7 * map_width - y && (A = g7 * map_width - y -
+            gC);
+        gD < -clientHeight2 + B && (C = -clientHeight2 + B - gD);
+        gD > g7 * map_height - B && (C = g7 * map_height - B - gD);
+        gC += A;
+        gD += C;
+        gy.gz();
+        eA.rS(A, C)
+    };
+    this.qu = function() {
+        l = clientWidth1 - n - m7;
+        x = Math.floor(clientHeight1 / 2 - 1.25 * n)
+    };
+    this.drawImage = function() {
+        mainCanvasCtx.drawImage(g[0], l, x);
+        mainCanvasCtx.drawImage(g[1], l, Math.floor(x + 3 * n / 2))
+    }
+}
+
+function Playtime() {
+    function g() {
+        A = Math.floor(.2 * (zoom ? .07 : .035) * averageWindowLength);
+        A = max(zoom ? 3 : 1, A);
+        var P = clientWidth2 / (playTime.length + B);
+        A = P > A ? P : A;
+        H = Math.floor((1 - B) * A);
+        z = 0;
+        k()
+    }
+
+    function k() {
+        z = -20 > z ? -20 : z;
+        z = z > (playTime.length - 15) * A ? (playTime.length - 15) * A : z;
+        E = Math.floor(z / A);
+        F = E + Math.floor(clientWidth1 / A);
+        F = F > playTime.length - 1 ? playTime.length - 1 : F;
+        E = F < E ? F : E;
+        E = 0 > E ? 0 : E;
+        var P = F;
+        C = y / playTime[P];
+        for (var U = F - 1; U >= E; U--) playTime[U] > playTime[P] && (P = U, C = y / Math.pow(playTime[U], L))
+    }
+
+    function n(P) {
+        P = Math.floor((z + clientWidth1 - P - B * A) / A);
+        P = -1 > P ? -1 : -1 === P ? 0 : P > playTime.length - 1 ? -1 : P;
+        return P !== G ? (G = P, -1 === M && 0 === G && playtimeUpdated && (M = setInterval(addCurrentPlayTime, 100)), !0) : !1
+    }
+
+    function l(P) {
+        var U = Math.floor(C * Math.pow(playTime[P], L));
+        mainCanvasCtx.fillRect(z + clientWidth1 - (P + 1) * A, clientHeight1 - U, H, U)
+    }
+
+    function addCurrentPlayTime() {
+        8 === aJ.getState() && (G = -1);
+        if (0 !== G) Q = (new Date).getTime(), clearInterval(M), M = -1;
+        else {
+            var playtimeGainedPerSecond = playTime[1] / 864E3;
+            if (-1 !== Q) {
+                var U = (new Date).getTime();
+                playtimeGainedPerSecond += (U - Q) * playTime[1] / 864E5;
+                Q = -1
+            }
+            0 < playtimeGainedPerSecond && (playTime[0] += Math.floor(playtimeGainedPerSecond), c4.canvasPendingUpdates = !0)
+        }
+    }
+    var playTime, z, y, A, B, C, E, F, G, N, I, D, K, playtimeUpdated, L, H, M, Q, R;
+    this.init = function() {
+        Q = M = -1;
+        playtimeUpdated = !1;
+        L = 1;
+        G = -1;
+        this.ri = !1;
+        K = 0;
+        D = new Date;
+        z = 0;
+        B = .3;
+        R = [];
+        R.push({
+            group: "Plateau A",
+            b3: 0,
+            pL: 57
+        });
+        R.push({
+            group: "Max A",
+            b3: 1,
+            pL: 1
+        });
+        R.push({
+            group: "Black Friday",
+            b3: 15,
+            pL: 15
+        });
+        R.push({
+            group: "Max B",
+            b3: 19,
+            pL: 19
+        });
+        R.push({
+            group: "Max C",
+            b3: 44,
+            pL: 44
+        });
+        R.push({
+            group: "First Android Version",
+            b3: 58,
+            pL: 58
+        });
+        R.push({
+            group: "Max D",
+            b3: 67,
+            pL: 67
+        });
+        R.push({
+            group: "The iFrame Explosion",
+            b3: 98,
+            pL: 99
+        });
+        R.push({
+            group: "The 155-Day Uptrend",
+            b3: 58,
+            pL: 213
+        });
+        R.push({
+            group: "Max E",
+            b3: 213,
+            pL: 213
+        });
+        R.push({
+            group: "Plateau B",
+            b3: 214,
+            pL: 259
+        });
+        R.push({
+            group: "Turbulent Times",
+            b3: 260,
+            pL: 344
+        });
+        R.push({
+            group: "Max F",
+            b3: 262,
+            pL: 262
+        });
+        R.push({
+            group: "Max G",
+            b3: 282,
+            pL: 282
+        });
+        R.push({
+            group: "Max H",
+            b3: 333,
+            pL: 333
+        });
+        R.push({
+            group: "The 19-Day Downtrend",
+            b3: 283,
+            pL: 301
+        });
+        R.push({
+            group: "Plateau C",
+            b3: 345,
+            pL: 385
+        });
+        R.push({
+            group: "The Alliance Ascent",
+            b3: 386,
+            pL: 395
+        });
+        R.push({
+            group: "Max I",
+            b3: 395,
+            pL: 395
+        });
+        R.push({
+            group: "First iOS Version",
+            b3: 411,
+            pL: 411
+        });
+        R.push({
+            group: "Plateau D",
+            b3: 396,
+            pL: 453
+        });
+        R.push({
+            group: "The TikTok Revolution",
+            b3: 454,
+            pL: 470
+        });
+        R.push({
+            group: "Max J",
+            b3: 456,
+            pL: 456
+        });
+        R.push({
+            group: "Max K",
+            b3: 472,
+            pL: 472
+        });
+        R.push({
+            group: "Max L",
+            b3: 478,
+            pL: 478
+        });
+        R.push({
+            group: "YT Drew",
+            b3: 471,
+            pL: 485
+        });
+        R.push({
+            group: "Plateau E",
+            b3: 485,
+            pL: 600
+        });
+        R.push({
+            group: "Uptrend A",
+            b3: 600,
+            pL: 613
+        });
+        R.push({
+            group: "Max M",
+            b3: 613,
+            pL: 613
+        });
+        R.push({
+            group: "Downtrend A",
+            b3: 614,
+            pL: 635
+        });
+        R.push({
+            group: "Plateau F",
+            b3: 636,
+            pL: 737
+        });
+        R.push({
+            group: "End of Record",
+            b3: 738,
+            pL: 738
+        });
+        R.push({ //Troll
+            group: "Age of Scripts",
+            b3: 802,
+            pL: 9999
+        });
+        playTime = [208644377, 208644377, 208644377, 206964709, 205156594, 250680803, 249089835, 234476552, 252346209, 263196406, 270821533, 291436400, 294907103, 288866179, 297960890, 310165928, 323215738, 326005712, 312078872, 282668674, 268883231, 261100885, 247870209, 240175828, 231697235, 240614202, 237647174, 230525212, 228239099, 226070733, 215992739, 216961676, 231079584, 235793502, 234032821, 228402462,
+            216942832, 211862670, 209792418, 220626495, 221020535, 228198633, 226910806, 227687295, 210969547, 197393506, 205629061, 215820135, 213694935, 209455870, 215822584, 215130299, 214034219, 229190414, 230055290, 225313791, 223398523, 231870169, 226224938, 218242706, 235891029, 210498444, 195329116, 187676007, 183432634, 175752106, 170096205, 173369342, 171454357, 185810310, 189616577, 190788861, 179291487, 179513980, 189122353, 188375572, 202060722, 203256609, 197948652, 191950448, 194693217, 196335490, 195911919, 202264283, 199251620, 193699336, 188441210,
+            183419345, 195919988, 198126823, 199780788, 197440550, 190144884, 179139362, 166469099, 178827877, 183801980, 197952484, 188875861, 185919783, 186237411, 182504952, 183532013, 174109004, 178159701, 161031347, 194622838, 205645645, 200496457, 194773327, 194546481, 207893217, 210920126, 213376144, 173859897, 154326886, 158943729, 166772975, 175066046, 177406405, 179018562, 185986119, 186747583, 200787939, 208959937, 161987576, 185512400, 185788899, 185957487, 194591063, 215634157, 230579314, 237637383, 240518707, 221398239, 225230795, 224891285, 211292916,
+            216944626, 219436299, 226523918, 232405568, 232166426, 216921782, 244767964, 257278946, 243548100, 237386943, 242802627, 229717622, 168149709, 259971896, 267057767, 257606635, 209857364, 126035568, 129833237, 151312703, 197006695, 73120657, 37551024, 39229432, 29517736, 29382631, 31512045, 42652097, 47363019, 49624906, 46687310, 33767120, 31230439, 34211643, 43094531, 53747053, 55380682, 49779117, 47748833, 21038802, 20406484, 24523793, 26566139, 25284142, 26825553, 23497443, 20291865, 17765022, 21291320, 21106123, 19050128, 18324426, 19044067, 19594721,
+            19347845, 23365124, 24186529, 19824881, 17952812, 17093838, 17328579, 17607296, 21284737, 22551012, 20471281, 19350848, 19654931, 18725460, 18641926, 23301269, 25178902, 21617041, 21433781, 21078957, 19526047, 18665064, 21394401, 21575049, 19286677, 18018450, 17550775, 17282428, 17055509, 19348704, 20177845, 19766211, 19088037, 18118802, 18269428, 18500614, 19130220, 19351798, 19205188, 19489961, 20233286, 20726811, 23245145, 26158741, 26096642, 24424181, 23690661, 22967492, 21098008, 20325973, 19431907, 17008295, 15583096, 14209752, 14307184, 13541498,
+            12822679, 13154311, 12161194, 12956543, 11435697, 13428928, 12262514, 12858519, 12405344, 12884309, 14410011, 15556681, 15260178, 14863807, 13861458, 15176144, 14089849, 13063987, 12378716, 13061867, 13118900, 13112653, 13137263, 13062253, 13126875, 14136833, 14711852, 14341250, 11888270, 13137006, 12830841, 12516937, 12783789, 13139393, 12931E3, 12857582, 13677329, 13892963, 13171528, 14135236, 14640750, 15677970, 16758399, 19125177, 17723446, 16469484, 17032884, 19792603, 21426397, 22032534, 20271251, 16190176, 16772813, 17675977, 18764026, 18346209,
+            19576834, 20989792, 21350839, 14696885, 14653075, 14677999, 14958759, 14210260, 15488352, 15623604, 14473144, 12823062, 14869909, 15142264, 15567014, 17896725, 20081347, 17765006, 12763925, 13523610, 13979983, 15080856, 17116394, 18483238, 18084320, 12100282, 12221529, 12441579, 12058220, 12441689, 12821546, 13401583, 13009895, 12271066, 12210094, 12355642, 13737115, 14257807, 14904897, 14072161, 15640387, 15721803, 16397970, 19254839, 21608906, 20527471, 16596206, 15550563, 14385591, 15547262, 13174302, 12462319, 13000669, 12832541, 12186376, 13150940,
+            14654379, 14299386, 14158528, 15185971, 12444117, 14253445, 15049053, 14123310, 16892853, 15963931, 11858727, 10012703, 9478191, 9193460, 8851082, 9298848, 9638204, 9442496, 8653593, 9093527, 8530977, 8809114, 9609612, 9906912, 9615756, 9477879, 9713075, 9126583, 8949378, 9577595, 10180186, 9858705, 9534213, 9184660, 8889455, 8311313, 9738346, 9772164, 9157791, 8445413, 8467279, 8756002, 9257951, 10213536, 10620530, 10352296, 9350531, 9118709, 9614237, 9692491, 10801215, 10984804, 9542309, 9609538, 9391430, 9515517, 10064494, 11061684, 10408005, 9794768,
+            9297643, 9275992, 9394076, 9716084, 10045958, 9715229, 9091248, 10010584, 9845528, 9532588, 8986320, 9037708, 9820996, 8953464, 9074064, 8644692, 8025308, 8832112, 10785788, 10539708, 8908744, 8331216, 8858100, 8626840, 7666284, 8503372, 8855308, 6762540, 6414076, 6786692, 6445532, 6262192, 5918176, 5864376, 5464928, 5384996, 5942760, 5261972, 5404612, 6184860, 6312948, 5815660, 5208552, 4734392, 4538784, 4661404, 5145524, 4819368, 4369224, 4458584, 4289956, 3538288, 3517544, 3871876, 3388048, 3344796, 3089228, 2863676, 2268964, 2160500, 2580004, 2244356, 2018408,
+            1688912, 1945368, 1796332, 1619260, 2060292, 1597656, 1472788, 1306208, 1171408, 1021096, 1109312, 1241276, 1305092, 1142748, 1157700, 991984, 786992, 786396, 1043956, 1029320, 860500, 834824, 841912, 736464, 690328, 878376, 907232, 794932, 646388, 752600, 672836, 636212, 794108, 746856, 642928, 671328, 493568, 458168, 428776, 464736, 371412, 314568, 225472, 252072, 227604, 251048, 269184, 174136, 825576, 536060, 165952, 153252, 180036, 149616, 138472, 157832, 188152, 180108, 134076, 70960, 89236, 111428, 60520, 74620, 73424, 74720, 71584, 94432, 62572, 66420, 32532,
+            34452, 41048, 51372, 61916, 43236, 55172, 26776, 47E3, 57424, 93100, 64980, 37288, 44296, 34588, 40700, 29200, 24604, 18184, 42660, 31404, 38096, 18556, 17388, 19568, 17604, 22328, 40300, 39392, 33440, 17960, 7984, 11612, 67700, 14108, 22444, 19756, 9436, 16864, 14400, 17216, 14436, 8612, 15952, 29764, 18748, 16348, 23976, 22080, 20268, 20984, 9480, 30736, 15996, 9484, 9392, 9716, 21540, 57428, 24788, 18728, 8528, 5972, 20560, 18268, 28088, 15364, 15300, 29348, 30992, 20564, 34420, 16716, 14424, 12360, 15124, 51172, 13176
+        ];
+        this.lx();
+        websocket_manager.rk(0, 0)
+    };
+    this.lx = function() {
+        y = Math.floor(.15 * clientHeight2);
+        N = Math.floor((zoom ? .018 : .0137) * averageWindowLength);
+        N = 10 > N ? 10 : N;
+        I = bt + N + bu;
+        g()
+    };
+    this.rm = function() {
+        playtimeUpdated || multiOut.requestPlaytimes()
+    };
+    this.appendPlayTimes = function(P) {
+        var U;
+        playtimeUpdated = !0;
+        for (U = 0; U < P.length; U++) playTime.unshift(P[U]);
+        g();
+        c4.canvasPendingUpdates = !0
+    };
+    this.rs = function() {
+        k()
+    };
+    this.lo = function(P, U) {
+        U > clientHeight1 - .6 * y ? this.ri ? P !== K && (z += P - K, K = P, k(), n(P), this.ri = -1 !== G, c4.canvasPendingUpdates = !0) : n(P) && (c4.canvasPendingUpdates = !0) : this.pW()
+    };
+    this.pW = function() {
+        -1 !== G && (this.ri = !1, G = -1, c4.canvasPendingUpdates = !0)
+    };
+    this.pd = function(P, U) {
+        -1 !== G && (z += Math.floor(U), k(), n(P), c4.canvasPendingUpdates = !0)
+    };
+    this.clicked = function(P, U) {
+        this.lo(P, U); 
+        -1 !== G && (K = P, this.ri = !0)
+    };
+    this.pX = function() {
+        -1 !== G && (this.ri = !1)
+    };
+    this.drawImage = function() {
+        mainCanvasCtx.fillStyle = of ;
+        for (var P = F; P >= E; P--) l(P);
+        playtimeUpdated && 0 === E && (mainCanvasCtx.fillStyle = oV, l(0)); - 1 !== G && (mainCanvasCtx.fillStyle = oe, l(G));
+        if (-1 !== G) {
+            mainCanvasCtx.font = I;
+            mainCanvasCtx.textBaseline = ok;
+            P = new Date;
+            P.setTime(D.getTime() - 864E5 * G);
+            var U = "month",
+                W = "day";
+            "undefined" !== typeof Intl && (U = (new Intl.DateTimeFormat("en-US", {
+                month: "long"
+            })).format(P), W = (new Intl.DateTimeFormat("en-US", {
+                weekday: "long"
+            })).format(P));
+            P = W + ", " + P.getUTCDate() + " " + U + " " + P.getFullYear();
+            var X = 1 === playTime[G] ? " second played" : " seconds played";
+            X = eP.split_into_pieces(playTime[G]) + X;
+            var V = Math.floor(mainCanvasCtx.measureText(P).width),
+                na = Math.floor(mainCanvasCtx.measureText(X).width),
+                ba = Math.floor(.5 * (V + N));
+            U = z + clientWidth1 - (G + 1) * A;
+            U = U < ba ? ba : U > clientWidth1 - ba ? clientWidth1 - ba : U;
+            W = clientHeight1 - Math.floor(C * Math.pow(playTime[G], L));
+            var ca = Math.floor(1.1 * N),
+                pa = W > clientHeight1 - ca ? clientHeight1 - ca : W;
+            mainCanvasCtx.fillStyle = hy;
+            mainCanvasCtx.fillRect(clientWidth1 - na - N, pa - ca, na + N, ca);
+            mainCanvasCtx.fillRect(U - ba, clientHeight1 - ca, V + N, ca);
+            mainCanvasCtx.fillStyle = cK;
+            mainCanvasCtx.textAlign = ol;
+            mainCanvasCtx.fillText(X, Math.floor(clientWidth1 - .5 * N), pa);
+            X = pa - 2 * ca;
+            V = -1;
+            na = playTime.length - G - 1;
+            for (ba = R.length - 1; 0 <= ba; ba--) (na >= R[ba].b3 && na <= R[ba].pL && (-1 === V || R[ba].pL - R[ba].b3 < R[V].pL - R[V].b3) && (V = ba))
+            if (-1 !== V) {
+                na = Math.floor(mainCanvasCtx.measureText(R[V].group).width);
+                mainCanvasCtx.fillStyle = hy;
+                mainCanvasCtx.fillRect(clientWidth1 - na - N, X, na + N, ca);
+                mainCanvasCtx.fillStyle = cK;
+                mainCanvasCtx.fillText(R[V].group, Math.floor(clientWidth1 - .5 * N), X + ca);
+            }
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.fillText(P, U, clientHeight1);
+            mainCanvasCtx.strokeStyle = nZ;
+            mainCanvasCtx.lineWidth = 1;
+            mainCanvasCtx.beginPath();
+            mainCanvasCtx.moveTo(0, W);
+            mainCanvasCtx.lineTo(clientWidth1, W);
+            mainCanvasCtx.closePath();
+            mainCanvasCtx.stroke()
+        }
+    }
+}
+
+function k7() {
+    this.cw = this.fJ = 0;
+    var g, k, n, l, x, t, z, y, A, B, C, E, F;
+    this.init = function() {
+        x = starting_troops;
+        C = "rgba(0,100,0,0.8)";
+        E = "rgba(150,0,0,0.8)";
+        B = !0;
+        y = !1;
+        A = troops[my_id];
+        this.lx()
+    };
+    this.lx = function() {
+        k = Math.floor((zoom ? .305 : .24) * averageWindowLength);
+        this.cw = Math.floor(.5 + .13 * k);
+        k = Math.floor(6 * this.cw);
+        g = bt + Math.floor(.8 * this.cw) + bu;
+        F = Math.floor(.5 * this.cw);
+        pl.font = g;
+        n = m7;
+        l = Math.floor(1 + .13 * this.cw);
+        t = document.createElement("canvas");
+        t.width = k;
+        t.height = this.cw;
+        z = t.getContext("2d", {
+            alpha: !0
+        });
+        z.font = g;
+        z.textBaseline = cI;
+        z.textAlign = cJ;
+        this.sD()
+    };
+    this.qF = function() {
+        return zoom && clientWidth2 < 1.2 * clientHeight2
+    };
+    this.qu = function() {
+        this.qF() ? this.fJ = clientWidth1 - k - m7 : this.fJ = Math.floor(eM.sE() + (clientWidth1 - eM.sE() - eB.width - k) / 2 - .5 * m7)
+    };
+    this.eb = function() {
+        y && (y = !1, this.sD())
+    };
+    this.sD = function() {
+        z.clearRect(0, 0, k, this.cw);
+        z.fillStyle = B ? C : E;
+        z.fillRect(0, 0, k, this.cw);
+        z.fillStyle = oe;
+        this.sF();
+        this.sG();
+        z.fillStyle = troops[my_id] >= interest.maxTroopsBeforeRedInterest(my_id) ? oZ : cK;
+        z.fillText(eP.split_into_pieces(A), Math.floor(k / 2), F);
+        z.fillStyle = cK;
+        z.fillRect(0, 0, k, 1);
+        z.fillRect(0, 0, 1, this.cw);
+        z.fillRect(0, this.cw - 1, k, 1);
+        z.fillRect(k - 1, 0, 1, this.cw)
+    };
+    this.sF =
+        function() {
+            var G = Math.floor((interest.getInterestTicksRemaining() - 1) * this.cw / 9);
+            G = min(G, this.cw - l);
+            z.fillRect(0, G, l, this.cw - G);
+            z.fillRect(k - l, G, l, this.cw - G)
+        };
+    this.sG = function() {
+        z.fillRect(l, this.cw - l, Math.floor((k - 2 * l) * troops[my_id] / x), l)
+    };
+    this.update = function() {
+        0 !== is_alive[my_id] && 2 !== player_status[my_id] && A !== troops[my_id] && (x = max(troops[my_id], x), B = troops[my_id] > A && 10 <= troops[my_id], A = troops[my_id], y = !0)
+    };
+    this.drawImage = function() {
+        0 === is_alive[my_id] || in_spawn || 2 === player_status[my_id] || mainCanvasCtx.drawImage(t, this.fJ, n)
+    }
+}
+var sI, qU, sJ, sK, sL, orderedLand, sM;
+
+function k8() {
+    function g() {
+        var S;
+        B.clearRect(0, 0, sI, qU);
+        B.fillStyle = oU;
+        B.fillRect(0, 0, sI, N);
+        B.fillStyle = oH;
+        B.fillRect(0, N, sI, qU - N);
+        sM[my_id] >= V && n(sM[my_id] - V, oT);
+        0 !== sM[my_id] && 0 === V && n(0, oS); - 1 !== X && n(X, m0);
+        B.fillStyle = oJ;
+        B.fillRect(0, N, sI, 1);
+        B.fillRect(0, 0, sI, ox);
+        B.fillRect(0, 0, ox, qU);
+        B.fillRect(sI - ox, 0, ox, qU);
+        B.fillRect(0, qU - ox, sI, ox);
+        B.font = sJ;
+        B.textBaseline = cI;
+        B.textAlign = cJ;
+        B.fillText(Q, Math.floor(sI / 2), Math.floor(F + sL / 2));
+        var O = sM[my_id] < V + y - 1 ? 1 : 2;
+        B.font = sK;
+        B.textAlign = mj;
+        for (S = y - O; 0 <= S; S--) k(orderedLand[S + V]),
+            l(S, S + V, orderedLand[S + V]);
+        B.textAlign = ol;
+        for (S = y - O; 0 <= S; S--) k(orderedLand[S + V]), x(S, orderedLand[S + V]);
+        2 === O && (k(my_id), B.textAlign = mj, l(y - 1, sM[my_id], my_id), B.textAlign = ol, x(y - 1, my_id));
+        0 === V && (S = .7 * I / sprites.bz(4).height, B.setTransform(S, 0, 0, S, Math.floor(D + .58 * I + .5 * S * sprites.bz(4).width), Math.floor(F + sL + .4 * I)), B.imageSmoothingEnabled = !0, B.drawImage(sprites.bz(4), -Math.floor(sprites.bz(4).width / 2), -Math.floor(sprites.bz(4).height / 2)), B.setTransform(1, 0, 0, 1, 0, 0))
+    }
+
+    function k(S) {
+        team_game && (B.fillStyle = teams.su[teams.im[teams.team_array[S]]])
+    }
+
+    function n(S, O) {
+        B.fillStyle = O;
+        S = S > y - 1 ? y - 1 : S;
+        var T = Math.floor((S === y - 1 ? 2 : 0 === S ? 1.15 : 1) * I);
+        T = S === y - 2 ? Math.floor(N + 9.15 * I) - Math.floor(N + 8.15 * I) : T;
+        B.fillRect(0, Math.floor(N + (S + (0 === S ? 0 : .15)) * I), sI, T)
+    }
+
+    function l(S, O, T) {
+        B.fillText(R[O], D, Math.floor(F + sL + (S + .5) * I));
+        1 === player_status[T] && (B.font = om + sK);
+        B.fillText(H[T] === T ? nickname[T] : L[H[T] % max_entities], K, Math.floor(F + sL + (S + .5) * I));
+        0 !== player_status[T] && (B.font = sK)
+    }
+
+    function x(S, O) {
+        B.fillText(land[O], J, Math.floor(F + sL + (S + .5) * I))
+    }
+
+    function t(S) {
+        S -= m7 + N;
+        if (0 > S) return Math.floor(S / I) - 1;
+        if (S < (y - 1) * I) return Math.floor(S / I);
+        if (S < qU - N) return y -
+            1;
+        S -= qU - N;
+        return y + Math.floor(S / I)
+    }
+
+    function z(S, O) {
+        return S >= m7 && S < m7 + sI && O >= m7 && O < m7 + qU
+    }
+    var y, A, B, C, const_maxEntities, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, W, X, V, na, ba, ca, pa;
+    this.init = function() {
+        var S, O;
+        na = 0;
+        ba = !1;
+        pa = ca = 0;
+        Q = "LEADERBOARD";
+        X = -1;
+        y = zoom ? 6 : 10;
+        V = 0;
+        W = !1;
+        P = new Uint16Array(y + 1);
+        U = new Uint32Array(y + 1);
+        const_maxEntities = max_entities;
+        orderedLand = new Uint16Array(const_maxEntities);
+        sM = new Uint16Array(const_maxEntities);
+        for (S = const_maxEntities - 1; 0 <= S; S--) orderedLand[S] = S, sM[S] = S;
+        this.lx(!0);
+        L = [];
+        H = new Uint16Array(max_entities);
+        M = new Uint16Array(max_entities);
+        var T = Math.floor(sI - K - D - C),
+            Y = 0;
+        R = Array(max_entities);
+        B.font = sK;
+        for (S = max_entities - 1; 0 <= S; S--)
+            if (R[S] =
+                S + 1 + ".", H[S] = S, M[S] = Math.floor(B.measureText(nickname[S]).width), M[S] > T) {
+                var Z = nickname[S];
+                for (O = nickname[S].length - 1; 1 <= O && !(Z = Z.substring(0, O), M[S] = Math.floor(B.measureText(Z + "...").width), M[S] <= T); O--);
+                Z += "...";
+                L.push(Z);
+                H[S] = max_entities + Y++
+            } g()
+    };
+    this.lx = function(S) {
+        zoom ? (sI = Math.floor(.335 * averageWindowLength), qU = Math.floor(y * sI / 8)) : (sI = Math.floor(.27 * averageWindowLength), qU = Math.floor(y * sI / 10));
+        sI = Math.floor(.97 * sI);
+        A = document.createElement("canvas");
+        A.width = sI;
+        A.height = qU;
+        B = A.getContext("2d", {
+            alpha: !0
+        });
+        F = .025 * sI;
+        sL = .16 * sI;
+        G = 0 * sI;
+        N = Math.floor(.45 * F + sL);
+        I = (qU - sL - 2 * F - G) / y;
+        sJ = bt + Math.floor(.55 * sL) + bu;
+        sK = Math.floor(.6 * I) + bu;
+        B.font = sK;
+        D = Math.floor(B.measureText("555").width);
+        K = Math.floor(B.measureText("555600.00").width);
+        C = Math.floor(B.measureText("00920600").width);
+        B.font = sJ;
+        J = sI - D;
+        if (!S) {
+            B.font = sK;
+            for (S = max_entities - 1; 0 <= S; S--) M[S] = Math.floor(B.measureText(H[S] === S ? nickname[S] : L[H[S] % max_entities]).width);
+            g()
+        }
+    };
+    this.sE = function() {
+        return sI
+    };
+    this.eb = function(S) {
+        W && (S || 14 >= so && 0 === c4.ticksElapsed() % 6 || 14 < so) && (W = !1, g())
+    };
+    this.update = function() {
+        for (var S = const_maxEntities - 1; 0 <= S; S--)
+            if (0 === is_alive[orderedLand[S]]) {
+                var O =
+                    S,
+                    T = orderedLand[O];
+                for (const_maxEntities--; O < const_maxEntities; O++) orderedLand[O] = orderedLand[O + 1], sM[orderedLand[O]] = O;
+                orderedLand[const_maxEntities] = T;
+                sM[orderedLand[const_maxEntities]] = const_maxEntities
+            } T = const_maxEntities - 1;
+        for (O = 0; O < T; O++) land[orderedLand[O]] < land[orderedLand[O + 1]] && (S = orderedLand[O], orderedLand[O] = orderedLand[O + 1], orderedLand[O + 1] = S, sM[orderedLand[O]] = O, sM[orderedLand[O + 1]] = O + 1);
+        a: {
+            S = W;W = !0;
+            for (O = T = sM[my_id] >= y - 1 ? y - 2 : y - 1; 0 <= O; O--)
+                if (P[O] !== orderedLand[O] || U[O] !== land[orderedLand[O]]) break a;
+            if (T !== y - 2 || P[y] === sM[my_id] && U[y] === land[my_id]) W = S
+        }
+        for (S = y - 1; 0 <= S; S--) P[S] = orderedLand[S], U[S] = land[orderedLand[S]];
+        P[y] = sM[my_id];
+        U[y] = land[my_id]
+    };
+    this.clicked = function(S, O) {
+        if (z(S, O)) {
+            na = c4.time;
+            ba = !0;
+            ca = pa = t(O);
+            if (isTouch) {
+                var T = t7(-1, pa, y);
+                T = T === y ? -1 : T;
+                X !== T && (X = T, g(), c4.canvasPendingUpdates = !0)
+            }
+            return !0
+        }
+        return !1
+    };
+    this.lo = function(S, O) {
+        var T = t(O);
+        if (ba) {
+            var Y = V;
+            V += ca - T;
+            V = t7(0, V, max_entities - y);
+            V !== Y && (ca = T, T = t7(-1, T, y), X = T = T !== y && z(S, O) ? T : -1, g(), c4.canvasPendingUpdates = !0);
+            return !0
+        }
+        T = t7(-1, T, y);
+        T = T === y || !z(S, O) || isTouch ? -1 : T;
+        return X !== T ? (X = T, g(), c4.canvasPendingUpdates = !0) : !1
+    };
+    this.pX = function(S, O) {
+        if (!ba) return !1;
+        ba = !1;
+        var T = t(O);
+        isTouch && -1 !== X && (X = -1, g(), c4.canvasPendingUpdates = !0);
+        if (350 > c4.time - na && pa === T && (T = t7(-1, T, y), T = T !== y && z(S, O) ? T : -1, -1 !== T)) {
+            var Y = orderedLand[T + V];
+            T === y - 1 && sM[my_id] >= V + y - 1 && (Y = my_id);
+            0 !== is_alive[Y] && eV.gg(Y, 800, !1, 0)
+        }
+        return !0
+    };
+    this.pd = function(S, O,
+        T) {
+        return ba ? !1 : z(S, O) ? (S = t(O), S = t7(-1, S, y), S = S === y || isTouch ? -1 : S, 0 < T ? V < max_entities - y && (V++, X = S, g(), c4.canvasPendingUpdates = !0) : 0 < V && (V--, X = S, g(), c4.canvasPendingUpdates = !0), !0) : !1
+    };
+    this.drawImage = function() {
+        mainCanvasCtx.drawImage(A, m7, m7)
+    }
+}
+
+function k9() {
+    function g() {
+        z.clearRect(0, 0, eB.width, eB.cw);
+        z.fillStyle = hy;
+        z.fillRect(0, 0, eB.width, eB.cw);
+        z.fillStyle = oN;
+        z.fillRect(0, eB.cw - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * eB.width), B);
+        z.fillStyle = cK;
+        z.fillRect(0, 0, eB.width, 1);
+        z.fillRect(0, 0, 1, eB.cw);
+        z.fillRect(eB.width - 1, 0, 1, eB.cw);
+        z.fillRect(0, eB.cw - 1, eB.width, 1);
+        z.fillRect(0, eB.cw - B - 1, eB.width, 1);
+        for (var P = 0, U = 0; U < D.length; U++)
+            if (J[U]) {
+                z.textAlign = mj;
+                var W = Math.floor((C - B + 2 * F) * (U - P + 1) / (D.length + 1) - .7 * F);
+                z.fillText(D[U], E, W);
+                z.textAlign = ol;
+                5 === U && 0 !== is_alive[my_id] &&
+                    troops[my_id] >= interest.maxTroopsBeforeRedInterest(my_id) ? (z.fillStyle = oi, z.fillText(k(U), eB.width - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.width - E, W)
+            } else P++
+    }
+
+    function k(P) {
+        return 3 > P ? K[P].toString() : 3 === P ? eB.nI(K[P] / 100, 2) : 4 === P ? eB.nI(K[P] / 100, 2) : 5 === P ? eB.nI(K[P] / 100, 2) : 7 > P ? eP.split_into_pieces(K[P]) : eB.getInterestTicksRemaining(K[7])
+    }
+
+    function n(P) {
+        P = divide_floor(1E4 * P, landPixels);
+        8 === gamemode && (0 === is_alive[0] ? endGame.gameEnd(1) : 0 === is_alive[1] && endGame.gameEnd(0));
+        P >= K[3] && (endGame.gameEnd(-1), K[4] = -1);
+        K[4] !== P && (I++, K[4] = P)
+    }
+
+    function l() {
+        for (var P = alive_count - 1; 0 <= P; P--)
+            if (0 < editing_border_pixels[alive_entities[P]].length) return !1;
+        return !0
+    }
+
+    function x() {
+        land[my_id] !== K[6] && (K[6] = land[my_id],
+            I++)
+    }
+    var t, z, y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R;
+    this.init = function() {
+        H = M = 0;
+        D = Array(8);
+        D[0] = "Humans";
+        D[1] = singleplayer ? "Players" : "Bots";
+        D[2] = "Spectators";
+        D[3] = "Threshold";
+        D[4] = "Occupation";
+        D[5] = "Interest";
+        D[6] = "Income";
+        D[7] = "Time";
+        R = landPixels - divide_floor(landPixels, 100);
+        K = Array(D.length);
+        K[0] = singleplayer ? 0 : player_count;
+        K[1] = singleplayer ? alive_count : bot_count;
+        K[2] = spectators;
+        K[3] = 1E4;
+        K[4] = divide_floor(1E4 * land[0], landPixels);
+        K[5] = 700;
+        K[6] = 0;
+        x();
+        K[7] = 0;
+        L = k(6);
+        J = Array(D.length);
+        for (var P = D.length - 1; 0 <= P; P--) J[P] = !0;
+        Q = 0;
+        singleplayer ? (J[0] = !1, J[2] = !1, J[3] = !1, Q = 3) : (J[3] = !1, Q = 1);
+        I = 0;
+        this.lx()
+    };
+    this.lx = function() {
+        this.width = Math.floor((zoom ?
+            .1646 : .126) * averageWindowLength);
+        this.cw = Math.floor(1.18 * this.width);
+        B = Math.floor(.04 * this.width);
+        E = Math.floor(.05 * this.width);
+        F = .04 * this.width;
+        C = this.cw;
+        this.cw -= Math.floor(Q * (this.cw - 2 * B) / D.length);
+        N = Math.floor(.55 * (C - B) / D.length);
+        G = bt + N + bu;
+        t = document.createElement("canvas");
+        t.width = this.width;
+        t.height = this.cw;
+        z = t.getContext("2d", {
+            alpha: !0
+        });
+        z.font = G;
+        z.textBaseline = cI;
+        z.lineWidth = 1;
+        this.j2();
+        this.qu();
+        eO.qu();
+        g()
+    };
+    this.qu = function() {
+        y = clientWidth1 - this.width - m7
+    };
+    this.tK = function() {
+        A = m7
+    };
+    this.j2 = function() {
+        A = m7 + (eO.qF() && 0 !== is_alive[my_id] && !in_spawn ? eO.cw + m7 : 0)
+    };
+    this.eb = function(P) {
+        0 < I && (P || 12 > so && 100 <= I || 12 <= so) && (I = 0, g())
+    };
+    this.lX = function() {
+        return K[7]
+    };
+    this.getInterestTicksRemaining = function(P) {
+        var U = Math.floor(P / 1E3 / 60);
+        P = Math.floor((P - 6E4 * U) / 1E3);
+        return 10 > P ? U + ":0" + P : U + ":" + P
+    };
+    this.nI = function(P, U) {
+        return P.toFixed(U) + "%"
+    };
+    this.update = function() {
+        J[0] && players_in_game - spectators !== K[0] && (K[0] = players_in_game - spectators, I++);
+        alive_count - K[0] !== K[1] && (K[1] = alive_count - K[0], I++);
+        this.eC();
+        if (team_game) {
+            var P = eT.get_largest_team_total_land();
+            P >= R && l() ? (endGame.gameEnd(-1), n(eT.get_largest_team_total_land())) : n(P)
+        } else P = land[orderedLand[0]], P >= R && l() && endGame.gameEnd(-1), n(P);
+        P = interest.interestRate(my_id);
+        P !== K[5] && (K[5] = P, I++);
+        x();
+        K[7] += c4.getTickInterval();
+        P = k(7);
+        L !== P && (L = P, I += 100)
+    };
+    this.eC = function() {
+        J[2] && spectators !== K[2] && (K[2] = spectators, I++)
+    };
+    this.tY = function(P) {
+        if (P === spawn_time) return H = 0, g(), !1;
+        if (-1 === P && 0 === M) return !1;
+        var U = H,
+            W = performance.now();
+        if (0 <= P) {
+            var X = W - 392 * P;
+            M = 0 === P || X < M ? X : M
+        }
+        H = (W - M) / (392 * spawn_time);
+        H = 1 < H ? 1 : H;
+        g();
+        return H !== U
+    };
+    this.drawImage = function() {
+        mainCanvasCtx.drawImage(t, y, A)
+    }
+}
+
+function GameResultBox() {
+    var g, k, n, l, x, t, z, y, A, B;
+    this.td = -1;
+    this.init = function() {
+        g = !1;
+        l = 0;
+        x = .61;
+        t = .07;
+        z = .09;
+        B = y = 0;
+        this.td = -1
+    };
+    this.lx = function() {
+        if (g) {
+            n = zoom ? Math.floor(.69 * averageWindowLength) : Math.floor(.5 * averageWindowLength);
+            n = min(n, max(clientWidth2 - 2 * m7, 10));
+            n = min(n, Math.floor(3.57 * max(clientHeight2 - 2 * m7, 3)));
+            l = Math.floor(.28 * n);
+            A = document.createElement("canvas");
+            A.width = n;
+            A.height = l;
+            var C = A.getContext("2d", {
+                    alpha: !0
+                }),
+                E = Math.floor(1 + l / 40);
+            C.clearRect(0, 0, n, l);
+            C.fillStyle = hy;
+            C.fillRect(E, E, n - 2 * E, l - 2 * E);
+            C.lineJoin = "bevel";
+            C.lineWidth = 2 * E;
+            C.strokeStyle = cK;
+            C.strokeRect(E,
+                E, n - 2 * E, l - 2 * E);
+            C.imageSmoothingEnabled = !0;
+            var F = sprites.bz(k),
+                G = F.height,
+                N = x * l / G;
+            C.setTransform(N, 0, 0, N, Math.floor((n - N * F.width) / 2), Math.floor((l - N * G) / 2));
+            C.drawImage(F, 0, 0);
+            C.setTransform(1, 0, 0, 1, Math.floor(n - z * l - t * l - E), Math.floor(E + t * l));
+            E = Math.floor(z * l);
+            C.lineWidth = Math.floor(1 + l / 80);
+            C.strokeStyle = cK;
+            C.beginPath();
+            C.moveTo(0, 0);
+            C.lineTo(E, E);
+            C.moveTo(0, E);
+            C.lineTo(E, 0);
+            C.stroke();
+            C.setTransform(1, 0, 0, 1, 0, 0)
+        }
+    };
+    this.show = function(C, E) {
+        g || (k = C ? 1 : 2, g = !0, this.lx(), hu.lp(), troopsBar.qj(), B = c4.time, -1 === this.td && (this.td = c4.ticksElapsed()), y = E ? 1 : 0)
+    };
+    this.update = function() {
+        !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.canvasPendingUpdates = !0)
+    };
+    this.clicked = function(C, E) {
+        if (!g || 0 >= y) return !1;
+        C -= Math.floor((clientWidth1 - n) / 2);
+        E -= clientHeight1 - l - 2 * m7;
+        if (0 > C || 0 > E || C > n || E > l) return !1;
+        C > n - l / 3 && E < l / 3 && (g = !1, c4.canvasPendingUpdates = !0);
+        return !0
+    };
+    this.drawImage = function() {
+        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((clientWidth1 - n) / 2), clientHeight1 - l - 2 * m7), mainCanvasCtx.globalAlpha = 1)
+    }
+}
+
+function ke() {
+    function g(t, z, y, A, B, C, E) {
+        0 !== is_alive[t] && 0 !== land[t] && (y = clientWidth1 * ((x_min[t] + x_max[t] + 1) / 2 - y) / (B - y) - .5 * z, A = clientHeight1 * ((y_min[t] + y_max[t] + 1) / 2 - A) / (C - A) - .5 * z, y > clientWidth1 || A > clientHeight1 || y < -z || A < -z || (mainCanvasCtx.setTransform(g7 * E, 0, 0, g7 * E, y, A), mainCanvasCtx.drawImage(n[team_game ? teams.team_array[t] : t < player_count ? 1 : 0], 0, 0)))
+    }
+    var k, n, l, x;
+    this.init = function() {
+        var t;
+        n = [];
+        k = !1;
+        if (in_spawn)
+            if (x = 0, l = 63, k = !0, team_game)
+                for (t = 0; t <= team_count; t++) n.push(this.tk(teams.tl[teams.im[t]], l));
+            else n.push(this.tk(teams.tl[0], l)), n.push(this.tk(teams.tl[4], l))
+    };
+    this.update = function() {
+        k && 349 === ++x && (n = [], k = !1)
+    };
+    this.tk = function(t, z) {
+        var y = document.createElement("canvas");
+        y.width = z;
+        y.height = z;
+        var A = y.getContext("2d", {
+            alpha: !0
+        });
+        A.clearRect(0, 0, z, z);
+        var B = A.getImageData(0, 0, z, z),
+            C = B.data,
+            E, F, G = Math.floor(z / 2),
+            N = 1 + G * G;
+        for (E = z - 1; 0 <= E; E--)
+            for (F = z - 1; 0 <= F; F--) {
+                var I = (E - G) * (E - G) + (F - G) * (F - G);
+                var D = 4 * (F * z + E);
+                C[D] = t[0];
+                C[D + 1] = t[1];
+                C[D + 2] = t[2];
+                I = Math.floor((N - I) * t[3] / N);
+                C[D + 3] = 0 < I ? I : 0
+            }
+        A.putImageData(B, 0, 0);
+        return y
+    };
+    this.drawImage = function() {
+        if (k) {
+            var t;
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.globalAlpha = 1 - (160 < x ? (x - 160) / 190 : 0);
+            var z = gC / g7,
+                y = gD / g7,
+                A = (clientWidth1 + gC) /
+                g7,
+                B = (clientHeight1 + gD) / g7;
+            var C = .25;
+            var E = l * g7 * C;
+            for (t = max_entities - 1; t >= player_count; t--) g(t, E, z, y, A, B, C);
+            C = .5;
+            E = l * g7 * C;
+            for (t = player_count - 1; 0 <= t; t--) g(t, E, z, y, A, B, C);
+            mainCanvasCtx.globalAlpha = 1;
+            mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
+            mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0)
+        }
+    }
+}
+
+function processAttack(author, target, ratio) {
+    if (!(0 === is_alive[author] || 0 > ratio || 1E3 < ratio || 2 === player_status[author])) {
+        var amount = divide_floor(ratio * troops[author], 1E3);
+        10 === gamemode && target < player_count && 2 !== player_status[target] && (amount = antiFullsend.reduceAmount(author, amount));
+        if (team_game && target < max_entities && !isTeamate(author, target)) processDonation(author, target, amount);
+        else {
+            target < max_entities && 0 === is_alive[target] && (target = max_entities);
+            var tax = divide_floor(3 * troops[author], 256);
+            amount -= 500 <= ratio ? tax : 0;
+            if (!(amount <= neutral_land_cost) && attacks.below_attack_cap(author)) {
+                var takablePixelsCount = editing_border_pixels[author].length;
+                target === max_entities ? addTakableNeutralPixelsToEditing(author) : addTakableTargetPixelsToEditing(author, target);
+                if (0 !== takablePixelsCount || 0 !== editing_border_pixels[author].length) {
+                    team_game && (d7[author] = 1);
+                    if (author === my_id) {
+                        statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
+                        statistics.numbers[1]++;
+                        statistics.numbers[12] += tax;
+                        statistics.numbers[13] += amount;
+                    }
+                    takePixelsAndChangeToMoving(takablePixelsCount, author);
+                    attacks.set(author, amount, target);
+                    troops[author] -= amount + tax;
+                    speed.cR(author, !1)
+                }
+            }
+        }
+    }
+}
+
+function processSendBoat(author, startingCoord, targetCoordThenTax, amount) {
+    10 === gamemode && author < player_count && (amount = antiFullsend.reduceAmount(author, amount));
+    if (amount <= neutral_land_cost || !attacks.below_attack_cap(author)) return !1;
+    startingCoord = eK.cR(author, startingCoord, targetCoordThenTax);
+    if (0 === startingCoord) return !1;
+    targetCoordThenTax = divide_floor(3 * troops[author], 128);
+    amount >= divide_floor(troops[author], 2) && (amount -= targetCoordThenTax);
+    author === my_id && (statistics.numbers[12] += targetCoordThenTax);
+    attacks.addBoat(author, amount, startingCoord);
+    troops[author] -= amount + targetCoordThenTax;
+    return !0
+}
+
+function processDonation(donator, target, amount) {
+    if (!(!team_game || 0 === is_alive[donator] || 0 === is_alive[target] || 0 > amount || amount > troops[donator] || donator === target || isTeamate(donator, target) || donator < player_count && target < player_count && 7 > gamemode && 1071 > c4.ticksElapsed())) {
+        var tax = divide_floor(troops[donator], 16);
+        amount -= amount >= divide_floor(troops[donator], 2) ? tax : 0;
+        var new_troops = land[target] * max_troops_to_land_ratio - troops[target];
+        0 >= new_troops || (amount = amount > new_troops ? new_troops : amount, donator === my_id && (announcements.donate(amount, target), statistics.numbers[12] += tax, statistics.numbers[16] += amount), 
+        target === my_id && (announcements.receive_donate(amount, donator), statistics.numbers[10] += amount), troops[donator] -= amount + tax, troops[target] += amount)
+    }
+}
+
+function tu() {
+    this.j5 = this.h9 = this.tv = !1;
+    this.tw = [0, 0, 0, 0];
+    this.tx = function() {
+        this.j5 = this.j5 || this.h9;
+        if (this.h9 || this.tv && this.j5) {
+            var g = gy.ty[0],
+                k = gy.ty[1],
+                n = gy.ty[2],
+                l = gy.ty[3];
+            g = g < this.tw[0] ? this.tw[0] : g;
+            k = k < this.tw[1] ? this.tw[1] : k;
+            n = n > this.tw[2] ? this.tw[2] : n;
+            l = l > this.tw[3] ? this.tw[3] : l;
+            this.tv = this.h9 = !1;
+            g === this.tw[0] && k === this.tw[1] && n === this.tw[2] && l === this.tw[3] ? this.j6() : n >= g && l >= k && mapCanvasCtx.putImageData(jX, 0, 0, g, k, n - g + 1, l - k + 1)
+        }
+    };
+    this.j6 = function() {
+        this.j5 && this.tw[2] >= this.tw[0] && this.tw[3] >=
+            this.tw[1] && mapCanvasCtx.putImageData(jX, 0, 0, this.tw[0], this.tw[1], this.tw[2] - this.tw[0] + 1, this.tw[3] - this.tw[1] + 1);
+        this.j5 = !1
+    };
+    this.iz = function() {
+        this.tw[2] >= this.tw[0] && this.tw[3] >= this.tw[1] && mapCanvasCtx.putImageData(jX, 0, 0, this.tw[0], this.tw[1], this.tw[2] - this.tw[0] + 1, this.tw[3] - this.tw[1] + 1);
+        this.j5 = !1
+    };
+    this.init = function() {
+        var y_coord;
+        this.j5 = this.h9 = this.tv = !1;
+        this.tw[0] = map_width;
+        this.tw[1] = map_height;
+        this.tw[2] = this.tw[3] = 0;
+        var x_coord = 1;
+        a: for (; x_coord < map_width - 1; x_coord++)
+            for (y_coord = map_height - 2; 1 < y_coord; y_coord--)
+                if (1 === pixel_rgba[pixel.to_coord(x_coord, y_coord) + 2]) {
+                    this.tw[0] = x_coord; //bottom left >^ x coord
+                    break a
+                } y_coord = 1;
+        a: for (; y_coord < map_height - 1; y_coord++)
+            for (x_coord = map_width - 2; 1 < x_coord; x_coord--)
+                if (1 === pixel_rgba[pixel.to_coord(x_coord, y_coord) + 2]) {
+                    this.tw[1] = y_coord;
+                    break a
+                } x_coord = map_width - 2; //top right <v y coord
+        a: for (; 0 < x_coord; x_coord--)
+            for (y_coord = map_height - 2; 1 < y_coord; y_coord--)
+                if (1 === pixel_rgba[pixel.to_coord(x_coord, y_coord) + 2]) {
+                    this.tw[2] = x_coord; //bottom right ^< x coord
+                    break a
+                } y_coord = map_height - 2;
+        a: for (; 0 < y_coord; y_coord--)
+            for (x_coord = map_width - 2; 1 < x_coord; x_coord--)
+                if (1 === pixel_rgba[pixel.to_coord(x_coord, y_coord) + 2]) {
+                    this.tw[3] = y_coord; //bottom right <^ y coord
+                    break a
+                }
+    }
+}
+
+function IntelliAttack() {
+    this.checkIntelli = function() {
+        if (1 === client_status) {
+            var myID = my_id;
+            2 === player_status[myID] || 0 === is_alive[myID] || in_spawn || attacks.below_attack_cap(myID) && 0 !== pixels_bordering_land[myID].length && this.startIntelli()
+        }
+    };
+    this.startIntelli = function() {
+        var myID = my_id;
+        var targets = this.getBorderingEntities(myID, !team_game).filter(target => target != max_entities);
+        this.removeAttackingTarget(myID, targets);
+        0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(myID, targets[0]))
+    };
+    this.doIntelliAttack = function(myID, target) {
+        announcements.low_balance();
+        singleplayer ? processAttack(myID, target.player, target.ratio) : multiOut.attack(target.ratio, target === max_entities ? myID : target.player)
+    };
+    this.sortTargets = function(targetPenalties) {
+        targetPenalties.sort(function(prev, next) {
+            return prev.peanlty - next.peanlty
+        })
+    };
+    this.calcValue = function(targets) {
+        var index, targetPenalties = [],
+            targetsCount = targets.length;
+        for (index = 0; index < targetsCount; index++) {
+            var id = targets[index], predDensity, mutualBorder = [], returnFactor = 0, time_left;
+            if (id != max_entities) {
+                predDensity = (id < player_count && bots_timing[id-player_count] < 10) ? 0.5 : density(id);
+                for (let index2 = 0; index2 < pixels_bordering_land[id].length; index2++) {
+                    for (let side = 0; side < 4; side++) {
+                        let coord = pixels_bordering_land[id][index2] + offset[side];
+                        if (pixel.strong_is_owner(my_id, coord) && !mutualBorder.includes(pixels_bordering_land[id][index2])) mutualBorder.push(pixels_bordering_land[id][index2])
+                        else if (pixel.is_neutral(coord) && bots_timing[id-player_count] < 10 && !returnFactor) returnFactor += 0.9*troops[id]/(troops[id] + attacks.total_troops_currently_attacking(id))
+                    }
+                }
+                for (let index2 = 0; index2 < attacks.getCurrentAttackCount(id); index2++) {
+                    var return_probability;
+                    if (attacks.get_boat_id_from_attack_index(id, index) != 0) return_probability = 0
+                    else {
+                        var target2 = attacks.get_attack_target_from_attack_index(id, index2)
+                        if (target2 == 512) return_probability = 1
+                        else {
+                            var mutualBorder2 = [], borderRatio;
+                            for (let index3 = 0; index3 < pixels_bordering_land[target2].length; index3++) {
+                                for (let side = 0; side < 4; side++) {
+                                    let coord = pixels_bordering_land[target2][index3] + offset[side];
+                                    if (pixel.strong_is_owner(id, coord) && !mutualBorder2.includes(pixels_bordering_land[target2][index3])) mutualBorder2.push(pixels_bordering_land[target2][index3])
+                                }
+                            }
+                            borderRatio = mutualBorder2.length/pixels_bordering_land[id].length;
+                            return_probability = borderRatio <= 0.1 ? 1 - 3 * Math.sqrt(borderRatio) : 0
+                        }
+                    }
+                    returnFactor += return_probability * attacks.get_attack_troops_remaining_from_attack_index(id, index2) / (troops[id] + attacks.total_troops_currently_attacking(id))
+                }
+                time_left = (100 - tick - (singleplayer ? 1 : 7 - (((cycle-1)*100 + tick - 1) % 7)));
+                targetPenalties.push({
+                    player: id,
+                    peanlty: 3 * predDensity - this.landWeighting(id) ** 1.8 - (mutualBorder.length/pixels_bordering_land[id].length) ** 0.5 + returnFactor,
+                    ratio: Math.round(Math.min((6 + 2 * predDensity) * mutualBorder.length * speed(my_id) * (time_left <= 20 ? 20 : time_left), 2*(troops[id] + land[id])) / troops[my_id] * 1E3),
+                })
+            }
+        }
+        return targetPenalties
+    };
+    this.landWeighting = function(id) {
+        var totalLand = 0, alive_bots = 0;;
+        alive_entities.forEach(e => e >= player_count && (totalLand += land[e], alive_bots++))
+        return totalLand == 0 ? 0 : land[id] * alive_bots / totalLand;
+    }
+    this.removeAttackingTarget = function(myID, targets) {
+        var index;
+        for (index = targets.length - 1; 0 <= index; index--) attacks.check(myID, targets[index]) && targets.splice(index, 1)
+    };
+    this.getBorderingEntities = function(id, k) {
+        var index, side, borderingEntities = [],
+            borderingEntityCount = 0;
+        var borderPixel = pixels_bordering_land[id].length - 1;
+        a: for (; 0 <= borderPixel; borderPixel--)
+            for (side = 3; 0 <= side; side--) {
+                var pixelOwner = pixel.is_neutral(pixels_bordering_land[id][borderPixel] + offset[side]) ? max_entities : pixel.owner(pixels_bordering_land[id][borderPixel] + offset[side]);
+                if (pixelOwner === max_entities || pixel.controlled_by_entity(pixels_bordering_land[id][borderPixel] + offset[side]) && pixelOwner !== id && (k || isTeamate(id, pixelOwner))) {
+                    for (index = borderingEntityCount - 1; 0 <= index; index--)
+                        if (borderingEntities[index] === pixelOwner) continue a;
+                    borderingEntities.push(pixelOwner);
+                    borderingEntityCount++
+                }
+            }
+        return borderingEntities
+    }
+}
+
+function u9() {
+    this.hidden = !1;
+    this.buttons = null;
+    this.uA = 0;
+    this.cw = this.width = null;
+    this.uB = .013;
+    this.uC = .022;
+    this.uD = .025;
+    this.uF = 3;
+    this.uG = 1.2;
+    this.uH = .2;
+    this.uI = .235;
+    this.uJ = .9;
+    this.uK = .08;
+    var label_leaderboard = ["Best Players", "Best Clans", "LEGENDS NEVER DIE", "THE NEVER ENDING WAR"],
+        k, n = [-1E6, -1E6];
+    this.position = [0, 0];
+    this.uP = [0, 0];
+    this.init = function() {
+        this.buttons = [null, null];
+        this.hidden = !1;
+        this.uA = 0;
+        this.lx()
+    };
+    this.cE = function(l) {
+        this.uA = l;
+        this.hidden = !0;
+        this.bv();
+        name_input.hide();
+        c4.canvasPendingUpdates = !0
+    };
+    this.update = function() {
+        this.hidden && this.bv()
+    };
+    this.bv = function() {
+        c4.time - 12E4 >= n[this.uA] && (n[this.uA] = c4.time, this.uP = [0, 0], websocket_manager.rk(0, 1 + this.uA) && multiOut.load_leaderboard(0, this.uA))
+    };
+    this.lx = function() {
+        var l;
+        this.width = this.uR(zoom ? .85 : .66, .75, clientWidth2, clientHeight2);
+        this.cw = Math.floor(this.width / .75);
+        for (l = 1; 0 <= l; l--) this.buttons[l] && (this.buttons[l][4] = bt + Math.floor(this.buttons[l][5] * this.cw / 10) + bu);
+        k = bt + Math.floor(.1 * this.cw) + bu
+    };
+    this.uR = function(l, x, t, z) {
+        return t < x * z ? Math.floor(l * t) : Math.floor(x * l * z)
+    };
+    this.uS = function(l, x, t, z, y, A, B) {
+        this.position[l] = B;
+        var C = x.length,
+            E = bt + Math.floor(y * this.cw / 10) + bu;
+        this.uX(x, E, A * this.width);
+        z = [
+            [],
+            C, -1, z, E, y, 10 * B
+        ];
+        for (y = 0; y < C; y++) A = {
+            name: x[y].name,
+            value: x[y].elo / t,
+            colorIndex: x[y].colorIndex
+        }, z[0].push(A);
+        this.buttons[l] = z;
+        this.uY(l);
+        x = this.buttons[l][0][0].name;
+        1 === l && (x = "[" + x + "]");
+        0 === B && uZ.br(l, x);
+        c4.canvasPendingUpdates = !0
+    };
+    this.uY = function(l) {
+        this.buttons[l][0].sort(function(x, t) {
+            return t.value - x.value
+        })
+    };
+    this.updateAttribute = function(l, x, t, z) {
+        if (this.buttons && this.buttons[l]) {
+            var y, A = !1,
+                B = 383 / 384;
+            if (0 === l) {
+                for (y = 0; y < this.buttons[l][0].length; y++)
+                    if (x === this.buttons[l][0][y].name && t > .99 * this.buttons[l][0][y].value && t < 1.01 * this.buttons[l][0][y].value) {
+                        this.buttons[l][0][y].value =
+                            z;
+                        A = !0;
+                        break
+                    } A || this.buttons[l][0].push({
+                    name: x,
+                    value: z
+                })
+            } else {
+                for (y = 0; y < this.buttons[l][0].length; y++)
+                    if (x === this.buttons[l][0][y].name) {
+                        this.buttons[l][0][y].value += 32 < this.buttons[l][0][y].value ? (64 - this.buttons[l][0][y].value) / 256 : .25;
+                        this.buttons[l][0][y].value *= 1 / B;
+                        A = !0;
+                        break
+                    } for (y = 0; y < this.buttons[l][0].length; y++) this.buttons[l][0][y].value *= B;
+                A || this.buttons[l][0].push({
+                    name: x,
+                    value: .25
+                })
+            }
+            this.uY(l)
+        }
+    };
+    this.uX = function(l, x, t) {
+        for (var z = l.length - 1; 0 <= z; z--)
+            for (; 3 < l[z].name.length && c2.measureText(l[z].name, x) > t;) l[z].name = l[z].name.substring(0,
+                l[z].name.length - 4) + "..."
+    };
+    this.clicked = function(l, x) {
+        if (!this.hidden) return !1;
+        l -= (clientWidth1 - this.width) / 2;
+        x -= (clientHeight1 - this.cw) / 2;
+        if (0 > l || l > this.width || 0 > x || x > this.cw) return this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0;
+        if (x < .3 * this.cw) var t = 1;
+        else x < .85 * this.cw ? (t = (0 === this.uA ? 14.1 : 3) * (x - .3 * this.cw) / (.55 * this.cw), t = Math.floor(1 + t * t)) : t = 0 === this.uA ? 200 : 10;
+        this.uP[this.uA] = l < this.width / 2 ? -t : t;
+        if (n[this.uA] + 50 > c4.time) return !0;
+        n[this.uA] = c4.time;
+        websocket_manager.rk(0, 1 + this.uA) && multiOut.load_leaderboard(0, this.uA);
+        return !0
+    };
+    this.drawImage = function() {
+        if (this.hidden) {
+            var l = this.uB *
+                this.width,
+                x = this.uF * l,
+                t = this.uC * this.width,
+                z = this.uG * t,
+                y = this.uD * this.width,
+                A = Math.floor(.25 * this.cw);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, (clientWidth1 - this.width) / 2, (clientHeight1 - this.cw) / 2);
+            mainCanvasCtx.fillStyle = 0 === this.uA ? oc : oX;
+            mainCanvasCtx.fillRect(0, 0, this.width, A);
+            mainCanvasCtx.fillStyle = oH;
+            mainCanvasCtx.fillRect(0, A, this.width, this.cw - A);
+            mainCanvasCtx.fillStyle = cK;
+            mainCanvasCtx.font = k;
+            mainCanvasCtx.textBaseline = cI;
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.fillText(label_leaderboard[this.uA], Math.floor(this.width / 2), Math.floor(.135 * this.cw));
+            mainCanvasCtx.font = bt + Math.floor(.025 * this.cw) + bu;
+            mainCanvasCtx.fillText(label_leaderboard[this.uA + 2], Math.floor(this.width / 2), Math.floor(.2125 * this.cw));
+            mainCanvasCtx.beginPath();
+            mainCanvasCtx.moveTo(this.width / 4, 0);
+            mainCanvasCtx.lineTo(this.width / 2 - l, 0);
+            mainCanvasCtx.lineTo(this.width / 2, -x);
+            mainCanvasCtx.lineTo(this.width / 2 + l, 0);
+            mainCanvasCtx.lineTo(this.width - t, 0);
+            mainCanvasCtx.lineTo(this.width + z, -z);
+            mainCanvasCtx.lineTo(this.width, t);
+            mainCanvasCtx.lineTo(this.width, this.cw / 2 - l);
+            mainCanvasCtx.lineTo(this.width + x, this.cw / 2);
+            mainCanvasCtx.lineTo(this.width, this.cw / 2 + l);
+            mainCanvasCtx.lineTo(this.width, this.cw - t);
+            mainCanvasCtx.lineTo(this.width + z, this.cw + z);
+            mainCanvasCtx.lineTo(this.width - t, this.cw);
+            mainCanvasCtx.lineTo(this.width / 2 + l, this.cw);
+            mainCanvasCtx.lineTo(this.width / 2, this.cw + x);
+            mainCanvasCtx.lineTo(this.width / 2 - l, this.cw);
+            mainCanvasCtx.lineTo(t, this.cw);
+            mainCanvasCtx.lineTo(-z, this.cw + z);
+            mainCanvasCtx.lineTo(0, this.cw - t);
+            mainCanvasCtx.lineTo(0, this.cw / 2 + l);
+            mainCanvasCtx.lineTo(-x, this.cw / 2);
+            mainCanvasCtx.lineTo(0, this.cw / 2 - l);
+            mainCanvasCtx.lineTo(0, t);
+            mainCanvasCtx.lineTo(-z, -z);
+            mainCanvasCtx.lineTo(t, 0);
+            mainCanvasCtx.lineTo(this.width / 4, 0);
+            mainCanvasCtx.lineTo(this.width / 4, y);
+            mainCanvasCtx.lineTo(y, y);
+            mainCanvasCtx.lineTo(y, this.cw - y);
+            mainCanvasCtx.lineTo(this.width - y, this.cw - y);
+            mainCanvasCtx.lineTo(this.width - y, y);
+            mainCanvasCtx.lineTo(this.width / 4, y);
+            mainCanvasCtx.fill();
+            this.buttons[this.uA] && this.ug(A);
+            this.uh(A);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+        }
+    };
+    this.uh = function(l) {
+        var x = max(2, Math.floor(.06 * this.width));
+        x -= x % 2;
+        var t = max(2, Math.floor(.01 * this.width));
+        t -= t % 2;
+        l = Math.floor(.82 * l);
+        mainCanvasCtx.fillRect(x,
+            l, x, t);
+        mainCanvasCtx.fillRect(this.width - x - x, l, x, t);
+        mainCanvasCtx.fillRect(Math.floor(this.width - x - x + (x - t) / 2), Math.floor(l - (x - t) / 2), t, x)
+    };
+    this.ug = function(l) {
+        mainCanvasCtx.font = this.buttons[this.uA][4];
+        for (var x, t = this.buttons[this.uA][1] - 1; 0 <= t; t--) mainCanvasCtx.textAlign = ol, x = Math.floor(this.uK * this.cw + l + t * ((1 - 2 * this.uK) * this.cw - l) / 9), mainCanvasCtx.fillText(this.buttons[this.uA][0][t].value.toFixed(this.buttons[this.uA][3]), Math.floor(this.uJ * this.width), x), mainCanvasCtx.fillText(t + 1 + this.buttons[this.uA][6] + ".", Math.floor(this.uH * this.width), x), mainCanvasCtx.textAlign = mj, mainCanvasCtx.fillText(this.buttons[this.uA][0][t].name,
+            Math.floor(this.uI * this.width), x)
+    }
+}
+
+function OpenLinkBox() {
+    var g, k, n, l, x, t, z, y, A, B, C, var_link, linkBox;
+    this.hidden = !1;
+    this.init = function(link, open) {
+        if (13 <= device_version) open ? var_link = link : var_link === link && droid.saveString(200, link);
+        else if (open) {
+            (mainSettings.buttons[1].buttonPanel.hidden || mainSettings.buttons[2].buttonPanel.hidden) && mainSettings.us();
+            name_input.hide();
+            var_link = link;
+            A = Math.floor((zoom ? clientWidth2 > clientHeight2 ? .6 : .45 : .4) * shorterWindowLength);
+            n = A / sprites.bz(17).width;
+            x = Math.floor(n * sprites.bz(17).height);
+            t = Math.floor(.4 * x);
+            z = Math.floor(.6 * x);
+            y = Math.floor(2.5 * z);
+            l = x + t + 3 * z;
+            var I = bt + Math.floor(t / device_pixel_ratio) + bu;
+            B = Math.floor(device_pixel_ratio * c2.measureText(var_link, I));
+            C = (B > A ? B : A) + 2 * y;
+            g = Math.floor((clientWidth1 - C) / 2);
+            k = Math.floor((clientHeight1 - l) / 2);
+            linkBox = document.createElement("a");
+            linkBox.appendChild(document.createTextNode(var_link));
+            linkBox.title = var_link;
+            linkBox.target = "blank";
+            linkBox.href = var_link;
+            linkBox.style.font = I;
+            linkBox.style.textAlign = "center";
+            linkBox.style.color = cK;
+            linkBox.style.position = "absolute";
+            linkBox.style.padding = "0px";
+            linkBox.style.margin = "0px";
+            linkBox.style.top = Math.floor((k + 2 * z + x) / device_pixel_ratio) + "px";
+            linkBox.style.left = Math.floor((g + (C - B) / 2) / device_pixel_ratio) + "px";
+            document.body.appendChild(linkBox);
+            this.hidden = !0;
+            c4.canvasPendingUpdates = !0
+        }
+    };
+    this.end = function() {
+        if (!this.hidden) return !1;
+        document.body.removeChild(linkBox);
+        this.hidden = !1;
+        return !0
+    };
+    this.clicked = function(G, N) {
+        if (!this.hidden) return !1;
+        if (G < g || N < k || G > g + C || N > k + l) c4.canvasPendingUpdates = !0, this.hidden = !1, document.body.removeChild(linkBox),
+            0 === aJ.getState() && jk.cE(0, !0);
+        return !0
+    };
+    this.drawImage = function() {
+        this.hidden && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = hy, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = oy, mainCanvasCtx.strokeStyle = cK, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.bz(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
+    }
+}
+
+function ut() {
+    var g = 0,
+        k = [0, 0, 0, 0, 0],
+        n = [0, 0, 0, 0, 0],
+        l = [1, 1, 1, 1, 1],
+        x = [!0, !0, !0, !0, !0];
+    this.uu = [!0, !0, !0, !0, !0];
+    var t = null, z;
+    this.uv = function(y, A) {
+        t = y;
+        x = A;
+        z = [op, oq, or, os, ot];
+        this.init()
+    };
+    this.init = function() {
+        if (sprites.bx()) {
+            var y = Math.floor((zoom ? .261 : .195) * averageWindowLength);
+            var A = Math.floor(.9 * y),
+                B = Math.floor(.17 * A);
+            g = zoom ? 2 * m7 : m7;
+            l[0] = y / t[0].width;
+            l[1] = A / t[1].width;
+            l[2] = B / t[2].height;
+            l[3] = B / t[3].height;
+            l[4] = B / t[4].height;
+            l[3] *= 1.07;
+            k[0] = g;
+            k[1] = g;
+            k[2] = g;
+            k[3] = g;
+            k[4] = Math.floor(2 * g + l[3] * t[3].width);
+            n[0] = g;
+            n[1] = n[0] + g + l[0] * t[0].height;
+            n[2] = n[1] + g + l[1] * t[1].height;
+            n[3] = n[2] + g + l[2] * t[2].height;
+            n[4] = n[3];
+            if (!x[0])
+                for (y = 0; 5 > y; y++) n[y] -= l[0] * t[0].height + g;
+            if (!x[1])
+                for (y = 2; 5 > y; y++) n[y] -= l[1] * t[1].height + g
+        }
+    };
+    this.hidden = function() {
+        return !(7 === aJ.getState() && zoom)
+    };
+    this.clicked = function(y, A, B) {
+        if (!t || !this.hidden()) return !1;
+        var C;
+        for (C = x.length - 1; 0 <= C; C--)
+            if (x[C] && this.uu[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return openLinkBox.init(z[C], B), !0;
+        return !1
+    };
+    this.drawImage = function() {
+        if (t && this.hidden()) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            var y;
+            for (y = 0; 5 > y; y++) x[y] &&
+                this.uu[y] && (mainCanvasCtx.setTransform(l[y], 0, 0, l[y], k[y], n[y]), mainCanvasCtx.drawImage(t[y], 0, 0));
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+        }
+    }
+}
+
+function kB() {
+    function g(x) {
+        var t = jh.uz[x],
+            z = t.fJ,
+            y = t.fK,
+            A = t.width,
+            B = t.cw;
+        mainCanvasCtx.fillStyle = t.v2;
+        mainCanvasCtx.fillRect(z, y, A, B);
+        x === k && (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(z, y, A, B));
+        mainCanvasCtx.lineWidth = 3;
+        mainCanvasCtx.strokeStyle = n;
+        mainCanvasCtx.strokeRect(z, y, A, B);
+        x = t.fJ;
+        z = t.fK;
+        y = t.width;
+        A = t.cw;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.font = t.font;
+        mainCanvasCtx.fillStyle = n;
+        mainCanvasCtx.fillText(t.na, Math.floor(x + y / 2), Math.floor(z + A / 2 + .1 * t.by))
+    }
+    var k, n, l;
+    this.f6 = this.fK = this.cw = this.width = 0;
+    this.init = function() {
+        k = -1;
+        n = cK;
+        l = "rgba(255,255,255,0.16)";
+        this.uz = Array(7);
+        this.cw = Math.floor((zoom ?
+            .123 : .093) * averageWindowLength);
+        this.width = Math.floor((zoom ? 3.96 : 4.2) * this.cw);
+        this.f6 = Math.floor(.025 * this.width);
+        var x = Math.floor(.26 * this.cw),
+            t = bt + x + bu;
+        this.uz[0] = {
+            fJ: 0,
+            fK: 0,
+            width: Math.floor(.6 * this.width - this.f6 / 2),
+            cw: this.cw,
+            na: "Multiplayer",
+            font: t,
+            v2: "rgba(22,88,22,0.8)",
+            by: x
+        };
+        x = Math.floor(.18 * this.cw);
+        t = bt + x + bu;
+        this.uz[1] = {
+            fJ: 0,
+            fK: 0,
+            width: this.width - this.uz[0].width - this.f6,
+            cw: this.cw,
+            na: "Singleplayer",
+            font: t,
+            v2: "rgba(22,88,88,0.8)",
+            by: x
+        };
+        this.uz[2] = {
+            fJ: 0,
+            fK: 0,
+            width: this.width,
+            cw: Math.floor(.3 * this.cw),
+            na: "",
+            font: this.uz[1].font,
+            v2: "rgba(100,0,0,0.8)",
+            by: this.uz[1].by
+        };
+        this.uz[3] = {
+            fJ: 0,
+            fK: 0,
+            width: this.width,
+            cw: this.cw,
+            na: "Back",
+            font: this.uz[0].font,
+            v2: "rgba(0,0,0,0.8)",
+            by: this.uz[0].by
+        };
+        this.uz[4] = {
+            fJ: 0,
+            fK: 0,
+            width: this.width,
+            cw: Math.floor(.3 * this.cw),
+            na: "The game was updated!",
+            font: this.uz[1].font,
+            v2: "rgba(100,0,0,0.8)",
+            by: this.uz[1].by
+        };
+        this.uz[5] = {
+            fJ: 0,
+            fK: 0,
+            width: this.uz[0].width,
+            cw: Math.floor(.8 * this.cw),
+            na: "Reload",
+            font: this.uz[0].font,
+            v2: "rgba(0,100,0,0.8)",
+            by: this.uz[0].by
+        };
+        this.uz[6] = {
+            fJ: 0,
+            fK: 0,
+            width: this.uz[1].width,
+            cw: this.uz[5].cw,
+            na: "Back",
+            font: this.uz[0].font,
+            v2: "rgba(0,0,0,0.8)",
+            by: this.uz[0].by
+        };
+        this.rs()
+    };
+    this.rs = function() {
+        this.fK = Math.floor(.54 * clientHeight1);
+        this.uz[0].fJ = Math.floor(.5 * clientWidth1 - .5 * this.width);
+        this.uz[1].fJ = this.uz[0].fJ + this.uz[0].width + this.f6;
+        this.uz[2].fJ = this.uz[3].fJ = this.uz[0].fJ;
+        this.uz[4].fJ = this.uz[5].fJ = this.uz[0].fJ;
+        this.uz[6].fJ = this.uz[1].fJ;
+        this.uz[0].fK = Math.floor(.54 * clientHeight1);
+        this.uz[1].fK = this.uz[0].fK;
+        this.uz[2].fK = Math.floor((clientHeight1 - this.uz[2].cw - this.uz[3].cw - this.f6) / 2);
+        this.uz[3].fK = this.uz[2].fK + this.uz[2].cw + this.f6;
+        this.uz[4].fK = Math.floor((clientHeight1 -
+            this.uz[4].cw - this.uz[5].cw - this.f6) / 2);
+        this.uz[5].fK = this.uz[6].fK = this.uz[4].fK + this.uz[4].cw + this.f6
+    };
+    this.v3 = function() {
+        g(0);
+        g(1)
+    };
+    this.v5 = function() {
+        g(2);
+        g(3)
+    };
+    this.v6 = function() {
+        g(4);
+        g(5);
+        g(6)
+    };
+    this.lo = function(x, t, z) {
+        var y = -1;
+        0 === aJ.getState() ? y = this.pR(x, t, 0, 2) : 3 === aJ.getState() ? y = this.pR(x, t, 3, 1) : 5 === aJ.getState() && (y = this.pR(x, t, 5, 2));
+        k !== y && (k = y, z && (c4.canvasPendingUpdates = !0));
+        return -1 !== y ? (playtime.pW(), !0) : !1
+    };
+    this.pR = function(x, t, z, y) {
+        for (var A = z; A < z + y; A++)
+            if (x >= this.uz[A].fJ && t >= this.uz[A].fK && x <= this.uz[A].fJ + this.uz[A].width && t <= this.uz[A].fK + this.uz[A].cw) return A;
+        return -1
+    }
+}
+
+function Colors() {
+    function getBoundedValue(k) {
+        return 0 > k ? 0 : 255 < k ? 255 : Math.floor(k)
+    }
+    this.cw = this.width = 0;
+    this.hidden = !1;
+    this.vD = this.vC = this.vB = this.nu = this.f6 = this.vA = 0;
+    this.colors = null;
+    this.init = function() {
+        clientWidth2 < 2 * clientHeight2 ? this.width = Math.floor((zoom ? .94 : .4) * clientWidth2) : (this.cw = Math.floor((zoom ? .88 : .4) * clientHeight2), this.width = Math.floor(2 * this.cw));
+        this.cw = this.width / 2;
+        this.f6 = this.cw / 16;
+        this.hidden = !0;
+        this.vA = 0;
+        this.vB = (this.cw - 3 * this.f6) / 2;
+        this.vC = this.width - 3 * this.f6 - this.vB;
+        this.vD = (this.cw - 4 * this.f6) / 3
+    };
+    this.vE = function() {
+        this.colors = [
+            [0, 0, 0],
+            [0, 0, 0]
+        ];
+        var k = get_colors().split("");
+        if (6 !== k.length)
+            for (k = 2; 0 <= k; k--) this.colors[0][k] = getBoundedValue(256 * Math.random());
+        else
+            for (var n = 2; 0 <= n; n--) this.colors[0][n] = getBoundedValue(4 * (10 * parseInt(k[2 * n]) + parseInt(k[2 * n + 1])));
+        this.vG()
+    };
+    this.get_rgb_64 = function() {
+        return [divide_floor(this.colors[0][0], 4), divide_floor(this.colors[0][1], 4), divide_floor(this.colors[0][2], 4)]
+    };
+    this.clicked = function(k, n) {
+        this.vA = 0;
+        var l = (clientHeight1 - this.cw) / 2;
+        k -= (clientWidth1 - this.width) / 2;
+        n -= l;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.cw - 1) return this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0, !1;
+        if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.cw - this.f6) return !0;
+        if (k < this.f6 + this.vB) return n < this.f6 + this.vB && 0 !== this.nu && (this.nu = 0, c4.canvasPendingUpdates = !0), !0;
+        if (k < 2 * this.f6 + this.vB) return !0;
+        k -= 2 * this.f6 + this.vB;
+        if (n < this.f6 + this.vD) return this.vA = 1, this.colors[this.nu][0] = getBoundedValue(256 * k / this.vC), c4.canvasPendingUpdates = !0;
+        if (n < 2 * this.f6 + this.vD) return !0;
+        if (n < 2 * this.f6 + 2 * this.vD) return this.vA = 2, this.colors[this.nu][1] = getBoundedValue(256 * k / this.vC), c4.canvasPendingUpdates = !0;
+        n >= 3 * this.f6 + 2 * this.vD && (this.vA = 3, this.colors[this.nu][2] = getBoundedValue(256 * k / this.vC), c4.canvasPendingUpdates = !0);
+        return !0
+    };
+    this.vG = function() {
+        for (var k = 2; 0 <= k; k--) this.colors[0][k] =
+            getBoundedValue(this.colors[0][k])
+    };
+    this.vI = function() {
+        for (var k = "", n, l = 0; 3 > l; l++) n = divide_floor(this.colors[0][l], 4), 10 > n && (k += "0"), k += n.toString();
+        save_colors(k)
+    };
+    this.lo = function(k) {
+        0 !== this.vA && (k -= 2 * this.f6 + this.vB + (clientWidth1 - this.width) / 2, this.colors[this.nu][this.vA - 1] = getBoundedValue(256 * k / this.vC), c4.canvasPendingUpdates = !0)
+    };
+    this.vJ = function() {
+        0 < this.vA && (this.vA = 0, this.vG(), this.vI(), c4.canvasPendingUpdates = !0)
+    };
+    this.drawImage = function() {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, (clientWidth1 - this.width) / 2, (clientHeight1 - this.cw) / 2);
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
+        mainCanvasCtx.lineWidth = oy;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.cw + 2);
+        mainCanvasCtx.font = bt + Math.floor(.8 * this.vB) + bu;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.textAlign = cJ;
+        this.vK(0);
+        mainCanvasCtx.lineWidth = oy;
+        this.vL(0);
+        this.vL(1);
+        this.vL(2);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    };
+    this.vK = function(k) {
+        mainCanvasCtx.fillStyle = "rgb(" + this.colors[k][0] + "," + this.colors[k][1] + "," + this.colors[k][2] + ")";
+        mainCanvasCtx.fillRect(this.f6, this.f6, this.vB, 2 * this.vB + this.f6);
+        mainCanvasCtx.lineWidth = 2 + oy;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(this.f6, this.f6, this.vB, 2 * this.vB + this.f6)
+    };
+    this.vL = function(k) {
+        mainCanvasCtx.fillStyle = "rgb(" + (0 === k ? 200 : 2 === k ? 50 :
+            0) + "," + (1 === k ? 200 : 2 === k ? 50 : 0) + "," + (2 === k ? 255 : 0) + ")";
+        mainCanvasCtx.fillRect(2 * this.f6 + this.vB, this.f6 + k * (this.f6 + this.vD), Math.floor(this.colors[this.nu][k] * this.vC / 255), this.vD);
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(2 * this.f6 + this.vB, this.f6 + k * (this.f6 + this.vD), this.vC, this.vD)
+    }
+}
+
+function kC() {
+    function g() {
+        return 0 === D ? 0 : 1 + (D - 1 + K) % (websocket_manager.terriWsCount - 1)
+    }
+
+    function k() {
+        D++;
+        I = c4.time;
+        websocket_manager.rk(g(), 4) && (J = !0, multiOut.join_lobby(g()))
+    }
+
+    function n() {
+        0 === D ? showError.displayError(3249) : (D === websocket_manager.terriWsCount - 1 && (D = -1), k())
+    }
+
+    function l(L, H, M) {
+        var Q = Math.floor((clientWidth1 - y) / 2) + C,
+            R = Q + Math.floor(M * (y - 2 * C));
+        mainCanvasCtx.lineWidth = H;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(Q, L);
+        mainCanvasCtx.lineTo(R, L);
+        mainCanvasCtx.lineTo(Math.floor(Q - C + M * y), L + z);
+        mainCanvasCtx.lineTo(Q - C, L + z);
+        mainCanvasCtx.closePath()
+    }
+    var x, t, z, y, A, B, C, E, F, G, N, I, D, K = 0,
+        J;
+    this.init = function() {
+        aJ.setState(6);
+        x = 0;
+        t = 1;
+        E = "rgba(0,220,120,0.4)";
+        F = "rgba(0,0,0,0.8)";
+        this.lx();
+        c4.canvasPendingUpdates = !0;
+        D = 0;
+        J = !1;
+        k()
+    };
+    this.lx = function() {
+        y = Math.floor((zoom ? .5 : .25) * averageWindowLength);
+        A = y + 12;
+        z = Math.floor(.125 * y);
+        C = 3 * z;
+        B = Math.floor(.225 * y);
+        N = Math.floor(.3 * z);
+        G = on + N + bu
+    };
+    this.vV = function(L) {
+        K = L
+    };
+    this.vZ = function(L) {
+        L === g() && (J = !1, n())
+    };
+    this.rm = function(L) {
+        6 !== aJ.getState() || J || (I = c4.time, J = !0, multiOut.join_lobby(L))
+    };
+    this.clicked = function(L, H) {
+        var M = Math.floor((clientWidth1 - A) / 2),
+            Q = Math.floor(.5 * (clientHeight1 - display_buffer_length - z - B)) + z + display_buffer_length;
+        return L > M && L < M + A && H > Q && H < Q + B ? (this.ve(), jh.lo(L, H, !1), !0) : !1
+    };
+    this.ve = function() {
+        websocket_manager.closeAll(3260);
+        name_input.init();
+        c4.canvasPendingUpdates = !0
+    };
+    this.update = function() {
+        6 === aJ.getState() && (J ? c4.time > I + 2E4 && showError.displayError(3250) : c4.time > I + 2E4 && n(), 
+        x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), 
+        E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", 
+        F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasPendingUpdates = !0)
+    };
+    this.drawImage = function() {
+        var L = Math.floor((clientWidth1 - A) / 2),
+            H = Math.floor(.5 * (clientHeight1 - display_buffer_length - z - B)),
+            M = x / 100;
+        mainCanvasCtx.fillStyle = F;
+        l(H, 3, 1);
+        mainCanvasCtx.fill();
+        mainCanvasCtx.fillStyle = E;
+        l(H, 3, M);
+        mainCanvasCtx.fill();
+        mainCanvasCtx.strokeStyle = cK;
+        l(H, 3, 1);
+        mainCanvasCtx.stroke();
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.font = G;
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillText("Loading", Math.floor(.5 * clientWidth1), Math.floor(H + .58 * z));
+        H = H + z + display_buffer_length;
+        M = A;
+        var Q = B;
+        mainCanvasCtx.fillStyle = oG;
+        mainCanvasCtx.fillRect(L, H, M, Q);
+        mainCanvasCtx.lineWidth = 3;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(L, H, M, Q);
+        var R = Math.floor(.3 * Q);
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.font = on + R + bu;
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillText("Back", Math.floor(L + M / 2), Math.floor(H + Q / 2 + .1 * R))
+    }
+}
+
+function kD() {
+    var state;
+    this.init = function() {
+        jh.init();
+        jk.init();
+        state = 0;
+        cookies_window.init();
+        name_input.init()
+    };
+    this.setState = function(newState) {
+        state = newState
+    };
+    this.getState = function() {
+        return state
+    };
+    this.vp = function() {
+        this.setState(8);
+        lobby.hide();
+        mainSettings.us();
+        cD.hidden = !1;
+        openLinkBox.clicked(-1E3, -1E3)
+    };
+    this.us = function(k) {
+        if (!vq) return !1;
+        if (!(400 > c4.time)) {
+            if ("Enter" === k.key || "Escape" === k.key) {
+                if (this.vr()) return 0 === state && jk.cE(0, !0), !0;
+                if ("Enter" === k.key) {
+                    if (0 === state) return name_input.vs(), !0;
+                    if (7 === state) return !0
+                }
+            }
+            return !1
+        }
+    };
+    this.vr = function() {
+        return openLinkBox.end() || mainSettings.us() ? !0 : cD.hidden ? (cD.hidden = !1, !0) : !1
+    };
+    this.aK =
+        function() {
+            c4.canvasPendingUpdates = !0;
+            8 === state ? canvas_hidden ? canvas_hidden = !canvas_hidden : hv.hidden ? hv.alterDisplay() : fq.alterDisplay() : 7 === state ? lobby.vt() : 6 === state ? ji.ve() : 3 === state ? showError.vu(0, 0) : 2 === state ? singleMenu.vu() : 0 === state && (this.vr() || set_android_state(11))
+        };
+    this.clicked = function(k, n) {
+        if (!cookies_window.clicked(k, n) && vq && !(openLinkBox.clicked(k, n) || 6 === state && ji.clicked(k, n) || 2 === state && singleMenu.clicked(k, n) || jt.clicked(k, n) || cD.clicked(k, n) || vv.clicked(k, n, !0) || mainSettings.clicked(k, n, !0))) {
+            playtime.clicked(k, n);
+            if (0 === state) name_input.clicked(k, n);
+            else if (3 === state) showError.clicked(k, n);
+            else if (5 === state) jl.clicked(k, n);
+            else if (7 === state && lobby.clicked(k, n)) return;
+            uZ.clicked(k, n)
+        }
+    };
+    this.lo = function(k, n) {
+        jt.lo(k, n);
+        if (!playtime.ri) {
+            if (cookies_window.lo(k, n)) {
+                playtime.pW();
+                return
+            }
+            if (2 === state && singleMenu.lo(k, n)) {
+                playtime.pW();
+                return
+            }
+            if (0 <= mainSettings.pR(k, n)) {
+                playtime.pW();
+                return
+            }
+            if (mainSettings.lo(k, n)) {
+                playtime.pW();
+                return
+            }
+            if (jh.lo(k, n, !0)) return
+        }
+        playtime.lo(k, n)
+    };
+    this.click = function(k, n) {
+        playtime.pX();
+        mainSettings.vJ() || vv.clicked(k, n, !1) || mainSettings.clicked(k, n, !1)
+    };
+    this.pd = function(k, n, l) {
+        mainSettings.buttons[1].buttonPanel.hidden || 0 === state && playtime.pd(k, l)
+    };
+    this.vw = function() {
+        jh.rs();
+        mainSettings.rs();
+        0 === state ? (jk.rs(0), playtime.rs()) : 7 === state && lobby.lx();
+        c4.canvasPendingUpdates = !0
+    };
+    this.drawImage = function() {
+        if (8 !== state && 10 !== state) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            this.hr();
+            playtime.drawImage();
+            jf.drawImage();
+            var k = Math.floor(.3 * clientHeight1),
+                n = sprites.lB("territorial.io"),
+                l = 1.75 * clientHeight1 / n.width;
+            l = l * n.width < .98 * clientWidth1 ? .98 * clientWidth1 / n.width : l;
+            mainCanvasCtx.globalAlpha = .15;
+            var x = Math.floor(.5 * (clientWidth1 - l * n.width));
+            x = Math.floor(x / l);
+            k = Math.floor(k - .5 * n.height * l);
+            k = Math.floor(k / l);
+            mainCanvasCtx.setTransform(l, 0, 0, l, x, k);
+            mainCanvasCtx.drawImage(n, x, k);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            mainCanvasCtx.globalAlpha = 1;
+            vv.drawImage();
+            uZ.drawImage();
+            mainSettings.drawImage();
+            jt.drawImage();
+            0 === state ? name_input.drawImage() : 2 === state ? singleMenu.drawImage() : 3 === state ? showError.drawImage() : 5 === state ? jl.drawImage() : 6 === state ? ji.drawImage() : 7 === state && lobby.drawImage();
+            mainSettings.vy();
+            cookies_window.drawImage();
+            cD.drawImage();
+            openLinkBox.drawImage()
+        }
+    };
+    this.hr = function() {
+        if (vq) {
+            var k = clientWidth2 / map_width,
+                n = clientHeight2 / map_height;
+            k = k > n ? k : n;
+            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((clientWidth2 - k * map_width) /
+                2), Math.floor((clientHeight2 - k * map_height) / 2));
+            mainCanvasCtx.drawImage(hs, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            mainCanvasCtx.fillStyle = oG
+        } else mainCanvasCtx.fillStyle = gH;
+        mainCanvasCtx.fillRect(0, 0, clientWidth2, clientHeight2)
+    }
+}
+
+function Emojis() {
+    this.cw = this.width = 0;
+    this.hidden = !1;
+    this.nj = 10;
+    this.bB = .12;
+    this.w3 = this.w2 = this.vA = !1;
+    this.init = function() {
+        this.width = clientWidth2 < 1 * clientHeight2 ? Math.floor((zoom ? .94 : .6) * clientWidth2) : Math.floor((zoom ? .94 : .6) * clientHeight2);
+        this.width -= this.width % this.nj;
+        this.cw = 1 * this.width;
+        this.hidden = !0;
+        this.vA = !1
+    };
+    this.clicked = function(g, k, n) {
+        var l = (clientHeight1 - this.cw) / 2;
+        g -= (clientWidth1 - this.width) / 2;
+        k -= l;
+        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.cw - 1) return 0 === n && (this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasPendingUpdates = !0), !1;
+        l = Math.floor(this.width / this.nj);
+        g = divide_floor(g, l) + this.nj * divide_floor(k, l);
+        g = 0 > g ? 0 : g >= a5.nn ? a5.nn - 1 : g;
+        if (0 ===
+            n || 1 === n && !a5.a7[g] || 2 === n && a5.a7[g]) this.w2 = !a5.a7[g], this.w3 = this.vA = !0, a5.a7[g] = !a5.a7[g], a5.o5(), c4.canvasPendingUpdates = !0;
+        return !0
+    };
+    this.lo = function(g, k) {
+        this.vA && this.clicked(g, k, this.w2 ? 1 : 2)
+    };
+    this.vJ = function() {
+        this.w3 && (save_emojis(), this.w3 = !1);
+        this.vA = this.w3 = !1
+    };
+    this.drawImage = function() {
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        var g = (clientWidth1 - this.width) / 2,
+            k = (clientHeight1 - this.cw) / 2;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
+        mainCanvasCtx.lineWidth = oy;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.cw + 2);
+        for (var n = Math.floor(this.width /
+                this.nj), l = (n - 2 * this.bB * n) / a5.width, x = a5.nn - 1; 0 <= x; x--) mainCanvasCtx.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nj * n), Math.floor(k + divide_floor(x, this.nj) * n)), a5.a7[x] && (mainCanvasCtx.fillStyle = oO, mainCanvasCtx.fillRect(0, 0, n, n)), mainCanvasCtx.setTransform(l, 0, 0, l, Math.floor(g + x % this.nj * n + this.bB * n), Math.floor(k + divide_floor(x, this.nj) * n + this.bB * n)), mainCanvasCtx.drawImage(a5.l7[x], 0, 0);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        mainCanvasCtx.imageSmoothingEnabled = !1
+    }
+}
+
+function ShowError() {
+    function g() {
+        var t = aJ.getState();
+        0 === t ? name_input.hide() : 6 === t ? websocket_manager.closeAll(n) : 7 === t ? (lobby.hide(), websocket_manager.close(websocket_manager.lobby, 3240)) : 8 === t && (leave_game(), name_input.hide());
+        aJ.setState(3);
+        jh.rs();
+        jh.uz[2].na = k(n);
+        c4.canvasPendingUpdates = !0
+    }
+
+    function k(t) {
+        var z;
+        for (z = l.length - 1; 0 <= z; z--)
+            if (t === l[z].code) return l[z].l;
+        return x + t
+    }
+    var n, l, x;
+    this.fit = function() {
+        l = [];
+        l.push({
+            l: "No Server Response",
+            code: 1006
+        });
+        l.push({
+            l: "Account successfully saved!",
+            code: 3231
+        });
+        l.push({
+            l: "Account Error",
+            code: 3232
+        });
+        l.push({
+            l: "No Servers Found",
+            code: 3249
+        });
+        l.push({
+            l: "Thanks for the vote.",
+            code: 3252
+        });
+        l.push({
+            l: "Please accept Cookies",
+            code: 3265
+        });
+        l.push({
+            l: "Invalid Password Format",
+            code: 3266
+        });
+        l.push({
+            l: "Lobby Timeout",
+            code: 4207
+        });
+        l.push({
+            l: "Invalid Username",
+            code: 4214
+        });
+        l.push({
+            l: "User already exists.",
+            code: 4224
+        });
+        l.push({
+            l: "No Client Response Error",
+            code: 4229
+        });
+        x = "Error "
+    };
+    this.init = function(t, z) {
+        n = z;
+        var y = aJ.getState();
+        if (6 === y) {
+            if (4211 === z) {
+                jl.init(0, 0);
+                return
+            }
+            if (4214 !== z) {
+                ji.vZ(t);
+                return
+            }
+        } else if (7 === y) {
+            if (t !== websocket_manager.lobby) return
+        } else {
+            8 === y && (t !== websocket_manager.remote || singleplayer || announcements.error(k(z)));
+            return
+        }
+        g()
+    };
+    this.displayError = function(t) {
+        n = t;
+        8 === aJ.getState() ? announcements.error(k(t)) : g()
+    };
+    this.lx = function() {
+        jh.uz[2].na = k(n)
+    };
+    this.clicked = function(t, z) {
+        3 === jh.pR(t, z, 3, 1) && this.vu(t, z)
+    };
+    this.vu = function(t, z) {
+        name_input.init();
+        jh.lo(t, z, !1);
+        c4.canvasPendingUpdates = !0
+    };
+    this.drawImage = function() {
+        jh.v5()
+    }
+}
+
+function kF() {
+    function g() {
+        k.push({
+            input: document.createElement("INPUT"),
+            hidden: !1,
+            color: n
+        });
+        var x = k.length - 1;
+        k[x].input.setAttribute("type", "text");
+        k[x].input.value = "";
+        k[x].input.style.textAlign = 0 === x ? "center" : "left";
+        k[x].input.style.backgroundColor = n;
+        k[x].input.style.border = "3px solid " + cK;
+        k[x].input.style.color = cK;
+        k[x].input.style.position = "absolute";
+        k[x].input.readOnly = 3 === x;
+        k[x].input.addEventListener("input", function() {
+            0 === x && name_input.wD()
+        })
+    }
+    var k, n, l;
+    this.init = function() {
+        n = "rgba(0,0,0,0.6)";
+        l = oV;
+        void 0 !==
+            k && this.cE(0, !1);
+        k = [];
+        g();
+        this.lx()
+    };
+    this.lx = function() {
+        var x = Math.floor(.22 * jh.cw / device_pixel_ratio);
+        k[0].input.style.font = bt + x + bu;
+        k[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
+        k[0].input.style.width = Math.floor(jh.width / device_pixel_ratio - 13) + "px"
+    };
+    this.bz = function(x) {
+        return k[x]
+    };
+    this.rs = function(x) {
+        k[x].input.style.left = Math.floor((clientWidth1 / device_pixel_ratio - (jh.width / device_pixel_ratio - 3) - 7) / 2) + "px";
+        0 === x && (k[x].input.style.bottom = Math.floor((clientHeight1 - jh.fK + jh.f6) / device_pixel_ratio) + "px")
+    };
+    this.cE = function(x, t) {
+        k[x].hidden !== t && ((k[x].hidden = t) ? document.body.appendChild(k[x].input) : document.body.removeChild(k[x].input))
+    };
+    this.wE = function(x, t) {
+        t && k[x].color === n || !t && k[x].color === l || (k[x].color = t ? n : l, k[x].input.style.backgroundColor = k[x].color)
+    }
+}
+
+function ki() {
+    this.my_id = this.gameHash = 0;
+    var g, k, n, l;
+    this.init = function(x) {
+        if (7 === aJ.getState()) {
+            g = x;
+            k = 0;
+            n = c4.time + 4500;
+            l = multiIn.getRemote(g) ? 2 : 0;
+            aJ.setState(10);
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            aJ.hr();
+            x = sprites.lB("loading");
+            var t = (zoom ? .396 : .25) * averageWindowLength / x.width;
+            mainCanvasCtx.setTransform(t, 0, 0, t, Math.floor((clientWidth2 - t * x.width) / 2), Math.floor((clientHeight2 - t * x.height) / 2));
+            mainCanvasCtx.drawImage(x, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+        }
+    };
+    this.eZ = function() {
+        0 < l && c4.time > n && (l--, n += 4500, 0 === c4.wO && 0 === c4.wP && (0 === l && websocket_manager.remote < websocket_manager.originCount && (websocket_manager.remote += websocket_manager.lobbyCount), websocket_manager.rk(websocket_manager.remote, 5)))
+    };
+    this.wS = function() {
+        10 === aJ.getState() && (k++, 2 <= k && (multiIn.extract_game_data(g), g = null))
+    }
+}
+
+function Lobby() {
+    function g(P, U) {
+        var W = E[P].getContext("2d", {
+            alpha: !0
+        });
+        W.clearRect(0, 0, 48, 48);
+        var X = 48 / U.width,
+            V = 48 / U.height;
+        X = V < X ? V : X;
+        W.setTransform(X, 0, 0, X, Math.floor((48 - X * U.width) / 2), Math.floor((48 - X * U.height) / 2));
+        W.drawImage(U, 0, 0);
+        W.setTransform(1, 0, 0, 1, 0, 0)
+    }
+
+    function k(P, U, W, X) {
+        X.beginPath();
+        X.moveTo(P, P);
+        X.lineTo(P + Math.cos(W) * U, P + Math.cos(W + 1.5 * Math.PI) * U);
+        X.stroke()
+    }
+
+    function n() {
+        if (7 === aJ.getState()) {
+            for (var P = -1, U = lobbyGames.length - 1; 0 <= U; U--)
+                if (null === lobbyGames[U].canvas) {
+                    P = U;
+                    break
+                } if (-1 !== P) {
+                U = getGameCanvas(lobbyGames[P].map_id, lobbyGames[P].xB);
+                if (null !== U) lobbyGames[P].canvas = U;
+                else {
+                    U = map_width;
+                    var W = map_height,
+                        X = hs,
+                        V = pl,
+                        na = xH,
+                        ba = xI,
+                        ca = current_map,
+                        pa = seed;
+                    loadMap(lobbyGames[P].map_id, lobbyGames[P].seed);
+                    xK.xL();
+                    var S = document.createElement("canvas");
+                    S.width = 128;
+                    S.height = 128;
+                    var O = S.getContext("2d", {
+                            alpha: !1
+                        }),
+                        T = 128 / map_width,
+                        Y = 128 / map_height;
+                    Y > T && (T = Y);
+                    O.imageSmoothingEnabled = !0;
+                    O.setTransform(T, 0, 0, T, (128 - T * map_width) / 2, (128 - T * map_height) / 2);
+                    O.drawImage(hs, 0, 0);
+                    map_width = U;
+                    map_height = W;
+                    hs = X;
+                    pl = V;
+                    xH = na;
+                    xI = ba;
+                    current_map = ca;
+                    seed = pa;
+                    lobbyGames[P].canvas = S
+                }
+                c4.canvasPendingUpdates = !0
+            }
+        }
+    }
+
+    function getGameCanvas(param_mapID, param_seed) {
+        for (var index = lobbyGames.length - 1; 0 <= index; index--)
+            if (null !== lobbyGames[index].canvas && lobbyGames[index].map_id === param_mapID && lobbyGames[index].seed === param_seed) return lobbyGames[index].canvas;
+        return null
+    }
+
+    function x(x_coord, y_coord) {
+        var display_games_rows, display_games_columns;
+        if (0 === lobbyGames.length) return !1;
+        var lobbyGame_index = 0;
+        var display_games_box_y_min = display_games_box_init_y_min;
+        for (display_games_columns = 0; display_games_columns < display_games_box_arrangement[1]; display_games_columns++) {
+            var display_games_box_x_min = games_display_box_init_x_min;
+            for (display_games_rows = 0; display_games_rows < display_games_box_arrangement[0]; display_games_rows++) {
+                if (x_coord > display_games_box_x_min && x_coord < display_games_box_x_min + display_games_box_length && y_coord > display_games_box_y_min && y_coord < display_games_box_y_min + display_games_box_length){
+                    return multiOut.join_game(lobbyGames[lobbyGame_index].game_id), game_selected = lobbyGames[lobbyGame_index].game_id !== game_selected ? lobbyGames[lobbyGame_index].game_id : -1, c4.canvasPendingUpdates = !0;
+                }
+                lobbyGame_index++;
+                if (lobbyGame_index >= lobbyGames.length) return !1;
+                display_games_box_x_min += display_games_box_length + display_buffer_length
+            }
+            display_games_box_y_min += display_games_box_length + display_buffer_length
+        }
+        return !1
+    }
+    var display_games_box_length, z, display_games_box_arrangement, games_display_box_init_x_min, display_games_box_init_y_min, C, E, lobbyGames, G, game_selected, I, D, label_displayLobbyStats = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
+        lobbyStats = [0, 0, 0, 0],
+        L, H, M, Q, R;
+    //The bottom 3 functions are Added
+    this.get_lobbyGames = function() {
+        return lobbyGames;
+    }
+    this.get_game_selected = function() {
+        return game_selected;
+    }
+    this.select_game = function(game_id) {
+        game_selected = game_id;
+    }
+    this.init = function() {
+        R = 0;
+        game_selected = -1;
+        aJ.setState(7);
+        lobbyGames = [];
+        this.lx();
+        var P;
+        E = Array(11);
+        for (P = E.length; 0 <= P; P--) E[P] = document.createElement("canvas"), E[P].width =
+            48, E[P].height = 48;
+        for (P = 0; 7 > P; P++) {
+            var U = P + 2,
+                W = E[U - 2].getContext("2d", {
+                    alpha: !0
+                }),
+                X = 1.5 * Math.PI;
+            W.lineWidth = 2;
+            W.strokeStyle = cK;
+            W.clearRect(0, 0, 48, 48);
+            for (var V = 0; V < U; V++) {
+                var na = X + 2 * Math.PI / U;
+                var ba = X,
+                    ca = na,
+                    pa = W;
+                pa.fillStyle = teams.wy[V + 1];
+                pa.beginPath();
+                pa.arc(24, 24, 23, ba, ca);
+                pa.lineTo(24, 24);
+                pa.fill();
+                0 !== V && k(24, 23, X, W);
+                X = na
+            }
+            k(24, 23, 1.5 * Math.PI, W);
+            W.beginPath();
+            W.arc(24, 24, 23, 0, 2 * Math.PI);
+            W.stroke()
+        }
+        g(7, sprites.bz(4));
+        g(8, a5.l7[27]);
+        g(9, a5.l7[46]);
+        g(10, a5.l7[36]);
+        c4.canvasPendingUpdates = !0
+    };
+    this.vt = function() {
+        this.hide();
+        websocket_manager.closeAll(3240);
+        name_input.init();
+        c4.canvasPendingUpdates = !0
+    };
+    this.hide = function() {
+        lobbyGames = [];
+        E = []
+    };
+    this.lx = function() {
+        var P, U;
+        display_games_box_arrangement = [0, 0];
+        G = [0, 0, 0, 0];
+        if (zoom) {
+            I = Math.floor(.8 * .4 * averageWindowLength);
+            D = Math.floor(.56 * I);
+            G[0] = display_buffer_length;
+
+            if (clientWidth2 < clientHeight2) {
+                G[1] = D + 2 * display_buffer_length;
+                G[2] = clientWidth2 - 3 * G[0];
+                G[3] = uZ.to_y() - 3 * display_buffer_length - D;
+                H = Math.floor(.95 * D);
+                M = Math.floor((clientWidth2 - I - display_buffer_length) / 2);
+                Q = Math.floor(display_buffer_length + D / 2);
+            } else {
+                G[1] = display_buffer_length;
+                G[2] = clientWidth2 - 3 * display_buffer_length - I;
+                G[3] = uZ.to_y() - 2 * display_buffer_length;
+                H = Math.floor(.8 * I);
+
+                if (G[3] - D < I) {
+                    H = Math.floor(.8 * (G[3] - D));
+                    H = Math.max(D, H);
+                }
+
+                M = Math.floor(clientWidth2 - I / 2 - display_buffer_length);
+                Q = Math.floor(display_buffer_length + D + (G[3] - D) / 2);
+                Q = Math.max(Q, Math.floor(D + 2 * display_buffer_length + H / 2));
+            }
+        } else {
+            I = Math.floor(.2016 * averageWindowLength);
+            D = Math.floor(.56 * I);
+            G[2] = Math.floor(.5 * clientWidth2);
+            G[3] = Math.floor(.5 * clientHeight2);
+            G[1] = Math.floor(.45 * (clientHeight2 - G[3]));
+            G[0] = Math.floor((clientWidth2 - G[2]) / 2);
+            H = Math.floor(.75 * D);
+            M = Math.floor(clientWidth2 / 2);
+            Q = Math.floor(G[1] + G[3] + (clientHeight2 - G[3] - G[1]) / 2);
+        }
+        L = bt + Math.floor(.65 * D / 4) + bu;
+        for (P = U = 1; P * U < lobbyGames.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
+        var W = (G[2] - (P - 1) * display_buffer_length) / P;
+        var X = (G[3] - (U - 1) * display_buffer_length) / U;
+        display_games_box_length = W < X ? W : X;
+        z = Math.floor(display_games_box_length);
+        C = bt + Math.floor(.5 * display_games_box_length / 5) + bu;
+        display_games_box_arrangement[0] = P;
+        display_games_box_arrangement[1] = U;
+        games_display_box_init_x_min = G[0] + Math.floor((G[2] - display_games_box_arrangement[0] * display_games_box_length - (display_games_box_arrangement[0] - 1) * display_buffer_length) / 2);
+        display_games_box_init_y_min = G[1] + Math.floor((G[3] - display_games_box_arrangement[1] * display_games_box_length - (display_games_box_arrangement[1] - 1) * display_buffer_length) / 2)
+    };
+    this.updateAttribute = function(param_lobbyStats, param_lobbyGames) {
+        var index, lobbyGamesCount = lobbyGames.length;
+        lobbyStats = param_lobbyStats;
+        for (index = 0; index < param_lobbyGames.length; index++) {
+            var gamePreviewCanvas = getGameCanvas(param_lobbyGames[index].map_id, param_lobbyGames[index].seed);
+            lobbyGames.push({
+                game_id: param_lobbyGames[index].id,
+                game_mode: param_lobbyGames[index].game_mode,
+                contest: param_lobbyGames[index].contest,
+                map_id: param_lobbyGames[index].map_id,
+                seed: param_lobbyGames[index].seed,
+                join_count: param_lobbyGames[index].join_count,
+                time_left: param_lobbyGames[index].time_left,
+                maximum_players: param_lobbyGames[index].maximum_players,
+                canvas: gamePreviewCanvas
+            })
+        }
+        for (index = lobbyGamesCount - 1; 0 <= index; index--) lobbyGames.shift();
+        if (-1 !== game_selected)
+            for (gamePreviewCanvas = game_selected, game_selected = -1, index = lobbyGames.length - 1; 0 <= index; index--)
+                if (lobbyGames[index].game_id === gamePreviewCanvas) {
+                    game_selected = gamePreviewCanvas;
+                    break
+                } if (lobbyGames.length > R || lobbyGames.length < R) R = lobbyGames.length, this.lx();
+        this.xE();
+        c4.canvasPendingUpdates = !0
+    };
+    this.xE = function() {
+        for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
+    };
+    this.clicked = function(x_coord, y_coord) {
+        return 4 * ((x_coord - M) * (x_coord - M) + (y_coord - Q) * (y_coord - Q)) <= H * H ? (this.vt(), jh.lo(x_coord, y_coord, !1), !0) : x(x_coord, y_coord)
+    };
+    this.drawImage = function() {
+        var P = 0,
+            U = display_games_box_init_y_min;
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        mainCanvasCtx.lineWidth = 3;
+        var W = Math.floor(.5 * H);
+        mainCanvasCtx.fillStyle = oG;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
+        mainCanvasCtx.fill();
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
+        mainCanvasCtx.stroke();
+        W = sprites.bz(0).height;
+        var X = .6 * H / W;
+        mainCanvasCtx.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * sprites.bz(0).width), Math.floor(Q - .5 * X * W));
+        mainCanvasCtx.drawImage(sprites.bz(0), 0, 0);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        mainCanvasCtx.fillStyle = oG;
+        mainCanvasCtx.fillRect(clientWidth2 - I - display_buffer_length, display_buffer_length, I, D);
+        0 <= game_selected ? (mainCanvasCtx.fillStyle = oO, mainCanvasCtx.fillRect(clientWidth2 - I -
+            display_buffer_length, display_buffer_length, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = oj, mainCanvasCtx.fillRect(clientWidth2 - I - display_buffer_length, display_buffer_length + Math.floor(.25 * D), I, Math.floor(.25 * D)));
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(clientWidth2 - I - display_buffer_length, display_buffer_length, I, D);
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.font = L;
+        mainCanvasCtx.textBaseline = cI;
+        W = Math.floor(.04 * I);
+        X = Math.floor(.08 * D);
+        for (var index = 3; 0 <= index; index--) {
+            var na = Math.floor(display_buffer_length + (index + 1) * (D + 2 * X) / 5 - X);
+            mainCanvasCtx.textAlign = mj;
+            mainCanvasCtx.fillText(label_displayLobbyStats[index], clientWidth2 - I - display_buffer_length + W, na);
+            mainCanvasCtx.textAlign = ol;
+            mainCanvasCtx.fillText(eP.split_into_pieces(lobbyStats[index]), clientWidth2 - display_buffer_length - W, na)
+        }
+        if (0 !== lobbyGames.length)
+            for (X = 0; X < display_games_box_arrangement[1]; X++) {
+                na = games_display_box_init_x_min;
+                for (W = 0; W < display_games_box_arrangement[0]; W++) {
+                    index = P;
+                    var ba = Math.floor(na),
+                        ca = Math.floor(U);
+                    if (null === lobbyGames[index].canvas) mainCanvasCtx.fillStyle = oG, mainCanvasCtx.fillRect(ba, ca, z, z);
+                    else {
+                        var pa = z / 128;
+                        mainCanvasCtx.setTransform(pa, 0, 0, pa, ba, ca);
+                        mainCanvasCtx.drawImage(lobbyGames[index].canvas, 0, 0);
+                        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+                    }
+                    if (game_selected === lobbyGames[index].game_id) {
+                        pa = ba;
+                        var S = ca,
+                            O = Math.floor(.2 * z),
+                            T = Math.floor(.3 * O);
+                        mainCanvasCtx.fillStyle = oQ;
+                        mainCanvasCtx.fillRect(pa + z - O, S, O, O);
+                        mainCanvasCtx.fillStyle = gH;
+                        mainCanvasCtx.fillRect(pa + z - O, S, 2, O);
+                        mainCanvasCtx.fillRect(pa + z - O, S + O - 2, O, 2);
+                        fq.drawShape(pa + z - O + T, S + T, O - 2 * T);
+                        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                        mainCanvasCtx.lineWidth = 3;
+                        mainCanvasCtx.fillStyle = oQ
+                    } else mainCanvasCtx.fillStyle = oF;
+                    S = Math.floor(display_games_box_length / 4);
+                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 *
+                        display_games_box_length), z, Math.floor(display_games_box_length / 5));
+                    mainCanvasCtx.fillRect(ba, ca, S, S);
+                    mainCanvasCtx.fillStyle = gH;
+                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 * display_games_box_length), z, 2);
+                    mainCanvasCtx.fillRect(ba + S - 2, ca, 2, S);
+                    mainCanvasCtx.fillRect(ba, ca + S - 2, S, 2);
+                    mainCanvasCtx.font = C;
+                    mainCanvasCtx.textBaseline = cI;
+                    mainCanvasCtx.textAlign = mj;
+                    mainCanvasCtx.fillStyle = od;
+                    mainCanvasCtx.fillText(lobbyGames[index].join_count.toString(), Math.floor(ba + .07 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.textAlign = cJ, mainCanvasCtx.fillStyle = oM, mainCanvasCtx.fillText(lobbyGames[index].game_id.toString(), Math.floor(ba + .5 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.textAlign = ol;
+                    mainCanvasCtx.fillStyle = oY;
+                    mainCanvasCtx.fillText(lobbyGames[index].time_left.toString(), Math.floor(ba + .93 * display_games_box_length), Math.floor(ca + .9 * display_games_box_length));
+                    mainCanvasCtx.strokeStyle = oe;
+                    mainCanvasCtx.strokeRect(ba, ca, z, z);
+                    O = Math.floor(.16 * display_games_box_length);
+                    pa = O / 48;
+                    mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
+                    E.length > lobbyGames[index].game_mode && mainCanvasCtx.drawImage(E[lobbyGames[index].game_mode], 0, 0);
+                    mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    lobbyGames[index].contest && (index = sprites.bz(4), pa = .5 * display_games_box_length / index.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (display_games_box_length - pa * index.width) / 2), Math.floor(ca + (display_games_box_length - pa * index.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(index, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
+                    P++;
+                    if (P >= lobbyGames.length) return;
+                    na += display_games_box_length + display_buffer_length
+                }
+                U += display_games_box_length + display_buffer_length
+            }
+    }
+}
+
+function kG() {
+    this.init = function(g, k) {
+        aJ.setState(5);
+        jh.lo(g, k, !1);
+        c4.canvasPendingUpdates = !0
+    };
+    this.drawImage = function() {
+        jh.v6()
+    };
+    this.clicked = function(g, k) {
+        var n = jh.pR(g, k, 5, 2);
+        5 === n ? reload_client() : 6 === n && (name_input.init(), jh.lo(g, k, !1), c4.canvasPendingUpdates = !0)
+    }
+}
+
+function SingleMenu() {
+    function g(n, l, x, t, z, y, A, B, C) {
+        mainCanvasCtx.fillStyle = z;
+        mainCanvasCtx.fillRect(n, l, x, t);
+        0 <= B && (mainCanvasCtx.fillStyle = "rgba(" + 22 * B + "," + (110 - 22 * B) + ",0,0.75)", mainCanvasCtx.fillRect(n, l, (1 + B) * x / 6, t));
+        0 < C && (mainCanvasCtx.fillStyle = "rgba(255,255,255,0.3)", mainCanvasCtx.fillRect(n, l, C * x / max_entities, t));
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(n, l, x, t);
+        0 !== y && (mainCanvasCtx.fillStyle = cK, mainCanvasCtx.font = bt + Math.floor(y * t) + bu, mainCanvasCtx.fillText(A, Math.floor(n + x / 2), Math.floor(l + .52 * t)))
+    }
+    var k = [0, 0, 0, 0];
+    this.botSettings = [{
+        difficulty: 1,
+        group: 512
+    }];
+    this.init = function() {
+        js.hidden = !1;
+        aJ.setState(2);
+        this.lx();
+        c4.canvasPendingUpdates = !0
+    };
+    this.hide = function() {};
+    this.lx = function() {
+        k[2] = Math.floor((zoom ? .49 : .4) * averageWindowLength);
+        k[1] = Math.floor((clientHeight2 - k[2] / 6 - this.botSettings.length * (display_buffer_length + k[2] / 10)) / 2);
+        k[0] = Math.floor((clientWidth2 - k[2]) / 2);
+        js.hidden && js.lx()
+    };
+    this.xW = function(n) {
+        var l;
+        if (6 < n) this.botSettings = [{
+            difficulty: 0,
+            group: 512
+        }];
+        else {
+            this.botSettings = [];
+            for (l = 0; l < n + 2; l++) this.botSettings.push({
+                difficulty: 0,
+                group: 0
+            });
+            this.xX()
+        }
+    };
+    this.vu = function() {
+        c4.canvasPendingUpdates = !0;
+        js.hidden ? js.hidden = !1 : (this.hide(), name_input.init())
+    };
+    this.jM = function() {
+        var n;
+        if (customMap.ds) return customMap.dt.xY;
+        var l = 0;
+        for (n = this.botSettings.length - 1; 0 <= n; n--) l += this.botSettings[n].group;
+        return l
+    };
+    this.lo = function(n, l) {
+        return js.hidden && js.lo(n, l) ? !0 : -1 === this.pR(n, l) ? !1 : !0
+    };
+    this.singleGameInit = function() {
+        websocket_manager.remote = 0;
+        websocket_manager.rk(0, 3) && multiOut.single_loaded(0);
+        aJ.vp();
+        if (customMap.ds) customMap.xb();
+        else {
+            var n = this.botSettings.length - 2;
+            n = 0 > n ? 7 : n;
+            game_init(Math.floor(16384 * Math.random()), 0, [{
+                name: name_input.get_username(),
+                color: mainSettings.buttons[2].buttonPanel.get_rgb_64(),
+                status: 0
+            }], n, !1)
+        }
+    };
+    this.click = function(n, l) {
+        return !1
+    };
+    this.clicked = function(n, l) {
+        if (cD.hidden || mainSettings.buttons[1].buttonPanel.hidden || mainSettings.buttons[2].buttonPanel.hidden) return !1;
+        if (js.hidden && !customMap.ds) return js.clicked(n, l);
+        var x = this.pR(n, l);
+        if (-1 === x) return !1;
+        if (0 === x) return this.vu(), !0;
+        if (1 === x) return customMap.ds ? (customMap.pW(), c4.canvasPendingUpdates = !0) : js.show(), !0;
+        if (2 === x) return this.hide(), this.singleGameInit(), !0;
+        if (customMap.ds) return !1;
+        if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
+            difficulty: 0,
+            group: max_entities
+        }), this.xX(), this.lx(), c4.canvasPendingUpdates = !0), !0;
+        var t = Math.floor((x - 3) / 3);
+        if (0 === x % 3) return 1 < this.botSettings.length && (this.botSettings.splice(t, 1), this.lx(), c4.canvasPendingUpdates = !0), !0;
+        var z = (k[2] - k[2] / 10 - 2 * display_buffer_length) / 2;
+        if (1 === x % 3) {
+            if (0 === t && 1 === this.botSettings[t].group) return !0;
+            n < k[0] + k[2] - 1.5 * z - display_buffer_length ? this.botSettings[t].difficulty-- : this.botSettings[t].difficulty++;
+            -1 > this.botSettings[t].difficulty ? this.botSettings[t].difficulty = 5 : 5 < this.botSettings[t].difficulty && (this.botSettings[t].difficulty = -1);
+            return c4.canvasPendingUpdates = !0
+        }
+        c4.canvasPendingUpdates = !0;
+        var y = (n - (k[0] + k[2] - z)) / z - .5;
+        y = Math.floor((0 > y ?
+            -(y * y) : y * y) * max_entities);
+        y = 0 === y ? 1 : y;
+        z = max_entities;
+        for (x = this.botSettings.length - 1; 0 <= x; x--) t !== x && (z -= this.botSettings[x].group);
+        if (0 > y) {
+            if (1 === this.botSettings[t].group) return this.botSettings[t].group = z, !0
+        } else if (this.botSettings[t].group === z) return this.botSettings[t].group = 1, !0;
+        this.botSettings[t].group += y;
+        1 > this.botSettings[t].group ? this.botSettings[t].group = 1 : this.botSettings[t].group > z && (this.botSettings[t].group = z);
+        return !0
+    };
+    this.xX = function() {
+        for (var n = Math.floor(max_entities / this.botSettings.length), l = max_entities % this.botSettings.length, x = this.botSettings.length - 1; 0 <= x; x--) this.botSettings[x].group = n;
+        this.botSettings[0].group += l
+    };
+    this.pR = function(n, l) {
+        var x, t = (k[2] - 2 * display_buffer_length) / 3,
+            z = k[2] / 6;
+        if (n < k[0] || l < k[1] || n >= k[0] + k[2]) return -1;
+        if (l < k[1] + z) return n < k[0] + t ? 0 : n < k[0] + t + display_buffer_length ? -1 : n < k[0] + 2 * t + display_buffer_length ? 1 : n < k[0] + 2 * t + 2 * display_buffer_length ? -1 : 2;
+        var y = k[2] / 10;
+        t = (k[2] - y - 2 * display_buffer_length) / 2;
+        for (x = 0; x < this.botSettings.length; x++) {
+            var A = k[1] + z + display_buffer_length + x * (y + display_buffer_length);
+            if (l < A) return -1;
+            if (!(l > A + y)) return n < k[0] + y ? 3 + 3 * x : n < k[0] + y + display_buffer_length ? -1 : n < k[0] + k[2] - t - display_buffer_length ? 4 + 3 * x : n < k[0] + k[2] - t ? -1 : 5 + 3 * x
+        }
+        return 8 > this.botSettings.length ? (A = k[1] + z + display_buffer_length + this.botSettings.length * (y + display_buffer_length), l < A || l > A + y || n > k[0] + y ? -1 : 27) : -1
+    };
+    this.drawImage = function() {
+        var n;
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        var l = (k[2] - 2 * display_buffer_length) / 3,
+            x = k[2] / 6;
+        g(k[0], k[1], l, x, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
+        g(k[0] + l + display_buffer_length, k[1], l, x, "rgba(" + (customMap.ds ? 128 : 0) + ",128,128,0.75)", .4, customMap.ds ? "Reset" : "Maps", -1, -1);
+        g(k[0] + k[2] - l, k[1], l, x, "rgba(0,128,0,0.75)", .4, "Start", -1, -1);
+        if (!customMap.ds) {
+            var t = k[2] / 10;
+            l = (k[2] - t - 2 * display_buffer_length) / 2;
+            for (n = 0; n < this.botSettings.length; n++) {
+                var z = k[1] + x + display_buffer_length + n * (t + display_buffer_length);
+                g(k[0], z, t, t, "rgba(0,128,0,0.75)", 0, null, -1);
+                g(k[0] + t + display_buffer_length, z, l, t, hy, .4, this.xg(n), this.botSettings[n].difficulty, -1);
+                g(k[0] + k[2] - l, z, l, t, hy, .4, this.xh(n), -1, this.botSettings[n].group)
+            }
+            if (8 > this.botSettings.length) {
+                z = k[1] + x + display_buffer_length + this.botSettings.length * (t +
+                    display_buffer_length);
+                g(k[0], z, t, t, "rgba(128,128,20,0.75)", 0, null, -1, -1);
+                n = k[0];
+                mainCanvasCtx.fillStyle = cK;
+                l = max(2, Math.floor(.5 * t));
+                l -= l % 2;
+                x = max(2, Math.floor(.1 * t));
+                x -= x % 2;
+                t = Math.floor((t - l) / 2);
+                var y = Math.floor(t + (l - x) / 2);
+                mainCanvasCtx.fillRect(n + t, z + y, l, x);
+                mainCanvasCtx.fillRect(n + y, z + t, x, l)
+            }
+            js.hidden && js.drawImage()
+        }
+    };
+    this.xg = function(teamID) {
+        return 0 === teamID && 1 === this.botSettings[teamID].group ? "You" : dG.botDifficultyLabel[this.botSettings[teamID].difficulty+1]
+    };
+    this.xh = function(n) {
+        return 1 === this.botSettings[n].group ? "1 Player" : this.botSettings[n].group + " Players"
+    }
+}
+
+function MainSettings() {
+    this.width = this.b3 = 0;
+    this.buttons = null;
+    this.init = function() {
+        this.buttons = [];
+        this.buttons.push({
+            fJ: 0,
+            fK: 0,
+            active: zoom,
+            buttonPanel: null
+        });
+        this.buttons.push({
+            fJ: 0,
+            fK: 0,
+            active: !1,
+            buttonPanel: new Emojis
+        });
+        this.buttons.push({
+            fJ: 0,
+            fK: 0,
+            active: !1,
+            buttonPanel: new Colors
+        });
+        this.buttons[2].buttonPanel.vE();
+        this.b3 = this.buttons.length;
+        this.width = 0
+    };
+    this.rs = function() {
+        this.width = Math.floor((zoom ? .063 : .04) * averageWindowLength);
+        this.width += 4 - this.width % 4;
+        this.buttons[0].fJ = display_buffer_length;
+        this.buttons[0].fK = clientHeight1 - this.width - display_buffer_length;
+        for (var g = 1; g < this.b3; g++) this.buttons[g].fJ = this.buttons[g - 1].fJ + Math.floor(zoom ? 1.5 * display_buffer_length : 3.7 * display_buffer_length) + this.width, this.buttons[g].fK = this.buttons[0].fK
+    };
+    this.pR = function(g, k) {
+            if (!sprites.bx()) return -1;
+            for (var index = this.b3 - 1; 0 <= index; index--)
+                if (g >= this.buttons[index].fJ && k >= this.buttons[index].fK && g < this.buttons[index].fJ + this.width && k < this.buttons[index].fK + this.width) return index;
+            return -1
+        };
+    this.xk = function() {
+        for (var g = 2; 1 <= g; g--)
+            if (this.buttons[g].buttonPanel.hidden) return !0;
+        return !1
+    };
+    this.us = function() {
+        return this.buttons[1].buttonPanel.hidden ? (this.buttons[1].buttonPanel.clicked(-5E3, -5E3, 0), !0) : this.buttons[2].buttonPanel.hidden ? (this.buttons[2].buttonPanel.clicked(-5E3, -5E3), !0) : !1
+    };
+    this.clicked = function(g, k, n) {
+        if (n) {
+            if (this.buttons[1].buttonPanel.hidden) return this.buttons[1].buttonPanel.clicked(g, k, 0), !0;
+            if (this.buttons[2].buttonPanel.hidden) return this.buttons[2].buttonPanel.clicked(g, k), !0
+        }
+        g = this.pR(g, k);
+        if (n) {
+            if (0 === g) return this.buttons[g].active = !this.buttons[g].active, zoom = this.buttons[g].active, jq.xl(), save_options(this.buttons[0].active, !1), !0;
+            if (1 <= g && 3 > g) return this.buttons[g].buttonPanel.init(), name_input.hide(), c4.canvasPendingUpdates = !0
+        }
+        return !1
+    };
+    this.lo = function(g, k) {
+        return this.buttons[1].buttonPanel.hidden ? (this.buttons[1].buttonPanel.lo(g, k), !0) : this.buttons[2].buttonPanel.hidden ? (this.buttons[2].buttonPanel.lo(g), !0) : !1
+    };
+    this.vJ = function() {
+        for (var g = 2; 1 <= g; g--)
+            if (this.buttons[g].buttonPanel.hidden) return this.buttons[g].buttonPanel.vJ(), !0;
+        return !1
+    };
+    this.drawImage = function() {
+        if (sprites.bx()) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            for (var g = this.b3 - 1; 0 <= g; g--) {
+                mainCanvasCtx.fillStyle = this.buttons[g].active ? mb : hy;
+                mainCanvasCtx.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+                if (0 === g) {
+                    this.xm(g, sprites.bz(15));
+                } else if (1 === g) {
+                    this.xn();
+                } else if (2 === g) {
+                    this.xo();
+                }
+                mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                mainCanvasCtx.lineWidth = oy;
+                mainCanvasCtx.strokeStyle = cK;
+                mainCanvasCtx.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+            }
+            mainCanvasCtx.imageSmoothingEnabled = !1
+        }
+    };
+    this.xm = function(g, k) {
+        var n = .08 * this.width,
+            l = (this.width - 2 * n) / k.width;
+        mainCanvasCtx.setTransform(l, 0, 0, l, this.buttons[g].fJ + n, this.buttons[g].fK + (this.width - l * k.height) / 2);
+        mainCanvasCtx.drawImage(k, 0, 0)
+    };
+    this.xn = function() {
+        var g = .06 * this.width,
+            k = (this.width - 2 * g) / a5.width;
+        mainCanvasCtx.setTransform(k, 0, 0, k, this.buttons[1].fJ + g, this.buttons[1].fK + g);
+        mainCanvasCtx.drawImage(a5.l7[4], 0, 0)
+    };
+    this.xo = function() {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, this.buttons[2].fJ, this.buttons[2].fK);
+        for (var g = this.width / 4, k = 3; 0 <= k; k--)
+            for (var n = 3; 0 <= n; n--) mainCanvasCtx.fillStyle = "rgb(" + Math.floor(367 * (k + 1) * (n + 1) % 256) + "," + Math.floor(687 * (k + 1) * (n + 1) % 256) + "," + Math.floor(651 * (k + 1) * (n + 1) % 256) + ")", mainCanvasCtx.fillRect(k * g, n * g, g, g)
+    };
+    this.vy = function() {
+        for (var g = 2; 1 <= g; g--)
+            if (this.buttons[g].buttonPanel.hidden) {
+                this.buttons[g].buttonPanel.drawImage();
+                break
+            }
+    }
+}
+
+function Name_input() {
+    function vote() {
+        if (0 !== username.indexOf("vote ")) return !1;
+        var split_names = username.split(" ");
+        if (2 !== split_names.length) return !1;
+        name_input.vote_id = split_names[1];
+        display_username();
+        websocket_manager.rk(0, 7) && multiOut.vote(0);
+        showError.displayError(3252);
+        return !0
+    }
+
+    function display_username() {
+        username = get_username();
+        jk.bz(0).input.value = username;
+        jk.wE(0, !0)
+    }
+
+    function save_account() {
+        if (0 !== username.indexOf("account ")) return !1;
+        var split_names = username.split(" ");
+        if (2 !== split_names.length) return display_username(), showError.displayError(3266), !0;
+        var password_max_limit = Math.floor(Math.pow(2, 48));
+        split_names = parseInt(characters.str_to_charcode(split_names[1]));
+        if (0 >= split_names || split_names >= password_max_limit) return display_username(), showError.displayError(3266), !0;
+        if (save_password(split_names)) return display_username(), showError.displayError(3231), !0;
+        display_username();
+        5 <= device_version ? showError.displayError(3232) : (showError.displayError(3265), cookies_window.hidden = !0, cookies_window.bs = -1);
+        return !0
+    }
+
+    function l() {
+        if (void 0 !== username && characters.iN(username)) return jk.wE(0, !0), !0;
+        jk.wE(0, !1);
+        return !1
+    }
+    var username;
+    this.vote_id = "";
+    this.last_vote_time = -7E3;
+    this.init = function() {
+        aJ.setState(0);
+        jh.rs();
+        jk.cE(0, !0);
+        jk.rs(0);
+        jf.init();
+        mainSettings.rs();
+        void 0 === username && (username = get_username(), jk.bz(0).input.value = username, l())
+    };
+    this.hide = function() {
+        jk.cE(0, !1)
+    };
+    this.xs = function(t) {
+        return 0 === t ? jh.width : 1 === t ? Math.floor(.3 * jh.cw) : 2 === t ? jk.bz(0).input.style.font : username
+    };
+    this.wD = function() {
+        username = jk.bz(0).input.value.trim();
+        l();
+        if ("password" === username || "account" === username) {
+            var t = characters.charcode_to_str(load_password().toString());
+            username = "account " + t;
+            jk.bz(0).input.value = username
+        }
+    };
+    this.clicked = function(t, z) {
+        c4.xt();
+        1 === jh.pR(t, z, 1, 1) ? save_account() || vote() || (set_android_state(10), l() ? (this.hide(), save_username(username), singleMenu.init()) : showError.displayError(4214)) : 0 === jh.pR(t, z, 0, 1) && this.vs()
+    };
+    this.vs = function() {
+        save_account() || vote() || (set_android_state(10), void 0 !== username && characters.iN(username) && 40 === username.charCodeAt(0) && 41 === username.charCodeAt(2) ? ji.vV((Math.abs(username.charCodeAt(1)) + 7) % websocket_manager.terriWsCount) : ji.vV(jt.xy - 1), l() ? sprites.bx() ? (this.hide(), save_username(username), customMap.pW(), ji.init()) : showError.displayError(3228) : showError.displayError(4214))
+    };
+    this.y2 = function() {
+        return !mainSettings.xk() && !cD.hidden && !openLinkBox.hidden
+    };
+    this.drawImage = function() {
+        if (this.y2()) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            var t = sprites.lB("territorial.io"),
+                z = 1.1 * jh.width / t.width;
+            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((clientWidth1 - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
+            mainCanvasCtx.drawImage(t, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            jh.v3()
+        }
+    };
+    this.get_username = function() {
+        return username
+    }
+    this.change_input_username = function() { //Custom Function
+        username = get_username();
+    }
+}
+
+function Sprites() {
+    function g(id, name, y, imageData) {
+        l[id] = name;
+        n[id] = new Image;
+        n[id].onload = function() {
+            if (0 < y) {
+                var B, C, E = document.createElement("canvas"),
+                    F = n[id].width,
+                    G = n[id].height;
+                E.width = F;
+                E.height = G;
+                var N = E.getContext("2d", {
+                    alpha: !0
+                });
+                N.drawImage(n[id], 0, 0);
+                var I = N.getImageData(0, 0, F, G),
+                    D = I.data;
+                if (3 > y) {
+                    var K = 2 === y ? 160 : 600;
+                    for (B = F - 1; 0 <= B; B--)
+                        for (C = G - 1; 0 <= C; C--) {
+                            var J = 4 * (B + C * F);
+                            D[J] + D[J + 1] + D[J + 2] < K && (D[J + 3] = Math.floor(255 * (D[J] + D[J + 1] + D[J + 2]) / K))
+                        }
+                } else if (3 === y)
+                    for (B = F - 1; 0 <= B; B--)
+                        for (C = G - 1; 0 <= C; C--) J = 4 * (B + C * F), 0 === D[J] &&
+                            200 < D[J + 1] && 0 === D[J + 2] && (D[J + 3] = 0);
+                else if (4 === y)
+                    for (B = F - 1; 0 <= B; B--)
+                        for (C = G - 1; 0 <= C; C--) J = 4 * (B + C * F), D[J + 1] > D[J] + 20 && D[J + 1] > D[J + 2] + 20 && 40 > D[J] + D[2] && (D[J + 3] = 255 - D[J + 1], D[J] = D[J + 1] = D[J + 2] = D[J]);
+                else if (5 === y)
+                    for (B = F - 1; 0 <= B; B--)
+                        for (C = G - 1; 0 <= C; C--) J = 4 * (B + C * F), 200 < D[J + 1] && D[J + 1] - 20 > D[J] && D[J + 1] - 20 > D[J + 2] ? 40 > D[J] + D[J + 2] ? D[J + 3] = 0 : (D[J + 3] = D[J], D[J] = 255, D[J + 1] = 255, D[J + 2] = 255) : 50 > D[J] && 50 > D[J + 1] && 50 > D[J + 2] && (50 > D[J] + D[J + 1] + D[J + 2] ? (D[J + 1] = D[J + 1], D[J + 3] = 180) : (D[J + 1] = D[J + 1], D[J + 3] = 180 + Math.floor(75 * (D[J] + D[J + 1] +
+                            D[J + 2] - 50) / 100)));
+                else if (6 === y)
+                    for (B = F - 1; 0 <= B; B--)
+                        for (C = G - 1; 0 <= C; C--) J = 4 * (B + C * F), D[J + 3] = Math.floor(255 * (D[J] + D[J + 1] + D[J + 2]) / 765), D[J] = D[J + 1] = D[J + 2] = 255;
+                else if (7 === y)
+                    for (B = F - 1; 0 <= B; B--)
+                        for (C = G - 1; 0 <= C; C--) J = 4 * (B + C * F), D[J + 1] > D[J + 2] + 10 && (D[J + 3] = D[J], D[J + 1] = D[J + 2]);
+                N.putImageData(I, 0, 0);
+                n[id] = E
+            }
+            spritesCount--;
+            sprites.bx() && (uZ.bv(), hu.l3(), a5.init(), vv.uv([n[8], n[16], n[7], n[9], n[10]], [!is_ios, 0 === device_version, !0, !0, !0]), c4.canvasPendingUpdates = !0, n[7] = x, n[8] = x, n[9] = x, n[10] = x)
+        };
+        n[id].src = imageData
+    }
+    var spritesCount, n, l, x;
+    this.init = function() {
+        if (void 0 === n) {
+            spritesCount = 20;
+            n = Array(spritesCount);
+            l = Array(spritesCount);
+            x = document.createElement("canvas");
+            x.width = 1;
+            x.height = 1;
+            for (var t = spritesCount - 1; 0 <= t; t--) n[t] = x;
+            g(0, "exit", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAABGBAMAAACkrn5fAAAAHlBMVEUAAAAiJCI4OjdcXltoameIioejpqPExsPY29j///9xarZIAAAAyUlEQVRIx+3WQQqCQBTG8TdOB5DUI+S6nRcoPIFhu1bBHGGO4Any3TYxAkWTv1DSYr71D4b5mOE9kWmszkeC/ZptT6Ocl+xj5qgtbVR1iZn9VE2wU2uO2Jryhm2h2OaKbdZgu/NKrXVK7f6q1JpaqTWFYpvrUtqhPTTYpst0aBOv2Drltlxh392iu0U1t5I4biX13PZvF7+zvOFWihXWlNy+aqZ/M3LcivXcds1xK9kKK3GYAVtYe+8CZ/c/7Br9blSNcgn75O/tE26TasUvH0ImAAAAAElFTkSuQmCC");
+            g(1, "victory", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUIAAABBBAMAAABWYLC1AAAAElBMVEUAAAA6PDlbXVqEhoO4urf///8hX3N2AAAEcklEQVRo3s2ZyZKcMAyGWdx3alLcSaW4k8lwZ9LjuwH3+79KlkljLb/czFJp+tYusD8k/ZItF/5y/a0F/dXb+KW472/cQCIbd8b4//+dDFu12/ByZ8Jkq0uHbRvuTFglwomOezx8j5/HxkrgTXEYqSxQyvcWCpVEhOG53p3QQTGfDiMUlppJxPXHEQrVxIT0092fEOaVw9Q8LpV5GysPJGUsWweojyCVCAgPIBQYc8nzwxEIvcYZjyQUmPv8kYQC68dhNoeWmOsD1Tyc/G5L+elvHLzs0tG3l7/PPn6KVJTfGxqpG0+9vXFW2w+ZGaoU0x3YrfwZP3dkrONijUK5ndBOLBAh2Wz8CwybMAESRPX4kDwZuGODMNkkjLoiwtLTyac8IXs2NpbJO2E0YVInhSH/c8LxolY1CVs+tFiEi2TqGW8lZqikTRlhLSYPGcIK2Ao/3gi/ilwiErQz4nIAJnx9xyJsga3w4xN3s6EbTVhowhJNbhCWyFaYcOVUvShpLZ+glfmREurZZ5MQ2wqOx/Q9k3YyeWNgJp0B4YgmNwh7aCv8eJp61U4mwT+xsJwA4Zarv37xm+ENQr89+/BCAwc93qXhRjmZpJeZ/Rs0YU1scU2MU1FkM/tKbT8kwt8+LB+8TtrT9dMCqHsrsyhYmdnfiYkEoaPBXRG/sPd8eunqZqfPmS1MHRGsfGLF5nX2Z4OwZWm6T15ihK3+/D7XBKFFcAErjzKVx3NTGIT8WZe+jRGSl0pdC7RUBqJW5D3P7O/iI9itDzx2Gla5oiAs6YwjKEBSKhOQMiDMnicGNmkUwc6V8sPTmHeyWAGpBELbgJWzx5c3Emqc0nIyya1Lqvax+BhhKfoE4/bdgHDR+6YOn6Zien0FK5fZpiInrITeRpWaL6qr5SwnUzGftJXTytUbCGszIzhjR8HcHKzTVNfqU9SHCGeRdAdjB1vgE4mWyuR1Q0QRLm8gDHsI9SErmg334HVD5EOE8w4vP2tnBrPxsICPeJ9SjDgESnkGpurMxkMEnUOVbT5Xy2cAEnN3U7rd8Kn5EGRscJOz5LqIunNoElbx+0eq3hev17IJRyNDwbpMGjwv3V5CsHOotRFtwhYWSmvn0BB9nfftbUq0txlV3rAJHTry6JVR+yG+f3/oVNDbhKiVYO+xWftkNQhPbLEW7bEr5WabsLClDM4p7Og/7zmnlPic4mVMZQj9xdzgkpUrmmTfctbr4VlvC/9hB2FvCoWtnM7A31SukJ1Qcl5+Audl2pMKOwidKRS2cm81WwHhmO85BOL8dQdhLZsxmNDhRSHhjb5NoF+xg7AwhcJX9nZ5lIRFvvcV6JZl2kHojZonVm7t4tMbG0ujfxio6+YdhD2MLbVyZZd9RVjhYo+6InEH4ck8q/KVezMt9daeA/exWc/h6oocoTP2Q/m7gKXIEZa5u4DAlp1uE5aWUHL3KbHIEvL7FFFsAouE+TYhlcqQIyR3UrG5QZi7kwoFCMT6k648n17v6n7uv9eL5/et9Asv0oTxJYkUxgAAAABJRU5ErkJggg==");
+            g(2, "defeat", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARMAAABABAMAAADL6o5mAAAAHlBMVEUAAAAlJyU7PTtUVlNsbmuJi4ijpaLCxMHX2db///+Cup+UAAACo0lEQVRo3s3ZsW7bMBAAUNqyZWUzsnT1VECbhy7ZvHTwlqmAN6PoUG0CggzairpIyi1Nk1b629awTPGOpHm0DyE1WYJEPlHk3UkW6w5t7eMXEWczKHvN52QoXfcjHUoUi4PSbdOhtItkKBEekZPSLdOh7NKhtOlQ3nwRnaC8pENp06F0t+lQvsWi/O/4+uPXiJNljcbgvUb5G5ci3mmWeVyKqGLNW5MyGyh1ZMo41hIyKaJRh573u9JY5HDo1LMsjBOfBLq9/oC0Rg4L5UYdeuWi5HqDAZShyT9clAKGBzJlBgMLB0UN9CKMksOEyEFpYOFBpkxBpywU1AmZkrFThpv7HUYZwcjPQEGzj04RsOpnoJRwnGNScFo7h7JS16HqcmbJDIUzW0hrWstQVfQWlMkhXg655BzKkoVyOPn7EMDjUa4Os0SidsIoCxbK5tBWhV7FCZSRJ8RtT1M6mE2PYb/tE1EdQsnoFNCpizLudwqYDCiUqScdhlLyfunkeslCo+TMlKJvPkNvNASKr14JpayPV0mtZKFRfFVcKKU5Cir4rYRAWXtq21CKetY31uVxiiI9FX8gZap+F7BrP2WC3oMupRSqZprBeeunlCiNXkopVesTrWShUDJpLS7sgd9GwYG/cn1B8lFGVWctuc7PQcao1hTK9YdP0hjgCykTo1579lLM7RcHxSg9VZYMoWw5KFfOL58BlHbOQdmYDa+CKeC1/2yKpbqvgyk1B2VsafgplNI6b6smVnH7wJq7h5tO2bFQCvdNkintkoVibX8RRtkJFkoDUmCpRwkqpZ3zUMDsgDObStkKFspUj9tqEr+EUO4EDwUt8Ez/ykKj3AkmSonGWGopn0J5WAkuSoX+KG60ksVL+Xm/8kXuAAoO1RvtOkT5B9F51EylDpRdAAAAAElFTkSuQmCC");
+            g(3, "orders", 6, "data:image/png;base64,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");
+            g(4, "crown", 4, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJsAAABqBAMAAABZgT4DAAAAJ1BMVEUgIi0xOi5GUTMadCZ3bkARrRyhk1AA1g/AqzAA/wDVxWXy2D/25XVxgVVAAAAGjElEQVRo3s2az2vcRhTHn+SV14l9UEJ+NEkPGygBEx/UhhJ8W0owJclBLZSwtw2YUGoflJhg9uaWUgq5rC2E6M0pJYdmD40xZsn0EAfjw0Z/VOfNSJr35LUjKTr0HcxiTT4785033/c0DvxRJp7fufOozLghlBm1ATLuNoWLXcRZg4ZwAahoN4OTk2uNXnXBbgYXArwW4gCg1wgugPNCRh+uNYLz4Tbi3pQQrxxuDXEH4DSC81C6/y0uXex+Q7gAbjS5FdvQQlwXFhvBRQAPhDgCGDRzZj2wVlYBZhqygGfaApabMigPaSUmdwpus6BS1JG0wu82S+M2wB4UNxfOFSd8uSQugouuU8zkQg4H1s1pWk7DBXNi7PLpycVa3FHXxM9OOZwnz9QWS9kYwGXmGcnEHkM5HOCJanM/bvXZmQjn8JgMyuBiSw7daxf8+B07sdvzpXFTZufBwyOWd2p2nUFp7frLXLpRwo6s0s4qubOz0ioHXLok6bLEcB+cvrPPv7S+pl8NFs8yKV2S7DLxnsIFvtVfKQTiIjyRl3lLMuBJvJQkXLy4w3oWPIV4DCVOH3C2lBBOSJdMuHjcmn2FuIq4UNsP/e6h5bBDZyUyOnR1T602N1jdFEmcB/Zr8Zi1DMG3tF3ahlnEMfG8FYeJa62LvwAWhxAr65aVgAz217rLdCWfI+492Z/IGtvsSC+prsMZQqQLyx7dTO/FG4cOXkfcMXGBp3OCmEQM1gdViO0hbANmuHhL+i15zMZmtal0SUJcQGZ6t0ekm0WEcCGAtIrKzwYn52tWG2rpksS0UJE81lvLJBHUjKRgiFP9keiYPIjk0z3H6LygcYe5HtIRxT+mPduBeaFbNj/HkdntzKObDcz517jjXA881cRzQljIZzfU6H/B4AL8gswEdBKryJIpslF4h+Bm0wUGkH7eJ3nsY+Zkq1XnX0fmArhWMZ4hW2Hr3bQwUVS/RZPUeyHMatX515FZqKc6KqCnEH9zCDPyVHRwegf00Lpa2EUuXe4Caq3MjH1ofRBvXWhLnHxruHTPJW8hsR6uV0uky1wg0JnV79He3pYI6ElcVHwJibSwOu+JdJl4nRfqMUm8uKMQjvI71dGQuh/qpBRbV7l0qQuELf2YlhP10ib3Xbnx98CKfLoYsT+jpFsyOCWenz12WHEC61FWKzZ96k/BA5Gutsek0+LFrl4rzRQUzBmY0rND7dNLx4uttpTOThImXpgqK4TF3PgaqWQRfV91s/EHNpcOxXO829ljU2fDrDikuJi8r6Z5olLrrmuyTosHVv40zxS1sQNaZ12zG1G+GrFnMemU55mneaaowsPKtmdez3fm8n8gbWaW0eRqIVM2z5QNU7kyXAC35Dp6NE+UXfO1qtV+lj1NMyWSK1tNl5bhhrDwMu1//TWjTubrJjpgZdPT1QfL9PXMHDIcOnhXyRcDndz1Iu4Q4AbbWimcLTVYZjhZz5JjF3uLqGU2trgRmMmumR62qN9J3dblTHoMJzNFCQOX/fmM9suUySXJS6PenhMj7T5u+IA3ZB5O5CXu0ZX0y/fl3oxO4uT0IFV3DJgQ1/HwWYX+zld7+Fi1Gl/8Lsf+Kv/ZUjIlMJV/RNhv36hvV0XJKeAC3Tk81uYnuzcZs8nUwDHWhXTgFd1vtAu47fRw/gl5tEbTcZgCWdxKk/tcARdlc3nVSUdeOo1m1mD/lPUHywVcbJxo9aYcefF+cka8UkNWTG73iq02zbHJ36PkI8GG5I2pwXm67aoTx7n3Gpw/PS3KxFFeaQwub5Sqx2FeVQ0uPC3NPh67+eufwUW0PleLbl4GDS4+6W1lw817QfJO1oFRPdrE9OAE5xeNvHqeUFxqAtXjvWmXCG6bV+jy8c5cihBc7Uzpm05zSFtS+1PzhL1tY7moE+TNlOJqmsCEvH5RXM1MOSKtJsXVNIFD0lZTXFgvU3bJ5TnF1TSBPumDKa6mCZBXTX4t49YxgQl5N+Q4v06mHNM7DoYL6pQLeuPAccM6W8tu4hiulgn06Y0Qw0V1TKBL73MYLq5jAi69muL3dx6sPCkT68kEf07wA/t7F8f5UC7Oq773/JH64JyKC6B1r0w8TCb4cyI/HLKbN47bqZ4pu+z2nONqmADLkwKuhgl02L1m4Wa2ugnAWbjK5eKY/1WkgKtsAjxPTuIWPsEATuBCaD2pFIU/nhVwEVSO3hm4uDpucNYVvleVNnPmXwSiHyoG/98Hw/8AAslhvSUnOcMAAAAASUVORK5CYII=");
+            g(5, "arena", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABABAMAAAAHc7SNAAAAHlBMVEUAAAAjJSM7PTpUVlNqbWqHiYalp6S/wr7W2NX////RSpP4AAAD9klEQVRo3sWZvW+bQBiHiSGAt6hdki1Dh7Jl9eapkjdPrbxV6lCxeaw3okqpbqNuzMd/2yRw3PvJkQVYYhHgnvfer9/dBQG4WnftgwWuawBwXAIgBQB/lwDIAEC1BEAOAJolAAwAaB/mHz+C4y8RhQkCKOcHuEMAl/kBDgigWTgG2/Z+7vFDPH77fW6AmAAUSxbi1+t5boAdAajnBjgRgHbm8a/o+HNLgiEGfy0UhUMMfrU/zvMCbOy4HxeSBKehBJtlirGze9AlW1GqtM2fH0rp6HroCTWzNcnpTMmxa+f5HZcEORnnyQ9gewkFyJUcS1zsp1wSUID2tx/gKAMYJccy14MSLgkYQOeeUYCLCBBqOZY7LRhxScABzl6A3gcEINFyDIY+lwQcoPEDFBLAWhE8IQQ7MUnAAd58MA5wkQAOiuxOYBM+sGIsABy9AN0QBMAosnsNx7xjkkAAKP0ABQdYabL7IBpWjwD88wNUHCDWZLeBPditkm8wwMuvD1+Mez8VU/qE3IwBUkV2r5AKWTFJkIPymUwHKBhAV2VzJrtjPOmGRiEECKcDVAzg7X9NxmR3ih2TQ0dTgGg6wKsPMED3aspe2+F9iYyWKwjwmQWhDlAQgC66zjGyLmCZ4yakYQCffo6lYUUAKgLQmx4y2U2WQ3FLJMHUQkQBXt5HANb5hkiCa1L9Q1quppZiBlBgABv+OZEEvKCQvSoOUAeTAGoMYHq/bkjsZCpA9b52zADaLQSI7EMpkQS5CtC8T5AAgEt35xECJHbcmEgCowL0TXOqJAMAZfenhgBrO/MhLsaRPn4fhRSgvvED9H7dAYDDkGkGye5kBKCUAJ7uAz9An1qGlfiH4ZmjuDvVCntVGKDZBxMASDYMTa5xpbcUd6ekXQIyA80WAYiluAxu6Wdi2brRGOxLUw+w+obfHAeIvGWjkXenhL2qoRfsUHKMA0Af1NIejC288ShAgQBs0X6cAnBLAE6ydSOFeGiarhsaGBoegIgAKNYJM8Oi0AHshEqoAQCTa3Igg2T3aRSgxQAJZPcBpAggVay7Ek9JDBKmDmAF88AHEKGRMsW6WNyazJGfcjYZytqwRgDuK7XS8vboK6V4fnTGAHfiqwoAWuIYJcc24motRY7J+YQVUwBCcF9seWc0M3vx+KQhqtg4Li/A8PF6+OIRLYUqNDP38gHSFgMc3LLND5C6+2tspbHWXStnJEgSQIDUVTE/QOjuH8Tl5hbMdaWcn5TiyujVfX4A+2YNTEYbo0cgBp6VU8wLBrCFq54EkNr7K2Jlaq3LlR2DDLoGAWyGjjgBILT3Y7zadItsbc8khU0TASTD8xMAetfXrGr2sdf8B96/CJXN/8t1AAAAAElFTkSuQmCC");
+            g(6, "territorial.io", 6, "data:image/png;base64,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");
+            g(7, "youtube", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKEAAAAkCAMAAADW8qrvAAAANlBMVEX+AgDxYgDjhgD/eXnQpAC7vAD/oaMA/wClzwCH4QAx/zdf/1ty/3Sf/6D/3d2+/77d/93///85QMf8AAACr0lEQVRYw8WYWbaDIAxAsdVqAzzi/jf7GBIGZxxO89GiUbgGEkJEH+Q7DF3bti8rjRPhxTftLavpuuH77X8gwv10BLQrTfsEpHECG4TwEhUy0ItKW1Gh7Zp6AwF0KRP16GSLsApQCLKidt1igE3NZZFjKZWEXR2gaMguaSwPa54jbCoJ2Yjo+lWxpR8jhFpA0dH6jlzbIzhCdOIf8606wm814atPq8+whXDXY+WS+Y4QDtWETdYxHlmGFwm7akLRZwsRaLrVc4TtAsL7vUkIWbxRRBrCngu9xArSinvS/cuccKYhQpletjrXl3ZasRQNP+Pfe9+ZZZhd4EnW5KmYHNxwVFIZ4UwTCP1U0GqhC3+5QjiOn11CPxQGj9EJ0Io8QchM6fMIcZVw/PvsEfpOAxkUMQ9PEObvZh87KtGsEY6rU81bs46zg4SLoNiI1YRaYvGECl2aLcI1Rib0Q2gM42HuN7qeUFOEtV8HZMvwv2ikTzLyZ4PQj2WK5U62NCc8Jd2ImcghwiUzRkI/wWHcOD7nPCcI2ZhxC/BPXiJUaXWrOwjxDOHmLLMXxlhzD6EpCbc9ZdOXadF5172dEJUK83Il2jBXCmE3Eka5ErF5EPMbwgO7Xp5e30+IJBcyh2cJzQ3ZV0GoniM8n8HeTziN2DZH1PrCKaAghCd2PZ/enT9JlYQ9D8dHQFNPqMYskUuEp0+jE0IaVxakCJQt54SswYIQZci+MGVfwZaitihSuHJGSMF7MQstCWea4tpM+tKiHy4sw7zcgMWoNIdOOyWcaRIOnSAAs5T7dGVpRpi61dmOOCqYEs403nQqf1dyXwjnq3NZXU5yMmbsFmA0ZJdGhmeAS3RJA1ET6nyg7c14GtW+L8UVzuEo4zMVzgM1WKoSU5m44TJxw0VirhLDL6rE/6vBvdrCmmWnAAAAAElFTkSuQmCC");
+            g(8, "googleplay", 3, "data:image/png;base64,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");
+            g(9, "discord", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyBAMAAADVdiTZAAAAG1BMVEUA/wBI/0lu/26P/5Cl/6O8/73R/9Hn/+j///+iRuwXAAABJUlEQVQ4y83TvW7CMBQF4BsKdKVIpYxIRaJjVLUSI6JDGSNlCCOq1JC1f+CxFIL92D22E+di/ABciZB8seRj35joVZ3VN1FXBSqhRYgPJEIsSQXrAnmjL2uP5Usm81z83Bec5WM+J9T4vS8Yfzz1yFQ0v2ackKsrxr2G7d4ZPjK1O214z3no+Jdz1/EKTy1NI/w6jmcIID6JJirGe8cYdIdGIcQOwx3j/gEpI6X+qoRkGqrnd6OXFR/NRAcdOWFc6hDPera0Xk/Fozo1ck4bHsSVpg0jYJSlervGW9zWSdQXhhXozlbGek1uY9/s2hRWect7ucnsf5ld7DfosX+kcsv+AdwtDfvHdW877x/u0raB6Oa0qG35rKZhbokg41sKclQEmTr/f+SUPtWxuyYAAAAASUVORK5CYII=");
+            g(10, "insta", 3, "data:image/png;base64,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");
+            g(11, "emojis", 4, "data:image/png;base64,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");
+            g(12, "flags", 3, "data:image/png;base64,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");
+            g(13, "bestTeam", 5, "data:image/png;base64,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");
+            g(14, "bestPlayer", 5, "data:image/png;base64,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");
+            g(15, "zoom", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuBAMAAACllzYEAAAAHlBMVEUAAAAhIyA3ODZTVVJrbWqEhoOkpqO8v7vX2tb///8goTJXAAABaElEQVQ4y32Tu1ODQBDGL8QAdlg5dml8dZTa2TijXQpnIh2TwoQOxwehi2PB0flKYP/b7HFv5nALBn5337d7ewshXZyuKX2PST8egUW76OE7EJFa+BhJ9bSsUWFaeTV3GKHbn8EvlB79bjSv4VO8jUr4VdiHNnK938MHPie0Yh+ZLqmGuNsJ7CNURgewI5qPoRE86GwkJyWIBIfcUfJrmMm0sclDyDnPWmLyADacl8jnRbEGKIoiJRP4EmU2LJmIDfLvAf7z/37mv6IUm08pzbV/rx5f1pPA1Fn/iX3eS3nekAslz7gcGw9bg3uqn6Rup5oH+uaTLpO4r0SmZVuUFE2lfTc+z1qr9+BVtGJqzq1RHNfQdAtnrEW75UwuXOFgvj3crpCyDu6UIpP9fPHZU5XkiYVXvsXIPcc+VwspzY2pPorE/NgCfYK+QJ5+QFA6fjQt2A4IWuIWODixe2ELcuIUNJGL+zQle92exY5pfDIaAAAAAElFTkSuQmCC");
+            g(16, "apple", 3, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAA8BAMAAAA9AI20AAAAG1BMVEUAAAAjJCJUVlOEhoOanZkA/wC8vrvW2dX7/fq38z8cAAAEbUlEQVRYw+2YzXOiSBTAGzW6x8ZY6pGYFMMxUct4JGbLcMwld9QpliNkLeUqUvT7s+e9BoUITpIpuWxtp0IJdP943/3B3t7eXtnF2xViGZIbf1+8mVcS3YQKmk3o16AKtLhCdAsqad4be3WrQcdX7BUqalesURXaZM2q0DZr/TfQQVVo8fTXb/LgzO9SiQpon/WPg0fjk5j3cuNnH74ZQPcztOBsegz6xnP7i+i99Tk6ZOwoadwH34LnR5jDBB6j9RjR4vkF4pEF6wmho1EQOyP83uwWuisX1uPgPNpmdciho/5efwiWoiZau86T5QX+ZACL+S0MpEKDVW9/PTMAljq0R026P4/WmJFHx30v2E/9+GFj7KzI8IIZ+K6AZdyCAXbowd3ewN9kkA4McYB+Hs078BG9gNgI/12trJ1L6BGEVjRoRwbZOsbrfipaqa1nUXvQOY+eB1kUIXpv+BAZ0VM8DI5od7id4auh7DBK0VOJ/rEtt7WYqXoAmxvlLn0f94Tp7qx3K24LFRL0IrCDOxiIzgZtLbqim6INQosevJSiTZwtr2ccr6lWsaJ2IFaRocM4Re/x0WIwhEV7hD2e1GmCjtUA0fB0Y5Shw9x8bCWPtlu6BIeswD95K7YiTT6xpWQJZG7ic7ovQ9/n0MZFa4jIkeuXLU/hpYXO0H4O7V4WbWfkWvZ6NT4zbp3F6HfQOVNzpXx8RDHalcX0c7SZobM5XpwzjqlMHA0/azf/FL1XeKlLBccKF6G7v4vObL2rm6WzciznC631NXTO1pl97ZZHKtxMl/wOdWiLG+UxQVO+btwFV7AMrDk99bvvbYhvFL2A9op5jnL1Q1KB38lgDxUz/a5gvYM8CsToUsUFr85rMqWnp+hdDt08mtSKGKI413/yOmaVMl8m+aQpE9nBbGzBV17WaHtPuXYipm+0xil6n0Mr7sGkgSAVUBxMqSAkWbVmmmBtqp9k63v8t2uotgs+dgwP9jyi4/xOJHVkqJBNEN2ieLBCikSvlqxWsJcu0YKCCHn0wqb6eojXrPLxIpp8aKJMvE/mnYZknJ1ySEfyCaFJL7SbVycFHMc5uCpDm0Vjmw3HMXGEDG5mkBJSk6Qt0T6IllLihdCaHD09RfvF0id7KglaFNBk9lN0nXZfBYNEhdInmIoNbwoGiZ1EqYJBWuWrJ+20PkX0CZQWeDN1I0LsuizuFAWmlBoSNwKhZXJugwLaP7VH4jGth8EXwELB4OtiPDRlOP3ACwazjY6+J2fXJdrHjlExQmRWfUh0WwY/ysbV6xkWrZDx8cMxZRwNlfDYLYqkk0cJHbGOo9VKljgLpky2K04SJROxfIXxynVOfg+VBcal/O47S9YUe/Sy0ORTQsswM0rQ4iepsnEO96pcaYdqwI31YCINOrtNtV2pqpxl1nNUd0hPo7lcJg0m39rLpEU7F3cX2yb9jz5paRJ8WNF9BV3hRrrC7X+FhxYVHrVUeEBU5bFWhYdxb6+Nf7YXbpv0CLGqg89fkK30UIXyeWIAAAAASUVORK5CYII=");
+            g(17, "open link", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAPBAMAAADpFNeEAAAAGFBMVEUA/wBi/2N//4CX/5i//8DU/9Pq/+r///90hWfkAAAA6klEQVQoz5XSPQ+CMBAG4FME1i6GlUHjSuLA6uaqEyt+JF3VSt+/b99WhRQG7XCB0qdcrycia42rkomxgJ2edsP8AfYEKH8Gc+CYaLQ/g5Szm8mcpkGGZwgurwsDKqfrrgf6kaNKcMihCpwk5+YZOr+2DMCOQBuAtkoKgpTgvsQOd7cCOMSg82DJz/0fHKjewMQAW4KGxRyeAYqBTyNgCFy6gyq517MEYKAjUNsA2nAPc95DyMaHW4Pu0wNoCVIQPJjN96aHoIjBzINqD9X30vu8cKW6JTGQ2pc18x2x0pbdOgTSxCD1YAHzAmJBjxvc7JBGAAAAAElFTkSuQmCC");
+            g(18, "loading", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZEAAABGBAMAAAD/Q7RHAAAAGFBMVEUAAAAnKSZKTElucG2Fh4SoqqfLzcr///+y5yZlAAAEnUlEQVRo3u3aS3PaMBAAYGNsuHoy0+TKTJv6SjNNfeWSciVNJlydF7qGl/n7JTGSd1e7wgaFaWfMKfFD1qeXV5KD8cb8kuC//rWSVtJKWkkraSWtpJW0klbSSlpJK2klraSV/KuSbw9qe8HsfnCyfHVuZu95Kmb3iUdJ+KAvKf7gM119vDoUb8Bv9gLsu2PD97+n4O/tr1/+OzHXXiqTRjHyJukqkLcndKqnDw94yTYfty7JoyD5jtIYeZJ0FEr2Fp670EcnkgScYiRrXkJLI/EjyUjOhtzduSwpBrJEJ4YloSJJPHqRRDRnK3DSPHIpS8w5TjLnJJlVGIkPydjKWdVsw+pZDokueE5SMJKunULuQcIky5a/S7KQJbtiQZLUTmHlQcIkW13YYyqKkRQOycKWKNcjD5dwyebMYJA7JLscspLCknAJgLHxUEnEJbtkmAuXZC5LysqEEq4V1OkoeySm/bxenf22ujd41NolWTskCyoxxfNydXajrL55qCSDXe4LeaNHdl8wkiLofP2NxwNeUhBJiKKJiBbUwRKFBtIxbrVlha3wCzMGGYzROMxLPhIDkhjn/aOtFa93x0o6uHJ1Cb3Bce1NoZYMJabN5w7JEkv6uLSibQT+w0PcFZGhQyFYmZ18CnVY0q0hKbAks6JrL1F9j4S6Gar50jVK0csLSTR97pC85x9IprW7+CESU0B9psCTHroGS8ZgwJAkSyRRqAF7k/TJyIFkWhCjesOSC5CAJNk+GEjqvwobSVIS9sRwVO3vzoXo2TEXGhZOSQ4knUazq/qSDMXe1QgAbp3rBpFzkl4dyQpIurBnqibhilsyJo2WeU6us7U8WLIZ2JLgkyUhkFSNKoN5x5K4liSvJNEnSaZE0gG5ic1dfThFaSTRQ9vpJbBOqsE3hp20kUS/r9JPl0itKzGjwbrqPXlzia5jdXIJ7I+qCsrhFKVRjyeLD6DHJ54lrlEYVIQC789mkliSDD1LUhIEgTdjJEzXm0nw7Bq840eeJY5opSesBrHv+LUoyQTJ5BgJM113RJCpMNnGknSfJKYSGEH6l3BR/dS+4c2WwBidlaDmxUX1oR+JMNNa8MtHK0vSgUZekhIJnWl5kpDZb7fKGLM2iebuBZqp5bIk3rBTepN1TxJT8gO00jJhO3x5FZSYDYuJLKGdgaxI6P9BwxuZgyt4cI8kYxrOR4770kphJTm7VmhZSZCk+H68ShRcbjxJ4MrdNWxFY2mlMJaanSSJyAClwCN/Pmx8SaJ9zc46wUkWLglISl5NPV4irXCH7B1F0xVuvMXnWOH2IBF2HWLcLUE81mjXgWzRTODI7VvSdfafBZmBjRruBKHXp667jKvt5GiJsDuXkXBfmXbXaHeuPHGOJVzfHAXHS/gdU0W2Naam9BvtmJIdwIn0jnsKPEj4XWy6KlVFio12sXE5aElX2GY8VkJ2xx9hRSV2kByLW8WypEcilHNuI+l4Cf7a45ldLzZ5GVrfN4yC/ZKQhu6/ECTxJQnCKoK/s6cdqDfl5AscuIMjS/S/7Bc4z3SlR5DU+5VfRRWvp/sqKiy/iqr/IdZfF1HJgRmsN+0AAAAASUVORK5CYII=");
+            g(19, "target", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAMFBMVEXUAADUISLWQkLMTQDZZmXAdwC0lADgiIioqQCWvgCE0QAA/wDnra1i6ADw0tL////afMd+AAAC6klEQVRIx42WTWgTURCApzFNY2lLBKEX0dy8iA0UxB8CKgUv0gaKBS2B3HOJnkUDQrENQi6KEITcgydR0l0CUYReJBZCi3YpaC+9FANS6GXZ5+6+eT+z+1adS/ImX97Mzs4f2ET2916vPV9/61At6Ifeq2UIZWXDSYK+IxLIlY4Z+ga6jL8xQbsFoFQrDtF7QqoThaxSDIKsE4HqYJAyhXZNDJxq6VCvZIQgq0NDSJCGgnqFJCiroB2lHTvjS06dWxJSHl0cjBjztm5JxXUBdaXqro8E4j2UD+gg1BamFpkQ75GgVjkkn/8SU+LVUHmaQx/wmB5pEHNzyh4oa08ZkU+oroZQhR8mKMO8PNdPBpBlvoixA67PBBC6lI4yzJVOgb3Nv1+OQawm3h9gJo19jUPHHLrhQ4UEazIKkzZYHJoRvxwuLAzE95voOWzyO5dQ/zkw/QQPfe65DfhwGO2T8JBCB39zqAM8l1Ij3QBMkSC0YFsP94nIB/4fj3vegLb+175IkCX94io0w8/zXJkX0IwezjLUNciTKZrWoSJCF4hLvlCookHHChppPhaB5+7c36BpvOm/oH+Y0x13VSFTx5vGEEzQOPGInyO5KPOUR3yVvrsDIFWBBVOFoR5hlwYczTfgPUmVj1y9SJKiBdhSMM3c0ItZzMwfWFMifeeYomZHpKb89MVWOCWr++hXpNCzfkmViFO6oEvTPtROaAWM/RRtDOx3QO0pyYveCjZ6HreH1saDhiGaeKxj9GUrBzl70iNj54FiCA3BeFVNtXsfEq2Odh/xrjPYxyuG9nuU00YC6DPqrKTcvD6nAshSNclbk3coR1BGDqCmpFJ3Hg++bN2OTNgQ6uojTh9kfP7g5KwnDcWiNl67CQy/SEzzhKvKZORvGqdwxqHLw47JWCOyYfSexaEHsYUmvj9cM6xG1jJlrjqmJcsiFu875nWt91I+4/yLxMXP3lu753PzK+tO8nYY3LbvS2SDtP8A+ntynBIvYeAAAAAASUVORK5CYII=")
+        }
+    };
+    this.bz = function(t) {
+        return n[t]
+    };
+    this.lB = function(t) {
+        for (var z = l.length - 1; 0 <= z; z--)
+            if (l[z] === t) return n[z];
+        return x
+    };
+    this.bx = function() {
+        return 0 === spritesCount
+    }
+}
+
+function Pixel() {
+    function revert_default_pixel(coord, type) {
+        pixel_rgba[coord] = 0;
+        pixel_rgba[coord + 1] = 0;
+        pixel_rgba[coord + 2] = type;
+        pixel_rgba[coord + 3] = 0;
+        k(coord)
+    }
+
+    function k(D) {
+        if (!h8.h9) {
+            var K = pixel.to_x(D);
+            D = pixel.to_y(D);
+            h8.h9 = K >= gy.ty[0] && K <= gy.ty[2] && D >= gy.ty[1] && D <= gy.ty[3]
+        }
+    }
+    var boat_base_color = [224, 224, 224],
+        l = [
+            [172, 172, 172],
+            [144, 0, 0],
+            [0, 128, 0],
+            [0, 0, 144],
+            [128, 128, 0],
+            [128, 0, 128],
+            [0, 128, 128],
+            [196, 196, 196],
+            [0, 0, 0]
+        ],
+        x = [
+            [4, 4, 4, 20],
+            [4, 0, 0, 27],
+            [0, 4, 0, 31],
+            [0, 0, 4, 27],
+            [4, 4, 0, 31],
+            [4, 0, 4, 31],
+            [0, 4, 4, 31],
+            [4, 4, 4, 14],
+            [4, 4, 4, 13]
+        ],
+        inner_red, inner_green, inner_blue, inner_alpha, stationary_border_red, stationary_border_green, stationary_border_blue, moving_border_red, moving_border_green, moving_border_blue;
+    this.init = function(D_then_index) {
+        inner_red = new Uint8Array(max_entities);
+        inner_green = new Uint8Array(max_entities);
+        inner_blue = new Uint8Array(max_entities);
+        inner_alpha = new Uint8Array(max_entities);
+        stationary_border_red = new Uint8Array(max_entities);
+        stationary_border_green = new Uint8Array(max_entities);
+        stationary_border_blue = new Uint8Array(max_entities);
+        moving_border_red = new Uint8Array(max_entities);
+        moving_border_green = new Uint8Array(max_entities);
+        moving_border_blue = new Uint8Array(max_entities);
+        this.font_color = new Uint8Array(max_entities);
+        matrix_processor_init();
+        if (team_game)
+            for (var K, J = max_entities - 1; 0 <= J; J--) K = teams.im[teams.team_array[J]], D_then_index = divide_floor((x[K][3] + 1) * fakeRandom.random(), fakeRandom.value(100)), inner_red[J] = l[K][0] + D_then_index * x[K][0], inner_green[J] = l[K][1] + D_then_index * x[K][1], inner_blue[J] = l[K][2] + D_then_index * x[K][2];
+        else if (customMap.ds && customMap.dt.ya)
+            for (D_then_index = customMap.dt.ya, K = entity_count - 1; 0 <= K; K--) inner_red[K] = 4 * D_then_index[K][0], inner_green[K] = 4 * D_then_index[K][1], inner_blue[K] = 4 * D_then_index[K][2];
+        else {
+            for (K = max_entities - 1; K >= player_count; K--) inner_red[K] = 4 * divide_floor(64 * fakeRandom.random(), fakeRandom.value(100)), inner_green[K] = 4 * divide_floor(64 * fakeRandom.random(), fakeRandom.value(100)), inner_blue[K] = 4 * divide_floor(64 * fakeRandom.random(), fakeRandom.value(100));
+            for (K = player_count - 1; 0 <= K; K--) inner_red[K] = 4 * D_then_index[K].color[0], inner_green[K] = 4 * D_then_index[K].color[1], inner_blue[K] = 4 * D_then_index[K].color[2]
+        }
+        for (D_then_index = max_entities - 1; 0 <= D_then_index; D_then_index--) {
+            K = divide_floor(inner_red[D_then_index] + inner_green[D_then_index] + inner_blue[D_then_index], 3);
+            inner_red[D_then_index] += yj(K - inner_red[D_then_index], 2);
+            inner_green[D_then_index] += yj(K - inner_green[D_then_index], 2);
+            inner_blue[D_then_index] += yj(K - inner_blue[D_then_index], 2);
+            inner_red[D_then_index] -= inner_red[D_then_index] % 4;
+            inner_green[D_then_index] -= inner_green[D_then_index] % 4;
+            inner_blue[D_then_index] -= inner_blue[D_then_index] % 4;
+        }
+        for (D_then_index = max_entities - 1; 0 <= D_then_index; D_then_index--) {
+            inner_red[D_then_index] += divide_floor(D_then_index, 128);
+            inner_green[D_then_index] += divide_floor(D_then_index % 128, 32);
+            inner_blue[D_then_index] += divide_floor(D_then_index % 32, 8);
+            inner_alpha[D_then_index] = D_then_index % 8;
+        }
+        this.set_font_color();
+        for (D_then_index = max_entities - 1; 0 <= D_then_index; D_then_index--) {
+            stationary_border_red[D_then_index] = 32 > inner_red[D_then_index] ? inner_red[D_then_index] + 32 : inner_red[D_then_index] - 32;
+            stationary_border_green[D_then_index] = 32 > inner_green[D_then_index] ? inner_green[D_then_index] + 32 : inner_green[D_then_index] - 32;
+            stationary_border_blue[D_then_index] = 32 > inner_blue[D_then_index] ? inner_blue[D_then_index] + 32 : inner_blue[D_then_index] - 32;
+        }
+        for (D_then_index = max_entities - 1; 0 <= D_then_index; D_then_index--) {
+            moving_border_red[D_then_index] = 235 < inner_red[D_then_index] ? inner_red[D_then_index] - 20 : inner_red[D_then_index] + 20;
+            moving_border_green[D_then_index] = 235 < inner_green[D_then_index] ? inner_green[D_then_index] - 20 : inner_green[D_then_index] + 20;
+            moving_border_blue[D_then_index] = 235 < inner_blue[D_then_index] ? inner_blue[D_then_index] - 20 : inner_blue[D_then_index] + 20;
+        }
+    };
+    this.set_font_color = function() {
+        for (var D = max_entities - 1; 0 <= D; D--) this.font_color[D] = 280 > inner_red[D] + inner_green[D] + inner_blue[D] ? 0 : 1
+    };
+    this.to_x = function(coord) {
+        return divide_floor(coord, 4) % map_width
+    };
+    this.to_y = function(coord) {
+        return divide_floor(coord, 4 * map_width)
+    };
+    this.to_coord = function(x_coord, y_coord) {
+        return Math.floor(4 * (y_coord * map_width + x_coord))
+    };
+    this.borders_mountain = function(coord) {
+        return this.is_mountain(coord + offset[0]) || this.is_mountain(coord + offset[1]) || this.is_mountain(coord + offset[2]) || this.is_mountain(coord + offset[3])
+    };
+    this.can_expand_from_here = function(coord, id) {
+        return this.can_take(coord + offset[0], id) || this.can_take(coord + offset[1], id) || this.can_take(coord + offset[2], id) || this.can_take(coord + offset[3], id)
+    };
+    this.controlled_by_entity = function(coord) {
+        return 208 <= pixel_rgba[coord + 3]
+    };
+    this.strong_is_owner = function(id, coord) {
+        return this.controlled_by_entity(coord) && this.is_owner(id, coord)
+    };
+    this.is_owner = function(id, coord) {
+        return id === this.owner(coord)
+    };
+    this.is_inner = function(coord) {
+        return 208 <= pixel_rgba[coord + 3] && 224 > pixel_rgba[coord + 3]
+    };
+    this.is_stationary_border = function(coord) {
+        return 224 <= pixel_rgba[coord + 3] && 248 > pixel_rgba[coord + 3]
+    };
+    this.borders_water = function(coord) {
+        for (var side = 3; 0 <= side; side--)
+            if (this.is_water(coord + offset[side])) return !0;
+        return !1
+    };
+    this.is_boat = function(coord) {
+        return 192 <= pixel_rgba[coord + 3] && 208 > pixel_rgba[coord + 3]
+    };
+    this.strong_is_boat = function(coord, owner) {
+        return this.is_boat(coord) && owner === this.owner(coord)
+    };
+    this.can_own = function(coord) {
+        return this.controlled_by_entity(coord) || this.is_neutral(coord)
+    };
+    this.is_water = function(coord) {
+        return 0 === pixel_rgba[coord + 3] && 2 === pixel_rgba[coord + 2] || this.is_boat(coord)
+    };
+    this.is_neutral = function(coord) {
+        return 0 === pixel_rgba[coord + 3] && 1 === pixel_rgba[coord + 2]
+    };
+    this.is_mountain = function(coord) {
+        return 0 === pixel_rgba[coord + 3] && 3 === pixel_rgba[coord + 2]
+    };
+    this.can_take = function(coord, id) {
+        return this.is_neutral(coord) || this.controlled_by_entity(coord) && id !== this.owner(coord)
+    };
+    this.owner = function(coord) {
+        return pixel_rgba[coord] % 4 * 128 + pixel_rgba[coord + 1] % 4 * 32 + pixel_rgba[coord + 2] % 4 * 8 + pixel_rgba[coord + 3] % 8
+    };
+    this.revert_to_neutral = function(coord) {
+        revert_default_pixel(coord, 1)
+    };
+    this.revert_to_water = function(coord) {
+        revert_default_pixel(coord, 2)
+    };
+    this.change_to_inner = function(coord, id) {
+        pixel_rgba[coord] = inner_red[id];
+        pixel_rgba[coord + 1] = inner_green[id];
+        pixel_rgba[coord + 2] = inner_blue[id];
+        pixel_rgba[coord + 3] = 208 + inner_alpha[id];
+        k(coord)
+    };
+    this.change_to_border = function(coord, id) {
+        pixel_rgba[coord] = stationary_border_red[id];
+        pixel_rgba[coord + 1] = stationary_border_green[id];
+        pixel_rgba[coord + 2] = stationary_border_blue[id];
+        pixel_rgba[coord + 3] = 224 + inner_alpha[id];
+        k(coord)
+    };
+    this.change_to_moving_border = function(coord, id) {
+        pixel_rgba[coord] = moving_border_red[id];
+        pixel_rgba[coord + 1] = moving_border_green[id];
+        pixel_rgba[coord + 2] = moving_border_blue[id];
+        pixel_rgba[coord + 3] = 248 + inner_alpha[id];
+        k(coord)
+    };
+    this.change_to_boat = function(coord, id) {
+        pixel_rgba[coord] = boat_base_color[0] + inner_red[id] % 4;
+        pixel_rgba[coord + 1] = boat_base_color[1] + inner_green[id] % 4;
+        pixel_rgba[coord + 2] = boat_base_color[2] + inner_blue[id] % 4;
+        pixel_rgba[coord + 3] = 192 + inner_alpha[id];
+        k(coord)
+    }
+}
+
+function User_settings() {
+    function g() {
+        for (var C = 0, E = 1; 5 > E; E++) C += settings_array[E] % 1024;
+        return C
+    }
+
+    function k() {
+        for (var C = 1; C < const_10 - const_4; C++) settings_array[C] = parseInt(settings_array[C])
+    }
+
+    function settings_init() {
+        settings_array[0] = "Player " + Math.floor(1E3 * Math.random());
+        settings_array[1] = clientWidth2 < clientHeight2 ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
+        settings_array[2] = 1;
+        settings_array[3] = 1;
+        settings_array[4] = clientWidth2 < clientHeight2 ? 0 : 1;
+        settings_array[5] = 0;
+        settings_array[6] = "000"; 
+        settings_array[7] = "0"; //Emoji
+        settings_array[8] = "0"; //Color
+        settings_array[9] = "0"; //Password
+        user_settings.format_settings()
+    }
+
+    function l() {
+        for (var index = const_10 - const_4 - 1; 0 <= index; index--) settings_array[index] = characters.str_to_charcode(settings_array[index]);
+        settings_array[0] = characters.iW(settings_array[0])
+    }
+
+    function x(C, E, F) {
+        var G = new Date;
+        G.setTime(G.getTime() + Math.floor(31536E6 * F));
+        C = C + "=" + E + ";expires=" + G.toUTCString() +
+            ";SameSite=Strict;Secure;path=/";
+        document.cookie = C
+    }
+    var t, settings_array, const_10, A, const_4;
+    this.init = function() {
+        if (!(5 <= device_version || is_ios)) {
+            const_4 = 4;
+            A = 0;
+            t = [];
+            const_10 = 10;
+            for (var C = 0; C < const_10; C++) t.push("u" + C);
+            settings_array = Array(const_10);
+            for (var E, F = document.cookie.split(";"), G = F.length - 1; 0 <= G; G--) {
+                F[G] = F[G].trim();
+                for (C = 2; 0 <= C; C--) F[G] = F[G].replace(" ", "");
+                3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? settings_array[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
+            }
+            settings_array[9] || (settings_array[9] = "0");
+            a: {
+                for (C = const_10 - 1; 0 <= C; C--)
+                    if (void 0 === settings_array[C]) {
+                        C = !1;
+                        break a
+                    } C = !0
+            }
+            C ? (A = 2, l(), k(), g() !== settings_array[5] && settings_init()) : settings_init()
+        }
+    };
+    this.format_settings = function() {
+        if (2 === A) {
+            settings_array[1] = 0 === settings_array[1] ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : settings_array[1];
+            settings_array[5] = g();
+            for (var C = 1; C < const_10 - const_4; C++) settings_array[C] = settings_array[C].toString();
+            settings_array[0] = characters.iV(settings_array[0]);
+            for (C = const_10 - const_4 - 1; 0 <= C; C--) settings_array[C] = characters.charcode_to_str(settings_array[C]);
+            for (C = const_10 - 1; 0 <= C; C--) x(t[C], settings_array[C], 1);
+            l();
+            k()
+        }
+    };
+    this.a0 = function() {
+        return A
+    };
+    this.nV = function(C) {
+        A = C;
+        this.format_settings()
+    };
+    this.set_setting = function(index, value) {
+        5 <= device_version || is_ios || (settings_array[index] = value)
+    };
+    this.get_settings = function(index) {
+        return 5 <= device_version || is_ios ? 0 : settings_array[index]
+    }
+}
+
+function kk() {
+    function g(l) {
+        for (k -= 2; l < k; l += 2) n[l] = n[l + 2], n[l + 1] = n[l + 3]
+    }
+    var k = 0,
+        n = new Uint16Array(32);
+    this.init = function() {
+        k = 0
+    };
+    this.update = function() {
+        if (0 !== k)
+            if (0 === is_alive[my_id] || attacks.sent_boats_count(my_id) === attacks.getCurrentAttackCount(my_id)) k = 0;
+            else {
+                var l;
+                for (l = k - 2; 0 <= l; l -= 2) {
+                    var x = n[l];
+                    if (x < max_entities && 0 === is_alive[x]) g(l);
+                    else {
+                        var t = n[l + 1];
+                        if (x >= max_entities && bordersNeutral(my_id) || x < max_entities && bordersEntity(my_id, x)) singleplayer ? processAttack(my_id, x, t) : multiOut.attack(t, x === max_entities ? my_id : x), g(l)
+                    }
+                }
+            }
+    };
+    this.lZ = function(l, x) {
+        var t;
+        a: {
+            for (t = 0; t < k; t += 2)
+                if (n[t] === l) {
+                    n[t + 1] += x;
+                    n[t + 1] = min(n[t + 1], 1E3);
+                    t = !0;
+                    break a
+                } t = !1
+        }
+        t || 32 === k || (n[k] = l, n[k + 1] = x, k += 2)
+    }
+}
+
+function fm(id) {
+    checkKillers(id);
+    revertNeutralLand(id);
+    removeArrayInfo(id);
+    speed.removeEntry(id);
+    eK.g3(id);
+    attacks.reset_attack_count(id)
+}
+
+function checkKillers(id) {
+    hu.isHuman(id) && spectators++;
+    var killers = attacks.get_attackers(id);
+    0 === killers.length ? id === my_id && setDefeat() : (setSpillOvers(id, killers), announceEraser(id, killers))
+}
+
+function setDefeat() {
+    statistics.numbers[17] += troops[my_id] + attacks.total_troops_currently_sent_away(my_id);
+    gameResultBox.show(!1, !1);
+    eB.tK()
+}
+
+function setSpillOvers(id, killers) {
+    var index;
+    for (index = killers.length - 1; 0 <= index; index--) attacks.spillOverAttack(killers[index], id)
+}
+
+function getLargestKillerIndex(killers) {
+    var index, largestKillerIndex = 0;
+    for (index = killers.length - 1; 1 <= index; index--) land[killers[index]] > land[killers[largestKillerIndex]] && (largestKillerIndex = index);
+    return largestKillerIndex
+}
+
+function announceEraser(id, killers) {
+    var index, largestKiller = killers[getLargestKillerIndex(killers)];
+    9 === gamemode && 1 === teams.team_array[id] && fakeRandom.generateBoolean(8) && e2.zS(largestKiller);
+    if (id === my_id) announcements.showGenericMessages(largestKiller, 1), setDefeat();
+    else {
+        for (index = killers.length - 1; 0 <= index; index--)
+            if (killers[index] === my_id) {
+                announcements.showGenericMessages(id, 0);
+                return
+            } id < player_count && announcements.ml(0, id, largestKiller)
+    }
+}
+
+function removeArrayInfo(g) {
+    is_alive[g] = troops[g] = 0;
+    editing_border_pixels[g] = null;
+    pixels_bordering_land[g] = null;
+    pixels_bordering_water[g] = null;
+    pixels_bordering_mountain[g] = null;
+    humanBots.onLeave(g)
+}
+
+function revertNeutralLand(id) {
+    var xIndex, yIndex;
+    for (xIndex = x_max[id]; xIndex >= x_min[id]; xIndex--)
+        for (yIndex = y_max[id]; yIndex >= y_min[id]; yIndex--) {
+            var coord = 4 * (yIndex * map_width + xIndex);
+            pixel.strong_is_owner(id, coord) && (pixel.revert_to_neutral(coord), land[id]--)
+        }
+}
+
+function LoadCustom() {
+    function onupload(file) {
+        (file = file.target.files) && 0 < file.length && loadCustom.checkFileType(file[0])
+    }
+
+    function onload(file) {
+        var img = new Image;
+        img.onload = imgLoaded;
+        img.src = file.target.result
+    }
+
+    function imgLoaded(imageThenWidth) {
+        var img = imageThenWidth.target;
+        imageThenWidth = img.width;
+        var imgHeight = img.height;
+        4096 < imageThenWidth || 4096 < imgHeight || 10 > imageThenWidth || 10 > imgHeight ? alert("Image width & height must be between 10 and 4096.") : (current_map = const_custom_map, seed = 0, map_width = imageThenWidth, map_height = imgHeight, hs.width = map_width, hs.height = map_height, pl.drawImage(img, 0, 0), xI = pl.getImageData(0, 0, map_width, map_height).data)
+    }
+    var uploader;
+    this.init = function() {
+        uploader = document.createElement("input");
+        uploader.type = "file";
+        uploader.onchange = onupload
+    };
+    this.u0 = function() {
+        uploader.click()
+    };
+    this.zU = function(x) {
+        onupload(x)
+    };
+    this.checkFileType = function(file) {
+        var split_fileName = file.name.split(".");
+        var typeThenReader = split_fileName[split_fileName.length - 1].toLowerCase();
+        if ("json" === typeThenReader) customMap.readJSON(file);
+        else if ("gif" === typeThenReader || "jpg" === typeThenReader || "jpeg" === typeThenReader || "png" === typeThenReader) customMap.mapName = split_fileName[0], typeThenReader = new FileReader, typeThenReader.onload = onload, typeThenReader.readAsDataURL(file)
+    };
+    this.pb = function(x) {
+        if (0 === aJ.getState() || 2 === aJ.getState()) x.stopPropagation(), x.preventDefault(), x.dataTransfer.dropEffect = "copy"
+    };
+    this.pc = function(x) {
+        if (0 === aJ.getState() || 2 === aJ.getState()) x.stopPropagation(), x.preventDefault(), (x = x.dataTransfer.files) && 0 < x.length && loadCustom.checkFileType(x[0])
+    }
+}
+
+function AntiFullsend() {
+    this.maxAmount = null;
+    this.init = function() {
+        this.maxAmount = 10 !== gamemode ? null : new Uint32Array(max_entities)
+    };
+    this.update = function() {
+        10 === gamemode && this.calcMaxAmount()
+    };
+    this.calcMaxAmount = function() {
+        var index, varMaxAmount = this.maxAmount,
+            varAliveEntities = alive_entities,
+            varTroops = troops;
+        for (index = alive_count - 1; 0 <= index; index--) {
+            var id = varAliveEntities[index];
+            if (!(id >= player_count)) {
+                var quarterAmount = Math.max(divide_floor(varTroops[id], 4), 2048);
+                var varInterest = Math.max(interest.interestRate(id), 100);
+                varMaxAmount[id] += divide_floor(varInterest * quarterAmount, 1E4);
+                varMaxAmount[id] > quarterAmount && (varMaxAmount[id] = quarterAmount)
+            }
+        }
+    };
+    this.reduceAmount = function(author, amount) {
+        if (amount > this.maxAmount[author]) return amount = this.maxAmount[author], this.maxAmount[author] = 0, amount;
+        this.maxAmount[author] -= amount;
+        return amount
+    }
+}
+
+function CustomMap() {
+    function g(z) {
+        customMap.ds = !0;
+        customMap.zo(JSON.parse(z.target.result));
+        customMap.lJ()
+    }
+
+    function k(z) {
+        var y;
+        if (22 >= z.length) return !1;
+        customMap.dt.map_id = 0;
+        customMap.dt.xB = 0;
+        loadMap(0, 0);
+        "data:image/png;base64," !== z.substring(0, 22) && (z = "data:image/png;base64," + z);
+        var A = new Image;
+        A.onload = function() {
+            map_width = A.width;
+            map_height = A.height;
+            4096 < map_width || 4096 < map_height || 10 > map_width || 10 > map_height ? (loadMap(0, 0), alert("Image w & h must be between 10 and 4096.")) : (current_map = const_custom_map, seed = 0, hs.width = map_width, hs.height = map_height, pl.drawImage(A, 0, 0), y = pl.getImageData(0, 0, map_width, map_height), xI = y.data)
+        };
+        A.src = z;
+        customMap.dt.zz = "";
+        return !0
+    }
+
+    function n(z, y, A, B) {
+        return "string" !== typeof z || z.length < y ? B : z.length > A ? z.substring(0, A) : z
+    }
+
+    function l(z, y, A) {
+        z = "number" === typeof z ? Math.floor(z) : y;
+        return Math.min(Math.max(z, y), A)
+    }
+
+    function x(z, y) {
+        return "boolean" === typeof z ? z : y
+    }
+
+    function t(z, y, A, B) {
+        if (!Array.isArray(z) || 1 > z.length) return null;
+        var C = 8 === B ? new Uint8Array(y) : new Uint16Array(y);
+        var E = z.length;
+        for (B = 0; B < y; B++) C[B] = l(z[B % E], 0, A);
+        return C
+    }
+    this.ds = !1;
+    this.dt = null;
+    this.mapName = "";
+    this.pW = function() {
+        this.ds = !1;
+        this.dt = null
+    };
+    this.xb = function() {
+        this.dt.ya &&
+            this.dt.zj && (this.dt.ya[0] = mainSettings.buttons[2].buttonPanel.get_rgb_64());
+        game_init(this.dt.zk, 0, this.zl(), this.dt.game_mode, !1)
+    };
+    this.zl = function() {
+        return [{
+            name: this.dt.zm ? name_input.get_username() : this.dt.zn[0],
+            color: [0, 0, 0],
+            status: 0
+        }]
+    };
+    this.readJSON = function(z) {
+        var y = new FileReader;
+        y.onload = g;
+        y.readAsText(z)
+    };
+    this.zo = function(z) {
+        this.dt = {};
+        this.dt.xY = l(z.numberPlayers, 1, 512);
+        this.dt.zr = l(z.modeID, 0, 1);
+        this.dt.map_id = l(z.mapID, 0, const_custom_map - 1);
+        this.dt.xB = l(z.seedMap, 0, 16383);
+        this.dt.zk = l(z.seedSpawn, 0, 16383);
+        this.dt.jL = x(z.selectableSpawn, !1);
+        this.dt.zm = x(z.selectableName, !1);
+        this.dt.zj =
+            x(z.selectableColor, !1);
+        this.mapName = this.dt.mapName = n(z.mapName, 1, 25, "Custom Map");
+        var y = this.dt;
+        var A = z.description;
+        var B;
+        if (!Array.isArray(A) || 1 > A.length) A = [];
+        else {
+            var C = A.length;
+            for (B = 0; B < C; B++) A[B] = n(A[B], 0, 100, "")
+        }
+        y.mS = A;
+        this.dt.hH = t(z.playerX, this.dt.xY, 4096, 16);
+        this.dt.hS = t(z.playerY, this.dt.xY, 4096, 16);
+        this.dt.zw = t(z.playerTeam, this.dt.xY, 8, 8);
+        this.dt.du = t(z.playerStrength, this.dt.xY, 5, 8);
+        y = this.dt;
+        A = z.playerColor;
+        B = this.dt.xY;
+        if (!Array.isArray(A) || 1 > A.length) A = null;
+        else {
+            var E = Array(B);
+            var F = A.length;
+            for (C = 0; C < B; C++) E[C] = t(A[C % F], 3, 63, 8);
+            A = E
+        }
+        y.ya = A;
+        y = this.dt;
+        A = z.playerName;
+        B = this.dt.xY;
+        if (!Array.isArray(A) || 1 > A.length) A = null;
+        else {
+            E = Array(B);
+            F = A.length;
+            for (C = 0; C < B; C++) E[C] = n(A[C % F], 3, 26, "Bot");
+            A = E
+        }
+        y.zn = A;
+        this.dt.zz = "string" === typeof z.mapBase64 ? z.mapBase64 : "";
+        this.dt.zm = this.dt.zm || !this.dt.zn;
+        this.dt.game_mode = 0 === this.dt.zr ? 7 : 2 === this.dt.zr ? 9 : 6;
+        this.dt.hH = this.dt.hS ? this.dt.hH : null
+    };
+    this.lJ = function() {
+        k(this.dt.zz) || loadMap(this.dt.map_id, this.dt.xB)
+    };
+    this.a06 = function() {
+        var z, y = 0,
+            A = this.dt.xY;
+        for (z = 0; z < A; z++) this.dt.zw[z] >
+            y && (y = this.dt.zw[z]);
+        return Math.max(0, y - 1)
+    }
+}
+
+function Attacks() {
+    function starting_index_in_attack_array(id) {
+        return id < player_count ? player_attack_limit * id : player_attack_limit * player_count + bot_attack_limit * (id - player_count)
+    }
+    var player_attack_limit, bot_attack_limit, currentAttackCount, target_ids, remaining_troops, boat_ids;
+    this.init = function() {
+        player_attack_limit = 16 > player_count ? 12 : 8;
+        bot_attack_limit = 4;
+        var array_length = starting_index_in_attack_array(max_entities);
+        currentAttackCount = new Uint8Array(max_entities);
+        target_ids = new Uint16Array(array_length);
+        remaining_troops = new Uint32Array(array_length);
+        boat_ids = new Uint16Array(array_length)
+    };
+    this.reset_attack_count = function(id) {
+        currentAttackCount[id] = 0
+    };
+    this.spillOverAttack = function (id, target) {
+        var index;
+        a: {
+            var startingIndexThenTroops = starting_index_in_attack_array(id);
+            for (index = currentAttackCount[id] - 1; 0 <= index; index--)
+                if (0 === boat_ids[startingIndexThenTroops + index] && target_ids[startingIndexThenTroops + index] === target) break a; index = currentAttackCount[id]
+        }
+        index !== currentAttackCount[id] && (startingIndexThenTroops = remaining_troops[starting_index_in_attack_array(id) + index], this.remove_attack(id, index), this.set(id, startingIndexThenTroops, max_entities))
+    };
+    this.check = function(id, target) {
+        var index, starting_index = starting_index_in_attack_array(id);
+        for (index = currentAttackCount[id] - 1; 0 <= index; index--)
+            if (0 === boat_ids[starting_index + index] && target_ids[starting_index + index] === target) return !0;
+        return !1
+    };
+    this.below_attack_cap = function(id) {
+        return id < player_count ? currentAttackCount[id] < player_attack_limit : currentAttackCount[id] < bot_attack_limit
+    };
+    this.getCurrentAttackCount = function(id) {
+        return currentAttackCount[id]
+    };
+    this.get_attack_target_from_attack_index = function(id, attack_index) {
+        return target_ids[starting_index_in_attack_array(id) + attack_index]
+    };
+    this.get_boat_id_from_attack_index = function(id, attack_index) {
+        return boat_ids[starting_index_in_attack_array(id) + attack_index]
+    };
+    this.find_boat_index_from_boat_id = function(id, boat_id) {
+        var index, starting_index = starting_index_in_attack_array(id);
+        for (index = currentAttackCount[id] - 1; 0 <= index; index--)
+            if (boat_ids[starting_index + index] === boat_id) return index;
+        return -1
+    };
+    this.get_attack_troops_remaining_from_attack_index = function(id, attack_index) {
+        return remaining_troops[starting_index_in_attack_array(id) + attack_index]
+    };
+    this.get_troops_remaining_from_target = function(id, target) {
+        var index, starting_index = starting_index_in_attack_array(id);
+        for (index = currentAttackCount[id] - 1; 0 <= index; index--)
+            if (0 === boat_ids[starting_index + index] && target_ids[starting_index + index] === target) return remaining_troops[starting_index + index];
+        return 0
+    };
+    this.total_troops_currently_sent_away = function(id_then_index) {
+        var starting_index = starting_index_in_attack_array(id_then_index), sum = 0;
+        for (id_then_index = currentAttackCount[id_then_index] - 1; 0 <= id_then_index; id_then_index--) sum += remaining_troops[starting_index + id_then_index];
+        return sum
+    };
+    this.total_troops_currently_attacking = function(id_then_index) {
+        var starting_index = starting_index_in_attack_array(id_then_index), sum = 0;
+        for (id_then_index = currentAttackCount[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 === boat_ids[starting_index + id_then_index] && (sum += remaining_troops[starting_index + id_then_index]);
+        return sum
+    };
+    this.sent_boats_count = function(id_then_index) {
+        var starting_index = starting_index_in_attack_array(id_then_index), sum = 0;
+        for (id_then_index = currentAttackCount[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 < boat_ids[starting_index + id_then_index] && sum++;
+        return sum
+    };
+    this.set_attack_troops_remaining_from_target = function(id_then_index, target, attack_troops_remaining) {
+        var C = starting_index_in_attack_array(id_then_index);
+        for (id_then_index = currentAttackCount[id_then_index] - 1; 0 <= id_then_index; id_then_index--) 0 === boat_ids[C + id_then_index] && target_ids[C + id_then_index] === target && (remaining_troops[C + id_then_index] = attack_troops_remaining)
+    };
+    this.set_attack_troops_remaining_from_attack_index = function(id, attack_index, attack_troops_remaining) {
+        remaining_troops[starting_index_in_attack_array(id) + attack_index] = attack_troops_remaining
+    };
+    this.set = function(id, attack_amount, target) { 
+        var index, starting_index = starting_index_in_attack_array(id);
+        target === my_id && statistics.numbers[id < player_count ? 6 : 5]++;
+        for (index = currentAttackCount[id] - 1; 0 <= index; index--)
+            if (0 === boat_ids[starting_index + index] && target_ids[starting_index + index] === target) {
+                remaining_troops[starting_index + index] += attack_amount;
+                remaining_troops[starting_index + index] = remaining_troops[starting_index + index] > troop_cap ? troop_cap : remaining_troops[starting_index + index];
+                return
+            } target_ids[starting_index + currentAttackCount[id]] = target;
+        remaining_troops[starting_index + currentAttackCount[id]] = attack_amount;
+        boat_ids[starting_index + currentAttackCount[id]] = 0;
+        currentAttackCount[id]++;
+        id < player_count && (target === my_id ? announcements.showGenericMessages(id, 5) : id === my_id && eA.mn(target))
+    };
+    this.addBoat = function(id, amount, boatID) {
+        var starting_index = starting_index_in_attack_array(id);
+        is_alive[id] = 2;
+        target_ids[starting_index + currentAttackCount[id]] = 0;
+        remaining_troops[starting_index + currentAttackCount[id]] = amount;
+        boat_ids[starting_index + currentAttackCount[id]] = boatID;
+        currentAttackCount[id]++
+    };
+    this.remove_attack = function(id, attack_index) {
+        var index;
+        if (0 !== currentAttackCount[id]) {
+            var starting_index = starting_index_in_attack_array(id);
+            currentAttackCount[id]--;
+            for (index = attack_index; index < currentAttackCount[id]; index++) target_ids[starting_index + index] = target_ids[starting_index + index + 1], remaining_troops[starting_index + index] = remaining_troops[starting_index + index + 1], boat_ids[starting_index + index] = boat_ids[starting_index + index + 1]
+        }
+    };
+    this.get_attackers = function(target) {
+        var entity_index, attacks_index, attackers = [];
+        for (entity_index = alive_count - 1; 0 <= entity_index; entity_index--) {
+            var starting_index = starting_index_in_attack_array(alive_entities[entity_index]);
+            for (attacks_index = currentAttackCount[alive_entities[entity_index]] - 1; 0 <= attacks_index; attacks_index--)
+                if (0 === boat_ids[starting_index + attacks_index] && target_ids[starting_index + attacks_index] === target) {
+                    attackers.push(alive_entities[entity_index]);
+                    break
+                }
+        }
+        return attackers
+    }
+}
+
+function Interest() {
+    var ticksPerInterestTick, interestTicksPerCycle, remainingTicksForInterest, remainingInterestTicks, discrete_Interest_array, const_maxEntities;
+    this.init = function() {
+        remainingInterestTicks = remainingTicksForInterest = interestTicksPerCycle = ticksPerInterestTick = 10
+    };
+    this.createDiscreteInterestArray = function() {
+        const_maxEntities = 512;
+        discrete_Interest_array = new Uint16Array(const_maxEntities);
+        for (var index = 0; index < const_maxEntities; index++) discrete_Interest_array[index] = 100 + approximateSqrt(divide_floor(25600 * index, const_maxEntities - 4), 9)
+    };
+    this.getInterestTicksRemaining = function() {
+        return remainingInterestTicks
+    };
+    this.update = function() {
+        if (0 >= --remainingTicksForInterest) {
+            remainingTicksForInterest = ticksPerInterestTick;
+            var index, myTroops = troops[my_id];
+            //singleplayer && !team_game && 0 !== is_alive[0] && 0 === dy.botSettings[0].difficulty && (troops[0] += divide_floor(land[0], 6)); Fuck this land gain bro
+            for (index = alive_count - 1; 0 <= index; index--) {
+                var interestThenIndex = divide_floor(interest.interestRate(alive_entities[index]) * troops[alive_entities[index]], 1E4);
+                troops[alive_entities[index]] += 1 > interestThenIndex ? 1 : interestThenIndex;
+                interest.limitTroops(alive_entities[index])
+            }
+            statistics.numbers[9] += troops[my_id] - myTroops;
+            if (0 >= --remainingInterestTicks) {
+                remainingInterestTicks = interestTicksPerCycle;
+                index = troops[my_id];
+                for (interestThenIndex = alive_count - 1; 0 <= interestThenIndex; interestThenIndex--) troops[alive_entities[interestThenIndex]] += land[alive_entities[interestThenIndex]], interest.limitTroops(alive_entities[interestThenIndex]);
+                statistics.numbers[8] += troops[my_id] - index
+            }
+        }
+    };
+    this.interestRate = function(id) {
+        var interest = discrete_Interest_array[divide_floor((const_maxEntities - 1) * land[id], landPixels)];
+        if (1920 > c4.ticksElapsed()) {
+            var newInterestRateThenMaxTroops = divide_floor(100 * (13440 - 6 * c4.ticksElapsed()), 1920);
+            interest = newInterestRateThenMaxTroops > interest ? newInterestRateThenMaxTroops : interest
+        }
+        newInterestRateThenMaxTroops = this.maxTroopsBeforeRedInterest(id);
+        troops[id] > newInterestRateThenMaxTroops && (interest -= divide_floor(2 * interest * (troops[id] - newInterestRateThenMaxTroops), newInterestRateThenMaxTroops));
+        return 0 > interest ? 0 : 700 < interest ? 700 : interest
+    };
+    this.maxTroopsBeforeRedInterest = function(idThenMaxTroops) {
+        idThenMaxTroops = 100 * land[idThenMaxTroops];
+        return idThenMaxTroops > maxTroopsBeforeRedInterest ? maxTroopsBeforeRedInterest : idThenMaxTroops
+    };
+    this.limitTroops = function(id) {
+        var maxTroops = land[id] * max_troops_to_land_ratio;
+        troops[id] = troops[id] > troop_cap ? troop_cap : troops[id] > maxTroops ? maxTroops : troops[id]
+    }
+}
+
+var font = true;
+
+function kO() {
+    function g() {
+        X.width = clientWidth1;
+        X.height = clientHeight1;
+        V = X.getContext("2d", {
+            alpha: !0
+        });
+        V.textAlign = cJ;
+        V.textBaseline = cI;
+        V.imageSmoothingEnabled = !0
+    }
+
+    function k() {
+        W = !1;
+        U = 1;
+        R = P = 0;
+        V.clearRect(0, 0, clientWidth1, clientHeight1);
+        for (var O = gC / g7, T = gD / g7, Y = (clientWidth1 + gC) / g7, Z = (clientHeight1 + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== is_alive[my_id] && hu.isHuman(my_id), za = alive_count - 1; 0 <= za; za--)
+            if (ia = alive_entities[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
+                la = Math.floor(clientWidth1 * (E[ia] + G[ia] / 2 - O) / (Y - O));
+                ma = Math.floor(clientHeight1 * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
+                V.font = oo[player_status[ia]] + fa * (font ? 1.5 : 1) + bu;
+                qa = V;
+                var ra = ia;
+                ra = fa >= J && fa < K ? teams.a19[pixel.font_color[ra]] + x(fa).toFixed(3) + ")" : teams.a1A[pixel.font_color[ra]];
+                qa.fillStyle = ra;
+				if (font) qa.fillStyle = density(ia) < 0.5 ? "Red" : (bots_timing[ia - player_count] <= 15 && 100 - tick >= 25) && ("Blue")
+				V.fillText(([7, 11].includes(gamemode) && font || gamemode == 8) ? eP.split_into_pieces(troops[ia]) : nickname[ia] + (font ? ` (${ia})` : ''), la, ma);
+
+                W = !0;
+                if (0 < ca[ia]) {
+                    qa = la;
+                    ra = ma;
+                    var va = fa,
+                        sa = ia;
+                    if (0 === sM[sa])
+                        if (a5.oD(ba[sa])) {
+                            var Aa = qa,
+                                ta = va,
+                                ya = sa;
+                            sa = ba[sa];
+                            var wa = .9 * ta / a5.width,
+                                Ca = Math.floor(ra - .5 * wa * a5.width - .05 * ta);
+                            V.globalAlpha = x(ta);
+                            for (var Ba = Math.floor(Aa - .5 * ta / D[ya] - .4 * ta - wa * a5.width), xa = 0; 2 > xa; xa++) V.setTransform(wa, 0, 0, wa, Ba, Ca), V.drawImage(a5.l7[sa], 0, 0), Ba = Math.floor(Aa +
+                                .5 * ta / D[ya] + .4 * ta);
+                            V.globalAlpha = 1;
+                            V.setTransform(1, 0, 0, 1, 0, 0);
+                            n(qa, ra, va, 0, 0)
+                        } else a5.oC(ba[sa]) ? (l(qa, ra, va, ba[sa], 0), n(qa, ra, va, 0, 1)) : (l(qa, ra, va, ba[sa], 1), n(qa, ra, va, 1, 0));
+                    else l(qa, ra, va, ba[sa], 0)
+                } else 0 === sM[ia] && n(la, ma, fa, 0, 0);
+                if (ua && (0 < ca[ia + max_entities] || 0 < ca[ia + 2 * max_entities] || 0 < ca[ia + 3 * max_entities] || 0 < ca[ia + 4 * max_entities])) {
+                    ra = la;
+                    va = ma;
+                    Aa = fa;
+                    ta = ia;
+                    ya = -1;
+                    for (qa = 4; 1 <= qa; qa--) 0 < ca[ta + qa * max_entities] && ya++;
+                    for (qa = 1; 5 > qa; qa++) 0 < ca[ta + qa * max_entities] && (sa = Aa, wa = qa, Ca = ta, Ba = ca[ta + qa * max_entities], xa = .8 * sa / a5.width, V.setTransform(xa, 0, 0, xa, Math.floor(ra - .5 * xa *
+                        a5.width - .534 * ya * sa), Math.floor(va + 1.4 * xa * a5.width)), V.globalAlpha = x(sa), V.drawImage(1 === wa ? a5.l7[ba[Ca + max_entities]] : 2 === wa && 255 > Ba ? hu.l5[2] : hu.l4[wa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), ya -= 2)
+                }
+                qa = Math.floor(L * fa);
+                qa < M || (V.font = bt + qa + bu, V.fillText([7, 11].includes(gamemode) && font || gamemode == 8 ? nickname[ia] + (font ? ` (${ia})` : '') : eP.split_into_pieces(troops[ia]), la, ma + Math.floor(.78 * fa)))
+            }
+    }
+
+    function n(O, T, Y, Z, la) {
+        var ma = .95 * Y / S;
+        V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * pa + .8 * Z * Y), Math.floor(T - 1.76 * ma * S - .82 * la * Y));
+        V.globalAlpha = x(Y);
+        V.drawImage(sprites.bz(4), 0, 0);
+        V.globalAlpha = 1;
+        V.setTransform(1,
+            0, 0, 1, 0, 0)
+    }
+
+    function l(O, T, Y, Z, la) {
+        var ma = 1.2 * Y / a5.width;
+        V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * a5.width - .8 * la * Y), Math.floor(T - 1.5 * ma * a5.width));
+        V.globalAlpha = x(Y);
+        V.drawImage(a5.l7[Z], 0, 0);
+        V.globalAlpha = 1;
+        V.setTransform(1, 0, 0, 1, 0, 0)
+    }
+
+    function x(O) {
+        return O >= J && O < K ? 1 - (O - J) / (K - J) : 1
+    }
+
+    function t(O) {
+        var T, Y = E[O];
+        for (T = E[O] - x_min[O] - 1; 0 <= T; T--)
+            if (Y--, !y(O, Y, F[O], N[O])) {
+                Y++;
+                break
+            } var Z = E[O];
+        for (T = x_max[O] - E[O] - G[O]; 0 <= T; T--)
+            if (Z++, !y(O, Z + G[O] - 1, F[O], N[O])) {
+                Z--;
+                break
+            } Y = Math.floor((Y + Z) / 2);
+        Z = F[O];
+        for (T = F[O] - y_min[O] - 1; 0 <=
+            T; T--)
+            if (Z--, !A(O, Y, Z, G[O])) {
+                Z++;
+                break
+            } var la = F[O];
+        for (T = y_max[O] - F[O] - N[O]; 0 <= T; T--)
+            if (la++, !A(O, Y, la + N[O] - 1, G[O])) {
+                la--;
+                break
+            } T = Math.floor((Z + la) / 2);
+        z(O, Y, T, G[O], N[O]) && (E[O] = Y, F[O] = T)
+    }
+
+    function z(O, T, Y, Z, la) {
+        var ma;
+        for (ma = T + Z - 1; ma >= T; ma--)
+            if (!y(O, ma, Y, la)) return !1;
+        var ia = Math.floor(.25 * la);
+        ia = 1 > ia ? 1 : ia;
+        for (ma = Y + la - 1 - ia; ma >= Y + ia; ma--)
+            if (!A(O, T, ma, Z)) return !1;
+        return !0
+    }
+
+    function y(O, T, Y, Z) {
+        return pixel.strong_is_owner(O, 4 * (Y * map_width + T)) && pixel.strong_is_owner(O, 4 * ((Y + Z - 1) * map_width + T))
+    }
+
+    function A(O, T, Y, Z) {
+        return pixel.strong_is_owner(O, 4 * (Y * map_width + T)) && pixel.strong_is_owner(O, 4 * (Y *
+            map_width + T + Z - 1))
+    }
+    var B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, W, X, V, na, ba, ca, pa, S;
+    this.init = function() {
+        W = !1;
+        Q = .88;
+        L = .5;
+        H = 1.8;
+        K = Math.floor(.5 * shorterWindowLength);
+        J = Math.floor(.2 * K);
+        M = 8 === gamemode ? jt.highResolution ? 6 : 4 : jt.highResolution ? 10 : 7;
+        C = B = 0;
+        E = new Uint16Array(max_entities);
+        F = new Uint16Array(max_entities);
+        G = new Uint16Array(max_entities);
+        N = new Uint16Array(max_entities);
+        I = new Float32Array(max_entities);
+        D = new Float32Array(max_entities);
+        ba = new Uint8Array(2 * max_entities);
+        ca = new Uint8Array(5 * max_entities);
+        X = X ? X : document.createElement("canvas");
+        g();
+        P = R = 0;
+        U = 1;
+        na = 0;
+        if (8 === gamemode) {
+            var O;
+            V.font = bt + 100 + bu;
+            var T = 100 / Math.floor(V.measureText("20 000 000").width);
+            for (O = max_entities - 1; 0 <= O; O--) D[O] = I[O] = T
+        } else
+            for (V.font = bt + Math.floor(100 * L) + bu, T = 80 / Math.floor(V.measureText(eP.split_into_pieces(troop_cap)).width), V.font = bt + 100 + bu, O = max_entities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), I[O] = T < D[O] ? T : D[O];
+        for (O = max_entities - 1; 0 <= O; O--) 12 > land[O] ? (E[O] = x_min[O] + 1, F[O] = y_min[O] + 1, G[O] = 1, N[O] = 1) : (E[O] = x_min[O], F[O] = y_min[O] + 1, G[O] = 4, N[O] = 2);
+        if (in_spawn)
+            for (O = 0; O < player_count; O++) G[O] = 0;
+        pa = sprites.bz(4).width;
+        S = sprites.bz(4).height
+    };
+    this.lx = function() {
+        g();
+        k()
+    };
+    this.j4 = function() {
+        for (var O = na = 0; O < player_count; O++) 3 !== x_max[O] - x_min[O] || 3 !== y_max[O] - y_min[O] ?
+            (E[O] = x_min[O] + (x_max[O] !== x_min[O] ? 1 : 0), F[O] = y_min[O], G[O] = 1, N[O] = 1) : (E[O] = x_min[O], F[O] = y_min[O] + 1, G[O] = 4, N[O] = 2)
+    };
+    this.showLandEmoji = function(id, type, emoji) {
+        0 === is_alive[id] || 4 !== type && 2 === player_status[id] || (id += type * max_entities, 0 === type ? ba[id] === emoji && 0 < ca[id] ? ca[id] = 0 : (ba[id] = emoji, ca[id] = a5.oD(emoji) ? 255 : 64) : 1 === type ? (ca[id] = 64, ba[id] = emoji) : ca[id] = emoji)
+    };
+    this.drawImage = function() {
+        W && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
+    };
+    this.rS = function(O, T) {
+        R += O;
+        P += T
+    };
+    this.lo = function(O,
+        T) {
+        eA.rS(O, T)
+    };
+    this.zoom = function(O, T, Y) {
+        U *= O;
+        R = (R + T) * O - T;
+        P = (P + Y) * O - Y
+    };
+    this.eb = function() {
+        return 0 >= --na ? (na = 4 >= so ? 10 : 12 > so ? 5 : 2, k(), !0) : !1
+    };
+    this.gG = function(O) {
+        return I[O]
+    };
+    this.update = function() {
+        if (4 <= ++C) {
+            var O, T;
+            C = 0;
+            for (T = 4; 1 <= T; T--)
+                for (O = alive_count - 1; 0 <= O; O--) {
+                    var Y = alive_entities[O] + T * max_entities;
+                    0 < ca[Y] && 255 > ca[Y] && ca[Y]--
+                }
+            if (2 !== client_status)
+                for (O = alive_count - 1; 0 <= O; O--) Y = alive_entities[O], 0 < ca[Y] && 255 > ca[Y] && ca[Y]--
+        }
+        O = Math.floor(.1 * alive_count);
+        O = 8 > O ? 8 : O;
+        O = O > alive_count ? alive_count : O;
+        for (Y = B + O - 1; Y >= B; Y--)
+            if (T = Y % alive_count, T = alive_entities[T], 0 < G[T] && z(T, E[T], F[T], G[T], N[T])) {
+                for (var Z, la, ma, ia, fa =
+                        T, qa = !1, ua = 0; 8 > ua; ua++) {
+                    la = G[fa] + 2;
+                    Z = N[fa] + 2;
+                    if (la > x_max[fa] - x_min[fa] + 1 || Z > y_max[fa] - y_min[fa] + 1) break;
+                    ia = E[fa] - 1;
+                    ma = F[fa] - 1;
+                    if (z(fa, ia, ma, la, Z)) E[fa] = ia, F[fa] = ma, G[fa] = la, N[fa] = Z, qa = !0;
+                    else break
+                }
+                if (Z = !qa) {
+                    fa = T;
+                    qa = !1;
+                    ua = G[fa];
+                    for (var za = 1 + Math.floor(.02 * ua), ra = 1; 5 > ra; ra++) {
+                        la = ua + ra * za;
+                        if (la > x_max[fa] - x_min[fa] + 1) break;
+                        Z = 1 + Math.floor(H * I[fa] * la);
+                        if (Z > y_max[fa] - y_min[fa] + 1) break;
+                        ia = x_min[fa] + Math.floor(Math.random() * (x_max[fa] - x_min[fa] + 2 - la));
+                        ma = y_min[fa] + Math.floor(Math.random() * (y_max[fa] - y_min[fa] + 2 - Z));
+                        z(fa, ia, ma, la, Z) && (E[fa] = ia, F[fa] =
+                            ma, G[fa] = la, N[fa] = Z, qa = !0)
+                    }
+                    Z = qa
+                }
+                Z && t(T)
+            } else {
+                a: {
+                    la = T;ma = E[la] + 1;ia = F[la] + 1;
+                    for (fa = G[la] - 2;;) {
+                        if (1 > fa) {
+                            G[la] = 0;
+                            break
+                        }
+                        Z = 1 + Math.floor(H * I[la] * fa);
+                        if (z(la, ma, ia, fa, Z)) {
+                            E[la] = ma;
+                            F[la] = ia;
+                            G[la] = fa;
+                            N[la] = Z;
+                            Z = !0;
+                            break a
+                        }
+                        ma++;
+                        ia++;
+                        fa -= 2
+                    }
+                    Z = !1
+                }
+                if (Z) t(T);
+                else
+                    for (Z = T, ma = x_max[Z] - x_min[Z] + 1, la = Math.floor(.02 * ma), la = 1 > la ? 1 : la, T = -6 * la; ma >= T; ma -= la)
+                        if (fa = 0 < ma ? ma : 1, ia = 1 + Math.floor(H * I[Z] * fa), ua = x_min[Z] + Math.floor(Math.random() * (x_max[Z] - x_min[Z] + 2 - fa)), qa = y_min[Z] + Math.floor(Math.random() * (y_max[Z] - y_min[Z] + 2 - ia)), z(Z, ua, qa, fa, ia)) {
+                            E[Z] =
+                                ua;
+                            F[Z] = qa;
+                            G[Z] = fa;
+                            N[Z] = ia;
+                            break
+                        }
+            } B += O;
+        B %= alive_count
+    };
+    this.mn = function(O) {
+        var T = O + 2 * max_entities,
+            Y = ca[T];
+        return 0 < Y ? (announcements.n9(50, O), ca[T] = 0, 255 === Y) : !1
+    };
+    this.lk = function(O) {
+        return 255 === ca[O + 2 * max_entities]
+    }
+}
+
+function NickNames() {
+    var sp_names, mp_names;
+    this.init = function() {
+        var index1, index2;
+        sp_names = "Abbasid Caliphate;Aceh s;Achaemenid Z;Afsharid z;Aghlabid Emirate;Ahom z;Akkadian Z;Aksumite Z;Akwamu;Alaouite z;Almohad Caliphate;Almoravid z;Angevin Z;Aq Qoyunlu;Armenian Z;Assyria;Ashanti Z;Austrian Z;Austria-Hungary;Ayyubid z;Aztec Z;Aulikara Z;Babylonian Z;Balhae;Banten s;S Banjar;Bamana Z;Bengal s;Benin Z;Kadamba z;Bornu Z;E Brazil;Britannic Z;British Z;British Raj;Bruneian Z;Bukhara Z;Burgundian State;Buyid z;Byzantine Z;Caliphate of C\u00f3rdoba;Cao Wei;Carthaginian Z;Cebu Rajahnate;Chagatai Khanate;Chalukya z;Chauhan z;Chav\u00edn Z;Chenla;Chera z;Chola z;Comanche Z;Congo Free State;Crimean Khanate;Dacian Z;Delhi s;Demak s;Durrani Z;Dutch Z;Egyptian Z;Elamite Z;Exarchate of Africa;Abyssinia;Fatimid Caliphate;First French Z;Frankish Z;Funan;Gallic Z;Gaza Z;Republic of Genoa;German Z;Ghana Z;Ghaznavid z;Ghurid z;Goguryeo;Goryeo;Gorkha Z;G\u00f6kt\u00fcrk Khaganate;Golden Horde;S Gowa;Seljuq Z;Gupta Z;Hafsid Y;Han z;Hanseatic League;E Harsha;Hephthalite Z;Hittite Z;Holy Roman Z;Hotak z;Hoysala Z;Hunnic Z;Husainid z;Idrisid z;Ilkhanate;K Israel;K Judah;Inca Z;Italian Z;E Japan;Jin z;Johor Z;Jolof Z;Joseon;Kaabu Z;Kachari Y;Kalmar Union;Kanem Z;Kanva z;Kara-Khanid Khanate;Kazakh Khanate;Khazar Khaganate;Khmer Z;Khilji z;Khwarazmian z;Kievan Rus';Konbaung z;Kong Z;Korean Z;Kushan Z;K Kush;Lakota;Latin Z;Later L\u00ea z;Liao z;Lodi s;Khmer Z;Macedonian Z;Majapahit Z;Mali Z;Malacca Z;Mamluk s;Manchukuo;Maratha Z;Marinid z;Massina Z;Mataram s;Mauretania;Mauryan Z;Median Z;Mlechchha z;Ming z;Mitanni Z;Mongol Z;Mughal Z;Nanda Z;Nguy\u1ec5n z;North Sea Z;E Nicaea;Numidia;Omani Z;Ottoman Z;Oyo Z;Pagan Z;Pahlavi z;Pala Z;Palmyrene Z;Parthian Z;Pontic Z;Portuguese Z;K Prussia;Ptolemaic Z;Qajar z;Qara Qoyunlu;Qin z;Qing z;Ramnad Sethupathis;Rashidun Caliphate;Rashtrakuta z;Roman Z;Rouran Khaganate;Rozwi Z;Rustamid z;Russian Z;Tsardom of Russia;Saadi z;Safavid z;Saffarid z;Sassanid z;Satavahana z;Samanid Z;Soviet Union;Saudeleur z;Duchy of Savoy;Seleucid Z;Serbian Z;Shu Han;Shang z;Siam Z;Sikh Z;Singhasari;Sokoto Caliphate;Song z;Songhai Z;Spanish Z;Srivijaya Z;Sui z;K Mysore;Shunga Z;S Sulu;Sumer;Sur Z;Swedish Z;Tahirid z;Tang z;T\u00e2y S\u01a1n z;S Ternate;E Thessalonica;German Reich;Tibetan Z;Tondo z;S Tidore;Timurid Z;K Tlemcen;E Trebizond;Toltec Z;Toungoo z;Toucouleur Z;Tu'i Tonga Z;Turgesh Khaganate;Umayyad Caliphate;Uyunid Emirate;Uyghur Khaganate;Uzbek Khanate;Vandal Y;Vijayanagara Z;Republic of Venice;Wari Z;Wassoulou Z;Wattasids;Western Roman Z;Eastern Wu;Western Xia z;Xin z;Yuan z;Zand z;Zhou z;Zulu Z;Yugoslavia;Kosovo;Sikkim;Kanem\u2013Bornu Z;Wadai Z;Ethiopian Z;Rozvi Z;Sasanian Z;E Vietnam;Shilluk Y;K Aksum;Gwiriko Y;Toro Y;Malindi Y;K Loango;K Mapungubwe;Ryukyu Y;K Cyprus;K Jerusalem;Garhwal Y;K Nepal;K Cambodia;Champa Y;Hanthawaddy Y;Phayao Y;K Sardinia;K Sicily;K Gwynedd;K Scotland;K Desmond;K Poland;K Hungary;K Croatia;K Bohemia;Albanian Y;K Georgia;K Portugal;Khanate of Sibir;K Romania;Cossack Hetmanate;Duchy of Bouillon;K Ireland;Lordship of Ireland;K Italy;Republic of Pisa;Idrisid z;Almoravid z;Almohad Caliphate;Marinid z;Wattasid z;Saadian z;Republic of Sal\u00e9;Rif Republic;K Kush;Makuria;Alodia;Ayyubid z;Mamluk s;Egypt Eyalet;K Fazughli;S Sennar;S Darfur;Mahdist State;S Egypt;K Egypt;Emirate of Cyrenaica;K Libya;Republic of Egypt;Republic of the Sudan;United Arab Republic;Libyan Arab Republic;Zirid z;Hafsid z;K Kuku;Regency of Algiers;Gurunsi;Liptako;Tenkodogo;Wogodogo;Yatenga;Bilanga;Bilayanga;Bongandini;Con;Macakoali;Piela;Nungu;K Sine;K Saloum;K Baol;K Cayor;K Waalo;Bundu;Bonoman;Gyaaman;Denkyira;Mankessim Y;K Dahomey;Oyo Z;K Nri;Aro Confederacy;Kwararafa;Biafra;Buganda;Bunyoro;Ankole;Busoga;Tanganyika;Kuba Y;K Luba;K Lunda;Yeke Y;K Ndongo;Kasanje Y;K Matamba;Mbunda Y;Chokwe Y;Kazembe Y;K Butua;Ndebele Y;Mthethwa Z;Bophuthatswana;Ciskei;Transkei;Venda;Rhodesia;Kart z;Nogai Horde;Khanate of Bukhara;Khanate of Khiva;Khamag Mongol;Northern Fujiwara;Kamakura Shogunate;Ashikaga Shogunate;Jaxa;Republic of Ezo;Jiangxi Soviet;Hunan Soviet;Guangzhou Commune;Gojoseon;Alaiye;Beylik of Bafra;Kara Koyunlu;Kars Republic;K Iraq;Arab Federation;Kar-Kiya z;Baduspanids;Marashiyan z;Afrasiyab z;Mihrabanid z;Safavid Iran;Sheikhdom of Kuwait;Bani Khalid Emirate;Emirate of Diriyah;Emirate of Najd;Muscat and Oman;Emirate of Riyadh;S Najd;K Hejaz;Fadhli s;Emirate of Beihan;Emirate of Dhala;S Lahej;Republic of Kuwait;K Cochin;Jaffna Y;Laur Y;Pandya z;Jaunpur s;Jaintia Y;Hyderabad State;Travancore;Udaipur State;Manikya z;Lan Xang;K Vientiane;K Champasak;Lao Issara;K Laos;Pyu States;Ava;Mon Ys;Pegu;K Mrauk U;Taungoo z;Shan States;Arakan;Raktamaritika;Singhanavati;Dvaravati;Ngoenyang;Hariphunchai;Tambralinga;Lavo Y;Langkasuka;Sukhothai Y;S Singora;Ayutthaya Y;Thonburi Y;Lan Na;Pattani Y;Jambi s;Palembang s;S Deli;S Langkat;S Serdang;S Cirebon;K Pajang;K Bali;Bima s;K Larantuka;K Banggai;Luwu;S Bone;Caucasian Albania;Kabardia;Circassia;K Abkhazia;Elisu s;Avar Khanate;Caucasian Imamate;K Imereti;K Kartli;K Kakheti;Crown of Aragon;Emirate of Granada;K Majorca;Crown of Castile;K Haiti;Cocoll\u00e1n;Zapotec Civilization;Mosquito Y;Somoza Regime;Iroquois Confederacy;Cherokee Nation;Vermont Republic;State of Muskogee;K Alo;K Sigave;K Fiji;K Nauru;K Chile;Muisca Confederation;El Stronato;K Chimor;Jungle Republic;Liga Federal;Supreme Junta;Weimar Republic;K Bavaria;Bremen;Frankfurt;Hamburg;K Hanover;Holstein;Lippe;Nassau;Oldenburg;Pomerania;Reuss;Saxe-Altenburg;Saxony;Schleswig;Waldeck;W\u00fcrttemberg;Helvetic Republic;Republic of Florence;Duchy of Urbino;Republic of Cospaia;Duchy of Lucca;Duchy of Mantua;Duchy of Milan;Papal States".split(";");
+        mp_names = "Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
+        var replace_chars = "K ; Y;E ; Z; z; s;S ".split(";"),
+            label_replacement = "Kingdom of ; Kingdom;Empire of ; Empire; Dynasty; Sultanate;Sultanate of ".split(";");
+        for (index1 = sp_names.length - 1; 0 <= index1; index1--)
+            for (index2 = replace_chars.length - 1; 0 <= index2; index2--) sp_names[index1] = sp_names[index1].replace(replace_chars[index2], label_replacement[index2])
+    };
+    this.fit = function() {
+        if (customMap.ds && customMap.dt.zn) {
+            var index;
+            for (index = player_count; index < max_entities; index++) nickname[index] = customMap.dt.zn[index % entity_count]
+        } else if (9 === gamemode) {
+            var fake_random = fakeRandom.random(),
+                x = mp_names.length,
+                t = player_count + e2.e3;
+            for (index = t - 1; index >= player_count; index--) nickname[index] = "[Bot] " + mp_names[(index + fake_random) % x];
+            for (index = t; index < max_entities; index++) nickname[index] = "[Zombie] " + mp_names[(index + fake_random) % x]
+        } else if (singleplayer)
+            for (fake_random = fakeRandom.random(), index = player_count; index < max_entities; index++) nickname[index] = sp_names[(index + fake_random) % max_entities];
+        else
+            for (fake_random = mp_names.length, x = fakeRandom.random(), index = player_count; index < max_entities; index++) nickname[index] = "[Bot] " + mp_names[(index + x) % fake_random]
+    };
+    this.hideNicknames = function() {
+        var index;
+        if (jt.hideNicknames && !singleplayer) {
+            temp_nickname = Array(player_count);
+            var var_playerCount = player_count;
+            var namesLength = mp_names.length;
+            var middleValue = fakeRandom.getMiddleValue();
+            for (index = 0; index < var_playerCount; index++) temp_nickname[index] = nickname[index], nickname[index] = mp_names[(index + middleValue) % namesLength];
+            nickname[my_id] = temp_nickname[my_id]
+        }
+    }
+}
+
+function kp() {
+    this.a1a = [];
+    this.a1b = [];
+    this.init = function() {
+        this.a1a = [];
+        this.a1b = []
+    };
+    this.update = function() {
+        0 <= this.a1a.length && this.a1c(this.a1a);
+        0 <= this.a1b.length && this.a1c(this.a1b)
+    };
+    this.a1c = function(g) {
+        var k, n = -1;
+        for (k = g.length - 1; 0 <= k; k--)
+            if (g[k].time--, 0 >= g[k].time) {
+                n = k;
+                break
+            } for (k = n; 0 <= k; k--) g.shift()
+    };
+    this.lQ = function(g, k, n) {
+        return this.a1e(this.a1a, g, k, n)
+    };
+    this.a1f = function(g, k, n) {
+        return this.a1e(this.a1b, g, k, n)
+    };
+    this.a1e = function(g, k, n, l) {
+        var x;
+        a: {
+            var t;
+            for (x = n.length - 1; 0 <= x; x--)
+                for (t = g.length - 1; 0 <=
+                    t; t--)
+                    if (g[t].player === n[x] && k === g[t].id) {
+                        x = !0;
+                        break a
+                    } x = !1
+        }
+        if (x) return !1;
+        if (l)
+            for (l = n.length - 1; 0 <= l; l--) g.push({
+                player: n[l],
+                id: k,
+                time: 384
+            });
+        return !0
+    }
+}
+var nickname, temp_nickname, is_alive, x_min, y_min, x_max, y_max, land, temp_land, troops, editing_border_pixels, pixels_bordering_land, pixels_bordering_water, pixels_bordering_mountain, player_status;
+
+function create_info_arrays(player_info) {
+    var id;
+    temp_nickname = nickname = Array(max_entities);
+    is_alive = new Uint8Array(max_entities);
+    x_min = new Uint16Array(max_entities);
+    y_min = new Uint16Array(max_entities);
+    x_max = new Uint16Array(max_entities);
+    y_max = new Uint16Array(max_entities);
+    land = new Uint32Array(max_entities);
+    temp_land = new Uint32Array(max_entities);
+    troops = new Uint32Array(max_entities);
+    editing_border_pixels = Array(max_entities);
+    pixels_bordering_land = Array(max_entities);
+    pixels_bordering_water = Array(max_entities);
+    pixels_bordering_mountain = Array(max_entities);
+    player_status = new Uint8Array(max_entities);
+    for (id = player_info.length - 1; 0 <= id; id--) nickname[id] = player_info[id].name, player_status[id] = player_info[id].status
+}
+
+function HumanBots() {
+    this.botAttackTime = 0;
+    this.players = null;
+    this.init = function() {
+        this.botAttackTime = 0;
+        this.players = []
+    };
+    this.turnToBot = function(id) {
+        this.players.push(id);
+        spectators++;
+        player_status[id] = 2;
+        pixel.font_color[id] = (pixel.font_color[id] + 2) % 4;
+        id === my_id && (gameResultBox.show(!1, !1), eB.tK());
+        eA.mn(id)
+    };
+    this.onLeave = function(g) {
+        var k;
+        if (2 !== player_status[g]) {
+            var n = this.players;
+            for (k = n.length - 1; 0 <= k; k--)
+                if (n[k] === g) {
+                    n.splice(k, 1);
+                    break
+                }
+        }
+    };
+    this.update = function() {
+        singleplayer || (30 === this.botAttackTime && this.checkBotAttack(), this.botAttackTime = (this.botAttackTime + 1) % 60)
+    };
+    this.checkBotAttack = function() {
+        var g, k = this.players;
+        for (g = k.length - 1; 0 <= g; g--) {
+            var n = k[g];
+            if (attacks.below_attack_cap(n)) {
+                var amount = divide_floor(20 * troops[n], 100);
+                60 > amount || (0 === pixels_bordering_land[n].length ? !dE.update(n, 2) && team_game && dI(n, amount, 0, 0) : team_game ? dT(n, amount) : db(n, amount))
+            }
+        }
+    }
+}
+function Websocket_manager() {
+    function g(l) {
+        return websockets_info[l].wsObjCreated && websockets[l].not_closed()
+    }
+    this.originCount = 4;
+    this.lobbyCount = this.originCount - 1;
+    this.terriWsCount = this.originCount + this.lobbyCount;
+    var websockets;
+    this.origins = null;
+    var websockets_info;
+    this.lobby = this.remote = 0;
+    this.init = function() {
+        var index;
+        this.origins = Array(this.originCount);
+        this.origins[0] = "territorial.io";
+        var x = fakeRandom.getMiddleValue(0);
+        fakeRandom.changeNumber(0);
+        for (index = 1; index < this.originCount; index++) this.origins[index] = characters.generate_origin_domain_names() + ".com";
+        fakeRandom.changeNumber(x);
+        websockets = Array(this.terriWsCount);
+        websockets_info = Array(this.terriWsCount);
+        for (index = this.terriWsCount - 1; 0 <= index; index--) websockets_info[index] = {
+            wsObjCreated: !1,
+            time: 0,
+            humanLastAction: !1
+        }
+    };
+    this.getEquivalentLobby = function() {
+        return this.lobby < this.originCount ? this.lobby : this.lobby - this.lobbyCount
+    };
+    this.update = function() {
+        for (var remote = this.terriWsCount - 1; 0 <= remote; remote--) this.is_open(remote) && c4.time > websockets_info[remote].time + 15E3 && multiOut.anti_disconnect_15s(remote, websockets_info[remote].humanLastAction)
+    };
+    this.rk = function(remote, x) {
+        if (!websockets_info[remote].wsObjCreated) return this.a1t(remote, x), !1;
+        if (websockets[remote].not_closed()) return websockets[remote].a1v(x), websockets[remote].is_open();
+        websockets[remote].end();
+        this.a1t(remote, x);
+        return !1
+    };
+    this.a1t = function (remote, x) {
+        websockets_info[remote].wsObjCreated = !0;
+        websockets_info[remote].time = c4.time;
+        websockets_info[remote].humanLastAction = !1;
+        websockets[remote] = new Terri_ws;
+        websockets[remote].init(remote, x)
+    };
+    this.a1v = function(l, x) {
+        g(l) && websockets[l].a1v(x)
+    };
+    this.a1y = function(remote, generic_param_or_leaderboard_page) {
+        0 === generic_param_or_leaderboard_page ? playtime.rm() : 3 > generic_param_or_leaderboard_page ? multiOut.load_leaderboard(remote, generic_param_or_leaderboard_page - 1) : 3 === generic_param_or_leaderboard_page ? multiOut.single_loaded(remote) : 4 === generic_param_or_leaderboard_page ? ji.rm(remote) : 5 === generic_param_or_leaderboard_page ? remote === this.remote && multiOut.multi_loaded() : 6 === generic_param_or_leaderboard_page ? multiOut.upload_error(remote) : 7 === generic_param_or_leaderboard_page && multiOut.vote(remote)
+    };
+    this.is_open = function(remote) {
+        return websockets_info[remote].wsObjCreated && websockets[remote].is_open()
+    };
+    this.send = function (remote, data) {
+        websockets_info[remote].time = c4.time;
+        websockets_info[remote].humanLastAction = !1;
+        websockets[remote].send(data)
+    };
+    this.pM = function (remote) {
+        websockets_info[remote].humanLastAction = !0
+    };
+    this.close = function(remote, reason) {
+        g(remote) && websockets[remote].close(reason)
+    };
+    this.errorClose = function(l, errorCode) {
+        showError.displayError(errorCode);
+        g(l) && websockets[l].close(errorCode)
+    };
+    this.closeAll = function(reason) {
+        for (var index = this.terriWsCount - 1; 0 <= index; index--) this.close(index, reason)
+    };
+    this.closeAllOther = function(remote, reason) {
+        for (var index = this.terriWsCount - 1; 0 <= index; index--) index !== remote && this.close(index, reason)
+    };
+    this.normalClosed = function(remote, error) {
+        websockets[remote].end();
+        showError.init(remote, error.code)
+    }
+}
+var alive_entities, alive_count;
+
+function updateAlive() {
+    var idIndex;
+    alive_count = 0;
+    for (idIndex = max_entities - 1; 0 <= idIndex; idIndex--) 0 !== is_alive[idIndex] && alive_count++;
+    alive_entities = new Uint16Array(alive_count);
+    var aliveIndex = 0;
+    for (idIndex = 0; idIndex < max_entities; idIndex++) 0 !== is_alive[idIndex] && (alive_entities[aliveIndex++] = idIndex)
+}
+
+function checkDeathAndAlive() {
+    checkPrematureDeath();
+    checkShiftAliveEntities()
+}
+
+function checkShiftAliveEntities() {
+    for (var index = alive_count - 1; 0 <= index; index--) 0 === is_alive[alive_entities[index]] && shiftAliveEntities(index)
+}
+
+function shiftAliveEntities(index) {
+    for (alive_count--; index < alive_count; index++) alive_entities[index] = alive_entities[index + 1]
+}
+
+function checkPrematureDeath() {
+    for (var g, index = alive_count - 1; 0 <= index; index--) {
+        if (land[alive_entities[index]] <= divide_floor(temp_land[alive_entities[index]], 4)) {
+            if (1E3 >= land[alive_entities[index]] && (2 !== is_alive[alive_entities[index]] || 0 === land[alive_entities[index]])) fm(alive_entities[index]);
+        } else if (land[alive_entities[index]] >= temp_land[alive_entities[index]]) temp_land[alive_entities[index]] = land[alive_entities[index]]
+        else {
+            g = divide_floor(temp_land[alive_entities[index]] - land[alive_entities[index]], 1E3);
+            temp_land[alive_entities[index]] -= 1 > g ? 1 : g;
+        }
+    }
+
+}
+
+function troop_hash() {
+    var id, sum = 0;
+    for (id = alive_count - 1; 0 <= id; id--) sum += troops[alive_entities[id]];
+    return sum % 4096
+}
+var mainCanvas, mainCanvasCtx, version, version_hash, clientWidth2, clientHeight2, shorterWindowLength, averageWindowLength, clientWidth1, clientHeight1, device_pixel_ratio, host_name, is_ios, ios, droid, device_version, zoom, has_had_error_before = !1,
+    is_not_top_window, not_using_client, client_id, gy, so, h8, a5, statistics, hv, cookies_window, c4, teams, eT, cD, endGame, vv, openLinkBox, uZ, time_hash, const_2_s52, error_line = 0,
+    error_message = "",
+    start_function_called = !1;
+
+function main() {
+    const_2_s52 = 2;
+    version_hash = 2526;
+    version = "1.83.3   3 February 2023";
+    construct();
+    d8();
+    start_function_called = !0;
+    device_version = (droid = "undefined" !== typeof Android ? Android : null) ? droid.getVersion() : 0;
+    12 <= device_version && droid.prepareAd("6685097465");
+    is_ios = !1;
+    window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iosCommandA && 
+        (is_ios = !0, window.webkit.messageHandlers.iosCommandA.postMessage("prepare ad 5907904081"), 
+        ios = "undefined" !== typeof mwIOSdataX ? mwIOSdataX : {
+            username: "iOS User " + Math.floor(1E3 * Math.random()),
+            id: Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)),
+            zoom: !0,
+            sound: !0,
+            emojis: "0",
+            colors: "0",
+            password: "0",
+            freeSpawn: !1,
+            unlimitedTime: !1,
+            alliances: !1
+        });
+    time_hash = (new Date).getTime() % 1024;
+    is_not_top_window = check_not_top_window();
+    jq.init();
+    user_settings.init();
+    set_client_id();
+    set_zoom();
+    set_android_html_header();
+    document.addEventListener ? document.addEventListener("contextmenu", function(g) { g.preventDefault() }, !1) : 
+        document.attachEvent("oncontextmenu", function() { window.event.returnValue = !1 });
+    set_client_checks();
+    document.addEventListener("keyup", on_key_up);
+    document.addEventListener("keydown", on_key_down);
+    document.addEventListener("visibilitychange", on_visibility_change);
+    window.addEventListener("error", on_error, !0);
+    so = 10;
+    xK = new a2P;
+    gy = new a2Q;
+    h8 = new tu;
+    a5 = new ni;
+    statistics = new Statistics;
+    hv = new a2S;
+    cookies_window = new Cookies_window;
+    c4 = new a2T;
+    c4.jd();
+    c4.init();
+    teams = new Teams;
+    eT = new a2V;
+    uZ = new bm;
+    uZ.init();
+    cD = new u9;
+    cD.init();
+    endGame = new EndGame;
+    vv = new ut;
+    openLinkBox = new OpenLinkBox;
+    p3();
+    fakeRandom.init();
+    interest.createDiscreteInterestArray();
+    jm.init();
+    jQ.init();
+    aJ.init();
+    loadCustom.init();
+    jt.init();
+    websocket_manager.init();
+    playtime.init();
+    nickNames.init();
+    addCanvasEventListeners();
+    sprites.init();
+    c4.canvasPendingUpdates = !0;
+    setTimeout(function() { loadMap(1, 14071) }, 0)
+}
+
+function start() {
+    start_function_called || main()
+}
+
+function check_not_top_window() {
+    try {
+        return window.self !== window.top
+    } catch (g) {
+        return !0
+    }
+}
+
+function on_error(error) {
+    has_had_error_before || (has_had_error_before = !0, error.message ? (error_line = error.lineno, error_message = error.message, websocket_manager.rk(0, 6) && multiOut.upload_error(0), error = "[A_ERROR " + error_line + "][" + error_message + "]", error_warning(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
+}
+
+function error_warning(error_message) {
+    droid ? droid.showToast(error_message) : alert(error_message)
+}
+
+function on_key_down(g) {
+    "ArrowLeft" === g.key ? gn.wE(3) : "ArrowUp" === g.key ? gn.wE(0) : "ArrowRight" === g.key ? gn.wE(1) : "ArrowDown" === g.key ? gn.wE(2) : "a" === g.key ? troopsBar.changeAttackFraction(.96875) : "d" === g.key ? troopsBar.changeAttackFraction(32 / 31) : "s" === g.key ? troopsBar.changeAttackFraction(.875) : "w" === g.key ? troopsBar.changeAttackFraction(8 / 7) : "1" === g.key ? troopsBar.changeAttackFraction(5 / 6) : "2" === g.key ? troopsBar.changeAttackFraction(1.2) : " " === g.key ? intelliAttack.checkIntelli() : "c" === g.key && client_status != 0 && (hv.printCoords())
+}
+
+function on_visibility_change() {
+    "hidden" === document.visibilityState ? c4.a2X() : c4.xt()
+}
+
+function on_key_up(g) {
+    400 > c4.time || (8 !== aJ.getState() && aJ.us(g) ? c4.canvasPendingUpdates = !0 : "Escape" === g.key ? aJ.aK() : "ArrowLeft" === g.key ? gn.a2Y(3) : "ArrowUp" === g.key ? gn.a2Y(0) : "ArrowRight" === g.key ? gn.a2Y(1) : "ArrowDown" === g.key ? gn.a2Y(2) : "h" === g.key && 1 <= client_status && (canvas_hidden = !canvas_hidden, c4.canvasPendingUpdates = !0))
+}
+
+function set_client_checks() {
+    host_name = window.location.hostname;
+    not_using_client = 0 <= host_name.toLowerCase().indexOf("territorial.io")
+    not_using_client = true //temp
+}
+
+function kQ() {
+    var g;
+    this.init = function() {
+        g = [];
+        9 === gamemode && this.a2a()
+    };
+    this.a2a = function() {
+        var k = [8, 51, 68, 88, 138, 178, 313];
+        var n = [35, 330];
+        this.e3 = 0;
+        this.e4 = [0, 0, 0, 0, 0, 0];
+        player_count <= k[0] ? (this.e3 = n[0] - player_count, this.e4[1] = n[1] - divide_floor(n[1] * player_count, k[0]), this.e4[0] = 512 - this.e4[1] - n[0]) : player_count <= k[1] ? (this.e3 = n[0] - k[0] - divide_floor((n[0] - k[0]) * (player_count - k[0]), k[1] - k[0]), this.e4[0] = 512 - this.e3 - player_count) : player_count <= k[2] ? (this.e4[0] = 512 - k[1] - divide_floor((512 - k[1]) * (player_count - k[1]), k[2] - k[1]), this.e4[1] = 512 - player_count - this.e4[0]) : player_count <= k[3] ? (this.e4[1] = 512 - k[2] - divide_floor((512 - k[2]) * (player_count - k[2]), k[3] - k[2]),
+            this.e4[2] = 512 - player_count - this.e4[1]) : player_count <= k[4] ? (this.e4[2] = 512 - k[3] - divide_floor((512 - k[3]) * (player_count - k[3]), k[4] - k[3]), this.e4[3] = 512 - player_count - this.e4[2]) : player_count <= k[5] ? (this.e4[3] = 512 - k[4] - divide_floor((512 - k[4]) * (player_count - k[4]), k[5] - k[4]), this.e4[4] = 512 - player_count - this.e4[3]) : player_count <= k[6] ? (this.e4[4] = 512 - k[5] - divide_floor((512 - k[5]) * (player_count - k[5]), k[6] - k[5]), this.e4[5] = 512 - player_count - this.e4[4]) : this.e4[5] = 512 - player_count;
+        n = this.e3;
+        for (k = 0; 6 > k; k++) n += this.e4[k];
+        if (n > bot_count) {
+            for (k = this.e3 = 0; 5 > k; k++) this.e4[k] = 0;
+            this.e4[5] = bot_count
+        }
+    };
+    this.zS = function(killer) {
+        g.push({
+            player: killer,
+            group: 14 + fakeRandom.generateRandomValue(20)
+        })
+    };
+    this.update = function() {
+        if (9 === gamemode) {
+            var k;
+            for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].group && (eA.showLandEmoji(g[k].player, 0, 46), g.splice(k))
+        }
+    }
+}
+var map_width, map_height, hs, pl, xH, xI, current_map, seed, vq, const_custom_map = 15, xK;
+
+function loadMap(param_mapID, k) {
+    param_mapID %= const_custom_map;
+    if (param_mapID !== current_map || notBAnorRealMap(current_map) && k !== seed) {
+        var n = performance.now();
+        vq = !1;
+        xK.xL();
+        fakeRandom.changeNumber(param_mapID);
+        current_map = param_mapID;
+        seed = k;
+        notBAnorRealMap(param_mapID) && (jm.bz(param_mapID).a1o = k);
+        if (isRealMap(current_map)) configRealMap(n);
+        else {
+            var l = jm.bz(current_map);
+            map_width = l.width;
+            map_height = l.cw;
+            fakeRandom.changeNumber(l.a1o);
+            jn.fit([map_width, map_height, l.gO, l.gL]);
+            a2k();
+            jQ.a2l();
+            jn.a2m();
+            a2n(n)
+        }
+    }
+}
+
+function a2n(g) {
+    var k = performance.now();
+    so = Math.floor(29 - (k - g) / (33 * jm.bz(current_map).per));
+    so = 0 > so ? 0 : 20 < so ? 20 : so
+}
+
+function real_map_starting_index() {
+    return 10
+}
+
+function isRealMap(mapID) {
+    return mapID >= real_map_starting_index()
+}
+
+function notBAnorRealMap(mapID) {
+    return !(1 === mapID || mapID >= real_map_starting_index())
+}
+
+function hasMountains(mapID) {
+    return 3 === mapID || 7 === mapID || 9 === mapID || mapID === const_custom_map
+}
+
+function surroundedByWater(mapID) {
+    return 2 === mapID || 7 === mapID || 9 === mapID
+}
+
+function a2P() {
+    function g() {
+        xK.update()
+    }
+
+    function k(l, x) {
+        0 < x && (xI[l] += x, xI[l + 1] += x, xI[l + 2] += x)
+    }
+
+    function n(l) {
+        return xI[l + 2] > xI[l] && xI[l + 2] > xI[l + 1]
+    }
+    this.rf = -1;
+    this.a2s = this.aA = 0;
+    this.a2t = 8;
+    this.a2u = 32;
+    this.a2v = 8;
+    this.a2w = 32;
+    this.a2x = [0, 0];
+    this.font_color = [0, 0, 0, 0];
+    this.a2y = null;
+    this.a2z = !0;
+    this.a30 = !1;
+    this.xL = function() {
+        -1 !== this.rf && clearTimeout(this.rf);
+        this.rf = -1;
+        this.a2y = null;
+        jn.a2m()
+    };
+    this.init = function() {
+        7 === aJ.getState() || this.a30 || (this.a2z = !0, this.aA = 0, this.a2s = 1, this.a2x = [jm.bz(current_map).a31[0], jm.bz(current_map).a32[0]], this.font_color = [jm.bz(current_map).a33[3], jm.bz(current_map).a33[4], jm.bz(current_map).a33[5], jm.bz(current_map).a33[6]], this.a2t = jm.bz(current_map).a33[7], this.a2u = jm.bz(current_map).a33[8], this.a2v = jm.bz(current_map).a33[9], this.a2w = jm.bz(current_map).a33[10], this.a2z ? this.rf = setTimeout(g, 16) : this.update())
+    };
+    this.update = function() {
+        if (8 === aJ.getState() && eV.gd()) this.rf = setTimeout(g, 16);
+        else {
+            if (0 === this.aA) {
+                var l = fakeRandom.getMiddleValue();
+                fakeRandom.changeNumber(jm.bz(current_map).a33[2]);
+                jn.fit([map_width, map_height, jm.bz(current_map).a33[0], jm.bz(current_map).a33[1]]);
+                fakeRandom.changeNumber(l);
+                this.a2y = jn.a35();
+                this.aA++;
+                if (this.a2z) {
+                    this.rf = setTimeout(g, 16);
+                    return
+                }
+            }
+            l = this.a2z ? 10 : 1E6;
+            l =
+                map_height - this.a2s - 1 < l ? map_height - this.a2s - 1 : l;
+            l = this.a2s + l;
+            for (var x, t, z = this.a2s; z < l; z++)
+                for (var y = 1; y < map_width - 1; y++)
+                    if (t = y + z * map_width, x = 4 * t, n(x)) this.a37(x, t, 1);
+                    else {
+                        this.a37(x, t, 0);
+                        t = y;
+                        var A = z;
+                        (1 < t && n(x - 4) || t < map_width - 2 && n(x + 4) || 1 < A && n(x - 4 * map_width) || A < map_height - 2 && n(x + 4 * map_width)) && this.a38(y, z)
+                    } this.a2s = l;
+            this.a2s >= map_height - 1 ? (pl.putImageData(xH, 0, 0, 1, 1, map_width - 2, map_height - 2), c4.canvasPendingUpdates = !0, this.xL()) : this.a2z && (this.rf = setTimeout(g, 16))
+        }
+    };
+    this.a37 = function(l, x, t) {
+        k(l, Math.floor(this.a2x[t] + this.font_color[t] * this.a2y[x] / 1E4) - xI[l])
+    };
+    this.a3C = function(l, x, t, z, y) {
+        k(l, Math.floor(this.a2x[z] +
+            (1 - x / t) * y) - xI[l])
+    };
+    this.a38 = function(l, x) {
+        var t = l - this.a2u;
+        var z = x - this.a2u;
+        var y = l + this.a2u,
+            A = x + this.a2u;
+        t = 1 > t ? 1 : t;
+        y = y > map_width - 2 ? map_width - 2 : y;
+        A = A > map_height - 2 ? map_height - 2 : A;
+        for (var B = 1 > z ? 1 : z; B <= A; B++)
+            for (var C = t; C <= y; C++)
+                if (z = 4 * (C + B * map_width), n(z)) {
+                    var E = this.a2t + (this.a2u - this.a2t) * this.a2y[C + map_width * B] / 1E4;
+                    if (!(Math.abs(l - C) > E || Math.abs(x - B) > E)) {
+                        var F = Math.sqrt((l - C) * (l - C) + (x - B) * (x - B));
+                        F >= E || this.a3C(z, F, E, 1, this.font_color[3])
+                    }
+                } else E = this.a2v + (this.a2w - this.a2v) * this.a2y[C + map_width * B] / 1E4, Math.abs(l - C) > E || Math.abs(x - B) > E || (F = Math.sqrt((l - C) *
+                    (l - C) + (x - B) * (x - B)), F >= E || this.a3C(z, F, E, 0, this.font_color[2]))
+    }
+}
+
+function a2k() {
+    2 === current_map ? a3E([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0]) : 7 === current_map ? a3E([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0]) : 8 === current_map ? a3E([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0]) : 9 === current_map && a3E([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
+}
+
+function a3E(g, k, n, l, x) {
+    var t, z, y, A = g.length - 1,
+        B = map_width + map_height;
+    B *= B;
+    var C = n.length;
+    for (t = C - 1; 0 <= t; t--) n[t] *= n[t];
+    var E = Array(C),
+        F = Array(C),
+        G = Array(C),
+        N = jn.a35();
+    if (void 0 === x)
+        for (x = Array(C), t = C - 1; 0 <= t; t--) x[t] = 0;
+    for (t = 1; t < C; t++) E[t] = n[t] - n[t - 1], F[t] = l[t] - l[t - 1], G[t] = x[t] - x[t - 1];
+    for (z = map_width - 1; 0 <= z; z--)
+        for (y = map_height - 1; 0 <= y; y--) {
+            var I = B;
+            for (t = A; 0 <= t; t--) {
+                var D = (z - g[t]) * (z - g[t]) + (y - k[t]) * (y - k[t]);
+                I = D < I ? D : I
+            }
+            D = l[C - 1];
+            var K = x[C - 1];
+            for (t = 1; t < C; t++)
+                if (I < n[t]) {
+                    D = l[t - 1] + yj((I - n[t - 1]) * F[t], E[t]);
+                    K = x[t - 1] + yj((I - n[t - 1]) * G[t],
+                        E[t]);
+                    break
+                } a3S(map_width * y + z, D, K, N)
+        }
+}
+
+function a3S(g, k, n, l) {
+    500 > k ? l[g] = divide_floor(l[g] * k * 2, 1E3) : 500 < k && (l[g] += divide_floor(2 * (1E4 - l[g]) * (k - 500), 1E3));
+    l[g] += divide_floor(n * (10 * k - l[g]), 1E3)
+}
+
+function kR() {
+    var g;
+    this.mountainPixels = this.waterPixels = this.landPixels = this.totalNonBorderPixels = 0;
+    this.init = function() {
+        g = Array(real_map_starting_index());
+        g[0] = {
+            width: [0, 5E3, 8E3, 1E4],
+            fB: [220, 250, 255, 220],
+            n6: [190, 220, 0, 0],
+            cm: [170, 200, 0, 0]
+        };
+        g[1] = {
+            width: [0, 4E3, 5E3, 6E3, 1E4],
+            fB: [25, 0, 100, 0, 25],
+            n6: [25, 0, 0, 0, 25],
+            cm: [25, 0, 0, 0, 25]
+        };
+        g[2] = {
+            width: [0, 500, 2500, 2999, 3E3, 3200, 4200, 5200, 5700, 8800, 1E4],
+            fB: [15, 15, 70, 40, 40, 40, 252, 40, 40, 20, 30],
+            n6: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
+            cm: [120, 120, 220, 110, 40, 40, 217, 10, 10, 10, 10]
+        };
+        g[3] = {
+            width: [0, 400, 1800, 2E3, 3200, 4500, 6E3, 7700, 8500, 9500, 1E4],
+            fB: [10,
+                10, 20, 10, 30, 10, 16, 40, 55, 230, 230
+            ],
+            n6: [10, 10, 40, 50, 100, 40, 80, 120, 55, 230, 230],
+            cm: [80, 80, 200, 10, 60, 10, 16, 40, 55, 230, 230]
+        };
+        g[4] = {
+            width: [0, 300, 1400, 1700, 3E3, 4E3, 1E4],
+            fB: [10, 10, 20, 10, 10, 170, 212],
+            n6: [20, 20, 60, 100, 100, 110, 170],
+            cm: [70, 70, 160, 30, 30, 60, 120]
+        };
+        g[5] = {
+            width: [0, 1E3, 3E3, 3500, 4E3, 4500, 7E3, 7500, 8E3, 1E4],
+            fB: [10, 10, 20, 10, 5, 10, 20, 5, 20, 25],
+            n6: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
+            cm: [80, 80, 200, 10, 5, 10, 20, 5, 20, 25]
+        };
+        g[6] = {
+            width: [0, 700, 2650, 3200, 5E3, 8E3, 1E4],
+            fB: [10, 10, 60, 255, 255, 200, 200],
+            n6: [10, 10, 60, 255, 255, 200, 200],
+            cm: [80, 80, 255, 255, 255, 200, 200]
+        };
+        g[7] = {
+            width: [0, 400, 1999, 2E3, 3200, 4E3, 4700, 5500, 6500, 9500, 1E4],
+            fB: [10, 10, 80, 255, 255, 55, 6, 70, 20, 155, 255],
+            n6: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
+            cm: [80, 80, 255, 235, 235, 55, 26, 10, 20, 155, 255]
+        };
+        g[8] = {
+            width: [0, 700, 1300, 1900, 1901, 2500, 3400, 6E3, 1E4],
+            fB: [25, 30, 30, 30, 255, 255, 30, 40, 20],
+            n6: [25, 30, 150, 150, 245, 245, 80, 150, 70],
+            cm: [60, 170, 170, 170, 235, 235, 30, 40, 40]
+        };
+        g[9] = {
+            width: [0, 400, 2009, 2010, 3300, 4E3, 5200, 6500, 8E3, 9500, 1E4],
+            fB: [10, 10, 80, 255, 255, 55, 23, 36, 20, 155, 255],
+            n6: [10, 10, 90, 245, 245,
+                170, 60, 160, 20, 155, 255
+            ],
+            cm: [80, 80, 255, 235, 235, 55, 9, 72, 20, 155, 255]
+        }
+    };
+    this.a2l = function() {
+        hs = document.createElement("canvas");
+        hs.width = map_width;
+        hs.height = map_height;
+        pl = hs.getContext("2d", {
+            alpha: !1
+        });
+        var k = pl.getImageData(0, 0, map_width, map_height);
+        xI = k.data;
+        var n = g[current_map].width,
+            l = g[current_map].fB,
+            x = g[current_map].n6,
+            t = g[current_map].cm,
+            z, y, A = jn.a35(),
+            B = n.length - 2,
+            C = Array(B + 1),
+            E = Array(B + 1),
+            F = Array(B + 1),
+            G = Array(B + 1);
+        for (y = B; 0 <= y; y--) C[y] = n[y + 1] - n[y], E[y] = l[y + 1] - l[y], F[y] = x[y + 1] - x[y], G[y] = t[y + 1] - t[y];
+        for (z = map_width * map_height - 1; 0 <= z; z--)
+            for (y = B; 0 <= y; y--)
+                if (A[z] >= n[y]) {
+                    var N = A[z] -
+                        n[y];
+                    xI[4 * z] = l[y] + yj(E[y] * N, C[y]);
+                    xI[4 * z + 1] = x[y] + yj(F[y] * N, C[y]);
+                    xI[4 * z + 2] = t[y] + yj(G[y] * N, C[y]);
+                    xI[4 * z + 3] = 255;
+                    break
+                } pl.putImageData(k, 0, 0);
+        jm.isBA() && sprites.bx() && jm.isBA() && (n = sprites.lB("arena"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = 2.8, pl.scale(k, k), pl.drawImage(n, Math.floor((map_width / k - n.width) / 2), Math.floor(.5 * map_height / k - n.height / 2)), pl.restore(), n = sprites.lB("territorial.io"), pl.save(), pl.globalAlpha = 1 === current_map ? .1 : 1, pl.imageSmoothingEnabled = !0, k = .87, pl.scale(k, k), pl.drawImage(n, Math.floor(.745 *
+            (map_width / k - n.width)), Math.floor(.422 * map_height / k - n.height / 2)), pl.restore());
+        vq = !0;
+        c4.canvasPendingUpdates = !0
+    };
+    this.jR = function() {
+        var k, totalLandMountainPixels = 0;
+        var l = map_height * map_width * 4;
+        var x = pixel_rgba,
+            t = xI;
+        for (k = map_width - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
+        l = 4 * map_width;
+        for (k = map_height - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
+        for (k = map_width * map_height - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (t[l + 2] > t[l + 1] && t[l + 2] > t[l] ? x[l + 2] = 2 : (x[l + 2] = 1, totalLandMountainPixels++));
+        this.totalNonBorderPixels = (map_width - 2) * (map_height - 2);
+        this.mountainPixels = 0;
+        if (hasMountains(current_map)) {
+            t = 0;
+            l = pixel_rgba;
+            var z = xI;
+            for (x = map_width * map_height - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (t++, l[k + 2] = 3);
+            jQ.mountainPixels = t
+        }
+        this.landPixels = landPixels = totalLandMountainPixels - this.mountainPixels;
+        this.waterPixels = this.totalNonBorderPixels - this.landPixels - this.mountainPixels
+    }
+}
+
+function configRealMap(g) {
+    var mapData;
+    current_map === real_map_starting_index() ? mapData = "AJfAJ5976oBB6PH6eDBpz76eEBV5bcAUgAyMPbaA8C8A6BL5baBKYAKBAyLPbZBoVAUCA6A9PbZBoVAUDA6A8PbZBeWBUIPRZBeVBUGAKCPRZBeVAKCA9Az555zAUMAUBAV56BUUAKEA7A6P55xAoLA8PoMCABAoGAV6FwA6A8BB5oMB9AoCA6AV6FyAUNA7AUEO9BKRA6AV685nAKDAoCAUGAUGA6AeFO8BAQAKBR65sAoBAoDAeFAyEA9AKDOUIB6AUBR65sA9AeDAyGAoMOUHB7AKBR75qBADAoEA6AKBAeMOyDB9R85hAeIA7AoEAoIAURQL8FhAUDAUFA6AoEAeJAUTP9SB59Ah66AKBAoEAUCA8AoFAeIAeUP8SB59Ar6eBAKFAyMAoGAefP6SL6KEkUGAUCAUBAKIAoGAefP7SL5eCA7AX6eCAyDAUKAoGAUdQB8LyA6AUDAKCk9AoBBKDD7QB8VyAyDA6k8B8AKmQB8VvA9AeFk8AoBBeBD7QL8VtAKCA9AUGj8AKFAeCByDCyEA6QV8VoAUDAKCBABA6j8AoDAUEBUECyZAVsSfoAUBAKBAKCBABA6j7BADBeDDeSApqSfpA6AUJAKGjyNAUNAUiB7AKBA8J7A9DB8ppAyBB8ieCAoCAoMAozAUBBKLJeNC8SzpCrjAKIAUDAUGBUCFUBA9AeKIyEAURC6S6OUYhoCBUBBAJAUyAeKAKLIyZCf87O6AKCAKBB5h6A6BeBAe8A9oYCL87PKOh6A8BKCAe8e9eYB9S7PKNh7A8AeBA7AeCJKFAU8KVCB86PULBACg7A7AUCAUBALAAoCA7Ao7KWB7S7PeIBKEgyCA7AeBKeBCK67CUOS9PUIBUDgoEAUIALcGoWBV9L5oGBKEAyBAKEfKFAUEAKEALeGUWBV9L5yGA9AyEA7fKEAUFALmGASBp9VgAeOBKKAyDA8fAFALwF7B7B6TLgAoMBUCAoDA6AUJAUCe6AyBPK5yPB8TBgA9AKCAeMAUOAUJAUDBoEcKFAUBAKDAL5U5eNCB9BhBUDBKBByBBABAoNA5cAHAe78AK78FeLCL9BmA9AeBAKiAKFAoCA6A5cKIAK77Ae78FULCL9BnA9AonAoDAyHb7BUBH6AU8KzBKVS9N9BACEKCAyCA9b6I8Ao8exBAWS9OK67bKBA7I6Ao88EyJCp88OK68a8AeHIyFJArA9Cz87OU67AeBaeEA7A7AK76A6JUpA9Cz87OU7W6KEA8AeDH7A7JoEAKjA8Cz87OK7W6UDA9AUBAKBH9ApDDeJCp87OK7C6ABAeBBy8UBK6DKKCf87OA7M6ABAeCAoCA8TACAKbByQS9OA7M59AeCAeEAKFAKCTyZB6Bp9BqHC56AyCAeKAUCTyYB7BV9LoHg5oGAUDAUDAeDAf9yZB7A8TpoHg5eHAKEAKEAeCAV98CyRAp97N9HW5yMAKEAeBAV99C9VpqG8Z6AKDAeBA9AWFC9VVoG9aKBAgQC9VVdAUIHW57AKEV7DCLM9AeEH6aCSDCLM8I5Z8B9AWBC8VBbI6ZeMAKCA6AUDUUbVBeIg5UHAKDA6AoBU7C8U9NU8WsBAMVycU8No8MqBAOVocU8Ny8CqAoCAKRVocU8N7H8X8AKDAeRAKDVoLAUPU8N9H5X9AeBAKOA7AWOC8U8OA7gnAoQA7AWOC8U8OA7gnAUTAKBAoCVocU8OA7gmAUXAeBVodU8OK7MmAURWyMAeFAUHU8OK7C58WoMAyBA8AqIOK7C57WyMByEU7OK7M57AeBWAMB8AWGOK69Z9AUBWKMB9AMGOU66aABAWWBWaOe6q65WKLW7Oo6M66O9AK7KMW7Oy55a7AeCO9AK7AMW7O6Fq67PyCG7BgbO6FW68P6Ae6yNW8O7D9AKLa7P8Ae6eNW9O7DyHAq7B6AFGAMXLxB6AKCAKBAKIBKCbKEAf5oHAKCFeMXVzBAKA6dpuAeGBABAeEAKoBghPeBAKDez5UFA9BKCAylBqhuABAL56AUBAKJB7DyPXi59QKCBASAKCA9AoPB6Xs59PABB9EKHCCit7PKCCe6qitz5eFCK6Wjt6PeCCo6Mjt7R9F9X6tz8y5qltV66AKXFMmtf6ABAoECUxX8tV6KBAoDCowX8tV59AUhE7X8tf58AehE6X8tV58AoiE6X7tB6KDD6E6X5tB6AFDyvXsxQUFDUyXiyQeDDeyXYyRAECy5Wes9RAFC6FWdseBAp7AGC6FgcseBAV7eICU5qcs7RoGCU55W7sp8ADCKXAegW5seEAL76AySCoHC8W5seBAL8oCB8CUJCUBAqYsqFBKBBAKCKBAqYspGAe98A9AUKBoPAyCWisJeCA7A9J6BABA9ByCA6A6XOlAKEJUHAUMJ7A9AKHB6AKLAUUAWKsK9oXJyPFKDU9sK9oaJURFKCU8se9eaJUQaOnAeBJebJUQaEoAeBI9DA9USZ8sA9UfJeSZ7r9JefJeTZ6r8JUhJUVA7AMvr8AKCI8Do9oVAoFYsoI9Do9efYsmAUBI8Do9eeY5r6AoBI8Dy9odYsjJojJydYiiJodAoEJ7AKECMrq6AeEJydAeDKyVYYZAyBJ6D7KyUYYcJ9DfMB7YYdJ7DVPB5YidAKDJUgL7BgsrK9ehMUBAUEY5rA9yglsaAKCJ6DX7sYKUeCoDi8qpCDAZAhvqfEC9CoEi7qVGC7CyFi6qBICycA7G7AUBAM7YTLAYC9Ao58AUKAg7YSLKXDKDF9AeJAq7ERLKYDUBGKDA9Ag7EQLKYJ6AKLAq68p6LKXLADa8pzKCzKA8agmAV7pKC6K9AeCAW65X7Ap7fKCeBAN8WiAKCAz7LLCfCAM8MiA7RBNCfBA6b7XyBAKCAKBP7AoILeYKUFb7X8AL59AeJBoDJ6CVEA7b5pABAKLAo9yTAUBKyJbh99AeJBACJ9B9K8A6b6n7A6AyDAKIAK99CK6yBgqlAL59A6AUGAKGAe98CU66AhVX7AL5eDAeBAKBAyKA7J6Ce66ArUnUCAyEAUHBA96CU68A5f8neBAoGAUHAKFAK9oYHKFf7n7B6AK99Cy7KGE9AW65nzRCy76AewA5aX9VRAKCCy78AKxA6aD89AKELycM9A8BoCYN86AKCAKELeUAKKM9BALAWpmUFAeDALNB9AeJNeHBKCYD8KGAe6oBFKUAeGOADBKCYD8ALAKCAU58AyvCADAUrALAAoKAWomAOAe58AytCUCAKsAVAAW5h8AMAK6oEEAdEyCJ9Ag5X8BTDUtALAAW5X8pPDAwAK9ABA8AW5X7eDA9LefE8AU88AeGAg5X7eJAVPDBmAeFAq5X7VbC9OAEAUFZX7BdC8N7AUDAoCA5ZN7LbC9N7AeCAyCA5ZD66AUDMyeOAIAUFZD6pfDLpA8AKGY9j8AUDNUfOePY7j8N7DBrA7AKIY7j8N7DLrB6DABV5j9NygOeRC8AWPj8NyiOUSC7AgOj6NemOeSC6AgOjzhD9OoSC6AWOjzhEBsB8YN5zhEBwB5YD5zhELxBgojziEB5UKYD5ziEBBAUyBCnjzhELBAeyA9X9jzhELBAoCAKvA8X9j7NKpKKIE6A7YD57NAqKKKEyFYM88AK6piEesAK5oMEeFDUDU7jfiEerAU5eGAKIEKFDUDU7j6NKsEUCFUQEKFDeCU7cKBAUCG6NytEKCFKREUCD6AWGcADAKCG6NytEKCFKUH8AMGb9AeBAU66N6EyqAKaAKZCK76AMGcACG8N8EopAUaAKYC5cC8KCHLgAKBEooAeaAeBAKSC9b8cADG9NewEACC6A7Byeb8b8Ay68NovEKCC7A8Bydb7b8Ay66N6E7EKDC8AoSC9b6b7Ay68NyuEeCFKdb5b8Ao69NouEeCFUdFUFV7b9AU68AUBNeuEoCFUcFKGV7b9AK69AeCNKuEyBFobE9A8V6b9AK69AoBNKuKAbFAIV5b9AK69N6E6KKaFKBAUDV6jBjE6KKabhzNouKUWb6jVhE6KUXb5jACAVfE6KUXG7AMHi9G6AK69EpFCU67AWGi8G7AU68EpGCU6yDU6i8G6AemAUcEo8KBC6CA66AWGi8G6AenAyYEo8KBC7B9brwG7AenAeaEo78AoaBeBA5bryG6AKpAKbEy7yFC7BKDAg76jLjEo6oDAoKC8A8cr5oFALaEo6eTC8A6c5ZADKKEALeEA6eXCyGc5ZADKKEAVdEA6AbCyFc5Y9Ao99AUBAUCNykFygA6AyNA5c5Y9Ay96AoEN6D7FesBoEc5VeBD6A6JeEAfnAeBD7E6E7BeFcqJAziAoDOADAKmAUBD9FNBU7A7BoDL6AoDOyOAeVAUBD6F5eCDBKOAfQAoDO6BUGCUiE6AyGeCDBAOA6L6AKFO6BAHCeCAKaFA99AWKUUKByHAUCLUCAptBAHB8AoCAKBCyyKAEU8UUIByQAeBKoFALvA9AySAKBAeDAKBCozKUCU8UKJByXKB5oJA6B7AKJCotAKDK6AWGUKJBebJ7P6BUECoFAKNFBMAgEUKIBebJ8P6BeDAKDCAEAUMFLOAWDUAHBocJ7P7ByBAKDCKCAeJFKBAVPAWCUAFBycJ8P7E7AUBAe5VSA5UCAAeRC7J9F8AK99KzHAKJA6T9ToBCyZKKHAUyAK99KpHAUIA8AeBTf9oDCeXKeDA7E9ALAKfHAeHBV9f9yCCAYKoCA9FABDoBGo79AKWK9AeDAUCBV9V9yCB7AKBCfQFKBDoBGo7eCAUJB7LACAKQTgGAKHCfRFUCDeBGe7oRA9LyCAKPTgGAUGCVSFeBDeBGA7fvB6Tf9eBA8A6A6CBTFeCDUCEoBBo69PoNTp9UCA7A6A7B9L9FoCDUCEoBAeBBA6z59BV9p9UCA8AyGCLOAeBFoDDUBDoHAeCAUBBA6f6oBAUGTp9KCA9AyECpNF8AegAKlA6AKCAUBA9Gp68Az9p9KCBAEAoXLo58AegAemA8BA6p68AV97TKCBAEAoVL6F7AocAKCAooAoLGL7UBT8UeEAyTL6F7A6C7A9D9AUNF9RoBT7UoDAeUAyBAKEKy56BKYBASAoPAeNF7lqFD8KoxAoCBKYA9B9A6C6GAsA5g5U6EBBE8B7CyJCACC9GAsA6gqLD9J7E8B7CACAeIFe59EoGgqLEe9euB9B8AoDBACAKwE9AKJEoHggJE7JKtCASAyCBABAUuFADA8EoIgWHE9JepCeRB6AUCEo5UFA6EoIgWFFK9onCoQB7AUBEozA8AysA8EKBcCFFK9omCyQB6EoCAUzA8A6EoHEAEb8U6FA9ykC6B6B6EoCAU5eFA8EeHEAGb6UyyJ7DoaB7BysF8AeLEeHD8A8b5UU5U99DUbB7ByrF9AULEyHD6A9b5UUzKecC8B7BKPAKeHUvAylA6AUBbz99AUCE9KyaC9B7AoCAeQAUaHUCAUwAelAKCAq78T8AeCE8K6CyeB6AoEAUPAeZGyLAUwAUrAM78UAzK6CegByECKECe66BAGE6AXWUAyK7CUhByBAKBCKGCe6eNAyuANXT9A7AKrK7CKiD9AyYGUPAr7B97A7AopLAPD9D8AeaGUNA6A9AN6B9yIAopLoJEekAeaGUMA9A7AX6B98AUBAUDEVUAKtD6AeaC9AKgBULAeFD6A5f8UyqQ7DyDC8GAMB9D8A5f7UoqQ8DoEC8GALCAnA5f6UopQ9DoEC7GUJCKoA5f5UonRKiAecGoCC6EKEf5UenRegAocGoCC6kB98Ep7eBAKeAobGyBC7kB97Ef77DADC8GoCC6kL96AeCD6AKBR7DADC9GeDC6kL9KHAekR9DADC9JX6L9AHAelSAdAUeC9AU6N6L9AEA6AeBDf79DABDUWAyBAK6X6L89AyGAeBAeCC8P9A6Bo6eUA7G5kB9UBA7AeCAUCC9P6A7B6GKUA7G6kB99AeEAKCCV6UIB7GAUA6EeDCN6B76AKVAoGCL6eJB7GAUA6EKFCN6B6yBAKCAKCAeDCACAUBAyUQoJB7GATA7D9A7CN6B6yNB9AeBAeECKDAf5yLB7GASA8D7A9CN6B6eQB7AoCAUDDB5eLB7GARA8DyNCD6B6KTB6AeCAeFC9PKMB8F8B7A9DyOB9kB6ASB7AeDAUGDBxBUGAKNF7B8A8DoQB8kB6AQAeBByCAyCAygOUQA7AUNFyTA8DoSB7j9P8DUFAKMDfiCoWFoUA7DoVB5j9P6DoSDpgCyWFoUA6DyVB5j9PyiB7D6NUNAoICU5eHAKNA7DeWBr6B57DUQD7NKGAKJAKICe5eGAUNA6DoXBN6V59DKOD8NAFA7BeYFeGAUNA6DoXBD6foAKSDAOD9NAGA6BeYFeFAUOAokCeKkflA6B6DAOEBdA7AyMC6FUFAUOAelCoIkplA9BeeBepM9A9AUNC6FUEAeNAolC6A5kzkBKIDyLEVdCoaFUEAUPAeln6N6BACAeCA9AUaBAsNeUC6FKDAeQAUkn7NeBAUbAUQAeHA8EzgCKbFADAKRAUln7NodAUPAoHA8EzZAyCCKcE9AeBB7AUkn8NouAeHA8E6MyGAKUDAvAeCFiANysAoHA8E6MycC9E7AUDFiAN7EeCA7A9AeBEVYC9C9E7AUDFiAN6F6BKpMoiCytAUDFsANy57BKEAUjMojCysAKEFsANe59BUDAeJAKYMojCyrAUEFsANU6ANAKNCzYDyZEUCAo55oBdGUbC6MojCorAUEF5oBdGUaC7MekCKtAeEF5oBcGUbC7MohCosAeEF5oBcGUaC8MogC6EeDAe56oBdF9C7C9MobC8AKCEeDAe55oLeA7AUtDAeMyZC9EyEAe55oLeA9AKqCACA9DVYCyeEoEAU56oLgE6CUEA9DVXC6DAsAoCF6oLhCKBCeVAyJDVWC7CeGAKrAyBF7oLiCABCUWAyJDVVC7CUIAKbBAFG5oBlEAUA6BKgMAYB9AUBBKCC6IEAN9D8CAFBUgMAYB9BoCCo8YAOAkD9DLUCoTBoDCU8iANyDAKmD9DLTCoTBoDCA86n9NorEAfL8CeNAeDBoFB7I8n9NerEAhL8CUNCAFB7I8n9NUsD9DzTCANCAGB6I8n9NKtEofL9B7ByUA7By88n9M9E8EegL9ByFAeJCAFB6I9n8M7E9EogL9BoDA6AUCAyRAKCAoRI9n8M6FArDfTBoBA8AKEAoQAeBAoSI8n8M6E8EejL9BoBBeDB7A7CA87n8M9EyrDzTBoBBeDB7A8B8I9n7NKsEKkL9BoBBeEByJB7JD97MoGAUqEUlL8BUEBUEB7A8A8AKHJD97MoyEUmL7BKGBAGB6A9AyHAU9N97LyBAKCAe5UpD9L6BKIA9A6B6Lr97Lo6KUAUSD9L6BKJA8A8BVQn7Lo6AUAoRD9L6BKBAeHA6BAJDeBIh97LeCAK58CAEB6EBQB7A6AyMA6DeDIh96L9FyUAoQD9L7B7A7AeOAyhAy8N96MA5eUA6AUBBUnL7B6A9AKCAKNAohAy8D97L6F7CKLAUCAooL7BeOAUOA6DAGH9n7Le58CeQAeoL7BeNAUDAoFAUEAeeA6H9n7Le57CyQAKqL6B6BABAoFAoDAUCD6AK8D97LU57Co6LRB6A9AKEAyCA7L9n7LU57Ce6VRB6A9AKEBfUn7Le56CK6LUB7BoMKoIA7n8L6FUWGLUB6B6BLDppOFoXAeCF6L9B6B7A9H8AyVppNFedF8L9BoXAe7oLCEOLezDU58L8BoYAK7KQB9ppUC9AKDAKJDe58LeUEUCFARCENMAbBAHDU58LeWAKCA8AKcA6EyTB9pfRDAMAyfF9L6CebAKHA6EyUCYKL7B9AoEB8AKgF9L6CoZAeGA6EUYB9pVTBy6K6BPC6AKDB8A9AKGD8C8B8pfVAKDA7GU6LPDKQBACAylDAQpp9o6BQDKPB9D6DKOpz9o6BQDAPB8D7DUNp6TU6VPDAPB8D7DeMp7TU6LSC7BUUD6EyCp8TA6VUCoKCyfu9S6AKBGfQAeCCoJDAXvf8e68A6AVHDoEDeSv6R9HeEAo87AUEAoID6AUjBi8B78HyBA9IeMA6HUDAKKwL76JA79BoFHUDAUIwV7y9U69AKGB6Ao78As86Ro9o6ANAUQAU8ABw9Ro9o56B7AURAK76A6w8Ry9o5oSAKSAK77A6w7R7JU5UVAe9eIwz77AeBAUCIyzCUDJ7AY86Sy8yy6LSy8oz6LS6Iez6LS6IepAUCAKF6LS9IApAyF6LTK77EUFA56LTK77EKHAuLTU76EKIA56JTe7oqA8A56JTo7UqA8A66JTyDA7GKqAyI6KUy6KpA6A86KSoCBy6oqA6AuOSUHBU6eqA8AaPR8AUCBAHGer6aR8B7Ae6es6aR7IUt6bR7IKt6cR6H8AKBE66dRo79E86eRe79E86fRU8Av6gRK76AeCE66hQ9IAw6iQ7IUu6kQ6IUu6lQy87EQmQofAK6Ak6nQUdA7F9D56nQAKAUQAKBA9F8D56nP9A9BKIBe57DaqQAGBeIBoSAKBAKjDGsQAFB6AySA7BUiDQrSKFCKCA6AyEDUcAKD6rV6AyFAoBCUc6yV6AyOB6C865WkBAEAKZ655X7Aod66M6a69Z967W5967W5967W5967W5867g5867g5867g5767q56675Z6675Z5676Z5676Z5676Z5676Zu77U6AKu678UyFEk78UyID9679UyID768L9yBA8A8DABAu8qEA8C769WEA8Cu95UoICG99T7AKGA9B9699UoKB77AUoLB56dAe69UyMBucAe69QUCBUCC7B6BGbAe7B58BABAeEAyYCAI6ZAe7B57B6AeHCUXAabAe7L57B7AKJCQ5UEHB57C7CQ5UEHB56C8CQ5eDHB57AUBCoV65eEG9QAZB965oEG9QAZB965yDG9QKZAUBAKCBa5yDG9QKZAKGAKEA665yDG9QUmAk5yDHB56AUED8AkxAUEAe7B565oAeCALyA7HV575oA8AyBOKGHf585qA8AKEN9Ay7p585sBVmAy7p595sBVkAo76P95uBLjAo76P9AKCAUB5rA8N6AK78Q55sA6V6Q65tAKQAMCQ756AGT8RF58AKBAz96RP6AFTz7P6oBTz7b59Rl58Rv57R675z7975V7975V7875f8HzSlwSbxSbxSbxSbxSlwSvvS56ZApRSuYA6L7S66WA6L7S656yBFeJL7S656yBFeIL8S656yDE8A9MB8556yEEoNMB8t6yFEAPMV8t6KJD7B8MV8t56BokB6Mz8t5UQD7B6M6S65yAyIAUlB7M6S65yAyuB7M7S75xAovB7M7S65yAeuCLZS75xAUuB6AoBM6S75xAKvB6NL87596BzhS759oPNz8959UPNz89589B8Nz9FsAKrB9Np9PqAUpCLiTV6oClyCD9C9M8Tf6oCloCD8DVaTz6UCloCDomMp9p6oCleBDUqMf9p6yClUBDUrMV9p67AN97AKFEABAfWTj66AKFD8M8TACAZ6yDAUnM8TACAZ66ELeT556ypNB9j67ELeTZ67EVeTP6ytNB9F67EffTF66EpfTZMAyDAUpEzfTZHByoE6NL9jDBKFAUpEfhTjCA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6Ao8i58m7Ae8Y59m7AK8O6O67us67us65u6ui68r6AKau8q6AyEAUau9qUUCE69p9B8AeFB7u8qASAyEB6u6qUSA7AUQu6qyPC5u6qyQC5u5q8BoZuscByZuifBAcA8A5s9rKHDKIA5s8r6AUmAUCtO78ti78AeCs9v7AUDs9wiwwsvwiwwsuw6s5w5s6wsuw6s5w7AyBr8xslx5r5x9rY99rZCq8ysay6q6y6qtJqPMBeGoFgP6BWe5lPKQW65pO7B8W55rOoXV95zN7C7V655VbEMK55pZEWI557MKtU8557MKuUj66LowP6AeFA7DF69LKyPySCZ8VDFL5oWB858pBFVyC8B5588J7FpqAeEC9Bt89Jy68M6EAJ59e9o7BYEUD598Je7pU6sJU76AoOKQsJU96J96sJU96J66vJU96JkyJK97Ja5U89J9B6AK7k5o88J9BKHAeFA9AK5k5y88KAKC6AeDEu58I7KKBEAs658I6OeGAoh659Iz5yf66K86PeFA7B666y8z68Bk6y8z7KH668Iz7eF669IwwI58vIwyISzIS6K7S66G587U59X9AQhF8X8AeqAZ9U5qlAopAj9e5gkAypAj96E9X7A6EAD6BEgmA7D9AkBEWoA6D8AuED8YKHD7AkID5YKHD7AkJDqrA6D6AkKDWsA6D6AkLDCtA7DyD6MC8Y8A6DoD6OC5ZAHDUE6NCqzA8DAE6QCM5eJC8AkTB8ZoKC7AkUB6ZyKC6AuYA9Z8BAZA56ZA7Z9BAaA589KJC6A589UIC6Aw9eJCoE6bAM67A8CoE6bAW67A7CoE6bAg66A9CUF897A8CKE899A9B9AeDAUGAS9AJB7A9AKH889A9B6B8888BKOCI87BKOCI88BKMCI89BKKCS9KLA7Cc9ULA6Cw9Un89Uo89Kq889Em88E5887E688yu886E5887E6887Ew87E5887E5887Ew88E5886E6886E788ov88ow88ov88yv88ow88ew88ey88K5m8Az88Az88AzH" : current_map ===
+        real_map_starting_index() + 1 ? mapData = "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Fs69FKxJ6556KX78Fs7AxFATAK75558KX78Fi7KuFeSAU7t59KN8AzvKuFyQAU7t6BBmAxvetF7BoDHj6U99mUvvetF8BeEHZ6e98metvUvF9BUEHZ6e98monv7E7GKJAy7Z6o7UBC5mocAKGAUCv7C7IKHA6Hj6o7UCCr86B8BUCwKZIoGA6HZ66HUDCX88B6x7Ce8yFA6AeBG8567HUHB8nAHy6CA8yFA7AUCG8L6AOyHeIB5nUEy9B6I8AeJAUCG7L7AOyHyJBJIBe9ADA8AUDG6L8AOyH79aBK9UCA7AUEGzTAYxH99eAVBAyDG6L9AsvIJ99AAhAKHGpUA5s7IJ99AAoGpVA6sy8T99AAmAoCF9MUGsy8T99AAfAoJF8MeGsy8T99AAdA8A7F7MoFs6Id99AAcAyKF7MyEs6Id99AArF6M6AsuIx99AApFzdAYuI6999AAnFzcAYvI6999AAnFpcAeDAOrI6999AAmFpdAUEAOrI6999AAmFpdAoBAYrI6999AAlFpeAoBAYpI8999AAlFpeA6sU87999AAmFfeA7sU86999AAoFBgA7BACrK85999AAoE9NUJA7AsgIx99AAoEBpBKDA5re8x99AAqCACBpqB9ro8n99AAtB7AeMOeTr6IT99AAuAKDBKDAUBA9OoTr7H9999AA5yGA8A8OoUr8H5999AA59AoKAzuB7sU69999AA78AVwB7se58999AA9ABOyUso57999AChB8s9F8999ACgB6tK58999ACgB6tK59999ACgBs5U59999AA7eCP8Bi5U58999AA7eCB9AVnBO5U59999AA9oCN9BE5e59999AA9oBOAIt6F9999AA9eBOAHt7F9999AChA6t9GJ99AA7eBOUCBeGuAuAeK999AA7eFBKDMoEBAHuKuA6A6999AA7oGAyIMeFAUCAKBAeGuot999AA8yTMeKAeHuyu999AA8oSMeKAoFu8AoBEJ99AA8oSMULA6AO7KDAen999AA8eRMAOv8AKEEJ99AA8eRL8B5v8AeFD8999AA8eQL8Bs8AEAymAyB999AA76BpTBs8KEAeqAeC999AA7oOL9Bs8UDAyqAKE999AA7UOL9Bi8yCAypAeD999AA7UOL8BY87AeEEKDAn99AA7UNL7Bi88AeFET99AA77A9AUBL6Bs89AoEEd99AA76A9AUBLoNxeDAeq999AA77A6L8BtAET99AA79AzQB5yUo999AA8KBL6B6yon999AB9yUyen999AB9USy7ET99AB89B7zKo999AB87B7zon999AB8yRzyo999AB8oRzKCAKBAKn999AB8eSz8D9999AB8ATzyCAUk999AB8KUz6AUCDx99AB8KU5XDd99AB8UT5WDn99AB8KU5UAKCAKBDT99AB8AU5WAKDDT99AB78CFWAoCDT99AB78B85YAoDDJ99AB77B85ZAyCDJ99AB8KM5ZA8AKf999AB8UI5bAKCD8999AB8eD5eAKDD9999AB7yC5tD6999AB7eC5vEJ99AB67AjuEn99AHOEn99AHQET99AHQET99AHUD7999AHRAKDD6999AHLAeDD9999AHMAyCD7999AHNAyBD7999AHSAKCD5999AHTAUBD567UB999AAuD767UC999AAsAKBAyBDQ7UDAUD999AAoAyBDQ7UI999AAoAoDDQ7AF999AAtAKBAUBDa7ABAoC999AArAKCAKCDT99AHXAKDDJ99AHVAUDC8999AHZAKDC8999AHfC5999AHaAKDAKBC5999ABvAP8KCAoW999ABuAP8UDAKY999AHiCx99AHeAKECeyAT99AG76AKHCUsAoBA5999AG8KWEeEAUG999AG8eBAUSEUDAKG999AG76AKGAKEB8EADAUE999AG89CKlAUEAn99AG8oBAUU999AHmB9999AHkAKDBoDAd99AHmBUFA5999AHjBUDA9999AHkA9AeJ999AHhAKCA9AeJ999AHkBAIA6999AHgBKHA7999AHhAyCAoBAKCBT99AHfAUBAUHAUBBn99AHgAKCAUBAKDAKDBVoAn99AF96AKHBVpAn99AF9yBAeROAE999AF9KYOAD999AF9oZN6Ad99AF98CT99AHgAUCBn99AHtBn99AHuAKCAn99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AGIAd99AJ99AJ99AJ99AJ99ACdAd99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AH7oE999AH5eB999AJ99AJ99AFGAKBAT99AJ99AJ99AJ99AJ99AC9KB999AH5UBAoF999AHtAyCAd99AHtAyCAd99AHvAx99AHxA7AUC999AHlAUFA9AUF668Ad99AA6ABAeCAyJAeE668Ax99AA57AeCAKEA7AeBA7AQ67Ax99AA56AyFA6999AHrAKBAKDA7999AHwA88mAdFBHDAVgAxFA97FALfA5898AKHA969KEOAF899AKGA98kAxGBE89A8YeII7AnGBoCAs76B7TUOC8Bo8yF9EA9AKDAeCAKBvyUN6AUyCUVB6G7CxDA9AeCv7C7NUDE8DABAULB7AeED9AyNDw9yJAyCvydNADA7BoDAoEAyBAyDD7A8C7CKFAeEAeHBKr88ACA6BE8KbNAwAKoAKhB7CyKFABAc7UDAUCAKIAUBveCAycM6M9AKoA7F6AKE86yEAKLvoHAUhKoIAguAKE858AeCBO6yDA7Ee9yEAM6m58AoDA9u6AoGFo8g6686UCAoCAUGueGAU7o65bS69A6t7KoubyDAm6UGtVJD9c786yHszND7c886yHA6AOkL6DrABKC8sA7AoCoKFC6L9DhCBKD8cAUNB5n8A6CfUD5eAFAKGAcbA7BUPn7A7CBWDrP8aA9BUOAyCm8BUQMUggABAKCAwRBAFAUCB8AeCm6ByEAUIMUch58MAUCBADCyBAN8eSAUDA8MAZAKBiIMAKDBADCr8UbAKCAVWCXv799AoMBADCr7V58AKDB7jl99AyMBADC5c7AUOAUKAeEA6D7QUTj68RBKDCg8KDAeEBeKAKTCf69CD6ABAcIByDCWaAKLAKYAUOBoIEAHR8AUCBr6wAAeGByDCqjAecC6A5W6AKDBX76AKB78eIBUKAeZWAEA9AoUa7BD85777A8BeMAeaUeDBAFDC69BD8779UTAeZUeGA6AyOAKMbAMm9787AKCCKDCp96AUEA7AyHAKPAKDAq7AOnKDAR78AUBCyDCz9oDAUJA5d9Br9568yCA6AK8yLAUQAoXT7foNn667yIAeDAUBAKEIyGBALAySUXMBX9u79Cy96BeGCp95fUIn669oNG8AoTB6A8Cf9rQAN9969UCAKCByCBeCHAOA9Cf9bR68oDA7A6DACA6Ao8UbSvT68ABAyEBeEC6AUDA6FKGCUiR87S68oBA6CAeA7AUCA6AKUAeQA6AUBB6D7R87P6CA7GAFCU68B9A7AUCA8A6AKBA8D9R77W6DA9BABE6A8De5yRA9AoEA7AUEE9RbL6UA9AoKEAJB9A8Ae6yIB7Ao58RHI6cA8AoPA8AUHAUPBKSQB7KGAk9ulAeGBUJAUHAyRA7CL56R869QRAeLAoRAyZAyHA6A7AUXPp5yDB969aHAeZAKhCKGA6D7O8P6AUR69kEBAFAoKGUEAymOUBAf58AUL6896LKKnOKCAV7Q886FK8AyDBKOA9N8Ru8aMc9RQ8kEd8RQ8aBd8Q9AoD68F97Z6AKrQu9j9KHAM5yHDf587B59eKAM5eJCp6HF6IZeKCB5vJ6OZV777M6AAoMZp7RN577AKEBKQAyFZ6Q57QBKC56yRAeGA9az577VA9BF6KcAq77OvWA9AeDAj6q8AHCVp7Y585cKQA7JeND57YA8AZ6yEC5bzCB9DRa57oHCM5oGB7DeEGeVC97bAUB57UJB6Z9A8BUdA7GeWC87R588BASZ7EeJGoYC77I6AA9Cq5UmA8G7CoeCUF6696MAyiY7AeOB6A7G8CokA8A967a6C58B6Ao7AaE767k7MxFeFDAdE966668MpFyGC8C8F666D68" :
+        current_map === real_map_starting_index() + 2 ? mapData = "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" :
+        current_map === real_map_starting_index() + 3 ? (mapData = "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C9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo") : 
+        current_map === real_map_starting_index() + 4 && (mapData = "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okA8BoDWK57x8D8A7FeCC7AoCAKDAUZDeMBAGWK56x8D8A8IeBDogBoIA7WU55x8D8A8L9DAQA6A8We55x7D7BKCAzLC8DCaFi97D8B7LKbDCdD9AUKx7EoPK9CoeXUiA6APFE8B6K6B8DMkC8z7E8B9KoODqoB95WFUPK9AonYoO5XFUQPMyA55aFUPAeEO578K5UWO678A5UWO678A6oJO778A7ADO778CTC6Ab5gSC8AUEAltV8DyE7rV7D7AvqV7D7A67oTUCCemAbrS9AoY78f7UEA9A7C578f7KSC878f7ASDH8V6UFAKTDR8V6UZDR8V6UZDR8V6eYDR8V6eZC978f6eTAeDC978f6eTD578f6UTD678f6eRD778f66AeEA6D878gR78gQ78qQ78qQ78qQ78qR787Vl9CK79MI79qG79qE798UM58APpUC57AjpT8Z7A55pT6Z8A65rTg58A75qTfCAp5UH5pTfDAzyA75qTfDAyMAQ86TLWAQ86TBXAa8z9BXAk8z88MoE68z86MyE686SzZA5686SfaA6688R9M6A869B76M6A769V7pbA669p7fcA569z7VdAvAQ68mQSrP78rP78sP68rP78rP68sP68sPmvPmwPcxPS5yDApm86Vl866Nm68NZ8ABdLc58ABdpZ58ABdzY58ACd9L958ADd8L858UCd8L758eCd9L658eCezK58eDezI58oDeymAe66586AXFDyHAyBAUFFZ86AXIDKKAUKAoCEt88ANNCegEZ89AXNCKhEP9KBfyQD7EJIBonD89KBAqD7B7AS9oIE6DUSAc9yEFAeB9AdyC9B8AnzC6CAD9zBUEA7CeC95eJA6An99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99ACeAT99AT99AT98Ad97Ax96Ax97AT99AABAT99AJ99AJ99AH6AC997Ax9yF99yE996A55lAO57A55lAY56A55lAY56A5bUBaoCt7Aq7UCaUEt7Aq7KDBUBY8A5t6Aq7KKAyFYyEt6Aq7KKAoHYoCt8A5a9BUBA97EAyhAMiClEA6DKCWoBAKf7EA7C9AgYDo5yF6sA6C7AqaDo5eH6qA8C6AqaDy5UH6qA9CyEW6D6FKC6wA8CyEW6D7FAG6sA8CyEWynFAG6rA8CyCW6EKzA56qA7CyDWKv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");
+    mapData = characters.iX(mapData);
+    var n = jm.bz(current_map).a31,
+        l = jm.bz(current_map).a32;
+    map_width = 1E3 * mapData[0] + mapData[1];
+    map_height = 1E3 * mapData[2] + mapData[3];
+    hs = document.createElement("canvas");
+    hs.width = map_width;
+    hs.height = map_height;
+    pl = hs.getContext("2d", {
+        alpha: !1
+    });
+    xH = pl.getImageData(0, 0, map_width, map_height);
+    xI = xH.data;
+    for (var x = mapData.length, t = !0, z = 0, y = 4; y < x; y++)
+        if (t) {
+            for (; 0 < mapData[y]--;) xI[z] = l[0], xI[z + 1] = l[1], xI[z + 2] = l[2], xI[z + 3] = 255, z += 4;
+            t = !1
+        } else {
+            for (; 0 < mapData[y]--;) xI[z] = n[0], xI[z + 1] = n[1], xI[z + 2] = n[2], xI[z + 3] = 255, z += 4;
+            t = !0
+        } pl.putImageData(xH, 0, 0);
+    vq = !0;
+    a2n(g);
+    xK.init();
+    c4.canvasPendingUpdates = !0
+}
+
+function kS() {
+    var g;
+    this.init = function() {
+        g = Array(const_custom_map);
+        g[0] = {
+            name: "White Arena",
+            width: 230,
+            cw: 230,
+            gO: 1E3,
+            gL: 2E3,
+            a1o: 173,
+            per: 1
+        };
+        g[1] = {
+            name: "Black Arena",
+            width: 800,
+            cw: 800,
+            gO: 100,
+            gL: 50,
+            a1o: 43,
+            per: 1
+        };
+        g[2] = {
+            name: "Island",
+            width: 512,
+            cw: 512,
+            gO: 128,
+            gL: 32,
+            a1o: 0,
+            per: 1.5
+        };
+        g[3] = {
+            name: "Mountains",
+            width: 960,
+            cw: 960,
+            gO: 60,
+            gL: 8,
+            a1o: 0,
+            per: 1.2
+        };
+        g[4] = {
+            name: "Desert",
+            width: 900,
+            cw: 900,
+            gO: 100,
+            gL: 5,
+            a1o: 0,
+            per: 1.2
+        };
+        g[5] = {
+            name: "Swamp",
+            width: 1E3,
+            cw: 1E3,
+            gO: 100,
+            gL: 40,
+            a1o: 0,
+            per: 1.2
+        };
+        g[6] = {
+            name: "Snow",
+            width: 1E3,
+            cw: 1E3,
+            gO: 100,
+            gL: 20,
+            a1o: 0,
+            per: 1.2
+        };
+        g[7] = {
+            name: "Cliffs",
+            width: 1024,
+            cw: 1024,
+            gO: 128,
+            gL: 32,
+            a1o: 0,
+            per: 1.5
+        };
+        g[8] = {
+            name: "Pond",
+            width: 820,
+            cw: 820,
+            gO: 200,
+            gL: 100,
+            a1o: 0,
+            per: 1.2
+        };
+        g[9] = {
+            name: "Halo",
+            width: 1024,
+            cw: 1024,
+            gO: 128,
+            gL: 32,
+            a1o: 0,
+            per: 1.5
+        };
+        g[10] = {
+            name: "Europe",
+            a31: [140, 130, 120],
+            a32: [12, 12, 76],
+            a33: [240, 120, 4672, 30, 26, 30, 90, 8, 32, 3, 9],
+            per: 1
+        };
+        g[11] = {
+            name: "World",
+            a31: [165, 145, 125],
+            a32: [15, 15, 69],
+            a33: [250, 100, 8, 25, 15, 25, 90, 8, 32, 3, 9],
+            per: 1
+        };
+        g[12] = {
+            name: "Caucasia",
+            a31: [140, 130, 120],
+            a32: [20, 20, 84],
+            a33: [240, 120, 100, 30, 25, 30, 90, 8, 32, 3, 9],
+            per: 1
+        };
+        g[13] = {
+            name: "USA 48",
+            a31: [120, 105, 92],
+            a32: [12, 12, 60],
+            a33: [300, 300, 9827, 26, 18, 36, 36, 8, 32, 3, 9],
+            per: 1
+        };
+        g[14] = {
+            name:"Middle East",
+            a31:[140, 130, 120],
+            a32:[12, 12, 76],
+            a33:[240, 120, 4672, 30, 26, 30, 90, 8, 32, 3, 9],
+            per:1
+        }
+    };
+    this.isBA = function() {
+        return 1 === current_map
+    };
+    this.bz = function(k) {
+        return g[k]
+    };
+    this.getMapName = function() {
+        return current_map === const_custom_map ? customMap.mapName : this.bz(current_map).name
+    }
+}
+var mapCanvas, pixel_rgba, mapCanvasCtx, jX;
+
+function loadMapCanvas() {
+    void 0 === mapCanvas && (mapCanvas = document.createElement("canvas"));
+    mapCanvas.width = map_width;
+    mapCanvas.height = map_height;
+    mapCanvasCtx = mapCanvas.getContext("2d", {
+        alpha: !0
+    });
+    jX = mapCanvasCtx.getImageData(0, 0, map_width, map_height);
+    pixel_rgba = jX.data
+}
+
+function kT() {
+    function g(J, L, H) {
+        C[0] = J;
+        for (J = 1; J < H; J++) C[J] = C[J - 1] + L, 1E4 <= C[J] ? (C[J] = 9999, L = -L) : 0 > C[J] ? (C[J] = 0, L = -L) : (L += 16384 <= fakeRandom.random() ? B : -B, L = L < -A ? -A : L > A ? A : L)
+    }
+
+    function k(J, L, H, M) {
+        if (H)
+            for (H = 0; H < M; H++) x[L * t + J + H] = C[H];
+        else
+            for (H = 0; H < M; H++) x[L * t + J + H * t] = C[H]
+    }
+
+    function n(J, L) {
+        var H = J - C[L - 1];
+        if (0 !== H) {
+            var M = 1 + divide_floor(Math.abs(H), L - 1);
+            M = 0 > H ? -M : M;
+            C[L - 1] = J;
+            var Q = L - 1 - divide_floor(Math.abs(H), Math.abs(M));
+            Q = 1 > Q ? 1 : Q > L - 2 ? L - 2 : Q;
+            for (var R = L - 2; R >= Q; R--) C[R] += H - (L - 1 - R) * M;
+            if (0 > H)
+                for (H = L - 2; 1 <= H; H--) 0 > C[H] && (C[H] = -C[H] - 1);
+            else
+                for (H =
+                    L - 2; 1 <= H; H--) 1E4 <= C[H] && (C[H] = 2E4 - C[H] - 1)
+        }
+    }
+
+    function l(J) {
+        for (var L = 0; L < J.length - 1; L++) J[L] = J[L + 1] - J[L];
+        J[J.length - 1] = J[J.length - 3]
+    }
+    var x, t, z, y, A, B, C, E, F, G, N, I, D, K;
+    this.fit = function(J) {
+        t = J[0];
+        z = J[1];
+        A = J[2];
+        B = J[3];
+        x = new Int16Array(t * z);
+        y = t > z ? t : z;
+        C = new Int16Array(y);
+        E = [];
+        F = [];
+        G = [];
+        N = Array(t);
+        I = Array(z);
+        for (J = t - 1; 0 <= J; J--) N[J] = !1;
+        for (J = z - 1; 0 <= J; J--) I[J] = !1;
+        D = new Int16Array(t);
+        K = new Int16Array(z);
+        J = y;
+        var L = fakeRandom.random() % 1E4,
+            H = fakeRandom.random() % (2 * A + 1) - A;
+        g(L, H, J);
+        J = K;
+        L = C;
+        H = z;
+        for (var M = 0; M < H; M++) J[M] = L[M];
+        k(0, 0,
+            !0, t);
+        J = x[0];
+        L = y;
+        H = fakeRandom.random() % (2 * A + 1) - A;
+        g(J, H, L);
+        J = D;
+        L = C;
+        H = t;
+        for (M = 0; M < H; M++) J[M] = L[M];
+        k(0, 0, !1, z);
+        l(D);
+        l(K);
+        g(x[t - 1], D[t - 1], z);
+        k(t - 1, 0, !1, z);
+        g(x[t * (z - 1)], K[z - 1], t);
+        n(x[t * z - 1], t);
+        k(0, z - 1, !0, t);
+        N[t - 1] = N[0] = !0;
+        I[z - 1] = I[0] = !0;
+        J = t;
+        E.push(0);
+        F.push(J);
+        G.push(!0);
+        J = z;
+        E.push(0);
+        F.push(J);
+        G.push(!1);
+        a: for (;;) {
+            J = E.length - 1;
+            for (L = J - 1; 0 <= L; L--) F[L] > F[J] && (J = L);
+            if (5 > F[J]) break a;
+            L = E[J] + divide_floor(F[J], 2);
+            if (G[J]) {
+                H = void 0;
+                var Q;
+                M = L;
+                for (var R = 0, P = 0; P < z - 1;) {
+                    for (Q = R + 1; Q < z; Q++)
+                        if (I[Q]) {
+                            P = Q;
+                            break
+                        } Q = P - R + 1;
+                    g(x[M + t * R], 0 ===
+                        R ? D[M] : C[H - 1] - C[H - 2], Q);
+                    n(x[P * t + M], Q);
+                    k(M, R, !1, Q);
+                    H = Q;
+                    R = P
+                }
+                N[M] = !0
+            } else {
+                H = void 0;
+                M = L;
+                for (P = R = 0; P < t - 1;) {
+                    for (Q = R + 1; Q < t; Q++)
+                        if (N[Q]) {
+                            P = Q;
+                            break
+                        } Q = P - R + 1;
+                    g(x[M * t + R], 0 === R ? K[M] : C[H - 1] - C[H - 2], Q);
+                    n(x[M * t + P], Q);
+                    k(R, M, !0, Q);
+                    H = Q;
+                    R = P
+                }
+                I[M] = !0
+            }
+            H = E[J] + F[J] - L;
+            M = G[J];
+            E.push(L);
+            F.push(H);
+            G.push(M);
+            F[J] = L - E[J] + 1
+        }
+        for (J = 0; J < t; J++)
+            if (!N[J])
+                for (L = 0; L < z; L++) I[L] || (H = x[L * t + J - 1] + x[(L - 1) * t + J], M = 2, N[J + 1] && (M++, H += x[L * t + J + 1]), I[L + 1] && (M++, H += x[(L + 1) * t + J]), x[L * t + J] = divide_floor(H, M))
+    };
+    this.a35 = function() {
+        return x
+    };
+    this.a2m = function() {
+        x = null
+    }
+}
+
+function divide_floor(m, n) {
+    return Math.floor(m / n + 1 / (2 * n))
+}
+
+function yj(g, k) {
+    return 0 <= g ? divide_floor(g, k) : -divide_floor(-g, k)
+}
+
+function square(n) {
+    return n * n
+}
+
+function max(m, n) {
+    return m > n ? m : n
+}
+
+function min(m, n) {
+    return m < n ? m : n
+}
+
+function t7(g, k, n) {
+    return k < g ? g : k > n ? n : k
+}
+
+function sqrtEstimation(value, maxIter) {
+    for (var estimate = divide_floor(value + 1, 2), index = 0; index < maxIter; index++) estimate = divide_floor(estimate + divide_floor(value, estimate), 2);
+    return estimate
+}
+
+function approximateSqrt(value, maxIter) {
+    return 1 > value ? 0 : sqrtEstimation(value, maxIter)
+}
+
+function a4L(g, k, n, l, x, t, z, y) {
+    return !(g + n <= x || k + l <= t || g >= x + z || k >= t + y)
+}
+
+function a4M(g, k, n, l, x, t, z, y) {
+    return g <= x && k <= t && g + n >= x + z && k + l >= t + y
+}
+
+function kl() {
+    function g() {
+        vv.uu[2] = vv.uu[3] = vv.uu[4] = !jt.hideLinks;
+        var y = jt.hideNicknames ? 1 : 0,
+            A = jt.hideLinks ? 1 : 0,
+            B = jt.highResolution ? 1 : 0;
+        is_ios ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= device_version ? (droid.saveNumber(25, y), droid.saveNumber(26, A)) : (user_settings.set_setting(6, 4 * B + 2 * A + y), user_settings.format_settings())
+    }
+
+    function k(y, A, B, C) {
+        if (0 === C) return y >= B.f7 && (0 === C || A >= B.f8) && A <= B.f8 + B.nR;
+        A -= C * (B.nR - 2);
+        return y >= B.f9 && (0 === C || A >= B.f8) && A <= B.f8 + B.nR
+    }
+
+    function n() {
+        var y = Math.floor((zoom ? .145 : .09) *
+                averageWindowLength),
+            A = Math.floor(1.5 * y),
+            B = Math.floor(.065 * (zoom ? .53 : .36) * averageWindowLength);
+        return {
+            f7: clientWidth2 - y - B,
+            f8: display_buffer_length,
+            i4: y,
+            nR: Math.floor(.35 * y),
+            f9: clientWidth2 - A - B,
+            i5: A
+        }
+    }
+
+    function l(y, A, B, C, E, F, G, N, I, D) {
+        D = Math.floor(D * C);
+        mainCanvasCtx.font = bt + D + bu;
+        N && (E += 80, F += 80, G += 80);
+        mainCanvasCtx.fillStyle = "rgba(" + E + "," + F + "," + G + ",0.6)";
+        mainCanvasCtx.fillRect(y, A, B, C);
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillRect(y, A, B, 2);
+        mainCanvasCtx.fillRect(y, A + C - 2, B, 2);
+        mainCanvasCtx.fillRect(y, A, 2, C);
+        mainCanvasCtx.fillRect(y + B - 2, A, 2, C);
+        mainCanvasCtx.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
+    }
+    this.xy = 1;
+    this.highResolution = this.hideLinks = this.hideNicknames = !1;
+    var x = -1,
+        t = !1,
+        z = [];
+    this.init =
+        function() {
+            z = [];
+            z.push({
+                name: "More",
+                id: 0,
+                fB: 140,
+                n6: 120,
+                cm: 0
+            });
+            z.push({
+                name: "Lobby 1",
+                id: 1,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            z.push({
+                name: "Hide Usernames",
+                id: 2,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            z.push({
+                name: "Hide Links",
+                id: 3,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            !is_ios && 5 > device_version && z.push({
+                name: "High Resolution",
+                id: 4,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            z.push({
+                name: "Tutorial",
+                id: 5,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            z.push({
+                name: "Player List",
+                id: 6,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            z.push({
+                name: "Clan List",
+                id: 7,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            z.push({
+                name: "Privacy Policy",
+                id: 8,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            !is_ios && 5 > device_version && z.push({
+                name: "Cookie Policy",
+                id: 9,
+                fB: 0,
+                n6: 0,
+                cm: 0
+            });
+            z.push({
+                name: "Mod Settings",
+                id: 10,
+                fB: 140,
+                n6: 140,
+                cm: 250
+            });
+            z.push({
+                name: version,
+                id: 10,
+                fB: 90,
+                n6: 0,
+                cm: 0
+            });
+            if (is_ios) this.hideNicknames = ios.freeSpawn, this.hideLinks = ios.unlimitedTime, this.highResolution = !1;
+            else if (5 <= device_version) this.hideNicknames = 1 === droid.loadNumber(25), this.hideLinks = 1 === droid.loadNumber(26), this.highResolution = !1;
+            else {
+                var settings_6 = user_settings.get_settings(6);
+                this.hideNicknames = 1 === (settings_6 & 1);
+                this.hideLinks = 2 === (settings_6 & 2);
+                this.highResolution = 4 === (settings_6 & 4)
+            }
+            z[2].n6 = this.hideNicknames ? 130 : 0;
+            z[3].n6 = this.hideLinks ? 130 : 0;
+            !is_ios && 5 > device_version && (z[4].n6 = this.highResolution ? 130 : 0);
+            this.hideLinks && (vv.uu[2] = vv.uu[3] = vv.uu[4] = !1)
+        };
+    this.clicked = function(y, A) {
+        var B;
+        if (!(7 <= aJ.getState())) {
+            var C = n();
+            if (t) {
+                for (B = 1; B < z.length; B++) 
+                    if (k(y, A, C, B)) {
+                        return 1 === z[B].id ? (jt.xy = 1 === jt.xy ? 2 : 2 === jt.xy ? 3 : 3 === jt.xy ? websocket_manager.originCount : 1, z[1].name = "Lobby " + (jt.xy === websocket_manager.originCount ? "4 (1B)" : jt.xy), c4.canvasPendingUpdates = !0) : 2 === z[B].id ? (jt.hideNicknames = !jt.hideNicknames, z[B].n6 = jt.hideNicknames ? 130 : 0, g(), c4.canvasPendingUpdates = !0) : 3 === z[B].id ? (jt.hideLinks = !jt.hideLinks, z[B].n6 = jt.hideLinks ? 130 : 0, g(), c4.canvasPendingUpdates = !0) : 4 === z[B].id ? (jt.highResolution = !jt.highResolution, z[B].n6 = jt.highResolution ? 130 : 0, g(), jq.xl(), c4.canvasPendingUpdates = !0) : 5 === z[B].id ? (openLinkBox.init(ov, !0), openLinkBox.init(ov, !1)) : 6 === z[B].id ? (openLinkBox.init(ow[0], !0), openLinkBox.init(ow[0], !1)) : 7 === z[B].id ? (openLinkBox.init(ow[1], !0), openLinkBox.init(ow[1], !1)) : 8 === z[B].id ? (openLinkBox.init(ou, !0), openLinkBox.init(ou, !1)) : 9 === z[B].id ? (openLinkBox.init(nX, !0), openLinkBox.init(nX, !1)) : 10 === z[B].id && typeof(document.getElementById('modMenu') != 'undefined') && (document.getElementById('modMenu').hidden = !document.getElementById('modMenu').hidden, document.getElementById('hideMenuCheck').checked = !document.getElementById('hideMenuCheck').checked ,!0);
+                    }
+                t = !1;
+                c4.canvasPendingUpdates = !0;
+                return !1
+            }
+            return k(y, A, C, 0) ? (t = !0, c4.canvasPendingUpdates = !0) : !1
+        }
+    };
+    this.lo = function(y, A) {
+        var B;
+        if (!(7 <= aJ.getState())) {
+            var C = n();
+            var E = x;
+            var F = t ? z.length - 1 : 1;
+            x = -1;
+            for (B = 0; B < F; B++)
+                if (k(y, A, C, B)) {
+                    x = B;
+                    break
+                } E !== x && (c4.canvasPendingUpdates = !0)
+        }
+    };
+    this.drawImage = function() {
+        var y;
+        if (!(7 <= aJ.getState())) {
+            var A = n();
+            mainCanvasCtx.textAlign = cJ;
+            mainCanvasCtx.textBaseline = cI;
+            l(A.f7, A.f8, A.i4, A.nR, z[0].fB, z[0].n6, z[0].cm, 0 === x, z[0].name, .6);
+            if (t) {
+                var B = z.length;
+                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nR - 2 * y, A.i5, A.nR, z[y].fB, z[y].n6, z[y].cm, x === y, z[y].name,
+                    y === B - 1 ? .32 : .45)
+            }
+        }
+    }
+}
+
+function kU() {
+    function g() {
+        n = !0;
+        l = -1;
+        x = Array(4);
+        for (var y = 3; 0 <= y; y--) x[y] = !1;
+        y = Math.floor(1 + .02 * shorterWindowLength);
+        t = Array(4);
+        z = Array(4);
+        z[1] = z[3] = t[0] = t[2] = 0;
+        z[0] = t[3] = -y;
+        t[1] = z[2] = y
+    }
+
+    function k() {
+        if (-1 !== l)
+            if (0 !== client_status && eV.h0()) {
+                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gC += t[A], gD += z[A], eA.lo(t[A], z[A]), gj.rK());
+                y ? c4.canvasPendingUpdates = !0 : gn.go()
+            } else gn.go()
+    }
+    var n = !1,
+        l, x, t, z;
+    this.wE = function(y) {
+        0 !== client_status && eV.h0() && (n || g(), x[y] = !0, -1 === l && (l = setInterval(k, 20), k()))
+    };
+    this.a2Y = function(y) {
+        if (0 !== client_status && (n || g(), x[y] = !1, -1 !== l)) {
+            y = !1;
+            for (var A =
+                    3; 0 <= A; A--) y = y || x[A];
+            y || this.go()
+        }
+    };
+    this.go = function() {
+        if (n && -1 !== l) {
+            for (var y = 3; 0 <= y; y--) x[y] = !1;
+            clearInterval(l);
+            l = -1
+        }
+    }
+}
+
+function WaterPixelChecker() {
+    var closestWaterPixel;
+
+    this.getClosestWaterPixel = function () {
+        return closestWaterPixel;
+    };
+
+    this.check = function(id, targetCoord) {
+        var pathIndex, loopCount = 21;
+        if (0 === pixels_bordering_water[id].length || !pixel.can_take(targetCoord) || !pixel.is_neutral(targetCoord) && pixel.owner(targetCoord) === id) return !1;
+        for (pathIndex = loopCount; 0 <= pathIndex; pathIndex--) {
+            if (loopCount === pathIndex) {
+                var originPixelIndex = 0, waterBorder = pixels_bordering_water[id],
+                    targetX = pixel.to_x(targetCoord), targetY = pixel.to_y(targetCoord),
+                    originX = pixel.to_x(waterBorder[0]), pixelIndex = pixel.to_y(waterBorder[0]),
+                    originDist = Math.abs(originX - targetX) + Math.abs(pixelIndex - targetY);
+
+                for (var pixelIndex = waterBorder.length - 1; 1 <= pixelIndex; pixelIndex--) {
+                    var startX = pixel.to_x(waterBorder[pixelIndex]), 
+                        startY = pixel.to_y(waterBorder[pixelIndex]),
+                        newDist = Math.abs(startX - targetX) + Math.abs(startY - targetY);
+                        newDist < originDist && (originDist = newDist, originPixelIndex = pixelIndex)
+                }
+                closestWaterPixel = waterBorder[originPixelIndex]
+            } else closestWaterPixel = pixels_bordering_water[id][divide_floor(pathIndex * pixels_bordering_water[id].length, loopCount)];
+
+            a: {
+                startX = pixel.to_x(closestWaterPixel), startY = pixel.to_y(closestWaterPixel),
+                targetX = pixel.to_x(targetCoord), targetY = pixel.to_y(targetCoord),
+                originDist = Math.abs(targetX - startX) + Math.abs(targetY - startY);
+                var nextCoord = closestWaterPixel, hasValidPath;
+                if (2 <= originDist) {
+                    for (var index = 0; index < originDist; index++) {
+                        nextCoord = Math.abs(targetX - startX) >= Math.abs(targetY - startY) ? nextCoord + offset[targetX > startX ? 1 : 3] : nextCoord + offset[targetY > startY ? 2 : 0]
+                        if (!pixel.is_water(nextCoord)) {
+                            if (pixel.can_take(nextCoord)) {
+                                if (0 === index || index + 20 < originDist) break;
+                                hasValidPath = !0;
+                                break a
+                            }
+                            break
+                        } hasValidPath = !1
+                    }
+                }
+            }
+            if (hasValidPath) return !0
+        }
+        return !1
+    }
+}
+
+function a2V() {
+    function draw_pie_chart() {
+        var B, C = 0,
+            E = 0,
+            F = Math.floor(x / 2),
+            G = Math.floor(t / 2),
+            N = 1.5 * Math.PI;
+        for (B = team_count; 0 <= B; B--) E += team_total_land[B], 0 === team_total_land[B] && C++;
+        n = !1;
+        y.clearRect(0, 0, x, x);
+        y.fillStyle = hy;
+        y.fillRect(0, 0, x, x);
+        y.fillStyle = oJ;
+        y.fillRect(0, 0, x, 2);
+        y.fillRect(0, 0, 2, x);
+        y.fillRect(x - 2, 0, 2, x);
+        y.fillRect(0, x - 2, x, 2);
+        if (0 < E)
+            if (C === team_count)
+                for (B = team_count; 0 <= B; B--) {
+                    if (0 < team_total_land[B]) {
+                        E = F;
+                        N = G;
+                        y.fillStyle = teams.wy[teams.im[B]];
+                        y.beginPath();
+                        y.arc(E, E, N, 0, 2 * Math.PI);
+                        y.fill();
+                        break
+                    }
+                } else {
+                    for (B = 0; B <= team_count; B++)
+                        if (0 < team_total_land[B]) {
+                            C = N + 2 * Math.PI * team_total_land[B] / E;
+                            var I = F,
+                                D = G,
+                                K = N,
+                                J = C;
+                            y.fillStyle = teams.wy[teams.im[B]];
+                            y.beginPath();
+                            y.arc(I, I, D, K, J);
+                            y.lineTo(I, I);
+                            y.fill();
+                            0 !== B && k(F, G, N);
+                            N = C
+                        } k(F, G, 1.5 * Math.PI)
+                }
+        y.beginPath();
+        y.arc(F, F, G, 0, 2 * Math.PI);
+        y.stroke()
+    }
+
+    function k(B, C, E) {
+        y.beginPath();
+        y.moveTo(B, B);
+        y.lineTo(B + Math.cos(E) * C, B + Math.cos(E + 1.5 * Math.PI) * C);
+        y.stroke()
+    }
+    var n = !1,
+        l = 0,
+        x = 0,
+        t = 0,
+        z = null,
+        y = null,
+        team_total_land = null;
+    this.init = function() {
+        if (team_game) {
+            l = 16;
+            team_total_land = new Uint32Array(team_count + 1);
+            for (var index = team_count; 0 < index; index--) team_total_land[index] = 1;
+            this.lx()
+        } else team_total_land = y = z = null
+    };
+    this.qT = function() {
+        return x
+    };
+    this.lx = function() {
+        team_game && (x = Math.floor(.18 * shorterWindowLength), x += x % 2, t = Math.floor(7 * x / 8), 
+        z = z ? z : document.createElement("canvas"), z.width = x, z.height = x, y = z.getContext("2d", { alpha: !0 }), y.lineWidth = 2, y.strokeStyle = cK, draw_pie_chart())
+    };
+    this.get_largest_team_total_land = function() {
+        return team_total_land[this.get_largest_team()]
+    };
+    this.ik = function() {
+        l = 31;
+        this.update();
+        return this.get_largest_team()
+    };
+    this.get_largest_team = function() {
+        for (var largest_team = 0, index = team_count; 0 < index; index--) team_total_land[index] > team_total_land[largest_team] && (largest_team = index);
+        return largest_team
+    };
+    this.update = function() {
+        if (team_game && 32 <= ++l) {
+            l = 0;
+            var index;
+            for (index = team_count; 0 <= index; index--) team_total_land[index] = 0;
+            for (index = alive_count - 1; 0 <= index; index--) team_total_land[teams.team_array[alive_entities[index]]] += land[alive_entities[index]];
+            n = !0
+        }
+    };
+    this.bv = function() {
+        team_game && n && draw_pie_chart()
+    };
+    this.drawImage = function() {
+        team_game && mainCanvasCtx.drawImage(z, m7, qU + 2 * m7)
+    }
+}
+
+function FakeRandom() {
+    var number, array;
+    this.init = function() {
+        array = Array(101);
+        for (var index = array.length - 1; 0 <= index; index--) array[index] = divide_floor(32768 * index, 100);
+        this.changeNumber(0)
+    };
+    this.value = function(index) {
+        return array[index]
+    };
+    this.getMiddleValue = function() {
+        return divide_floor(number - 1, 2)
+    };
+    this.changeNumber = function(param) {
+        number = 2 * param % 32768 + 1
+    };
+    this.random = function() {
+        return number = 167 * number % 32768
+    };
+    this.generateRandomValue = function (maxLimit) {
+        return divide_floor(maxLimit * this.random(), 32768)
+    };
+    this.generateBoolean = function(index) {
+        return 0 !== index && this.random() < this.value(index)
+    }
+}
+
+function kd() {
+    function g() {
+        (500 <= z || 5 < t) && k()
+    }
+
+    function k() {
+        t = 0;
+        z += 700 > z ? 200 : 0;
+        sprites.bx() && (l() || x) && (x = !1, p4(), uZ.init(), jh.init(), jk.lx(), vv.init(), ji.lx(), playtime.lx(), jf.lx(), cookies_window.lx(), cD.lx(), a5.init(), 1 <= client_status ? (eM.lx(!1), eO.lx(), eB.lx(), gj.lx(), troopsBar.lx(), announcements.lx(), fq.lx(), peace.lx(), eP.lx(), c2.lx(), hu.l3(), hv.lx(), eA.lx(), gameResultBox.lx(), eT.lx(), gj.rK()) : (0 === aJ.getState() ? jk.cE(0, !0) : 2 === aJ.getState() ? singleMenu.lx() : 3 === aJ.getState() && showError.lx(), aJ.vr(), aJ.vw()), c4.canvasPendingUpdates = !0)
+    }
+
+    function n(y) {
+        return y && 128 < y ? Math.floor(y) : 128
+    }
+
+    function l() {
+        if (5 <= device_version) {
+            var varClientWidth = n(document.documentElement.clientWidth);
+            var varClientHeight = n(document.documentElement.clientHeight);
+            device_pixel_ratio = 1;
+            if (varClientWidth !== clientWidth1 || varClientHeight !== clientHeight1) {
+                clientWidth1 = varClientWidth;
+                clientHeight1 = varClientHeight;
+                clientWidth2 = clientWidth1;
+                clientHeight2 = clientHeight1;
+                shorterWindowLength = min(clientWidth2, clientHeight2);
+                averageWindowLength = divide_floor(clientHeight2 + clientWidth2, 2);
+                if (5 <= device_version) {
+                    var B = droid.loadNumber(23);
+                    var C = droid.loadNumber(24);
+                    varClientWidth > B && (B = varClientWidth, droid.saveNumber(23, B));
+                    varClientHeight > C && (C = varClientHeight, droid.saveNumber(24, C))
+                } else B = varClientWidth, C = varClientHeight;
+                varClientWidth = mainCanvas.width;
+                varClientHeight = mainCanvas.height;
+                B > varClientWidth && (varClientWidth = B, mainCanvas.width = B);
+                C > varClientHeight && (varClientHeight = C, mainCanvas.height = C);
+                mainCanvas.style.width = varClientWidth + "px";
+                mainCanvas.style.height = varClientHeight + "px";
+                B = !0
+            } else B = !1;
+            return B
+        }
+        jt.highResolution ? (device_pixel_ratio = window.devicePixelRatio) || (device_pixel_ratio = 1) : device_pixel_ratio = 1;
+        B = n(document.documentElement.clientWidth);
+        C = n(document.documentElement.clientHeight);
+        varClientWidth = Math.floor(.5 + device_pixel_ratio * B);
+        varClientHeight = Math.floor(.5 + device_pixel_ratio * C);
+        if (varClientWidth === clientWidth1 && varClientHeight === clientHeight1) return !1;
+        clientWidth1 = clientWidth2 = varClientWidth;
+        clientHeight1 = clientHeight2 = varClientHeight;
+        shorterWindowLength = min(clientWidth2, clientHeight2);
+        averageWindowLength = divide_floor(clientHeight2 + clientWidth2, 2);
+        mainCanvas.width = varClientWidth;
+        mainCanvas.height = varClientHeight;
+        mainCanvas.style.width = B + "px";
+        mainCanvas.style.height = C + "px";
+        return !0
+    }
+    var x = !1,
+        t, z;
+    this.init = function() {
+        t = 1;
+        z = 100;
+        clientWidth2 = clientHeight2 = shorterWindowLength = clientWidth1 = clientHeight1 = averageWindowLength = 0;
+        device_pixel_ratio = 1;
+        mainCanvas = document.getElementById("canvasA");
+        mainCanvasCtx = mainCanvas.getContext("2d", {
+            alpha: !1
+        });
+        mainCanvasCtx.imageSmoothingEnabled = !1;
+        l();
+        window.addEventListener("resize", g)
+    };
+    this.update = function() {
+        ju.update();
+        ++t >= z && k()
+    };
+    this.xl = function() {
+        x = !0;
+        500 <= z && k()
+    }
+}
+
+function kX() {
+    function g(G) {
+        eK.removeEntry(n, F);
+        attacks.remove_attack(n, E);
+        G && (troops[n] += l)
+    }
+
+    function k() {
+        pixel.strong_is_boat(x, n) && pixel.revert_to_water(x)
+    }
+    var n, l, x, t, z, y, A, B, C, E, F;
+    this.update = function(G, N, I, D, K) {
+        C = G;
+        F = N;
+        n = I;
+        z = pixel.to_x(D);
+        y = pixel.to_y(D);
+        A = pixel.to_x(K);
+        B = pixel.to_y(K);
+        t = x = pixel.to_coord(z, y);
+        E = attacks.find_boat_index_from_boat_id(n, F); - 1 === E ? (k(), eK.removeEntry(n, F), G = !1) : (l = attacks.get_attack_troops_remaining_from_attack_index(n, E), G = !0);
+        if (G && (k(), G = divide_floor(l, 128), G = 1 > G ? 1 : G, l -= G, n === my_id && (statistics.numbers[15] += G), l <= neutral_land_cost ? (n === my_id && (statistics.numbers[15] += l), g(!1), G = !1) : (attacks.set_attack_troops_remaining_from_attack_index(n, E, l), G = !0), G))
+            if (G = pixel.to_coord(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.to_x(x), y = pixel.to_y(x),
+                eK.g0(C, x), G = pixel.can_take(x) ? !1 : !0, G) pixel.is_water(x) && pixel.change_to_boat(x, n);
+            else a: {
+                if (pixel.is_neutral(x)) G = max_entities;
+                else {
+                    G = pixel.owner(x);
+                    if (G === n) {
+                        g(!0);
+                        break a
+                    }
+                    if (!isTeamate(n, G)) {
+                        N = land[G] * max_troops_to_land_ratio - troops[G];
+                        0 >= N || (N = l > N ? N : l, l -= N, n === my_id && (announcements.donate(N, G), statistics.numbers[16] += N), G === my_id && (announcements.receive_donate(N, n), statistics.numbers[10] += N), troops[G] += N);
+                        g(!0);
+                        break a
+                    }
+                }
+                n === my_id && (statistics.numbers[13] += l);
+                eK.removeEntry(n, F);
+                attacks.remove_attack(n, E);
+                editing_border_pixels[n].push(t);
+                attacks.set(n, l, G);
+                speed.cR(n, !0)
+            }
+    };
+    this.g4 = function(G, N) {
+        n = G;
+        x = pixel.to_coord(pixel.to_x(N), pixel.to_y(N));
+        k()
+    }
+}
+
+function kY() {
+    var g, k, n, l;
+    this.init = function() {
+        var x, t, z;
+        n = !0;
+        l = "rgb(" + xI[0] + "," + xI[1] + "," + xI[2] + ")";
+        var y = surroundedByWater(current_map) ? !0 : n = !1;
+        if (y) k = null;
+        else {
+            g = divide_floor(96, 4);
+            if (1 === current_map) {
+                var A = 0;
+                var B = 160
+            } else A = 128, B = 32;
+            l = "rgb(" + A + "," + A + "," + A + ")";
+            k = Array(4);
+            for (y = 3; 0 <= y; y--) {
+                k[y] = document.createElement("canvas");
+                var C = 0 === y % 2 ? map_width : g;
+                var E = 0 === y % 2 ? g : map_height + 2 * g;
+                k[y].width = C;
+                k[y].height = E;
+                var F = k[y].getContext("2d", {
+                    alpha: !1
+                });
+                var G = F.getImageData(0, 0, C, E);
+                var N = G.data;
+                if (0 === y % 2)
+                    for (t = g - 1; 0 <= t; t--) {
+                        var I = B + Math.floor((t + 1) * (A - B) /
+                            (g + 1));
+                        for (x = C - 1; 0 <= x; x--) {
+                            var D = 4 * ((0 === y ? g - t - 1 : t) * C + x);
+                            N[D] = I;
+                            N[D + 1] = I;
+                            N[D + 2] = I;
+                            N[D + 3] = 255
+                        }
+                    } else {
+                        for (x = g - 1; 0 <= x; x--)
+                            for (I = B + Math.floor((x + 1) * (A - B) / (g + 1)), t = E - 1 - g; t >= g; t--) D = 4 * (t * C + (3 === y ? g - x - 1 : x)), N[D] = I, N[D + 1] = I, N[D + 2] = I, N[D + 3] = 255;
+                        for (z = 1; 0 <= z; z--)
+                            for (x = g - 1; 0 <= x; x--)
+                                for (t = g - 1; 0 <= t; t--) I = (Math.pow(x * x + t * t, .5) + 1) / (g + 1), I = 1 < I ? 1 : I, I = B + Math.floor(I * (A - B)), D = 4 * ((0 === z ? g - t - 1 : t + z * (E - g)) * C + (1 === y ? x : g - x - 1)), N[D] = I, N[D + 1] = I, N[D + 2] = I, N[D + 3] = 255
+                    }
+                F.putImageData(G, 0, 0)
+            }
+            pl.fillStyle = "rgb(" + B + "," + B + "," + B + ")";
+            pl.fillRect(0, 0, map_width, 1);
+            pl.fillRect(0, map_height - 1, map_width, 1);
+            pl.fillRect(0, 0, 1, map_height);
+            pl.fillRect(map_width - 1, 0, 1, map_height)
+        }
+    };
+    this.hr = function() {
+        var x = n ? 0 : -g;
+        a4M(x, x, map_width - 2 * x, map_height - 2 * x, gy.a5H, gy.a5I, gy.a5J, gy.a5K) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, clientWidth1, clientHeight1))
+    };
+    this.drawImage = function() {
+        n || (a4L(0, -g, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[0], gy.a5L, gy.a5M - g), a4L(map_width, -g, g, map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[1], gy.a5L + map_width, gy.a5M - g), a4L(0, map_height, map_width, g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[2], gy.a5L, gy.a5M + map_height), a4L(-g, -g, g,
+            map_height + 2 * g, gy.a5H, gy.a5I, gy.a5J, gy.a5K) && mainCanvasCtx.drawImage(k[3], gy.a5L - g, gy.a5M - g))
+    }
+}
+
+function Terri_ws() {
+    function pass() {}
+
+    function ws_onopen() {
+        websocket_manager.a1y(remote, y)
+    }
+
+    function ws_onmessage(F) {
+        unread_messages++;
+        1 === unread_messages ? data_reader.readAsArrayBuffer(F.data) : B.push(F.data)
+    }
+
+    function onread() {
+        unread_messages--;
+        multiIn.extract_data(remote, new Uint8Array(data_reader.result));
+        0 < unread_messages && (data_reader.readAsArrayBuffer(B[0]), B.shift())
+    }
+
+    function ws_onerror() {}
+
+    function ws_onclose(F) {
+        websocket_manager.normalClosed(remote, F)
+    }
+    var remote, y, unread_messages, B, data_reader, ws, ws_url;//ws_url added here
+    this.init = function(remote_param, G) {
+        remote = remote_param;
+        y = G;
+        unread_messages = 0;
+        B = [];
+        data_reader = new FileReader;
+        data_reader.addEventListener("loadend", onread);
+        /*var */ws_url = ws_strings[0];
+        ws_url = remote < websocket_manager.originCount ? ws_url + (websocket_manager.origins[remote] + ws_strings[1 + const_2_s52]) : 
+            ws_url + (websocket_manager.origins[0] + "/i" + (1 + const_2_s52) + (remote - websocket_manager.lobbyCount) + "/");
+        ws = new WebSocket(ws_url);
+        this.url = ws_url //temp
+        ws.onopen = ws_onopen;
+        ws.onmessage = ws_onmessage;
+        ws.onclose = ws_onclose;
+        ws.onerror = ws_onerror
+    };
+    this.is_connecting = function() {
+        return ws.readyState === ws.CONNECTING
+    };
+    this.is_open = function() {
+        return ws.readyState === ws.OPEN
+    };
+    this.not_closed = function() {
+        return this.is_connecting() || this.is_open()
+    };
+    this.a1v = function(F) {
+        y = F
+    };
+    this.send = function(F) {
+        this.is_open() && ws.send(F)
+    };
+    this.close = function(F) {
+        this.not_closed() && (ws.close(F), this.end())
+    };
+    this.end = function() {
+        ws.onopen = pass;
+        ws.onmessage = pass;
+        ws.onclose = pass;
+        ws.onerror = pass;
+        data_reader.removeEventListener("loadend", onread)
+    }
+}
+
+function Statistics() {
+    this.cV = 501;
+    this.a5X = new Uint32Array(this.cV);
+    this.s8 = new Uint32Array(this.cV);
+    this.tV = new Uint16Array(this.cV);
+    this.m6 = 0;
+    this.tickInterval = 1;
+    this.dV = 0;
+    this.max = [0, 0, 0];
+    this.numbers = 0;
+    this.description = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
+    this.init = function() {
+        this.m6 = 0;
+        this.tickInterval = 1;
+        this.dV = 0;
+        this.a5a();
+        this.a5b()
+    };
+    this.update = function() {
+        0 < this.dV-- || this.a5c()
+    };
+    this.a5c = function() {
+        0 !== is_alive[my_id] && (this.a5X[this.m6] = land[my_id], this.s8[this.m6] = troops[my_id], this.tV[this.m6] = interest.interestRate(my_id), this.a5d(this.m6), this.m6++, this.m6 === this.cV && this.a5e(), this.dV = this.tickInterval - 1, hv.bv())
+    };
+    this.a5e = function() {
+        this.a5a();
+        this.a5d(0);
+        this.m6 = 1 + divide_floor(this.cV, 2);
+        for (var g = 1; g < this.m6; g++) this.a5X[g] = this.a5X[2 * g], this.s8[g] = this.s8[2 * g], this.tV[g] = this.tV[2 * g], this.a5d(g);
+        this.tickInterval *= 2
+    };
+    this.a5a = function() {
+        this.max[0] = this.max[1] = this.max[2] = 0
+    };
+    this.a5b = function() {
+        this.numbers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    };
+    this.a5d = function(g) {
+        this.max[0] = this.a5X[g] > this.max[0] ? this.a5X[g] : this.max[0];
+        this.max[1] = this.s8[g] > this.max[1] ? this.s8[g] : this.max[1];
+        this.max[2] = this.tV[g] > this.max[2] ? this.tV[g] : this.max[2]
+    }
+}
+
+function a2S() {
+    this.bs = this.qK = this.a5g = this.a5f = this.xU = this.nS = this.nR = this.ue = this.ud = this.i5 = this.i4 = this.cw = this.width = 0;
+    this.lt = ["Territory", "Balance", "Interest", "Numbers"];
+    this.hidden = !1;
+    this.a5h = -1;
+    this.a5i = !1;
+    this.mouseCoords = [0, 0];
+    this.init = function() {
+        this.hidden = !1;
+        this.a5h = -1;
+        this.a5i = !1;
+        this.lx()
+    };
+    this.lx = function() {
+        this.width = clientWidth2 < 1.618 * clientHeight2 ? clientWidth2 : 1.618 * clientHeight2;
+        this.width = Math.floor((zoom && clientWidth2 < clientHeight2 ? 1 : zoom ? .8 : clientWidth2 < clientHeight2 ? .65 : .5) * this.width);
+        this.qK = Math.floor(1 + .006 * this.width);
+        this.width -= zoom && clientWidth2 < clientHeight2 ? 2 * m7 + this.qK : 0;
+        this.cw = Math.floor(this.width / 1.618);
+        this.i4 = Math.floor(1 + .02 *
+            this.width);
+        this.nR = this.i5 = Math.floor(1 + .04 * this.width);
+        this.nS = Math.floor(1 + .075 * this.width);
+        this.a5f = Math.floor(this.width * (zoom ? .028 : .02));
+        this.a5f = 6 > this.a5f ? 6 : this.a5f;
+        this.a5g = Math.floor(.028 * this.width);
+        this.a5g = 6 > this.a5g ? 6 : this.a5g;
+        this.xU = this.cw - 2 * this.nR - this.nS;
+        this.hidden && this.a5j()
+    };
+    this.clicked = function(g, k) {
+        if (!this.hidden) return !1;
+        var n = g,
+            l = k;
+        g -= divide_floor(clientWidth1 - this.width, 2);
+        k -= divide_floor(clientHeight1 - this.cw, 2);
+        if (0 > g || 0 > k || g >= this.width || k >= this.cw) {
+            if (1 < fq.clicked(n, l)) return !0;
+            this.end();
+            return !0
+        }
+        if (k < this.cw - this.nS) return this.a5i = !0, this.a5h = (g - 2 * this.i4 - this.ud) / this.ue, !0;
+        n = Math.floor(g / (this.width / this.lt.length));
+        n = 0 > n ? 0 : n >= this.lt.length ? this.lt.length - 1 : n;
+        n !== this.bs && (this.bs = n, this.a5j(), c4.canvasPendingUpdates = !0);
+        return !0
+    };
+    this.printCoords = function() {
+        var x_coord = Math.floor((this.mouseCoords[0] + gC) / g7),
+            y_coord = Math.floor((this.mouseCoords[1] + gD) / g7);
+        1 > x_coord || 1 > y_coord || x_coord > map_width - 1 || y_coord > map_height - 1 || console.log(x_coord + " " + y_coord)
+    };
+    this.lo = function (xCoord, yCoord) {
+        this.mouseCoords[0] = xCoord;
+        this.mouseCoords[0] = yCoord;
+        if (this.hidden && this.a5i) {
+            xCoord -= divide_floor(clientWidth1 - this.width, 2);
+            var yCoord = this.a5h;
+            this.a5h = (xCoord - 2 * this.i4 - this.ud) / this.ue;
+            if (0 <= this.a5h && 1 >= this.a5h || 0 <= yCoord && 1 >= yCoord) c4.canvasPendingUpdates = !0;
+            return !0
+        }
+        return !1
+    };
+    this.pX = function() {
+        this.a5i && (this.a5i = !1)
+    };
+    this.alterDisplay = function() {
+        this.hidden ? this.end() : this.show()
+    };
+    this.show = function() {
+        2 > statistics.m6 || (this.hidden = !0, this.a5j())
+    };
+    this.end = function() {
+        this.hidden = !1;
+        this.a5h = -1
+    };
+    this.a5j = function() {
+        2 > this.bs ? this.ud = c2.measureText(eP.split_into_pieces(statistics.max[this.bs]), bt + this.a5f + bu) : 2 === this.bs && (this.ud = c2.measureText(eB.nI(6, 2), bt + this.a5f + bu));
+        this.ue = this.width - 2 * this.i4 - this.ud - this.i5
+    };
+    this.bv = function() {
+        this.hidden && this.a5j()
+    };
+    this.drawImage = function() {
+        this.hidden && this.nY()
+    };
+    this.nY = function() {
+        var g = divide_floor(clientWidth1 - this.width, 2),
+            k = divide_floor(clientHeight1 - this.cw, 2);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.cw);
+        this.a5k();
+        mainCanvasCtx.strokeRect(0, 0, this.width, this.cw);
+        mainCanvasCtx.textAlign = ol;
+        mainCanvasCtx.font = bt + this.a5f + bu;
+        0 === this.bs ? this.a5l(statistics.a5X, g, k) : 1 === this.bs ? this.a5l(statistics.s8, g, k) : 2 === this.bs ? this.a5m(g, k) : 3 === this.bs && (this.a5n(g, k), this.a5o(g, k));
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    };
+    this.a5k = function() {
+        mainCanvasCtx.lineWidth = this.qK;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.font = bt + this.a5g + bu;
+        var g = this.width / this.lt.length;
+        mainCanvasCtx.fillStyle = oP;
+        mainCanvasCtx.fillRect(this.bs * g, this.cw - this.nS, g, this.nS);
+        mainCanvasCtx.fillStyle = cK;
+        for (var k = this.lt.length - 1; 0 <= k; k--) mainCanvasCtx.strokeRect(k * g, this.cw - this.nS, g,
+            this.nS), mainCanvasCtx.fillText(this.lt[k], (k + .5) * g, this.cw - .46 * this.nS)
+    };
+    this.a5l = function(g, k, n) {
+        var l = statistics.max[this.bs];
+        mainCanvasCtx.setTransform(1, 0, 0, 1, k + 2 * this.i4 + this.ud, n + this.nR);
+        mainCanvasCtx.lineWidth = 2;
+        k = this.xU / Math.sqrt(l);
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(this.ue, this.xU - k * Math.sqrt(g[statistics.m6 - 1]));
+        for (n = statistics.m6 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.ue / (statistics.m6 - 1), this.xU - k * Math.sqrt(g[n]));
+        mainCanvasCtx.stroke();
+        g = this.drawShape(g, k, .5);
+        .95 > g && mainCanvasCtx.fillText(eP.split_into_pieces(l), -this.i4, 0);
+        .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(eP.split_into_pieces(Math.floor(l / 4)), -this.i4, Math.floor(this.xU /2));
+        .05 < g && mainCanvasCtx.fillText("0", -this.i4, this.xU)
+    };
+    this.a5m = function(g, k) {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + 2 * this.i4 + this.ud, k + this.nR);
+        mainCanvasCtx.lineWidth = 2;
+        var n = this.xU / statistics.max[this.bs];
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(this.ue, this.xU - n * statistics.tV[statistics.m6 - 1]);
+        for (var l = statistics.m6 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.ue / (statistics.m6 - 1), this.xU - n * statistics.tV[l]);
+        mainCanvasCtx.stroke();
+        n = this.drawShape(statistics.tV, n, 1);
+        l = statistics.max[this.bs] / 100;
+        .95 > n && mainCanvasCtx.fillText(eB.nI(l, 2), -this.i4, 0);
+        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nI(l / 2, 2), -this.i4, Math.floor(this.xU / 2));
+        .05 < n && mainCanvasCtx.fillText(eB.nI(0,
+            2), -this.i4, this.xU)
+    };
+    this.a5n = function(g, k) {
+        var n;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .34 * this.width, k + 2 * this.nR);
+        mainCanvasCtx.textAlign = ol;
+        var l = this.cw - 4 * this.nR - this.nS;
+        for (n = 7; 0 <= n; n--) mainCanvasCtx.fillText(statistics.description[n], 0, n * l / 7);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .39 * this.width, k + 2 * this.nR);
+        mainCanvasCtx.textAlign = mj;
+        n = statistics.numbers[1];
+        mainCanvasCtx.fillText(eB.nI(statistics.numbers[0] / (10 * (1 > n ? 1 : n)), 1), 0, 0);
+        for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statistics.numbers[n].toString(), 0, n * l / 7);
+        mainCanvasCtx.fillText(eB.nI(100 * (1 - land[my_id] / statistics.numbers[7]), 0), 0, l)
+    };
+    this.a5o = function(g, k) {
+        var n;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .74 * this.width,
+            k + 2 * this.nR);
+        mainCanvasCtx.textAlign = ol;
+        var l = this.cw - 4 * this.nR - this.nS;
+        mainCanvasCtx.fillStyle = oL;
+        for (n = 2; 0 <= n; n--) mainCanvasCtx.fillText(statistics.description[n + 8], 0, n * l / 9);
+        mainCanvasCtx.fillStyle = oK;
+        mainCanvasCtx.fillText(statistics.description[11], 0, 3 * l / 9);
+        mainCanvasCtx.fillStyle = ob;
+        for (n = 8; 4 <= n; n--) mainCanvasCtx.fillText(statistics.description[n + 8], 0, n * l / 9);
+        mainCanvasCtx.fillStyle = oa;
+        mainCanvasCtx.fillText(statistics.description[17], 0, 9 * l / 9);
+        mainCanvasCtx.fillStyle = oL;
+        n = eP.split_into_pieces(statistics.numbers[8] + statistics.numbers[9] + statistics.numbers[10] + statistics.numbers[11]);
+        var x = mainCanvasCtx.measureText(n).width;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .79 * this.width + x, k + 2 * this.nR);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[8]), 0, 0);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[9]), 0, 1 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[10]), 0, 2 * l / 9);
+        mainCanvasCtx.fillStyle = oK;
+        mainCanvasCtx.fillText(n, 0, 3 * l / 9);
+        mainCanvasCtx.fillStyle = ob;
+        n = statistics.numbers[13] - attacks.total_troops_currently_attacking(my_id);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[12]), 0, 4 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(n), 0, 5 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[14]), 0, 6 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[15]), 0, 7 * l / 9);
+        mainCanvasCtx.fillText(eP.split_into_pieces(statistics.numbers[16]), 0, 8 * l / 9);
+        n = statistics.numbers[12] + n + statistics.numbers[14] + statistics.numbers[15] + statistics.numbers[16] + statistics.numbers[17];
+        mainCanvasCtx.fillStyle = oa;
+        mainCanvasCtx.fillText(eP.split_into_pieces(n), 0, l);
+        mainCanvasCtx.fillStyle = cK
+    };
+    this.drawShape = function (g, k, n) {
+        if (0 > this.a5h || 1 < this.a5h) return .25;
+        var l = this.a5h * (statistics.m6 - 1),
+            x = Math.floor(l),
+            t = g[x];
+        t += (l - x) * (g[x < statistics.m6 - 1 ? x + 1 : x] - t);
+        mainCanvasCtx.strokeStyle = of ;
+        .04 < this.a5h && this.a5u(0, this.xU - k * Math.pow(t, n), l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n));
+        .04 < t / statistics.max[this.bs] && this.a5u(l * this.ue / (statistics.m6 - 1), this.xU, l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n));
+        mainCanvasCtx.fillStyle = oW;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(l * this.ue / (statistics.m6 - 1), this.xU - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
+        mainCanvasCtx.fill();
+        g = this.a5h * c4.getTickInterval();
+        g = 0 === is_alive[my_id] ? Math.floor(g * gameResultBox.td) : Math.floor(g * c4.ticksElapsed());
+        mainCanvasCtx.fillStyle = cK;
+        mainCanvasCtx.fillText(1 === n ? eB.nI(t / 100, 2) : eP.split_into_pieces(Math.floor(t)),
+            -this.i4, this.xU - k * Math.pow(t, n));
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.fillText(eB.getInterestTicksRemaining(g), l * this.ue / (statistics.m6 - 1), this.xU + this.a5f - (zoom ? 2 : 0));
+        mainCanvasCtx.textAlign = ol;
+        return k * Math.pow(t, n) / this.xU
+    };
+    this.a5u = function(g, k, n, l) {
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(g, k);
+        mainCanvasCtx.lineTo(n, l);
+        mainCanvasCtx.stroke()
+    }
+}
+
+function Teams() {
+    this.wy = "rgba(130,130,130,0.88) rgba(130,12,12,0.88) rgba(12,130,12,0.88) rgba(12,12,130,0.88) rgba(130,130,12,0.88) rgba(130,12,130,0.88) rgba(12,130,130,0.88) rgba(130,130,130,0.88) rgba(0,0,0,0.88)".split(" ");
+    this.su = [cK, "rgb(255,120,120)", "rgb(0,230,0)", "rgb(150,150,255)", "rgb(240,240,25)", "rgb(240,25,240)", "rgb(25,240,240)", cK, "rgb(170,170,170)"];
+    this.a5v = [cK, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", cK, gH];
+    this.a5w = [gH, cK,
+        cK, cK, gH, gH, gH, gH, cK
+    ];
+    this.a19 = ["rgba(255,255,255,", "rgba(0,0,0,", "rgba(170,170,170,", "rgba(85,85,85,"];
+    this.a1A = ["rgb(255,255,255)", "rgb(0,0,0)", "rgb(170,170,170)", "rgb(85,85,85)"];
+    this.label_team_color = "White Red Green Blue Yellow Magenta Cyan White Black".split(" ");
+    this.tl = [
+        [255, 255, 255, 180],
+        [255, 0, 0, 180],
+        [0, 255, 0, 180],
+        [50, 50, 255, 180],
+        [255, 255, 0, 180],
+        [255, 0, 255, 180],
+        [0, 255, 255, 180],
+        [255, 255, 255, 180],
+        [0, 0, 0, 180]
+    ];
+    var g = [
+        [255, 255, 255],
+        [255, 0, 0],
+        [0, 255, 0],
+        [0, 0, 255],
+        [255, 255, 0],
+        [255, 0, 255],
+        [0, 255, 255],
+        [255, 255, 255],
+        [0, 0, 0]
+    ];
+    this.im = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    var k, n;
+    this.init = function(l) {
+        this.team_array = new Uint8Array(max_entities);
+        this.a62();
+        team_game && (customMap.ds && customMap.dt.zw ? this.yb() : 9 === gamemode ? this.a63() : this.update(l))
+    };
+    this.yb = function() {
+        var l, x = entity_count;
+        this.im = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        for (l = 0; l < x; l++) this.team_array[l] = customMap.dt.zw[l]
+    };
+    this.a62 = function() {
+        for (var l = this.im.length - 1; 0 <= l; l--) this.im[l] = l;
+        k = [];
+        n = []
+    };
+    this.a63 = function() {
+        var l;
+        for (l = player_count + e2.e3 - 1; 0 <= l; l--) this.team_array[l] = 1;
+        for (l = player_count + e2.e3; l < max_entities; l++) this.team_array[l] = 2;
+        this.im[1] = 7;
+        this.im[2] = 8
+    };
+    this.update = function(l) {
+        var x = new Uint8Array(player_count),
+            t = new Uint8Array(player_count),
+            z = new Uint16Array(8),
+            y = new Uint16Array(this.im.length);
+        this.a67(l, x, t, z);
+        this.yZ(z);
+        singleplayer || this.a68(y, x, t);
+        this.a69(x, t, y);
+        singleplayer ? this.a6A() : this.a6B()
+    };
+    this.a67 = function(l, x, t, z) {
+        var y, A, B = this.im.length - 1,
+            C = new Uint16Array(B);
+        for (y = player_count - 1; 0 <= y; y--) {
+            for (A = B; 1 <= A; A--) C[A - 1] = Math.abs(4 * l[y].color[0] - g[A][0]) + Math.abs(4 * l[y].color[1] - g[A][1]) + Math.abs(4 * l[y].color[2] - g[A][2]);
+            var E = 768;
+            for (A = B - 1; 0 <= A; A--) {
+                var F = (A + y) % B;
+                C[F] < E && (E = C[F], x[y] = F)
+            }
+            z[x[y]] += 4;
+            E = 768;
+            for (A = B - 1; 0 <= A; A--) F =
+                (A + y) % B, C[F] < E && F !== x[y] && (E = C[F], t[y] = F);
+            z[t[y]]++
+        }
+    };
+    this.yZ = function(l) {
+        var x, t, z = this.im.length - 1;
+        for (x = z; 0 <= x; x--) this.im[x] = x;
+        for (x = z - 1; 0 <= x; x--) l[x]++;
+        for (x = 1; x <= z; x++) {
+            var y = 0;
+            for (t = 1; t < z; t++) l[t] > l[y] && (y = t);
+            l[y] = 0;
+            this.im[x] = y + 1
+        }
+    };
+    this.a68 = function(l, x, t) {
+        var z = this.im.length - 1,
+            y = new Uint16Array(z),
+            A = [];
+        var B = player_count - 1;
+        a: for (; 0 <= B; B--) {
+            var C = B;
+            var E = temp_nickname[C].indexOf("[");
+            if (0 > E) E = null;
+            else {
+                var F = temp_nickname[C].indexOf("]");
+                E = 1 < F - E && 8 >= F - E ? temp_nickname[C].substring(E + 1, F).toUpperCase().trim() : null
+            }
+            if (null !== E) {
+                for (F = k.length - 1; 0 <= F; F--)
+                    if (E === k[F]) {
+                        n[F].push(B);
+                        continue a
+                    } k.push(E);
+                A.push(!1);
+                n.push([]);
+                n[k.length - 1].push(B)
+            }
+        }
+        for (F = k.length - 1; 0 <= F; F--) {
+            C = -1;
+            for (E = k.length - 1; 0 <= E; E--) !A[E] && (-1 === C || n[E].length > n[C].length) && (C = E);
+            for (E = z - 1; 0 <= E; E--) y[E] = 1;
+            for (E = n[C].length - 1; 0 <= E; E--) y[x[n[C][E]]] += 3, y[t[n[C][E]]]++;
+            for (B = z - 1; 0 <= B; B--) {
+                var G = C % z;
+                for (E = z - 1; 0 <= E; E--) y[E] > y[G] && (G = E);
+                var N = -1;
+                for (E = team_count; 0 < E; E--)
+                    if (this.im[E] === G + 1) {
+                        N = E;
+                        break
+                    } y[G] = 0;
+                if (-1 !== N) {
+                    G = 0;
+                    for (E = team_count; 0 < E; E--) l[N] > l[E] && G++;
+                    if (G !== team_count - 1) {
+                        for (E = n[C].length - 1; 0 <= E; E--) l[N]++, this.team_array[n[C][E]] = N;
+                        break
+                    }
+                }
+            }
+            A[C] = !0
+        }
+    };
+    this.a69 = function(l, x, t) {
+        var z;
+        var y = this.im.length - 1;
+        var A = divide_floor(player_count, team_count);
+        0 < player_count % team_count && A++;
+        var B = new Uint8Array(y + 1);
+        for (z = y; 1 <= z; z--) B[this.im[z]] = z;
+        for (y = 0; y < player_count; y++) z = B[l[y] + 1], 0 === this.team_array[y] && z <= team_count && t[z] < A && (t[z]++, this.team_array[y] = z);
+        for (y = 0; y < player_count; y++) z = B[x[y] + 1], 0 === this.team_array[y] && z <= team_count && t[z] < A && (t[z]++, this.team_array[y] = z);
+        for (z = team_count; 1 <= z; z--)
+            for (y = player_count - 1; 0 <= y && !(t[z] >= A); y--) 0 === this.team_array[y] && (t[z]++, this.team_array[y] = z)
+    };
+    this.a6A = function() {
+        var l, x = new Uint16Array(team_count);
+        x[team_count - 1] = max_entities;
+        for (l = team_count - 2; 0 <= l; l--) x[l] = singleMenu.botSettings[l].group;
+        x[0]--;
+        var t = 0 === x[0] ? 1 : 0;
+        for (l = player_count; l < max_entities; l++) this.team_array[l] = t + 1, x[t]--, 0 >= x[t] && t++
+    };
+    this.a6B = function() {
+        for (var l = player_count; l < max_entities; l++) this.team_array[l] = 1 + l % team_count
+    };
+    this.il = function(l) {
+        if (singleplayer) return [512, ""];
+        var x, t, z = -1,
+            y = -1;
+        for (t = k.length - 1; 0 <= t; t--)
+            for (x = n[t].length - 1; 0 <= x && this.im[this.team_array[n[t][x]]] === l; x--)
+                if (-1 === z || sM[n[t][x]] < sM[z]) z = n[t][x], y = t;
+        return -1 === z || 0 === is_alive[z] ? [512, ""] : [z, k[y]]
+    }
+}
+
+function update_author_xy_minmax() {
+    for (var x_coord, y_coord, index = prev_border_length - 1; 0 <= index; index--) x_coord = divide_floor(prev_border_land[index], 4) % map_width, y_coord = divide_floor(prev_border_land[index], 4 * map_width), 
+        x_min[prev_author] = x_min[prev_author] > x_coord ? x_coord : x_min[prev_author], y_min[prev_author] = y_min[prev_author] > y_coord ? y_coord : y_min[prev_author], x_max[prev_author] = x_max[prev_author] < x_coord ? x_coord : x_max[prev_author], y_max[prev_author] = y_max[prev_author] < y_coord ? y_coord : y_max[prev_author]
+}
+
+function update_editing_border_pixels() {
+    var editing_border_length = editing_border_pixels[prev_author].length, side;
+    var index = editing_border_length - 1;
+    a: for (; 0 <= index; index--) {
+        for (side = 3; 0 <= side; side--) {
+            var coord = editing_border_pixels[prev_author][index] + offset[side];
+            if (pixel.is_neutral(coord) || pixel.controlled_by_entity(coord) && pixel.owner(coord) !== prev_author) {
+                pixel.change_to_moving_border(editing_border_pixels[prev_author][index], prev_author);
+                continue a
+            }
+        }
+        editing_border_pixels[prev_author][index] = editing_border_pixels[prev_author][editing_border_length - 1];
+        editing_border_pixels[prev_author].pop();
+        editing_border_length--
+    }
+}
+
+function update_pixels_bordering_terrain() {
+    var land_border_length = pixels_bordering_land[prev_author].length,
+        side, is_mountain, editing_border_length = land_border_length - 1;
+    a: for (; 0 <= editing_border_length; editing_border_length--) {
+        var is_water = is_mountain = !1;
+        for (side = 3; 0 <= side; side--) {
+            var coord = pixels_bordering_land[prev_author][editing_border_length] + offset[side];
+            if (pixel.can_take(coord, prev_author)) continue a;
+            is_water = is_water || pixel.is_water(coord);
+            is_mountain = is_mountain || pixel.is_mountain(coord)
+        }
+        is_water ? pixels_bordering_water[prev_author].push(pixels_bordering_land[prev_author][editing_border_length]) : 
+            is_mountain ? pixels_bordering_mountain[prev_author].push(pixels_bordering_land[prev_author][editing_border_length]) : 
+            pixel.change_to_inner(pixels_bordering_land[prev_author][editing_border_length], prev_author);
+        pixels_bordering_land[prev_author][editing_border_length] = pixels_bordering_land[prev_author][land_border_length - 1];
+        pixels_bordering_land[prev_author].pop();
+        land_border_length--
+    }
+}
+
+function deduct_target_land() {
+    land[prev_target] -= prev_border_length
+}
+
+function remove_pixels_bordering_terrain_for_target(pixels_bordering_terrain) {
+    for (var border_length = pixels_bordering_terrain.length, index = border_length - 1; 0 <= index; index--) pixel.strong_is_owner(prev_target, pixels_bordering_terrain[index]) || (pixels_bordering_terrain[index] = pixels_bordering_terrain[border_length - 1], pixels_bordering_terrain.pop(), border_length--)
+}
+
+function remove_taken_pixels_in_editing_border_pixels(editing_pixels_border) {
+    for (var border_length = editing_pixels_border.length, index = border_length - 1; 0 <= index; index--) !pixel.strong_is_owner(prev_target, editing_pixels_border[index]) && pixel.can_take(editing_pixels_border[index]) && (editing_pixels_border[index] = editing_pixels_border[border_length - 1], editing_pixels_border.pop(), border_length--)
+}
+
+function construct_new_border_terrain(pixels_bordering_terrain) {
+    for (var border_length = pixels_bordering_terrain.length, side, coord, index = border_length - 1; 0 <= index; index--)
+        for (side = 3; 0 <= side; side--)
+            if (coord = pixels_bordering_terrain[index] + offset[side], pixel.can_take(coord, prev_target)) {
+                pixels_bordering_land[prev_target].push(pixels_bordering_terrain[index]);
+                pixels_bordering_terrain[index] = pixels_bordering_terrain[border_length - 1];
+                pixels_bordering_terrain.pop();
+                border_length--;
+                break
+            }
+}
+
+function convert_prev_inner_to_border() {
+    for (var side, coord, index = prev_border_length - 1; 0 <= index; index--)
+        for (side = 3; 0 <= side; side--) coord = prev_border_land[index] + offset[side], pixel.is_owner(prev_target, coord) && pixel.is_inner(coord) && (pixels_bordering_land[prev_target].push(coord), pixel.change_to_border(coord, prev_target))
+}
+
+function update_target_xy_minmax() {
+    var index;
+    a: for (; y_min[prev_target] < y_max[prev_target];) {
+        for (index = x_max[prev_target]; index >= x_min[prev_target]; index--)
+            if (pixel.strong_is_owner(prev_target, 4 * (y_min[prev_target] * map_width + index))) break a;
+        y_min[prev_target]++
+    }
+    a: for (; y_min[prev_target] < y_max[prev_target];) {
+        for (index = x_max[prev_target]; index >= x_min[prev_target]; index--)
+            if (pixel.strong_is_owner(prev_target, 4 * (y_max[prev_target] * map_width + index))) break a;
+        y_max[prev_target]--
+    }
+    a: for (; x_min[prev_target] < x_max[prev_target];) {
+        for (index = y_max[prev_target]; index >= y_min[prev_target]; index--)
+            if (pixel.strong_is_owner(prev_target, 4 * (index * map_width + x_min[prev_target]))) break a;
+        x_min[prev_target]++
+    }
+    a: for (; x_min[prev_target] < x_max[prev_target];) {
+        for (index = y_max[prev_target]; index >= y_min[prev_target]; index--)
+            if (pixel.strong_is_owner(prev_target, 4 * (index * map_width + x_max[prev_target]))) break a;
+        x_max[prev_target]--
+    }
+}
+
+function isTeamate(player1, player2) {
+    return 0 === teams.team_array[player1] || teams.team_array[player1] !== teams.team_array[player2]
+}
+
+function bordersTarget(id, target) {
+    var index, attackCount = attacks.getCurrentAttackCount(id);
+    for (index = 0; index < attackCount; index++)
+        if (0 === attacks.get_boat_id_from_attack_index(id, index)) {
+            var attackTarget = attacks.get_attack_target_from_attack_index(id, index);
+            if (attackTarget === max_entities) {
+                if (target === max_entities) break;
+                if (bordersNeutral(target)) return !0
+            } else if (target === max_entities) {
+                if (bordersNeutral(attackTarget)) return !0
+            } else if (bordersEntity(target, attackTarget)) return !0
+        } return !1
+}
+
+function bordersNeutral(id) {
+    var side, index, l = pixels_bordering_land[id].length;
+    for (side = 3; 0 <= side; side--) {
+        var mcDir = offset[side];
+        for (index = 0; index < l; index++)
+            if (pixel.is_neutral(pixels_bordering_land[id][index] + mcDir)) return !0
+    }
+    return !1
+}
+
+function bordersEntity(id1, id2) {
+    var side;
+    var border1Length = pixels_bordering_land[id1].length;
+    var border2LengthThenIndex = pixels_bordering_land[id2].length;
+    border2LengthThenIndex < border1Length && (border1Length = id1, id1 = id2, id2 = border1Length, border1Length = border2LengthThenIndex);
+    for (side = 3; 0 <= side; side--) {
+        var mcDir = offset[side];
+        for (border2LengthThenIndex = 0; border2LengthThenIndex < border1Length; border2LengthThenIndex++) {
+            var coord = pixels_bordering_land[id1][border2LengthThenIndex] + mcDir;
+            if (pixel.controlled_by_entity(coord) && pixel.owner(coord) === id2) return !0
+        }
+    }
+    return !1
+}
+
+function a2T() {
+    function animate() {
+        c4.time = performance.now();
+        c4.a6V();
+        window.requestAnimationFrame(animate)
+    }
+
+    function k() {
+        var n = performance.now();
+        c4.time + 1500 < n && (c4.time = n, c4.a6V())
+    }
+    this.canvasPendingUpdates = !1;
+    this.a6X = this.a6W = this.a6V = null;
+    this.time = 0;
+    this.a6Y = -1;
+    this.init = function() {
+        window.requestAnimationFrame(animate);
+        this.time = performance.now()
+    };
+    this.a2X = function() {
+        1 !== client_status || !singleplayer || fq.menuOpen || in_spawn || fq.alterDisplay(); - 1 === this.a6Y && (this.a6Y = setInterval(k, 2E3))
+    };
+    this.xt = function() {
+        this.canvasPendingUpdates = !0; - 1 !== this.a6Y && (clearInterval(this.a6Y), this.a6Y = -1)
+    };
+    this.jd = function() {
+        this.a6V = this.a6b;
+        this.a6W = null;
+        this.canvasPendingUpdates = !0
+    };
+    this.jY = function() {
+        this.a6W = new a6c;
+        this.a6V = this.a6d
+    };
+    this.jZ = function() {
+        this.a6X = new a6e;
+        this.a6X.init();
+        this.a6V = this.a6f
+    };
+    this.a6b = function() {
+        jf.update();
+        ji.update();
+        jq.update();
+        websocket_manager.update();
+        eY.wS();
+        cD.update();
+        this.canvasPendingUpdates && (this.canvasPendingUpdates = !1, aJ.drawImage())
+    };
+    this.a6d = function() {
+        this.a6W.update()
+    };
+    this.a6f = function() {
+        this.a6X.update()
+    };
+    this.ticksElapsed = function() {
+        return singleplayer ? this.a6W.wP : this.a6X.wP
+    };
+    this.getTickInterval = function() {
+        return 56
+    }
+}
+
+function a6c() {
+    this.time = c4.time;
+    this.tickInterval = 56;
+    this.wP = this.bs = 0;
+    this.a6g = !1;
+    this.update = function() {
+        jq.update();
+        in_spawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.tickInterval * Math.floor(1 + (c4.time - this.time) / this.tickInterval), 2 === client_status || fq.menuOpen ? e8() : (game_tick(), this.wP++, h8.tx()), this.bs++) : (fq.menuOpen ? ec() : (c4.canvasPendingUpdates = !0, ea()), this.bs = 0);
+        eU();
+        c4.canvasPendingUpdates && (c4.canvasPendingUpdates = !1, hp())
+    }
+}
+
+function a6e() {
+    this.time = c4.time;
+    this.tickInterval = 56;
+    this.wO = this.wP = this.bs = 0;
+    this.a6h = null;
+    this.a0j = 7;
+    var g;
+    this.init = function() {
+        this.wO = 0;
+        this.a6h = [];
+        g = this.wP = this.bs = 0
+    };
+    this.a6i = function(k) {
+        if (in_spawn) this.tY(k);
+        else if (this.a6h.push(k), 2 === client_status) {
+            for (k = 0; k < this.a6h.length; k++) multiIn.commenceActions(this.a6h[k], g), g = (g + 1) % 8;
+            this.a6h = []
+        }
+    };
+    this.tY = function(k) {
+        multiIn.commenceActions(k, g);
+        g = (g + 1) % 8;
+        eB.tY(this.wO);
+        this.wO === spawn_time ? (spawn.update(), this.wP = this.bs = this.wO = 0, this.time = c4.time) : (this.wO++, eA.j4(), eA.eb(), h8.tx())
+        if (typeof(script_spawn_tick) != 'undefined') script_spawn_tick(this.wO)
+    };
+    this.update = function() {
+        jq.update();
+        in_spawn ? (c4.canvasPendingUpdates = eB.tY(-1) || c4.canvasPendingUpdates, ec()) : 0 === this.bs ? c4.time >= this.time && 
+        (this.time += this.tickInterval * Math.floor(1 + (c4.time - this.time) / this.tickInterval), 2 === client_status ? e8() : this.a6k(), this.bs++) : (c4.canvasPendingUpdates = !0, ea(), this.bs = 0);
+        eU();
+        c4.canvasPendingUpdates && (c4.canvasPendingUpdates = !1, hp())
+    };
+    this.a6k = function() {
+        if (this.wP !== 7 * this.wO) game_tick(), this.wP++, h8.tx();
+        else {
+            for (var k = !1; this.a6m();)
+                if (k = !0, game_tick(), this.wP++, 0 < this.a6h.length)
+                    for (var n = this.a0j - 2; 0 <= n; n--) game_tick(), this.wP++;
+                else break;
+            k ? h8.tx() : (e8(), h8.j6())
+        }
+    };
+    this.a6m = function() {
+        return 0 < this.a6h.length ? (this.wO++, multiIn.commenceActions(this.a6h[0], g), g = (g + 1) % 8, this.a6h.shift(), !0) : !1
+    }
+}
+
+function km() {
+    function g(k, n) {
+        8 !== aJ.getState() || 0 !== n && n !== gamemode || singleplayer || announcements.n0(k)
+    }
+    this.gW = 0;
+    this.a6n = !0;
+    this.update = function() {
+        c4.time > this.gW && (this.gW = c4.time + 2500, this.a6o())
+    };
+    this.a6o = function() {
+        var k = new Date;
+        var n = k.getUTCSeconds();
+        this.a6n ? 55 > n || -1 !== c4.a6Y || (this.a6n = !1, n = k.getUTCMinutes(), 4 === n % 5 ? (k = k.getUTCHours(), 59 === n && 15 <= k && 21 >= k ? g("Upcoming Game of the Day", 0) : 14 === n % 30 ? g("Upcoming Alliance Contest", 0) : 29 === n % 30 ? g("Upcoming Battle Royale Contest", 0) : g("Upcoming One-vs-One Game", 8)) : 2 === n % 5 && g("Upcoming Zombie Game",
+            9)) : 55 > n && (this.a6n = !0)
+    }
+}
+
+function kZ() {
+    function g() {
+        return Math.pow(Math.pow(x - n, 2) + Math.pow(t - l, 2), .5)
+    }
+
+    function k(z) {
+        n = device_pixel_ratio * z.touches[0].clientX;
+        l = device_pixel_ratio * z.touches[0].clientY;
+        x = device_pixel_ratio * z.touches[1].clientX;
+        t = device_pixel_ratio * z.touches[1].clientY
+    }
+    var n, l, x, t;
+    this.pP = function(z) {
+        return 1 < z.touches.length ? (k(z), hu.end(), !0) : !1
+    };
+    this.pU = function(z) {
+        if (0 === client_status) return !1;
+        if (1 < z.touches.length) {
+            if (!eV.h0()) return !0;
+            var y = g();
+            k(z);
+            z = g();
+            gj.rL(Math.floor((n + x) / 2), Math.floor((l + t) / 2), z / y);
+            return c4.canvasPendingUpdates = !0
+        }
+        return !1
+    }
+}
+
+function MultiIn() {
+    function extract_names(nameLength, data) {
+        for (var nameArray = Array(nameLength), index = 0; index < nameLength; index++) nameArray[index] = extractor(data, 10);
+        return characters.convertToString(nameArray)
+    }
+
+    function extractor(array, data_length) {
+        for (var data = 0, byte_index, A, mIndex = starting_index; mIndex < starting_index + data_length; mIndex++) byte_index = divide_floor(mIndex, 8), A = 7 - mIndex % 8, data |= (array[byte_index] >> A & 1) << starting_index + data_length - mIndex - 1;
+        starting_index += data_length;
+        return data
+    }
+    var data_length, starting_index;
+    this.extract_data = function(remote, data) {
+        starting_index = 0;
+        data_length = data.length;
+        if (0 === data_length) websocket_manager.errorClose(remote, 3205);
+        else {
+            var message = extractor(data, 1); 
+            if (0 === message) {
+                message = extractor(data, 2);
+                if (0 === message) {
+                    if (0 === extractor(data, 1)) {
+                        if (0 === remote && 8 !== aJ.getState() && !(4 > data_length)) {
+                            uZ.br(0, extract_names(extractor(data, 5), data));
+                            uZ.br(1, "[" + extract_names(extractor(data, 3), data) + "]");
+                            var timeStampCountOrLobbyStats = extractor(data, 12),
+                                playtime_bitsNeeded = extractor(data, 6),
+                                playTimes = Array(timeStampCountOrLobbyStats);
+                            for (message = 0; message < timeStampCountOrLobbyStats; message++) playTimes[message] = extractor(data, playtime_bitsNeeded);
+                            playtime.appendPlayTimes(playTimes)
+                        }
+                    } else {
+                        if (8 !== aJ.getState())
+                            if (3 > data_length) websocket_manager.errorClose(remote, 3208);
+                            else {
+                                timeStampCountOrLobbyStats = extractor(data, 1);
+                                playtime_bitsNeeded = extractor(data, 16);
+                                playTimes = extractor(data, 4);
+                                var players_or_games = [];
+                                for (message = 0; message < playTimes; message++) {
+                                    var E = extractor(data, 14);
+                                    var F = extractor(data, 5);
+                                    F = extract_names(F, data);
+                                    players_or_games.push({
+                                        name: F,
+                                        elo: E
+                                    })
+                                }
+                                0 === timeStampCountOrLobbyStats ? cD.uS(0, players_or_games, 10, 1, .36, .55, playtime_bitsNeeded) : cD.uS(1, players_or_games, 100, 2, .47, .5, playtime_bitsNeeded)
+                            }
+                    }
+                }
+                else if (1 === message) {
+                    if (remote !== websocket_manager.lobby) websocket_manager.close(remote, 3239);
+                    else if (6 === aJ.getState() && lobby.init(), 7 !== aJ.getState()) websocket_manager.close(remote, 3251);
+                    else {
+                        timeStampCountOrLobbyStats = [0, 0, 0, 0];
+                        playtime_bitsNeeded = extractor(data, 6);
+                        for (message = 0; 4 > message; message++) timeStampCountOrLobbyStats[message] = extractor(data, playtime_bitsNeeded);
+                        playTimes = extractor(data, 4);
+                        players_or_games = [];
+                        for (message = 0; message < playTimes; message++) players_or_games.push({
+                            id: extractor(data, 5),
+                            game_mode: extractor(data, 4),
+                            contest: 1 === extractor(data, 1),
+                            map_id: extractor(data, 6),
+                            seed: extractor(data, 14),
+                            join_count: extractor(data, playtime_bitsNeeded),
+                            maximum_players: extractor(data, 9) + 1,
+                            time_left: extractor(data, 10)
+                        });
+                        lobby.updateAttribute(timeStampCountOrLobbyStats, players_or_games)
+                    }
+                } 
+                else 2 !== message && 3 !== message || eY.init(data);
+
+            } else if (1 === message) {
+                message = aJ.getState();
+                if (8 !== message) {
+                    if (10 === message) {
+                        websocket_manager.errorClose(remote, 3243);
+                    }
+                } else {
+                    if (remote !== websocket_manager.remote) {
+                        websocket_manager.errorClose(remote, 3244);
+                    } else {
+                        if (0 === extractor(data, 1)) {
+                            c4.a6X.a6i(data);
+                        } else {
+                            message = extractor(data, 2);
+                            if (0 === message) {
+                                if (3 !== data_length) {
+                                    websocket_manager.errorClose(websocket_manager.remote, 3230);
+                                } else {
+                                    message = extractor(data, 9);
+                                    timeStampCountOrLobbyStats = extractor(data, 7);
+                                    if (0 !== is_alive[message] && 0 !== is_alive[my_id]) {
+                                        timeStampCountOrLobbyStats %= a5.a6;
+                                        announcements.sentEmoji(message, my_id, timeStampCountOrLobbyStats);
+                                        eA.showLandEmoji(message, 1, timeStampCountOrLobbyStats);
+                                    }
+                                }
+                            } else if (1 === message) {
+                                if (2 !== data_length) {
+                                    websocket_manager.errorClose(websocket_manager.remote, 3235);
+                                } else {
+                                    message = extractor(data, 9);
+                                    if (0 !== is_alive[message] && 0 !== is_alive[my_id]) {
+                                        eQ.a1f(0, [message], !0) && announcements.la(message, 1);
+                                    }
+                                }
+                            } else if (3 !== data_length) {
+                                websocket_manager.errorClose(websocket_manager.remote, 3236);
+                            } else {
+                                message = extractor(data, 9);
+                                timeStampCountOrLobbyStats = extractor(data, 9);
+                                if (0 !== is_alive[message] && 0 !== is_alive[timeStampCountOrLobbyStats] && 0 !== is_alive[my_id]) {
+                                    if (eQ.a1f(1, [message], !0)) {
+                                        eA.showLandEmoji(message, 3, 96);
+                                        eA.showLandEmoji(timeStampCountOrLobbyStats, 4, 96);
+                                        announcements.requested_attack(message, timeStampCountOrLobbyStats);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+    };
+    this.extract_game_data = function(data) {
+        starting_index = 1;
+        data_length = data.length;
+        if (2 === extractor(data, 2)) {
+            starting_index += 20;
+            var varMyID = extractor(data, 9), varGameSeed = extractor(data, 14), varGamemode = extractor(data, 4),
+                varIsContest = 1 === extractor(data, 1), varMapID = extractor(data, 6), C = extractor(data, 14),
+                varPlayerCount = extractor(data, 9) + 1, varPlayerInfoThenStatus = [], status_then_color, color_then_elo, nick;
+            for (var index = 0; index < varPlayerCount; index++) {
+                status_then_color = extractor(data, 1);
+                color_then_elo = [extractor(data, 6), extractor(data, 6), extractor(data, 6)];
+                nick = extract_names(extractor(data, 5), data);
+                varPlayerInfoThenStatus.push({
+                    name: nick,
+                    color: color_then_elo,
+                    status: status_then_color
+                });
+            };
+            aJ.vp();
+            loadMap(varMapID, C);
+            1 === varPlayerInfoThenStatus.length && singleMenu.xW(varGamemode);
+            game_init(varGameSeed, varMyID, varPlayerInfoThenStatus, varGamemode, varIsContest)
+        } else {
+            starting_index += 20;
+            varMyID = extractor(data, 1);
+            varGameSeed = extractor(data, 14);
+            varGamemode = extractor(data, 4);
+            varIsContest = 1 === extractor(data, 1);
+            varMapID = extractor(data, 6);
+            C = extractor(data, 14);
+            varPlayerCount = [];
+            for (index = 0; 2 > index; index++) {
+                varPlayerInfoThenStatus = extractor(data, 1), status_then_color = [extractor(data, 6), extractor(data, 6), extractor(data, 6)];
+                color_then_elo = extractor(data, 14), nick = extract_names(extractor(data, 5), data);
+                varPlayerCount.push({
+                    name: nick,
+                    color: status_then_color,
+                    elo: color_then_elo,
+                    status: varPlayerInfoThenStatus
+                });
+            };
+            aJ.vp();
+            loadMap(varMapID, C);
+            game_init(varGameSeed, varMyID, varPlayerCount, varGamemode, varIsContest)
+        }
+    };
+
+    this.getRemote = function(data) {
+        starting_index = 1;
+        data_length = data.length;
+        var check_1v1 = extractor(data, 2),
+            remote = extractor(data, 10);
+        websocket_manager.lobby > websocket_manager.lobbyCount && (remote += websocket_manager.lobbyCount);
+        if (websocket_manager.lobby === remote) return websocket_manager.remote = remote, !1;
+        websocket_manager.close(websocket_manager.lobby, 3247);
+        websocket_manager.remote = remote;
+        eY.gameHash = extractor(data, 10);
+        eY.my_id = extractor(data, 2 === check_1v1 ? 9 : 1);
+        websocket_manager.rk(remote, 5) && multiOut.multi_loaded();
+        return !0
+    };
+    this.commenceActions = function(message, t) {
+        starting_index = 2;
+        var z = 8 * message.length;
+        if (extractor(message, 3) !== t) websocket_manager.errorClose(websocket_manager.remote, 3248);
+        else
+            for (; starting_index + 8 <= z;) {
+                var data = extractor(message, 3);
+                var author = extractor(message, 9);
+                if (0 === data) {
+                    data = extractor(message, 10);
+                    var target = extractor(message, 9);
+                    target = target === author ? max_entities : target;
+                    processAction.commenceAttack(author, data, target)
+                } else if (1 === data) {
+                    data = extractor(message, 10);
+                    target = extractor(message, 11);
+                    var C = extractor(message, 11);
+                    processAction.commencePickLocation(author, data, target, C)
+                } else if (2 === data) {
+                    target = extractor(message, 9);
+                    target = target === author ? max_entities : target;
+                    processAction.commenceCancel(author, target);
+                } else if (3 === data) processAction.onLeave(author)
+                else if (4 === data) {
+                    data = extractor(message, 7);
+                    eA.showLandEmoji(author, 0, data);
+                } else if (5 === data) processAction.surrender(author)
+                else if (6 === data) processAction.commencePeace(author, extractor(message, 1))
+                else if (7 === data) processAction.commenceCancelBoat(author, 1 + extractor(message, 11))
+            }
+    }
+}
+
+function a2Q() {
+    this.a5K = this.a5J = this.a5I = this.a5H = this.a5M = this.a5L = 0;
+    this.ty = [0, 0, 0, 0];
+    this.gz = function() {
+        this.a5L = gj.to_x();
+        this.a5M = gj.to_y();
+        this.a5H = -this.a5L;
+        this.a5I = -this.a5M;
+        this.a5J = clientWidth1 / g7;
+        this.a5K = clientHeight1 / g7;
+        this.ty[0] = Math.floor(this.a5H);
+        this.ty[1] = Math.floor(this.a5I);
+        this.ty[2] = Math.floor(this.ty[0] + this.a5J + 1);
+        this.ty[3] = Math.floor(this.ty[1] + this.a5K + 1);
+        h8.tv = !0
+    }
+}
+
+function kb() {
+    var g, k;
+    this.init = function() {
+        g = 1;
+        k = 0
+    };
+    this.update = function() {
+        0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.canvasPendingUpdates = !0)
+    };
+    this.drawImage = function() {
+        0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, clientWidth1, clientHeight1))
+    }
+}
+
+function kg() {
+    function g_2(k, n, l, x, t) {
+        k >= const_custom_map || (current_map === k && (mainCanvasCtx.fillStyle = oI, mainCanvasCtx.fillRect(n, l, x, t), mainCanvasCtx.fillStyle = cK), mainCanvasCtx.strokeRect(n, l, x, t), mainCanvasCtx.fillText(jm.bz(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
+    }
+    this.hidden = !1;
+    this.xV = [0, 0, 0, 0];
+    this.show = function() {
+        this.hidden = !0;
+        this.lx();
+        c4.canvasPendingUpdates = !0
+    };
+    this.lx = function() {
+        var g = divide_floor(const_custom_map + const_custom_map % 2, 2);
+        g = clientHeight2 - g * display_buffer_length;
+        this.xV[2] = zoom ? Math.floor(.75 * shorterWindowLength) : Math.floor(.5 * shorterWindowLength);
+        this.xV[3] = Math.floor(1.2 * this.xV[2]);
+        this.xV[3] > g && (this.xV[3] = g, this.xV[2] = Math.floor(g / 1.2));
+        this.xV[0] = Math.floor((clientWidth2 - this.xV[2]) / 2);
+        this.xV[1] = Math.floor((clientHeight2 - this.xV[3]) / 2)
+    };
+    this.lo = function(g, k) {
+        return g < this.xV[0] || k < this.xV[1] || g > this.xV[0] + this.xV[2] || k > this.xV[1] + this.xV[3] ? !1 : !0
+    };
+    this.clicked = function(g, k) {
+        var z = divide_floor(const_custom_map + const_custom_map % 2, 2);
+        c4.canvasPendingUpdates = !0;
+        if (g < this.xV[0] || k < this.xV[1] || g > this.xV[0] + this.xV[2] || k > this.xV[1] + this.xV[3]) return this.hidden = !1, !0;
+        var n = Math.floor(.13 * this.xV[3]);
+        if (k < this.xV[1] + n) return g > this.xV[0] + this.xV[2] - 1.2 * n && (this.hidden = !1), !0;
+        n = Math.floor(z * (k - this.xV[1] - n) / (this.xV[3] - n));
+        n = 0 > n ? 0 : n > z - 1 ? z - 1 : n;
+        g > this.xV[0] + this.xV[2] / 2 && (n += z);
+        if (n >= const_custom_map) return !0;
+        loadMap(n, Math.floor(16384 * Math.random()));
+        return !0
+    };
+    this.drawImage = function() {
+        var g, k = Math.floor(.13 * this.xV[3]),
+            z = divide_floor(const_custom_map + const_custom_map % 2, 2),
+            n = (this.xV[3] - k - (z + 1) * display_buffer_length) / z,
+            l = Math.floor((this.xV[2] - 3 * display_buffer_length) / 2);
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.textAlign = cJ;
+        mainCanvasCtx.textBaseline = cI;
+        mainCanvasCtx.font = bt + Math.floor(.48 * n) + bu;
+        mainCanvasCtx.fillStyle = hy;
+        mainCanvasCtx.fillRect(this.xV[0], this.xV[1], this.xV[2], this.xV[3]);
+        mainCanvasCtx.fillStyle = oI;
+        mainCanvasCtx.fillRect(this.xV[0], this.xV[1], this.xV[2], k);
+        mainCanvasCtx.strokeStyle = cK;
+        mainCanvasCtx.strokeRect(this.xV[0], this.xV[1], this.xV[2], this.xV[3]);
+        mainCanvasCtx.fillStyle = cK;
+        for (g = z - 1; 0 <= g; g--) {
+            var x = Math.floor(this.xV[1] + k + display_buffer_length + g * (n + display_buffer_length));
+            g_2(g,this.xV[0] + display_buffer_length, x, l, n);
+            g_2(g + z, this.xV[0] + l + 2 * display_buffer_length, x, l, n);
+        }
+        fq.drawShape(Math.floor(this.xV[0] + this.xV[2] - .8 * k), Math.floor(this.xV[1] + .25 * k), Math.floor(.5 * k));
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    }
+}
+
+function MultiOut() {
+    function format_password(array) {
+        var password = load_password(),
+            password_hash = Math.floor(password / 16777216);
+        fitter(array, 24, password_hash);
+        fitter(array, 24, password - 16777216 * password_hash)
+    }
+
+    function format_client_info(array) {
+        fitter(array, 14, version_hash);
+        fitter(array, 4, is_ios ? 2 : 12 <= device_version ? 1 : 0 < device_version ? 3 : 0);
+        fitter(array, 1, not_using_client ? 1 : 0);
+        fitter(array, 1, is_not_top_window ? 1 : 0);
+        fitter(array, 5, (new Date).getHours() % 24)
+    }
+
+    function get_message_size(size) {
+        return divide_floor(size, 8) + (0 < size % 8 ? 1 : 0)
+    }
+
+    function fitter(array, formatLength, data) {
+        for (var byteIndex, B, index = mIndex; index < mIndex + formatLength; index++) byteIndex = divide_floor(index, 8), B = 7 - index % 8, array[byteIndex] |= (data >> formatLength - (index - mIndex + 1) & 1) << B;
+        mIndex += formatLength
+    }
+    var mIndex;
+    this.requestPlaytimes = function() {
+        var array = new Uint8Array(3);
+        mIndex = 0;
+        fitter(array, 1, 0);
+        fitter(array, 3, 0);
+        fitter(array, 14, version_hash);
+        websocket_manager.send(0, array)
+    };
+    this.join_lobby = function(lobby) {
+        var name_keycodes = characters.convertToCharCode(name_input.get_username()),
+            name_length = name_keycodes.length,
+            array = new Uint8Array(get_message_size(105 + 10 * name_length));
+        mIndex = 0;
+        fitter(array, 1, 0);
+        fitter(array, 3, 1);
+        fitter(array, 10, time_hash);
+        var rgb_then_index = mainSettings.buttons[2].buttonPanel.get_rgb_64();
+        fitter(array, 6, rgb_then_index[0]);
+        fitter(array, 6, rgb_then_index[1]);
+        fitter(array, 6, rgb_then_index[2]);
+        format_password(array);
+        format_client_info(array);
+        for (rgb_then_index = 0; rgb_then_index < name_length; rgb_then_index++) fitter(array, 10, name_keycodes[rgb_then_index]);
+        websocket_manager.lobby = lobby;
+        websocket_manager.send(lobby, array)
+    };
+    this.load_leaderboard = function(remote_id, board_type) {
+        var array = new Uint8Array(5);
+        mIndex = 0;
+        fitter(array, 1, 0);
+        fitter(array, 3, 7);
+        fitter(array, 3, 0);
+        fitter(array, 14, version_hash);
+        fitter(array, 1, board_type);
+        fitter(array, 16, Math.abs(4096 + cD.position[board_type] + cD.uP[board_type]) % 65536);
+        websocket_manager.send(remote_id, array)
+    };
+    this.upload_error = function(remote_id) {
+        var z, array = new Uint8Array(100);
+        mIndex = 0;
+        fitter(array, 1, 0);
+        fitter(array, 3, 7);
+        fitter(array, 3, 1);
+        fitter(array, 14, error_line);
+        var keycode_msg = characters.convertToCharCode(error_message),
+            B = min(keycode_msg.length, 77);
+        fitter(array, 7, B);
+        for (z = 0; z < B; z++) fitter(array, 10, keycode_msg[z]);
+        websocket_manager.send(remote_id, array)
+    };
+    this.vote = function(remote_id) {
+        var array;
+        if (!(name_input.last_vote_time + 7E3 > c4.time)) {
+            name_input.last_vote_time = c4.time;
+            var array = new Uint8Array(17);
+            mIndex = 0;
+            fitter(array, 1, 0);
+            fitter(array, 3, 7);
+            fitter(array, 3, 2);
+            format_password(array);
+            var A = max(name_input.vote_id.length - 20, 0);
+            for (array = name_input.vote_id.length - 1; array >= A; array--) fitter(array, 4, Math.abs(name_input.vote_id.charCodeAt(array) - 48) % 10);
+            websocket_manager.send(remote_id, array)
+        }
+    };
+    this.anti_disconnect_15s = function(remote_id, z) {
+        var array = new Uint8Array(1);
+        mIndex = 0;
+        fitter(array, 1, 0);
+        fitter(array, 3, 5);
+        fitter(array, 1, z ? 1 : 0);
+        websocket_manager.send(remote_id, array)
+    };
+    this.join_game = function(game_id) {
+        var array = new Uint8Array(1);
+        mIndex = 0;
+        fitter(array, 1, 0);
+        fitter(array, 3, 2);
+        fitter(array, 4, game_id);
+        websocket_manager.send(websocket_manager.lobby, array)
+        if (document.getElementById('followMain').checked && typeof(bots) != 'undefined') bots.join_game(game_id)
+    };
+    this.multi_loaded = function() {
+        var array = new Uint8Array(7);
+        mIndex = 0;
+        fitter(array, 1, 0);
+        fitter(array, 3, 6);
+        fitter(array, 8, websocket_manager.getEquivalentLobby());
+        fitter(array, 10, eY.gameHash);
+        fitter(array, 9, eY.my_id);
+        fitter(array, 10, time_hash);
+        fitter(array, 14, version_hash);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.attack = function(ratio, target) {
+        var array = new Uint8Array(3);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 0);
+        fitter(array, 10, ratio);
+        fitter(array, 9, target);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.pick_location = function(ratio, x_coord, y_coord) {
+        var array = new Uint8Array(5);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 1);
+        fitter(array, 10, ratio);
+        fitter(array, 11, x_coord);
+        fitter(array, 11, y_coord);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.cancel = function(target) {
+        var array = new Uint8Array(2);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 2);
+        fitter(array, 1, 0);
+        fitter(array, 9, target);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.cancel_boat = function(boat_id) {
+        var array = new Uint8Array(2);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 2);
+        fitter(array, 1, 1);
+        fitter(array, 11, boat_id - 1);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.upload_result = function(troop_hash, result) {
+        var array = new Uint8Array(4);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 3);
+        fitter(array, 12, troop_hash);
+        fitter(array, 10, result);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.surrender = function() {
+        var array = new Uint8Array(1);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 4);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.self_emoji = function(emoji) {
+        var array = new Uint8Array(2);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 5);
+        fitter(array, 7, emoji);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.send_emoji = function(emoji, target) {
+        announcements.sentEmoji(my_id, target, emoji);
+        var array = new Uint8Array(3);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 6);
+        fitter(array, 2, 0);
+        fitter(array, 9, target);
+        fitter(array, 7, emoji);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.non_aggression = function(friend) {
+        var array = new Uint8Array(2);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 6);
+        fitter(array, 2, 1);
+        fitter(array, 9, friend);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.request_attack = function(friends, target) {
+        var friend_index, friends_length = friends.length, 
+        array = new Uint8Array(get_message_size(15 + 9 * friends_length));
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 6);
+        fitter(array, 2, 2);
+        fitter(array, 9, target);
+        for (friend_index = 0; friend_index < friends_length; friend_index++) fitter(array, 9, friends[friend_index]);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.vote_peace = function(choice) {
+        var array = new Uint8Array(1);
+        mIndex = 0;
+        fitter(array, 1, 1);
+        fitter(array, 3, 7);
+        fitter(array, 1, choice ? 1 : 0);
+        websocket_manager.send(websocket_manager.remote, array)
+    };
+    this.single_loaded = function(remote) {
+        var array = new Uint8Array(4);
+        mIndex = 0;
+        fitter(array, 1, 0);
+        fitter(array, 3, 3);
+        format_client_info(array);
+        websocket_manager.send(remote, array)
+    }
+}
+
+aiCommand746(0)
+setTimeout(start, 1E4);

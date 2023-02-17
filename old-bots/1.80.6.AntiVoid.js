@@ -143,12 +143,12 @@ function ai() {
 
 function ah() {
     1 === aX.aY(aF) && an.ao(aF);
-    if (aF !== myID) troops[aF] += aG, ar.as(aF);
+    if (aF !== ap) aq[aF] += aG, ar.as(aF);
     else {
-        var g = troops[aF];
-        troops[aF] += aG;
+        var g = aq[aF];
+        aq[aF] += aG;
         ar.as(aF);
-        at.au[13] -= troops[aF] - g
+        at.au[13] -= aq[aF] - g
     }
     aX.av(aF, aE)
 }
@@ -209,8 +209,8 @@ function bC() {
 function bB() {
     aQ = true;
     aX.bM(aF, aE, aG);
-    land[aF] += aJ;
-    //land is land
+    bN[aF] += aJ;
+    //bN is land
     bO();
     bP()
 }
@@ -238,7 +238,7 @@ function bZ(g, k) {
             aX.ba(aI, aF, k - g);
             return
         } g = al(g, 2);
-    troops[aI] = troops[aI] >= g ? troops[aI] - g : 0
+    aq[aI] = aq[aI] >= g ? aq[aI] - g : 0
 }
 
 function bW() {
@@ -246,11 +246,11 @@ function bW() {
 }
 
 function bU() {
-    return al(aJ * troops[aI], 1 + bc() * bd())
+    return al(aJ * aq[aI], 1 + bc() * bd())
 }
 
 function bc() {
-    return Math.floor(2 + be(al(land[aI], 100), 8))
+    return Math.floor(2 + be(al(bN[aI], 100), 8))
 }
 
 function bd() {
@@ -320,11 +320,11 @@ function bf() {
 }
 
 function cE(g, k, y, u) {
-    var m = al(3 * troops[g], 256);
-    u -= u >= al(troops[g], 2) ? m : 0;
+    var m = al(3 * aq[g], 256);
+    u -= u >= al(aq[g], 2) ? m : 0;
     cI(y, g);
     aX.cJ(g, u, k);
-    troops[g] -= u + m;
+    aq[g] -= u + m;
     an.cK(g, false)
 }
 
@@ -419,9 +419,9 @@ function ck() {
 
 function cl(g) {
     var k, y = cb[0],
-        u = troops[y] + aX.bb(y, g);
+        u = aq[y] + aX.bb(y, g);
     for (k = cZ - 1; 1 <= k; k--) {
-        var m = troops[cb[k]] + aX.bb(cb[k], g);
+        var m = aq[cb[k]] + aX.bb(cb[k], g);
         m < u && (y = cb[k], u = m)
     }
     return y
@@ -457,7 +457,7 @@ function d3(g, k) {
         if (0 === bF[g].length) d6.d7(g) || (d8.d9(g - cj, 200), dA(g, k, d8.cG[g - cj], ar.dB(g)));
         else if (!(0 < bG[g].length && cX.random() < cX.value(bG[g].length > bF[g].length ? 7 : 3) && d6.d7(g))) {
         var y = ar.dB(g);
-        troops[g] > y && k < troops[g] - y && (k = troops[g] - y);
+        aq[g] > y && k < aq[g] - y && (k = aq[g] - y);
         d2 ? dC(g, k, d8.cG[g - cj], y) : dD(g, k, d8.cG[g - cj])
     }
 }
@@ -467,11 +467,11 @@ function dC(g, k, y, u) {
 }
 
 function dG(g, k, y) {
-    3 <= y && 2142 < bx.dL() && (k === b1 || troops[k] < al(troops[g], 20)) && d8.d9(g - cj, 25)
+    3 <= y && 2142 < bx.dL() && (k === b1 || aq[k] < al(aq[g], 20)) && d8.d9(g - cj, 25)
 }
 
 function dA(g, k, y, u) {
-    if (0 !== dN.dO[g] && !(5 === y && troops[g] < u || 4 === y && troops[g] < al(u, 2)))
+    if (0 !== dN.dO[g] && !(5 === y && aq[g] < u || 4 === y && aq[g] < al(u, 2)))
         for (y = cX.cY(dP), u = 0; u < dP; u++) {
             var m = dQ[(u + y) % dP];
             if (dN.dO[m] === dN.dO[g] && 1 === cz[m]) {
@@ -487,8 +487,8 @@ function dD(g, k, y) {
 }
 
 function dJ(g, k, y) {
-    if (al(troops[g], 8) > troops[y]) {
-        var u = al(11 * troops[y], 5);
+    if (al(aq[g], 8) > aq[y]) {
+        var u = al(11 * aq[y], 5);
         k = k > u ? k : u
     }
     u = ax[g].length;
@@ -557,7 +557,7 @@ function dU() {
             k[A] !== y[A] && (k[A] += k[A] < y[A] ? u[A] : -u[A], k[A] = Math.abs(k[A] - y[A]) <= u[A] ? y[A] : k[A]);
             g[A] = al(m[A], 10);
             var z = A + cj;
-            d3(z, al(k[A] * troops[z], 1E3))
+            d3(z, al(k[A] * aq[z], 1E3))
             timeatc(g);
         }
     }
@@ -571,427 +571,100 @@ function du() {
 }
 
 var tickglobal;
-var botsglobal = [0];
 tick();
 var cycle = 0;
 var attackamount;
 const attackedBots = [];
-var pacing = [ 1, 3, 2, 3, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
-//var pacing4 = [ 0, 3, 2, 3, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
-var pacing2 = [ 1, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4];
-var pacing3 = [ 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
-var attacks = [];
-var attackTimings = [];
-var attackslength;
 var den = 1;
 var hfd = 0;
-var patck = 0;
-var changePace = 0;
-var uinterface = 0;
-var cga = -10;//cycle got attacked by player
-var attackLess = 1;
-function gotAttacked(){
-cga = cycle;
-attackLess = 0.8;
-}
-function notAttacked(){
-if (cga + 3 == cycle) attackLess = 0.9;
-if (cga + 5 == cycle) attackLess = 1;
-if (cga + 1 == cycle) return 1;
-if (cga + 2 == cycle) return 2;
-else return 0;
-}
-function userinterface(){
-if (uinterface == 0) uinterface = 1;
-else if (uinterface == 1) uinterface = 0;
-}
 function changeDensityHotkey(){
 if (hfd == 0) hfd = 1;
 else if (hfd == 1) hfd = 0;
 }
-function changeattackHotkey(){
-if (patck == 0) patck = 1;
-else if (patck == 1) patck = 0;
-}
 //8 === dg
 function tick(){
-var currentTick;
+var tick1;
+var tick2;
 var opponent;
-var latency = 0;
+var donateID = ap;
+var randomcycle = 0;
 this.tick0 = function(){
-currentTick = 0;
+tick1 = 0;
+tick2 = 0;
 cycle = 0;
+randomcycle = Math.round(Math.random()*2);//0 or 1
 hfd = 0;
-patck = 0;
-changePace = 0;
-uinterface = 0;
     if (cj == 2){
-        if (myID == 0) opponent = 1;
-        if (myID == 1) opponent = 0;
-        latency = 7;
+        if (ap == 0) opponent = 1;
+        if (ap == 1) opponent = 0;
+        console.log(opponent, ap);
     }
-    if (cj > 2) latency = 7;
-    if (cj == 1) latency = 0, opponent = -10;
-    
+    for (let f = cj - 1; f >= 0; f--){
+        if(fy[f] == "[ELITE] oi") donateID = f;
+    }
 }
 this.opening = function(){
-    if (cj == 1){
-            if (cycle == 0) f3(myID, myID+512, 282);
-            if (cycle == 1) f3(myID, myID+512, 430);
-            if (cycle == 2) f3(myID, myID+512, 460);
-            if (cycle > 2) f3(myID, myID+512, 440);
+    if (!this.checkPlayer()){
+        if (cycle == 0) iR.kw(228, ap+512);
+        if (cycle == 1) iR.kw(430, ap+512);
+        if (cycle == 2) iR.kw(460, ap+512);
+        if (cycle > 2) iR.kw(440, ap+512);
     }
     else {
-        if (!this.checkPlayer()){
-            if (cycle == 0) iR.kw(282, myID);
-            if (cycle == 1) iR.kw(430, myID);
-            if (cycle == 2) iR.kw(460, myID);
-            if (cycle > 2) iR.kw(450, myID);
-        }
-        else {
-            if (cycle == 0) iR.kw(282, myID);
-            if (cycle == 1) iR.kw(350, myID);
-            if (cycle == 2) iR.kw(350, myID);
-            if (cycle > 2) iR.kw(325, myID);
-        }
+        if (cycle == 0) iR.kw(228, ap+512);
+        if (cycle == 1) iR.kw(350, ap+512);
+        if (cycle == 2) iR.kw(350, ap+512);
+        if (cycle > 2) iR.kw(350, ap+512);
     }
 }
-this.lag = function(currentTick){
-    if (currentTick % 4 === 0) return true
-    return false
-}
+
 this.checkPlayer = function(){
     for (let j = cj - 1; j >= 0; j--){
-        if (border(j) && j != myID) return true;
+        if (border(j) && j != ap) return true;
     }
     return false
 }
-/*this.densityforPlayer = function(){
-    if (cj === 2){
-        if (land[myID] > land[opponent]){
-            if (this.checkPlayer()) this.calculateDensity(2,1);
-            else {
-                this.calculateDensity(2,2);
-            }
-        }
-        else if(land[myID] < land[opponent]){
-            if (this.checkPlayer()) this.calculateDensity(1,1);
-            else {
-                this.calculateDensity(1,2);
-            }
-        }
-    }
-    else if (this.checkPlayer()){
-        den = 10;
-    }
-    else {
-        this.calculateDensity(1,1);//den = 1;
-    }
-    //console.log(den);
-}*/
-this.density = function(){
-    if (hfd === 0) return true
-    if (hfd === 1) return false
-}
-this.platck = function(){
-    if (patck === 0) return false
-    if (patck === 1) return true
-}
-this.changePacing = function(){
-    if (this.checkPlayer() && cycle < 13) changePace = 1;
-    if (cycle >= 13 && this.checkPlayer() && changePace == 0){
-        pacing2 = pacing3;
-    }
+this.cycle = function(){
+    if (cycle % 2 === 0 && randomcycle == 1 && cycle >= 17) return true;
+    if (cycle % 2 === 0 && randomcycle == 0 && cycle >= 14) return true;		
+    if (cycle % 2 != 0 && randomcycle == 2) return true;		
+    return false
 }
 this.count = function(){
-    if(100<= ++currentTick){
-        var availableBots = [];
-        var availableBotsTiming = [];
-        var availableBotsLand = [];
-        var borderRatio = [];
-        var ratings = [];
-        var sequenceofAttacks = [];
-        //contar = 0;
-        currentTick = 0;
+    if(100<= ++tick1){
+        tick1 = 0;
         cycle = cycle + 1;
         attackedBots.length = 0;
-        attackTimings.length = 0;
-        var stop;
-        if (cycle > 0) {
-            this.changePacing();
-            for (let i = cj; i < gx; i++){
-                if (border(i)){
-                    availableBots.push(i);
-                    availableBotsTiming.push(timing[i-cj]);
-                    availableBotsLand.push(land[i]);
-                    borderRatio.push(borderBots(i));
-                    }
-            }
-            var maxLand = Math.max(...availableBotsLand);
-            var maxBorderRatio = Math.max(...borderRatio);
-            for (let h = 0; h < availableBots.length; h++){
-                var i = availableBots[h];
-                var rating = botRating(i, borderRatio[h], timing[i-cj], maxLand, maxBorderRatio, opponent);
-                ratings.push(rating);
-            }
-            var sortedRatings = Array.from(ratings);
-            var sortedRatings = sortedRatings.sort((a, b) => b-a);
-            for (let j = 0; j < ratings.length; j++){
-                var index = ratings.indexOf(sortedRatings[j]);
-                sequenceofAttacks.push(availableBots[index]);
-                //console.log(/*"ID: "+availableBots[index]+*/" Rating: "+ratings[index]+" Tick: "+availableBotsTiming[index]+" Land: "+land[availableBots[index]]+" Name: "+fy[availableBots[index]]);
-            }
-            /*for (let j = 11; j >= 0; j = j-0.5){
-                for (let h = 0; h < availableBots.length; h++){
-                    if (j == ratings[h]) sequenceofAttacks.push(availableBots[h]);//, console.log("ID "+availableBots[h]+" Tick "+availableBotsTiming[h]+" Land "+land[availableBots[h]]+" Name "+fy[availableBots[h]]);
-                }
-            }*/
-            //console.log(sequenceofAttacks);
-            var numberofAttacks = this.checkPlayer() ? pacing2[cycle-8] : pacing[cycle-8];
-            if (notAttacked() == 1) numberofAttacks = 1;
-            if (notAttacked() == 2) numberofAttacks = 2;
-            if (cycle == 8){
-                if (!this.checkPlayer() && land[myID] >= 9000) numberofAttacks = 0;
-                else if (this.checkPlayer() && land[myID] >= 6000)numberofAttacks = 0;
-            }
-            //numberofAttacks = (troops[opponent] / land[opponent] * 0.75) > (troops[myID] / land[myID]) ? numberofAttacks - 1 : numberofAttacks;
-            attacks = sequenceofAttacks.slice(0, numberofAttacks);
-            attackslength = attacks.length;
-            //console.clear();
-            for (let m = 0; m < attackslength; m++ ){
-                attackTimings.push(timing[attacks[m]-cj]);
-                console.log("ID: "+attacks[m]+"R: "+sortedRatings[m]+" T: "+attackTimings[m]+" L: "+land[attacks[m]]+" N: "+fy[attacks[m]]);
-            }
-            botsglobal = attacks;
+        tick2 = Math.floor(Math.random()*100);
+    };
+    tickglobal = tick1;
+    if (tick1 == 66 && cycle <= 4){
+        this.opening();
+    }
+    else if (tick1 == 77  && (cycle == 5 || cycle == 6)){
+        //f3(0, ap+512, 410);
+        if (this.checkPlayer()) iR.kw(150, ap+512);
+        else {
+            iR.kw(200, ap+512);
         }
     }
-    tickglobal = currentTick;
-    if(cycle == 12 && currentTick == 52){
-        console.log("1:10 " + troops[myID] + "kt , " + land[myID] + "kl");
+    
+    if (cycle >= 11 && tick1 == tick2 && this.cycle() && aq[ap] > 4000){
+        iR.kw(350, donateID);
     }
-    if(cycle == 14 && currentTick == 32) {
-        console.log("1:20 " + troops[myID] + "kt , " + land[myID] + "kl");
-    }
-    if(cycle == 17 && currentTick == 22) {
-        console.log("1:36 " + troops[myID] + "kt , " + land[myID] + "kl");
-    }
-    if (this.density()){
-        if (((currentTick == 74 - latency && !this.checkPlayer()) || (currentTick == 64 - latency && this.checkPlayer())) && cycle <= 4){
-            this.opening();
-        }
-        else if ((currentTick == 33 - latency || currentTick == 63 - latency || (currentTick == 83 - latency && !this.checkPlayer()) ) && (cycle == 5 || cycle == 6)){
-            //f3(0, myID+512, 410);
-            if (cj == 1) f3(myID, myID+512, 400);
-            else if (this.checkPlayer()) iR.kw(250, myID);
-            else {
-                iR.kw(400, myID);
-            }
-        }
-        else if ((currentTick == 13 - latency || currentTick == 53 - latency || (currentTick == 83 - latency && !this.checkPlayer()) ) && cycle == 7){
-            var openingamount = 270;
-            if (currentTick == 53 - latency) openingamount = 250;
-            if (currentTick == 83 - latency) openingamount = 200;
-            if (cj == 1) f3(myID, myID+512, openingamount);
-            else if (this.checkPlayer()) iR.kw(200, myID);
-            else {
-                iR.kw(openingamount, myID);
-            }
-        }
-        /*else if ((currentTick == 11 - latency || currentTick == 61 - latency ) && (cycle == 8 || cycle == 9) ){
-            if (this.checkPlayer()) iR.kw(100, myID+512);
-            else {
-                iR.kw(150, myID+512), f3(0, myID+512, 150);
-            }
-        }*/
-        else if (currentTick == 81 - latency && (attackedBots.indexOf(myID+512) === -1 || attackedBots.indexOf(myID) === -1) && cycle >= 10 ){
-            var x = 10;
-            if (cycle >= 15) x = 0.8;
-            if (cj == 1) f3(myID, myID+512, x), attackedBots.push(myID+512);
-            else {
-                iR.kw(x, myID);
-                attackedBots.push(myID); 
-            }
-        }
-    }
-    //else if (((currentTick >= 31 && currentTick <= 71 && land[myID] < 6E4) || (currentTick >= 31 && currentTick <= 81 && land[myID] > 6E4))  && cycle >= 0 && cycle < 18) {
-    if (currentTick >= 1 && cycle >= 8 /*&& checkSpeed(currentTick) /*&& this.lag(currentTick)*/) {
-        var tickleft = 100 - currentTick - latency;
-        if (land[myID] < 6E4) {
-            //50 updates
-            var updatesleft = tickleft * 0.5;
-        }
-        else if (land[myID] >= 6E4) {
-            //100 updates
-            var updatesleft = tickleft;
-        }
-        if (this.density() && this.lag(currentTick)){
-            for (let i = 0; i < attackslength; i++){
-                if (currentTick + latency >= attackTimings[i]){
-                    if(attackedBots.indexOf(attacks[i]) === -1){
-                        
-                        var side = botSide(attacks[i]);
-                        var ratiotoSend = (updatesleft / side) > 1 ? 3.5 : (updatesleft / side) * 3.5;
-                        ratiotoSend = ratiotoSend < 1.5 ? 1.5 * attackLess : ratiotoSend * attackLess;
-                        attackamount = Math.floor((land[attacks[i]] * ratiotoSend / troops[myID]) * 1000);
-                        iR.kw(attackamount, attacks[i]);
-                        if (cj == 1) f3(0, attacks[i], attackamount);
-                        //console.log("ID: "+attacks[i]+" Land: "+land[attacks[i]]+" Amount: "+attackamount*troops[myID]/1000);
-                        attackedBots.push(attacks[i]);
-                        //console.log(attackamount);
-                        break
-                    }
-                }
-            }
-        }
-        if (currentTick > 71 - latency && cycle > 12 && this.platck() && this.checkPlayer() && attackedBots.indexOf(opponent) === -1 && attackPlayer(opponent) && cj == 2){
-                attackamount = Math.floor((troops[myID] - troops[opponent]) * 2000/ troops[myID]);			
-                attackamount = attackamount > 660 ? 660 : attackamount;			
-                attackamount = attackamount < 350 ? 350 : attackamount;			
-                iR.kw(attackamount, opponent);
-                attackedBots.push(opponent);
-        }
-        /*
-            if(attackedBots.indexOf(i) === -1){// this.density()){
-            if (border(i)){
-                    var side = botSide(i);
-                    var ratiotoSend = (updatesleft / side) > 1 ? 3.5 : (updatesleft / side) * 3.5;
-                    var attackwait = updatesleft - side;
-                    
-                    if (rating == 7 && currentTick >= 31) {
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                    }	
-                    else if (rating == 6.5 && currentTick >= 33){
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 6 && currentTick >= 35){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 5.5 && currentTick >= 37){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 5 && currentTick >= 39){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 4.5 && currentTick >= 41){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 4 && currentTick >= 43){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 3.5 && currentTick >= 45){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 3 && currentTick >= 47){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 2.5 && currentTick >= 49){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 2 && currentTick >= 51){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 1.5 && currentTick >= 53){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 1 && currentTick >= 55){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                    else if (rating == 0.5 && currentTick >= 57){
-                        
-                        attackedBots.push(i);
-                        attackamount = Math.floor(((troops[i] + land[i]) * ratiotoSend / troops[myID]) * 1000);
-                        //f3(0,i,attackamount);
-                        iR.kw(attackamount, i), f3(0, i, attackamount);
-                        break;
-                        }
-                        
-                    }
-                }
-            }
-        }*/	
-    }
+    
 }
 }
 
-function attackPlayer(opponent) {
-if (troops[myID] >= troops[opponent]*1.3) return true;
-else if(troops[myID] >= troops[opponent]*1.25 && land[myID] >= land[opponent]*1.3) return true;
-else if(troops[myID] >= troops[opponent]*1.15 && land[myID] >= land[opponent]*1.4) return true;
-return false
-    
-}
-function checkSpeed(currentTick){
-if (land[myID] < 6E4 && currentTick < 71 - latency) return true;
-if (land[myID] >= 6E4 && currentTick < 81 - latency) return true;
-if (land[myID] >= 16E4 && currentTick < 86 - latency) return true;
+function checkSpeed(tick1){
+if (bN[ap] < 6E4 && tick1 < 67) return true;
+if (bN[ap] >= 6E4 && tick1 < 77) return true;
+if (bN[ap] >= 16E4 && tick1 < 83) return true;
 
 return false
 }
 function averageland() {
-const aliveBots = land
+const aliveBots = bN
 .filter((mass, index) => index > cj && mass > 0);
 
 const totalLandMass = aliveBots
@@ -1001,178 +674,102 @@ return Math.floor(totalLandMass / aliveBots.length);
 
 }
 function border(i) {
-if (i === myID) return false;
-var N, T;
-for (N = 3; 0 <= N; N--)
-    for (T = bF[myID].length - 1; 0 <= T; T--) {
-        var U = bF[myID][T] + aO[N];
-        if (ay.b7(U) && ay.b8(U) === i) return true
-    }
+if(bN[ap] > 0){
+    if (i === ap) return false;
+    var N, T;
+    for (N = 3; 0 <= N; N--)
+        for (T = bF[ap].length - 1; 0 <= T; T--) {
+            var U = bF[ap][T] + aO[N];
+            if (ay.b7(U) && ay.b8(U) === i) return true
+        }
+}
 return false
-}
-function cutBots(i, opponent) {
-var N, T;
-var borderList = [];
-var freeland = [];
-var watermountains = [];
-for (N = 3; 0 <= N; N--) {
-    for (T = bF[i].length - 1; 0 <= T; T--) {
-        var U = bF[i][T] + aO[N];
-        if (ay.b7(U) && !borderList.includes(ay.b8(U)) && ay.b8(U) != i){
-            borderList.push(ay.b8(U));
-        }
-        if (!ay.b7(U) && ay.b8(U) != 8 ){
-            watermountains.push(ay.b8(U));
-        }
-        if (!ay.b7(U) && ay.b8(U) == 8 ){
-            freeland.push(ay.b8(U));
-        }
-    }
-}
-//console.log(borderList, freeland, watermountains, fy[i], freeland.length);	
-if (borderList.includes(opponent) && borderList.length >= 3 && watermountains.length != 0) return [10, freeland.length];	//Border with me, opponent, Water/Mountains and another bot (Very important to cut off opponent)
-if (borderList.includes(opponent) && borderList.length >= 3) return [8, freeland.length]; 									//Border with me, opponent and another bot
-if (borderList.length == 1) return [4, freeland.length]; 																	//Border only with me
-if (borderList.includes(opponent) && borderList.length == 2) return [2, freeland.length];									//Border with me and my opponent
-return [0, freeland.length];
-
 }
 function borderBots(i) {
 const botsBorder = [];
 var N, T, side, borderRatio;
 for (N = 3; 0 <= N; N--)
-    for (T = bF[myID].length - 1; 0 <= T; T--) {
-        var U = bF[myID][T] + aO[N];
+    for (T = bF[ap].length - 1; 0 <= T; T--) {
+        var U = bF[ap][T] + aO[N];
         if (ay.b7(U) && ay.b8(U) === i) {
             botsBorder.push(i);
         }
     }
-borderRatio = botsBorder.length / botSide(i);
+side = Math.sqrt(bN[i]);
+side = Math.round(side);
+borderRatio = botsBorder.length / side;
 return borderRatio
 
 }
 function botSide(i) {
-side = Math.sqrt(land[i]);
+side = Math.sqrt(bN[i]);
 side = Math.round(side);
 return side
 }
-function botRating(i , borderR, timing, maxLand, maxBorderRatio, opponent) {
+function botRating(i , borderRatio) {
 var rating = 0;
-
-//weights: land-34%,border-18%,timing-23%,priority-25%//in the future add if we have a border with opponent check if bots have a border with our opponent as well and if they also have a border with another bot or freeland,water,mountains
-var landRating = land[i]/maxLand > 1 ? 1 : land[i]/maxLand;
-var landRating = landRating ** 0.35;
-var landRating = Math.round(landRating*1E4)/1E4;
-var borderRating = borderR/maxBorderRatio > 1 ? 1 : borderR/maxBorderRatio;
-var borderRating = borderRating ** 0.17;
-var borderRating = Math.round(borderRating*1E4)/1E4;
-var timingRating;
-
-/*if (averageland() * 2.2 < land[i]) {
+if (averageland() * 2.2 < bN[i]) {
+    rating = 4;
+}
+else if (averageland() * 1.5 < bN[i] && averageland() * 2.2 >= bN[i]) {
     rating = 3.5;
 }
-else if (averageland() * 1.5 < land[i] && averageland() * 2.2 >= land[i]) {
-    rating = 3;
+else if (averageland() * 1 < bN[i] && averageland() * 1.5 >= bN[i]) {
+    rating = 2.5;
 }
-else if (averageland() * 1 < land[i] && averageland() * 1.5 >= land[i]) {
-    rating = 2;
+else if (averageland() * 0.75 < bN[i] && averageland() * 1 >= bN[i]) {
+    rating = 1.5;
 }
-else if (averageland() * 0.75 < land[i] && averageland() * 1 >= land[i]) {
-    rating = 1;
-}
-else if (averageland() * 0.5 < land[i] && averageland() * 0.75 >= land[i]) {
+else if (averageland() * 0.5 < bN[i] && averageland() * 0.75 >= bN[i]) {
     rating = 0.5;
 }
-else if (averageland() * 0.5 >= land[i] ) {
+else if (averageland() * 0.5 >= bN[i] ) {
     rating = 0;
 }
 if ( borderRatio > 3) { 
-    rating = rating + 2.5;
+    rating = rating + 3;
 }
 else if (borderRatio > 2 && borderRatio <= 3) {
-    rating = rating + 1.5;
+    rating = rating + 2;
 }
 else if (borderRatio > 1.25 && borderRatio <= 2) {
-    rating = rating + 1;
+    rating = rating + 1.5;
 }
 else if (borderRatio > 0.8 && borderRatio <= 1.25) {
-    rating = rating + 0.5;
+    rating = rating + 1;
 }
 else if (borderRatio > 0.45 && borderRatio <= 0.8) {
-    rating = rating + 0;
+    rating = rating + 1;
 }
 else if (borderRatio <= 0.45) {
-    rating = rating - 1;
-}*/
-if (timing >= 0 && timing <= 10) land[myID] >= 6E4 ? timingRating = 0.5 : timingRating = 0.6;
-else if (timing > 10 && timing <= 20) land[myID] >= 6E4 ? timingRating = 0.6 : timingRating = 0.7;
-else if (timing > 20 && timing <= 30) land[myID] >= 6E4 ? timingRating = 0.7 : timingRating = 0.8;
-else if (timing > 30 && timing <= 40) land[myID] >= 6E4 ? timingRating = 0.8 : timingRating = 0.9;
-else if (timing > 40 && timing <= 50) land[myID] >= 6E4 ? timingRating = 0.9 : timingRating = 1;
-else if (timing > 50 && timing <= 60) land[myID] >= 6E4 ? timingRating = 1 : timingRating = 0.7;
-else if (timing > 60 && timing <= 70) land[myID] >= 6E4 ? timingRating = 0.8 : timingRating = 0.4;
-else if (timing > 70 && timing <= 76) land[myID] >= 6E4 ? timingRating = 0.7 : timingRating = 0.2;
-else if (timing > 76 && timing <= 80) land[myID] >= 6E4 ? timingRating = 0.5 : timingRating = 0.1;
-else if (timing > 80 && timing <= 90) land[myID] >= 6E4 ? timingRating = 0.2 : timingRating = 0;
-else if (timing > 90) land[myID] >= 6E4 ? timingRating = 0 : timingRating = 0;
-else {
-        timingRating = 0;
+    rating = rating + 0;
 }
-/*if (timing > 40 && timing < 50) timingRating = 1;
-else if ((timing > 30 && timing < 41)|| (timing > 49 && timing < 60)) timingRating = 0.9;
-else if (timing > 20 && timing < 31) timingRating = 0.8;
-else if (timing > 59 && timing < 70) land[myID] >= 6E4 ? timingRating = 0.7 : timingRating = 0.65;
-else if (timing > 10 && timing < 21) land[myID] >= 6E4 ? timingRating = 0.35 : timingRating = 0.5;
-else if (timing >= 0 && timing < 11) land[myID] >= 6E4 ? timingRating = 0.3 : timingRating = 0.45;
-else if (timing > 69 && timing < 76) land[myID] >= 6E4 ? timingRating = 0.5 : timingRating = 0.2;
-else {
-        timingRating = 0.1;
-}*/
-timingRating = timingRating ** 0.23;
-timingRating = Math.round(timingRating*1E4)/1E4;
-
-var cut = cutBots(i, opponent);
-var priority;
-var freecheck;
-if (cut[0] == 10) priority = 0.25;
-else if (cut[0] == 8) priority = 0.2;
-else if (cut[0] == 4) priority = 0.1;
-else if (cut[0] == 2) priority = 0.05;
-else if (cut[0] == 0) priority = 0;
-if (cut[1] == 0) freecheck = 1;
-else if (cut[1] > 0 && cut[1] <= 20) freecheck = 1;
-else if (cut[1] > 20) freecheck = 1;
-//console.log(freecheck);
-
-rating = landRating * borderRating * timingRating * freecheck + priority;
-rating = Math.round(rating*1E4)/1E4;
-//console.log("ID:",i,"R:",landRating, borderRating, timingRating, rating,"T: "+timing+" L: "+land[i]+" N: "+fy[i]);
 return rating
 
 }
 
 function e0() {
-tickf.count();
-ar.d7();
-e1.d7();
-e2.d7();
-e3.d7();
-an.d7();
-e4.d7();
-e5();
-e6.d7();
-dn.d7();
-dw.d7();
-dx.d7();
-e7.d7();
-e8.d7();
-e9.d7();
-dv.d7();
-eA.d7();
-eB.d7();
-at.d7();
-eC.d7();
-dz.d7()
+    tickf.count();
+    ar.d7();
+    e1.d7();
+    e2.d7();
+    e3.d7();
+    an.d7();
+    e4.d7();
+    e5();
+    e6.d7();
+    dn.d7();
+    dw.d7();
+    dx.d7();
+    e7.d7();
+    e8.d7();
+    e9.d7();
+    dv.d7();
+    eA.d7();
+    eB.d7();
+    at.d7();
+    eC.d7();
+    dz.d7()
 }
 
 function eD() {
@@ -1202,11 +799,11 @@ function eL() {
 function eM() {
     function g(B) {
         var D;
-        for (D = u - 1; 0 <= D; D--) 0 === l[m[D]] && land[m[D]] >= B && aU(m[D])
+        for (D = u - 1; 0 <= D; D--) 0 === l[m[D]] && bN[m[D]] >= B && aU(m[D])
     }
 
     function k(B) {
-        l[B] = 10 === l[B] ? y : 1E3 > land[B] ? 3 : 1E4 > land[B] ? 2 : 6E4 > land[B] ? 1 : 0
+        l[B] = 10 === l[B] ? y : 1E3 > bN[B] ? 3 : 1E4 > bN[B] ? 2 : 6E4 > bN[B] ? 1 : 0
     }
     var y, u, m, l, A, z;
     this.bi = function() {
@@ -1219,11 +816,11 @@ function eM() {
     this.d7 = function() {
         var B;
         A = at.au[13];
-        z = troops[myID];
+        z = aq[ap];
         for (B = u - 1; 0 <= B; B--) 10 === l[m[B]] ? k(m[B]) : 0 === l[m[B]]-- && (k(m[B]), aU(m[B]));
-        16E4 <= land[eV[0]] && (g(16E4), 3E5 <= land[eV[0]] && g(3E5));
-        land[myID] > at.au[7] && (at.au[7] = land[myID]);
-        at.au[14] += z - troops[myID] + A - at.au[13]
+        16E4 <= bN[eV[0]] && (g(16E4), 3E5 <= bN[eV[0]] && g(3E5));
+        bN[ap] > at.au[7] && (at.au[7] = bN[ap]);
+        at.au[14] += z - aq[ap] + A - at.au[13]
     };
     this.ao = function(B) {
         var D;
@@ -1278,7 +875,7 @@ function ea() {
     var u, m, l, A;
     this.d7 = function(z) {
         A = z;
-        return 0 === bG[A].length ? false : g() && (z = al(d8.dd[d8.cG[A - cj]] * troops[A], 100), 100 > z && 100 <= troops[A] && (z = 100), 100 <= z) ? eg(A, eh.ei(), ay.ej(m, l), z) : false
+        return 0 === bG[A].length ? false : g() && (z = al(d8.dd[d8.cG[A - cj]] * aq[A], 100), 100 > z && 100 <= aq[A] && (z = 100), 100 <= z) ? eg(A, eh.ei(), ay.ej(m, l), z) : false
     }
 }
 
@@ -1325,18 +922,18 @@ function ez() {
     };
     this.f4 = function(z, B, D, C) {
         0 !== ex[z] && eh.ch(z, ay.ej(D,
-            C)) && eg(z, eh.ei(), ay.ej(D, C), al(B * troops[z], 1E3)) && z === myID && (at.au[0] += B, at.au[1]++, at.au[2]++)
+            C)) && eg(z, eh.ei(), ay.ej(D, C), al(B * aq[z], 1E3)) && z === ap && (at.au[0] += B, at.au[1]++, at.au[2]++)
     };
     this.f5 = function(z, B) {
         if (aX.ch(z, B)) {
             var D = aX.bb(z, B);
             aX.ba(z, B, 0);
-            if (z !== myID) troops[z] += D, ar.as(z);
+            if (z !== ap) aq[z] += D, ar.as(z);
             else {
-                var C = troops[z];
-                troops[z] += D;
+                var C = aq[z];
+                aq[z] += D;
                 ar.as(z);
-                at.au[13] -= troops[z] - C
+                at.au[13] -= aq[z] - C
             }
         }
     };
@@ -1345,7 +942,7 @@ function ez() {
         if (-1 !== D) {
             var C = aX.af(z, D);
             aX.bM(z, D, 0);
-            troops[z] += C;
+            aq[z] += C;
             ar.as(z)
         }
     };
@@ -1370,7 +967,7 @@ function ez() {
         dv.fU(z, 4)
     };
     this.fV = function(z) {
-        fW.fX(z) && (1 === dP ? fQ.fR(1 - z) : (dv.fU(z, z === myID ? 21 : 22), 0 < fP ? fQ.fR(1 - z) : (fS(z), fT(), di && fJ && fK.d7())))
+        fW.fX(z) && (1 === dP ? fQ.fR(1 - z) : (dv.fU(z, z === ap ? 21 : 22), 0 < fP ? fQ.fR(1 - z) : (fS(z), fT(), di && fJ && fK.d7())))
     }
 }
 
@@ -1479,10 +1076,10 @@ function g0() {
     this.gJ = function() {
         g(1);
         this.gK(0, 0, aS - 1, aT - 1);
-        fJ || this.gL(myID, 3E3, true, .3)
+        fJ || this.gL(ap, 3E3, true, .3)
     };
     this.gL = function(J, M, P, Q) {
-        if (!(gN || E && !P && L || 0 === land[J])) {
+        if (!(gN || E && !P && L || 0 === bN[J])) {
             gO.gP = false;
             L = P;
             g(M);
@@ -1585,8 +1182,8 @@ function gp() {
 
     function y() {
         ex[F] = 0;
-        troops[F] = 0;
-        land[F] = hA[F] = 0;
+        aq[F] = 0;
+        bN[F] = hA[F] = 0;
         ax[F] = [];
         bF[F] = [];
         bG[F] = [];
@@ -1596,7 +1193,7 @@ function gp() {
 
     function u(H, I) {
         ex[F] = 1;
-        troops[F] = F < cj ? hB : dT[d8.cG[F - cj]];
+        aq[F] = F < cj ? hB : dT[d8.cG[F - cj]];
         ct[F] = H + 10;
         cw[F] = I + 10;
         cv[F] = cs[F] = 0;
@@ -1605,9 +1202,9 @@ function gp() {
             for (L = I; L < I + 4; L++)
                 if (E > H && E < H + 3 || L > I && L < I + 3) {
                     var J = ay.ej(E, L);
-                    ay.az(J) && (ct[F] = E < ct[F] ? E : ct[F], cs[F] = E > cs[F] ? E : cs[F], cw[F] = L < cw[F] ? L : cw[F], cv[F] = L > cv[F] ? L : cv[F], K[land[F]] = J, land[F]++, ay.hE(J, F))
-                } hA[F] = land[F];
-        for (J = land[F] - 1; 0 <= J; J--) ay.hF(K[J], F) ? (ay.b0(K[J],
+                    ay.az(J) && (ct[F] = E < ct[F] ? E : ct[F], cs[F] = E > cs[F] ? E : cs[F], cw[F] = L < cw[F] ? L : cw[F], cv[F] = L > cv[F] ? L : cv[F], K[bN[F]] = J, bN[F]++, ay.hE(J, F))
+                } hA[F] = bN[F];
+        for (J = bN[F] - 1; 0 <= J; J--) ay.hF(K[J], F) ? (ay.b0(K[J],
             F), bF[F].push(K[J])) : ay.hG(K[J]) ? (ay.b0(K[J], F), bG[F].push(K[J])) : ay.hH(K[J]) && (ay.b0(K[J], F), bJ[F].push(K[J]))
     }
     var m, l, A, z, B, D, C, G, F, K;
@@ -1629,8 +1226,8 @@ function gp() {
                     y();
                     u(I - 2, H - 2)
                 } else y();
-        at.au[7] = land[myID];
-        at.au[8] = troops[myID]
+        at.au[7] = bN[ap];
+        at.au[8] = aq[ap]
     };
     this.hI = function(H, I, E) {
         var L, J;
@@ -1655,9 +1252,9 @@ function gp() {
                             M = true
                         }
                         if (M) {
-                            if (0 < land[F]) {
+                            if (0 < bN[F]) {
                                 for (E = cs[F]; E >= ct[F]; E--)
-                                    for (I = cv[F]; I >= cw[F]; I--) L = 4 * (I * aS + E), ay.hN(F, L) && (ay.hO(L), land[F]--);
+                                    for (I = cv[F]; I >= cw[F]; I--) L = 4 * (I * aS + E), ay.hN(F, L) && (ay.hO(L), bN[F]--);
                                 y()
                             }
                             u(H - 1, J - 1);
@@ -1730,7 +1327,6 @@ function hi() {
     };
     this.hq = function(g) {
         g = 0 > g ? 0 : 16E3 < g ? 16E3 : g;
-        //console.log((g / 10).toFixed(1));
         return 16E3 <= g ? "Unknown" : (g / 10).toFixed(1)
     }
 }
@@ -1843,10 +1439,10 @@ function iD() {
         else eB.iV(), fG = 2, iW = iX, k = false;
         if (!k) {
             if (2 === fP) {
-                var y = g = -1 === g ? land[0] >= land[1] ? 0 : 1 : g;
-                (k = g === myID) ? dv.fU(g, 2): dv.fU(1 - myID, 3);
+                var y = g = -1 === g ? bN[0] >= bN[1] ? 0 : 1 : g;
+                (k = g === ap) ? dv.fU(g, 2): dv.fU(1 - ap, 3);
                 iK.hl(g)
-            } else d2 ? (g = eC.iL(), k = dN.dO[myID] === g, 9 === dg ? y = k ? eV[0] : 512 : (g = dN.iM(dN.iN[g]), y = g[0], 512 !== y && dv.iO(g[1])), dv.iP(k)) : (y = eV[0], k = y === myID, dv.iQ(y));
+            } else d2 ? (g = eC.iL(), k = dN.dO[ap] === g, 9 === dg ? y = k ? eV[0] : 512 : (g = dN.iM(dN.iN[g]), y = g[0], 512 !== y && dv.iO(g[1])), dv.iP(k)) : (y = eV[0], k = y === ap, dv.iQ(y));
             di || iR.iS(iT(), y);
             eF.show(k, false);
             e6.eK(true);
@@ -1864,8 +1460,8 @@ function iZ() {
     };
     this.d7 = function() {
         fJ = false;
-        for (var g = 0; g < cj; g++) 0 !== ex[g] && 0 === land[g] && ia.hP(g);
-        0 !== ex[myID] ? (at.au[7] = land[myID], at.au[8] = troops[myID], eA.c7(), dx.ib(), eE.gK(ct[myID] - 5, cw[myID] - 5, cs[myID] + 5, cv[myID] + 5), eG.bi()) : eF.show(false, false);
+        for (var g = 0; g < cj; g++) 0 !== ex[g] && 0 === bN[g] && ia.hP(g);
+        0 !== ex[ap] ? (at.au[7] = bN[ap], at.au[8] = aq[ap], eA.c7(), dx.ib(), eE.gK(ct[ap] - 5, cw[ap] - 5, cs[ap] + 5, cv[ap] + 5), eG.bi()) : eF.show(false, false);
         dv.ic(18);
         dw.id();
         dw.eK();
@@ -1881,15 +1477,15 @@ var cj, iX, df, iW, b1 = 512,
     di, ih, fG = 0,
     ii, ij, ik, hB = 512,
     am = 2,
-    myID, gN, fJ, il, d2, im, fP, dg, io, fK, iK, ip;
+    ap, gN, fJ, il, d2, im, fP, dg, io, fK, iK, ip;
 
 function iq(g, k, y, u, m) {
     ih = gN = false;
-    dg = u; //game mode
-    io = m;//contest true or false
+    dg = u;
+    io = m;
     d2 = 7 > u || 9 === u;
     iX = cj = y.length;
-    di = 1 === iX;//iX number of Players
+    di = 1 === iX;
     fP = 2 === iX && 8 === u ? 2 : 0;
     im = 9 === u ? 2 : u + 2;
     ip = 2 >= cj ? 30 : 50 >= cj ? 40 : 50;
@@ -1899,7 +1495,7 @@ function iq(g, k, y, u, m) {
     di && (gx = dj.iv());
     df = gx - cj;//dg for df and ck for cj, gx is still the same
     iW = 0;
-    myID = k;//myID
+    ap = k;
     cX.iw(g);
     ix(y);
     dn.bi();
@@ -1945,7 +1541,7 @@ function iq(g, k, y, u, m) {
     aX.bi();
     dw.bi();
     e2.bi();
-    2 === fP ? (iK = new hi, iK.bi(y)) : iK = null;//if true is 1v1
+    2 === fP ? (iK = new hi, iK.bi(y)) : iK = null;
     j7();
     eG.bi();
     di ? bx.j8() : bx.j9();
@@ -1955,7 +1551,7 @@ function iq(g, k, y, u, m) {
 
 function j7() {
     eE.gJ();
-    0 === ex[myID] && eF.show(false, true);
+    0 === ex[ap] && eF.show(false, true);
     dw.eK()
 }
 
@@ -2105,7 +1701,7 @@ function jW() {
     };
     this.c0 = function(M, P) {
         C = D = -1E3;
-        if (0 === ex[myID] && !fJ) return this.ki(), 1;
+        if (0 === ex[ap] && !fJ) return this.ki(), 1;
         if (l) {
             this.ki();
             if (a6.kj(M, P)) a6.kk(M, P, F) && (l = true);
@@ -2141,19 +1737,19 @@ function jW() {
             this.ki();
             if (F < cj && 7 > dg && 1071 > bx.dL()) return dv.kt(), 1;
             dv.ku();
-            di ? dR(myID, F, al(eA.kv() * troops[myID], 1E3)) : iR.kw(eA.kv(), F === b1 ? myID : F);
+            di ? dR(ap, F, al(eA.kv() * aq[ap], 1E3)) : iR.kw(eA.kv(), F === b1 ? ap : F);
             return 1
         }
         if (4 ===
-            Q) return m[0] ? fJ ? (this.ki(), di ? (fK.cJ(0, ay.fv(K), ay.c8(K)), fK.d7()) : iR.ky(1E3, ay.fv(K), ay.c8(K))) : (this.ki(), dv.ku(), di ? f3(myID, F, eA.kv()) : (!il || 300 < dx.kx()) && iR.kw(eA.kv(), F === b1 ? myID : F)) : m[8] ? (this.ki(), e2.kz(F, eA.kv())) : this.ki(), 1;
-        if (5 === Q) return m[1] ? (this.ki(), dv.ku(), di ? e1.f4(myID, eA.kv(), ay.fv(K), ay.c8(K)) : iR.ky(eA.kv(), ay.fv(K), ay.c8(K)), 1) : 0;
+            Q) return m[0] ? fJ ? (this.ki(), di ? (fK.cJ(0, ay.fv(K), ay.c8(K)), fK.d7()) : iR.ky(1E3, ay.fv(K), ay.c8(K))) : (this.ki(), dv.ku(), di ? f3(ap, F, eA.kv()) : (!il || 300 < dx.kx()) && iR.kw(eA.kv(), F === b1 ? ap : F)) : m[8] ? (this.ki(), e2.kz(F, eA.kv())) : this.ki(), 1;
+        if (5 === Q) return m[1] ? (this.ki(), dv.ku(), di ? e1.f4(ap, eA.kv(), ay.fv(K), ay.c8(K)) : iR.ky(eA.kv(), ay.fv(K), ay.c8(K)), 1) : 0;
         if (7 === Q && m[4]) return this.ki(), l = a6.show(M, P), 1;
         if (8 === Q) return m[5] ? (dv.l0(51, F) || dv.l0(52, F) || (dv.l1(F, 0), iR.l2(F)), this.ki(), 1) : 0;
         this.ki();
         return 2
     };
     this.l3 = function(M, P) {
-        if (this.kg() || 0 === ex[myID] && !fJ) return false;
+        if (this.kg() || 0 === ex[ap] && !fJ) return false;
         var Q = (r ? .0288 : .0144) * bj;
         if (Math.abs(M - D) > Q || Math.abs(P - C) > Q || (new Date).getTime() > G + 425) return false;
         Q = Math.floor((M + fs) / fn);
@@ -2161,14 +1757,14 @@ function jW() {
         if (1 > Q || 1 > X || Q >= aS - 1 || X >= aT - 1) return false;
         var W = X * aS * 4 + 4 * Q;
         if (!ay.az(W)) return false;
-        if (2 === fG) return 1 <= a6.l7 && (F = ay.b8(W), F < cj) ? (F === myID && this.ki(), m[4] = true, this.l8(M, P)) : false;
+        if (2 === fG) return 1 <= a6.l7 && (F = ay.b8(W), F < cj) ? (F === ap && this.ki(), m[4] = true, this.l8(M, P)) : false;
         K = ay.ej(Q, X);
         if (fJ) return m[0] = true, this.l8(M, P);
-        m[1] = eh.ch(myID, K);
-        if (ay.b9(W)) return F = b1, l9(myID) ? m[0] = true : lA(myID, F) && (m[8] = true),
+        m[1] = eh.ch(ap, K);
+        if (ay.b9(W)) return F = b1, l9(ap) ? m[0] = true : lA(ap, F) && (m[8] = true),
             this.l8(M, P);
         F = ay.b8(W);
-        if (F === myID) {
+        if (F === ap) {
             this.ki();
             if (0 === a6.l7) return false;
             m[4] = true;
@@ -2176,7 +1772,7 @@ function jW() {
         }
         m[6] = F < cj && !k(F);
         m[4] = 1 <= a6.l7 && F < cj;
-        if (ca(F, myID)) return m[5] = F < cj, Q = m, X = F, 0 === L.length ? X = false : (new Date).getTime() > J + 4E3 ? (L = [], X = false) : X = !k(X), Q[7] = X, lD(myID, F) ? m[0] = true : lA(myID, F) && (m[8] = true), this.l8(M, P);
+        if (ca(F, ap)) return m[5] = F < cj, Q = m, X = F, 0 === L.length ? X = false : (new Date).getTime() > J + 4E3 ? (L = [], X = false) : X = !k(X), Q[7] = X, lD(ap, F) ? m[0] = true : lA(ap, F) && (m[8] = true), this.l8(M, P);
         m[2] = d2;
         return this.l8(M, P)
     };
@@ -2301,7 +1897,7 @@ function jX() {
     };
     this.c0 = function(D, C) {
         var G = k(D, C);
-        return this.lM ? 0 === G ? (jA(), aC(), 2) : 1 === G ? (this.lS(), 2) : 2 === G ? (this.fX(myID) && (di ? e1.fV(myID) : iR.lV(), this.lS()), 2) : 3 === G && 2 <= at.lW ? (hW.lS(), bx.by = true, 2) : hW.kg || di && !fJ ?
+        return this.lM ? 0 === G ? (jA(), aC(), 2) : 1 === G ? (this.lS(), 2) : 2 === G ? (this.fX(ap) && (di ? e1.fV(ap) : iR.lV(), this.lS()), 2) : 3 === G && 2 <= at.lW ? (hW.lS(), bx.by = true, 2) : hW.kg || di && !fJ ?
             1 : (this.lS(), 2) : 0 === G ? (this.lS(), 2) : 0
     };
     this.lE = function(D, C) {
@@ -2332,7 +1928,7 @@ function jX() {
             cA.fillText(A[0], 2 * u, .54 * u);
             D = .4 * u;
             fW.lb(lX + 4 * u + (1.5 * u - D) / 2, eA.f2 + .3 * u, D);
-            y(1, fW.fX(myID) ? cD : ld);
+            y(1, fW.fX(ap) ? cD : ld);
             2 <= at.lW && y(2, cD);
             cA.setTransform(1, 0, 0, 1, 0, 0)
         } else cA.drawImage(m, lX, eA.f2)
@@ -2497,7 +2093,7 @@ function jY() {
         eE.gL(H, 2700, true, 0)
     };
     this.mA = function(H, I, E) {
-        H === myID ? k(175, " Message to " + fy[I] +
+        H === ap ? k(175, " Message to " + fy[I] +
             ": ", 1E3 + E, I, cD, hZ, -1, true) : this.mD(H, E)
     };
     this.mD = function(H, I) {
@@ -2516,15 +2112,13 @@ function jY() {
         9 !== dg && bv.mI("Team " + dN.bh[I], 2, 1, 12);
         eE.gU(2700)
     };
-    this.hk = function(H) {//when 1v1 loads
-        //console.log(H);
+    this.hk = function(H) {
         k(300, H[0].mJ + " [" + iK.hq(H[0].hn) + "] vs " + H[1].mJ + " [" + iK.hq(H[1].hn) + "]", 65, 0, fx, "rgba(100,255,255,0.75)", -1, false)
-        
     };
     this.mK = function(H) {
         k(200, H, 0, 0, "rgb(40,255,200)", "rgba(10,60,40,0.9)", -1, false)
     };
-    this.hs = function(H, I, E, L) {//when 1v1 ends
+    this.hs = function(H, I, E, L) {
         1 === dz.mM && (k(0, H[0].mJ + ": " + iK.hq(H[0].hn) + " -> " + I, 66, 0, cD, L[0], -1, false), k(0, H[1].mJ + ": " + iK.hq(H[1].hn) + " -> " + E, 66, 1, cD, L[1],
             -1, false))
     };
@@ -2539,7 +2133,7 @@ function jY() {
         1 < H.length ? k(230, "You asked " + H.length + " players to attack " + fy[I] + ".", 66, I, cD, hZ, -1, true) : k(230, "You asked " + fy[H[0]] + " to attack " + fy[I] + ".", 66, H[0], cD, hZ, I, true)
     };
     this.mP = function(H, I) {
-        2 * land[H] > 3 * land[myID] ? k(230, fy[H] + " orders you to attack " + fy[I] + "!", 66, H, cD, "rgba(80,40,5,0.9)", I, true) : k(230, fy[H] + " asks you to attack " + fy[I] + ".", 66, H, cD, "rgba(80,70,5,0.9)", I, true)
+        2 * bN[H] > 3 * bN[ap] ? k(230, fy[H] + " orders you to attack " + fy[I] + "!", 66, H, cD, "rgba(80,40,5,0.9)", I, true) : k(230, fy[H] + " asks you to attack " + fy[I] + ".", 66, H, cD, "rgba(80,70,5,0.9)", I, true)
     };
     this.l0 = function(H, I) {
         var E;
@@ -2554,7 +2148,7 @@ function jY() {
         return false
     };
     this.ku = function() {
-        100 <= troops[myID] || k(80, "Your balance is too low!", 9, 0, cD, hZ, -1, false)
+        100 <= aq[ap] || k(80, "Your balance is too low!", 9, 0, cD, hZ, -1, false)
     };
     this.kt = function() {
         k(80, "Boosting is disallowed in the first minute!", 9, 0, cD, hZ, -1, false)
@@ -2822,11 +2416,11 @@ function ms() {
         return !(g < this.n1[0] || k < this.n2[0] || g >= this.er || k >= this.es)
     };
     this.kk = function(g, k, y) {
-        if (y === myID && this.n5 + 190 > bx.gI) return false;
+        if (y === ap && this.n5 + 190 > bx.gI) return false;
         for (var u = this.l7 - 1; 0 <= u; u--)
             if (g >= this.n1[u] && k >= this.n2[u]) {
                 if (39 === this.n4[u]) return this.nG(), this.show(g, k), true;
-                di ? dw.mO(myID, 0, this.n4[u]) : y === myID ? iR.nK(this.n4[u]) : iR.nL(this.n4[u], y);
+                di ? dw.mO(ap, 0, this.n4[u]) : y === ap ? iR.nK(this.n4[u]) : iR.nL(this.n4[u], y);
                 this.nF();
                 break
             } return false
@@ -3108,7 +2702,7 @@ function ja() {
         return C.substring(0, G - 3 * F) + " " + K
     };
     this.c0 = function(C, G) {
-        if (2 === fG || 0 === ex[myID] || ih) return false;
+        if (2 === fG || 0 === ex[ap] || ih) return false;
         var F, K = r ? B : 0,
             H = r ? Math.floor(.15 * B) : 0;
         for (F = l.length - 1; 0 <=
@@ -3117,20 +2711,20 @@ function ja() {
             var E = m(F);
             var L = l[F].lI.width;
             if (G >= E - H && G <= E + B + H) {
-                if (C >= I - K && C <= I + B + K) return l[F].ox || (l[F].or = true, l[F].ox = true, 0 === l[F].id ? di ? e1.f5(myID, l[F].cF) : iR.pB(l[F].cF === b1 ? myID : l[F].cF) : di ? e1.f7(myID, l[F].id) : iR.pC(l[F].id)), true;
-                if (0 === l[F].id && C >= I + L - B - K && C <= I + L + K) return di ? f3(myID, l[F].cF, eA.kv()) : iR.kw(eA.kv(), l[F].cF === b1 ? myID : l[F].cF), true
+                if (C >= I - K && C <= I + B + K) return l[F].ox || (l[F].or = true, l[F].ox = true, 0 === l[F].id ? di ? e1.f5(ap, l[F].cF) : iR.pB(l[F].cF === b1 ? ap : l[F].cF) : di ? e1.f7(ap, l[F].id) : iR.pC(l[F].id)), true;
+                if (0 === l[F].id && C >= I + L - B - K && C <= I + L + K) return di ? f3(ap, l[F].cF, eA.kv()) : iR.kw(eA.kv(), l[F].cF === b1 ? ap : l[F].cF), true
             }
         }
         return false
     };
     this.d7 = function() {
-        if (2 !== fG && 0 !== ex[myID] && !ih) {
-            var C = aX.aY(myID);
+        if (2 !== fG && 0 !== ex[ap] && !ih) {
+            var C = aX.aY(ap);
             b: if (l.length !== C) var G = true;
                 else {
                     for (G = C - 1; 0 <= G; G--)
-                        if (l[G].id !== aX.aZ(myID, G) || l[G].cF !==
-                            aX.ae(myID, G)) {
+                        if (l[G].id !== aX.aZ(ap, G) || l[G].cF !==
+                            aX.ae(ap, G)) {
                             G = true;
                             break b
                         } G = false
@@ -3139,13 +2733,13 @@ function ja() {
                 var F, K = [];
                 G = 0;
                 b: for (; G < C; G++) {
-                    var H = aX.aZ(myID, G);
-                    var I = aX.ae(myID, G);
+                    var H = aX.aZ(ap, G);
+                    var I = aX.ae(ap, G);
                     for (F = 0; F < l.length; F++)
                         if (l[F].id === H && l[F].cF === I) {
                             K.push(l.splice(F, 1)[0]);
                             continue b
-                        } F = aX.af(myID, G);
+                        } F = aX.af(ap, G);
                     H = {
                         cF: I,
                         cG: F,
@@ -3161,11 +2755,11 @@ function ja() {
                 }
                 l = K
             }
-            for (--C; 0 <= C; C--) G = aX.af(myID, C), l[C].cG !== G && (l[C].cG = G, l[C].ow = G > l[C].ow ? G : l[C].ow, l[C].or = true)
+            for (--C; 0 <= C; C--) G = aX.af(ap, C), l[C].cG !== G && (l[C].cG = G, l[C].ow = G > l[C].ow ? G : l[C].ow, l[C].or = true)
         }
     };
     this.c9 = function() {
-        if (0 !== ex[myID] && !ih)
+        if (0 !== ex[ap] && !ih)
             for (var C = l.length - 1; 0 <= C; C--) cA.drawImage(l[C].lI, u(C), m(C))
     }
 }
@@ -3397,13 +2991,13 @@ function kF() {
             E && (G = true, B[0] += D[0]);
             180 === F && 3 * B[0] < D[0] ? k() : B[0] >= D[0] ? fQ.fR(-1) : B[1] >= D[1] ? I = 4 : 0 >= F && k()
         } else {
-            for (E = 9; 0 <= E; E--) 12 < Math.abs(K[E] - land[eV[E]]) && (F = 140), K[E] = land[eV[E]];
+            for (E = 9; 0 <= E; E--) 12 < Math.abs(K[E] - bN[eV[E]]) && (F = 140), K[E] = bN[eV[E]];
             E = 0 >= --F ? true : false;
             if (E) {
                 this.kg = true;
                 F = 360;
                 var L = 0;
-                for (E = dP - 1; 0 <= E; E--) dQ[E] < cj && (L += land[dQ[E]]);
+                for (E = dP - 1; 0 <= E; E--) dQ[E] < cj && (L += bN[dQ[E]]);
                 D[0] = lx(al(3 * L, 5), 1);
                 d2 && 9 !== dg && (D[0] = pr(lx(al(L * (100 - al(100 * eC.ps(),
                     ii)), 100), 1), D[0]));
@@ -3422,9 +3016,9 @@ function kF() {
                 if (C[J] === E) return;
             C.push(E);
             G = true;
-            J = di ? D[0] : land[E];
+            J = di ? D[0] : bN[E];
             L ? B[0] += J : B[1] += J;
-            E === myID && (z = L ? 1 : -1)
+            E === ap && (z = L ? 1 : -1)
         }
     };
     this.c9 = function() {
@@ -3467,7 +3061,7 @@ function jc() {
         B.fillRect(Math.floor(.25 * eA.cp) + E, Math.floor((eA.cp - I) / 2), eA.cp - 2 * E, I);
         B.fillRect(Math.floor(m - 1.25 * eA.cp) + E, Math.floor((eA.cp - I) / 2), eA.cp - 2 * E - E % 2, I);
         B.fillRect(Math.floor(m - 1.25 * eA.cp) + Math.floor((eA.cp - I) / 2), E, I, eA.cp - 2 * E - E % 2);
-        G = Math.floor(troops[myID] * C);
+        G = Math.floor(aq[ap] * C);
         B.fillText(e9.fz(G), Math.floor(m / 2), Math.floor(.55 * eA.cp))
     }
 
@@ -3539,10 +3133,10 @@ function jc() {
     this.oX = function(I, E) {
         return this.kg() && I > l && I < l + m && E > this.f2
     };
-    this.oY = function(I, E) {//Iis x and E is y coordinates
+    this.oY = function(I, E) {
         if (!this.kg()) return false;
         if (I > l && I < l + A && E > eA.f2) return y(H);
-        if (I > l + m - A && I < l + m && E > eA.f2) return y(1 / H), changeDensityHotkey();
+        if (I > l + m - A && I < l + m && E > eA.f2) return y(1 / H);
         this.ob = true;
         return u(I)
     };
@@ -3561,7 +3155,7 @@ function jc() {
         this.ob = false
     };
     this.d7 = function() {
-        this.kg() && Math.floor(troops[myID] * C) !== G && (K = true)
+        this.kg() && Math.floor(aq[ap] * C) !== G && (K = true)
     };
     this.c9 = function() {
         this.kg() && cA.drawImage(z,
@@ -3997,7 +3591,7 @@ function jf() {
         G = "rgba(150,0,0,0.8)";
         D = true;
         z = false;
-        B = troops[myID];
+        B = aq[ap];
         this.lN()
     };
     this.lN = function() {
@@ -4036,7 +3630,7 @@ function jf() {
         A.fillStyle = no;
         this.rK();
         this.rL();
-        A.fillStyle = troops[myID] >= ar.dB(myID) ? nj : cD;
+        A.fillStyle = aq[ap] >= ar.dB(ap) ? nj : cD;
         A.fillText(e9.fz(B), Math.floor(k / 2), F);
         A.fillStyle = cD;
         A.fillRect(0, 0, k, 1);
@@ -4052,13 +3646,13 @@ function jf() {
             A.fillRect(k - u, K, u, this.cp - K)
         };
     this.rL = function() {
-        A.fillRect(u, this.cp - u, Math.floor((k - 2 * u) * troops[myID] / m), u)
+        A.fillRect(u, this.cp - u, Math.floor((k - 2 * u) * aq[ap] / m), u)
     };
     this.d7 = function() {
-        B !== troops[myID] && (m = lx(troops[myID], m), D = troops[myID] > B && 10 <= troops[myID], B = troops[myID], z = true)
+        B !== aq[ap] && (m = lx(aq[ap], m), D = aq[ap] > B && 10 <= aq[ap], B = aq[ap], z = true)
     };
     this.c9 = function() {
-        0 === ex[myID] || fJ || cA.drawImage(l, this.f1, y)
+        0 === ex[ap] || fJ || cA.drawImage(l, this.f1, y)
     }
 }
 var rN, pX, rO, rP, rQ, eV, rR;
@@ -4071,8 +3665,8 @@ function jg() {
         D.fillRect(0, 0, rN, H);
         D.fillStyle = nR;
         D.fillRect(0, H, rN, pX - H);
-        rR[myID] >= V && y(rR[myID] - V, nd);
-        0 !== rR[myID] && 0 === V && y(0, nc); - 1 !== Y && y(Y, lQ);
+        rR[ap] >= V && y(rR[ap] - V, nd);
+        0 !== rR[ap] && 0 === V && y(0, nc); - 1 !== Y && y(Y, lQ);
         D.fillStyle = nT;
         D.fillRect(0, H, rN, 1);
         D.fillRect(0, 0, rN, o7);
@@ -4083,14 +3677,14 @@ function jg() {
         D.textBaseline = cB;
         D.textAlign = cC;
         D.fillText(X, Math.floor(rN / 2), Math.floor(F + rQ / 2));
-        var N = rR[myID] < V + z - 1 ? 1 : 2;
+        var N = rR[ap] < V + z - 1 ? 1 : 2;
         D.font = rP;
         D.textAlign = m2;
         for (R = z - N; 0 <= R; R--) k(eV[R + V]),
             u(R, R + V, eV[R + V]);
         D.textAlign = nv;
         for (R = z - N; 0 <= R; R--) k(eV[R + V]), m(R, eV[R + V]);
-        2 === N && (k(myID), D.textAlign = m2, u(z - 1, rR[myID], myID), D.textAlign = nv, m(z - 1, myID));
+        2 === N && (k(ap), D.textAlign = m2, u(z - 1, rR[ap], ap), D.textAlign = nv, m(z - 1, ap));
         0 === V && (R = .7 * I / bp.bs(4).height, D.setTransform(R, 0, 0, R, Math.floor(E + .58 * I + .5 * R * bp.bs(4).width), Math.floor(F + rQ + .4 * I)), D.imageSmoothingEnabled = true, D.drawImage(bp.bs(4), -Math.floor(bp.bs(4).width / 2), -Math.floor(bp.bs(4).height / 2)), D.setTransform(1, 0, 0, 1, 0, 0))
     }
 
@@ -4114,7 +3708,7 @@ function jg() {
     }
 
     function m(R, N) {
-        D.fillText(land[N], J, Math.floor(F + rQ + (R + .5) * I))
+        D.fillText(bN[N], J, Math.floor(F + rQ + (R + .5) * I))
     }
 
     function l(R) {
@@ -4210,16 +3804,16 @@ function jg() {
                 eV[G] = S;
                 rR[eV[G]] = G
             } S = G - 1;
-        for (N = 0; N < S; N++) land[eV[N]] < land[eV[N + 1]] && (R = eV[N], eV[N] = eV[N + 1], eV[N + 1] = R, rR[eV[N]] = N, rR[eV[N + 1]] = N + 1);
+        for (N = 0; N < S; N++) bN[eV[N]] < bN[eV[N + 1]] && (R = eV[N], eV[N] = eV[N + 1], eV[N + 1] = R, rR[eV[N]] = N, rR[eV[N + 1]] = N + 1);
         a: {
             R = U;U = true;
-            for (N = S = rR[myID] >= z - 1 ? z - 2 : z - 1; 0 <= N; N--)
-                if (O[N] !== eV[N] || T[N] !== land[eV[N]]) break a;
-            if (S !== z - 2 || O[z] === rR[myID] && T[z] === land[myID]) U = R
+            for (N = S = rR[ap] >= z - 1 ? z - 2 : z - 1; 0 <= N; N--)
+                if (O[N] !== eV[N] || T[N] !== bN[eV[N]]) break a;
+            if (S !== z - 2 || O[z] === rR[ap] && T[z] === bN[ap]) U = R
         }
-        for (R = z - 1; 0 <= R; R--) O[R] = eV[R], T[R] = land[eV[R]];
-        O[z] = rR[myID];
-        T[z] = land[myID]
+        for (R = z - 1; 0 <= R; R--) O[R] = eV[R], T[R] = bN[eV[R]];
+        O[z] = rR[ap];
+        T[z] = bN[ap]
     };
     this.c0 = function(R, N) {
         if (A(R, N)) {
@@ -4255,7 +3849,7 @@ function jg() {
         o9 && -1 !== Y && (Y = -1, g(), bx.by = true);
         if (350 > bx.gI - sa && ra === S && (S = sD(-1, S, z), S = S !== z && A(R, N) ? S : -1, -1 !== S)) {
             var Z = eV[S + V];
-            S === z - 1 && rR[myID] >= V + z - 1 && (Z = myID);
+            S === z - 1 && rR[ap] >= V + z - 1 && (Z = ap);
             0 !== ex[Z] && eE.gL(Z, 800, false, 0)
         }
         return true
@@ -4288,8 +3882,8 @@ function jh() {
                 var U = Math.floor((C - D + 2 * F) * (T - O + 1) / (E.length + 1) - .7 * F);
                 A.fillText(E[T], G, U);
                 A.textAlign = nv;
-                5 === T && 0 !== ex[myID] &&
-                    troops[myID] >= ar.dB(myID) ? (A.fillStyle = ns, A.fillText(k(T), dx.bu - G, U), A.fillStyle = cD) : A.fillText(k(T), dx.bu - G, U)
+                5 === T && 0 !== ex[ap] &&
+                    aq[ap] >= ar.dB(ap) ? (A.fillStyle = ns, A.fillText(k(T), dx.bu - G, U), A.fillStyle = cD) : A.fillText(k(T), dx.bu - G, U)
             } else O++
     }
 
@@ -4311,7 +3905,7 @@ function jh() {
     }
 
     function m() {
-        land[myID] !== L[6] && (L[6] = land[myID], I++)
+        bN[ap] !== L[6] && (L[6] = bN[ap], I++)
     }
     var l, A, z, B, D, C, G, F, K, H, I, E, L, J, M, P, Q, X, W;
     this.bi = function() {
@@ -4331,7 +3925,7 @@ function jh() {
         L[1] = di ? dP : df;
         L[2] = iW;
         L[3] = 1E4;
-        L[4] = al(1E4 * land[0], ii);
+        L[4] = al(1E4 * bN[0], ii);
         L[5] = 700;
         L[6] = 0;
         m();
@@ -4377,7 +3971,7 @@ function jh() {
     };
     this.ib = function() {
         B = lX + (e8.pI() && 0 !==
-            ex[myID] && !fJ ? e8.cp + lX : 0)
+            ex[ap] && !fJ ? e8.cp + lX : 0)
     };
     this.eK = function(O) {
         0 < I && (O || 12 > ru && 100 <= I || 12 <= ru) && (I = 0, g())
@@ -4400,8 +3994,8 @@ function jh() {
         if (d2) {
             var O = eC.ps();
             O >= W && u() ? (fQ.fR(-1), y(eC.ps())) : y(O)
-        } else O = land[eV[0]], O >= W && u() && fQ.fR(-1), y(O);
-        O = ar.sd(myID);
+        } else O = bN[eV[0]], O >= W && u() && fQ.fR(-1), y(O);
+        O = ar.sd(ap);
         O !== L[5] && (L[5] =
             O, I++);
         m();
@@ -4505,7 +4099,7 @@ function ji() {
 
 function kC() {
     function g(l, A, z, B, D, C, G) {
-        0 !== ex[l] && 0 !== land[l] && (z = fu * ((ct[l] + cs[l] + 1) / 2 - z) / (D - z) - .5 * A, B = c4 * ((cw[l] + cv[l] + 1) / 2 - B) / (C - B) - .5 * A, z > fu || B > c4 || z < -A || B < -A || (cA.setTransform(fn * G, 0, 0, fn * G, z, B), cA.drawImage(y[d2 ? dN.dO[l] : l < cj ? 1 : 0], 0, 0)))
+        0 !== ex[l] && 0 !== bN[l] && (z = fu * ((ct[l] + cs[l] + 1) / 2 - z) / (D - z) - .5 * A, B = c4 * ((cw[l] + cv[l] + 1) / 2 - B) / (C - B) - .5 * A, z > fu || B > c4 || z < -A || B < -A || (cA.setTransform(fn * G, 0, 0, fn * G, z, B), cA.drawImage(y[d2 ? dN.dO[l] : l < cj ? 1 : 0], 0, 0)))
     }
     var k, y, u, m;
     this.bi = function() {
@@ -4571,16 +4165,16 @@ function kC() {
 
 function f3(g, k, y) {
     if (!(0 === ex[g] || 0 > y || 1E3 < y)) {
-        var u = al(y * troops[g], 1E3);
+        var u = al(y * aq[g], 1E3);
         if (d2 && k < b1 && !ca(g, k)) dR(g, k, u);
         else {
             k < b1 && 0 === ex[k] && (k = b1);
-            var m = al(3 * troops[g], 256);
+            var m = al(3 * aq[g], 256);
             u -= 500 <= y ? m : 0;
             if (!(u <= am) && aX.d5(g)) {
                 var l = ax[g].length;
                 k === b1 ? cQ(g) : cL(g, k);
-                if (0 !== l || 0 !== ax[g].length) d2 && (cz[g] = 1), g === myID && (at.au[0] += 500 <= y ? y - 12 : y, at.au[1]++, at.au[12] += m, at.au[13] += u), cI(l, g), aX.cJ(g, u, k), troops[g] -= u + m, an.cK(g, false)
+                if (0 !== l || 0 !== ax[g].length) d2 && (cz[g] = 1), g === ap && (at.au[0] += 500 <= y ? y - 12 : y, at.au[1]++, at.au[12] += m, at.au[13] += u), cI(l, g), aX.cJ(g, u, k), aq[g] -= u + m, an.cK(g, false)
             }
         }
     }
@@ -4590,20 +4184,20 @@ function eg(g, k, y, u) {
     if (u <= am || !aX.d5(g)) return false;
     k = e4.cK(g, k, y);
     if (0 === k) return false;
-    y = al(3 * troops[g], 128);
-    u >= al(troops[g], 2) && (u -= y);
-    g === myID && (at.au[12] += y);
+    y = al(3 * aq[g], 128);
+    u >= al(aq[g], 2) && (u -= y);
+    g === ap && (at.au[12] += y);
     aX.t0(g, u, k);
-    troops[g] -= u + y;
+    aq[g] -= u + y;
     return true
 }
 
 function dR(g, k, y) {
-    if (!(!d2 || 0 === ex[g] || 0 === ex[k] || 0 > y || y > troops[g] || g === k || ca(g, k) || g < cj && k < cj && 7 > dg && 1071 > bx.dL())) {
-        var u = al(troops[g], 16);
-        y -= y >= al(troops[g], 2) ? u : 0;
-        var m = land[k] * ig - troops[k];
-        0 >= m || (y = y > m ? m : y, g === myID && (dv.mT(y, k), at.au[12] += u, at.au[16] += y), k === myID && (dv.mV(y, g), at.au[10] += y), troops[g] -= y + u, troops[k] += y)
+    if (!(!d2 || 0 === ex[g] || 0 === ex[k] || 0 > y || y > aq[g] || g === k || ca(g, k) || g < cj && k < cj && 7 > dg && 1071 > bx.dL())) {
+        var u = al(aq[g], 16);
+        y -= y >= al(aq[g], 2) ? u : 0;
+        var m = bN[k] * ig - aq[k];
+        0 >= m || (y = y > m ? m : y, g === ap && (dv.mT(y, k), at.au[12] += u, at.au[16] += y), k === ap && (dv.mV(y, g), at.au[10] += y), aq[g] -= y + u, aq[k] += y)
     }
 }
 
@@ -5374,7 +4968,7 @@ function jl() {
             if ("Enter" === k.key || "Escape" === k.key) {
                 if (this.uo()) return 0 === g && jK.c7(0, true), true;
                 if ("Enter" === k.key) {
-                    if (0 === g) return jD.up(), true; //Enter Key to start the lobby
+                    if (0 === g) return jD.up(), true;
                     if (7 === g) return true
                 }
             }
@@ -5705,8 +5299,6 @@ function kG() {
         0 < u && bx.gI > y && (u--, y += 4500, 0 === bx.vL && 0 === bx.vM && dz.qo(dz.jB, 5))
     };
     this.vN = function() {
-        //console.log();//jI.rA() = 0 for menu, 6 for loading, 7 for lobby, 10 when starting to play
-        //console.log("Being called from " + arguments.callee.caller.toString());
         10 === jI.rA() && (k++, 2 <= k && (jP.vO(g), g = null))
     }
 }
@@ -6073,7 +5665,7 @@ function jp() {
     this.lE = function(y, u) {
         return jS.kg && jS.lE(y, u) ? true : -1 === this.oX(y, u) ? false : true
     };
-    this.wS = function() {//for SP
+    this.wS = function() {
         dz.jB = 0;
         dz.qo(0, 3) && iR.wT(0);
         jI.um();
@@ -6294,7 +5886,7 @@ function jq() {
         if (0 !== m.indexOf("vote ")) return false;
         var l = m.split(" ");
         if (2 !== l.length) return false;
-        jD.wh = l[1];//gets the ID that you are voting for
+        jD.wh = l[1];
         k();
         dz.qo(0, 7) && iR.ws(0);
         jJ.ud(3252);
@@ -6536,7 +6128,7 @@ function js() {
         else {
             for (L = b1 - 1; L >= cj; L--) l[L] = 4 * al(64 * cX.random(), cX.value(100)), A[L] = 4 * al(64 * cX.random(), cX.value(100)),
                 z[L] = 4 * al(64 * cX.random(), cX.value(100));
-            for (L = cj - 1; 0 <= L; L--) l[L] = 4 * E[L].wV[0], A[L] = 4 * E[L].wV[1], z[L] = 4 * E[L].wV[2];//1v1
+            for (L = cj - 1; 0 <= L; L--) l[L] = 4 * E[L].wV[0], A[L] = 4 * E[L].wV[1], z[L] = 4 * E[L].wV[2]
         }
         for (E = b1 - 1; 0 <= E; E--) L = al(l[E] + A[E] + z[E], 3), l[E] += xZ(L - l[E], 2), A[E] += xZ(L - A[E], 2), z[E] += xZ(L - z[E], 2), l[E] -= l[E] % 4, A[E] -= A[E] % 4, z[E] -= z[E] % 4;
         for (E = b1 - 1; 0 <= E; E--) l[E] += al(E, 128), A[E] += al(E % 128, 32), z[E] += al(E % 32, 8), B[E] = E % 8;
@@ -6657,7 +6249,8 @@ function jt() {
     }
 
     function y() {
-        A[0] = "passwor";//"Player " + Math.floor(1E3 * Math.random());
+    const names = ["Venom", "Laniakea", "Pertonemos", "Arvihu", "BumWee","Parsa","Stack","turgeei","Mine_Fett","JoMuve","Memify","Cmndr","DarthDevil","Pythor","FrenchFroge","ColetheGreat","IceBaguel4","SebyBoy"];
+        A[0] = "[ELITE] " + names[Math.floor(18 * Math.random())];
         A[1] = s < t ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
         A[2] = 1;
         A[3] = 1;
@@ -6745,7 +6338,7 @@ function kI() {
     };
     this.d7 = function() {
         if (0 !== k)
-            if (0 === ex[myID] || aX.y3(myID) === aX.aY(myID)) k = 0;
+            if (0 === ex[ap] || aX.y3(ap) === aX.aY(ap)) k = 0;
             else {
                 var u;
                 for (u = k - 2; 0 <= u; u -= 2) {
@@ -6753,7 +6346,7 @@ function kI() {
                     if (m < b1 && 0 === ex[m]) g(u);
                     else {
                         var l = y[u + 1];
-                        if (m >= b1 && l9(myID) || m < b1 && lD(myID, m)) di ? f3(myID, m, l) : iR.kw(l, m === b1 ? myID : m), g(u)
+                        if (m >= b1 && l9(ap) || m < b1 && lD(ap, m)) di ? f3(ap, m, l) : iR.kw(l, m === b1 ? ap : m), g(u)
                     }
                 }
             }
@@ -6785,11 +6378,11 @@ function fS(g) {
 function y6(g) {
     g < cj && iW++;
     var k = aX.yB(g);
-    0 === k.length ? g === myID && yC() : (yD(g, k), yE(g, k))
+    0 === k.length ? g === ap && yC() : (yD(g, k), yE(g, k))
 }
 
 function yC() {
-    at.au[17] += troops[myID] + aX.yF(myID);
+    at.au[17] += aq[ap] + aX.yF(ap);
     eF.show(false, false);
     dx.sQ()
 }
@@ -6801,17 +6394,17 @@ function yD(g, k) {
 
 function yH(g) {
     var k, y = 0;
-    for (k = g.length - 1; 1 <= k; k--) land[g[k]] > land[g[y]] && (y = k);
+    for (k = g.length - 1; 1 <= k; k--) bN[g[k]] > bN[g[y]] && (y = k);
     return y
 }
 
 function yE(g, k) {
     var y, u = k[yH(k)];
     9 === dg && 1 === dN.dO[g] && cX.dH(8) && dn.yJ(u);
-    if (g === myID) dv.fU(u, 1), yC();
+    if (g === ap) dv.fU(u, 1), yC();
     else {
         for (y = k.length - 1; 0 <= y; y--)
-            if (k[y] === myID) {
+            if (k[y] === ap) {
                 dv.fU(g, 0);
                 return
             } g < cj && dv.mX(g, u)
@@ -6819,7 +6412,7 @@ function yE(g, k) {
 }
 
 function y8(g) {
-    ex[g] = troops[g] = 0;
+    ex[g] = aq[g] = 0;
     ax[g] = null;
     bF[g] = null;
     bG[g] = null;
@@ -6831,7 +6424,7 @@ function y7(g) {
     for (k = cs[g]; k >= ct[g]; k--)
         for (y = cv[g]; y >= cw[g]; y--) {
             var u = 4 * (y * aS + k);
-            ay.hN(g, u) && (ay.hO(u), land[g]--)
+            ay.hN(g, u) && (ay.hO(u), bN[g]--)
         }
 }
 
@@ -6920,22 +6513,19 @@ function ju() {
     this.bM = function(z, B, D) {
         l[g(z) + B] = D
     };
-    this.cJ = function(z, B, D) {//every attack
+    this.cJ = function(z, B, D) {
         var C, G = g(z);
-        D === myID && at.au[z < cj ? 6 : 5]++;
+        D === ap && at.au[z < cj ? 6 : 5]++;
         for (C = u[z] - 1; 0 <= C; C--)
             if (0 === A[G + C] && m[G + C] === D) {
                 l[G + C] += B;
                 l[G + C] = l[G + C] > ij ? ij : l[G + C];
                 return
-            } 
-        m[G + u[z]] = D;
+            } m[G + u[z]] = D;
         l[G + u[z]] = B;
         A[G + u[z]] = 0;
-        //console.log("Amount:",B,"attacker:",z,"target:",D);
         u[z]++;
-        z < cj && (D === myID ? dv.fU(z, 5) : z === myID && dw.m6(D))
-        if (z < cj && D === myID && cycle > 10) gotAttacked(); 
+        z < cj && (D === ap ? dv.fU(z, 5) : z === ap && dw.m6(D))
     };
     this.t0 = function(z, B, D) {
         var C = g(z);
@@ -6983,39 +6573,39 @@ function jv() {
     this.d7 = function() {
         if (0 >= --y) {
             y = g;
-            var A, z = troops[myID];
-            di && !d2 && 0 !== ex[0] && 0 === dj.dk[0].b6 && (troops[0] += al(land[0], 6));
+            var A, z = aq[ap];
+            di && !d2 && 0 !== ex[0] && 0 === dj.dk[0].b6 && (aq[0] += al(bN[0], 6));
             for (A = dP - 1; 0 <= A; A--) {
-                var B = al(ar.sd(dQ[A]) * troops[dQ[A]], 1E4);
-                troops[dQ[A]] += 1 > B ? 1 : B;
+                var B = al(ar.sd(dQ[A]) * aq[dQ[A]], 1E4);
+                aq[dQ[A]] += 1 > B ? 1 : B;
                 ar.as(dQ[A])
             }
-            at.au[9] += troops[myID] - z;
+            at.au[9] += aq[ap] - z;
             if (0 >= --u) {
                 u = k;
-                A = troops[myID];
-                for (B = dP - 1; 0 <= B; B--) troops[dQ[B]] += land[dQ[B]], ar.as(dQ[B]);
-                at.au[8] += troops[myID] - A
+                A = aq[ap];
+                for (B = dP - 1; 0 <= B; B--) aq[dQ[B]] += bN[dQ[B]], ar.as(dQ[B]);
+                at.au[8] += aq[ap] - A
             }
         }
     };
     this.sd = function(A) {
-        var z = m[al((l - 1) * land[A], ii)];
+        var z = m[al((l - 1) * bN[A], ii)];
         if (1920 > bx.dL()) {
             var B = al(100 * (13440 - 6 * bx.dL()), 1920);
             z = B > z ? B : z
         }
         B = this.dB(A);
-        troops[A] > B && (z -= al(2 * z * (troops[A] - B), B));
+        aq[A] > B && (z -= al(2 * z * (aq[A] - B), B));
         return 0 > z ? 0 : 700 < z ? 700 : z
     };
     this.dB = function(A) {
-        A = 100 * land[A];
+        A = 100 * bN[A];
         return A > ik ? ik : A
     };
     this.as = function(A) {
-        var z = land[A] * ig;
-        troops[A] = troops[A] > ij ? ij : troops[A] > z ? z : troops[A]
+        var z = bN[A] * ig;
+        aq[A] = aq[A] > ij ? ij : aq[A] > z ? z : aq[A]
     }
 }
 
@@ -7037,27 +6627,15 @@ function jw() {
         W = O = 0;
         V.clearRect(0, 0, fu, c4);
         for (var N = fs / fn, S = ft / fn, Z = (fu + fs) / fn, ba = (c4 + ft) / fn, pa, qa, oa, ka, ta, xa = dP - 1; 0 <= xa; xa--)
-            if (oa = dQ[xa], ka = Math.floor(X * fn * I[oa] * K[oa]), /*!(ka < Q || ka >= L) && */G[oa] + K[oa] > N && G[oa] < Z && F[oa] + H[oa] > S && F[oa] < ba) {
+            if (oa = dQ[xa], ka = Math.floor(X * fn * I[oa] * K[oa]), !(ka < Q || ka >= L) && G[oa] + K[oa] > N && G[oa] < Z && F[oa] + H[oa] > S && F[oa] < ba) {
                 pa = Math.floor(fu * (G[oa] + K[oa] / 2 - N) / (Z - N));
                 qa = Math.floor(c4 * (F[oa] + H[oa] / 2 - S) / (ba - S) - .1 * ka);
-                if (uinterface == 0){
-                    V.font = ny[mZ[oa]] + ka * 1.5 + bn;
-                }
-                else {
-                    V.font = ny[mZ[oa]] + ka + bn;
-                }
+                V.font = ny[mZ[oa]] + ka + bn;
                 ta = V;
                 var ua = oa;
                 ua = ka >= J && ka < L ? dN.zI[ay.q1[ua]] + m(ka).toFixed(3) + ")" : dN.zJ[ay.q1[ua]];
-                if (botsglobal.includes(oa) && uinterface == 0){
-                    if (troops[oa]/land[oa]< 0.5) ta.fillStyle = "Red";
-                    else ta.fillStyle = "rgb(10,10,150)";
-                }
-                else {
-                    ta.fillStyle = ua;
-                }
-                //V.fillText(8 === dg ? e9.fz(troops[oa]) : fy[oa], pa, qa);
-                V.fillText(troops[oa], pa, qa);
+                ta.fillStyle = ua;
+                V.fillText(8 === dg ? e9.fz(aq[oa]) : fy[oa], pa, qa);
                 U = true;
                 if (0 < da[oa]) {
                     ta = pa;
@@ -7088,13 +6666,13 @@ function jw() {
                     ya = oa;
                     Ba = -1;
                     //fy is name
-                    //troops is troops
+                    //aq is troops
                     for (ta = 4; 1 <= ta; ta--) 0 < da[ya + ta * b1] && Ba++;
                     for (ta = 1; 5 > ta; ta++) 0 < da[ya + ta * b1] && (va = Ca, za = ta, Ea = ya, Da = da[ya + ta * b1], Aa = .8 * va / a6.bu, V.setTransform(Aa, 0, 0, Aa, Math.floor(ua - .5 * Aa * a6.bu - .534 * Ba * va), Math.floor(wa + 1.4 * Aa *
                         a6.bu)), V.globalAlpha = m(va), V.drawImage(1 === za ? a6.kZ[la[Ea + b1]] : 2 === za && 255 > Da ? hV.kX[2] : hV.kW[za + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), Ba -= 2)
                 }
                 ta = Math.floor(M * ka);
-                ta < Q || (V.font = bm + ta + bn, V.fillText(fy[oa], pa, qa + Math.floor(.78 * ka)))
+                ta < Q || (V.font = bm + ta + bn, V.fillText(8 === dg ? fy[oa] : e9.fz(aq[oa]), pa, qa + Math.floor(.78 * ka)))
             }
     }
 
@@ -7107,7 +6685,8 @@ function jw() {
         V.setTransform(1, 0, 0, 1, 0, 0)
     }
 
-    function u(N, S, Z, ba, pa) {
+    function u(N, S, Z,
+        ba, pa) {
         var qa = 1.2 * Z / a6.bu;
         V.setTransform(qa, 0, 0, qa, Math.floor(N - .5 * qa * a6.bu - .8 * pa * Z), Math.floor(S - 1.5 * qa * a6.bu));
         V.globalAlpha = m(Z);
@@ -7193,7 +6772,7 @@ function jw() {
         V.font = bm + Math.floor(100 * M) + bn;
         var S = 80 / Math.floor(V.measureText(e9.fz(ij)).width);
         V.font = bm + 100 + bn;
-        for (N = b1 - 1; 0 <= N; N--) E[N] = 100 / Math.floor(V.measureText(fy[N]).width), I[N] = S < E[N] ? S : E[N], 12 > land[N] ? (G[N] = ct[N] + 1, F[N] = cw[N] + 1, K[N] = 1, H[N] = 1) : (G[N] = ct[N], F[N] = cw[N] + 1, K[N] = 4, H[N] = 2);
+        for (N = b1 - 1; 0 <= N; N--) E[N] = 100 / Math.floor(V.measureText(fy[N]).width), I[N] = S < E[N] ? S : E[N], 12 > bN[N] ? (G[N] = ct[N] + 1, F[N] = cw[N] + 1, K[N] = 1, H[N] = 1) : (G[N] = ct[N], F[N] = cw[N] + 1, K[N] = 4, H[N] = 2);
         if (fJ)
             for (N = 0; N < cj; N++) K[N] = 0;
         ra = bp.bs(4).width;
@@ -7350,11 +6929,11 @@ function jx() {
             var m = k.length;
             var l = cX.zg();
             for (y = 0; y < u; y++) zf[y] = fy[y], fy[y] = k[(y + l) % m];
-            fy[myID] = zf[myID]
+            fy[ap] = zf[ap]
         }
     }
 }
-var fy, zf, ex, ct, cw, cs, cv, land, hA, troops, ax, bF, bG, bJ, mZ;
+var fy, zf, ex, ct, cw, cs, cv, bN, hA, aq, ax, bF, bG, bJ, mZ;
 
 function ix(g) {
     zf = fy = Array(b1);
@@ -7363,9 +6942,9 @@ function ix(g) {
     cw = new Uint16Array(b1);
     cs = new Uint16Array(b1);
     cv = new Uint16Array(b1);
-    land = new Uint32Array(b1);
+    bN = new Uint32Array(b1);
     hA = new Uint32Array(b1);
-    troops = new Uint32Array(b1);
+    aq = new Uint32Array(b1);
     ax = Array(b1);
     bF = Array(b1);
     bG = Array(b1);
@@ -7476,12 +7055,12 @@ function a06(g) {
 }
 
 function a05() {
-    for (var g, k = dP - 1; 0 <= k; k--) land[dQ[k]] <= al(hA[dQ[k]], 4) ? 1E3 >= land[dQ[k]] && (2 !== ex[dQ[k]] || 0 === land[dQ[k]]) && fS(dQ[k]) : land[dQ[k]] >= hA[dQ[k]] ? hA[dQ[k]] = land[dQ[k]] : (g = al(hA[dQ[k]] - land[dQ[k]], 1E3), hA[dQ[k]] -= 1 > g ? 1 : g)
+    for (var g, k = dP - 1; 0 <= k; k--) bN[dQ[k]] <= al(hA[dQ[k]], 4) ? 1E3 >= bN[dQ[k]] && (2 !== ex[dQ[k]] || 0 === bN[dQ[k]]) && fS(dQ[k]) : bN[dQ[k]] >= hA[dQ[k]] ? hA[dQ[k]] = bN[dQ[k]] : (g = al(hA[dQ[k]] - bN[dQ[k]], 1E3), hA[dQ[k]] -= 1 > g ? 1 : g)
 }
 
 function iT() {
     var g, k = 0;
-    for (g = dP - 1; 0 <= g; g--) k += troops[dQ[g]];
+    for (g = dP - 1; 0 <= g; g--) k += aq[dQ[g]];
     return k % 4096
 }
 var oH, cA, a07, a08, s, t, oR, bj, fu, c4, a09, b, c, e, d, r, a0A = false,
@@ -7490,7 +7069,7 @@ var oH, cA, a07, a08, s, t, oR, bj, fu, c4, a09, b, c, e, d, r, a0A = false,
 
 function a0H() {
     a0E = 2;
-    a08 = 4262;//1135;//735;//2516;//3427;//3426;//3425; //2543; //6373;
+    a08 = 1135;//3426; //3425;
     a07 = "1.80.6   26 September 2022";
     jV();
     d0();
@@ -7581,7 +7160,7 @@ function a0V(g) {
 }
 
 function a0L(g) {
-    "ArrowLeft" === g.key ? gS.vA(3) : "ArrowUp" === g.key ? gS.vA(0) : "ArrowRight" === g.key ? gS.vA(1) : "ArrowDown" === g.key ? gS.vA(2) : "a" === g.key ? eA.q9(.96875) : "d" === g.key ? eA.q9(32 / 31) : "s" === g.key ? eA.q9(.875) : "w" === g.key ? eA.q9(8 / 7) : "1" === g.key ? eA.q9(5 / 6) : "2" === g.key ? eA.q9(1.2) : "m" === g.key ? changeDensityHotkey() : "u" === g.key ? userinterface() : "p" === g.key && changeattackHotkey()
+    "ArrowLeft" === g.key ? gS.vA(3) : "ArrowUp" === g.key ? gS.vA(0) : "ArrowRight" === g.key ? gS.vA(1) : "ArrowDown" === g.key ? gS.vA(2) : "a" === g.key ? eA.q9(.96875) : "d" === g.key ? eA.q9(32 / 31) : "s" === g.key ? eA.q9(.875) : "w" === g.key ? eA.q9(8 / 7) : "1" === g.key ? eA.q9(5 / 6) : "2" === g.key ? eA.q9(1.2) : "m" === g.key && changeDensityHotkey()
 }
 
 function a0M() {
@@ -8586,7 +8165,7 @@ function a0U() {
             u = 0;
             var D;
             for (D = im; 0 <= D; D--) B[D] = 0;
-            for (D = dP - 1; 0 <= D; D--) B[dN.dO[dQ[D]]] += land[dQ[D]];
+            for (D = dP - 1; 0 <= D; D--) B[dN.dO[dQ[D]]] += bN[dQ[D]];
             y = true
         }
     };
@@ -8695,7 +8274,7 @@ function k5() {
     function g(K) {
         e4.ao(y, F);
         aX.av(y, G);
-        K && (troops[y] += u)
+        K && (aq[y] += u)
     }
 
     function k() {
@@ -8712,7 +8291,7 @@ function k5() {
         D = ay.c8(L);
         l = m = ay.ej(A, z);
         G = aX.fC(y, F); - 1 === G ? (k(), e4.ao(y, F), K = false) : (u = aX.af(y, G), K = true);
-        if (K && (k(), K = al(u, 128), K = 1 > K ? 1 : K, u -= K, y === myID && (at.au[15] += K), u <= am ? (y === myID && (at.au[15] += u), g(false), K = false) : (aX.bM(y, G, u), K = true), K))
+        if (K && (k(), K = al(u, 128), K = 1 > K ? 1 : K, u -= K, y === ap && (at.au[15] += K), u <= am ? (y === ap && (at.au[15] += u), g(false), K = false) : (aX.bM(y, G, u), K = true), K))
             if (K = ay.ej(A, z), m = Math.abs(B - A) >= Math.abs(D - z) ? K + aO[B > A ? 1 : 3] : K + aO[D > z ? 2 : 0], A = ay.fv(m), z = ay.c8(m),
                 e4.fg(C, m), K = ay.az(m) ? false : true, K) ay.xe(m) && ay.xl(m, y);
             else a: {
@@ -8724,13 +8303,13 @@ function k5() {
                         break a
                     }
                     if (!ca(y, K)) {
-                        H = land[K] * ig - troops[K];
-                        0 >= H || (H = u > H ? H : u, u -= H, y === myID && (dv.mT(H, K), at.au[16] += H), K === myID && (dv.mV(H, y), at.au[10] += H), troops[K] += H);
+                        H = bN[K] * ig - aq[K];
+                        0 >= H || (H = u > H ? H : u, u -= H, y === ap && (dv.mT(H, K), at.au[16] += H), K === ap && (dv.mV(H, y), at.au[10] += H), aq[K] += H);
                         g(true);
                         break a
                     }
                 }
-                y === myID && (at.au[13] += u);e4.ao(y, F);aX.av(y, G);ax[y].push(l);aX.cJ(y, u, K);an.cK(y, true)
+                y === ap && (at.au[13] += u);e4.ao(y, F);aX.av(y, G);ax[y].push(l);aX.cJ(y, u, K);an.cK(y, true)
             }
     };
     this.fk = function(K, H) {
@@ -8890,7 +8469,7 @@ function a0Q() {
         0 < this.dM-- || this.a3c()
     };
     this.a3c = function() {
-        0 !== ex[myID] && (this.a3X[this.lW] = land[myID], this.rD[this.lW] = troops[myID], this.sc[this.lW] = ar.sd(myID), this.a3d(this.lW), this.lW++, this.lW === this.cO && this.a3e(), this.dM = this.a3Y - 1, hW.bo())
+        0 !== ex[ap] && (this.a3X[this.lW] = bN[ap], this.rD[this.lW] = aq[ap], this.sc[this.lW] = ar.sd(ap), this.a3d(this.lW), this.lW++, this.lW === this.cO && this.a3e(), this.dM = this.a3Y - 1, hW.bo())
     };
     this.a3e = function() {
         this.a3a();
@@ -9059,7 +8638,7 @@ function a0R() {
         y = at.au[1];
         cA.fillText(dx.sS(at.au[0] / (10 * (1 > y ? 1 : y)), 1), 0, 0);
         for (y = 6; 1 <= y; y--) cA.fillText(at.au[y].toString(), 0, y * u / 7);
-        cA.fillText(dx.sS(100 * (1 - land[myID] / at.au[7]), 0), 0, u)
+        cA.fillText(dx.sS(100 * (1 - bN[ap] / at.au[7]), 0), 0, u)
     };
     this.a3o = function(g, k) {
         var y;
@@ -9085,7 +8664,7 @@ function a0R() {
         cA.fillStyle = nU;
         cA.fillText(y, 0, 3 * u / 9);
         cA.fillStyle = nl;
-        y = at.au[13] - aX.yO(myID);
+        y = at.au[13] - aX.yO(ap);
         cA.fillText(e9.fz(at.au[12]), 0, 4 * u / 9);
         cA.fillText(e9.fz(y), 0, 5 * u / 9);
         cA.fillText(e9.fz(at.au[14]), 0, 6 * u / 9);
@@ -9110,7 +8689,7 @@ function a0R() {
         cA.arc(u * this.tc / (at.lW - 1), this.wO - k * Math.pow(l, y), 4, 0, 2 * Math.PI);
         cA.fill();
         g = this.a3h * bx.se();
-        g = 0 === ex[myID] ? Math.floor(g * eF.sl) : Math.floor(g * bx.dL());
+        g = 0 === ex[ap] ? Math.floor(g * eF.sl) : Math.floor(g * bx.dL());
         cA.fillStyle = cD;
         cA.fillText(1 === y ? dx.sS(l / 100, 2) : e9.fz(Math.floor(l)),
             -this.hf, this.wO - k * Math.pow(l, y));
@@ -9348,7 +8927,7 @@ function ad() {
 }
 
 function bD() {
-    land[aI] -= aJ
+    bN[aI] -= aJ
 }
 
 function bE(g) {
@@ -9474,16 +9053,16 @@ function a0S() {
         this.a4V = null;
         this.by = true
     };
-    this.j8 = function() {//SinglePlayer
+    this.j8 = function() {
         this.a4V = new a4b;
         this.a4U = this.a4c
     };
-    this.j9 = function() {//Multiplayer
+    this.j9 = function() {
         this.a4W = new a4d;
         this.a4W.bi();
         this.a4U = this.a4e
     };
-    this.a4a = function() { //run in infinite loop
+    this.a4a = function() {
         jE.d7();
         jH.d7();
         jQ.d7();
@@ -9508,7 +9087,7 @@ function a0S() {
 
 function a4b() {
     this.gI = bx.gI;
-    this.a3Y = 56;//56
+    this.a3Y = 56;
     this.vM = this.bl = 0;
     this.a4f = false;
     this.d7 = function() {
@@ -9686,7 +9265,7 @@ function k8() {
                 });
                 jR.tY(z, C)
             } else 2 !== A && 3 !== A || eH.bi(l);
-            else 1 === A && (A = jI.rA(), 8 !== A ? 10 === A && dz.a02(m, 3243) : m !== dz.jB ? dz.a02(m, 3244) : 0 === k(l, 1) ? bx.a4W.a4h(l) : (A = k(l, 2), 0 === A ? 3 !== y ? dz.a02(dz.jB, 3230) : (A = k(l, 9), z = k(l, 7), 0 !== ex[A] && 0 !== ex[myID] && (z %= a6.a7, dv.mA(A, myID, z), dw.mO(A, 1, z))) : 1 === A ? 2 !== y ? dz.a02(dz.jB, 3235) : (A = k(l, 9), 0 !== ex[A] && 0 !== ex[myID] && (dv.l0(50, A) || dv.l0(52, A) || dv.l1(A, 1))) : 3 !== y ? dz.a02(dz.jB, 3236) : (A = k(l, 9), z = k(l, 9), 0 === ex[A] || 0 === ex[z] || 0 === ex[myID] || dv.mQ(50, A, z) || (dw.mO(A, 3, 96), dw.mO(z, 4, 96), dv.mP(A, z)))))
+            else 1 === A && (A = jI.rA(), 8 !== A ? 10 === A && dz.a02(m, 3243) : m !== dz.jB ? dz.a02(m, 3244) : 0 === k(l, 1) ? bx.a4W.a4h(l) : (A = k(l, 2), 0 === A ? 3 !== y ? dz.a02(dz.jB, 3230) : (A = k(l, 9), z = k(l, 7), 0 !== ex[A] && 0 !== ex[ap] && (z %= a6.a7, dv.mA(A, ap, z), dw.mO(A, 1, z))) : 1 === A ? 2 !== y ? dz.a02(dz.jB, 3235) : (A = k(l, 9), 0 !== ex[A] && 0 !== ex[ap] && (dv.l0(50, A) || dv.l0(52, A) || dv.l1(A, 1))) : 3 !== y ? dz.a02(dz.jB, 3236) : (A = k(l, 9), z = k(l, 9), 0 === ex[A] || 0 === ex[z] || 0 === ex[ap] || dv.mQ(50, A, z) || (dw.mO(A, 3, 96), dw.mO(z, 4, 96), dv.mP(A, z)))))
         }
     };
     this.vO = function(m) {
@@ -9851,7 +9430,7 @@ function kE() {
         cA.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
-var contar = 0;
+
 function kA() {//iR
     function g(l) {
         var A = j(),
@@ -9877,19 +9456,15 @@ function kA() {//iR
         m += A
     }
     var m;
-    this.qr = function() {//finish load the code
+    this.qr = function() {
         var l = new Uint8Array(3);
         m = 0;
         u(l, 1, 0);
         u(l, 3, 0);
         u(l, 14, a08);
         dz.send(0, l)
-        /*const ke = new KeyboardEvent('keydown', {
-        key:"Enter"
-    });
-    a0K(ke);*/
     };
-    this.uX = function(l) {//join Lobby
+    this.uX = function(l) {
         var A = n.i4(jD.wU()),
             z = A.length,
             B = new Uint8Array(y(105 +
@@ -9908,7 +9483,7 @@ function kA() {//iR
         dz.mM = l;
         dz.send(l, B)
     };
-    this.tO = function(l, A) {//open leaderboards
+    this.tO = function(l, A) {
         var z = new Uint8Array(5);
         m = 0;
         u(z, 1, 0);
@@ -9919,7 +9494,7 @@ function kA() {//iR
         u(z, 16, Math.abs(4096 + c6.position[A] + c6.tN[A]) % 65536);
         dz.send(l, z)
     };
-    this.a00 = function(l) {//password, when saved cookies?
+    this.a00 = function(l) {
         var A, z = new Uint8Array(100);
         m = 0;
         u(z, 1, 0);
@@ -9932,7 +9507,7 @@ function kA() {//iR
         for (A = 0; A < D; A++) u(z, 10, B[A]);
         dz.send(l, z)
     };
-    this.ws = function(l) {//votes???
+    this.ws = function(l) {
         var A;
         if (!(jD.wi + 7E3 > bx.gI)) {
             jD.wi = bx.gI;
@@ -9947,7 +9522,7 @@ function kA() {//iR
             dz.send(l, z)
         }
     };
-    this.zr = function(l, A) {//is called every 15s in lobby
+    this.zr = function(l, A) {
         var z = new Uint8Array(1);
         m = 0;
         u(z, 1, 0);
@@ -9955,7 +9530,7 @@ function kA() {//iR
         u(z, 1, A ? 1 : 0);
         dz.send(l, z)
     };
-    this.wH = function(l) {//click on game (0 to 15)1v1 was 12
+    this.wH = function(l) {
         var A = new Uint8Array(1);
         m = 0;
         u(A, 1, 0);
@@ -9963,7 +9538,7 @@ function kA() {//iR
         u(A, 4, l);
         dz.send(dz.mM, A)
     };
-    this.zz = function() {//enter MP game
+    this.zz = function() {
         var l = new Uint8Array(7);
         m = 0;
         u(l, 1, 0);
@@ -9974,6 +9549,7 @@ function kA() {//iR
         u(l, 10, a0D);
         u(l, 14, a08);
         dz.send(dz.jB, l)
+        //iR.ky(1E3,4,4);
     };
     this.kw = function(l, A) {
         var z = new Uint8Array(3);
@@ -9983,12 +9559,10 @@ function kA() {//iR
         u(z, 10, l);
         u(z, 9, A);
         dz.send(dz.jB, z)
-        contar = contar+1;
-        //l = amount; A = target;
         //console.log("Being called from " + arguments.callee.caller.toString());
-        //console.log("amount: "+l+" target: "+A+" nº atck: "+contar);
+        //console.log(l, A);
     };
-    this.ky = function(l, A, z) {//choose Spawn in Mp
+    this.ky = function(l, A, z) {
         var B = new Uint8Array(5);
         m = 0;
         u(B, 1, 1);
@@ -9997,11 +9571,8 @@ function kA() {//iR
         u(B, 11, A);
         u(B, 11, z);
         dz.send(dz.jB, B)
-        //l = 1000 
-        //z = x coordinate
-        //A = y coordinate
     };
-    this.pB = function(l) {//cancel attack
+    this.pB = function(l) {
         var A = new Uint8Array(2);
         m = 0;
         u(A, 1, 1);
@@ -10010,7 +9581,7 @@ function kA() {//iR
         u(A, 9, l);
         dz.send(dz.jB, A)
     };
-    this.pC = function(l) {//cancel boat
+    this.pC = function(l) {
         var A = new Uint8Array(2);
         m = 0;
         u(A, 1, 1);
@@ -10020,7 +9591,7 @@ function kA() {//iR
         dz.send(dz.jB, A)
     };
     this.iS =
-        function(l, A) {//win game. At least 1v1 game
+        function(l, A) {
             var z = new Uint8Array(4);
             m = 0;
             u(z, 1, 1);
@@ -10028,17 +9599,15 @@ function kA() {//iR
             u(z, 12, l);
             u(z, 10, A);
             dz.send(dz.jB, z)
-            console.log(l,A);
-            // result 1: l = 596, A = 1
         };
-    this.lV = function() {//dont know but is called after you click
+    this.lV = function() {
         var l = new Uint8Array(1);
         m = 0;
         u(l, 1, 1);
         u(l, 3, 4);
         dz.send(dz.jB, l)
     };
-    this.nK = function(l) {//emojis iR.nk(16)
+    this.nK = function(l) {
         var A = new Uint8Array(2);
         m = 0;
         u(A, 1, 1);
@@ -10046,8 +9615,8 @@ function kA() {//iR
         u(A, 7, l);
         dz.send(dz.jB, A)
     };
-    this.nL = function(l, A) {//emojis for players, A is the player ID
-        dv.mA(myID, A, l);
+    this.nL = function(l, A) {
+        dv.mA(ap, A, l);
         var z = new Uint8Array(3);
         m = 0;
         u(z, 1, 1);
@@ -10057,7 +9626,7 @@ function kA() {//iR
         u(z, 7, l);
         dz.send(dz.jB, z)
     };
-    this.l2 = function(l) {//something to do with the function where it decides if it is a boat or an attack or an emoji
+    this.l2 = function(l) {
         var A = new Uint8Array(2);
         m = 0;
         u(A, 1, 1);
@@ -10066,7 +9635,7 @@ function kA() {//iR
         u(A, 9, l);
         dz.send(dz.jB, A)
     };
-    this.ks = function(l, A) {//recommend target l and A are the target and who your are recommending targets ID
+    this.ks = function(l, A) {
         var z, B = l.length,
             D = new Uint8Array(y(15 + 9 * B));
         m = 0;
@@ -10077,7 +9646,7 @@ function kA() {//iR
         for (z = 0; z < B; z++) u(D, 9, l[z]);
         dz.send(dz.jB, D)
     };
-    this.pm = function(l) {//something to do with clicking on screen
+    this.pm = function(l) {
         var A = new Uint8Array(1);
         m = 0;
         u(A, 1, 1);
@@ -10085,7 +9654,7 @@ function kA() {//iR
         u(A, 1, l ? 1 : 0);
         dz.send(dz.jB, A)
     };
-    this.wT = function(l) {//join SP game
+    this.wT = function(l) {
         var A = new Uint8Array(4);
         m = 0;
         u(A, 1, 0);
