@@ -1,27 +1,27 @@
 function a() {
     if (isIOS) return c.username;
-    if (12 <= deviceVersion) {
-        var g = e.loadString(20);
-        "" === g && (g = "Android User " + Math.floor(1E3 * Math.random()), e.saveString(20, g))
-    } else 5 <= deviceVersion ? (g = e.loadString(0), "" === g && (g = "Player " + Math.floor(1E3 * Math.random()), e.saveString(0, g))) : g = f.g(0);
+    if (12 <= androidVersion) {
+        var g = androidObject.loadString(20);
+        "" === g && (g = "Android User " + Math.floor(1E3 * Math.random()), androidObject.saveString(20, g))
+    } else 5 <= androidVersion ? (g = androidObject.loadString(0), "" === g && (g = "Player " + Math.floor(1E3 * Math.random()), androidObject.saveString(0, g))) : g = userSettings.g(0);
     return g
 }
 
 function h() {
     i = Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1));
     if (isIOS) i = c.id;
-    else if (12 <= deviceVersion) {
-        var g = e.loadNumber(20); - 1 === g ? e.saveNumber(20, i) : i = g
-    } else 5 <= deviceVersion ? (g = e.loadNumber(2), 2 === g ? e.saveNumber(2, i + 3) : i = g - 3) : i = f.g(1)
+    else if (12 <= androidVersion) {
+        var g = androidObject.loadNumber(20); - 1 === g ? androidObject.saveNumber(20, i) : i = g
+    } else 5 <= androidVersion ? (g = androidObject.loadNumber(2), 2 === g ? androidObject.saveNumber(2, i + 3) : i = g - 3) : i = userSettings.g(1)
 }
 
 function j() {
     var g = 0;
     if (isIOS) g = c.password;
-    else if (12 <= deviceVersion) g = e.loadString(22);
+    else if (12 <= androidVersion) g = androidObject.loadString(22);
     else {
-        if (5 <= deviceVersion) return g;
-        g = f.g(9)
+        if (5 <= androidVersion) return g;
+        g = userSettings.g(9)
     }
     var k = Math.floor(Math.pow(2, 48));
     g = Math.floor(parseInt(characters.n(g)));
@@ -32,74 +32,74 @@ function j() {
 
 function p() {
     if (isIOS) isZoom = c.zoom || r < s;
-    else if (12 <= deviceVersion) {
-        var g = e.loadNumber(21); - 1 === g ? (isZoom = 100 >= e.getNumber(0) || r < s, e.saveNumber(21, isZoom ? 1 : 0)) : isZoom = 1 === g || r < s
-    } else 5 <= deviceVersion ? (g = e.loadNumber(1), 2 === g ? (isZoom = !0, e.saveNumber(1, isZoom ? 1 : 0)) : isZoom = 1 === g) : isZoom = 0 === f.g(4) || r < s
+    else if (12 <= androidVersion) {
+        var g = androidObject.loadNumber(21); - 1 === g ? (isZoom = 100 >= androidObject.getNumber(0) || r < s, androidObject.saveNumber(21, isZoom ? 1 : 0)) : isZoom = 1 === g || r < s
+    } else 5 <= androidVersion ? (g = androidObject.loadNumber(1), 2 === g ? (isZoom = !0, androidObject.saveNumber(1, isZoom ? 1 : 0)) : isZoom = 1 === g) : isZoom = 0 === userSettings.g(4) || r < s
 }
 
 function u() {
-    return isIOS ? c.emojis : 5 <= deviceVersion ? e.loadString(1) : f.g(7)
+    return isIOS ? c.emojis : 5 <= androidVersion ? androidObject.loadString(1) : userSettings.g(7)
 }
 
 function v() {
-    return isIOS ? c.colors : 12 <= deviceVersion ? e.loadString(21) : 5 <= deviceVersion ? e.loadString(2) : f.g(8)
+    return isIOS ? c.colors : 12 <= androidVersion ? androidObject.loadString(21) : 5 <= androidVersion ? androidObject.loadString(2) : userSettings.g(8)
 }
 
 function w(g) {
     if (isIOS) window.webkit.messageHandlers.iosCommandA.postMessage("username " + g);
-    else if (12 <= deviceVersion) e.saveString(20, g), e.setState(10);
-    else if (5 <= deviceVersion) e.saveString(0, g);
+    else if (12 <= androidVersion) androidObject.saveString(20, g), androidObject.setState(10);
+    else if (5 <= androidVersion) androidObject.saveString(0, g);
     else {
         if (3 > g.length || 0 <= g.indexOf(";")) g = "Player 666";
-        f.x(0, g);
-        f.y()
+        userSettings.x(0, g);
+        userSettings.y()
     }
 }
 
 function o(g) {
     g = characters.z(g.toString());
-    return isIOS ? (c.password = g, window.webkit.messageHandlers.iosCommandA.postMessage("password " + g), !0) : 12 <= deviceVersion ? (e.saveString(22, g), !0) : 5 <= deviceVersion ? !1 : 2 === f.a0() ? (f.x(9, g), f.y(), !0) : !1
+    return isIOS ? (c.password = g, window.webkit.messageHandlers.iosCommandA.postMessage("password " + g), !0) : 12 <= androidVersion ? (androidObject.saveString(22, g), !0) : 5 <= androidVersion ? !1 : 2 === userSettings.a0() ? (userSettings.x(9, g), userSettings.y(), !0) : !1
 }
 
 function a1(g, k) {
-    isIOS ? (window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (g ? 1 : 0)), window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (k ? 1 : 0))) : 12 <= deviceVersion ? (e.saveNumber(22, k ? 1 : 0), e.saveNumber(21, g ? 1 : 0)) : 5 <= deviceVersion ? (e.saveNumber(1, g ? 1 : 0), e.saveNumber(11, k ? 1 : 0)) : (f.x(2, k ? 1 : 0), f.x(4, g ? 0 : 1), f.y())
+    isIOS ? (window.webkit.messageHandlers.iosCommandA.postMessage("zoom " + (g ? 1 : 0)), window.webkit.messageHandlers.iosCommandA.postMessage("sound " + (k ? 1 : 0))) : 12 <= androidVersion ? (androidObject.saveNumber(22, k ? 1 : 0), androidObject.saveNumber(21, g ? 1 : 0)) : 5 <= androidVersion ? (androidObject.saveNumber(1, g ? 1 : 0), androidObject.saveNumber(11, k ? 1 : 0)) : (userSettings.x(2, k ? 1 : 0), userSettings.x(4, g ? 0 : 1), userSettings.y())
 }
 
 function a3() {
     for (var g = "", k = 0; k < a5.a6; k += 2) g += a5.a7[k] || a5.a7[k + 1] ? a5.a7[k] && !a5.a7[k + 1] ? "1" : !a5.a7[k] && a5.a7[k + 1] ? "2" : "3" : "0";
-    isIOS ? window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + g) : 5 <= deviceVersion ? e.saveString(1, g) : (f.x(7, g), f.y())
+    isIOS ? window.webkit.messageHandlers.iosCommandA.postMessage("emojis " + g) : 5 <= androidVersion ? androidObject.saveString(1, g) : (userSettings.x(7, g), userSettings.y())
 }
 
 function a8(g) {
     if (isIOS) window.webkit.messageHandlers.iosCommandA.postMessage("colors " + g);
     else {
-        if (12 <= deviceVersion) e.saveString(21, g);
-        else if (5 <= deviceVersion) {
-            e.saveString(2, g);
+        if (12 <= androidVersion) androidObject.saveString(21, g);
+        else if (5 <= androidVersion) {
+            androidObject.saveString(2, g);
             return
         }
-        f.x(8, g);
-        f.y()
+        userSettings.x(8, g);
+        userSettings.y()
     }
 }
 
 function a9(g) {
-    isIOS || 5 <= deviceVersion && e.setState(g)
+    isIOS || 5 <= androidVersion && androidObject.setState(g)
 }
 
 function aB() {
-    isIOS ? window.webkit.messageHandlers.iosCommandA.postMessage("show ad 1800000") : 12 <= deviceVersion && e.presentAd(18E5)
+    isIOS ? window.webkit.messageHandlers.iosCommandA.postMessage("show ad 1800000") : 12 <= androidVersion && androidObject.presentAd(18E5)
 }
 
 function aC() {
-    isIOS ? location.reload() : 7 <= deviceVersion ? e.setState(5) : location.reload()
+    isIOS ? location.reload() : 7 <= androidVersion ? androidObject.setState(5) : location.reload()
 }
 
 function aD() {
-    14 > deviceVersion || e.saveString(23, '<!DOCTYPE html>\n<html lang="aG">\n' + document.getElementsByTagName("html")[0].innerHTML + "\n</html>")
+    14 > androidVersion || androidObject.saveString(23, '<!DOCTYPE html>\n<html lang="aG">\n' + document.getElementsByTagName("html")[0].innerHTML + "\n</html>")
 }
 self.aiCommand746 = function(g) {
-    0 === g ? init() : 1 !== g || 14 > deviceVersion || aJ.aK()
+    0 === g ? init() : 1 !== g || 14 > androidVersion || aJ.aK()
 };
 var aL, aM, aN, aO, aP, aQ, aR, aS, aT, aU, aV, aW, aX;
 
@@ -110,11 +110,11 @@ function aY() {
     aT = 0;
     aU = new Uint32Array(aR);
     aV = new Int32Array(4);
-    aV[0] = -4 * aZ;
+    aV[0] = -4 * currentMapWidth;
     aV[1] = 4;
     aV[2] = -aV[0];
     aV[3] = -aV[1];
-    aW = new Uint8Array(aZ * aa)
+    aW = new Uint8Array(currentMapWidth * currentMapHeight)
 }
 
 function ab(g) {
@@ -122,7 +122,7 @@ function ab(g) {
     aX = !1;
     ac();
     ad();
-    for (g = ae.af(aM) - 1; 0 <= g; g--) 0 === ae.ag(aM, g) && (aL = g, ah());
+    for (g = attacks.af(aM) - 1; 0 <= g; g--) 0 === attacks.ag(aM, g) && (aL = g, ah());
     aX && ai()
 }
 
@@ -132,8 +132,8 @@ function ai() {
 }
 
 function ah() {
-    aP = ae.al(aM, aL);
-    aN = ae.am(aM, aL);
+    aP = attacks.al(aM, aL);
+    aN = attacks.am(aM, aL);
     an();
     0 === aQ ? ao() : (ap(), aq() ? ar() : ao())
 }
@@ -149,33 +149,33 @@ function ap() {
 }
 
 function ao() {
-    1 === ae.af(aM) && au.av(aM);
-    if (aM !== myID) ax[aM] += aN, ay.az(aM);
+    1 === attacks.af(aM) && speed.av(aM);
+    if (aM !== myID) troops[aM] += aN, interest.az(aM);
     else {
-        var g = ax[aM];
-        ax[aM] += aN;
-        ay.az(aM);
-        b0.b1[13] -= ax[aM] - g
+        var g = troops[aM];
+        troops[aM] += aN;
+        interest.az(aM);
+        statistics.b1[13] -= troops[aM] - g
     }
-    ae.b2(aM, aL)
+    attacks.b2(aM, aL)
 }
 
 function ac() {
-    var g = b4[aM].length;
+    var g = potentialBorderAdvances[aM].length;
     g = g > aR ? aR : g;
     aT = 0;
-    for (--g; 0 <= g; g--) aU[aT++] = b4[aM][g]
+    for (--g; 0 <= g; g--) aU[aT++] = potentialBorderAdvances[aM][g]
 }
 
 function ad() {
     var g;
-    for (g = b4[aM].length - 1; 0 <= g; g--) b5.b6(b4[aM][g]) && b5.b7(b4[aM][g], aM);
-    b4[aM] = []
+    for (g = potentialBorderAdvances[aM].length - 1; 0 <= g; g--) pixel.b6(potentialBorderAdvances[aM][g]) && pixel.b7(potentialBorderAdvances[aM][g], aM);
+    potentialBorderAdvances[aM] = []
 }
 
 function an() {
     aQ = 0;
-    aP === b8 ? b9() : bA()
+    aP === maxEntities ? b9() : bA()
 }
 
 function bA() {
@@ -184,7 +184,7 @@ function bA() {
         for (k = aT - 1; 0 <= k; k--) {
             var n = aU[k] + aV[g];
             var l = divideFloor(n, 4);
-            0 === aW[l] && b5.bE(n) && b5.bF(n) === aP && (aW[l] = 1, aS[aQ++] = n)
+            0 === aW[l] && pixel.bE(n) && pixel.bF(n) === aP && (aW[l] = 1, aS[aQ++] = n)
         }
 }
 
@@ -194,35 +194,35 @@ function b9() {
         for (k = aT - 1; 0 <= k; k--) {
             var n = aU[k] + aV[g];
             var l = divideFloor(n, 4);
-            0 === aW[l] && b5.bG(n) && (aW[l] = 1, aS[aQ++] = n)
+            0 === aW[l] && pixel.bG(n) && (aW[l] = 1, aS[aQ++] = n)
         }
 }
 
 function ar() {
-    bH() ? (bI(), aP !== b8 && bJ()) : ao()
+    bH() ? (bI(), aP !== maxEntities && bJ()) : ao()
 }
 
 function bJ() {
     bK();
-    bL(bM[aP]);
-    bL(bN[aP]);
-    bO(b4[aP]);
-    bP(bN[aP]);
-    bP(bQ[aP]);
+    bL(landBorderPixels[aP]);
+    bL(waterBorderPixels[aP]);
+    bO(potentialBorderAdvances[aP]);
+    bP(waterBorderPixels[aP]);
+    bP(mountainBorderPixels[aP]);
     bR();
     bS()
 }
 
 function bI() {
     aX = !0;
-    ae.bT(aM, aL, aN);
-    bU[aM] += aQ;
+    attacks.bT(aM, aL, aN);
+    land[aM] += aQ;
     bV();
     bW()
 }
 
 function bH() {
-    return aP === b8 ? bX() : bY()
+    return aP === maxEntities ? bX() : bY()
 }
 
 function bY() {
@@ -239,28 +239,28 @@ function bY() {
 
 function bg(g, k) {
     if (0 < k)
-        if (g >= k) ae.bh(aP, aM, 0), g -= k;
+        if (g >= k) attacks.bh(aP, aM, 0), g -= k;
         else {
-            ae.bh(aP, aM, k - g);
+            attacks.bh(aP, aM, k - g);
             return
         } g = divideFloor(g, 2);
-    ax[aP] = ax[aP] >= g ? ax[aP] - g : 0
+    troops[aP] = troops[aP] >= g ? troops[aP] - g : 0
 }
 
 function bd() {
-    return ae.bi(aP, aM)
+    return attacks.bi(aP, aM)
 }
 
 function bb() {
-    return divideFloor(aQ * ax[aP], 1 + bj() * bk())
+    return divideFloor(aQ * troops[aP], 1 + bj() * bk())
 }
 
 function bj() {
-    return Math.floor(2 + sqrtEstimation(divideFloor(bU[aP], 100), 8))
+    return Math.floor(2 + sqrtEstimation(divideFloor(land[aP], 100), 8))
 }
 
 function bk() {
-    return bM[aP].length + divideFloor(bN[aP].length + bQ[aP].length, 50)
+    return landBorderPixels[aP].length + divideFloor(waterBorderPixels[aP].length + mountainBorderPixels[aP].length, 50)
 }
 
 function bX() {
@@ -269,106 +269,106 @@ function bX() {
 }
 
 function bW() {
-    for (var g = aQ - 1; 0 <= g; g--) b4[aM].push(aS[g]), bM[aM].push(aS[g]), b5.b7(aS[g], aM)
+    for (var g = aQ - 1; 0 <= g; g--) potentialBorderAdvances[aM].push(aS[g]), landBorderPixels[aM].push(aS[g]), pixel.b7(aS[g], aM)
 }
 
 function bm() {
     var g = 1,
         k = [null, null];
-    this.bp = function() {
+    this.init = function() {
         g = .72 * (isZoom ? .0011 : .001) * bq;
         for (var n = 1; 0 <= n; n--) k[n] && this.br(n, k[n].l)
     };
     this.br = function(n, l) {
         k[n] = {
             l: l,
-            font: bt + 10 + bu
+            font: fontWeightBold + 10 + fontSizeArial
         };
         this.bv(n)
     };
     this.bv = function(n) {
-        if (bw.bx() && k[n]) {
+        if (sprites.bx() && k[n]) {
             var l = k[n].l,
-                x = Math.floor(.15 * g * bw.bz(13).height),
-                t = bt + x + bu,
+                x = Math.floor(.15 * g * sprites.getValuebyID(13).height),
+                t = fontWeightBold + x + fontSizeArial,
                 z = c2.measureText(l, t),
-                y = .8 * g * bw.bz(13).width;
-            z > y && (x = Math.floor(x * y / z), t = bt + x + bu);
+                y = .8 * g * sprites.getValuebyID(13).width;
+            z > y && (x = Math.floor(x * y / z), t = fontWeightBold + x + fontSizeArial);
             k[n] = {
                 l: l,
                 font: t
             };
-            c4.c5 = !0
+            c4.canvasDirty = !0
         }
     };
     this.c6 = function() {
-        return Math.floor(g * bw.bz(13).height)
+        return Math.floor(g * sprites.getValuebyID(13).height)
     };
-    this.c7 = function(n, l) {
-        return !bw.bx() || n < cA || l < cB - mainSettings.c1 -
-            g * bw.bz(13).height - 2 * cA || l > cB - mainSettings.c1 - 2 * cA ? !1 : n < cA + g * bw.bz(13).width ? (mainLeaderboard.cE(0), !0) : n < 2 * cA + g * bw.bz(13).width ? !1 : n < 2 * cA + 2 * g * bw.bz(13).width ? (mainLeaderboard.cE(1), !0) : !1
+    this.mouseDown = function(n, l) {
+        return !sprites.bx() || n < cA || l < cB - mainSettings.width -
+            g * sprites.getValuebyID(13).height - 2 * cA || l > cB - mainSettings.width - 2 * cA ? !1 : n < cA + g * sprites.getValuebyID(13).width ? (mainLeaderboard.cE(0), !0) : n < 2 * cA + g * sprites.getValuebyID(13).width ? !1 : n < 2 * cA + 2 * g * sprites.getValuebyID(13).width ? (mainLeaderboard.cE(1), !0) : !1
     };
     this.cF = function() {
-        return Math.floor(cB - mainSettings.c1 - g * bw.bz(13).height - 2 * cA)
+        return Math.floor(cB - mainSettings.width - g * sprites.getValuebyID(13).height - 2 * cA)
     };
     this.cG = function() {
-        if (bw.bx()) {
-            cH.imageSmoothingEnabled = !0;
-            cH.setTransform(g, 0, 0, g, cA, this.cF());
-            cH.drawImage(bw.bz(14), 0, 0);
-            cH.setTransform(g, 0, 0, g, 2 * cA + g * bw.bz(13).width, this.cF());
-            cH.drawImage(bw.bz(13), 0, 0);
-            for (var n = 1; 0 <= n; n--) k[n] && (cH.setTransform(1, 0, 0, 1, (1 + n) * cA + n * g *
-                bw.bz(13).width, this.cF()), cH.font = k[n].font, cH.textBaseline = cI, cH.textAlign = cJ, cH.fillStyle = cK, cH.fillText(k[n].l, .5 * g * bw.bz(13).width, .86 * g * bw.bz(13).height));
-            cH.setTransform(1, 0, 0, 1, 0, 0)
+        if (sprites.bx()) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.setTransform(g, 0, 0, g, cA, this.cF());
+            mainCanvasCtx.drawImage(sprites.getValuebyID(14), 0, 0);
+            mainCanvasCtx.setTransform(g, 0, 0, g, 2 * cA + g * sprites.getValuebyID(13).width, this.cF());
+            mainCanvasCtx.drawImage(sprites.getValuebyID(13), 0, 0);
+            for (var n = 1; 0 <= n; n--) k[n] && (mainCanvasCtx.setTransform(1, 0, 0, 1, (1 + n) * cA + n * g *
+                sprites.getValuebyID(13).width, this.cF()), mainCanvasCtx.font = k[n].font, mainCanvasCtx.textBaseline = middleAlign, mainCanvasCtx.textAlign = centerAlign, mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(k[n].l, .5 * g * sprites.getValuebyID(13).width, .86 * g * sprites.getValuebyID(13).height));
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     }
 }
 
 function cL(g, k, n, l) {
-    var x = divideFloor(3 * ax[g], 256);
-    l -= l >= divideFloor(ax[g], 2) ? x : 0;
+    var x = divideFloor(3 * troops[g], 256);
+    l -= l >= divideFloor(troops[g], 2) ? x : 0;
     cP(n, g);
-    ae.cQ(g, l, k);
-    ax[g] -= l + x;
-    au.cR(g, !1)
+    attacks.set(g, l, k);
+    troops[g] -= l + x;
+    speed.cR(g, !1)
 }
 
 function cS(g, k) {
     var n, l;
-    for (n = bM[g].length - 1; 0 <= n; n--)
-        if (b5.cU(bM[g][n]))
+    for (n = landBorderPixels[g].length - 1; 0 <= n; n--)
+        if (pixel.cU(landBorderPixels[g][n]))
             for (l = 3; 0 <= l; l--)
-                if (b5.bE(bM[g][n] + aV[l]) && b5.bF(bM[g][n] + aV[l]) === k) {
-                    b4[g].push(bM[g][n]);
+                if (pixel.bE(landBorderPixels[g][n] + aV[l]) && pixel.bF(landBorderPixels[g][n] + aV[l]) === k) {
+                    potentialBorderAdvances[g].push(landBorderPixels[g][n]);
                     break
                 }
 }
 
 function cP(g, k) {
-    for (var n = b4[k].length - 1; n >= g; n--) b5.cW(b4[k][n], k)
+    for (var n = potentialBorderAdvances[k].length - 1; n >= g; n--) pixel.cW(potentialBorderAdvances[k][n], k)
 }
 
 function cX(g) {
-    for (var k, n = bM[g].length - 1; 0 <= n; n--)
-        if (b5.cU(bM[g][n]))
+    for (var k, n = landBorderPixels[g].length - 1; 0 <= n; n--)
+        if (pixel.cU(landBorderPixels[g][n]))
             for (k = 3; 0 <= k; k--)
-                if (b5.bG(bM[g][n] + aV[k])) {
-                    b4[g].push(bM[g][n]);
+                if (pixel.bG(landBorderPixels[g][n] + aV[k])) {
+                    potentialBorderAdvances[g].push(landBorderPixels[g][n]);
                     break
                 }
 }
 
 function cY(g, k) {
     var n, l;
-    var x = bM[g].length;
+    var x = landBorderPixels[g].length;
     var t = 256 <= x ? 12 : 32 <= x ? 6 : 1;
-    x = x - 1 - ce.cf(t);
+    x = x - 1 - fakeRandom.cf(t);
     cg = 0;
     a: for (; 0 <= x; x -= t)
         for (l = 3; 0 <= l; l--) {
-            var z = b5.bG(bM[g][x] + aV[l]) ? b8 : b5.bF(bM[g][x] + aV[l]);
-            if (z === b8 || b5.bE(bM[g][x] + aV[l]) && z !== g && (k || ch(g, z))) {
+            var z = pixel.bG(landBorderPixels[g][x] + aV[l]) ? maxEntities : pixel.bF(landBorderPixels[g][x] + aV[l]);
+            if (z === maxEntities || pixel.bE(landBorderPixels[g][x] + aV[l]) && z !== g && (k || ch(g, z))) {
                 for (n = cg - 1; 0 <= n; n--)
                     if (ci[n] === z) continue a;
                 ci[cg] = z;
@@ -381,10 +381,10 @@ function cY(g, k) {
 function ck(g, k) {
     var n, l;
     cg = 0;
-    for (n = bM[g].length - 1; 0 <= n; n--)
+    for (n = landBorderPixels[g].length - 1; 0 <= n; n--)
         for (l = 3; 0 <= l; l--) {
-            var x = b5.bG(bM[g][n] + aV[l]) ? b8 : b5.bF(bM[g][n] + aV[l]);
-            if (x === b8 || b5.bE(bM[g][n] + aV[l]) && x !== g && (k || ch(g, x))) return ci[cg++] = x, !0
+            var x = pixel.bG(landBorderPixels[g][n] + aV[l]) ? maxEntities : pixel.bF(landBorderPixels[g][n] + aV[l]);
+            if (x === maxEntities || pixel.bE(landBorderPixels[g][n] + aV[l]) && x !== g && (k || ch(g, x))) return ci[cg++] = x, !0
         }
     return !1
 }
@@ -392,7 +392,7 @@ function ck(g, k) {
 function cl() {
     var g;
     for (g = cg - 1; 0 <= g; g--)
-        if (ci[g] === b8) {
+        if (ci[g] === maxEntities) {
             for (cg--; g < cg; g++) ci[g] = ci[g + 1];
             return !0
         } return !1
@@ -401,7 +401,7 @@ function cl() {
 function cn(g) {
     var k, n;
     for (k = cg - 1; 0 <= k; k--)
-        if (ae.co(g, ci[k]))
+        if (attacks.co(g, ci[k]))
             for (cg--, n = k; n < cg; n++) ci[n] = ci[n + 1];
     return 0 === cg
 }
@@ -409,23 +409,23 @@ function cn(g) {
 function cp() {
     var g;
     for (g = cg - 1; 0 <= g; g--)
-        if (ci[g] >= cq) return !0;
+        if (ci[g] >= playerCount) return !0;
     return !1
 }
 
 function cr() {
     var g, k;
     for (g = cg - 1; 0 <= g; g--)
-        if (ci[g] < cq)
+        if (ci[g] < playerCount)
             for (cg--, k = g; k < cg; k++) ci[k] = ci[k + 1];
     return 0 < cg
 }
 
 function cs(g) {
     var k, n = ci[0],
-        l = ax[n] + ae.bi(n, g);
+        l = troops[n] + attacks.bi(n, g);
     for (k = cg - 1; 1 <= k; k--) {
-        var x = ax[ci[k]] + ae.bi(ci[k], g);
+        var x = troops[ci[k]] + attacks.bi(ci[k], g);
         x < l && (n = ci[k], l = x)
     }
     return n
@@ -434,18 +434,18 @@ function cs(g) {
 function cv(g) {
     var k = ci[0];
     if (1 === cg) return k;
-    var n = divideFloor(cz[g] + d0[g], 2),
-        l = divideFloor(d2[g] + d3[g], 2),
-        x = square(n - divideFloor(cz[k] + d0[k], 2)) + square(l - divideFloor(d2[k] + d3[k], 2));
+    var n = divideFloor(xMax[g] + xMin[g], 2),
+        l = divideFloor(yMax[g] + yMin[g], 2),
+        x = square(n - divideFloor(xMax[k] + xMin[k], 2)) + square(l - divideFloor(yMax[k] + yMin[k], 2));
     for (g = cg - 1; 1 <= g; g--) {
-        var t = square(n - divideFloor(cz[ci[g]] + d0[ci[g]], 2)) + square(l - divideFloor(d2[ci[g]] + d3[ci[g]], 2));
+        var t = square(n - divideFloor(xMax[ci[g]] + xMin[ci[g]], 2)) + square(l - divideFloor(yMax[ci[g]] + yMin[ci[g]], 2));
         t < x && (x = t, k = ci[g])
     }
     return k
 }
 
 function d6() {
-    return ci[ce.cf(cg)]
+    return ci[fakeRandom.cf(cg)]
 }
 var cj, cg, ci, d7;
 
@@ -456,22 +456,22 @@ function d8() {
 }
 
 function d9() {
-    d7 = dA ? new Uint8Array(b8) : null
+    d7 = teamGame ? new Uint8Array(maxEntities) : null
 }
 
 function dB(g, k) {
-    dA && (d7[g] = 0);
-    if (ae.dD(g) && !(60 > k))
-        if (0 === bM[g].length) dE.dF(g, dG.cN[g - cq]) || (dG.dH(g - cq, 200), dI(g, k, dG.cN[g - cq], ay.dJ(g)));
-        else if (!(0 < bN[g].length && ce.random() < ce.value(bN[g].length > bM[g].length ? 7 : 3) && dE.dF(g, dG.cN[g - cq]))) {
-        var n = ay.dJ(g);
-        ax[g] > n && k < ax[g] - n && (k = ax[g] - n);
-        dA ? dK(g, k, dG.cN[g - cq], n) : dL(g, k, dG.cN[g - cq])
+    teamGame && (d7[g] = 0);
+    if (attacks.dD(g) && !(60 > k))
+        if (0 === landBorderPixels[g].length) dE.dF(g, dG.cN[g - playerCount]) || (dG.dH(g - playerCount, 200), dI(g, k, dG.cN[g - playerCount], interest.dJ(g)));
+        else if (!(0 < waterBorderPixels[g].length && fakeRandom.random() < fakeRandom.value(waterBorderPixels[g].length > landBorderPixels[g].length ? 7 : 3) && dE.dF(g, dG.cN[g - playerCount]))) {
+        var n = interest.dJ(g);
+        troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
+        teamGame ? dK(g, k, dG.cN[g - playerCount], n) : dL(g, k, dG.cN[g - playerCount])
     }
 }
 
 function dK(g, k, n, l) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, b8, n)) : (ce.dP(dG.dQ[n]) ? l = cs(g) : (cp() && ce.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < bN[g].length && ce.random() < ce.value(60) && dE.dF(g, n) || (dG.dH(g - cq, 200), dI(g, k, n, l))
+    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, maxEntities, n)) : (fakeRandom.dP(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < waterBorderPixels[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.dF(g, n) || (dG.dH(g - playerCount, 200), dI(g, k, n, l))
 }
 
 function dT(g, k) {
@@ -479,23 +479,23 @@ function dT(g, k) {
 }
 
 function dO(g, k, n) {
-    3 <= n && 2142 < c4.dU() && (k === b8 || ax[k] < divideFloor(ax[g], 20)) && dG.dH(g - cq, 25)
+    3 <= n && 2142 < c4.dU() && (k === maxEntities || troops[k] < divideFloor(troops[g], 20)) && dG.dH(g - playerCount, 25)
 }
 
 function dI(g, k, n, l) {
-    if (0 !== dW.dX[g] && !(5 === n && ax[g] < l || 4 === n && ax[g] < divideFloor(l, 2)))
-        for (n = ce.cf(dY), l = 0; l < dY; l++) {
+    if (0 !== teams.dX[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divideFloor(l, 2)))
+        for (n = fakeRandom.cf(dY), l = 0; l < dY; l++) {
             var x = dZ[(l + n) % dY];
-            if (dW.dX[x] === dW.dX[g] && 1 === d7[x]) {
+            if (teams.dX[x] === teams.dX[g] && 1 === d7[x]) {
                 da(g, x, k);
-                x < cq && ce.random() < ce.value(10) && (d7[x] = 0);
+                x < playerCount && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
                 break
             }
         }
 }
 
 function dL(g, k, n) {
-    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : ce.dP(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && ce.dP(dG.dS[n]) && cr(), dR(g, k, cv(g))))
+    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : fakeRandom.dP(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), dR(g, k, cv(g))))
 }
 
 function db(g, k) {
@@ -503,20 +503,20 @@ function db(g, k) {
 }
 
 function dR(g, k, n) {
-    if (divideFloor(ax[g], 8) > ax[n]) {
-        var l = divideFloor(11 * ax[n], 5);
+    if (divideFloor(troops[g], 8) > troops[n]) {
+        var l = divideFloor(11 * troops[n], 5);
         k = k > l ? k : l
     }
-    l = b4[g].length;
+    l = potentialBorderAdvances[g].length;
     cS(g, n);
     cL(g, n, l, k)
 }
 
 function dN(g, k) {
-    var n = b8,
-        l = b4[g].length;
+    var n = maxEntities,
+        l = potentialBorderAdvances[g].length;
     cX(g);
-    return b4[g].length !== l ? (cL(g, n, l, k), !0) : !1
+    return potentialBorderAdvances[g].length !== l ? (cL(g, n, l, k), !0) : !1
 }
 var dd = [60, 74, 112, 200, 256, 512];
 
@@ -527,31 +527,31 @@ function de() {
     this.dS = [98, 95, 90, 40, 20, 0];
     this.dn = [85, 70, 65, 30, 7, 3];
     this.dQ = [0, 0, 0, 0, 50, 90];
-    this.bp = function() {
+    this.init = function() {
         var z;
-        g = new Uint8Array(dq);
-        k = new Uint16Array(dq);
-        n = new Uint16Array(dq);
-        l = new Uint8Array(dq);
-        this.cN = new Uint8Array(dq);
-        x = new Uint16Array(dq);
-        t = new Uint16Array(dq);
-        if (dr.ds) {
-            if (dr.dt.du)
-                for (z = dq - 1; 0 <= z; z--) this.cN[z] = dr.dt.du[z + 1]
-        } else if (9 === dv) this.dw();
-        else if (dx)
-            if (dA)
-                for (z = dq - 1; 0 <=
-                    z; z--) this.cN[z] = dy.dz[dW.dX[z + cq] - 1].bD;
+        g = new Uint8Array(botCount);
+        k = new Uint16Array(botCount);
+        n = new Uint16Array(botCount);
+        l = new Uint8Array(botCount);
+        this.cN = new Uint8Array(botCount);
+        x = new Uint16Array(botCount);
+        t = new Uint16Array(botCount);
+        if (customMap.ds) {
+            if (customMap.dt.du)
+                for (z = botCount - 1; 0 <= z; z--) this.cN[z] = customMap.dt.du[z + 1]
+        } else if (9 === gamemode) this.dw();
+        else if (singleplayer)
+            if (teamGame)
+                for (z = botCount - 1; 0 <=
+                    z; z--) this.cN[z] = singleSettings.dz[teams.dX[z + playerCount] - 1].bD;
             else
-                for (z = dq - 1; 0 <= z; z--) this.cN[z] = dy.dz[0].bD;
+                for (z = botCount - 1; 0 <= z; z--) this.cN[z] = singleSettings.dz[0].bD;
         else {
-            var y = 8 === dv ? 1 : 0;
-            for (z = dq - 1; 0 <= z; z--) this.cN[z] = y
+            var y = 8 === gamemode ? 1 : 0;
+            for (z = botCount - 1; 0 <= z; z--) this.cN[z] = y
         }
-        for (z = dq - 1; 0 <= z; z--) 2 >= this.cN[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.cN[z] ? (k[z] = 1E3, n[z] = 1E3) : 1 === this.cN[z] ? (k[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (k[z] = 1E3, n[z] = 870)) : 4 >= this.cN[z] ? (l[z] = 1 + ce.cf(20), t[z] = 250 + ce.cf(1501), x[z] = 500 + ce.cf(501), 3 === this.cN[z] ? (k[z] = 600 + ce.cf(101), n[z] = 300 + ce.cf(401)) : (k[z] = 300 + ce.cf(201), n[z] = 100 + ce.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
-            35 + ce.cf(16), k[z] = 400 + ce.cf(101), n[z] = 50 + ce.cf(101)), g[z] = 1 + divideFloor(x[z] * ce.random(), 10 * ce.value(100))
+        for (z = botCount - 1; 0 <= z; z--) 2 >= this.cN[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.cN[z] ? (k[z] = 1E3, n[z] = 1E3) : 1 === this.cN[z] ? (k[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (k[z] = 1E3, n[z] = 870)) : 4 >= this.cN[z] ? (l[z] = 1 + fakeRandom.cf(20), t[z] = 250 + fakeRandom.cf(1501), x[z] = 500 + fakeRandom.cf(501), 3 === this.cN[z] ? (k[z] = 600 + fakeRandom.cf(101), n[z] = 300 + fakeRandom.cf(401)) : (k[z] = 300 + fakeRandom.cf(201), n[z] = 100 + fakeRandom.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
+            35 + fakeRandom.cf(16), k[z] = 400 + fakeRandom.cf(101), n[z] = 50 + fakeRandom.cf(101)), g[z] = 1 + divideFloor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
     };
     this.dw = function() {
         var z, y;
@@ -571,8 +571,8 @@ function de() {
             x[z] !== t[z] && (x[z] += x[z] < t[z] ? 3 : -3);
             k[z] !== n[z] && (k[z] += k[z] < n[z] ? l[z] : -l[z], k[z] = Math.abs(k[z] - n[z]) <= l[z] ? n[z] : k[z]);
             g[z] = divideFloor(x[z], 10);
-            var y = z + cq;
-            dB(y, divideFloor(k[z] * ax[y], 1E3))
+            var y = z + playerCount;
+            dB(y, divideFloor(k[z] * troops[y], 1E3))
         }
     }
 }
@@ -585,13 +585,13 @@ function e8() {
 }
 
 function eE() {
-    ay.dF();
-    eF.dF();
-    eG.dF();
+    interest.dF();
+    antiFullSend.dF();
+    processAction.dF();
     eH.dF();
-    eI.dF();
+    humanBots.dF();
     eJ.dF();
-    au.dF();
+    speed.dF();
     eK.dF();
     eL();
     eM.dF();
@@ -603,19 +603,19 @@ function eE() {
     eP.dF();
     announcements.dF();
     eQ.dF();
-    eR.dF();
-    eS.dF();
-    b0.dF();
+    troopBar.dF();
+    peace.dF();
+    statistics.dF();
     eT.dF();
     wsManager.dF()
 }
 
 function eU() {
     eV.dF();
-    eW.dF();
+    gameResultBox.dF();
     c2.dF();
     eX.dF();
-    setOrigin.eZ()
+    setGameOrigin.eZ()
 }
 
 function ea() {
@@ -623,42 +623,42 @@ function ea() {
     eP.eb();
     eB.eb(!1);
     eO.eb();
-    eR.eb();
-    eS.eb();
+    troopBar.eb();
+    peace.eb();
     eA.eb();
     eT.bv()
 }
 
 function ec() {
-    eA.eb() && (c4.c5 = !0);
+    eA.eb() && (c4.canvasDirty = !0);
     wsManager.dF()
 }
 
-function ed() {
+function Speed() {
     function g(A) {
         var B;
-        for (B = l - 1; 0 <= B; B--) 0 === t[x[B]] && bU[x[B]] >= A && ab(x[B])
+        for (B = l - 1; 0 <= B; B--) 0 === t[x[B]] && land[x[B]] >= A && ab(x[B])
     }
 
     function k(A) {
-        t[A] = 10 === t[A] ? n : 1E3 > bU[A] ? 3 : 1E4 > bU[A] ? 2 : 6E4 > bU[A] ? 1 : 0
+        t[A] = 10 === t[A] ? n : 1E3 > land[A] ? 3 : 1E4 > land[A] ? 2 : 6E4 > land[A] ? 1 : 0
     }
     var n, l, x, t, z, y;
-    this.bp = function() {
+    this.init = function() {
         z = y = 0;
         n = 6;
         l = 0;
-        x = new Uint16Array(b8);
-        t = new Uint8Array(b8)
+        x = new Uint16Array(maxEntities);
+        t = new Uint8Array(maxEntities)
     };
     this.dF = function() {
         var A;
-        z = b0.b1[13];
-        y = ax[myID];
+        z = statistics.b1[13];
+        y = troops[myID];
         for (A = l - 1; 0 <= A; A--) 10 === t[x[A]] ? k(x[A]) : 0 === t[x[A]]-- && (k(x[A]), ab(x[A]));
-        16E4 <= bU[em[0]] && (g(16E4), 3E5 <= bU[em[0]] && g(3E5));
-        bU[myID] > b0.b1[7] && (b0.b1[7] = bU[myID]);
-        b0.b1[14] += y - ax[myID] + z - b0.b1[13]
+        16E4 <= land[em[0]] && (g(16E4), 3E5 <= land[em[0]] && g(3E5));
+        land[myID] > statistics.b1[7] && (statistics.b1[7] = land[myID]);
+        statistics.b1[14] += y - troops[myID] + z - statistics.b1[13]
     };
     this.av = function(A) {
         var B;
@@ -683,9 +683,9 @@ function er() {
         l = 3;
         a: {
             for (var y = 40; 1 <= y; y--) {
-                x = d0[z] + divideFloor(ce.random() * (cz[z] - d0[z] + 1), ce.value(100));
-                t = d3[z] + divideFloor(ce.random() * (d2[z] - d3[z] + 1), ce.value(100));
-                var A = k(b5.f1(x, t));
+                x = xMin[z] + divideFloor(fakeRandom.random() * (xMax[z] - xMin[z] + 1), fakeRandom.value(100));
+                t = yMin[z] + divideFloor(fakeRandom.random() * (yMax[z] - yMin[z] + 1), fakeRandom.value(100));
+                var A = k(pixel.f1(x, t));
                 if (1 !== A) break a
             }
             A = 1
@@ -697,8 +697,8 @@ function er() {
     }
 
     function k(y) {
-        if (b5.b6(y) && (b5.bG(y) || b5.bF(y) !== z && ch(z, b5.bF(y)))) {
-            if (ez.co(z, y)) return 2;
+        if (pixel.b6(y) && (pixel.bG(y) || pixel.bF(y) !== z && ch(z, pixel.bF(y)))) {
+            if (boatPathChecker.co(z, y)) return 2;
             if (0 === l--) return 0
         }
         return 1
@@ -706,18 +706,18 @@ function er() {
 
     function n(y, A) {
         for (var B, C, E, F, G, N, I, D = y; D < y + 50 * A; D += A)
-            if (B = d0[z] - D, B = 1 > B ? 1 : B, C = d3[z] - D, C = 1 >
-                C ? 1 : C, E = cz[z] + D, E = E >= aZ - 1 ? aZ - 2 : E, F = d2[z] + D, F = F >= aa - 1 ? aa - 2 : F, I = divideFloor(2 * ce.random() * (E - B + F - C), ce.value(100)), G = E - B, N = F - C, I <= G ? (x = B + I, t = C) : I <= G + N ? (x = E, t = C + I - G) : I <= 2 * G + N ? (x = B + I - G - N, t = F) : (x = B, t = C + I - 2 * G - N), B = k(b5.f1(x, t)), 1 !== B) return B;
+            if (B = xMin[z] - D, B = 1 > B ? 1 : B, C = yMin[z] - D, C = 1 >
+                C ? 1 : C, E = xMax[z] + D, E = E >= currentMapWidth - 1 ? currentMapWidth - 2 : E, F = yMax[z] + D, F = F >= currentMapHeight - 1 ? currentMapHeight - 2 : F, I = divideFloor(2 * fakeRandom.random() * (E - B + F - C), fakeRandom.value(100)), G = E - B, N = F - C, I <= G ? (x = B + I, t = C) : I <= G + N ? (x = E, t = C + I - G) : I <= 2 * G + N ? (x = B + I - G - N, t = F) : (x = B, t = C + I - 2 * G - N), B = k(pixel.f1(x, t)), 1 !== B) return B;
         return 1
     }
     var l, x, t, z;
     this.dF = function(y, A) {
         z = y;
-        if (0 === bN[z].length) return !1;
+        if (0 === waterBorderPixels[z].length) return !1;
         if (g()) {
-            var B = divideFloor(dG.dn[A] * ax[z], 100);
-            100 > B && 100 <= ax[z] && (B = 100);
-            if (100 <= B) return ey(z, ez.f0(), b5.f1(x, t), B)
+            var B = divideFloor(dG.dn[A] * troops[z], 100);
+            100 > B && 100 <= troops[z] && (B = 100);
+            if (100 <= B) return ey(z, boatPathChecker.f0(), pixel.f1(x, t), B)
         }
         return !1
     }
@@ -725,26 +725,26 @@ function er() {
 
 function fC() {
     var g, k;
-    this.bp = function() {
-        g = dq;
-        k = new Uint16Array(dq);
-        for (var n = dq - 1; 0 <= n; n--) k[n] = n
+    this.init = function() {
+        g = botCount;
+        k = new Uint16Array(botCount);
+        for (var n = botCount - 1; 0 <= n; n--) k[n] = n
     };
     this.dF = function() {
         for (var n = g - 1; 0 <= n; n--)
-            if (0 === fF[k[n] + cq]) {
+            if (0 === isAlive[k[n] + playerCount]) {
                 var l = n;
                 for (g--; l < g; l++) k[l] = k[l + 1]
             } else dG.dF(k[n])
     }
 }
 
-function fH() {
+function ProcessAction() {
     function g(y, A, B, C, E, F) {
         0 < B && 1E3 >= B && (k.push(y), n.push(A), l.push(B), x.push(C), t.push(E), z.push(F))
     }
     var k, n, l, x, t, z;
-    this.bp = function() {
+    this.init = function() {
         k = [];
         n = [];
         l = [];
@@ -760,63 +760,62 @@ function fH() {
         else if (2 === n[y]) this.fN(k[y], x[y]);
         else if (6 === n[y]) {
             var B = k[y];
-            0 !== fF[B] && 2 !== fT[k] && eS.fX(B, 1 === x[y])
+            0 !== isAlive[B] && 2 !== playerStatus[k] && peace.fX(B, 1 === x[y])
         } else 7 === n[y] && this.fP(k[y], x[y]);
-        0 < A && this.bp()
+        0 < A && this.init()
     };
     this.fM = function(y, A, B, C) {
-        0 !== fF[y] && 2 !==
-            fT[k] && ez.co(y, b5.f1(B, C)) && ey(y, ez.f0(), b5.f1(B, C), divideFloor(A * ax[y], 1E3)) && y === myID && (b0.b1[0] += A, b0.b1[1]++, b0.b1[2]++)
+        0 !== isAlive[y] && 2 !==
+            playerStatus[k] && boatPathChecker.co(y, pixel.f1(B, C)) && ey(y, boatPathChecker.f0(), pixel.f1(B, C), divideFloor(A * troops[y], 1E3)) && y === myID && (statistics.b1[0] += A, statistics.b1[1]++, statistics.b1[2]++)
     };
     this.fN = function(y, A) {
-        if (0 !== fF[y] && 2 !== fT[k] && ae.co(y, A)) {
-            var B = ae.bi(y, A);
-            ae.bh(y, A, 0);
-            if (y !== myID) ax[y] += B, ay.az(y);
+        if (0 !== isAlive[y] && 2 !== playerStatus[k] && attacks.co(y, A)) {
+            var B = attacks.bi(y, A);
+            attacks.bh(y, A, 0);
+            if (y !== myID) troops[y] += B, interest.az(y);
             else {
-                var C = ax[y];
-                ax[y] += B;
-                ay.az(y);
-                b0.b1[13] -= ax[y] - C
+                var C = troops[y];
+                troops[y] += B;
+                interest.az(y);
+                statistics.b1[13] -= troops[y] - C
             }
         }
     };
     this.fP = function(y, A) {
-        if (0 !== fF[y] && 2 !== fT[k]) {
-            var B = ae.fV(y, A);
+        if (0 !== isAlive[y] && 2 !== playerStatus[k]) {
+            var B = attacks.fV(y, A);
             if (-1 !== B) {
-                var C = ae.am(y, B);
-                ae.bT(y, B, 0);
-                ax[y] += C;
-                ay.az(y)
+                var C = attacks.am(y, B);
+                attacks.bT(y, B, 0);
+                troops[y] += C;
+                interest.az(y)
             }
         }
     };
     this.fY = function(y, A, B) {
-        1 === fZ && g(y, 0, A, B, 0, 0)
+        1 === clientStatus && g(y, 0, A, B, 0, 0)
     };
     this.fb = function(y, A, B, C) {
-        1 === fZ && (fc ?
-            fd.cQ(y, B, C) : g(y, 1, A, 0, B, C))
+        1 === clientStatus && (inSpawn ? spawn.set(y, B, C) : g(y, 1, A, 0, B, C))
     };
     this.fe = function(y, A) {
-        1 === fZ && g(y, 2, 1, A, 0, 0)
+        1 === clientStatus && g(y, 2, 1, A, 0, 0)
     };
     this.ff = function(y, A) {
-        1 === fZ && g(y, 7, 1, A, 0, 0)
+        1 === clientStatus && g(y, 7, 1, A, 0, 0)
     };
     this.fg = function(y, A) {
-        1 === fZ && g(y, 6, 1, A, 0, 0)
+        1 === clientStatus && g(y, 6, 1, A, 0, 0)
     };
     this.fh = function(y) {
-        1 === fZ && 0 !== fF[y] && 2 !== fT[y] && (8 === dv ? fi.fj(1 - y) : this.fk(y));
+        1 === clientStatus && 0 !== isAlive[y] && 2 !== playerStatus[y] && (8 === gamemode ? endGame.endGame(1 - y) : this.fk(y));
         announcements.fl(y, 4)
     };
     this.fk = function(y) {
-        fc ? (fm(y), fn()) : eI.fo(y)
+        inSpawn ? (fm(y), fn()) : humanBots.fo(y)
     };
     this.fp = function(y) {
-        0 !== fF[y] && 2 !== fT[y] && fq.fr(y) && (1 === dY ? fi.fj(y) : (announcements.fl(y, y === myID ? 21 : 22), 8 === dv ? fi.fj(1 - y) : dx ? (fm(y), fn(), fc && fd.dF()) : this.fk(y)))
+        0 !== isAlive[y] && 2 !== playerStatus[y] && fq.fr(y) && (1 === dY ? endGame.endGame(y) : (announcements.fl(y, y === myID ? 21 : 22), 8 === gamemode ? endGame.endGame(1 - y) : singleplayer ? (fm(y), fn(), inSpawn && spawn.dF()) : this.fk(y)))
     }
 }
 
@@ -825,10 +824,10 @@ function fu() {
         for (l--; B < l; B++) x[B] = x[B + 1], t[B] = t[B + 1], z[B] = z[B + 1], y[B] = y[B + 1], A[B] = A[B + 1]
     }
     var k, n, l, x, t, z, y, A;
-    this.bp = function() {
+    this.init = function() {
         k = 1;
         l = 0;
-        n = 2 * b8;
+        n = 2 * maxEntities;
         x = new Uint16Array(n);
         t = new Uint8Array(n);
         z = new Uint16Array(n);
@@ -873,23 +872,23 @@ function fu() {
                 E = gD / g7,
                 F = (gE + gC) / g7,
                 G = (cB + gD) / g7;
-            cH.textAlign = cJ;
-            cH.textBaseline = cI;
+            mainCanvasCtx.textAlign = centerAlign;
+            mainCanvasCtx.textBaseline = middleAlign;
             for (B = l - 1; 0 <= B; B--) {
-                var N = b5.gF(y[B]);
-                var I = b5.cF(y[B]);
+                var N = pixel.gF(y[B]);
+                var I = pixel.cF(y[B]);
                 var D = x[B];
-                if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== fF[D]) {
+                if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== isAlive[D]) {
                     var K = Math.floor(.94 * g7 * eA.gG(D));
                     if (!(6 > K)) {
                         N = Math.floor(gE * (N + .5 - C) / (F - C));
                         I = Math.floor(cB * (I + .48 - E) / (G - E));
-                        cH.font = bt +
-                            K + bu;
-                        cH.fillStyle = gH;
-                        cH.fillText(gI[D], N, I);
+                        mainCanvasCtx.font = fontWeightBold +
+                            K + fontSizeArial;
+                        mainCanvasCtx.fillStyle = blackRGB;
+                        mainCanvasCtx.fillText(nickname[D], N, I);
                         var J = Math.floor(.57 * K);
-                        6 > J || (D = ae.am(D, ae.fV(D, z[B])), cH.font = bt + J + bu, cH.fillText(eP.gJ(D), N, I + Math.floor(.82 * K)))
+                        6 > J || (D = attacks.am(D, attacks.fV(D, z[B])), mainCanvasCtx.font = fontWeightBold + J + fontSizeArial, mainCanvasCtx.fillText(eP.gJ(D), N, I + Math.floor(.82 * K)))
                     }
                 }
             }
@@ -927,19 +926,19 @@ function gK() {
     };
     this.ge = function() {
         g(1);
-        this.gf(0, 0, aZ - 1, aa - 1);
-        fc || this.gg(myID, 3E3, !0, .3)
+        this.gf(0, 0, currentMapWidth - 1, currentMapHeight - 1);
+        inSpawn || this.gg(myID, 3E3, !0, .3)
     };
     this.gg = function(J, L, H, M) {
-        if (!(gi || D && !H && K || 0 === bU[J])) {
+        if (!(isCanvasHidden || D && !H && K || 0 === land[J])) {
             gj.gk = !1;
             K = H;
             g(L);
-            E = (d0[J] + cz[J] + 1) / 2;
-            F = (d3[J] + d2[J] + 1) / 2;
-            L = cz[J] -
-                d0[J] + 1;
-            J = d2[J] - d3[J] + 1;
+            E = (xMin[J] + xMax[J] + 1) / 2;
+            F = (yMin[J] + yMax[J] + 1) / 2;
+            L = xMax[J] -
+                xMin[J] + 1;
+            J = yMax[J] - yMin[J] + 1;
             H = gE / L;
             var Q = cB / J;
             G = H < Q ? H : Q;
@@ -953,7 +952,7 @@ function gK() {
         gj.gk = !1;
         K = !0;
         g(J);
-        n(0, 0, aZ - 1, aa - 1);
+        n(0, 0, currentMapWidth - 1, currentMapHeight - 1);
         k(.875);
         D = !0;
         gn.go()
@@ -989,7 +988,7 @@ function gK() {
             eA.zoom(L, (J * L - gC) / (1 - L), (H * L - gD) / (1 - L));
             gy.gz();
             1 <= x && (D = !1, h8.h9 = !0);
-            c4.c5 = !0
+            c4.canvasDirty = !0
         }
     }
 }
@@ -999,14 +998,14 @@ function hA() {
         var I;
         a: {
             for (I = 0; 8 > I; I++)
-                if (t = divideFloor(y * ce.random(), ce.value(100)), z = divideFloor(A * ce.random(), ce.value(100)), k()) {
+                if (t = divideFloor(y * fakeRandom.random(), fakeRandom.value(100)), z = divideFloor(A * fakeRandom.random(), fakeRandom.value(100)), k()) {
                     I = !0;
                     break a
                 } I = !1
         }
         if (!I) a: {
-            var D, K, J, L;I = divideFloor(y * ce.random(), ce.value(100));
-            var H = divideFloor(A * ce.random(), ce.value(100));
+            var D, K, J, L;I = divideFloor(y * fakeRandom.random(), fakeRandom.value(100));
+            var H = divideFloor(A * fakeRandom.random(), fakeRandom.value(100));
             for (D = 40; 1 <= D; D--)
                 for (K = A - D; 0 <= K; K -= 40)
                     for (z = (K + H) % A, J = 40; 1 <= J; J--)
@@ -1026,68 +1025,68 @@ function hA() {
             L = C + t * B + K;
         for (I = J + F - 1; I >= J; I--)
             for (D = L + F - 1; D >= L; D--)
-                if (K = b5.f1(D, I), !b5.b6(K) ||
-                    b5.cU(K)) return !1;
+                if (K = pixel.f1(D, I), !pixel.b6(K) ||
+                    pixel.cU(K)) return !1;
         return !0
     }
 
     function n() {
-        fF[G] = 0;
-        ax[G] = 0;
-        bU[G] = ha[G] = 0;
-        b4[G] = [];
-        bM[G] = [];
-        bN[G] = [];
-        bQ[G] = [];
-        d0[G] = d3[G] = cz[G] = d2[G] = 0
+        isAlive[G] = 0;
+        troops[G] = 0;
+        land[G] = tempLand[G] = 0;
+        potentialBorderAdvances[G] = [];
+        landBorderPixels[G] = [];
+        waterBorderPixels[G] = [];
+        mountainBorderPixels[G] = [];
+        xMin[G] = yMin[G] = xMax[G] = yMax[G] = 0
     }
 
     function l(I, D) {
-        fF[G] = 1;
-        ax[G] = G < cq ? hb : dd[dG.cN[G - cq]];
-        d0[G] = I + 10;
-        d3[G] = D + 10;
-        d2[G] = cz[G] = 0;
+        isAlive[G] = 1;
+        troops[G] = G < playerCount ? startingTroops : dd[dG.cN[G - playerCount]];
+        xMin[G] = I + 10;
+        yMin[G] = D + 10;
+        yMax[G] = xMax[G] = 0;
         var K, J;
         for (K = I; K < I + 4; K++)
             for (J = D; J < D + 4; J++)
                 if (K > I && K < I + 3 || J > D && J < D + 3) {
-                    var L = b5.f1(K, J);
-                    b5.b6(L) && (d0[G] = K < d0[G] ? K : d0[G], cz[G] = K > cz[G] ? K : cz[G], d3[G] = J < d3[G] ? J : d3[G], d2[G] = J > d2[G] ? J : d2[G], N[bU[G]] = L, bU[G]++, b5.he(L, G))
-                } ha[G] = bU[G];
-        for (L = bU[G] - 1; 0 <= L; L--) b5.hf(N[L], G) ? (b5.b7(N[L],
-            G), bM[G].push(N[L])) : b5.hg(N[L]) ? (b5.b7(N[L], G), bN[G].push(N[L])) : b5.hh(N[L]) && (b5.b7(N[L], G), bQ[G].push(N[L]))
+                    var L = pixel.f1(K, J);
+                    pixel.b6(L) && (xMin[G] = K < xMin[G] ? K : xMin[G], xMax[G] = K > xMax[G] ? K : xMax[G], yMin[G] = J < yMin[G] ? J : yMin[G], yMax[G] = J > yMax[G] ? J : yMax[G], N[land[G]] = L, land[G]++, pixel.he(L, G))
+                } tempLand[G] = land[G];
+        for (L = land[G] - 1; 0 <= L; L--) pixel.hf(N[L], G) ? (pixel.b7(N[L],
+            G), landBorderPixels[G].push(N[L])) : pixel.hg(N[L]) ? (pixel.b7(N[L], G), waterBorderPixels[G].push(N[L])) : pixel.hh(N[L]) && (pixel.b7(N[L], G), mountainBorderPixels[G].push(N[L]))
     }
 
     function x(I, D) {
         var K, J;
         for (J = D; J > D - 6; J--)
             for (K = I; K > I - 6; K--) {
-                var L = b5.f1(K, J);
-                if (b5.cU(L)) return !1
+                var L = pixel.f1(K, J);
+                if (pixel.cU(L)) return !1
             }
         return !0
     }
     var t, z, y, A, B, C, E, F, G, N;
-    this.bp = function() {
+    this.init = function() {
         var I;
         N = Array(12);
         F = 6;
         B = 10;
-        y = divideFloor(aZ, B);
-        A = divideFloor(aa, B);
-        C = divideFloor(aZ - B * y, 2);
-        E = divideFloor(aa - B * A, 2);
-        if (fc)
-            for (I = 0; I < cq; I++) G = I, n(), fF[G] = 1;
-        if (dr.ds && dr.dt.hH)
-            for (G = 0; G < b8; G++) {
-                if (1 !== fF[G]) {
-                    if (G < hM) {
-                        var D = dr.dt.hH[G] + 1;
-                        I = dr.dt.hS[G] + 1;
-                        3 < D && D < aZ - 5 && 3 < I && I < aa - 5 &&
-                            b5.b6(b5.f1(D, I)) && x(D + 3, I + 3) ? (D += 1, I += 1, n(), l(D - 2, I - 2), I = !0) : I = !1;
+        y = divideFloor(currentMapWidth, B);
+        A = divideFloor(currentMapHeight, B);
+        C = divideFloor(currentMapWidth - B * y, 2);
+        E = divideFloor(currentMapHeight - B * A, 2);
+        if (inSpawn)
+            for (I = 0; I < playerCount; I++) G = I, n(), isAlive[G] = 1;
+        if (customMap.ds && customMap.dt.hH)
+            for (G = 0; G < maxEntities; G++) {
+                if (1 !== isAlive[G]) {
+                    if (G < entityCount) {
+                        var D = customMap.dt.hH[G] + 1;
+                        I = customMap.dt.hS[G] + 1;
+                        3 < D && D < currentMapWidth - 5 && 3 < I && I < currentMapHeight - 5 &&
+                            pixel.b6(pixel.f1(D, I)) && x(D + 3, I + 3) ? (D += 1, I += 1, n(), l(D - 2, I - 2), I = !0) : I = !1;
                         if (I) continue;
                         if (g()) {
                             D = C + t * B + divideFloor(B, 2);
@@ -1100,9 +1099,9 @@ function hA() {
                     n()
                 }
             } else
-                for (G = 0; G < b8; G++) 1 !== fF[G] && (G < hM && g() ? (D = C + t * B + divideFloor(B, 2), I = E + z * B + divideFloor(B, 2), n(), l(D - 2, I - 2)) : n());
-        b0.b1[7] = bU[myID];
-        b0.b1[8] = ax[myID]
+                for (G = 0; G < maxEntities; G++) 1 !== isAlive[G] && (G < entityCount && g() ? (D = C + t * B + divideFloor(B, 2), I = E + z * B + divideFloor(B, 2), n(), l(D - 2, I - 2)) : n());
+        statistics.b1[7] = land[myID];
+        statistics.b1[8] = troops[myID]
     };
     this.hi = function(I, D, K) {
         var J, L;
@@ -1110,11 +1109,11 @@ function hA() {
         for (J = 0; 20 > J; J++)
             for (I = D + J; I >= D - J; I--)
                 for (L = K + J; L >= K - J; L--)
-                    if ((I === D + J || I === D - J || L === K + J || L === K - J) && 3 < I && I < aZ - 5 && 3 < L && L < aa - 5 && b5.b6(b5.f1(I, L)) && x(I + 3, L + 3)) {
-                        if (0 < bU[G]) {
-                            for (K = cz[G]; K >=
-                                d0[G]; K--)
-                                for (D = d2[G]; D >= d3[G]; D--) J = 4 * (D * aZ + K), b5.hm(G, J) && (b5.hn(J), bU[G]--);
+                    if ((I === D + J || I === D - J || L === K + J || L === K - J) && 3 < I && I < currentMapWidth - 5 && 3 < L && L < currentMapHeight - 5 && pixel.b6(pixel.f1(I, L)) && x(I + 3, L + 3)) {
+                        if (0 < land[G]) {
+                            for (K = xMax[G]; K >=
+                                xMin[G]; K--)
+                                for (D = yMax[G]; D >= yMin[G]; D--) J = 4 * (D * currentMapWidth + K), pixel.hm(G, J) && (pixel.hn(J), land[G]--);
                             n()
                         }
                         l(I - 1, L - 1);
@@ -1134,27 +1133,27 @@ function hA() {
 
 function hp() {
     hq.hr();
-    cH.setTransform(g7, 0, 0, g7, 0, 0);
-    cH.imageSmoothingEnabled = 3 > g7;
-    cH.drawImage(hs, gj.gF(), gj.cF());
+    mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0);
+    mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
+    mainCanvasCtx.drawImage(hs, gj.gF(), gj.cF());
     eN.cG();
-    cH.drawImage(ht, gj.gF(), gj.cF());
-    cH.imageSmoothingEnabled = !1;
+    mainCanvasCtx.drawImage(mapCanvas, gj.gF(), gj.cF());
+    mainCanvasCtx.imageSmoothingEnabled = !1;
     hq.cG();
-    cH.setTransform(1, 0, 0, 1, 0, 0);
+    mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
     eA.cG();
     eK.cG();
-    gi || (cH.imageSmoothingEnabled = !1, announcements.cG(), eM.cG(), eR.cG(), eS.cG(), eB.cG(), gj.cG(), c2.cG(), eT.cG(), eO.cG(), eP.cG(), fq.cG(), eW.cG(), hu.cG(), hv.cG(), eX.cG())
+    isCanvasHidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.cG(), eM.cG(), troopBar.cG(), peace.cG(), eB.cG(), gj.cG(), c2.cG(), eT.cG(), eO.cG(), eP.cG(), fq.cG(), gameResultBox.cG(), hu.cG(), hv.cG(), eX.cG())
 }
 
 function hw(g, k, n) {
     g.clearRect(0, 0, k, n);
-    g.fillStyle = hy;
+    g.fillStyle = blackMoreOpaque;
     g.fillRect(0, 0, k, n)
 }
 
 function hz(g, k, n, l) {
-    g.fillStyle = cK;
+    g.fillStyle = whiteRGB2;
     g.fillRect(0, 0, k, l);
     g.fillRect(0, 0, l, n);
     g.fillRect(k - l, 0, l, n);
@@ -1162,7 +1161,7 @@ function hz(g, k, n, l) {
 }
 
 function i1(g, k, n, l, x, t, z) {
-    g.fillStyle = cK;
+    g.fillStyle = whiteRGB2;
     t = Math.floor(l * t);
     t += (t - x) % 2;
     var y = Math.floor((t - x) / 2);
@@ -1171,22 +1170,22 @@ function i1(g, k, n, l, x, t, z) {
     z && g.fillRect(k + l + y, n + l, x, t)
 }
 
-function i7() {
-    this.i8 = null;
-    this.bp = function(g) {
-        this.i8 = g;
-        announcements.i9(this.i8)
+function Points1v1() {
+    this.players = null;
+    this.init = function(playerInfo) {
+        this.players = playerInfo;
+        announcements.new1v1(this.players)
     };
-    this.iA = function(g) {
-        var k = 8 / (1 + Math.pow(2, (this.i8[g].iC - this.i8[1 - g].iC) / 10 / 32));
-        k = Math.floor(10 * k + .5);
-        var n = this.iF(this.i8[g].iC + k + 1);
-        k = this.iF(this.i8[1 - g].iC - k);
-        0 === g ? announcements.iH(this.i8, n, k, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : announcements.iH(this.i8, k, n, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
+    this.calculateElo = function(winner) {
+        var eloChange = 8 / (1 + Math.pow(2, (this.players[winner].elo - this.players[1 - winner].elo) / 10 / 32));
+        eloChange = Math.floor(10 * eloChange + .5);
+        var winnerElo = this.formatElo(this.players[winner].elo + loserElo + 1),
+            loserElo = this.formatElo(this.players[1 - winner].elo - loserElo);
+        0 === winner ? announcements.result1v1(this.players, winnerElo, loserElo, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : announcements.result1v1(this.players, loserElo, winnerElo, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
     };
-    this.iF = function(g) {
-        g = 0 > g ? 0 : 16E3 < g ? 16E3 : g;
-        return 16E3 <= g ? "Unknown" : (g / 10).toFixed(1)
+    this.formatElo = function(elo) {
+        elo = 0 > elo ? 0 : 16E3 < elo ? 16E3 : elo;
+        return 16E3 <= elo ? "Unknown" : (elo / 10).toFixed(1)
     }
 }
 
@@ -1232,7 +1231,7 @@ function Characters() {
         }
         return z
     };
-    this.iU = function(x) {
+    this.convertToString = function(x) {
         for (var t = "", z = x.length, y, A = 0; A < z; A++)
             for (y = 1; y < l.length; y++)
                 if (x[A] < l[y]) {
@@ -1249,7 +1248,7 @@ function Characters() {
     this.iW = function(x) {
         for (var t = Array(Math.floor(x.length /
                 3)), z = 0; z < x.length; z += 3) t[Math.floor(z / 3)] = parseInt(x.substring(z, z + 3));
-        return this.iU(t)
+        return this.convertToString(t)
     };
     this.z = function(x) {
         var t, z = [x.length];
@@ -1281,160 +1280,160 @@ function Characters() {
         for (z = 0; z < t; z += 3) x[A++] = parseInt(y[z] + y[z + 1] + y[z + 2]);
         return x
     };
-    this.iZ = function() {
-        var x, t = "";
-        for (x = 0; 6 > x; x++) {
-            var z = 48 + ce.random() % 36;
-            z += 58 <= z ? 39 : 0;
-            t += String.fromCharCode(z)
+    this.generateOriginURLs = function() {
+        var index, url = "";
+        for (index = 0; 6 > index; index++) {
+            var charcode = 48 + fakeRandom.random() % 36;
+            charcode += 58 <= charcode ? 39 : 0;
+            url += String.fromCharCode(charcode)
         }
-        return t
+        return url
     }
 }
 
-function ib() {
-    this.fj = function(g) {
-        if (2 === fZ) var k = !0;
-        else eS.iv(), fZ = 2, iw = ix, k = !1;
+function EndGame() {
+    this.endGame = function(winner) {
+        if (2 === clientStatus) var k = !0;
+        else peace.iv(), clientStatus = 2, spectatorCount = playersIngame, k = !1;
         if (!k) {
-            if (8 === dv) {
-                var n = g = 0 > g ? bU[0] >= bU[1] ? 0 : 1 : g;
-                (k = g === myID) ? announcements.fl(g, 2): announcements.fl(1 - myID, 3);
-                ij.iA(g)
-            } else dA ? (g = eT.ik(), k = dW.dX[myID] === g, 9 === dv ? n = k ? em[0] : 512 : (g = dW.il(dW.im[g]), n = g[0], 512 !== n && announcements.io(g[1])), announcements.ip(k)) : (n = em[0], k = n === myID, announcements.iq(n));
-            dx || dataEncoder.uploadResult(getTroopHash(), n);
-            eW.show(k, !1);
+            if (8 === gamemode) {
+                var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
+                (k = winner === myID) ? announcements.fl(winner, 2): announcements.fl(1 - myID, 3);
+                points1v1.calculateElo(winner)
+            } else teamGame ? (winner = eT.ik(), k = teams.dX[myID] === winner, 9 === gamemode ? result = k ? em[0] : 512 : (winner = teams.il(teams.im[winner]), result = winner[0], 512 !== result && announcements.io(winner[1])), announcements.ip(k)) : (result = em[0], k = result === myID, announcements.iq(result));
+            singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
+            gameResultBox.show(k, !1);
             announcements.iy(!0);
             eM.eb(!0);
             eB.eb(!0);
-            c4.c5 = !0;
+            c4.canvasDirty = !0;
             h8.iz();
             a9(0)
         }
     }
 }
 
-function j0() {
-    this.cQ = function(g, k, n) {
-        0 !== fF[g] && j1.hi(g, k, n) && (c4.c5 = !0)
+function Spawn() {
+    this.set = function(g, k, n) {
+        0 !== isAlive[g] && j1.hi(g, k, n) && (c4.canvasDirty = !0)
     };
     this.dF = function() {
-        fc = !1;
-        for (var g = 0; g < cq; g++) 0 !== fF[g] && 0 === bU[g] && j1.ho(g);
-        0 !== fF[myID] ? (b0.b1[7] = bU[myID], b0.b1[8] = ax[myID], eR.cE(), eB.j2(), eV.gf(d0[myID] - 5, d3[myID] - 5, cz[myID] + 5, d2[myID] + 5), eX.bp()) : eW.show(!1, !1);
+        inSpawn = !1;
+        for (var g = 0; g < playerCount; g++) 0 !== isAlive[g] && 0 === land[g] && j1.ho(g);
+        0 !== isAlive[myID] ? (statistics.b1[7] = land[myID], statistics.b1[8] = troops[myID], troopBar.cE(), eB.j2(), eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5), eX.init()) : gameResultBox.show(!1, !1);
         announcements.j3(18);
         eA.j4();
         eA.eb();
-        fd = null;
+        spawn = null;
         h8.j5 = !0;
         h8.j6();
-        dx && a9(1)
+        singleplayer && a9(1)
     }
 }
-var cq, ix, dq, iw, b8 = 512,
-    hM = 512,
+var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
+    entityCount = 512,
     j7 = 150,
-    dx, j8, fZ = 0,
-    j9, jA, jB, hb = 512,
+    singleplayer, j8, clientStatus = 0,
+    j9, troopCap, maxTroopsBeforeRedInterest, startingTroops = 512,
     at = 2,
-    myID, gi, fc, jC, dA, jD, dv, jE, fd, ij, jF;
+    myID, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
-function jG(g, k, n, l, x) {
-    j8 = gi = !1;
-    dv = l;
-    jE = x;
-    dA = 7 > dv || 9 === dv;
-    ix = cq = n.length;
-    dx = 1 === ix;
-    dv = 10 === dv && dx ? 7 : dv;
-    dv = 8 === dv && 2 !== cq ? 7 : dv;
-    jD = 9 === dv ? 2 : dv + 2;
-    jF = 2 >= cq ? 30 : 50 >= cq ? 40 : 50;
-    jC = dr.ds && !dr.dt.jL ? fc = !1 : fc = dA || 100 > cq;
-    fd = fc ? new j0 : null;
-    hb = 512;
-    hM = b8;
-    dx && (hM = dy.jM());
-    dq = hM - cq;
-    iw = 0;
-    myID = k;
-    ce.jN(g);
-    jO(n);
-    e2.bp();
-    dW.bp(n);
-    fZ = 1;
-    jA = 15E8;
-    jB = 1E9;
-    b0.bp();
-    jP();
-    jQ.jR();
-    h8.bp();
-    ay.bp();
+function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isContest) {
+    j8 = isCanvasHidden = !1;
+    gamemode = param_gamemode;
+    isContest = param_isContest;
+    teamGame = 7 > gamemode || 9 === gamemode;
+    playersIngame = playerCount = playerInfo.length;
+    singleplayer = 1 === playersIngame;
+    gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
+    gamemode = 8 === gamemode && 2 !== playerCount ? 7 : gamemode;
+    teamCount = 9 === gamemode ? 2 : gamemode + 2;
+    spawnTime = 2 >= playerCount ? 30 : 50 >= playerCount ? 40 : 50;
+    freeSpawn = customMap.ds && !customMap.dt.jL ? inSpawn = !1 : inSpawn = teamGame || 100 > playerCount;
+    spawn = inSpawn ? new Spawn : null;
+    startingTroops = 512;
+    entityCount = maxEntities;
+    singleplayer && (entityCount = singleSettings.getEntityCount());
+    botCount = entityCount - playerCount;
+    spectatorCount = 0;
+    myID = param_myID;
+    fakeRandom.jN(param_Seed);
+    setupPlayerInfoArrays(playerInfo);
+    e2.init();
+    teams.init(playerInfo);
+    clientStatus = 1;
+    troopCap = 15E8;
+    maxTroopsBeforeRedInterest = 1E9;
+    statistics.init();
+    setMapCanvas();
+    configFakeMap.jR();
+    h8.init();
+    interest.init();
     d9();
-    b5.bp(n);
-    hq.bp();
-    eT.bp();
-    dG.bp();
-    jS.jT();
-    jS.jU();
-    j1.bp();
+    pixel.init(playerInfo);
+    hq.init();
+    eT.init();
+    dG.init();
+    nickNames.jT();
+    nickNames.jU();
+    j1.init();
     jV();
-    eN.bp();
-    hv.bp();
-    jW.putImageData(jX, 0, 0);
-    eM.bp();
-    gj.bp();
-    eR.bp();
-    eS.bp();
-    eO.bp();
-    eB.bp();
-    fq.bp();
-    c2.bp();
-    announcements.bp();
-    eP.bp();
-    hu.bp();
-    eW.bp();
-    eG.bp();
-    eK.bp();
-    au.bp();
-    eJ.bp();
+    eN.init();
+    hv.init();
+    mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0);
+    eM.init();
+    gj.init();
+    troopBar.init();
+    peace.init();
+    eO.init();
+    eB.init();
+    fq.init();
+    c2.init();
+    announcements.init();
+    eP.init();
+    hu.init();
+    gameResultBox.init();
+    processAction.init();
+    eK.init();
+    speed.init();
+    eJ.init();
     aY();
-    ae.bp();
-    eA.bp();
-    eF.bp();
-    eI.bp();
-    eQ.bp();
-    eH.bp();
-    8 === dv ? (ij = new i7, ij.bp(n)) : ij = null;
-    dx ? c4.jY() : c4.jZ();
+    attacks.init();
+    eA.init();
+    antiFullSend.init();
+    humanBots.init();
+    eQ.init();
+    eH.init();
+    8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(playerInfo)) : points1v1 = null;
+    singleplayer ? c4.jY() : c4.jZ();
     ja();
-    eX.bp();
-    c4.c5 = !0;
-    dx && fc || a9(1)
+    eX.init();
+    c4.canvasDirty = !0;
+    singleplayer && inSpawn || a9(1)
 }
 
 function ja() {
     eV.ge();
-    0 === fF[myID] && eW.show(!1, !0);
+    0 === isAlive[myID] && gameResultBox.show(!1, !0);
     eA.eb()
 }
 
 function jb() {
     wsManager.close(wsManager.remote, 3246);
-    fZ = 0;
+    clientStatus = 0;
     c4.jd();
-    nameInput.bp();
+    nameInput.init();
     a9(0);
     aB()
 }
-var dG, au, dE, eJ, eG, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, eR, gj, jg, eO, eM, eB, eW, jh, ji, aJ, jj, jk, jl, dy, nameInput, bw, b5, f, ae, ay, eA, jS, e2, jQ, jm, jn, gn, ez, ce, g1, hq, jo, jp, eX, dataEncoder, jq, eN, jr, js, eS, setOrigin, wsManager, eH, jt, ju, eI, eF, eQ, jv, dr;
+var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopBar, gj, playtime, eO, eM, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, e2, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, ju, humanBots, antiFullSend, eQ, loadCustom, customMap;
 
-function jw() {
+function construct() {
     dG = new de;
-    au = new ed;
+    speed = new Speed;
     dE = new er;
     eJ = new fC;
-    eG = new fH;
+    processAction = new ProcessAction;
     eK = new fu;
     eV = new gK;
     j1 = new hA;
@@ -1445,57 +1444,57 @@ function jw() {
     jf = new k0;
     eP = new k1;
     c2 = new k2;
-    eR = new k3;
+    troopBar = new TroopBar;
     gj = new k4;
-    jg = new k5;
+    playtime = new Playtime;
     eO = new k6;
     eM = new k7;
     eB = new k8;
-    eW = new k9;
+    gameResultBox = new GameResultBox;
     jh = new kA;
     ji = new kB;
     aJ = new kC;
-    jj = new kD;
-    jj.jT();
+    showError = new ShowError;
+    showError.jT();
     jk = new kE;
     jl = new kF;
-    dy = new kG;
+    singleSettings = new SingleSettings;
     nameInput = new NameInput;
-    bw = new kI;
-    b5 = new kJ;
-    f = new kK;
-    ae = new kL;
-    ay = new kM;
+    sprites = new Sprites;
+    pixel = new Pixel;
+    userSettings = new UserSettings;
+    attacks = new Attacks;
+    interest = new Interest;
     eA = new kN;
-    jS = new kO;
+    nickNames = new NickNames;
     e2 = new kP;
-    jQ = new kQ;
-    jm = new kR;
+    configFakeMap = new ConfigFakeMap;
+    mapInfo = new MapInfo;
     jn = new kS;
     gn = new kT;
-    ez = new kU;
-    ce = new kV;
+    boatPathChecker = new BoatPathChecker;
+    fakeRandom = new FakeRandom;
     g1 = new kW;
     hq = new kX;
     jo = new kY;
-    jp = new kZ;
+    dataDecoder = new DataDecoder;
     eX = new ka;
     dataEncoder = new DataEncoder;
     jq = new kc;
     eN = new kd;
-    jr = new ke;
+    lobby = new Lobby;
     js = new kf;
-    eS = new kg;
-    setOrigin = new kh;
+    peace = new Peace;
+    setGameOrigin = new SetGameOrigin;
     wsManager = new WsManager;
     eH = new kj;
     jt = new kk;
     ju = new kl;
-    eI = new km;
-    eF = new kn;
+    humanBots = new HumanBots;
+    antiFullSend = new AntiFullSend;
     eQ = new ko;
-    jv = new kp;
-    dr = new kq
+    loadCustom = new LoadCustom;
+    customMap = new CustomMap
 }
 
 function jx() {
@@ -1513,7 +1512,7 @@ function jx() {
             W.beginPath();
             W.arc(Math.floor(U / 2), Math.floor(U / 2), Math.floor(.47 * U), 0, 2 * Math.PI);
             W.fill();
-            6 === L[P] ? R.drawImage(bw.bz(19), 0, 0) : 7 === L[P] ? R.drawImage(bw.l9("emojis"), -4 * M, 0) : R.drawImage(bw.bz(3), -L[P] * M, 0)
+            6 === L[P] ? R.drawImage(sprites.getValuebyID(19), 0, 0) : 7 === L[P] ? R.drawImage(sprites.l9("emojis"), -4 * M, 0) : R.drawImage(sprites.getValuebyID(3), -L[P] * M, 0)
         }
     }
 
@@ -1532,9 +1531,9 @@ function jx() {
         return L < z - A - N || L > z + 2 * A + N || H < y - A - N || H > y + 2 * A + N ? -1 : 3 * (H < y - N / 2 ? 0 : H < y + A + N / 2 ? 1 : 2) + (L < z - N / 2 ? 0 : L < z + A + N / 2 ? 1 : 2)
     }
     var x = [],
-        t, z, y, A, B, C, E, F, G, N, I, D, K, J;
+        t, z, y, A, B, C, E, targetID, G, N, I, D, K, J;
     this.l0 = [];
-    this.bp = function() {
+    this.init = function() {
         K = [];
         x = [];
         t = !1;
@@ -1547,7 +1546,7 @@ function jx() {
         this.l2 = [];
         I = [];
         this.l3 = [];
-        var L = bw.bz(3).height;
+        var L = sprites.getValuebyID(3).height;
         A = Math.floor((isZoom ? .075 : .0468) * bq);
         D = A / L;
         N = Math.floor(A / 3);
@@ -1558,104 +1557,102 @@ function jx() {
         this.l2[6] = this.l0[1]
     };
     this.lB = function(L, H) {
-        if (this.lC()) {
-            var M = this.c7(L, H);
-            c4.c5 = 0 < M;
+        if (this.hidden()) {
+            var M = this.mouseDown(L, H);
+            c4.canvasDirty = 0 < M;
             return 2 > M
         }
         return !1
     };
     this.lD = function(L, H) {
-        this.lC() || (B = L, C = H, E = (new Date).getTime())
+        this.hidden() || (B = L, C = H, E = (new Date).getTime())
     };
     this.lE = function(L) {
-        return L < cq && 2 !== fT[L]
+        return L < playerCount && 2 !== playerStatus[L]
     };
-    this.c7 = function(L, H) {
+    this.mouseDown = function(L, H) {
         C = B = -1E3;
-        if (2 === fT[myID] || 0 === fF[myID] && !fc) return this.lF(), 1;
+        if (2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return this.lF(), 1;
         if (t) {
             this.lF();
-            if (a5.lG(L, H)) a5.lH(L, H, F) && (t = !0);
+            if (a5.lG(L, H)) a5.lH(L, H, targetID) && (t = !0);
             else return a5.lI(), 2;
             return 1
         }
-        var M = l(L, H);
-        if (!n(M) || 0 === M || 6 === M || !x[2] && 3 === M) return this.lF(), 2;
-        if (1 === M) {
+        var type = l(L, H);
+        if (!n(type) || 0 === type || 6 === type || !x[2] && 3 === type) return this.lF(), 2;
+        if (1 === type) {
             if (x[6]) {
-                M = (new Date).getTime();
-                M > J + 4E3 && (K = []);
-                J = M;
-                if (k(F)) return this.lF(), 1;
-                K.push(F);
+                type = (new Date).getTime();
+                type > J + 4E3 && (K = []);
+                J = type;
+                if (k(targetID)) return this.lF(), 1;
+                K.push(targetID);
                 16 < K.length && K.shift();
                 this.lF();
                 return 1
             }
             return 0
         }
-        if (2 === M) {
+        if (2 === type) {
             if (x[7]) {
-                for (M = K.length - 1; 0 <= M; M--) 0 === fF[K[M]] && K.splice(M, 1);
-                0 < K.length && (eQ.lO(1, K, !0) && (announcements.lP(K, F), dataEncoder.requestAttack(K, F)), K = []);
+                for (type = K.length - 1; 0 <= type; type--) 0 === isAlive[K[type]] && K.splice(type, 1);
+                0 < K.length && (eQ.lO(1, K, !0) && (announcements.lP(K, targetID), dataEncoder.requestAttack(K, targetID)), K = []);
                 this.lF();
                 return 1
             }
             return 0
         }
-        if (3 === M) {
+        if (3 === type) {
             this.lF();
-            if (this.lE(F) && 7 > dv && 1071 > c4.dU()) return announcements.lR(),
-                1;
+            if (this.lE(targetID) && 7 > gamemode && 1071 > c4.dU()) return announcements.lR(), 1;
             announcements.lS();
-            dx ? da(myID, F, divideFloor(eR.lT() * ax[myID], 1E3)) : dataEncoder.attack(eR.lT(), F === b8 ? myID : F);
+            singleplayer ? da(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
             return 1
         }
-        if (4 === M) return x[0] ? fc ? (this.lF(), dx ? (fd.cQ(0, b5.gF(G), b5.cF(G)), fd.dF()) : dataEncoder.setLocation(1E3, b5.gF(G), b5.cF(G))) : (this.lF(), announcements.lS(), dx ? fL(myID, F, eR.lT()) : (!jC || 300 < eB.lV()) && dataEncoder.attack(eR.lT(), F === b8 ? myID : F)) : x[8] ? (this.lF(), eH.lX(F, eR.lT())) : this.lF(), 1;
-        if (5 === M) return x[1] ? (this.lF(), announcements.lS(), dx ? eG.fM(myID, eR.lT(), b5.gF(G), b5.cF(G)) : dataEncoder.setLocation(eR.lT(), b5.gF(G), b5.cF(G)), 1) : 0;
-        if (7 === M && x[4]) return this.lF(), t = a5.show(L, H), 1;
-        if (8 === M) return x[5] ?
-            (eQ.lO(0, [F], !0) && (announcements.lY(F, 0), dataEncoder.nonAggression(F)), this.lF(), 1) : 0;
+        if (4 === type) return x[0] ? inSpawn ? (this.lF(), singleplayer ? (spawn.set(0, pixel.gF(G), pixel.cF(G)), spawn.dF()) : dataEncoder.setLocation(1E3, pixel.gF(G), pixel.cF(G))) : (this.lF(), announcements.lS(), singleplayer ? fL(myID, targetID, troopBar.getRatio()) : (!freeSpawn || 300 < eB.lV()) && dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID)) : x[8] ? (this.lF(), eH.lX(targetID, troopBar.getRatio())) : this.lF(), 1;
+        if (5 === type) return x[1] ? (this.lF(), announcements.lS(), singleplayer ? processAction.fM(myID, troopBar.getRatio(), pixel.gF(G), pixel.cF(G)) : dataEncoder.setLocation(troopBar.getRatio(), pixel.gF(G), pixel.cF(G)), 1) : 0;
+        if (7 === type && x[4]) return this.lF(), t = a5.show(L, H), 1;
+        if (8 === type) return x[5] ? (eQ.lO(0, [targetID], !0) && (announcements.nonAggression(targetID, 0), dataEncoder.nonAggression(targetID)), this.lF(), 1) : 0;
         this.lF();
         return 2
     };
     this.click = function(L, H) {
-        if (this.lC() || 2 === fT[myID] || 0 === fF[myID] && !fc) return !1;
+        if (this.hidden() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return !1;
         var M = (isZoom ? .0288 : .0144) * bq;
         if (Math.abs(L - B) > M || Math.abs(H - C) > M || (new Date).getTime() > E + 425) return !1;
         M = Math.floor((L + gC) / g7);
         var Q = Math.floor((H + gD) / g7);
-        if (1 > M || 1 > Q || M >= aZ - 1 || Q >= aa - 1) return !1;
-        var R = Q * aZ * 4 + 4 * M;
-        if (!b5.b6(R)) return !1;
-        if (2 === fZ) return 1 <= a5.ld && (F = b5.bF(R), this.lE(F)) ? (F === myID && this.lF(), x[4] = !0, this.le(L, H)) : !1;
-        G = b5.f1(M, Q);
-        if (fc) return x[0] = !0, this.le(L, H);
-        x[1] = ez.co(myID, G);
-        if (b5.bG(R)) return F = b8, lf(myID) ? x[0] = !0 : lg(myID, F) && (x[8] = !0), this.le(L, H);
-        F = b5.bF(R);
-        if (F === myID) {
+        if (1 > M || 1 > Q || M >= currentMapWidth - 1 || Q >= currentMapHeight - 1) return !1;
+        var R = Q * currentMapWidth * 4 + 4 * M;
+        if (!pixel.b6(R)) return !1;
+        if (2 === clientStatus) return 1 <= a5.ld && (targetID = pixel.bF(R), this.lE(targetID)) ? (targetID === myID && this.lF(), x[4] = !0, this.le(L, H)) : !1;
+        G = pixel.f1(M, Q);
+        if (inSpawn) return x[0] = !0, this.le(L, H);
+        x[1] = boatPathChecker.co(myID, G);
+        if (pixel.bG(R)) return targetID = maxEntities, lf(myID) ? x[0] = !0 : lg(myID, targetID) && (x[8] = !0), this.le(L, H);
+        targetID = pixel.bF(R);
+        if (targetID === myID) {
             this.lF();
             if (0 === a5.ld) return !1;
             x[4] = !0;
             return this.le(L, H)
         }
         M = x;
-        Q = F;
+        Q = targetID;
         Q = hu.lE(Q) && !k(Q) && eQ.lO(1, [Q], !1);
         M[6] = Q;
-        x[4] = 1 <= a5.ld && this.lE(F);
-        if (ch(F, myID)) {
-            x[5] = this.lE(F) && !eA.li(F) && eQ.lO(0, [F], !1);
+        x[4] = 1 <= a5.ld && this.lE(targetID);
+        if (ch(targetID, myID)) {
+            x[5] = this.lE(targetID) && !eA.li(targetID) && eQ.lO(0, [targetID], !1);
             M = x;
-            Q = F;
+            Q = targetID;
             if (0 === K.length) Q = !1;
             else if ((new Date).getTime() > J + 4E3) K = [], Q = !1;
             else {
                 if (R = !k(Q)) {
                     b: {
-                        if (dA)
+                        if (teamGame)
                             for (R = K.length - 1; 0 <= R; R--)
                                 if (!ch(Q, K[R])) {
                                     Q = !0;
@@ -1668,26 +1665,26 @@ function jx() {
             }
             M[7] = Q;
             lk(myID,
-                F) ? x[0] = !0 : lg(myID, F) && (x[8] = !0);
+                targetID) ? x[0] = !0 : lg(myID, targetID) && (x[8] = !0);
             return this.le(L, H)
         }
-        x[2] = dA;
+        x[2] = teamGame;
         return this.le(L, H)
     };
     this.le = function(L, H) {
         z = L - Math.floor(A / 2);
         y = H - Math.floor(A / 2);
-        return this.lC()
+        return this.hidden()
     };
     this.lm = function(L, H) {
-        if (!this.lC()) return !1;
+        if (!this.hidden()) return !1;
         if (t) {
             if (a5.lG(L, H)) return !1;
             a5.lI();
             t = !1;
-            return c4.c5 = !0
+            return c4.canvasDirty = !0
         }
-        return n(l(L, H)) ? !1 : (this.lF(), c4.c5 = !0)
+        return n(l(L, H)) ? !1 : (this.lF(), c4.canvasDirty = !0)
     };
     this.lF = function() {
         var L;
@@ -1697,31 +1694,31 @@ function jx() {
     this.ln = function() {
         this.lF()
     };
-    this.lC = function() {
+    this.hidden = function() {
         var L;
         for (L = x.length - 1; 0 <= L; L--)
             if (x[L]) return !0;
         return t
     };
     this.cG = function() {
-        this.lC() &&
+        this.hidden() &&
             this.lo()
     };
     this.lo = function() {
         if (t) a5.cG();
         else {
             var L = (A + N) / D;
-            cH.imageSmoothingEnabled = !0;
-            cH.setTransform(D, 0, 0, D, z, y);
-            x[0] ? fc ? cH.drawImage(this.l2[3], 0, 0) : cH.drawImage(this.l2[0], 0, 0) : x[8] ? cH.drawImage(this.l0[0], 0, 0) : cH.drawImage(I[0], 0, 0);
-            x[1] && cH.drawImage(this.l2[1], L, 0);
-            x[2] && cH.drawImage(this.l2[2], -L, 0);
-            x[4] && cH.drawImage(this.l2[4], 0, L);
-            x[5] && cH.drawImage(this.l2[5], L, L);
-            x[6] && cH.drawImage(this.l2[6], 0, -L);
-            x[7] && cH.drawImage(this.l2[7], L, -L);
-            cH.imageSmoothingEnabled = !1;
-            cH.setTransform(1,
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.setTransform(D, 0, 0, D, z, y);
+            x[0] ? inSpawn ? mainCanvasCtx.drawImage(this.l2[3], 0, 0) : mainCanvasCtx.drawImage(this.l2[0], 0, 0) : x[8] ? mainCanvasCtx.drawImage(this.l0[0], 0, 0) : mainCanvasCtx.drawImage(I[0], 0, 0);
+            x[1] && mainCanvasCtx.drawImage(this.l2[1], L, 0);
+            x[2] && mainCanvasCtx.drawImage(this.l2[2], -L, 0);
+            x[4] && mainCanvasCtx.drawImage(this.l2[4], 0, L);
+            x[5] && mainCanvasCtx.drawImage(this.l2[5], L, L);
+            x[6] && mainCanvasCtx.drawImage(this.l2[6], 0, -L);
+            x[7] && mainCanvasCtx.drawImage(this.l2[7], L, -L);
+            mainCanvasCtx.imageSmoothingEnabled = !1;
+            mainCanvasCtx.setTransform(1,
                 0, 0, 1, 0, 0)
         }
     }
@@ -1733,117 +1730,117 @@ function jy() {
             alpha: !0
         });
         B.clearRect(0, 0, l, l);
-        B.fillStyle = lx;
+        B.fillStyle = blackSemiTransparent2;
         B.fillRect(0, 0, l, l);
-        0 === y && (B.fillStyle = ly, B.fillRect(0, 0, l, l));
-        B.fillStyle = cK;
+        0 === y && (B.fillStyle = whiteMore2Transparent, B.fillRect(0, 0, l, l));
+        B.fillStyle = whiteRGB2;
         B.fillRect(0, 0, l, 1);
         B.fillRect(0, 0, 1, l);
         B.fillRect(0, l - 1, l, 1);
         B.fillRect(l - 1, 0, 1, l);
-        var C = .9 * l / bw.bz(0).width;
+        var C = .9 * l / sprites.getValuebyID(0).width;
         B.imageSmoothingEnabled = !0;
-        B.setTransform(C, 0, 0, C, Math.floor((l - C * bw.bz(0).width) / 2), Math.floor((l - C * bw.bz(0).height) / 2));
-        B.drawImage(bw.bz(0), 0, 0);
+        B.setTransform(C, 0, 0, C, Math.floor((l - C * sprites.getValuebyID(0).width) / 2), Math.floor((l - C * sprites.getValuebyID(0).height) / 2));
+        B.drawImage(sprites.getValuebyID(0), 0, 0);
         B.setTransform(1, 0, 0, 1, 0, 0)
     }
 
     function k(B, C) {
         if (!fq.lu) return B <= l +
-            m5 && C >= eR.fK ? 0 : -1;
+            m5 && C >= troopBar.fK ? 0 : -1;
         if (B <= 4 * l + m5) {
-            if (C >= eR.fK) return 0;
-            if (C >= eR.fK - l - A * m5) return 2;
-            if (C >= eR.fK - 2 * (l + A * m5)) return 3
-        } else if (B <= 7 * l + m5 && C >= eR.fK - l - A * m5) return 1;
+            if (C >= troopBar.fK) return 0;
+            if (C >= troopBar.fK - l - A * m5) return 2;
+            if (C >= troopBar.fK - 2 * (l + A * m5)) return 3
+        } else if (B <= 7 * l + m5 && C >= troopBar.fK - l - A * m5) return 1;
         return -1
     }
 
     function n(B, C) {
-        cH.setTransform(1, 0, 0, 1, m5, eR.fK - B * A * m5 - B * l);
-        cH.fillStyle = lx;
-        cH.fillRect(0, 0, 4 * l, l);
-        y === B + 1 && C === cK && (cH.fillStyle = ly, cH.fillRect(0, 0, 4 * l, l));
-        cH.fillStyle = C;
-        cH.fillRect(0, 0, 4 * l, 1);
-        cH.fillRect(0, 0, 1, l);
-        cH.fillRect(4 * l, 0, 1, l);
-        cH.fillRect(0, l - 1, 4 * l, 1);
-        cH.fillText(z[B], 2 * l, .54 * l)
+        mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.fK - B * A * m5 - B * l);
+        mainCanvasCtx.fillStyle = blackSemiTransparent2;
+        mainCanvasCtx.fillRect(0, 0, 4 * l, l);
+        y === B + 1 && C === whiteRGB2 && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * l, l));
+        mainCanvasCtx.fillStyle = C;
+        mainCanvasCtx.fillRect(0, 0, 4 * l, 1);
+        mainCanvasCtx.fillRect(0, 0, 1, l);
+        mainCanvasCtx.fillRect(4 * l, 0, 1, l);
+        mainCanvasCtx.fillRect(0, l - 1, 4 * l, 1);
+        mainCanvasCtx.fillText(z[B], 2 * l, .54 * l)
     }
     var l, x, t, z = ["Quit Game", "Surrender", "Statistics"],
         y, A;
-    this.bp = function() {
+    this.init = function() {
         y = -1;
         this.lu = !1;
         A = isZoom ? 1.2 : .6;
         this.lv()
     };
     this.lv = function() {
-        l = eR.cw;
+        l = troopBar.height;
         x = document.createElement("canvas");
         x.width = l;
         x.height = l;
-        t = bt + Math.floor((isZoom ? .5 : .45) * l) + bu;
+        t = fontWeightBold + Math.floor((isZoom ? .5 : .45) * l) + fontSizeArial;
         g()
     };
     this.m0 = function() {
-        (this.lu = !this.lu) ? (gi = !1, dx && 1 === fZ && !fc && (setTimeout(function() {
+        (this.lu = !this.lu) ? (isCanvasHidden = !1, singleplayer && 1 === clientStatus && !inSpawn && (setTimeout(function() {
             h8.iz()
-        }, 0), a9(0))) : (y = -1, g(), dx && a9(1));
-        c4.c5 = !0
+        }, 0), a9(0))) : (y = -1, g(), singleplayer && a9(1));
+        c4.canvasDirty = !0
     };
-    this.c7 = function(B, C) {
+    this.mouseDown = function(B, C) {
         var E = k(B, C);
-        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.fr(myID) && (dx ? eG.fp(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= b0.m4 ? (hv.m0(), c4.c5 = !0, 2) : hv.lC ||
-            dx && !fc ? 1 : (this.m0(), 2) : 0 === E ? (this.m0(), 2) : 0
+        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.fr(myID) && (singleplayer ? processAction.fp(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statistics.m4 ? (hv.m0(), c4.canvasDirty = !0, 2) : hv.hidden ||
+            singleplayer && !inSpawn ? 1 : (this.m0(), 2) : 0 === E ? (this.m0(), 2) : 0
     };
     this.lm = function(B, C) {
         var E = k(B, C);
         if (E === y) return -1 !== y;
         y = E;
         this.lu || g();
-        c4.c5 = !0;
+        c4.canvasDirty = !0;
         return -1 !== y
     };
     this.cG = function() {
         if (this.lu) {
             var B = Math.floor(5.5 * l);
-            cH.setTransform(1, 0, 0, 1, m5, eR.fK);
-            cH.fillStyle = lx;
-            cH.fillRect(0, 0, B, l);
-            0 === y ? (cH.fillStyle = ly, cH.fillRect(0, 0, 4 * l, l)) : 1 === y && (cH.fillStyle = ly, cH.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
-            cH.fillStyle = cK;
-            cH.fillRect(0, 0, B, 1);
-            cH.fillRect(0, 0, 1, l);
-            cH.fillRect(4 * l, 0, 1, l);
-            cH.fillRect(0, l - 1, B, 1);
-            cH.fillRect(B - 1,
+            mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.fK);
+            mainCanvasCtx.fillStyle = blackSemiTransparent2;
+            mainCanvasCtx.fillRect(0, 0, B, l);
+            0 === y ? (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * l, l)) : 1 === y && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
+            mainCanvasCtx.fillStyle = whiteRGB2;
+            mainCanvasCtx.fillRect(0, 0, B, 1);
+            mainCanvasCtx.fillRect(0, 0, 1, l);
+            mainCanvasCtx.fillRect(4 * l, 0, 1, l);
+            mainCanvasCtx.fillRect(0, l - 1, B, 1);
+            mainCanvasCtx.fillRect(B - 1,
                 0, 1, l);
-            cH.font = t;
-            cH.textBaseline = cI;
-            cH.textAlign = cJ;
-            cH.fillText(z[0], 2 * l, .54 * l);
+            mainCanvasCtx.font = t;
+            mainCanvasCtx.textBaseline = middleAlign;
+            mainCanvasCtx.textAlign = centerAlign;
+            mainCanvasCtx.fillText(z[0], 2 * l, .54 * l);
             B = .4 * l;
-            fq.m9(m5 + 4 * l + (1.5 * l - B) / 2, eR.fK + .3 * l, B);
-            n(1, fq.fr(myID) ? cK : mB);
-            2 <= b0.m4 && n(2, cK);
-            cH.setTransform(1, 0, 0, 1, 0, 0)
-        } else cH.drawImage(x, m5, eR.fK)
+            fq.m9(m5 + 4 * l + (1.5 * l - B) / 2, troopBar.fK + .3 * l, B);
+            n(1, fq.fr(myID) ? whiteRGB2 : gray128RGB);
+            2 <= statistics.m4 && n(2, whiteRGB2);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+        } else mainCanvasCtx.drawImage(x, m5, troopBar.fK)
     };
     this.fr = function(B) {
-        return 0 !== fF[B] && 2 !== fZ && hu.lE(B)
+        return 0 !== isAlive[B] && 2 !== clientStatus && hu.lE(B)
     };
     this.m9 = function(B, C, E) {
-        cH.setTransform(1, 0, 0, 1, B, C);
-        cH.lineWidth = 2;
-        cH.strokeStyle = cK;
-        cH.beginPath();
-        cH.moveTo(0, 0);
-        cH.lineTo(E, E);
-        cH.moveTo(0, E);
-        cH.lineTo(E, 0);
-        cH.stroke()
+        mainCanvasCtx.setTransform(1, 0, 0, 1, B, C);
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(0, 0);
+        mainCanvasCtx.lineTo(E, E);
+        mainCanvasCtx.moveTo(0, E);
+        mainCanvasCtx.lineTo(E, 0);
+        mainCanvasCtx.stroke()
     }
 }
 
@@ -1851,16 +1848,16 @@ function Announcements() {
     var g, k, n, l, x, t, z;
 
     function y() {
-        return eR.md(announcements.ma()) ? eS.lC ? eR.fK - eR.cw - 2 * N : eR.fK - N : eS.lC ? s - eR.cw - (isZoom ? 3 : 2) * N : s - N
+        return troopBar.md(announcements.ma()) ? peace.hidden ? troopBar.fK - troopBar.height - 2 * N : troopBar.fK - N : peace.hidden ? s - troopBar.height - (isZoom ? 3 : 2) * N : s - N
     }
 
-    function A(H, M, Q, R, P, U, W, X) {
+    function announce(H, M, Q, R, P, U, W, X) {
         var V = 1E3 <= Q;
         var na = Math.floor(c2.measureText(M, announcements.c0) + 1.5 * I + (V ? G : 1.5 * I));
         if (na + N > r && !V && 50 !== Q && 20 < M.length) {
             var ba = Math.floor(.5 * M.length);
-            A(H, M.substring(0, ba), Q, R, P, U, W, X);
-            A(H, M.substring(ba), Q, R, P, U, W, X)
+            announce(H, M.substring(0, ba), Q, R, P, U, W, X);
+            announce(H, M.substring(ba), Q, R, P, U, W, X)
         } else {
             var ca = Q - 1E3;
             ba = na + (50 === Q ? D : 0);
@@ -1872,23 +1869,23 @@ function Announcements() {
             });
             S.font =
                 announcements.c0;
-            S.textBaseline = cI;
-            S.textAlign = mh;
+            S.textBaseline = middleAlign;
+            S.textAlign = leftAlign;
             S.clearRect(0, 0, na, G);
             S.fillStyle = U;
             S.fillRect(0, 0, na, G);
             S.fillStyle = P;
             S.fillText(M, Math.floor(1.5 * I), Math.floor(G / 2));
-            V && (V = G / a5.c1, S.imageSmoothingEnabled = !0, S.setTransform(V, 0, 0, V, na - G, 0), S.drawImage(a5.l5[ca], 0, 0));
+            V && (V = G / a5.width, S.imageSmoothingEnabled = !0, S.setTransform(V, 0, 0, V, na - G, 0), S.drawImage(a5.l5[ca], 0, 0));
             F.unshift({
                 time: H,
                 l: M,
                 id: Q,
                 player: R,
-                lq: pa,
+                canvas: pa,
                 mU: P,
                 mV: U,
-                c1: na,
+                width: na,
                 mb: ba,
                 mW: W,
                 mX: X
@@ -1913,11 +1910,11 @@ function Announcements() {
     function E(H, M) {
         var Q,
             R = !1;
-        for (Q = F.length - 1; 0 <= Q; Q--) F[Q].id !== H || M !== b8 && F[Q].player !== M || (F.splice(Q, 1), R = !0);
+        for (Q = F.length - 1; 0 <= Q; Q--) F[Q].id !== H || M !== maxEntities && F[Q].player !== M || (F.splice(Q, 1), R = !0);
         return R
     }
     var F, G, N, I, D, K, J, L;
-    this.bp = function() {
+    this.init = function() {
         J = 0;
         K = isZoom ? 7 : 12;
         g = [0, 0, 0];
@@ -1929,22 +1926,22 @@ function Announcements() {
         z = [" was conquered by ", " left the game.", " surrendered."];
         F = [];
         this.lv();
-        fc && this.fl(0, 18);
-        var H = "Map: " + jm.nD() + "   Pixels: " + eP.gJ(jQ.nE) + "   Land: " + eP.gJ(jQ.nF) + " (" + eB.nG(100 * jQ.nF / jQ.nE, 1) + ")",
+        inSpawn && this.fl(0, 18);
+        var H = "Map: " + mapInfo.getMapName() + "   Pixels: " + eP.gJ(configFakeMap.nE) + "   Land: " + eP.gJ(configFakeMap.nF) + " (" + eB.nG(100 * configFakeMap.nF / configFakeMap.nE, 1) + ")",
             M = "";
-        0 < jQ.nI && (M += "Water: " + eP.gJ(jQ.nI) +
-            " (" + eB.nG(100 * jQ.nI / jQ.nE, 1) + ")");
-        0 < jQ.nJ && (M += 0 < jQ.nI ? "   " : "", M += "Mountains: " + eP.gJ(jQ.nJ) + " (" + eB.nG(100 * jQ.nJ / jQ.nE, 1) + ")");
-        A(340, H, 6, 0, C(215, 245, 255), hy, -1, !1);
-        0 < M.length && A(340, M, 6, 0, C(215, 245, 255), hy, -1, !1);
-        10 === dv && A(120, "Full sending against human players is disabled.", 6, 0, C(235, 255, 120), hy, -1, !1);
+        0 < configFakeMap.nI && (M += "Water: " + eP.gJ(configFakeMap.nI) +
+            " (" + eB.nG(100 * configFakeMap.nI / configFakeMap.nE, 1) + ")");
+        0 < configFakeMap.nJ && (M += 0 < configFakeMap.nI ? "   " : "", M += "Mountains: " + eP.gJ(configFakeMap.nJ) + " (" + eB.nG(100 * configFakeMap.nJ / configFakeMap.nE, 1) + ")");
+        announce(340, H, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
+        0 < M.length && announce(340, M, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
+        10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, C(235, 255, 120), blackMoreOpaque, -1, !1);
         this.mP()
     };
     this.mP = function() {
         var H;
-        if (dr.ds) {
-            var M = dr.dt.mQ.length;
-            for (H = 0; H < M; H++) A(400, dr.dt.mQ[H], 6, 0, C(255, 255, 255), hy, -1, !1)
+        if (customMap.ds) {
+            var M = customMap.dt.mQ.length;
+            for (H = 0; H < M; H++) announce(400, customMap.dt.mQ[H], 6, 0, C(255, 255, 255), blackMoreOpaque, -1, !1)
         }
     };
     this.lv = function() {
@@ -1953,13 +1950,13 @@ function Announcements() {
         G =
             10 > G ? 10 : G;
         this.by = Math.floor(2 * G / 3);
-        this.c0 = bt + this.by + bu;
+        this.c0 = fontWeightBold + this.by + fontSizeArial;
         N = m5;
         I = Math.floor(G / 5);
         if (0 < F.length) {
             var M = F;
             F = [];
-            for (H = M.length - 1; 0 <= H; H--) A(M[H].time, M[H].l, M[H].id, M[H].player, M[H].mU, M[H].mV, M[H].mW, M[H].mX)
+            for (H = M.length - 1; 0 <= H; H--) announce(M[H].time, M[H].l, M[H].id, M[H].player, M[H].mU, M[H].mV, M[H].mW, M[H].mX)
         }
         this.mY()
     };
@@ -1972,28 +1969,28 @@ function Announcements() {
             alpha: !0
         });
         H.font = this.c0;
-        H.textBaseline = cI;
-        H.textAlign = cJ;
+        H.textBaseline = middleAlign;
+        H.textAlign = centerAlign;
         H.clearRect(0, 0, D, G);
-        H.fillStyle = mZ;
+        H.fillStyle = greenDarkMoreOpaque;
         H.fillRect(0, 0, D, G);
-        H.fillStyle = cK;
+        H.fillStyle = whiteRGB2;
         H.fillText("Accept",
             Math.floor(D / 2), Math.floor(G / 2))
     };
     this.ma = function() {
-        if (eS.lC) return eS.c1;
+        if (peace.hidden) return peace.width;
         var H = F.length;
         return 0 === H ? 0 : 1 === H ? F[0].mb : getMax(F[0].mb, F[1].mb)
     };
-    this.c7 = function(H, M) {
+    this.mouseDown = function(H, M) {
         for (var Q = y(), R, P = F.length - 1; 0 <= P; P--)
             if (R = Q - (P + 1) * G, M >= R && M < R + G) {
                 if (50 === F[P].id) {
-                    if (H >= gE - D - N - F[P].c1) return H >= gE - D - N ? (P = F[P].player, this.lY(P, 0), dataEncoder.nonAggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
+                    if (H >= gE - D - N - F[P].width) return H >= gE - D - N ? (P = F[P].player, this.nonAggression(P, 0), dataEncoder.nonAggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
                     break
                 }
-                if (H >= gE - F[P].c1 - N) return F[P].mX && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mW && (Q = F[P].mW, F[P].mW = F[P].player, F[P].player = Q)), !0;
+                if (H >= gE - F[P].width - N) return F[P].mX && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mW && (Q = F[P].mW, F[P].mW = F[P].player, F[P].player = Q)), !0;
                 break
             } return !1
     };
@@ -2002,24 +1999,24 @@ function Announcements() {
             for (var M = F.length - 1; 0 <= M; M--) F[M].id === H && (F[M].time = 1)
         };
     this.fl = function(H, M) {
-        0 === M ? (b0.b1[H < cq ? 4 : 3]++, c2.cQ(H, 0), A(isZoom ? 100 : 160, "You conquered " + gI[H] + ".", 0, H, "rgb(10,220,10)", hy, -1, !1)) : 1 === M ? (E(50, b8), c2.cQ(H, 1), A(360, "You were conquered by " + gI[H] + ".", 0, H, "rgb(255,40,40)", hy, -1, !0), eV.gg(H, 2700, !0, 0)) : 2 === M ? (c2.cQ(H, 2), A(0, "Congratulations! You won the game.", 0, H, "rgb(10,255,255)", hy, -1, !0), eV.gg(H, 2700, !0, 0)) : 3 === M ? (c2.cQ(H, 2), A(0, gI[H] + " won the game.", 0, H, cK, hy, -1, !0), eV.gg(H, 2700,
-            !0, 0)) : 4 === M ? (ix--, iw--, this.mj(1, H, H)) : 5 === M ? 2 !== fT[H] && hu.lE(myID) && (B(1, 5), eA.ml(H) ? A(180, gI[H] + " has broken the non-aggression pact and invades you!", 1, H, C(255, 200, 180), hy, -1, !0) : A(180, gI[H] + " is attacking you!", 1, H, "rgb(255,70,10)", hy, -1, !0)) : 18 === M ? A(255, "Choose your start position!", 18, 0, cK, hy, -1, !1) : 21 === M ? A(220, "You surrendered!", M, 0, "rgb(255,40,40)", hy, -1, !1) : 22 === M && this.mj(2, H, H)
+        0 === M ? (statistics.b1[H < playerCount ? 4 : 3]++, c2.set(H, 0), announce(isZoom ? 100 : 160, "You conquered " + nickname[H] + ".", 0, H, "rgb(10,220,10)", blackMoreOpaque, -1, !1)) : 1 === M ? (E(50, maxEntities), c2.set(H, 1), announce(360, "You were conquered by " + nickname[H] + ".", 0, H, "rgb(255,40,40)", blackMoreOpaque, -1, !0), eV.gg(H, 2700, !0, 0)) : 2 === M ? (c2.set(H, 2), announce(0, "Congratulations! You won the game.", 0, H, "rgb(10,255,255)", blackMoreOpaque, -1, !0), eV.gg(H, 2700, !0, 0)) : 3 === M ? (c2.set(H, 2), announce(0, nickname[H] + " won the game.", 0, H, whiteRGB2, blackMoreOpaque, -1, !0), eV.gg(H, 2700,
+            !0, 0)) : 4 === M ? (playersIngame--, spectatorCount--, this.mj(1, H, H)) : 5 === M ? 2 !== playerStatus[H] && hu.lE(myID) && (B(1, 5), eA.ml(H) ? announce(180, nickname[H] + " has broken the non-aggression pact and invades you!", 1, H, C(255, 200, 180), blackMoreOpaque, -1, !0) : announce(180, nickname[H] + " is attacking you!", 1, H, "rgb(255,70,10)", blackMoreOpaque, -1, !0)) : 18 === M ? announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, !1) : 21 === M ? announce(220, "You surrendered!", M, 0, "rgb(255,40,40)", blackMoreOpaque, -1, !1) : 22 === M && this.mj(2, H, H)
     };
     this.mm = function(H) {
-        A(200, "Error [" + H + "]", 94, 0, cK, mo, -1, !1)
+        announce(200, "Error [" + H + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, !1)
     };
     this.iq = function(H) {
-        c2.cQ(H, 2);
-        100 > cq ? A(0, gI[H] +
-            " won the game.", 3, H, cK, hy, -1, !0) : A(0, gI[H] + " has been immortalized!", 3, H, cK, hy, -1, !0);
+        c2.set(H, 2);
+        100 > playerCount ? announce(0, nickname[H] +
+            " won the game.", 3, H, whiteRGB2, blackMoreOpaque, -1, !0) : announce(0, nickname[H] + " has been immortalized!", 3, H, whiteRGB2, blackMoreOpaque, -1, !0);
         eV.gg(H, 2700, !0, 0)
     };
     this.newEmojiMessage = function(H, M, Q) {
-        H === myID ? A(175, " Message to " + gI[M] + ": ", 1E3 + Q, M, C(200, 255, 210), hy, -1, !0) : this.ms(H, Q)
+        H === myID ? announce(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, C(200, 255, 210), blackMoreOpaque, -1, !0) : this.ms(H, Q)
     };
     this.ms = function(H, M) {
         var Q, R = 0;
-        A(175, gI[H] + ": ", 1E3 + M, H, cK, "rgba(5,60,25,0.9)", -1, !0);
+        announce(175, nickname[H] + ": ", 1E3 + M, H, whiteRGB2, "rgba(5,60,25,0.9)", -1, !0);
         for (Q = 0; Q < F.length; Q++)
             if (1E3 <= F[Q].id && F[Q].player === H && (R++, 3 < R)) {
                 F.splice(Q, 1);
@@ -2027,64 +2024,64 @@ function Announcements() {
             }
     };
     this.ip = function(H) {
-        var M = dW.im[eT.mw()];
-        H ? (9 === dv ? (H = "The Resistance defeated the virus.", c2.mx("The Resistance",
-            2, 1, 12)) : H = "Congratulations! Team " + dW.bo[M] + " has won the game!", A(0, H, 40, 0, "rgb(10,220,10)", hy, -1, !1)) : (9 === dv ? (H = "Mankind lost the war against the virus.", c2.mx("The Virus", 2, 0, 16)) : H = "Our alliance has been defeated!", A(0, H, 41, 0, "rgb(200,80,80)", hy, -1, !1));
-        9 !== dv && c2.mx("Team " + dW.bo[M], 2, 1, 12);
+        var M = teams.im[eT.mw()];
+        H ? (9 === gamemode ? (H = "The Resistance defeated the virus.", c2.mx("The Resistance",
+            2, 1, 12)) : H = "Congratulations! Team " + teams.bo[M] + " has won the game!", announce(0, H, 40, 0, "rgb(10,220,10)", blackMoreOpaque, -1, !1)) : (9 === gamemode ? (H = "Mankind lost the war against the virus.", c2.mx("The Virus", 2, 0, 16)) : H = "Our alliance has been defeated!", announce(0, H, 41, 0, "rgb(200,80,80)", blackMoreOpaque, -1, !1));
+        9 !== gamemode && c2.mx("Team " + teams.bo[M], 2, 1, 12);
         eV.gp(2700)
     };
-    this.i9 = function(H) {
-        A(300, H[0].name + " [" + ij.iF(H[0].iC) + "] vs " + H[1].name + " [" + ij.iF(H[1].iC) + "]", 65, 0, gH, "rgba(100,255,255,0.75)", -1, !1)
+    this.new1v1 = function(H) {
+        announce(300, H[0].name + " [" + points1v1.formatElo(H[0].elo) + "] vs " + H[1].name + " [" + points1v1.formatElo(H[1].elo) + "]", 65, 0, blackRGB, "rgba(100,255,255,0.75)", -1, !1)
     };
     this.my = function(H) {
-        A(200, H, 0, 0, "rgb(40,255,200)",
+        announce(200, H, 0, 0, "rgb(40,255,200)",
             "rgba(10,60,40,0.9)", -1, !1)
     };
-    this.iH = function(H, M, Q, R) {
-        1 === wsManager.getConnectedLobby() && (A(0, H[0].name + ": " + ij.iF(H[0].iC) + " -> " + M, 66, 0, cK, R[0], -1, !1), A(0, H[1].name + ": " + ij.iF(H[1].iC) + " -> " + Q, 66, 1, cK, R[1], -1, !1))
+    this.result1v1 = function(H, M, Q, R) {
+        1 === wsManager.getConnectedLobby() && (announce(0, H[0].name + ": " + points1v1.formatElo(H[0].elo) + " -> " + M, 66, 0, whiteRGB2, R[0], -1, !1), announce(0, H[1].name + ": " + points1v1.formatElo(H[1].elo) + " -> " + Q, 66, 1, whiteRGB2, R[1], -1, !1))
     };
     this.io = function(H) {
-        1 === wsManager.getConnectedLobby() && A(0, "[" + H + "] has won " + cq + (jE ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", hy, -1, !1)
+        1 === wsManager.getConnectedLobby() && announce(0, "[" + H + "] has won " + playerCount + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", blackMoreOpaque, -1, !1)
     };
-    this.lY = function(H, M) {
-        0 === M ? E(50, H) ? (A(128, "You signed a non-aggression pact with " + gI[H] + ".", 52, H, C(180, 255, 180), hy, -1, !0), eA.n2(H, 2, 255)) : A(384, "You asked " + gI[H] + " to sign a non-aggression pact.",
-            51, H, C(210, 210, 255), hy, -1, !0) : E(51, H) ? (A(128, gI[H] + " accepted the non-aggression pact.", 52, H, cK, "rgba(60,120,10,0.9)", -1, !0), eA.n2(H, 2, 255)) : (A(384, gI[H] + " requests a non-aggression pact.", 50, H, cK, "rgba(90,90,90,0.9)", -1, !0), eA.n2(H, 2, 96))
+    this.nonAggression = function(friendID, ratifier) {
+        0 === ratifier ? E(50, friendID) ? (announce(128, "You signed a non-aggression pact with " + nickname[friendID] + ".", 52, friendID, C(180, 255, 180), blackMoreOpaque, -1, !0), eA.showIcon(friendID, 2, 255)) : announce(384, "You asked " + nickname[friendID] + " to sign a non-aggression pact.",
+            51, friendID, C(210, 210, 255), blackMoreOpaque, -1, !0) : E(51, friendID) ? (announce(128, nickname[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, !0), eA.showIcon(friendID, 2, 255)) : (announce(384, nickname[friendID] + " requests a non-aggression pact.", 50, friendID, whiteRGB2, "rgba(90,90,90,0.9)", -1, !0), eA.showIcon(friendID, 2, 96))
     };
     this.lP = function(H, M) {
         var Q = "You ",
             R;
         a: {
             for (R = H.length - 1; 0 <= R; R--)
-                if (2 * bU[H[R]] > bU[myID]) {
+                if (2 * land[H[R]] > land[myID]) {
                     R = !1;
                     break a
                 } R = !0
         }
         R ? (Q += "ordered ", R = C(255, 235, 210)) : (Q += "asked ", R = C(210, 255, 210));
-        1 < H.length ? A(230, Q + H.length + " players to attack " + gI[M] + ".", 66, M, R, hy, -1, !0) : A(230, Q + gI[H[0]] +
-            " to attack " + gI[M] + ".", 66, H[0], R, hy, M, !0)
+        1 < H.length ? announce(230, Q + H.length + " players to attack " + nickname[M] + ".", 66, M, R, blackMoreOpaque, -1, !0) : announce(230, Q + nickname[H[0]] +
+            " to attack " + nickname[M] + ".", 66, H[0], R, blackMoreOpaque, M, !0)
     };
-    this.n5 = function(H, M) {
-        bU[H] > 2 * bU[myID] ? A(230, gI[H] + " orders you to attack " + gI[M] + "!", 66, H, cK, "rgba(90,50,5,0.9)", M, !0) : A(230, gI[H] + " asks you to attack " + gI[M] + ".", 66, H, cK, "rgba(75,65,5,0.9)", M, !0)
+    this.requestToAttack = function(requesterID, targetID) {
+        land[requesterID] > 2 * land[myID] ? announce(230, nickname[requesterID] + " orders you to attack " + nickname[targetID] + "!", 66, requesterID, whiteRGB2, "rgba(90,50,5,0.9)", targetID, !0) : announce(230, nickname[requesterID] + " asks you to attack " + nickname[targetID] + ".", 66, requesterID, whiteRGB2, "rgba(75,65,5,0.9)", targetID, !0)
     };
     this.n7 = function(H, M) {
         E(H, M)
     };
     this.lS = function() {
-        100 <= ax[myID] || A(80, "Your balance is too low!", 9, 0, cK, hy, -1, !1)
+        100 <= troops[myID] || announce(80, "Your balance is too low!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
     };
     this.lR = function() {
-        A(80, "Boosting is disallowed in the first minute!", 9, 0, cK, hy, -1, !1)
+        announce(80, "Boosting is disallowed in the first minute!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
     };
     this.n8 = function(H, M) {
-        2 !== fT[myID] && A(200, "You exported " + eP.gJ(H) +
-            " resource" + (1 === H ? "" : "s") + " to " + gI[M] + ".", 30, M, "rgb(190,255,190)", hy, -1, !0)
+        2 !== playerStatus[myID] && announce(200, "You exported " + eP.gJ(H) +
+            " resource" + (1 === H ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", blackMoreOpaque, -1, !0)
     };
     this.nA = function(H, M) {
-        if (2 !== fT[myID]) {
-            var Q = 2 === fT[M] || M >= cq;
+        if (2 !== playerStatus[myID]) {
+            var Q = 2 === playerStatus[M] || M >= playerCount;
             var R = 200 - 20 * F.length;
-            A(80 > R ? 80 : R, (Q ? "A bot" : gI[M]) + " supported you with " + eP.gJ(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, gH, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
+            announce(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + eP.gJ(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, blackRGB, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
             B(31, isZoom ? 4 : 6)
         }
     };
@@ -2096,8 +2093,8 @@ function Announcements() {
         var M = l[H];
         var Q = g[H];
         l[H] = 0;
-        1 === M ? (M = gI[Q] + z[H], 0 === H && (M +=
-            gI[k[H]] + "."), A(n[H], M, 7, k[H], cK, hy, -1, !0)) : 2 <= M && (M = gI[Q] + " and " + (M - 1) + " other player" + (2 === M ? "" : "s") + t[H], A(n[H], M, 7, Q, cK, hy, -1, !1))
+        1 === M ? (M = nickname[Q] + z[H], 0 === H && (M +=
+            nickname[k[H]] + "."), announce(n[H], M, 7, k[H], whiteRGB2, blackMoreOpaque, -1, !0)) : 2 <= M && (M = nickname[Q] + " and " + (M - 1) + " other player" + (2 === M ? "" : "s") + t[H], announce(n[H], M, 7, Q, whiteRGB2, blackMoreOpaque, -1, !1))
     };
     this.mj = function(H, M, Q) {
         var R = c4.dU(),
@@ -2106,80 +2103,80 @@ function Announcements() {
         g[H] = M;
         k[H] = Q;
         1 === P && (x[H] = R);
-        1 === P && (32 > ix || 2 === fZ) ? this.nL(H) : 1 < P && (x[H] < R - 140 || 2 === fZ) && this.nL(H)
+        1 === P && (32 > playersIngame || 2 === clientStatus) ? this.nL(H) : 1 < P && (x[H] < R - 140 || 2 === clientStatus) && this.nL(H)
     };
     this.dF = function() {
         var H, M = F.length - K;
         M = 1 >= M ? 1 : M * M;
         for (H = F.length - 1; 0 <= H; H--) 0 < F[H].time && (F[H].time -= M, 0 >= F[H].time && F.splice(H, 1));
         if (128 !== J && (J++, !(128 > J)))
-            for (H = 5, M = dY - 1; 0 <= M; M--) 1 === fT[dZ[M]] && 0 < H-- && A(240, gI[dZ[M]] +
-                " joined the game.", 1, dZ[M], gH, "rgba(255,255,255,0.75)", -1, !0);
+            for (H = 5, M = dY - 1; 0 <= M; M--) 1 === playerStatus[dZ[M]] && 0 < H-- && announce(240, nickname[dZ[M]] +
+                " joined the game.", 1, dZ[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
         this.iy(!1)
     };
     this.cG = function() {
-        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (cH.drawImage(F[Q].lq, gE - F[Q].c1 - D - N, M), cH.drawImage(L, gE - D - N, M)) : cH.drawImage(F[Q].lq, gE - F[Q].c1 - N, M)
+        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (mainCanvasCtx.drawImage(F[Q].canvas, gE - F[Q].width - D - N, M), mainCanvasCtx.drawImage(L, gE - D - N, M)) : mainCanvasCtx.drawImage(F[Q].canvas, gE - F[Q].width - N, M)
     }
 }
 
-function nO() {
-    this.by = this.nQ = this.nP = this.i4 = this.cw = this.c1 = 0;
+function CookiesPrompt() {
+    this.by = this.nQ = this.nP = this.i4 = this.height = this.width = 0;
     this.bs = -1;
     this.lr = ["Accept Cookies", "More Information", "Decline"];
     this.colors = ["rgba(0,255,0,0.4)", "rgba(0,0,255,0.4)", "rgba(255,0,0,0.4)"];
-    this.lC = !1;
-    this.bp = function() {
+    this.hidden = !1;
+    this.init = function() {
         this.lv();
-        this.lC = 5 > deviceVersion && !isIOS && 0 === f.a0()
+        this.hidden = 5 > androidVersion && !isIOS && 0 === userSettings.a0()
     };
     this.lv = function() {
-        this.c1 = Math.floor(2.8 * Math.floor((isZoom ? .09 : .062) * bq));
-        this.cw = Math.floor(1 * this.c1);
-        this.i4 = Math.floor(.06 * this.c1);
-        this.i5 = this.c1 - 2 * this.i4;
+        this.width = Math.floor(2.8 * Math.floor((isZoom ? .09 : .062) * bq));
+        this.height = Math.floor(1 * this.width);
+        this.i4 = Math.floor(.06 * this.width);
+        this.i5 = this.width - 2 * this.i4;
         this.nP = this.i4;
-        this.nQ = (this.cw - (this.lr.length + 1) * this.nP) / this.lr.length;
+        this.nQ = (this.height - (this.lr.length + 1) * this.nP) / this.lr.length;
         this.by = Math.floor(.3 * this.nQ)
     };
-    this.c7 = function(g, k) {
-        if (!this.lC) return !1;
+    this.mouseDown = function(g, k) {
+        if (!this.hidden) return !1;
         var n = this.nS(g, k);
         if (-1 === n) return !1;
-        0 === n ? (f.nT(2), this.lC = !1) : 1 === n ? nU.bp(nV, !0) : 2 === n && (f.nT(1), this.lC = !1);
-        return c4.c5 = !0
+        0 === n ? (userSettings.nT(2), this.hidden = !1) : 1 === n ? openLinkBox.init(cookiePolicyLink, !0) : 2 === n && (userSettings.nT(1), this.hidden = !1);
+        return c4.canvasDirty = !0
     };
     this.lm = function(g, k) {
-        if (!this.lC) return !1;
+        if (!this.hidden) return !1;
         var n = this.bs;
         this.bs = this.nS(g, k);
-        n !== this.bs && (c4.c5 = !0);
+        n !== this.bs && (c4.canvasDirty = !0);
         return -1 !== this.bs
     };
     this.nS = function(g, k) {
         g -= cA;
-        k -= Math.floor(cB - this.cw - cA);
-        if (0 > g || 0 > k || g >= this.c1 || k >= this.cw) return -1;
-        var n = Math.floor((k - .5 * this.nP) / ((this.cw - this.nP) / this.lr.length));
+        k -= Math.floor(cB - this.height - cA);
+        if (0 > g || 0 > k || g >= this.width || k >= this.height) return -1;
+        var n = Math.floor((k - .5 * this.nP) / ((this.height - this.nP) / this.lr.length));
         return 0 >
             n ? 0 : n >= this.lr.length ? this.lr.length - 1 : n
     };
     this.cG = function() {
-        this.lC && this.nW()
+        this.hidden && this.nW()
     };
     this.nW = function() {
         var g = cA,
-            k = Math.floor(cB - this.cw - cA);
-        cH.setTransform(1, 0, 0, 1, g, k);
-        cH.fillStyle = hy;
-        cH.fillRect(0, 0, this.c1, this.cw);
-        cH.textBaseline = cI;
-        cH.textAlign = cJ;
-        cH.strokeStyle = cK;
-        cH.font = bt + this.by + bu;
-        cH.strokeRect(0, 0, this.c1, this.cw);
-        for (var n = this.lr.length - 1; 0 <= n; n--) cH.setTransform(1, 0, 0, 1, g + this.i4, k + this.nP + n * (this.nP + this.nQ)), cH.fillStyle = this.colors[n], cH.fillRect(0, 0, this.i5, this.nQ), this.bs === n && (cH.fillStyle =
-            nX, cH.fillRect(0, 0, this.i5, this.nQ)), cH.fillStyle = cK, cH.fillText(this.lr[n], this.i5 / 2, .54 * this.nQ), cH.strokeRect(0, 0, this.i5, this.nQ);
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+            k = Math.floor(cB - this.height - cA);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = blackMoreOpaque;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.height);
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.font = fontWeightBold + this.by + fontSizeArial;
+        mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
+        for (var n = this.lr.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.i4, k + this.nP + n * (this.nP + this.nQ)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.i5, this.nQ), this.bs === n && (mainCanvasCtx.fillStyle =
+            whiteMore3Transparent, mainCanvasCtx.fillRect(0, 0, this.i5, this.nQ)), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(this.lr[n], this.i5 / 2, .54 * this.nQ), mainCanvasCtx.strokeRect(0, 0, this.i5, this.nQ);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
 
@@ -2188,19 +2185,19 @@ function k0() {
         return 10 > y ? "0" + y : String(y)
     }
     var k, n, l, x, t, z;
-    this.bp = function() {
+    this.init = function() {
         void 0 === x && this.lv();
         this.setTime()
     };
     this.lv = function() {
         x = Math.floor((isZoom ? .53 : .36) * bq);
         t = Math.floor(.065 * x);
-        z = bt + Math.floor(.9 * t) + bu;
+        z = fontWeightBold + Math.floor(.9 * t) + fontSizeArial;
         l--;
         this.setTime()
     };
     this.dF = function() {
-        this.setTime() && (c4.c5 = !0)
+        this.setTime() && (c4.canvasDirty = !0)
     };
     this.setTime = function() {
         var y = new Date;
@@ -2218,19 +2215,19 @@ function k0() {
         return !0
     };
     this.cG = function() {
-        cH.lineWidth = 1 + Math.floor(t / 15);
-        cH.translate(gE - t, Math.floor(.5 * (cB + x)));
-        cH.rotate(-Math.PI / 2);
-        cH.fillStyle = cK;
-        cH.fillRect(0, 0, x, t);
-        cH.strokeStyle = gH;
-        cH.strokeRect(0, 0, x, t + 10);
-        cH.fillStyle = gH;
-        cH.font = z;
-        cH.textBaseline = cI;
-        cH.textAlign = cJ;
-        cH.fillText(k, Math.floor(x / 2), Math.floor(.59 * t));
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.lineWidth = 1 + Math.floor(t / 15);
+        mainCanvasCtx.translate(gE - t, Math.floor(.5 * (cB + x)));
+        mainCanvasCtx.rotate(-Math.PI / 2);
+        mainCanvasCtx.fillStyle = whiteRGB2;
+        mainCanvasCtx.fillRect(0, 0, x, t);
+        mainCanvasCtx.strokeStyle = blackRGB;
+        mainCanvasCtx.strokeRect(0, 0, x, t + 10);
+        mainCanvasCtx.fillStyle = blackRGB;
+        mainCanvasCtx.font = z;
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.fillText(k, Math.floor(x / 2), Math.floor(.59 * t));
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
 
@@ -2240,7 +2237,7 @@ function ng() {
     this.nk = 8;
     this.nl = this.ni + this.nj;
     this.a6 = this.ni + this.nj + this.nk;
-    this.c1 = 72;
+    this.width = 72;
     this.nn = this.nm = 0;
     this.l5 = Array(this.a6);
     this.no = 8;
@@ -2252,14 +2249,14 @@ function ng() {
     this.ld = 0;
     this.ns = this.a7 = null;
     this.nt = 0;
-    this.bp = function() {
+    this.init = function() {
         var g;
         this.a7 = Array(this.a6);
         this.ns = Array(this.a6);
-        var k = bw.l9("emojis");
+        var k = sprites.l9("emojis");
         this.nv();
         for (g = this.ld = 0; g < this.ni; g++) this.nw(g, g, k);
-        k = bw.l9("flags");
+        k = sprites.l9("flags");
         for (g = 0; g < this.nj; g++) this.nw(g,
             this.ni + g, k);
         this.ny();
@@ -2270,13 +2267,13 @@ function ng() {
         this.a7[k] = !1;
         this.ns[k] = 0;
         var l = document.createElement("canvas");
-        l.width = this.c1;
-        l.height = this.c1;
+        l.width = this.width;
+        l.height = this.width;
         var x = l.getContext("2d", {
             alpha: !0
         });
-        x.clearRect(0, 0, this.c1, this.c1);
-        23 === k ? x.drawImage(hu.l3[2], 0, 0) : 36 === k ? x.drawImage(hu.l3[0], 0, 0) : 49 === k ? x.drawImage(hu.l3[1], 0, 0) : x.drawImage(n, this.c1 * g % (g === k ? this.nh * this.c1 : 4E3), g === k ? divideFloor(g, this.nh) * this.c1 : 0, this.c1, this.c1, 0, 0, this.c1, this.c1);
+        x.clearRect(0, 0, this.width, this.width);
+        23 === k ? x.drawImage(hu.l3[2], 0, 0) : 36 === k ? x.drawImage(hu.l3[0], 0, 0) : 49 === k ? x.drawImage(hu.l3[1], 0, 0) : x.drawImage(n, this.width * g % (g === k ? this.nh * this.width : 4E3), g === k ? divideFloor(g, this.nh) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
         this.l5[k] = l
     };
     this.ny = function() {
@@ -2292,15 +2289,15 @@ function ng() {
     };
     this.nz = function(g, k) {
         var n = document.createElement("canvas");
-        n.width = this.c1;
-        n.height = this.c1;
+        n.width = this.width;
+        n.height = this.width;
         var l = n.getContext("2d", {
             alpha: !0
         });
-        l.clearRect(0, 0, this.c1, this.c1);
+        l.clearRect(0, 0, this.width, this.width);
         l.rotate(k * Math.PI / 2);
         l.drawImage(this.l5[g], 1 === k ?
-            0 : -this.c1, -this.c1);
+            0 : -this.width, -this.width);
         return n
     };
     this.o0 = function() {
@@ -2328,7 +2325,7 @@ function ng() {
     this.nv = function() {
         this.nm = Math.floor((isZoom ? .075 :
             .0468) * bq);
-        this.zoom = this.nm / this.c1;
+        this.zoom = this.nm / this.width;
         this.nn = (1 + this.nr) * this.nm
     };
     this.show = function(g, k) {
@@ -2359,7 +2356,7 @@ function ng() {
         for (var l = this.ld - 1; 0 <= l; l--)
             if (g >= this.np[l] && k >= this.nq[l]) {
                 if (39 === this.ns[l]) return this.o4(), this.show(g, k), !0;
-                dx ? eA.n2(myID, 0, this.ns[l]) : n === myID ? dataEncoder.selfEmoji(this.ns[l]) : dataEncoder.sendEmoji(this.ns[l], n);
+                singleplayer ? eA.showIcon(myID, 0, this.ns[l]) : n === myID ? dataEncoder.selfEmoji(this.ns[l]) : dataEncoder.sendEmoji(this.ns[l], n);
                 this.o3();
                 break
             } return !1
@@ -2371,103 +2368,102 @@ function ng() {
         return g >= this.ni && g < this.ni + this.nj
     };
     this.cG = function() {
-        cH.imageSmoothingEnabled = !0;
-        for (var g = this.nr * this.nm / 2, k = this.ld - 1; 0 <= k; k--) cH.setTransform(this.zoom, 0, 0, this.zoom, this.np[k] + g, this.nq[k] + g), cH.drawImage(this.l5[this.ns[k]], 0, 0);
-        cH.imageSmoothingEnabled = !1;
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        for (var g = this.nr * this.nm / 2, k = this.ld - 1; 0 <= k; k--) mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.np[k] + g, this.nq[k] + g), mainCanvasCtx.drawImage(this.l5[this.ns[k]], 0, 0);
+        mainCanvasCtx.imageSmoothingEnabled = !1;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.oC = function(g, k, n) {
-        cH.imageSmoothingEnabled = !0;
-        cH.setTransform(this.zoom, 0, 0, this.zoom, g, k);
-        cH.drawImage(this.l5[n], 0, 0);
-        cH.imageSmoothingEnabled = !1;
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, g, k);
+        mainCanvasCtx.drawImage(this.l5[n], 0, 0);
+        mainCanvasCtx.imageSmoothingEnabled = !1;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
-var gH = "rgb(0,0,0)",
-    oD = "rgba(0,0,0,0.7)",
-    oE = "rgba(0,0,0,0.5)",
-    lx = "rgba(0,0,0,0.5)",
-    hy = "rgba(0,0,0,0.75)",
-    oF = "rgba(0,0,0,0.85)",
-    oG = "rgba(0,96,96,0.75)",
-    oH = "rgb(255,255,255)",
-    mB = "rgb(128,128,128)",
-    oI = "rgb(30,255,30)",
-    oJ = "rgb(0,200,0)",
-    oK = "rgb(0,255,0)",
-    oL = "rgba(0,255,0,0.6)",
-    oM = "rgba(0,255,0,0.5)",
-    oN = "rgba(0,200,0,0.5)",
-    mZ = "rgba(0,100,0,0.75)",
-    oO = "rgba(0,40,0,0.8)",
-    oP = "rgb(128,255,128)",
-    oQ = "rgba(255,255,150,0.2)",
-    oR = "rgba(0,255,0,0.3)",
-    ly = "rgba(255,255,255,0.3)",
-    oS = "rgba(0,40,90,0.75)",
-    oT = "rgba(220,0,0,0.6)",
-    oU = "rgba(255,100,100,0.8)",
-    mo = "rgba(100,0,0,0.85)",
-    oV = "rgba(60,0,0,0.85)",
-    oW = "rgb(255,120,120)",
-    oX = "rgb(255,160,160)",
-    oY = "rgb(255,70,70)",
-    oZ = "rgb(230,0,0)",
-    oa = "rgba(0,60,60,0.85)",
-    ob = "rgb(160,160,255)",
-    cK = "rgb(255,255,255)",
-    oc = "rgba(255,255,255,0.6)",
-    od = "rgba(255,255,255,0.4)",
-    nX = "rgba(255,255,255,0.25)",
-    oe = "rgba(255,255,255,0.85)",
-    of = "rgba(255,255,255,0.75)",
-    og = "rgb(255,120,100)",
-    oh = "rgba(255,255,0,0.5)",
-    cI = "middle",
-    oi = "bottom",
-    cJ = "center",
-    mh = "left",
-    oj = "right",
-    bt = "bold ",
-    ok = "italic ",
-    ol = "normal ",
-    bu = "px Arial",
-    om = [bt, ok + bt, bt],
-    on = "https://play.google.com/store/apps/details?id=territorial.io",
-    oo = "https://apps.apple.com/app/id1581110913",
-    op = "https://www.youtube.com/watch?v=toZTQ8aRdFc",
-    oq = "https://discord.gg/pthqvpTXmh",
-    or = "https://www.instagram.com/davidtschacher/",
-    nV = "https://territorial.io/cookie_policy",
-    os = "https://territorial.io/privacy_policy",
-    ot = "https://territorial.io/tutorial",
-    ou = ["https://territorial.io/players", "https://territorial.io/clans"],
-    m5, ov, cA, ow, ox, oy, oz, mainSettings, p0 = ["wss://",
-        "/s50/", "/s51/", "/s52/"
-    ];
+var blackRGB = "rgb(0,0,0)",
+    blackOpaque = "rgba(0,0,0,0.7)",
+    blackSemiTransparent = "rgba(0,0,0,0.5)",
+    blackSemiTransparent2 = "rgba(0,0,0,0.5)",
+    blackMoreOpaque = "rgba(0,0,0,0.75)",
+    blackMore2Opaque = "rgba(0,0,0,0.85)",
+    blueMoreOpaque = "rgba(0,96,96,0.75)",
+    whiteRGB = "rgb(255,255,255)",
+    gray128RGB = "rgb(128,128,128)",
+    limeGreenRGB = "rgb(30,255,30)",
+    greenRGB = "rgb(0,200,0)",
+    greenBrightRGB = "rgb(0,255,0)",
+    greenBrightMoreOpaque = "rgba(0,255,0,0.6)",
+    greenBrightSemiTransparent = "rgba(0,255,0,0.5)",
+    greenSemiTransparent = "rgba(0,200,0,0.5)",
+    greenDarkMoreOpaque = "rgba(0,100,0,0.75)",
+    greenDarkerMoreOpaque = "rgba(0,40,0,0.8)",
+    greenLightRGB = "rgb(128,255,128)",
+    yellowMoreTransparent = "rgba(255,255,150,0.2)",
+    greenBrightMoreTransparent = "rgba(0,255,0,0.3)",
+    whiteMore2Transparent = "rgba(255,255,255,0.3)",
+    blueDarkMoreOpaque = "rgba(0,40,90,0.75)",
+    redMoreOpaque = "rgba(220,0,0,0.6)",
+    redBrightMoreOpaque = "rgba(255,100,100,0.8)",
+    redDarkMoreOpaque = "rgba(100,0,0,0.85)",
+    redDarkerMoreOpaque = "rgba(60,0,0,0.85)",
+    redLighterRGB = "rgb(255,120,120)",
+    redMoreLighterRGB = "rgb(255,160,160)",
+    redLightRGB = "rgb(255,70,70)",
+    redBrightRGB = "rgb(230,0,0)",
+    blueGreenMoreOpaque = "rgba(0,60,60,0.85)",
+    blueBrightRGB = "rgb(160,160,255)",
+    whiteRGB2 = "rgb(255,255,255)",
+    whiteMoreOpaque = "rgba(255,255,255,0.6)",
+    whiteMoreTransparent = "rgba(255,255,255,0.4)",
+    whiteMore3Transparent = "rgba(255,255,255,0.25)",
+    whiteBrightMore2Opaque = "rgba(255,255,255,0.85)",
+    whiteBrightMoreOpaque = "rgba(255,255,255,0.75)",
+    orangeRGB = "rgb(255,120,100)",
+    yellowSemiTransparent = "rgba(255,255,0,0.5)",
+    middleAlign = "middle",
+    bottomAlign = "bottom",
+    centerAlign = "center",
+    leftAlign = "left",
+    rightAlign = "right",
+    fontWeightBold = "bold ",
+    fontStyleItalic = "italic ",
+    fontStyleNormal = "normal ",
+    fontSizeArial = "px Arial",
+    fontStyles = [fontWeightBold, fontStyleItalic + fontWeightBold, fontWeightBold],
+    googleplayLink = "https://play.google.com/store/apps/details?id=territorial.io",
+    appstoreLink = "https://apps.apple.com/app/id1581110913",
+    youtubeLink = "https://www.youtube.com/watch?v=toZTQ8aRdFc",
+    discordLink = "https://discord.gg/pthqvpTXmh",
+    igLink = "https://www.instagram.com/davidtschacher/",
+    cookiePolicyLink = "https://territorial.io/cookie_policy",
+    privacyPolicyLink = "https://territorial.io/privacy_policy",
+    tutorialLink = "https://territorial.io/tutorial",
+    leaderboardLinks = ["https://territorial.io/players", "https://territorial.io/clans"],
+    m5, ov, cA, ow, isTouch, oy, oz, mainSettings, 
+    wsUrlStrings = ["wss://", "/s50/", "/s51/", "/s52/"];
 
 function p1() {
     p2();
     ow = 3;
     mainSettings = new MainSettings;
-    mainSettings.bp()
+    mainSettings.init()
 }
 
-function p4() {
-    p5.addEventListener("mousedown", p6);
-    p5.addEventListener("mousemove", p7);
-    p5.addEventListener("mouseup", p8);
-    p5.addEventListener("click", p9);
-    p5.addEventListener("mouseleave", pA);
-    p5.addEventListener("wheel", pB);
-    p5.addEventListener("touchstart", pC);
-    p5.addEventListener("touchmove", pD);
-    p5.addEventListener("touchend", pE);
-    p5.addEventListener("touchcancel", pF);
-    p5.addEventListener("dragover", pG);
-    p5.addEventListener("drop", pH);
-    ox = !1
+function addMainCanvasEventListeners() {
+    mainCanvas.addEventListener("mousedown", onMousedown);
+    mainCanvas.addEventListener("mousemove", onMousemove);
+    mainCanvas.addEventListener("mouseup", onMouseup);
+    mainCanvas.addEventListener("click", onClick);
+    mainCanvas.addEventListener("mouseleave", onMouseleave);
+    mainCanvas.addEventListener("wheel", onWheel);
+    mainCanvas.addEventListener("touchstart", onTouchstart);
+    mainCanvas.addEventListener("touchmove", onTouchmove);
+    mainCanvas.addEventListener("touchend", onTouchend);
+    mainCanvas.addEventListener("touchcancel", onTouchcancel);
+    mainCanvas.addEventListener("dragover", onDragover);
+    mainCanvas.addEventListener("drop", onDrop);
+    isTouch = !1
 }
 
 function p2() {
@@ -2479,89 +2475,89 @@ function p2() {
     ov = 1 > ov ? 1 : ov
 }
 
-function p6(g) {
+function onMousedown(g) {
     g.preventDefault();
-    ox || (wsManager.pK(wsManager.remote), pL(Math.floor(pM * g.clientX), Math.floor(pM * g.clientY)))
+    isTouch || (wsManager.pK(wsManager.remote), pL(Math.floor(pM * g.clientX), Math.floor(pM * g.clientY)))
 }
 
-function pC(g) {
+function onTouchstart(g) {
     g.preventDefault();
     wsManager.pK(wsManager.remote);
-    ox = !0;
+    isTouch = !0;
     0 < g.touches.length && (oy = Math.floor(pM * g.touches[0].clientX), oz = Math.floor(pM * g.touches[0].clientY), jo.pN(g) || pL(oy, oz))
 }
 
 function pL(g, k) {
-    if (0 === fZ) aJ.c7(g, k);
-    else if (!(hv.c7(g, k) || hu.lB(g, k) || eW.c7(g, k) || eP.c7(g, k))) {
-        var n = fq.c7(g, k);
-        2 === n || eM.c7(g, k) || (gj.c7(g, k) ? c4.c5 = !0 : eR.pP(g, k) ? (gj.gk = !1, eR.pQ(g, k) && (c4.c5 = !0)) : announcements.c7(g, k) || eS.c7(g, k) || 0 === n && hu.lD(g, k))
+    if (0 === clientStatus) aJ.mouseDown(g, k);
+    else if (!(hv.mouseDown(g, k) || hu.lB(g, k) || gameResultBox.mouseDown(g, k) || eP.mouseDown(g, k))) {
+        var n = fq.mouseDown(g, k);
+        2 === n || eM.mouseDown(g, k) || (gj.mouseDown(g, k) ? c4.canvasDirty = !0 : troopBar.pP(g, k) ? (gj.gk = !1, troopBar.pQ(g, k) && (c4.canvasDirty = !0)) : announcements.mouseDown(g, k) || peace.mouseDown(g, k) || 0 === n && hu.lD(g, k))
     }
 }
 
-function p7(g) {
-    ox = !1;
+function onMousemove(g) {
+    isTouch = !1;
     g.preventDefault();
     pR(Math.floor(pM * g.clientX), Math.floor(pM * g.clientY))
 }
 
-function pD(g) {
+function onTouchmove(g) {
     g.preventDefault();
     0 < g.touches.length && (oy = Math.floor(pM * g.touches[0].clientX), oz = Math.floor(pM * g.touches[0].clientY), jo.pS(g) || pR(oy, oz))
 }
 
 function pR(g, k) {
-    0 === fZ ? aJ.lm(g, k) : hv.lm(g, k) || (hu.lC() ? hu.lm(g, k) : fq.lm(g, k) || (eR.pT ? eR.lm(g, k) && (c4.c5 = !0) : (eM.lm(g, k), gj.gk && gj.lm(g, k) && (c4.c5 = !0))))
+    0 === clientStatus ? aJ.lm(g, k) : hv.lm(g, k) || (hu.hidden() ? hu.lm(g, k) : fq.lm(g, k) || (troopBar.pT ? troopBar.lm(g, k) && (c4.canvasDirty = !0) : (eM.lm(g, k), gj.gk && gj.lm(g, k) && (c4.canvasDirty = !0))))
 }
 
-function pA(g) {
+function onMouseleave(g) {
     g.preventDefault();
-    0 === fZ ? (aJ.click(-1024, -1024), jg.pU()) : (eM.pV(-1024, -1024), fq.lm(-1024, -1024), eR.pW(), gj.gk && (gj.gk = !1))
+    0 === clientStatus ? (aJ.click(-1024, -1024), playtime.pU()) : (eM.pV(-1024, -1024), fq.lm(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
 }
 
-function p8(g) {
+function onMouseup(g) {
     g.preventDefault();
-    ox || pX(Math.floor(pM * g.clientX), Math.floor(pM * g.clientY))
+    isTouch || pX(Math.floor(pM * g.clientX), Math.floor(pM * g.clientY))
 }
 
-function p9(g) {
-    2 === aJ.pY() && dy.click(g.clientX, g.clientY)
+function onClick(g) {
+    2 === aJ.getState() && singleSettings.click(g.clientX, g.clientY)
 }
 
-function pE(g) {
+function onTouchend(g) {
     g.preventDefault();
-    g && g.touches && 0 < g.touches.length && 0 !== fZ ? gj.gk = !1 : pX(oy, oz)
+    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? gj.gk = !1 : pX(oy, oz)
 }
 
-function pF(g) {
+function onTouchcancel(g) {
     g.preventDefault();
     pX(oy, oz)
 }
 
-function pG(g) {
-    jv.pZ(g)
+function onDragover(g) {
+    loadCustom.pZ(g)
 }
 
-function pH(g) {
-    jv.pa(g)
+function onDrop(g) {
+    loadCustom.pa(g)
 }
 
 function pX(g, k) {
-    0 === fZ ? aJ.click(g, k) : (eM.pV(g, k), hv.pV(), eR.pW(), gj.gk = !1, hu.click(g, k) && (c4.c5 = !0))
+    0 === clientStatus ? aJ.click(g, k) : (eM.pV(g, k), hv.pV(), troopBar.pW(), gj.gk = !1, hu.click(g, k) && (c4.canvasDirty = !0))
 }
 
-function pB(g) {
+function onWheel(g) {
     g.preventDefault();
     wsManager.pK(wsManager.remote);
     var k = Math.floor(pM * g.clientX),
         n = Math.floor(pM * g.clientY),
         l = g.deltaY;
     1 === g.deltaMode && (l *= 20);
-    0 === fZ ? aJ.pb(k, n, l) : eM.pb(k, n, l) || (eR.pP(k, n) ? eR.pb(l) && (c4.c5 = !0) : gj.pb(k, n, 2 * l) && (c4.c5 = !0))
+    0 === clientStatus ? aJ.pb(k, n, l) : eM.pb(k, n, l) || (troopBar.pP(k, n) ? troopBar.pb(l) && (c4.canvasDirty = !0) : gj.pb(k, n, 2 * l) && (c4.canvasDirty = !0))
 }
 
 function pc(g, k, n) {
-    g.fillStyle = cK;
+    g.fillStyle = whiteRGB2;
     g.fillRect(0, 0, k, 1);
     g.fillRect(0, n - 1, k, 1);
     g.fillRect(0, 0, 1, n);
@@ -2570,23 +2566,23 @@ function pc(g, k, n) {
 
 function k1() {
     function g(C) {
-        var E = t[C].lq.width;
+        var E = t[C].canvas.width;
         t[C].hx.clearRect(0, 0, E, A);
-        t[C].hx.fillStyle = 0 !== t[C].id ? "rgba(33,33,120,0.83)" : t[C].cM === b8 ? "rgba(88,88,88,0.83)" : t[C].cM < cq ? "rgba(100,70,33,0.83)" : "rgba(33,100,80,0.83)";
+        t[C].hx.fillStyle = 0 !== t[C].id ? "rgba(33,33,120,0.83)" : t[C].cM === maxEntities ? "rgba(88,88,88,0.83)" : t[C].cM < playerCount ? "rgba(100,70,33,0.83)" : "rgba(33,100,80,0.83)";
         t[C].hx.fillRect(0, 0, E, A);
         pc(t[C].hx, E, A);
-        E > z + 2 * A && (t[C].hx.fillRect(E - z - A, 0, 1, A), t[C].hx.fillText(gI[t[C].cM], Math.floor((E - z) / 2), Math.floor(.57 * A)));
+        E > z + 2 * A && (t[C].hx.fillRect(E - z - A, 0, 1, A), t[C].hx.fillText(nickname[t[C].cM], Math.floor((E - z) / 2), Math.floor(.57 * A)));
         var F = 0 !== t[C].id ? 0 : A;
         t[C].hx.fillText(eP.gJ(t[C].cN), Math.floor(E - z / 2 - F), Math.floor(.57 * A));
-        t[C].hx.fillStyle = oc;
+        t[C].hx.fillStyle = whiteMoreOpaque;
         t[C].hx.fillRect(Math.floor(E -
             z - F), A - B, Math.floor(z * t[C].cN / t[C].pr), B);
-        0 === t[C].id ? (k(C, E), t[C].hx.strokeStyle = oP, t[C].hx.fillRect(A, 0, 1, A), E -= A, t[C].hx.beginPath(), t[C].hx.moveTo(Math.floor(.3 * A + E), Math.floor(A / 2)), t[C].hx.lineTo(Math.floor(A - .3 * A + E), Math.floor(A / 2)), t[C].hx.stroke(), t[C].hx.beginPath(), t[C].hx.moveTo(Math.floor(A / 2 + E), Math.floor(.3 * A)), t[C].hx.lineTo(Math.floor(A / 2 + E), Math.floor(A - .3 * A)), t[C].hx.stroke()) : k(C, 2 * A)
+        0 === t[C].id ? (k(C, E), t[C].hx.strokeStyle = greenLightRGB, t[C].hx.fillRect(A, 0, 1, A), E -= A, t[C].hx.beginPath(), t[C].hx.moveTo(Math.floor(.3 * A + E), Math.floor(A / 2)), t[C].hx.lineTo(Math.floor(A - .3 * A + E), Math.floor(A / 2)), t[C].hx.stroke(), t[C].hx.beginPath(), t[C].hx.moveTo(Math.floor(A / 2 + E), Math.floor(.3 * A)), t[C].hx.lineTo(Math.floor(A / 2 + E), Math.floor(A - .3 * A)), t[C].hx.stroke()) : k(C, 2 * A)
     }
 
     function k(C, E) {
-        t[C].hx.strokeStyle = t[C].ps ? mB : oX;
-        t[C].hx.fillStyle = cK;
+        t[C].hx.strokeStyle = t[C].ps ? gray128RGB : redMoreLighterRGB;
+        t[C].hx.fillStyle = whiteRGB2;
         t[C].hx.fillRect(E - A, 0,
             1, A);
         var F = Math.floor(A / 12);
@@ -2604,32 +2600,32 @@ function k1() {
     }
 
     function n(C) {
-        C.lq = document.createElement("canvas");
+        C.canvas = document.createElement("canvas");
         pj.font = y;
         var E = z;
-        C.cM < b8 && 0 === C.id && (E += Math.floor(pj.measureText(gI[C.cM] +
+        C.cM < maxEntities && 0 === C.id && (E += Math.floor(pj.measureText(nickname[C.cM] +
             "000").width));
         E += A;
         0 === C.id && (E += A);
-        C.lq.width = E;
-        C.lq.height = A;
-        C.hx = C.lq.getContext("2d", {
+        C.canvas.width = E;
+        C.canvas.height = A;
+        C.hx = C.canvas.getContext("2d", {
             alpha: !0
         });
         C.hx.font = y;
-        C.hx.textBaseline = cI;
-        C.hx.textAlign = cJ
+        C.hx.textBaseline = middleAlign;
+        C.hx.textAlign = centerAlign
     }
 
     function l(C) {
-        return eO.qD() ? gE - t[C].lq.width - m5 : eO.fJ
+        return eO.qD() ? gE - t[C].canvas.width - m5 : eO.fJ
     }
 
     function x(C) {
-        return Math.floor(2 * m5 + (eO.qD() ? eB.cw + m5 : 0) + eO.cw + 1.3 * C * A)
+        return Math.floor(2 * m5 + (eO.qD() ? eB.height + m5 : 0) + eO.height + 1.3 * C * A)
     }
     var t, z, y, A, B;
-    this.bp = function() {
+    this.init = function() {
         t = [];
         this.lv()
     };
@@ -2655,30 +2651,30 @@ function k1() {
         for (var G = C.substring(E - 3, E), N = 1; N < F; N++) G = C.substring(E - 3 * (N + 1), E - 3 * N) + " " + G;
         return C.substring(0, E - 3 * F) + " " + G
     };
-    this.c7 = function(C, E) {
-        if (2 === fZ || 0 === fF[myID] || j8 || !hu.lE(myID)) return !1;
+    this.mouseDown = function(C, E) {
+        if (2 === clientStatus || 0 === isAlive[myID] || j8 || !hu.lE(myID)) return !1;
         var F, G = isZoom ? A : 0,
             N = isZoom ? Math.floor(.15 * A) : 0;
         for (F = t.length -
             1; 0 <= F; F--) {
             var I = l(F);
             var D = x(F);
-            var K = t[F].lq.width;
+            var K = t[F].canvas.width;
             if (E >= D - N && E <= D + A + N) {
-                if (C >= I - G && C <= I + A + G) return t[F].ps || (t[F].pm = !0, t[F].ps = !0, 0 === t[F].id ? dx ? eG.fN(myID, t[F].cM) : dataEncoder.cancel(t[F].cM === b8 ? myID : t[F].cM) : dx ? eG.fP(myID, t[F].id) : dataEncoder.cancelBoat(t[F].id)), !0;
-                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return dx ? fL(myID, t[F].cM, eR.lT()) : dataEncoder.attack(eR.lT(), t[F].cM === b8 ? myID : t[F].cM), !0
+                if (C >= I - G && C <= I + A + G) return t[F].ps || (t[F].pm = !0, t[F].ps = !0, 0 === t[F].id ? singleplayer ? processAction.fN(myID, t[F].cM) : dataEncoder.cancel(t[F].cM === maxEntities ? myID : t[F].cM) : singleplayer ? processAction.fP(myID, t[F].id) : dataEncoder.cancelBoat(t[F].id)), !0;
+                if (0 === t[F].id && C >= I + K - A - G && C <= I + K + G) return singleplayer ? fL(myID, t[F].cM, troopBar.getRatio()) : dataEncoder.attack(troopBar.getRatio(), t[F].cM === maxEntities ? myID : t[F].cM), !0
             }
         }
         return !1
     };
     this.dF = function() {
-        if (2 !== fZ && 0 !== fF[myID] && !j8 && hu.lE(myID)) {
-            var C = ae.af(myID);
+        if (2 !== clientStatus && 0 !== isAlive[myID] && !j8 && hu.lE(myID)) {
+            var C = attacks.af(myID);
             b: if (t.length !== C) var E = !0;
                 else {
                     for (E = C - 1; 0 <= E; E--)
-                        if (t[E].id !== ae.ag(myID,
-                                E) || t[E].cM !== ae.al(myID, E)) {
+                        if (t[E].id !== attacks.ag(myID,
+                                E) || t[E].cM !== attacks.al(myID, E)) {
                             E = !0;
                             break b
                         } E = !1
@@ -2687,13 +2683,13 @@ function k1() {
                 var F, G = [];
                 E = 0;
                 b: for (; E < C; E++) {
-                    var N = ae.ag(myID, E);
-                    var I = ae.al(myID, E);
+                    var N = attacks.ag(myID, E);
+                    var I = attacks.al(myID, E);
                     for (F = 0; F < t.length; F++)
                         if (t[F].id === N && t[F].cM === I) {
                             G.push(t.splice(F, 1)[0]);
                             continue b
-                        } F = ae.am(myID, E);
+                        } F = attacks.am(myID, E);
                     N = {
                         cM: I,
                         cN: F,
@@ -2701,7 +2697,7 @@ function k1() {
                         id: N,
                         pm: !0,
                         ps: !1,
-                        lq: null,
+                        canvas: null,
                         hx: null
                     };
                     n(N);
@@ -2709,18 +2705,18 @@ function k1() {
                 }
                 t = G
             }
-            for (--C; 0 <= C; C--) E = ae.am(myID, C), t[C].cN !== E && (t[C].cN = E, t[C].pr = E > t[C].pr ? E : t[C].pr, t[C].pm = !0)
+            for (--C; 0 <= C; C--) E = attacks.am(myID, C), t[C].cN !== E && (t[C].cN = E, t[C].pr = E > t[C].pr ? E : t[C].pr, t[C].pm = !0)
         }
     };
     this.cG = function() {
-        if (0 !== fF[myID] && hu.lE(myID) && !j8)
-            for (var C = t.length - 1; 0 <= C; C--) cH.drawImage(t[C].lq, l(C), x(C))
+        if (0 !== isAlive[myID] && hu.lE(myID) && !j8)
+            for (var C = t.length - 1; 0 <= C; C--) mainCanvasCtx.drawImage(t[C].canvas, l(C), x(C))
     }
 }
 
 function k2() {
     function g() {
-        cH.drawImage(I, m5 + (dA ? m5 + eT.qR() : 0), qS + 2 * m5)
+        mainCanvasCtx.drawImage(I, m5 + (teamGame ? m5 + eT.qR() : 0), qS + 2 * m5)
     }
 
     function k() {
@@ -2732,15 +2728,15 @@ function k2() {
         D.clearRect(0, 0, l[0].width + G, y + G);
         D.translate(Math.floor(G / 2), Math.floor(G / 2));
         D.lineWidth = G;
-        D.fillStyle = 1 === l[0].qP ? oe : hy;
+        D.fillStyle = 1 === l[0].qP ? whiteBrightMore2Opaque : blackMoreOpaque;
         n();
         D.fill();
-        D.strokeStyle = 1 === l[0].qP ? gH : cK;
+        D.strokeStyle = 1 === l[0].qP ? blackRGB : whiteRGB2;
         n();
         D.stroke();
-        D.textAlign = cJ;
-        D.textBaseline = cI;
-        D.fillStyle = 1 === l[0].qP ? gH : cK;
+        D.textAlign = centerAlign;
+        D.textBaseline = middleAlign;
+        D.fillStyle = 1 === l[0].qP ? blackRGB : whiteRGB2;
         D.font = A[0];
         D.fillText(E[l[0].qO], Math.floor(l[0].width / 2), Math.floor(.72 * C[0] * y));
         D.font = A[1];
@@ -2761,7 +2757,7 @@ function k2() {
         D.closePath()
     }
     var l, x, t, z, y, A, B, C, E, F, G, N, I, D, K, J;
-    this.bp = function() {
+    this.init = function() {
         K = 0;
         x = 4;
         t = z = 0;
@@ -2783,8 +2779,8 @@ function k2() {
         y = Math.floor((isZoom ? .0725 : .058) * bq);
         B[0] = Math.floor(.85 * C[0] * y);
         B[1] = Math.floor(.85 * C[1] * y);
-        A[0] = bt + B[0] + bu;
-        A[1] = bt + B[1] + bu;
+        A[0] = fontWeightBold + B[0] + fontSizeArial;
+        A[1] = fontWeightBold + B[1] + fontSizeArial;
         for (L = F.length - 1; 0 <= L; L--) F[L] = this.measureText(E[L] + "000", A[0]);
         G = Math.floor(1 + .05 * y);
         N = Math.floor(.2 * y);
@@ -2798,22 +2794,22 @@ function k2() {
     };
     this.dF = function() {
         if (0 !== x)
-            if (4 === x) c4.time > J && (x = 0, 1 === fZ && c2.mx(jm.nD(), 3, 1, 9));
+            if (4 === x) c4.time > J && (x = 0, 1 === clientStatus && c2.mx(mapInfo.getMapName(), 3, 1, 9));
             else {
                 if (1 === x) 0 === t && (k(), t = 1E-4), t += .002 *
-                    (c4.time - K), 1 <= t && (z = 0, x = 2, t = 1), c4.c5 = !0;
+                    (c4.time - K), 1 <= t && (z = 0, x = 2, t = 1), c4.canvasDirty = !0;
                 else if (2 === x) {
                     if (z += (c4.time - K) / 1E3, z > l[0].gb || 1 < z && 1 < l.length) x = 3
-                } else 3 === x && (t -= .002 * (c4.time - K), 0 >= t && (t = 0, l.shift(), x = 0 < l.length ? 1 : 0), c4.c5 = !0);
+                } else 3 === x && (t -= .002 * (c4.time - K), 0 >= t && (t = 0, l.shift(), x = 0 < l.length ? 1 : 0), c4.canvasDirty = !0);
                 K = c4.time
             }
     };
     this.measureText = function(L, H) {
-        cH.font = H;
-        return Math.floor(cH.measureText(L).width)
+        mainCanvasCtx.font = H;
+        return Math.floor(mainCanvasCtx.measureText(L).width)
     };
-    this.cQ = function(L, H) {
-        this.mx(gI[L], H, 1, 0 === H ? 3 : 7)
+    this.set = function(L, H) {
+        this.mx(nickname[L], H, 1, 0 === H ? 3 : 7)
     };
     this.mx = function(L, H, M, Q) {
         var R = this.measureText(L + "00", A[1]);
@@ -2829,21 +2825,21 @@ function k2() {
     };
     this.cG = function() {
         0 !== x && 0 !==
-            t && (1 > t ? (cH.globalAlpha = t, g(), cH.globalAlpha = 1) : g())
+            t && (1 > t ? (mainCanvasCtx.globalAlpha = t, g(), mainCanvasCtx.globalAlpha = 1) : g())
     }
 }
 
-function kg() {
+function Peace() {
     function g() {
-        var D = eS.c1;
+        var D = peace.width;
         E = !1;
         hw(t, D, l);
         var K = Math.floor(D / 2);
-        1 === y ? (t.fillStyle = oL, t.fillRect(K, 0, K, l)) : -1 === y && (t.fillStyle = oT, t.fillRect(0, 0, K, l));
+        1 === y ? (t.fillStyle = greenBrightMoreOpaque, t.fillRect(K, 0, K, l)) : -1 === y && (t.fillStyle = redMoreOpaque, t.fillRect(0, 0, K, l));
         hz(t, D, l, 2);
         K = Math.floor(.25 * l);
         K = 2 > K ? 2 : K;
-        t.fillStyle = of;
+        t.fillStyle = whiteBrightMoreOpaque;
         var J = Math.floor((l - 4) * A[1] / B[1]);
         0 < J && t.fillRect(2, l - 2 - J, K, J);
         J = Math.floor((l - 4) * A[0] / B[0]);
@@ -2860,17 +2856,17 @@ function kg() {
         F = 140;
         y = 0;
         C = [];
-        eS.lC = !1;
+        peace.hidden = !1;
         A[0] = A[1] = 0
     }
 
     function n() {
-        return eR.md(announcements.ma()) ? eR.fK - l - m5 : s - l - (isZoom ? 2 : 1) * m5
+        return troopBar.md(announcements.ma()) ? troopBar.fK - l - m5 : s - l - (isZoom ? 2 : 1) * m5
     }
     var l, x, t, z, y, A, B, C, E, F, G, N, I;
-    this.bp = function() {
+    this.init = function() {
         N = I = 0;
-        E = this.lC = !1;
+        E = this.hidden = !1;
         F = 140;
         y = 0;
         A = [0, 0];
@@ -2880,11 +2876,11 @@ function kg() {
         this.lv()
     };
     this.lv = function() {
-        l = eR.cw;
-        this.c1 = 4 * l;
+        l = troopBar.height;
+        this.width = 4 * l;
         this.qd();
         x = document.createElement("canvas");
-        x.width = this.c1;
+        x.width = this.width;
         x.height = l;
         t = x.getContext("2d", {
             alpha: !0
@@ -2908,7 +2904,7 @@ function kg() {
             var J = Math.floor(D / 8);
             J = 1 > J ? 1 : J;
             K.lineWidth = J;
-            K.strokeStyle = cK;
+            K.strokeStyle = whiteRGB2;
             var L = Math.floor(D / 2);
             D = Math.floor((D - J) / 2);
             K.beginPath();
@@ -2921,18 +2917,18 @@ function kg() {
             K.stroke()
         }
     };
-    this.c7 = function(D, K) {
-        if (D < r - this.c1 - m5) return !1;
+    this.mouseDown = function(D, K) {
+        if (D < r - this.width - m5) return !1;
         var J = n();
         if (K < J || K > J + l) return !1;
-        J = D > r - m5 - this.c1 /
+        J = D > r - m5 - this.width /
             2;
-        dx ? this.fX(0, J) : hu.lE(myID) && 0 !== fF[myID] && dataEncoder.votePeace(J);
+        singleplayer ? this.fX(0, J) : hu.lE(myID) && 0 !== isAlive[myID] && dataEncoder.votePeace(J);
         return !0
     };
     this.dF = function() {
         if (0 < I) I--, 0 === I && k();
-        else if (this.lC) {
+        else if (this.hidden) {
             F--;
             var D;
             if (D = 270 === F && 2 <= N) a: {
@@ -2943,17 +2939,17 @@ function kg() {
                     } D = !0
             }
             D && (E = !0, A[0] += B[0]);
-            180 === F && 3 * A[0] < B[0] ? k() : A[0] >= B[0] ? fi.fj(-1) : A[1] >= B[1] ? I = 4 : 0 >= F && k()
+            180 === F && 3 * A[0] < B[0] ? k() : A[0] >= B[0] ? endGame.endGame(-1) : A[1] >= B[1] ? I = 4 : 0 >= F && k()
         } else {
-            for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - bU[em[D]]) && (F = 140), G[D] = bU[em[D]];
+            for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[em[D]]) && (F = 140), G[D] = land[em[D]];
             D = 0 >= --F ? !0 : !1;
             if (D) {
-                this.lC = !0;
+                this.hidden = !0;
                 F = 360;
                 var K = 0;
-                for (D = dY - 1; 0 <= D; D--) hu.lE(dZ[D]) && (K += bU[dZ[D]]);
+                for (D = dY - 1; 0 <= D; D--) hu.lE(dZ[D]) && (K += land[dZ[D]]);
                 B[0] = getMax(divideFloor(3 * K, 5), 1);
-                dA && 9 !== dv && (B[0] =
+                teamGame && 9 !== gamemode && (B[0] =
                     getMin(getMax(divideFloor(K * (100 - divideFloor(100 * eT.qm(), j9)), 100), 1), B[0]));
                 B[1] = getMax(K - B[0], 1);
                 N++
@@ -2961,29 +2957,29 @@ function kg() {
         }
     };
     this.iv = function() {
-        this.lC && A[0] < B[0] && k()
+        this.hidden && A[0] < B[0] && k()
     };
     this.fX = function(D, K) {
         var J;
-        if (this.lC) {
+        if (this.hidden) {
             for (J = C.length - 1; 0 <= J; J--)
                 if (C[J] === D) return;
             C.push(D);
             E = !0;
-            J = dx ? B[0] : bU[D];
+            J = singleplayer ? B[0] : land[D];
             K ? A[0] += J : A[1] += J;
             D === myID && (y = K ? 1 : -1)
         }
     };
     this.cG = function() {
-        if (this.lC) {
+        if (this.hidden) {
             var D = n();
-            cH.drawImage(x, r - this.c1 - m5, D)
+            mainCanvasCtx.drawImage(x, r - this.width - m5, D)
         }
     }
 }
 
-function k3() {
+function TroopBar() {
     function g() {
         if (C < 1 / 3) {
             var I = Math.floor(540 * C);
@@ -2995,28 +2991,28 @@ function k3() {
     }
 
     function k() {
-        A.clearRect(0, 0, x, eR.cw);
+        A.clearRect(0, 0, x, troopBar.height);
         var I = Math.floor(C * (x - 2 * z));
-        A.fillStyle = hy;
-        A.fillRect(0, 0, z, eR.cw);
-        A.fillRect(z + I, 0, x - z - I, eR.cw);
+        A.fillStyle = blackMoreOpaque;
+        A.fillRect(0, 0, z, troopBar.height);
+        A.fillRect(z + I, 0, x - z - I, troopBar.height);
         A.fillStyle = g();
-        A.fillRect(z, 0, I, eR.cw);
-        A.fillStyle = cK;
+        A.fillRect(z, 0, I, troopBar.height);
+        A.fillStyle = whiteRGB2;
         A.fillRect(0, 0, x, 1);
-        A.fillRect(0, eR.cw - 1, x, 1);
-        A.fillRect(0, 0, 1, eR.cw);
-        A.fillRect(z, 0, 1, eR.cw);
-        A.fillRect(z + I, 0, 1, eR.cw);
-        A.fillRect(x - z, 0, 1, eR.cw);
-        A.fillRect(x - 1, 0, 1, eR.cw);
-        I = 1 + Math.floor(.0625 * eR.cw);
-        var D = 1 + Math.floor(.3 * eR.cw);
-        A.fillRect(Math.floor(.25 * eR.cw) + D, Math.floor((eR.cw - I) / 2), eR.cw - 2 * D, I);
-        A.fillRect(Math.floor(x - 1.25 * eR.cw) + D, Math.floor((eR.cw - I) / 2), eR.cw - 2 * D - D % 2, I);
-        A.fillRect(Math.floor(x - 1.25 * eR.cw) + Math.floor((eR.cw - I) / 2), D, I, eR.cw - 2 * D - D % 2);
-        E = Math.floor(ax[myID] * C);
-        A.fillText(eP.gJ(E), Math.floor(x / 2), Math.floor(.55 * eR.cw))
+        A.fillRect(0, troopBar.height - 1, x, 1);
+        A.fillRect(0, 0, 1, troopBar.height);
+        A.fillRect(z, 0, 1, troopBar.height);
+        A.fillRect(z + I, 0, 1, troopBar.height);
+        A.fillRect(x - z, 0, 1, troopBar.height);
+        A.fillRect(x - 1, 0, 1, troopBar.height);
+        I = 1 + Math.floor(.0625 * troopBar.height);
+        var D = 1 + Math.floor(.3 * troopBar.height);
+        A.fillRect(Math.floor(.25 * troopBar.height) + D, Math.floor((troopBar.height - I) / 2), troopBar.height - 2 * D, I);
+        A.fillRect(Math.floor(x - 1.25 * troopBar.height) + D, Math.floor((troopBar.height - I) / 2), troopBar.height - 2 * D - D % 2, I);
+        A.fillRect(Math.floor(x - 1.25 * troopBar.height) + Math.floor((troopBar.height - I) / 2), D, I, troopBar.height - 2 * D - D % 2);
+        E = Math.floor(troops[myID] * C);
+        A.fillText(eP.gJ(E), Math.floor(x / 2), Math.floor(.55 * troopBar.height))
     }
 
     function n(I) {
@@ -3037,8 +3033,8 @@ function k3() {
         return D !== C ? (k(), !0) : !1
     }
     var x, t, z, y, A, B, C, E, F, G, N = 11 / 12;
-    this.bp = function() {
-        B = !fc;
+    this.init = function() {
+        B = !inSpawn;
         G = !1;
         C = .5;
         E = 0;
@@ -3046,33 +3042,33 @@ function k3() {
         this.lv()
     };
     this.lv = function() {
-        isZoom && r < .8 * s ? (this.cw = Math.floor(.0536 * bq), x = r - 4 * m5 - this.cw) : (x = Math.floor((isZoom ? .65 : .389) * bq), x += 12 - x % 12, this.cw = Math.floor(x / 12));
-        z = Math.floor(3 * this.cw / 2);
-        F = bt + Math.floor(.5 * this.cw) + bu;
+        isZoom && r < .8 * s ? (this.height = Math.floor(.0536 * bq), x = r - 4 * m5 - this.height) : (x = Math.floor((isZoom ? .65 : .389) * bq), x += 12 - x % 12, this.height = Math.floor(x / 12));
+        z = Math.floor(3 * this.height / 2);
+        F = fontWeightBold + Math.floor(.5 * this.height) + fontSizeArial;
         y = document.createElement("canvas");
         y.width = x;
-        y.height = this.cw;
+        y.height = this.height;
         A = y.getContext("2d", {
             alpha: !0
         });
         A.font = F;
-        A.textBaseline = cI;
-        A.textAlign = cJ;
+        A.textBaseline = middleAlign;
+        A.textAlign = centerAlign;
         this.qs();
         k()
     };
     this.qs = function() {
-        t = isZoom && r < .8 * s ? this.cw + 3 * m5 : Math.floor((gE - x) / 2);
-        this.fK = cB - this.cw - (isZoom ? 2 : 1) * m5
+        t = isZoom && r < .8 * s ? this.height + 3 * m5 : Math.floor((gE - x) / 2);
+        this.fK = cB - this.height - (isZoom ? 2 : 1) * m5
     };
     this.eb = function() {
         G && (G = !1, k())
     };
-    this.lC = function() {
-        return !(!B || fq.lu && t < Math.floor(m5 + 5.5 * this.cw))
+    this.hidden = function() {
+        return !(!B || fq.lu && t < Math.floor(m5 + 5.5 * this.height))
     };
     this.md = function(I) {
-        return this.lC() ? t + x > r - I - m5 : !1
+        return this.hidden() ? t + x > r - I - m5 : !1
     };
     this.cE = function() {
         B = !0
@@ -3080,25 +3076,25 @@ function k3() {
     this.qh = function() {
         B = !1
     };
-    this.lT = function() {
+    this.getRatio = function() {
         var I = Math.floor(1E3 * C);
         return 0 >= I ? 1 : 1E3 < I ? 1E3 : I
     };
     this.pP = function(I, D) {
-        return this.lC() && I > t && I < t + x && D > this.fK
+        return this.hidden() && I > t && I < t + x && D > this.fK
     };
     this.pQ = function(I, D) {
-        if (!this.lC()) return !1;
-        if (I > t && I < t + z && D > eR.fK) return n(N);
-        if (I > t + x - z && I < t + x && D > eR.fK) return n(1 / N);
+        if (!this.hidden()) return !1;
+        if (I > t && I < t + z && D > troopBar.fK) return n(N);
+        if (I > t + x - z && I < t + x && D > troopBar.fK) return n(1 / N);
         this.pT = !0;
         return l(I)
     };
     this.r3 = function(I) {
-        0 !== fZ && this.lC() && n(I) && (c4.c5 = !0)
+        0 !== clientStatus && this.hidden() && n(I) && (c4.canvasDirty = !0)
     };
     this.pb = function(I) {
-        if (0 === I || !this.lC()) return !1;
+        if (0 === I || !this.hidden()) return !1;
         0 < I ? (I = 400 / (400 + I), I = I < N ? N : I) : (I = (400 - I) / 400, I = I > 1 / N ? 1 / N : I);
         return n(I)
     };
@@ -3109,10 +3105,10 @@ function k3() {
         this.pT = !1
     };
     this.dF = function() {
-        this.lC() && Math.floor(ax[myID] * C) !== E && (G = !0)
+        this.hidden() && Math.floor(troops[myID] * C) !== E && (G = !0)
     };
     this.cG = function() {
-        this.lC() && cH.drawImage(y,
+        this.hidden() && mainCanvasCtx.drawImage(y,
             t, this.fK)
     }
 }
@@ -3120,7 +3116,7 @@ var g7, gC, gD;
 
 function k4() {
     var g, k, n, l, x, t, z;
-    this.bp = function() {
+    this.init = function() {
         g = Array(2);
         k = Array(2);
         this.gk = !1;
@@ -3136,8 +3132,8 @@ function k4() {
         });
         this.qs();
         y = Math.floor(1 + n / 20);
-        for (var A = 1; 0 <= A; A--) k[A].clearRect(0, 0, n, n), k[A].fillStyle = oD, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].fill(), k[A].lineWidth = y, k[A].fillStyle = oH, k[A].strokeStyle =
-            oH, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), i1(k[A], 0, 0, n, y, .3, 0 === A)
+        for (var A = 1; 0 <= A; A--) k[A].clearRect(0, 0, n, n), k[A].fillStyle = blackOpaque, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].fill(), k[A].lineWidth = y, k[A].fillStyle = whiteRGB, k[A].strokeStyle =
+            whiteRGB, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), i1(k[A], 0, 0, n, y, .3, 0 === A)
     };
     this.gF = function() {
         return -gC / g7
@@ -3151,7 +3147,7 @@ function k4() {
     this.gx = function(y, A) {
         gD = g7 * y - A
     };
-    this.c7 = function(y, A) {
+    this.mouseDown = function(y, A) {
         if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pb(Math.floor(gE / 2), Math.floor(cB / 2), -200) : this.pb(Math.floor(gE / 2), Math.floor(cB / 2), 200);
         eV.h0() && (this.gk = !0, t = y, z = A);
         return !1
@@ -3193,10 +3189,10 @@ function k4() {
             B = s / 16,
             C = 0;
         gC < -r + y && (A = -r + y - gC);
-        gC > g7 * aZ - y && (A = g7 * aZ - y -
+        gC > g7 * currentMapWidth - y && (A = g7 * currentMapWidth - y -
             gC);
         gD < -s + B && (C = -s + B - gD);
-        gD > g7 * aa - B && (C = g7 * aa - B - gD);
+        gD > g7 * currentMapHeight - B && (C = g7 * currentMapHeight - B - gD);
         gC += A;
         gD += C;
         gy.gz();
@@ -3207,12 +3203,12 @@ function k4() {
         x = Math.floor(cB / 2 - 1.25 * n)
     };
     this.cG = function() {
-        cH.drawImage(g[0], l, x);
-        cH.drawImage(g[1], l, Math.floor(x + 3 * n / 2))
+        mainCanvasCtx.drawImage(g[0], l, x);
+        mainCanvasCtx.drawImage(g[1], l, Math.floor(x + 3 * n / 2))
     }
 }
 
-function k5() {
+function Playtime() {
     function g() {
         A = Math.floor(.2 * (isZoom ? .07 : .035) * bq);
         A = getMax(isZoom ? 3 : 1, A);
@@ -3245,11 +3241,11 @@ function k5() {
 
     function l(P) {
         var U = Math.floor(C * Math.pow(t[P], L));
-        cH.fillRect(z + gE - (P + 1) * A, cB - U, H, U)
+        mainCanvasCtx.fillRect(z + gE - (P + 1) * A, cB - U, H, U)
     }
 
     function x() {
-        8 === aJ.pY() && (G = -1);
+        8 === aJ.getState() && (G = -1);
         if (0 !== G) Q = (new Date).getTime(), clearInterval(M), M = -1;
         else {
             var P = t[1] / 864E3;
@@ -3258,11 +3254,11 @@ function k5() {
                 P += (U - Q) * t[1] / 864E5;
                 Q = -1
             }
-            0 < P && (t[0] += Math.floor(P), c4.c5 = !0)
+            0 < P && (t[0] += Math.floor(P), c4.canvasDirty = !0)
         }
     }
     var t, z, y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R;
-    this.bp = function() {
+    this.init = function() {
         Q = M = -1;
         J = !1;
         L = 1;
@@ -3453,44 +3449,44 @@ function k5() {
             s);
         N = Math.floor((isZoom ? .018 : .0137) * bq);
         N = 10 > N ? 10 : N;
-        I = bt + N + bu;
+        I = fontWeightBold + N + fontSizeArial;
         g()
     };
     this.rk = function() {
         J || dataEncoder.requestLoadInfo()
     };
-    this.rm = function(P) {
+    this.addPlaytimes = function(P) {
         var U;
         J = !0;
         for (U = 0; U < P.length; U++) t.unshift(P[U]);
         g();
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.rq = function() {
         k()
     };
     this.lm = function(P, U) {
-        U > cB - .6 * y ? this.rg ? P !== K && (z += P - K, K = P, k(), n(P), this.rg = -1 !== G, c4.c5 = !0) : n(P) && (c4.c5 = !0) : this.pU()
+        U > cB - .6 * y ? this.rg ? P !== K && (z += P - K, K = P, k(), n(P), this.rg = -1 !== G, c4.canvasDirty = !0) : n(P) && (c4.canvasDirty = !0) : this.pU()
     };
     this.pU = function() {
-        -1 !== G && (this.rg = !1, G = -1, c4.c5 = !0)
+        -1 !== G && (this.rg = !1, G = -1, c4.canvasDirty = !0)
     };
     this.pb = function(P, U) {
-        -1 !== G && (z += Math.floor(U), k(), n(P), c4.c5 = !0)
+        -1 !== G && (z += Math.floor(U), k(), n(P), c4.canvasDirty = !0)
     };
-    this.c7 = function(P, U) {
+    this.mouseDown = function(P, U) {
         this.lm(P, U); - 1 !== G && (K = P, this.rg = !0)
     };
     this.pV = function() {
         -1 !== G && (this.rg = !1)
     };
     this.cG = function() {
-        cH.fillStyle = od;
+        mainCanvasCtx.fillStyle = whiteMoreTransparent;
         for (var P = F; P >= E; P--) l(P);
-        J && 0 === E && (cH.fillStyle = oT, l(0)); - 1 !== G && (cH.fillStyle = oc, l(G));
+        J && 0 === E && (mainCanvasCtx.fillStyle = redMoreOpaque, l(0)); - 1 !== G && (mainCanvasCtx.fillStyle = whiteMoreOpaque, l(G));
         if (-1 !== G) {
-            cH.font = I;
-            cH.textBaseline = oi;
+            mainCanvasCtx.font = I;
+            mainCanvasCtx.textBaseline = bottomAlign;
             P = new Date;
             P.setTime(D.getTime() - 864E5 * G);
             var U = "month",
@@ -3504,109 +3500,109 @@ function k5() {
             var X = 1 === t[G] ? " second played" :
                 " seconds played";
             X = eP.gJ(t[G]) + X;
-            var V = Math.floor(cH.measureText(P).width),
-                na = Math.floor(cH.measureText(X).width),
+            var V = Math.floor(mainCanvasCtx.measureText(P).width),
+                na = Math.floor(mainCanvasCtx.measureText(X).width),
                 ba = Math.floor(.5 * (V + N));
             U = z + gE - (G + 1) * A;
             U = U < ba ? ba : U > gE - ba ? gE - ba : U;
             W = cB - Math.floor(C * Math.pow(t[G], L));
             var ca = Math.floor(1.1 * N),
                 pa = W > cB - ca ? cB - ca : W;
-            cH.fillStyle = hy;
-            cH.fillRect(gE - na - N, pa - ca, na + N, ca);
-            cH.fillRect(U - ba, cB - ca, V + N, ca);
-            cH.fillStyle = cK;
-            cH.textAlign = oj;
-            cH.fillText(X, Math.floor(gE - .5 * N), pa);
+            mainCanvasCtx.fillStyle = blackMoreOpaque;
+            mainCanvasCtx.fillRect(gE - na - N, pa - ca, na + N, ca);
+            mainCanvasCtx.fillRect(U - ba, cB - ca, V + N, ca);
+            mainCanvasCtx.fillStyle = whiteRGB2;
+            mainCanvasCtx.textAlign = rightAlign;
+            mainCanvasCtx.fillText(X, Math.floor(gE - .5 * N), pa);
             X = pa - 2 * ca;
             V = -1;
             na = t.length - G - 1;
             for (ba = R.length - 1; 0 <= ba; ba--) na >= R[ba].b3 && na <= R[ba].pJ && (-1 ===
-                V || R[ba].pJ - R[ba].b3 < R[V].pJ - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(cH.measureText(R[V].mt).width), cH.fillStyle = hy, cH.fillRect(gE - na - N, X, na + N, ca), cH.fillStyle = cK, cH.fillText(R[V].mt, Math.floor(gE - .5 * N), X + ca));
-            cH.textAlign = cJ;
-            cH.fillText(P, U, cB);
-            cH.strokeStyle = nX;
-            cH.lineWidth = 1;
-            cH.beginPath();
-            cH.moveTo(0, W);
-            cH.lineTo(gE, W);
-            cH.closePath();
-            cH.stroke()
+                V || R[ba].pJ - R[ba].b3 < R[V].pJ - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(mainCanvasCtx.measureText(R[V].mt).width), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(gE - na - N, X, na + N, ca), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(R[V].mt, Math.floor(gE - .5 * N), X + ca));
+            mainCanvasCtx.textAlign = centerAlign;
+            mainCanvasCtx.fillText(P, U, cB);
+            mainCanvasCtx.strokeStyle = whiteMore3Transparent;
+            mainCanvasCtx.lineWidth = 1;
+            mainCanvasCtx.beginPath();
+            mainCanvasCtx.moveTo(0, W);
+            mainCanvasCtx.lineTo(gE, W);
+            mainCanvasCtx.closePath();
+            mainCanvasCtx.stroke()
         }
     }
 }
 
 function k6() {
-    this.cw = this.fJ = 0;
+    this.height = this.fJ = 0;
     var g, k, n, l, x, t, z, y, A, B, C, E, F;
-    this.bp = function() {
-        x = hb;
+    this.init = function() {
+        x = startingTroops;
         C = "rgba(0,100,0,0.8)";
         E = "rgba(150,0,0,0.8)";
         B = !0;
         y = !1;
-        A = ax[myID];
+        A = troops[myID];
         this.lv()
     };
     this.lv = function() {
         k = Math.floor((isZoom ? .305 : .24) * bq);
-        this.cw = Math.floor(.5 + .13 * k);
-        k = Math.floor(6 * this.cw);
-        g = bt + Math.floor(.8 * this.cw) + bu;
-        F = Math.floor(.5 * this.cw);
+        this.height = Math.floor(.5 + .13 * k);
+        k = Math.floor(6 * this.height);
+        g = fontWeightBold + Math.floor(.8 * this.height) + fontSizeArial;
+        F = Math.floor(.5 * this.height);
         pj.font = g;
         n = m5;
-        l = Math.floor(1 + .13 * this.cw);
+        l = Math.floor(1 + .13 * this.height);
         t = document.createElement("canvas");
         t.width = k;
-        t.height = this.cw;
+        t.height = this.height;
         z = t.getContext("2d", {
             alpha: !0
         });
         z.font = g;
-        z.textBaseline = cI;
-        z.textAlign = cJ;
+        z.textBaseline = middleAlign;
+        z.textAlign = centerAlign;
         this.sB()
     };
     this.qD = function() {
         return isZoom && r < 1.2 * s
     };
     this.qs = function() {
-        this.qD() ? this.fJ = gE - k - m5 : this.fJ = Math.floor(eM.sC() + (gE - eM.sC() - eB.c1 - k) / 2 - .5 * m5)
+        this.qD() ? this.fJ = gE - k - m5 : this.fJ = Math.floor(eM.sC() + (gE - eM.sC() - eB.width - k) / 2 - .5 * m5)
     };
     this.eb = function() {
         y && (y = !1, this.sB())
     };
     this.sB = function() {
-        z.clearRect(0, 0, k, this.cw);
+        z.clearRect(0, 0, k, this.height);
         z.fillStyle = B ? C : E;
-        z.fillRect(0, 0, k, this.cw);
-        z.fillStyle = oc;
+        z.fillRect(0, 0, k, this.height);
+        z.fillStyle = whiteMoreOpaque;
         this.sD();
         this.sE();
-        z.fillStyle = ax[myID] >= ay.dJ(myID) ? oX : cK;
+        z.fillStyle = troops[myID] >= interest.dJ(myID) ? redMoreLighterRGB : whiteRGB2;
         z.fillText(eP.gJ(A), Math.floor(k / 2), F);
-        z.fillStyle = cK;
+        z.fillStyle = whiteRGB2;
         z.fillRect(0, 0, k, 1);
-        z.fillRect(0, 0, 1, this.cw);
-        z.fillRect(0, this.cw - 1, k, 1);
-        z.fillRect(k - 1, 0, 1, this.cw)
+        z.fillRect(0, 0, 1, this.height);
+        z.fillRect(0, this.height - 1, k, 1);
+        z.fillRect(k - 1, 0, 1, this.height)
     };
     this.sD =
         function() {
-            var G = Math.floor((ay.sF() - 1) * this.cw / 9);
-            G = getMin(G, this.cw - l);
-            z.fillRect(0, G, l, this.cw - G);
-            z.fillRect(k - l, G, l, this.cw - G)
+            var G = Math.floor((interest.sF() - 1) * this.height / 9);
+            G = getMin(G, this.height - l);
+            z.fillRect(0, G, l, this.height - G);
+            z.fillRect(k - l, G, l, this.height - G)
         };
     this.sE = function() {
-        z.fillRect(l, this.cw - l, Math.floor((k - 2 * l) * ax[myID] / x), l)
+        z.fillRect(l, this.height - l, Math.floor((k - 2 * l) * troops[myID] / x), l)
     };
     this.dF = function() {
-        0 !== fF[myID] && 2 !== fT[myID] && A !== ax[myID] && (x = getMax(ax[myID], x), B = ax[myID] > A && 10 <= ax[myID], A = ax[myID], y = !0)
+        0 !== isAlive[myID] && 2 !== playerStatus[myID] && A !== troops[myID] && (x = getMax(troops[myID], x), B = troops[myID] > A && 10 <= troops[myID], A = troops[myID], y = !0)
     };
     this.cG = function() {
-        0 === fF[myID] || fc || 2 === fT[myID] || cH.drawImage(t, this.fJ, n)
+        0 === isAlive[myID] || inSpawn || 2 === playerStatus[myID] || mainCanvasCtx.drawImage(t, this.fJ, n)
     }
 }
 var sG, qS, sH, sI, sJ, em, sK;
@@ -3615,35 +3611,35 @@ function k7() {
     function g() {
         var S;
         B.clearRect(0, 0, sG, qS);
-        B.fillStyle = oS;
+        B.fillStyle = blueDarkMoreOpaque;
         B.fillRect(0, 0, sG, N);
-        B.fillStyle = oF;
+        B.fillStyle = blackMore2Opaque;
         B.fillRect(0, N, sG, qS - N);
-        sK[myID] >= V && n(sK[myID] - V, oR);
-        0 !== sK[myID] && 0 === V && n(0, oQ); - 1 !== X && n(X, ly);
-        B.fillStyle = oH;
+        sK[myID] >= V && n(sK[myID] - V, greenBrightMoreTransparent);
+        0 !== sK[myID] && 0 === V && n(0, yellowMoreTransparent); - 1 !== X && n(X, whiteMore2Transparent);
+        B.fillStyle = whiteRGB;
         B.fillRect(0, N, sG, 1);
         B.fillRect(0, 0, sG, ov);
         B.fillRect(0, 0, ov, qS);
         B.fillRect(sG - ov, 0, ov, qS);
         B.fillRect(0, qS - ov, sG, ov);
         B.font = sH;
-        B.textBaseline = cI;
-        B.textAlign = cJ;
+        B.textBaseline = middleAlign;
+        B.textAlign = centerAlign;
         B.fillText(Q, Math.floor(sG / 2), Math.floor(F + sJ / 2));
         var O = sK[myID] < V + y - 1 ? 1 : 2;
         B.font = sI;
-        B.textAlign = mh;
+        B.textAlign = leftAlign;
         for (S = y - O; 0 <= S; S--) k(em[S + V]),
             l(S, S + V, em[S + V]);
-        B.textAlign = oj;
+        B.textAlign = rightAlign;
         for (S = y - O; 0 <= S; S--) k(em[S + V]), x(S, em[S + V]);
-        2 === O && (k(myID), B.textAlign = mh, l(y - 1, sK[myID], myID), B.textAlign = oj, x(y - 1, myID));
-        0 === V && (S = .7 * I / bw.bz(4).height, B.setTransform(S, 0, 0, S, Math.floor(D + .58 * I + .5 * S * bw.bz(4).width), Math.floor(F + sJ + .4 * I)), B.imageSmoothingEnabled = !0, B.drawImage(bw.bz(4), -Math.floor(bw.bz(4).width / 2), -Math.floor(bw.bz(4).height / 2)), B.setTransform(1, 0, 0, 1, 0, 0))
+        2 === O && (k(myID), B.textAlign = leftAlign, l(y - 1, sK[myID], myID), B.textAlign = rightAlign, x(y - 1, myID));
+        0 === V && (S = .7 * I / sprites.getValuebyID(4).height, B.setTransform(S, 0, 0, S, Math.floor(D + .58 * I + .5 * S * sprites.getValuebyID(4).width), Math.floor(F + sJ + .4 * I)), B.imageSmoothingEnabled = !0, B.drawImage(sprites.getValuebyID(4), -Math.floor(sprites.getValuebyID(4).width / 2), -Math.floor(sprites.getValuebyID(4).height / 2)), B.setTransform(1, 0, 0, 1, 0, 0))
     }
 
     function k(S) {
-        dA && (B.fillStyle = dW.ss[dW.im[dW.dX[S]]])
+        teamGame && (B.fillStyle = teams.ss[teams.im[teams.dX[S]]])
     }
 
     function n(S, O) {
@@ -3656,13 +3652,13 @@ function k7() {
 
     function l(S, O, T) {
         B.fillText(R[O], D, Math.floor(F + sJ + (S + .5) * I));
-        1 === fT[T] && (B.font = ok + sI);
-        B.fillText(H[T] === T ? gI[T] : L[H[T] % b8], K, Math.floor(F + sJ + (S + .5) * I));
-        0 !== fT[T] && (B.font = sI)
+        1 === playerStatus[T] && (B.font = fontStyleItalic + sI);
+        B.fillText(H[T] === T ? nickname[T] : L[H[T] % maxEntities], K, Math.floor(F + sJ + (S + .5) * I));
+        0 !== playerStatus[T] && (B.font = sI)
     }
 
     function x(S, O) {
-        B.fillText(bU[O], J, Math.floor(F + sJ + (S + .5) * I))
+        B.fillText(land[O], J, Math.floor(F + sJ + (S + .5) * I))
     }
 
     function t(S) {
@@ -3679,7 +3675,7 @@ function k7() {
         return S >= m5 && S < m5 + sG && O >= m5 && O < m5 + qS
     }
     var y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, W, X, V, na, ba, ca, pa;
-    this.bp = function() {
+    this.init = function() {
         var S, O;
         na = 0;
         ba = !1;
@@ -3691,26 +3687,26 @@ function k7() {
         W = !1;
         P = new Uint16Array(y + 1);
         U = new Uint32Array(y + 1);
-        E = b8;
+        E = maxEntities;
         em = new Uint16Array(E);
         sK = new Uint16Array(E);
         for (S = E - 1; 0 <= S; S--) em[S] = S, sK[S] = S;
         this.lv(!0);
         L = [];
-        H = new Uint16Array(b8);
-        M = new Uint16Array(b8);
+        H = new Uint16Array(maxEntities);
+        M = new Uint16Array(maxEntities);
         var T = Math.floor(sG - K - D - C),
             Y = 0;
-        R = Array(b8);
+        R = Array(maxEntities);
         B.font = sI;
-        for (S = b8 - 1; 0 <= S; S--)
+        for (S = maxEntities - 1; 0 <= S; S--)
             if (R[S] =
-                S + 1 + ".", H[S] = S, M[S] = Math.floor(B.measureText(gI[S]).width), M[S] > T) {
-                var Z = gI[S];
-                for (O = gI[S].length - 1; 1 <= O && !(Z = Z.substring(0, O), M[S] = Math.floor(B.measureText(Z + "...").width), M[S] <= T); O--);
+                S + 1 + ".", H[S] = S, M[S] = Math.floor(B.measureText(nickname[S]).width), M[S] > T) {
+                var Z = nickname[S];
+                for (O = nickname[S].length - 1; 1 <= O && !(Z = Z.substring(0, O), M[S] = Math.floor(B.measureText(Z + "...").width), M[S] <= T); O--);
                 Z += "...";
                 L.push(Z);
-                H[S] = b8 + Y++
+                H[S] = maxEntities + Y++
             } g()
     };
     this.lv = function(S) {
@@ -3727,8 +3723,8 @@ function k7() {
         G = 0 * sG;
         N = Math.floor(.45 * F + sJ);
         I = (qS - sJ - 2 * F - G) / y;
-        sH = bt + Math.floor(.55 * sJ) + bu;
-        sI = Math.floor(.6 * I) + bu;
+        sH = fontWeightBold + Math.floor(.55 * sJ) + fontSizeArial;
+        sI = Math.floor(.6 * I) + fontSizeArial;
         B.font = sI;
         D = Math.floor(B.measureText("555").width);
         K = Math.floor(B.measureText("555600.00").width);
@@ -3737,7 +3733,7 @@ function k7() {
         J = sG - D;
         if (!S) {
             B.font = sI;
-            for (S = b8 - 1; 0 <= S; S--) M[S] = Math.floor(B.measureText(H[S] === S ? gI[S] : L[H[S] % b8]).width);
+            for (S = maxEntities - 1; 0 <= S; S--) M[S] = Math.floor(B.measureText(H[S] === S ? nickname[S] : L[H[S] % maxEntities]).width);
             g()
         }
     };
@@ -3749,7 +3745,7 @@ function k7() {
     };
     this.dF = function() {
         for (var S = E - 1; 0 <= S; S--)
-            if (0 === fF[em[S]]) {
+            if (0 === isAlive[em[S]]) {
                 var O =
                     S,
                     T = em[O];
@@ -3757,26 +3753,26 @@ function k7() {
                 em[E] = T;
                 sK[em[E]] = E
             } T = E - 1;
-        for (O = 0; O < T; O++) bU[em[O]] < bU[em[O + 1]] && (S = em[O], em[O] = em[O + 1], em[O + 1] = S, sK[em[O]] = O, sK[em[O + 1]] = O + 1);
+        for (O = 0; O < T; O++) land[em[O]] < land[em[O + 1]] && (S = em[O], em[O] = em[O + 1], em[O + 1] = S, sK[em[O]] = O, sK[em[O + 1]] = O + 1);
         a: {
             S = W;W = !0;
             for (O = T = sK[myID] >= y - 1 ? y - 2 : y - 1; 0 <= O; O--)
-                if (P[O] !== em[O] || U[O] !== bU[em[O]]) break a;
-            if (T !== y - 2 || P[y] === sK[myID] && U[y] === bU[myID]) W = S
+                if (P[O] !== em[O] || U[O] !== land[em[O]]) break a;
+            if (T !== y - 2 || P[y] === sK[myID] && U[y] === land[myID]) W = S
         }
-        for (S = y - 1; 0 <= S; S--) P[S] = em[S], U[S] = bU[em[S]];
+        for (S = y - 1; 0 <= S; S--) P[S] = em[S], U[S] = land[em[S]];
         P[y] = sK[myID];
-        U[y] = bU[myID]
+        U[y] = land[myID]
     };
-    this.c7 = function(S, O) {
+    this.mouseDown = function(S, O) {
         if (z(S, O)) {
             na = c4.time;
             ba = !0;
             ca = pa = t(O);
-            if (ox) {
+            if (isTouch) {
                 var T = rangeClamp(-1, pa, y);
                 T = T === y ? -1 : T;
-                X !== T && (X = T, g(), c4.c5 = !0)
+                X !== T && (X = T, g(), c4.canvasDirty = !0)
             }
             return !0
         }
@@ -3787,56 +3783,56 @@ function k7() {
         if (ba) {
             var Y = V;
             V += ca - T;
-            V = rangeClamp(0, V, b8 - y);
-            V !== Y && (ca = T, T = rangeClamp(-1, T, y), X = T = T !== y && z(S, O) ? T : -1, g(), c4.c5 = !0);
+            V = rangeClamp(0, V, maxEntities - y);
+            V !== Y && (ca = T, T = rangeClamp(-1, T, y), X = T = T !== y && z(S, O) ? T : -1, g(), c4.canvasDirty = !0);
             return !0
         }
         T = rangeClamp(-1, T, y);
-        T = T === y || !z(S, O) || ox ? -1 : T;
-        return X !== T ? (X = T, g(), c4.c5 = !0) : !1
+        T = T === y || !z(S, O) || isTouch ? -1 : T;
+        return X !== T ? (X = T, g(), c4.canvasDirty = !0) : !1
     };
     this.pV = function(S, O) {
         if (!ba) return !1;
         ba = !1;
         var T = t(O);
-        ox && -1 !== X && (X = -1, g(), c4.c5 = !0);
+        isTouch && -1 !== X && (X = -1, g(), c4.canvasDirty = !0);
         if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, y), T = T !== y && z(S, O) ? T : -1, -1 !== T)) {
             var Y = em[T + V];
             T === y - 1 && sK[myID] >= V + y - 1 && (Y = myID);
-            0 !== fF[Y] && eV.gg(Y, 800, !1, 0)
+            0 !== isAlive[Y] && eV.gg(Y, 800, !1, 0)
         }
         return !0
     };
     this.pb = function(S, O,
         T) {
-        return ba ? !1 : z(S, O) ? (S = t(O), S = rangeClamp(-1, S, y), S = S === y || ox ? -1 : S, 0 < T ? V < b8 - y && (V++, X = S, g(), c4.c5 = !0) : 0 < V && (V--, X = S, g(), c4.c5 = !0), !0) : !1
+        return ba ? !1 : z(S, O) ? (S = t(O), S = rangeClamp(-1, S, y), S = S === y || isTouch ? -1 : S, 0 < T ? V < maxEntities - y && (V++, X = S, g(), c4.canvasDirty = !0) : 0 < V && (V--, X = S, g(), c4.canvasDirty = !0), !0) : !1
     };
     this.cG = function() {
-        cH.drawImage(A, m5, m5)
+        mainCanvasCtx.drawImage(A, m5, m5)
     }
 }
 
 function k8() {
     function g() {
-        z.clearRect(0, 0, eB.c1, eB.cw);
-        z.fillStyle = hy;
-        z.fillRect(0, 0, eB.c1, eB.cw);
-        z.fillStyle = oL;
-        z.fillRect(0, eB.cw - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * eB.c1), B);
-        z.fillStyle = cK;
-        z.fillRect(0, 0, eB.c1, 1);
-        z.fillRect(0, 0, 1, eB.cw);
-        z.fillRect(eB.c1 - 1, 0, 1, eB.cw);
-        z.fillRect(0, eB.cw - 1, eB.c1, 1);
-        z.fillRect(0, eB.cw - B - 1, eB.c1, 1);
+        z.clearRect(0, 0, eB.width, eB.height);
+        z.fillStyle = blackMoreOpaque;
+        z.fillRect(0, 0, eB.width, eB.height);
+        z.fillStyle = greenBrightMoreOpaque;
+        z.fillRect(0, eB.height - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * eB.width), B);
+        z.fillStyle = whiteRGB2;
+        z.fillRect(0, 0, eB.width, 1);
+        z.fillRect(0, 0, 1, eB.height);
+        z.fillRect(eB.width - 1, 0, 1, eB.height);
+        z.fillRect(0, eB.height - 1, eB.width, 1);
+        z.fillRect(0, eB.height - B - 1, eB.width, 1);
         for (var P = 0, U = 0; U < D.length; U++)
             if (J[U]) {
-                z.textAlign = mh;
+                z.textAlign = leftAlign;
                 var W = Math.floor((C - B + 2 * F) * (U - P + 1) / (D.length + 1) - .7 * F);
                 z.fillText(D[U], E, W);
-                z.textAlign = oj;
-                5 === U && 0 !== fF[myID] &&
-                    ax[myID] >= ay.dJ(myID) ? (z.fillStyle = og, z.fillText(k(U), eB.c1 - E, W), z.fillStyle = cK) : z.fillText(k(U), eB.c1 - E, W)
+                z.textAlign = rightAlign;
+                5 === U && 0 !== isAlive[myID] &&
+                    troops[myID] >= interest.dJ(myID) ? (z.fillStyle = orangeRGB, z.fillText(k(U), eB.width - E, W), z.fillStyle = whiteRGB2) : z.fillText(k(U), eB.width - E, W)
             } else P++
     }
 
@@ -3846,27 +3842,27 @@ function k8() {
 
     function n(P) {
         P = divideFloor(1E4 * P, j9);
-        8 === dv && (0 === fF[0] ? fi.fj(1) : 0 === fF[1] && fi.fj(0));
-        P >= K[3] && (fi.fj(-1), K[4] = -1);
+        8 === gamemode && (0 === isAlive[0] ? endGame.endGame(1) : 0 === isAlive[1] && endGame.endGame(0));
+        P >= K[3] && (endGame.endGame(-1), K[4] = -1);
         K[4] !== P && (I++, K[4] = P)
     }
 
     function l() {
         for (var P = dY - 1; 0 <= P; P--)
-            if (0 < b4[dZ[P]].length) return !1;
+            if (0 < potentialBorderAdvances[dZ[P]].length) return !1;
         return !0
     }
 
     function x() {
-        bU[myID] !== K[6] && (K[6] = bU[myID],
+        land[myID] !== K[6] && (K[6] = land[myID],
             I++)
     }
     var t, z, y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R;
-    this.bp = function() {
+    this.init = function() {
         H = M = 0;
         D = Array(8);
         D[0] = "Humans";
-        D[1] = dx ? "Players" : "Bots";
+        D[1] = singleplayer ? "Players" : "Bots";
         D[2] = "Spectators";
         D[3] = "Threshold";
         D[4] = "Occupation";
@@ -3875,11 +3871,11 @@ function k8() {
         D[7] = "Time";
         R = j9 - divideFloor(j9, 100);
         K = Array(D.length);
-        K[0] = dx ? 0 : cq;
-        K[1] = dx ? dY : dq;
-        K[2] = iw;
+        K[0] = singleplayer ? 0 : playerCount;
+        K[1] = singleplayer ? dY : botCount;
+        K[2] = spectatorCount;
         K[3] = 1E4;
-        K[4] = divideFloor(1E4 * bU[0], j9);
+        K[4] = divideFloor(1E4 * land[0], j9);
         K[5] = 700;
         K[6] = 0;
         x();
@@ -3888,29 +3884,29 @@ function k8() {
         J = Array(D.length);
         for (var P = D.length - 1; 0 <= P; P--) J[P] = !0;
         Q = 0;
-        dx ? (J[0] = !1, J[2] = !1, J[3] = !1, Q = 3) : (J[3] = !1, Q = 1);
+        singleplayer ? (J[0] = !1, J[2] = !1, J[3] = !1, Q = 3) : (J[3] = !1, Q = 1);
         I = 0;
         this.lv()
     };
     this.lv = function() {
-        this.c1 = Math.floor((isZoom ?
+        this.width = Math.floor((isZoom ?
             .1646 : .126) * bq);
-        this.cw = Math.floor(1.18 * this.c1);
-        B = Math.floor(.04 * this.c1);
-        E = Math.floor(.05 * this.c1);
-        F = .04 * this.c1;
-        C = this.cw;
-        this.cw -= Math.floor(Q * (this.cw - 2 * B) / D.length);
+        this.height = Math.floor(1.18 * this.width);
+        B = Math.floor(.04 * this.width);
+        E = Math.floor(.05 * this.width);
+        F = .04 * this.width;
+        C = this.height;
+        this.height -= Math.floor(Q * (this.height - 2 * B) / D.length);
         N = Math.floor(.55 * (C - B) / D.length);
-        G = bt + N + bu;
+        G = fontWeightBold + N + fontSizeArial;
         t = document.createElement("canvas");
-        t.width = this.c1;
-        t.height = this.cw;
+        t.width = this.width;
+        t.height = this.height;
         z = t.getContext("2d", {
             alpha: !0
         });
         z.font = G;
-        z.textBaseline = cI;
+        z.textBaseline = middleAlign;
         z.lineWidth = 1;
         this.j2();
         this.qs();
@@ -3918,13 +3914,13 @@ function k8() {
         g()
     };
     this.qs = function() {
-        y = gE - this.c1 - m5
+        y = gE - this.width - m5
     };
     this.tI = function() {
         A = m5
     };
     this.j2 = function() {
-        A = m5 + (eO.qD() && 0 !== fF[myID] && !fc ? eO.cw +
+        A = m5 + (eO.qD() && 0 !== isAlive[myID] && !inSpawn ? eO.height +
             m5 : 0)
     };
     this.eb = function(P) {
@@ -3942,14 +3938,14 @@ function k8() {
         return P.toFixed(U) + "%"
     };
     this.dF = function() {
-        J[0] && ix - iw !== K[0] && (K[0] = ix - iw, I++);
+        J[0] && playersIngame - spectatorCount !== K[0] && (K[0] = playersIngame - spectatorCount, I++);
         dY - K[0] !== K[1] && (K[1] = dY - K[0], I++);
         this.eC();
-        if (dA) {
+        if (teamGame) {
             var P = eT.qm();
-            P >= R && l() ? (fi.fj(-1), n(eT.qm())) : n(P)
-        } else P = bU[em[0]], P >= R && l() && fi.fj(-1), n(P);
-        P = ay.tU(myID);
+            P >= R && l() ? (endGame.endGame(-1), n(eT.qm())) : n(P)
+        } else P = land[em[0]], P >= R && l() && endGame.endGame(-1), n(P);
+        P = interest.tU(myID);
         P !== K[5] && (K[5] = P, I++);
         x();
         K[7] +=
@@ -3958,10 +3954,10 @@ function k8() {
         L !== P && (L = P, I += 100)
     };
     this.eC = function() {
-        J[2] && iw !== K[2] && (K[2] = iw, I++)
+        J[2] && spectatorCount !== K[2] && (K[2] = spectatorCount, I++)
     };
     this.tW = function(P) {
-        if (P === jF) return H = 0, g(), !1;
+        if (P === spawnTime) return H = 0, g(), !1;
         if (-1 === P && 0 === M) return !1;
         var U = H,
             W = performance.now();
@@ -3969,20 +3965,20 @@ function k8() {
             var X = W - 392 * P;
             M = 0 === P || X < M ? X : M
         }
-        H = (W - M) / (392 * jF);
+        H = (W - M) / (392 * spawnTime);
         H = 1 < H ? 1 : H;
         g();
         return H !== U
     };
     this.cG = function() {
-        cH.drawImage(t, y, A)
+        mainCanvasCtx.drawImage(t, y, A)
     }
 }
 
-function k9() {
+function GameResultBox() {
     var g, k, n, l, x, t, z, y, A, B;
     this.tb = -1;
-    this.bp = function() {
+    this.init = function() {
         g = !1;
         l = 0;
         x = .61;
@@ -4005,15 +4001,15 @@ function k9() {
                 }),
                 E = Math.floor(1 + l / 40);
             C.clearRect(0, 0, n, l);
-            C.fillStyle = hy;
+            C.fillStyle = blackMoreOpaque;
             C.fillRect(E, E, n - 2 * E, l - 2 * E);
             C.lineJoin = "bevel";
             C.lineWidth = 2 * E;
-            C.strokeStyle = cK;
+            C.strokeStyle = whiteRGB2;
             C.strokeRect(E,
                 E, n - 2 * E, l - 2 * E);
             C.imageSmoothingEnabled = !0;
-            var F = bw.bz(k),
+            var F = sprites.getValuebyID(k),
                 G = F.height,
                 N = x * l / G;
             C.setTransform(N, 0, 0, N, Math.floor((n - N * F.width) / 2), Math.floor((l - N * G) / 2));
@@ -4021,7 +4017,7 @@ function k9() {
             C.setTransform(1, 0, 0, 1, Math.floor(n - z * l - t * l - E), Math.floor(E + t * l));
             E = Math.floor(z * l);
             C.lineWidth = Math.floor(1 + l / 80);
-            C.strokeStyle = cK;
+            C.strokeStyle = whiteRGB2;
             C.beginPath();
             C.moveTo(0, 0);
             C.lineTo(E, E);
@@ -4032,38 +4028,38 @@ function k9() {
         }
     };
     this.show = function(C, E) {
-        g || (k = C ? 1 : 2, g = !0, this.lv(), hu.ln(), eR.qh(), B = c4.time, -1 === this.tb &&
+        g || (k = C ? 1 : 2, g = !0, this.lv(), hu.ln(), troopBar.qh(), B = c4.time, -1 === this.tb &&
             (this.tb = c4.dU()), y = E ? 1 : 0)
     };
     this.dF = function() {
-        !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.c5 = !0)
+        !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.canvasDirty = !0)
     };
-    this.c7 = function(C, E) {
+    this.mouseDown = function(C, E) {
         if (!g || 0 >= y) return !1;
         C -= Math.floor((gE - n) / 2);
         E -= cB - l - 2 * m5;
         if (0 > C || 0 > E || C > n || E > l) return !1;
-        C > n - l / 3 && E < l / 3 && (g = !1, c4.c5 = !0);
+        C > n - l / 3 && E < l / 3 && (g = !1, c4.canvasDirty = !0);
         return !0
     };
     this.cG = function() {
-        !g || 0 >= y || (cH.globalAlpha = y, cH.drawImage(A, Math.floor((gE - n) / 2), cB - l - 2 * m5), cH.globalAlpha = 1)
+        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((gE - n) / 2), cB - l - 2 * m5), mainCanvasCtx.globalAlpha = 1)
     }
 }
 
 function kd() {
     function g(t, z, y, A, B, C, E) {
-        0 !== fF[t] && 0 !== bU[t] && (y = gE * ((d0[t] + cz[t] + 1) / 2 - y) / (B - y) - .5 * z, A = cB * ((d3[t] + d2[t] + 1) / 2 - A) / (C - A) - .5 * z, y > gE || A > cB || y < -z || A < -z || (cH.setTransform(g7 * E, 0, 0, g7 * E, y, A), cH.drawImage(n[dA ? dW.dX[t] : t < cq ? 1 : 0], 0, 0)))
+        0 !== isAlive[t] && 0 !== land[t] && (y = gE * ((xMin[t] + xMax[t] + 1) / 2 - y) / (B - y) - .5 * z, A = cB * ((yMin[t] + yMax[t] + 1) / 2 - A) / (C - A) - .5 * z, y > gE || A > cB || y < -z || A < -z || (mainCanvasCtx.setTransform(g7 * E, 0, 0, g7 * E, y, A), mainCanvasCtx.drawImage(n[teamGame ? teams.dX[t] : t < playerCount ? 1 : 0], 0, 0)))
     }
     var k, n, l, x;
-    this.bp = function() {
+    this.init = function() {
         var t;
         n = [];
         k = !1;
-        if (fc)
-            if (x = 0, l = 63, k = !0, dA)
-                for (t = 0; t <= jD; t++) n.push(this.ti(dW.tj[dW.im[t]], l));
-            else n.push(this.ti(dW.tj[0], l)), n.push(this.ti(dW.tj[4], l))
+        if (inSpawn)
+            if (x = 0, l = 63, k = !0, teamGame)
+                for (t = 0; t <= teamCount; t++) n.push(this.ti(teams.tj[teams.im[t]], l));
+            else n.push(this.ti(teams.tj[0], l)), n.push(this.ti(teams.tj[4], l))
     };
     this.dF = function() {
         k && 349 === ++x && (n = [], k = !1)
@@ -4097,8 +4093,8 @@ function kd() {
     this.cG = function() {
         if (k) {
             var t;
-            cH.imageSmoothingEnabled = !0;
-            cH.globalAlpha = 1 - (160 < x ? (x - 160) / 190 : 0);
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.globalAlpha = 1 - (160 < x ? (x - 160) / 190 : 0);
             var z = gC / g7,
                 y = gD / g7,
                 A = (gE + gC) /
@@ -4106,54 +4102,54 @@ function kd() {
                 B = (cB + gD) / g7;
             var C = .25;
             var E = l * g7 * C;
-            for (t = b8 - 1; t >= cq; t--) g(t, E, z, y, A, B, C);
+            for (t = maxEntities - 1; t >= playerCount; t--) g(t, E, z, y, A, B, C);
             C = .5;
             E = l * g7 * C;
-            for (t = cq - 1; 0 <= t; t--) g(t, E, z, y, A, B, C);
-            cH.globalAlpha = 1;
-            cH.imageSmoothingEnabled = 3 > g7;
-            cH.setTransform(g7, 0, 0, g7, 0, 0)
+            for (t = playerCount - 1; 0 <= t; t--) g(t, E, z, y, A, B, C);
+            mainCanvasCtx.globalAlpha = 1;
+            mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
+            mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0)
         }
     }
 }
 
 function fL(g, k, n) {
-    if (!(0 === fF[g] || 0 > n || 1E3 < n || 2 === fT[g])) {
-        var l = divideFloor(n * ax[g], 1E3);
-        10 === dv && k < cq && 2 !== fT[k] && (l = eF.tq(g, l));
-        if (dA && k < b8 && !ch(g, k)) da(g, k, l);
+    if (!(0 === isAlive[g] || 0 > n || 1E3 < n || 2 === playerStatus[g])) {
+        var l = divideFloor(n * troops[g], 1E3);
+        10 === gamemode && k < playerCount && 2 !== playerStatus[k] && (l = antiFullSend.tq(g, l));
+        if (teamGame && k < maxEntities && !ch(g, k)) da(g, k, l);
         else {
-            k < b8 && 0 === fF[k] && (k = b8);
-            var x = divideFloor(3 * ax[g], 256);
+            k < maxEntities && 0 === isAlive[k] && (k = maxEntities);
+            var x = divideFloor(3 * troops[g], 256);
             l -= 500 <= n ? x : 0;
-            if (!(l <= at) && ae.dD(g)) {
-                var t = b4[g].length;
-                k === b8 ? cX(g) : cS(g, k);
-                if (0 !== t || 0 !== b4[g].length) dA && (d7[g] = 1), g === myID && (b0.b1[0] += 500 <= n ? n - 12 : n, b0.b1[1]++, b0.b1[12] += x, b0.b1[13] += l), cP(t, g), ae.cQ(g, l, k), ax[g] -= l + x, au.cR(g, !1)
+            if (!(l <= at) && attacks.dD(g)) {
+                var t = potentialBorderAdvances[g].length;
+                k === maxEntities ? cX(g) : cS(g, k);
+                if (0 !== t || 0 !== potentialBorderAdvances[g].length) teamGame && (d7[g] = 1), g === myID && (statistics.b1[0] += 500 <= n ? n - 12 : n, statistics.b1[1]++, statistics.b1[12] += x, statistics.b1[13] += l), cP(t, g), attacks.set(g, l, k), troops[g] -= l + x, speed.cR(g, !1)
             }
         }
     }
 }
 
 function ey(g, k, n, l) {
-    10 === dv && g < cq && (l = eF.tq(g, l));
-    if (l <= at || !ae.dD(g)) return !1;
+    10 === gamemode && g < playerCount && (l = antiFullSend.tq(g, l));
+    if (l <= at || !attacks.dD(g)) return !1;
     k = eK.cR(g, k, n);
     if (0 === k) return !1;
-    n = divideFloor(3 * ax[g], 128);
-    l >= divideFloor(ax[g], 2) && (l -= n);
-    g === myID && (b0.b1[12] += n);
-    ae.tr(g, l, k);
-    ax[g] -= l + n;
+    n = divideFloor(3 * troops[g], 128);
+    l >= divideFloor(troops[g], 2) && (l -= n);
+    g === myID && (statistics.b1[12] += n);
+    attacks.tr(g, l, k);
+    troops[g] -= l + n;
     return !0
 }
 
 function da(g, k, n) {
-    if (!(!dA || 0 === fF[g] || 0 === fF[k] || 0 > n || n > ax[g] || g === k || ch(g, k) || g < cq && k < cq && 7 > dv && 1071 > c4.dU())) {
-        var l = divideFloor(ax[g], 16);
-        n -= n >= divideFloor(ax[g], 2) ? l : 0;
-        var x = bU[k] * j7 - ax[k];
-        0 >= x || (n = n > x ? x : n, g === myID && (announcements.n8(n, k), b0.b1[12] += l, b0.b1[16] += n), k === myID && (announcements.nA(n, g), b0.b1[10] += n), ax[g] -= n + l, ax[k] += n)
+    if (!(!teamGame || 0 === isAlive[g] || 0 === isAlive[k] || 0 > n || n > troops[g] || g === k || ch(g, k) || g < playerCount && k < playerCount && 7 > gamemode && 1071 > c4.dU())) {
+        var l = divideFloor(troops[g], 16);
+        n -= n >= divideFloor(troops[g], 2) ? l : 0;
+        var x = land[k] * j7 - troops[k];
+        0 >= x || (n = n > x ? x : n, g === myID && (announcements.n8(n, k), statistics.b1[12] += l, statistics.b1[16] += n), k === myID && (announcements.nA(n, g), statistics.b1[10] += n), troops[g] -= n + l, troops[k] += n)
     }
 }
 
@@ -4172,47 +4168,47 @@ function ts() {
             n = n > this.tu[2] ? this.tu[2] : n;
             l = l > this.tu[3] ? this.tu[3] : l;
             this.tt = this.h9 = !1;
-            g === this.tu[0] && k === this.tu[1] && n === this.tu[2] && l === this.tu[3] ? this.j6() : n >= g && l >= k && jW.putImageData(jX, 0, 0, g, k, n - g + 1, l - k + 1)
+            g === this.tu[0] && k === this.tu[1] && n === this.tu[2] && l === this.tu[3] ? this.j6() : n >= g && l >= k && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, g, k, n - g + 1, l - k + 1)
         }
     };
     this.j6 = function() {
         this.j5 && this.tu[2] >= this.tu[0] && this.tu[3] >=
-            this.tu[1] && jW.putImageData(jX, 0, 0, this.tu[0], this.tu[1], this.tu[2] - this.tu[0] + 1, this.tu[3] - this.tu[1] + 1);
+            this.tu[1] && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, this.tu[0], this.tu[1], this.tu[2] - this.tu[0] + 1, this.tu[3] - this.tu[1] + 1);
         this.j5 = !1
     };
     this.iz = function() {
-        this.tu[2] >= this.tu[0] && this.tu[3] >= this.tu[1] && jW.putImageData(jX, 0, 0, this.tu[0], this.tu[1], this.tu[2] - this.tu[0] + 1, this.tu[3] - this.tu[1] + 1);
+        this.tu[2] >= this.tu[0] && this.tu[3] >= this.tu[1] && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, this.tu[0], this.tu[1], this.tu[2] - this.tu[0] + 1, this.tu[3] - this.tu[1] + 1);
         this.j5 = !1
     };
-    this.bp = function() {
+    this.init = function() {
         var g;
         this.j5 = this.h9 = this.tt = !1;
-        this.tu[0] = aZ;
-        this.tu[1] = aa;
+        this.tu[0] = currentMapWidth;
+        this.tu[1] = currentMapHeight;
         this.tu[2] = this.tu[3] = 0;
         var k = 1;
-        a: for (; k < aZ - 1; k++)
-            for (g = aa - 2; 1 < g; g--)
-                if (1 === tx[b5.f1(k, g) + 2]) {
+        a: for (; k < currentMapWidth - 1; k++)
+            for (g = currentMapHeight - 2; 1 < g; g--)
+                if (1 === pixelRGBA[pixel.f1(k, g) + 2]) {
                     this.tu[0] = k;
                     break a
                 } g = 1;
-        a: for (; g < aa -
+        a: for (; g < currentMapHeight -
             1; g++)
-            for (k = aZ - 2; 1 < k; k--)
-                if (1 === tx[b5.f1(k, g) + 2]) {
+            for (k = currentMapWidth - 2; 1 < k; k--)
+                if (1 === pixelRGBA[pixel.f1(k, g) + 2]) {
                     this.tu[1] = g;
                     break a
-                } k = aZ - 2;
+                } k = currentMapWidth - 2;
         a: for (; 0 < k; k--)
-            for (g = aa - 2; 1 < g; g--)
-                if (1 === tx[b5.f1(k, g) + 2]) {
+            for (g = currentMapHeight - 2; 1 < g; g--)
+                if (1 === pixelRGBA[pixel.f1(k, g) + 2]) {
                     this.tu[2] = k;
                     break a
-                } g = aa - 2;
+                } g = currentMapHeight - 2;
         a: for (; 0 < g; g--)
-            for (k = aZ - 2; 1 < k; k--)
-                if (1 === tx[b5.f1(k, g) + 2]) {
+            for (k = currentMapWidth - 2; 1 < k; k--)
+                if (1 === pixelRGBA[pixel.f1(k, g) + 2]) {
                     this.tu[3] = g;
                     break a
                 }
@@ -4220,10 +4216,10 @@ function ts() {
 }
 
 function MainLeaderboard() {
-    this.lC = !1;
+    this.hidden = !1;
     this.buttons = null;
     this.tz = 0;
-    this.cw = this.c1 = null;
+    this.height = this.width = null;
     this.u0 = .013;
     this.u1 = .022;
     this.u2 = .025;
@@ -4237,62 +4233,59 @@ function MainLeaderboard() {
         k, n = [-1E6, -1E6];
     this.position = [0, 0];
     this.paginationDirection = [0, 0];
-    this.bp = function() {
+    this.init = function() {
         this.buttons = [null, null];
-        this.lC = !1;
+        this.hidden = !1;
         this.tz = 0;
         this.lv()
     };
     this.cE = function(l) {
         this.tz = l;
-        this.lC = !0;
+        this.hidden = !0;
         this.bv();
         nameInput.th();
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.dF = function() {
-        this.lC && this.bv()
+        this.hidden && this.bv()
     };
     this.bv = function() {
         c4.time - 12E4 >= n[this.tz] && (n[this.tz] = c4.time, this.paginationDirection = [0, 0], wsManager.ri(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
     };
     this.lv = function() {
         var l;
-        this.c1 = this.uG(isZoom ? .85 : .66, .75, r, s);
-        this.cw = Math.floor(this.c1 / .75);
-        for (l = 1; 0 <= l; l--) this.buttons[l] && (this.buttons[l][4] = bt + Math.floor(this.buttons[l][5] * this.cw / 10) + bu);
-        k = bt + Math.floor(.1 * this.cw) + bu
+        this.width = this.uG(isZoom ? .85 : .66, .75, r, s);
+        this.height = Math.floor(this.width / .75);
+        for (l = 1; 0 <= l; l--) this.buttons[l] && (this.buttons[l][4] = fontWeightBold + Math.floor(this.buttons[l][5] * this.height / 10) + fontSizeArial);
+        k = fontWeightBold + Math.floor(.1 * this.height) + fontSizeArial
     };
     this.uG = function(l, x, t, z) {
         return t < x * z ? Math.floor(l * t) : Math.floor(x * l * z)
     };
-    this.uH = function(l, x, t, z, y, A, B) {
-        this.position[l] = B;
-        var C = x.length,
-            E = bt + Math.floor(y * this.cw / 10) + bu;
-        this.uM(x, E, A * this.c1);
-        z = [
-            [],
-            C, -1, z, E, y, 10 * B
-        ];
-        for (y = 0; y < C; y++) A = {
-            name: x[y].name,
-            value: x[y].iC / t,
-            colorIndex: x[y].colorIndex
+    this.updateLeaderboard = function(boardType, bestEntries, divideAmount, z, y, A, page) {
+        this.position[boardType] = page;
+        var entriesLength = bestEntries.length,
+            E = fontWeightBold + Math.floor(y * this.height / 10) + fontSizeArial;
+        this.uM(bestEntries, E, A * this.width);
+        z = [[], entriesLength, -1, z, E, y, 10 * page];
+        for (y = 0; y < entriesLength; y++) A = {
+            name: bestEntries[y].name,
+            value: bestEntries[y].elo / divideAmount,
+            colorIndex: bestEntries[y].colorIndex
         }, z[0].push(A);
-        this.buttons[l] = z;
-        this.uN(l);
-        x = this.buttons[l][0][0].name;
-        1 === l && (x = "[" + x + "]");
-        0 === B && uO.br(l, x);
-        c4.c5 = !0
+        this.buttons[boardType] = z;
+        this.uN(boardType);
+        bestEntries = this.buttons[boardType][0][0].name;
+        1 === boardType && (bestEntries = "[" + bestEntries + "]");
+        0 === page && uO.br(boardType, bestEntries);
+        c4.canvasDirty = !0
     };
     this.uN = function(l) {
         this.buttons[l][0].sort(function(x, t) {
             return t.value - x.value
         })
     };
-    this.uP = function(l, x, t, z) {
+    this.updateObjects = function(l, x, t, z) {
         if (this.buttons && this.buttons[l]) {
             var y, A = !1,
                 B = 383 / 384;
@@ -4328,115 +4321,115 @@ function MainLeaderboard() {
             for (; 3 < l[z].name.length && c2.measureText(l[z].name, x) > t;) l[z].name = l[z].name.substring(0,
                 l[z].name.length - 4) + "..."
     };
-    this.c7 = function(l, x) {
-        if (!this.lC) return !1;
-        l -= (gE - this.c1) / 2;
-        x -= (cB - this.cw) / 2;
-        if (0 > l || l > this.c1 || 0 > x || x > this.cw) return this.lC = !1, 0 === aJ.pY() && jk.cE(0, !0), c4.c5 = !0;
-        if (x < .3 * this.cw) var t = 1;
-        else x < .85 * this.cw ? (t = (0 === this.tz ? 14.1 : 3) * (x - .3 * this.cw) / (.55 * this.cw), t = Math.floor(1 + t * t)) : t = 0 === this.tz ? 200 : 10;
-        this.paginationDirection[this.tz] = l < this.c1 / 2 ? -t : t;
+    this.mouseDown = function(l, x) {
+        if (!this.hidden) return !1;
+        l -= (gE - this.width) / 2;
+        x -= (cB - this.height) / 2;
+        if (0 > l || l > this.width || 0 > x || x > this.height) return this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasDirty = !0;
+        if (x < .3 * this.height) var t = 1;
+        else x < .85 * this.height ? (t = (0 === this.tz ? 14.1 : 3) * (x - .3 * this.height) / (.55 * this.height), t = Math.floor(1 + t * t)) : t = 0 === this.tz ? 200 : 10;
+        this.paginationDirection[this.tz] = l < this.width / 2 ? -t : t;
         if (n[this.tz] + 50 > c4.time) return !0;
         n[this.tz] = c4.time;
         wsManager.ri(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz);
         return !0
     };
     this.cG = function() {
-        if (this.lC) {
+        if (this.hidden) {
             var l = this.u0 *
-                this.c1,
+                this.width,
                 x = this.u4 * l,
-                t = this.u1 * this.c1,
+                t = this.u1 * this.width,
                 z = this.u5 * t,
-                y = this.u2 * this.c1,
-                A = Math.floor(.25 * this.cw);
-            cH.setTransform(1, 0, 0, 1, (gE - this.c1) / 2, (cB - this.cw) / 2);
-            cH.fillStyle = 0 === this.tz ? oa : oV;
-            cH.fillRect(0, 0, this.c1, A);
-            cH.fillStyle = oF;
-            cH.fillRect(0, A, this.c1, this.cw - A);
-            cH.fillStyle = cK;
-            cH.font = k;
-            cH.textBaseline = cI;
-            cH.textAlign = cJ;
-            cH.fillText(g[this.tz], Math.floor(this.c1 / 2), Math.floor(.135 * this.cw));
-            cH.font = bt + Math.floor(.025 * this.cw) + bu;
-            cH.fillText(g[this.tz + 2], Math.floor(this.c1 / 2), Math.floor(.2125 * this.cw));
-            cH.beginPath();
-            cH.moveTo(this.c1 / 4, 0);
-            cH.lineTo(this.c1 / 2 - l, 0);
-            cH.lineTo(this.c1 / 2, -x);
-            cH.lineTo(this.c1 / 2 + l, 0);
-            cH.lineTo(this.c1 - t, 0);
-            cH.lineTo(this.c1 + z, -z);
-            cH.lineTo(this.c1, t);
-            cH.lineTo(this.c1, this.cw / 2 - l);
-            cH.lineTo(this.c1 + x, this.cw / 2);
-            cH.lineTo(this.c1, this.cw / 2 + l);
-            cH.lineTo(this.c1, this.cw - t);
-            cH.lineTo(this.c1 + z, this.cw + z);
-            cH.lineTo(this.c1 - t, this.cw);
-            cH.lineTo(this.c1 / 2 + l, this.cw);
-            cH.lineTo(this.c1 / 2, this.cw + x);
-            cH.lineTo(this.c1 / 2 - l, this.cw);
-            cH.lineTo(t, this.cw);
-            cH.lineTo(-z, this.cw + z);
-            cH.lineTo(0,
-                this.cw - t);
-            cH.lineTo(0, this.cw / 2 + l);
-            cH.lineTo(-x, this.cw / 2);
-            cH.lineTo(0, this.cw / 2 - l);
-            cH.lineTo(0, t);
-            cH.lineTo(-z, -z);
-            cH.lineTo(t, 0);
-            cH.lineTo(this.c1 / 4, 0);
-            cH.lineTo(this.c1 / 4, y);
-            cH.lineTo(y, y);
-            cH.lineTo(y, this.cw - y);
-            cH.lineTo(this.c1 - y, this.cw - y);
-            cH.lineTo(this.c1 - y, y);
-            cH.lineTo(this.c1 / 4, y);
-            cH.fill();
+                y = this.u2 * this.width,
+                A = Math.floor(.25 * this.height);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, (gE - this.width) / 2, (cB - this.height) / 2);
+            mainCanvasCtx.fillStyle = 0 === this.tz ? blueGreenMoreOpaque : redDarkerMoreOpaque;
+            mainCanvasCtx.fillRect(0, 0, this.width, A);
+            mainCanvasCtx.fillStyle = blackMore2Opaque;
+            mainCanvasCtx.fillRect(0, A, this.width, this.height - A);
+            mainCanvasCtx.fillStyle = whiteRGB2;
+            mainCanvasCtx.font = k;
+            mainCanvasCtx.textBaseline = middleAlign;
+            mainCanvasCtx.textAlign = centerAlign;
+            mainCanvasCtx.fillText(g[this.tz], Math.floor(this.width / 2), Math.floor(.135 * this.height));
+            mainCanvasCtx.font = fontWeightBold + Math.floor(.025 * this.height) + fontSizeArial;
+            mainCanvasCtx.fillText(g[this.tz + 2], Math.floor(this.width / 2), Math.floor(.2125 * this.height));
+            mainCanvasCtx.beginPath();
+            mainCanvasCtx.moveTo(this.width / 4, 0);
+            mainCanvasCtx.lineTo(this.width / 2 - l, 0);
+            mainCanvasCtx.lineTo(this.width / 2, -x);
+            mainCanvasCtx.lineTo(this.width / 2 + l, 0);
+            mainCanvasCtx.lineTo(this.width - t, 0);
+            mainCanvasCtx.lineTo(this.width + z, -z);
+            mainCanvasCtx.lineTo(this.width, t);
+            mainCanvasCtx.lineTo(this.width, this.height / 2 - l);
+            mainCanvasCtx.lineTo(this.width + x, this.height / 2);
+            mainCanvasCtx.lineTo(this.width, this.height / 2 + l);
+            mainCanvasCtx.lineTo(this.width, this.height - t);
+            mainCanvasCtx.lineTo(this.width + z, this.height + z);
+            mainCanvasCtx.lineTo(this.width - t, this.height);
+            mainCanvasCtx.lineTo(this.width / 2 + l, this.height);
+            mainCanvasCtx.lineTo(this.width / 2, this.height + x);
+            mainCanvasCtx.lineTo(this.width / 2 - l, this.height);
+            mainCanvasCtx.lineTo(t, this.height);
+            mainCanvasCtx.lineTo(-z, this.height + z);
+            mainCanvasCtx.lineTo(0,
+                this.height - t);
+            mainCanvasCtx.lineTo(0, this.height / 2 + l);
+            mainCanvasCtx.lineTo(-x, this.height / 2);
+            mainCanvasCtx.lineTo(0, this.height / 2 - l);
+            mainCanvasCtx.lineTo(0, t);
+            mainCanvasCtx.lineTo(-z, -z);
+            mainCanvasCtx.lineTo(t, 0);
+            mainCanvasCtx.lineTo(this.width / 4, 0);
+            mainCanvasCtx.lineTo(this.width / 4, y);
+            mainCanvasCtx.lineTo(y, y);
+            mainCanvasCtx.lineTo(y, this.height - y);
+            mainCanvasCtx.lineTo(this.width - y, this.height - y);
+            mainCanvasCtx.lineTo(this.width - y, y);
+            mainCanvasCtx.lineTo(this.width / 4, y);
+            mainCanvasCtx.fill();
             this.buttons[this.tz] && this.uV(A);
             this.uW(A);
-            cH.setTransform(1, 0, 0, 1, 0, 0)
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     };
     this.uW = function(l) {
-        var x = getMax(2, Math.floor(.06 * this.c1));
+        var x = getMax(2, Math.floor(.06 * this.width));
         x -= x % 2;
-        var t = getMax(2, Math.floor(.01 * this.c1));
+        var t = getMax(2, Math.floor(.01 * this.width));
         t -= t % 2;
         l = Math.floor(.82 * l);
-        cH.fillRect(x,
+        mainCanvasCtx.fillRect(x,
             l, x, t);
-        cH.fillRect(this.c1 - x - x, l, x, t);
-        cH.fillRect(Math.floor(this.c1 - x - x + (x - t) / 2), Math.floor(l - (x - t) / 2), t, x)
+        mainCanvasCtx.fillRect(this.width - x - x, l, x, t);
+        mainCanvasCtx.fillRect(Math.floor(this.width - x - x + (x - t) / 2), Math.floor(l - (x - t) / 2), t, x)
     };
     this.uV = function(l) {
-        cH.font = this.buttons[this.tz][4];
-        for (var x, t = this.buttons[this.tz][1] - 1; 0 <= t; t--) cH.textAlign = oj, x = Math.floor(this.u9 * this.cw + l + t * ((1 - 2 * this.u9) * this.cw - l) / 9), cH.fillText(this.buttons[this.tz][0][t].value.toFixed(this.buttons[this.tz][3]), Math.floor(this.u8 * this.c1), x), cH.fillText(t + 1 + this.buttons[this.tz][6] + ".", Math.floor(this.u6 * this.c1), x), cH.textAlign = mh, cH.fillText(this.buttons[this.tz][0][t].name,
-            Math.floor(this.u7 * this.c1), x)
+        mainCanvasCtx.font = this.buttons[this.tz][4];
+        for (var x, t = this.buttons[this.tz][1] - 1; 0 <= t; t--) mainCanvasCtx.textAlign = rightAlign, x = Math.floor(this.u9 * this.height + l + t * ((1 - 2 * this.u9) * this.height - l) / 9), mainCanvasCtx.fillText(this.buttons[this.tz][0][t].value.toFixed(this.buttons[this.tz][3]), Math.floor(this.u8 * this.width), x), mainCanvasCtx.fillText(t + 1 + this.buttons[this.tz][6] + ".", Math.floor(this.u6 * this.width), x), mainCanvasCtx.textAlign = leftAlign, mainCanvasCtx.fillText(this.buttons[this.tz][0][t].name,
+            Math.floor(this.u7 * this.width), x)
     }
 }
 
-function uX() {
+function OpenLinkBox() {
     var g, k, n, l, x, t, z, y, A, B, C, E, F;
-    this.lC = !1;
-    this.bp = function(G, N) {
-        if (13 <= deviceVersion) N ? E = G : E === G && e.saveString(200, G);
+    this.hidden = !1;
+    this.init = function(G, N) {
+        if (13 <= androidVersion) N ? E = G : E === G && androidObject.saveString(200, G);
         else if (N) {
-            (mainSettings.buttons[1].buttonClass.lC || mainSettings.buttons[2].buttonClass.lC) && mainSettings.uh();
+            (mainSettings.buttons[1].buttonClass.hidden || mainSettings.buttons[2].buttonClass.hidden) && mainSettings.hideIfNotHidden();
             nameInput.th();
             E = G;
             A = Math.floor((isZoom ? r > s ? .6 : .45 : .4) * pI);
-            n = A / bw.bz(17).width;
-            x = Math.floor(n * bw.bz(17).height);
+            n = A / sprites.getValuebyID(17).width;
+            x = Math.floor(n * sprites.getValuebyID(17).height);
             t = Math.floor(.4 * x);
             z = Math.floor(.6 * x);
             y = Math.floor(2.5 * z);
             l = x + t + 3 * z;
-            var I = bt + Math.floor(t / pM) + bu;
+            var I = fontWeightBold + Math.floor(t / pM) + fontSizeArial;
             B = Math.floor(pM * c2.measureText(E, I));
             C = (B > A ? B : A) + 2 * y;
             g = Math.floor((gE - C) / 2);
@@ -4448,31 +4441,31 @@ function uX() {
             F.href = E;
             F.style.font = I;
             F.style.textAlign = "center";
-            F.style.color = cK;
+            F.style.color = whiteRGB2;
             F.style.position = "absolute";
             F.style.padding = "0px";
             F.style.margin = "0px";
             F.style.top = Math.floor((k + 2 * z + x) / pM) + "px";
             F.style.left = Math.floor((g + (C - B) / 2) / pM) + "px";
             document.body.appendChild(F);
-            this.lC = !0;
-            c4.c5 = !0
+            this.hidden = !0;
+            c4.canvasDirty = !0
         }
     };
     this.lF = function() {
-        if (!this.lC) return !1;
+        if (!this.hidden) return !1;
         document.body.removeChild(F);
-        this.lC = !1;
+        this.hidden = !1;
         return !0
     };
-    this.c7 = function(G, N) {
-        if (!this.lC) return !1;
-        if (G < g || N < k || G > g + C || N > k + l) c4.c5 = !0, this.lC = !1, document.body.removeChild(F),
-            0 === aJ.pY() && jk.cE(0, !0);
+    this.mouseDown = function(G, N) {
+        if (!this.hidden) return !1;
+        if (G < g || N < k || G > g + C || N > k + l) c4.canvasDirty = !0, this.hidden = !1, document.body.removeChild(F),
+            0 === aJ.getState() && jk.cE(0, !0);
         return !0
     };
     this.cG = function() {
-        this.lC && (cH.imageSmoothingEnabled = !0, cH.setTransform(1, 0, 0, 1, g, k), cH.fillStyle = hy, cH.fillRect(0, 0, C, l), cH.lineWidth = ow, cH.strokeStyle = cK, cH.strokeRect(0, 0, C, l), cH.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), cH.drawImage(bw.bz(17), 0, 0), cH.setTransform(1, 0, 0, 1, 0, 0))
+        this.hidden && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValuebyID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
     }
 }
 
@@ -4488,11 +4481,11 @@ function ui() {
     this.uk = function(y, A) {
         t = y;
         x = A;
-        z = [on, oo, op, oq, or];
-        this.bp()
+        z = [googleplayLink, appstoreLink, youtubeLink, discordLink, igLink];
+        this.init()
     };
-    this.bp = function() {
-        if (bw.bx()) {
+    this.init = function() {
+        if (sprites.bx()) {
             var y = Math.floor((isZoom ? .261 : .195) * bq);
             var A = Math.floor(.9 * y),
                 B = Math.floor(.17 * A);
@@ -4519,23 +4512,23 @@ function ui() {
                 for (y = 2; 5 > y; y++) n[y] -= l[1] * t[1].height + g
         }
     };
-    this.lC = function() {
-        return !(7 === aJ.pY() && isZoom)
+    this.hidden = function() {
+        return !(7 === aJ.getState() && isZoom)
     };
-    this.c7 = function(y, A, B) {
-        if (!t || !this.lC()) return !1;
+    this.mouseDown = function(y, A, B) {
+        if (!t || !this.hidden()) return !1;
         var C;
         for (C = x.length - 1; 0 <= C; C--)
-            if (x[C] && this.uj[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return nU.bp(z[C], B), !0;
+            if (x[C] && this.uj[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return openLinkBox.init(z[C], B), !0;
         return !1
     };
     this.cG = function() {
-        if (t && this.lC()) {
-            cH.imageSmoothingEnabled = !0;
+        if (t && this.hidden()) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
             var y;
             for (y = 0; 5 > y; y++) x[y] &&
-                this.uj[y] && (cH.setTransform(l[y], 0, 0, l[y], k[y], n[y]), cH.drawImage(t[y], 0, 0));
-            cH.setTransform(1, 0, 0, 1, 0, 0)
+                this.uj[y] && (mainCanvasCtx.setTransform(l[y], 0, 0, l[y], k[y], n[y]), mainCanvasCtx.drawImage(t[y], 0, 0));
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     }
 }
@@ -4545,54 +4538,54 @@ function kA() {
         var t = jh.uo[x],
             z = t.fJ,
             y = t.fK,
-            A = t.c1,
-            B = t.cw;
-        cH.fillStyle = t.ur;
-        cH.fillRect(z, y, A, B);
-        x === k && (cH.fillStyle = l, cH.fillRect(z, y, A, B));
-        cH.lineWidth = 3;
-        cH.strokeStyle = n;
-        cH.strokeRect(z, y, A, B);
+            A = t.width,
+            B = t.height;
+        mainCanvasCtx.fillStyle = t.ur;
+        mainCanvasCtx.fillRect(z, y, A, B);
+        x === k && (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(z, y, A, B));
+        mainCanvasCtx.lineWidth = 3;
+        mainCanvasCtx.strokeStyle = n;
+        mainCanvasCtx.strokeRect(z, y, A, B);
         x = t.fJ;
         z = t.fK;
-        y = t.c1;
-        A = t.cw;
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
-        cH.font = t.font;
-        cH.fillStyle = n;
-        cH.fillText(t.nY, Math.floor(x + y / 2), Math.floor(z + A / 2 + .1 * t.by))
+        y = t.width;
+        A = t.height;
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.font = t.font;
+        mainCanvasCtx.fillStyle = n;
+        mainCanvasCtx.fillText(t.nY, Math.floor(x + y / 2), Math.floor(z + A / 2 + .1 * t.by))
     }
     var k, n, l;
-    this.f6 = this.fK = this.cw = this.c1 = 0;
-    this.bp = function() {
+    this.f6 = this.fK = this.height = this.width = 0;
+    this.init = function() {
         k = -1;
-        n = cK;
+        n = whiteRGB2;
         l = "rgba(255,255,255,0.16)";
         this.uo = Array(7);
-        this.cw = Math.floor((isZoom ?
+        this.height = Math.floor((isZoom ?
             .123 : .093) * bq);
-        this.c1 = Math.floor((isZoom ? 3.96 : 4.2) * this.cw);
-        this.f6 = Math.floor(.025 * this.c1);
-        var x = Math.floor(.26 * this.cw),
-            t = bt + x + bu;
+        this.width = Math.floor((isZoom ? 3.96 : 4.2) * this.height);
+        this.f6 = Math.floor(.025 * this.width);
+        var x = Math.floor(.26 * this.height),
+            t = fontWeightBold + x + fontSizeArial;
         this.uo[0] = {
             fJ: 0,
             fK: 0,
-            c1: Math.floor(.6 * this.c1 - this.f6 / 2),
-            cw: this.cw,
+            width: Math.floor(.6 * this.width - this.f6 / 2),
+            height: this.height,
             nY: "Multiplayer",
             font: t,
             ur: "rgba(22,88,22,0.8)",
             by: x
         };
-        x = Math.floor(.18 * this.cw);
-        t = bt + x + bu;
+        x = Math.floor(.18 * this.height);
+        t = fontWeightBold + x + fontSizeArial;
         this.uo[1] = {
             fJ: 0,
             fK: 0,
-            c1: this.c1 - this.uo[0].c1 - this.f6,
-            cw: this.cw,
+            width: this.width - this.uo[0].width - this.f6,
+            height: this.height,
             nY: "Singleplayer",
             font: t,
             ur: "rgba(22,88,88,0.8)",
@@ -4601,8 +4594,8 @@ function kA() {
         this.uo[2] = {
             fJ: 0,
             fK: 0,
-            c1: this.c1,
-            cw: Math.floor(.3 * this.cw),
+            width: this.width,
+            height: Math.floor(.3 * this.height),
             nY: "",
             font: this.uo[1].font,
             ur: "rgba(100,0,0,0.8)",
@@ -4611,8 +4604,8 @@ function kA() {
         this.uo[3] = {
             fJ: 0,
             fK: 0,
-            c1: this.c1,
-            cw: this.cw,
+            width: this.width,
+            height: this.height,
             nY: "Back",
             font: this.uo[0].font,
             ur: "rgba(0,0,0,0.8)",
@@ -4621,8 +4614,8 @@ function kA() {
         this.uo[4] = {
             fJ: 0,
             fK: 0,
-            c1: this.c1,
-            cw: Math.floor(.3 * this.cw),
+            width: this.width,
+            height: Math.floor(.3 * this.height),
             nY: "The game was updated!",
             font: this.uo[1].font,
             ur: "rgba(100,0,0,0.8)",
@@ -4631,8 +4624,8 @@ function kA() {
         this.uo[5] = {
             fJ: 0,
             fK: 0,
-            c1: this.uo[0].c1,
-            cw: Math.floor(.8 * this.cw),
+            width: this.uo[0].width,
+            height: Math.floor(.8 * this.height),
             nY: "Reload",
             font: this.uo[0].font,
             ur: "rgba(0,100,0,0.8)",
@@ -4641,8 +4634,8 @@ function kA() {
         this.uo[6] = {
             fJ: 0,
             fK: 0,
-            c1: this.uo[1].c1,
-            cw: this.uo[5].cw,
+            width: this.uo[1].width,
+            height: this.uo[5].height,
             nY: "Back",
             font: this.uo[0].font,
             ur: "rgba(0,0,0,0.8)",
@@ -4652,18 +4645,18 @@ function kA() {
     };
     this.rq = function() {
         this.fK = Math.floor(.54 * cB);
-        this.uo[0].fJ = Math.floor(.5 * gE - .5 * this.c1);
-        this.uo[1].fJ = this.uo[0].fJ + this.uo[0].c1 + this.f6;
+        this.uo[0].fJ = Math.floor(.5 * gE - .5 * this.width);
+        this.uo[1].fJ = this.uo[0].fJ + this.uo[0].width + this.f6;
         this.uo[2].fJ = this.uo[3].fJ = this.uo[0].fJ;
         this.uo[4].fJ = this.uo[5].fJ = this.uo[0].fJ;
         this.uo[6].fJ = this.uo[1].fJ;
         this.uo[0].fK = Math.floor(.54 * cB);
         this.uo[1].fK = this.uo[0].fK;
-        this.uo[2].fK = Math.floor((cB - this.uo[2].cw - this.uo[3].cw - this.f6) / 2);
-        this.uo[3].fK = this.uo[2].fK + this.uo[2].cw + this.f6;
+        this.uo[2].fK = Math.floor((cB - this.uo[2].height - this.uo[3].height - this.f6) / 2);
+        this.uo[3].fK = this.uo[2].fK + this.uo[2].height + this.f6;
         this.uo[4].fK = Math.floor((cB -
-            this.uo[4].cw - this.uo[5].cw - this.f6) / 2);
-        this.uo[5].fK = this.uo[6].fK = this.uo[4].fK + this.uo[4].cw + this.f6
+            this.uo[4].height - this.uo[5].height - this.f6) / 2);
+        this.uo[5].fK = this.uo[6].fK = this.uo[4].fK + this.uo[4].height + this.f6
     };
     this.us = function() {
         g(0);
@@ -4680,14 +4673,14 @@ function kA() {
     };
     this.lm = function(x, t, z) {
         var y = -1;
-        0 === aJ.pY() ? y = this.pP(x, t, 0, 2) : 3 === aJ.pY() ? y = this.pP(x, t, 3, 1) : 5 === aJ.pY() && (y = this.pP(x, t, 5, 2));
-        k !== y && (k = y, z && (c4.c5 = !0));
-        return -1 !== y ? (jg.pU(), !0) : !1
+        0 === aJ.getState() ? y = this.pP(x, t, 0, 2) : 3 === aJ.getState() ? y = this.pP(x, t, 3, 1) : 5 === aJ.getState() && (y = this.pP(x, t, 5, 2));
+        k !== y && (k = y, z && (c4.canvasDirty = !0));
+        return -1 !== y ? (playtime.pU(), !0) : !1
     };
     this.pP = function(x, t, z, y) {
         for (var A = z; A < z + y; A++)
-            if (x >= this.uo[A].fJ && t >= this.uo[A].fK && x <= this.uo[A].fJ + this.uo[A].c1 &&
-                t <= this.uo[A].fK + this.uo[A].cw) return A;
+            if (x >= this.uo[A].fJ && t >= this.uo[A].fK && x <= this.uo[A].fJ + this.uo[A].width &&
+                t <= this.uo[A].fK + this.uo[A].height) return A;
         return -1
     }
 }
@@ -4696,19 +4689,19 @@ function Colors() {
     function g(k) {
         return 0 > k ? 0 : 255 < k ? 255 : Math.floor(k)
     }
-    this.cw = this.c1 = 0;
-    this.lC = !1;
+    this.height = this.width = 0;
+    this.hidden = !1;
     this.v2 = this.v1 = this.v0 = this.ns = this.f6 = this.uz = 0;
     this.colors = null;
-    this.bp = function() {
-        r < 2 * s ? this.c1 = Math.floor((isZoom ? .94 : .4) * r) : (this.cw = Math.floor((isZoom ? .88 : .4) * s), this.c1 = Math.floor(2 * this.cw));
-        this.cw = this.c1 / 2;
-        this.f6 = this.cw / 16;
-        this.lC = !0;
+    this.init = function() {
+        r < 2 * s ? this.width = Math.floor((isZoom ? .94 : .4) * r) : (this.height = Math.floor((isZoom ? .88 : .4) * s), this.width = Math.floor(2 * this.height));
+        this.height = this.width / 2;
+        this.f6 = this.height / 16;
+        this.hidden = !0;
         this.uz = 0;
-        this.v0 = (this.cw - 3 * this.f6) / 2;
-        this.v1 = this.c1 - 3 * this.f6 - this.v0;
-        this.v2 = (this.cw - 4 * this.f6) / 3
+        this.v0 = (this.height - 3 * this.f6) / 2;
+        this.v1 = this.width - 3 * this.f6 - this.v0;
+        this.v2 = (this.height - 4 * this.f6) / 3
     };
     this.v3 = function() {
         this.colors = [
@@ -4725,20 +4718,20 @@ function Colors() {
     this.getRGB64 = function() {
         return [divideFloor(this.colors[0][0], 4), divideFloor(this.colors[0][1], 4), divideFloor(this.colors[0][2], 4)]
     };
-    this.c7 = function(k, n) {
+    this.mouseDown = function(k, n) {
         this.uz = 0;
-        var l = (cB - this.cw) / 2;
-        k -= (gE - this.c1) / 2;
+        var l = (cB - this.height) / 2;
+        k -= (gE - this.width) / 2;
         n -= l;
-        if (0 > k || 0 > n || k >= this.c1 - 1 || n >= this.cw - 1) return this.lC = !1, 0 === aJ.pY() && jk.cE(0, !0), c4.c5 = !0, !1;
-        if (k < this.f6 || n < this.f6 || k >= this.c1 - this.f6 || n >= this.cw - this.f6) return !0;
-        if (k < this.f6 + this.v0) return n < this.f6 + this.v0 && 0 !== this.ns && (this.ns = 0, c4.c5 = !0), !0;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasDirty = !0, !1;
+        if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.height - this.f6) return !0;
+        if (k < this.f6 + this.v0) return n < this.f6 + this.v0 && 0 !== this.ns && (this.ns = 0, c4.canvasDirty = !0), !0;
         if (k < 2 * this.f6 + this.v0) return !0;
         k -= 2 * this.f6 + this.v0;
-        if (n < this.f6 + this.v2) return this.uz = 1, this.colors[this.ns][0] = g(256 * k / this.v1), c4.c5 = !0;
+        if (n < this.f6 + this.v2) return this.uz = 1, this.colors[this.ns][0] = g(256 * k / this.v1), c4.canvasDirty = !0;
         if (n < 2 * this.f6 + this.v2) return !0;
-        if (n < 2 * this.f6 + 2 * this.v2) return this.uz = 2, this.colors[this.ns][1] = g(256 * k / this.v1), c4.c5 = !0;
-        n >= 3 * this.f6 + 2 * this.v2 && (this.uz = 3, this.colors[this.ns][2] = g(256 * k / this.v1), c4.c5 = !0);
+        if (n < 2 * this.f6 + 2 * this.v2) return this.uz = 2, this.colors[this.ns][1] = g(256 * k / this.v1), c4.canvasDirty = !0;
+        n >= 3 * this.f6 + 2 * this.v2 && (this.uz = 3, this.colors[this.ns][2] = g(256 * k / this.v1), c4.canvasDirty = !0);
         return !0
     };
     this.v5 = function() {
@@ -4750,48 +4743,48 @@ function Colors() {
         a8(k)
     };
     this.lm = function(k) {
-        0 !== this.uz && (k -= 2 * this.f6 + this.v0 + (gE - this.c1) / 2, this.colors[this.ns][this.uz - 1] = g(256 * k / this.v1), c4.c5 = !0)
+        0 !== this.uz && (k -= 2 * this.f6 + this.v0 + (gE - this.width) / 2, this.colors[this.ns][this.uz - 1] = g(256 * k / this.v1), c4.canvasDirty = !0)
     };
     this.v8 = function() {
-        0 < this.uz && (this.uz = 0, this.v5(), this.v7(), c4.c5 = !0)
+        0 < this.uz && (this.uz = 0, this.v5(), this.v7(), c4.canvasDirty = !0)
     };
     this.cG = function() {
-        cH.setTransform(1, 0, 0, 1, (gE - this.c1) / 2, (cB - this.cw) / 2);
-        cH.fillStyle = hy;
-        cH.fillRect(0, 0, this.c1, this.cw);
-        cH.lineWidth = ow;
-        cH.strokeStyle = cK;
-        cH.strokeRect(-1,
-            -1, this.c1 + 2, this.cw + 2);
-        cH.font = bt + Math.floor(.8 * this.v0) + bu;
-        cH.textBaseline = cI;
-        cH.textAlign = cJ;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, (gE - this.width) / 2, (cB - this.height) / 2);
+        mainCanvasCtx.fillStyle = blackMoreOpaque;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.height);
+        mainCanvasCtx.lineWidth = ow;
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(-1,
+            -1, this.width + 2, this.height + 2);
+        mainCanvasCtx.font = fontWeightBold + Math.floor(.8 * this.v0) + fontSizeArial;
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.textAlign = centerAlign;
         this.v9(0);
-        cH.lineWidth = ow;
+        mainCanvasCtx.lineWidth = ow;
         this.vA(0);
         this.vA(1);
         this.vA(2);
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.v9 = function(k) {
-        cH.fillStyle = "rgb(" + this.colors[k][0] + "," + this.colors[k][1] + "," + this.colors[k][2] + ")";
-        cH.fillRect(this.f6, this.f6, this.v0, 2 * this.v0 + this.f6);
-        cH.lineWidth = 2 + ow;
-        cH.strokeStyle = cK;
-        cH.strokeRect(this.f6, this.f6, this.v0, 2 * this.v0 + this.f6)
+        mainCanvasCtx.fillStyle = "rgb(" + this.colors[k][0] + "," + this.colors[k][1] + "," + this.colors[k][2] + ")";
+        mainCanvasCtx.fillRect(this.f6, this.f6, this.v0, 2 * this.v0 + this.f6);
+        mainCanvasCtx.lineWidth = 2 + ow;
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(this.f6, this.f6, this.v0, 2 * this.v0 + this.f6)
     };
     this.vA = function(k) {
-        cH.fillStyle = "rgb(" + (0 === k ? 200 : 2 === k ? 50 :
+        mainCanvasCtx.fillStyle = "rgb(" + (0 === k ? 200 : 2 === k ? 50 :
             0) + "," + (1 === k ? 200 : 2 === k ? 50 : 0) + "," + (2 === k ? 255 : 0) + ")";
-        cH.fillRect(2 * this.f6 + this.v0, this.f6 + k * (this.f6 + this.v2), Math.floor(this.colors[this.ns][k] * this.v1 / 255), this.v2);
-        cH.strokeStyle = cK;
-        cH.strokeRect(2 * this.f6 + this.v0, this.f6 + k * (this.f6 + this.v2), this.v1, this.v2)
+        mainCanvasCtx.fillRect(2 * this.f6 + this.v0, this.f6 + k * (this.f6 + this.v2), Math.floor(this.colors[this.ns][k] * this.v1 / 255), this.v2);
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(2 * this.f6 + this.v0, this.f6 + k * (this.f6 + this.v2), this.v1, this.v2)
     }
 }
 
 function kB() {
     function g() {
-        return 0 === D ? 0 : 1 + (D - 1 + K) % (wsManager.vM - 1)
+        return 0 === D ? 0 : 1 + (D - 1 + K) % (wsManager.terriWsCount - 1)
     }
 
     function k() {
@@ -4801,30 +4794,30 @@ function kB() {
     }
 
     function n() {
-        0 === D ? jj.vS(3249) : (D === wsManager.vM - 1 && (D = -1), k())
+        0 === D ? showError.vS(3249) : (D === wsManager.terriWsCount - 1 && (D = -1), k())
     }
 
     function l(L, H, M) {
         var Q = Math.floor((gE - y) / 2) + C,
             R = Q + Math.floor(M * (y - 2 * C));
-        cH.lineWidth = H;
-        cH.beginPath();
-        cH.moveTo(Q, L);
-        cH.lineTo(R, L);
-        cH.lineTo(Math.floor(Q - C + M * y), L + z);
-        cH.lineTo(Q - C, L + z);
-        cH.closePath()
+        mainCanvasCtx.lineWidth = H;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(Q, L);
+        mainCanvasCtx.lineTo(R, L);
+        mainCanvasCtx.lineTo(Math.floor(Q - C + M * y), L + z);
+        mainCanvasCtx.lineTo(Q - C, L + z);
+        mainCanvasCtx.closePath()
     }
     var x, t, z, y, A, B, C, E, F, G, N, I, D, K = 0,
         J;
-    this.bp = function() {
+    this.init = function() {
         aJ.setState(6);
         x = 0;
         t = 1;
         E = "rgba(0,220,120,0.4)";
         F = "rgba(0,0,0,0.8)";
         this.lv();
-        c4.c5 = !0;
+        c4.canvasDirty = !0;
         D = 0;
         J = !1;
         k()
@@ -4836,7 +4829,7 @@ function kB() {
         C = 3 * z;
         B = Math.floor(.225 * y);
         N = Math.floor(.3 * z);
-        G = ol + N + bu
+        G = fontStyleNormal + N + fontSizeArial
     };
     this.vK = function(L) {
         K = L
@@ -4845,249 +4838,248 @@ function kB() {
         L === g() && (J = !1, n())
     };
     this.rk = function(L) {
-        6 !== aJ.pY() || J || (I = c4.time, J = !0, dataEncoder.joinLobby(L))
+        6 !== aJ.getState() || J || (I = c4.time, J = !0, dataEncoder.joinLobby(L))
     };
-    this.c7 = function(L, H) {
+    this.mouseDown = function(L, H) {
         var M = Math.floor((gE - A) / 2),
             Q = Math.floor(.5 * (cB - cA - z - B)) + z + cA;
         return L > M && L < M + A && H > Q && H < Q + B ? (this.vT(), jh.lm(L, H, !1), !0) : !1
     };
     this.vT = function() {
         wsManager.vU(3260);
-        nameInput.bp();
-        c4.c5 = !0
+        nameInput.init();
+        c4.canvasDirty = !0
     };
     this.dF = function() {
-        6 === aJ.pY() &&
-            (J ? c4.time > I + 2E4 && jj.vS(3250) : c4.time > I + 2E4 && n(), x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.c5 = !0)
+        6 === aJ.getState() &&
+            (J ? c4.time > I + 2E4 && showError.vS(3250) : c4.time > I + 2E4 && n(), x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasDirty = !0)
     };
     this.cG = function() {
         var L = Math.floor((gE - A) / 2),
             H = Math.floor(.5 * (cB - cA - z - B)),
             M = x / 100;
-        cH.fillStyle = F;
+        mainCanvasCtx.fillStyle = F;
         l(H, 3, 1);
-        cH.fill();
-        cH.fillStyle = E;
+        mainCanvasCtx.fill();
+        mainCanvasCtx.fillStyle = E;
         l(H, 3, M);
-        cH.fill();
-        cH.strokeStyle = cK;
+        mainCanvasCtx.fill();
+        mainCanvasCtx.strokeStyle = whiteRGB2;
         l(H, 3, 1);
-        cH.stroke();
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
-        cH.font = G;
-        cH.fillStyle = cK;
-        cH.fillText("Loading", Math.floor(.5 * gE), Math.floor(H + .58 * z));
+        mainCanvasCtx.stroke();
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.font = G;
+        mainCanvasCtx.fillStyle = whiteRGB2;
+        mainCanvasCtx.fillText("Loading", Math.floor(.5 * gE), Math.floor(H + .58 * z));
         H = H + z + cA;
         M = A;
         var Q = B;
-        cH.fillStyle = oE;
-        cH.fillRect(L, H, M, Q);
-        cH.lineWidth = 3;
-        cH.strokeStyle = cK;
-        cH.strokeRect(L, H, M, Q);
+        mainCanvasCtx.fillStyle = blackSemiTransparent;
+        mainCanvasCtx.fillRect(L, H, M, Q);
+        mainCanvasCtx.lineWidth = 3;
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(L, H, M, Q);
         var R = Math.floor(.3 * Q);
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
-        cH.font = ol + R + bu;
-        cH.fillStyle = cK;
-        cH.fillText("Back", Math.floor(L + M / 2), Math.floor(H + Q / 2 + .1 * R))
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.font = fontStyleNormal + R + fontSizeArial;
+        mainCanvasCtx.fillStyle = whiteRGB2;
+        mainCanvasCtx.fillText("Back", Math.floor(L + M / 2), Math.floor(H + Q / 2 + .1 * R))
     }
 }
 
 function kC() {
-    var g;
-    this.bp = function() {
-        jh.bp();
-        jk.bp();
-        g = 0;
-        vc.bp();
-        nameInput.bp()
+    var gameState;
+    this.init = function() {
+        jh.init();
+        jk.init();
+        gameState = 0;
+        cookiesPrompt.init();
+        nameInput.init()
     };
-    this.setState = function(k) {
-        g = k
+    this.setState = function(state) {
+        gameState = state
     };
-    this.pY = function() {
-        return g
+    this.getState = function() {
+        return gameState
     };
     this.ve = function() {
         this.setState(8);
-        jr.th();
-        mainSettings.uh();
-        mainLeaderboard.lC = !1;
-        nU.c7(-1E3, -1E3)
+        lobby.th(); 
+        mainSettings.hideIfNotHidden();
+        mainLeaderboard.hidden = !1;
+        openLinkBox.mouseDown(-1E3, -1E3)
     };
-    this.uh = function(k) {
+    this.hideIfNotHidden = function(k) {
         if (!vf) return !1;
         if (!(400 > c4.time)) {
             if ("Enter" === k.key || "Escape" === k.key) {
-                if (this.vg()) return 0 === g && jk.cE(0, !0), !0;
+                if (this.vg()) return 0 === gameState && jk.cE(0, !0), !0;
                 if ("Enter" === k.key) {
-                    if (0 === g) return nameInput.vh(), !0;
-                    if (7 === g) return !0
+                    if (0 === gameState) return nameInput.vh(), !0; //Joins lobby
+                    if (7 === gameState) return !0
                 }
             }
             return !1
         }
     };
     this.vg = function() {
-        return nU.lF() || mainSettings.uh() ? !0 : mainLeaderboard.lC ? (mainLeaderboard.lC = !1, !0) : !1
+        return openLinkBox.lF() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.hidden ? (mainLeaderboard.hidden = !1, !0) : !1
     };
     this.aK =
         function() {
-            c4.c5 = !0;
-            8 === g ? gi ? gi = !gi : hv.lC ? hv.m0() : fq.m0() : 7 === g ? jr.vi() : 6 === g ? ji.vT() : 3 === g ? jj.vj(0, 0) : 2 === g ? dy.vj() : 0 === g && (this.vg() || a9(11))
+            c4.canvasDirty = !0;
+            8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : hv.hidden ? hv.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? ji.vT() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || a9(11))
         };
-    this.c7 = function(k, n) {
-        if (!vc.c7(k, n) && vf && !(nU.c7(k, n) || 6 === g && ji.c7(k, n) || 2 === g && dy.c7(k, n) || jt.c7(k, n) || mainLeaderboard.c7(k, n) || vk.c7(k, n, !0) || mainSettings.c7(k, n, !0))) {
-            jg.c7(k, n);
-            if (0 === g) nameInput.c7(k, n);
-            else if (3 === g) jj.c7(k, n);
-            else if (5 === g) jl.c7(k, n);
-            else if (7 === g && jr.c7(k, n)) return;
-            uO.c7(k, n)
+    this.mouseDown = function(k, n) {
+        if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && ji.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || jt.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
+            playtime.mouseDown(k, n);
+            if (0 === gameState) nameInput.mouseDown(k, n);
+            else if (3 === gameState) showError.mouseDown(k, n);
+            else if (5 === gameState) jl.mouseDown(k, n);
+            else if (7 === gameState && lobby.mouseDown(k, n)) return;
+            uO.mouseDown(k, n)
         }
     };
     this.lm = function(k, n) {
         jt.lm(k, n);
-        if (!jg.rg) {
-            if (vc.lm(k, n)) {
-                jg.pU();
+        if (!playtime.rg) {
+            if (cookiesPrompt.lm(k, n)) {
+                playtime.pU();
                 return
             }
-            if (2 ===
-                g && dy.lm(k, n)) {
-                jg.pU();
+            if (2 === gameState && singleSettings.lm(k, n)) {
+                playtime.pU();
                 return
             }
             if (0 <= mainSettings.pP(k, n)) {
-                jg.pU();
+                playtime.pU();
                 return
             }
             if (mainSettings.lm(k, n)) {
-                jg.pU();
+                playtime.pU();
                 return
             }
             if (jh.lm(k, n, !0)) return
         }
-        jg.lm(k, n)
+        playtime.lm(k, n)
     };
     this.click = function(k, n) {
-        jg.pV();
-        mainSettings.v8() || vk.c7(k, n, !1) || mainSettings.c7(k, n, !1)
+        playtime.pV();
+        mainSettings.v8() || vk.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
     };
     this.pb = function(k, n, l) {
-        mainSettings.buttons[1].buttonClass.lC || 0 === g && jg.pb(k, l)
+        mainSettings.buttons[1].buttonClass.hidden || 0 === gameState && playtime.pb(k, l)
     };
     this.vl = function() {
         jh.rq();
         mainSettings.rq();
-        0 === g ? (jk.rq(0), jg.rq()) : 7 === g && jr.lv();
-        c4.c5 = !0
+        0 === gameState ? (jk.rq(0), playtime.rq()) : 7 === gameState && lobby.lv();
+        c4.canvasDirty = !0
     };
     this.cG = function() {
-        if (8 !== g && 10 !== g) {
-            cH.imageSmoothingEnabled = !0;
+        if (8 !== gameState && 10 !== gameState) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
             this.hr();
-            jg.cG();
+            playtime.cG();
             jf.cG();
             var k = Math.floor(.3 * cB),
-                n = bw.l9("territorial.io"),
+                n = sprites.l9("territorial.io"),
                 l = 1.75 * cB / n.width;
             l = l * n.width < .98 * gE ? .98 * gE / n.width : l;
-            cH.globalAlpha = .15;
+            mainCanvasCtx.globalAlpha = .15;
             var x = Math.floor(.5 * (gE - l * n.width));
             x = Math.floor(x / l);
             k = Math.floor(k - .5 * n.height * l);
             k = Math.floor(k / l);
-            cH.setTransform(l, 0, 0, l, x, k);
-            cH.drawImage(n, x, k);
-            cH.setTransform(1, 0, 0, 1, 0, 0);
-            cH.globalAlpha = 1;
+            mainCanvasCtx.setTransform(l, 0, 0, l, x, k);
+            mainCanvasCtx.drawImage(n, x, k);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            mainCanvasCtx.globalAlpha = 1;
             vk.cG();
             uO.cG();
             mainSettings.cG();
             jt.cG();
-            0 === g ? nameInput.cG() : 2 === g ? dy.cG() : 3 === g ? jj.cG() : 5 === g ? jl.cG() : 6 === g ? ji.cG() : 7 === g && jr.cG();
+            0 === gameState ? nameInput.cG() : 2 === gameState ? singleSettings.cG() : 3 === gameState ? showError.cG() : 5 === gameState ? jl.cG() : 6 === gameState ? ji.cG() : 7 === gameState && lobby.cG();
             mainSettings.vn();
-            vc.cG();
+            cookiesPrompt.cG();
             mainLeaderboard.cG();
-            nU.cG()
+            openLinkBox.cG()
         }
     };
     this.hr = function() {
         if (vf) {
-            var k = r / aZ,
-                n = s / aa;
+            var k = r / currentMapWidth,
+                n = s / currentMapHeight;
             k = k > n ? k : n;
-            cH.setTransform(k, 0, 0, k, Math.floor((r - k * aZ) /
-                2), Math.floor((s - k * aa) / 2));
-            cH.drawImage(hs, 0, 0);
-            cH.setTransform(1, 0, 0, 1, 0, 0);
-            cH.fillStyle = oE
-        } else cH.fillStyle = gH;
-        cH.fillRect(0, 0, r, s)
+            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((r - k * currentMapWidth) /
+                2), Math.floor((s - k * currentMapHeight) / 2));
+            mainCanvasCtx.drawImage(hs, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            mainCanvasCtx.fillStyle = blackSemiTransparent
+        } else mainCanvasCtx.fillStyle = blackRGB;
+        mainCanvasCtx.fillRect(0, 0, r, s)
     }
 }
 
 function Emojis() {
-    this.cw = this.c1 = 0;
-    this.lC = !1;
+    this.height = this.width = 0;
+    this.hidden = !1;
     this.nh = 10;
     this.bB = .12;
     this.vs = this.vr = this.uz = !1;
-    this.bp = function() {
-        this.c1 = r < 1 * s ? Math.floor((isZoom ? .94 : .6) * r) : Math.floor((isZoom ? .94 : .6) * s);
-        this.c1 -= this.c1 % this.nh;
-        this.cw = 1 * this.c1;
-        this.lC = !0;
+    this.init = function() {
+        this.width = r < 1 * s ? Math.floor((isZoom ? .94 : .6) * r) : Math.floor((isZoom ? .94 : .6) * s);
+        this.width -= this.width % this.nh;
+        this.height = 1 * this.width;
+        this.hidden = !0;
         this.uz = !1
     };
-    this.c7 = function(g, k, n) {
-        var l = (cB - this.cw) / 2;
-        g -= (gE - this.c1) / 2;
+    this.mouseDown = function(g, k, n) {
+        var l = (cB - this.height) / 2;
+        g -= (gE - this.width) / 2;
         k -= l;
-        if (0 > g || 0 > k || g >= this.c1 - 1 || k >= this.cw - 1) return 0 === n && (this.lC = !1, 0 === aJ.pY() && jk.cE(0, !0), c4.c5 = !0), !1;
-        l = Math.floor(this.c1 / this.nh);
+        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.height - 1) return 0 === n && (this.hidden = !1, 0 === aJ.getState() && jk.cE(0, !0), c4.canvasDirty = !0), !1;
+        l = Math.floor(this.width / this.nh);
         g = divideFloor(g, l) + this.nh * divideFloor(k, l);
         g = 0 > g ? 0 : g >= a5.nl ? a5.nl - 1 : g;
         if (0 ===
-            n || 1 === n && !a5.a7[g] || 2 === n && a5.a7[g]) this.vr = !a5.a7[g], this.vs = this.uz = !0, a5.a7[g] = !a5.a7[g], a5.o3(), c4.c5 = !0;
+            n || 1 === n && !a5.a7[g] || 2 === n && a5.a7[g]) this.vr = !a5.a7[g], this.vs = this.uz = !0, a5.a7[g] = !a5.a7[g], a5.o3(), c4.canvasDirty = !0;
         return !0
     };
     this.lm = function(g, k) {
-        this.uz && this.c7(g, k, this.vr ? 1 : 2)
+        this.uz && this.mouseDown(g, k, this.vr ? 1 : 2)
     };
     this.v8 = function() {
         this.vs && (a3(), this.vs = !1);
         this.uz = this.vs = !1
     };
     this.cG = function() {
-        cH.imageSmoothingEnabled = !0;
-        var g = (gE - this.c1) / 2,
-            k = (cB - this.cw) / 2;
-        cH.setTransform(1, 0, 0, 1, g, k);
-        cH.fillStyle = hy;
-        cH.fillRect(0, 0, this.c1, this.cw);
-        cH.lineWidth = ow;
-        cH.strokeStyle = cK;
-        cH.strokeRect(-1, -1, this.c1 + 2, this.cw + 2);
-        for (var n = Math.floor(this.c1 /
-                this.nh), l = (n - 2 * this.bB * n) / a5.c1, x = a5.nl - 1; 0 <= x; x--) cH.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nh * n), Math.floor(k + divideFloor(x, this.nh) * n)), a5.a7[x] && (cH.fillStyle = oM, cH.fillRect(0, 0, n, n)), cH.setTransform(l, 0, 0, l, Math.floor(g + x % this.nh * n + this.bB * n), Math.floor(k + divideFloor(x, this.nh) * n + this.bB * n)), cH.drawImage(a5.l5[x], 0, 0);
-        cH.setTransform(1, 0, 0, 1, 0, 0);
-        cH.imageSmoothingEnabled = !1
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        var g = (gE - this.width) / 2,
+            k = (cB - this.height) / 2;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = blackMoreOpaque;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.height);
+        mainCanvasCtx.lineWidth = ow;
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.height + 2);
+        for (var n = Math.floor(this.width /
+                this.nh), l = (n - 2 * this.bB * n) / a5.width, x = a5.nl - 1; 0 <= x; x--) mainCanvasCtx.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nh * n), Math.floor(k + divideFloor(x, this.nh) * n)), a5.a7[x] && (mainCanvasCtx.fillStyle = greenBrightSemiTransparent, mainCanvasCtx.fillRect(0, 0, n, n)), mainCanvasCtx.setTransform(l, 0, 0, l, Math.floor(g + x % this.nh * n + this.bB * n), Math.floor(k + divideFloor(x, this.nh) * n + this.bB * n)), mainCanvasCtx.drawImage(a5.l5[x], 0, 0);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        mainCanvasCtx.imageSmoothingEnabled = !1
     }
 }
 
-function kD() {
+function ShowError() {
     function g() {
-        var t = aJ.pY();
-        0 === t ? nameInput.th() : 6 === t ? wsManager.vU(n) : 7 === t ? (jr.th(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.th());
+        var t = aJ.getState();
+        0 === t ? nameInput.th() : 6 === t ? wsManager.vU(n) : 7 === t ? (lobby.th(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.th());
         aJ.setState(3);
         jh.rq();
         jh.uo[2].nY = k(n);
-        c4.c5 = !0
+        c4.canvasDirty = !0
     }
 
     function k(t) {
@@ -5145,12 +5137,12 @@ function kD() {
         });
         x = "Error "
     };
-    this.bp = function(t, z) {
+    this.init = function(t, z) {
         n = z;
-        var y = aJ.pY();
+        var y = aJ.getState();
         if (6 === y) {
             if (4211 === z) {
-                jl.bp(0, 0);
+                jl.init(0, 0);
                 return
             }
             if (4214 !== z) {
@@ -5160,7 +5152,7 @@ function kD() {
         } else if (7 === y) {
             if (t !== wsManager.lobby) return
         } else {
-            8 === y && (t !== wsManager.remote || dx || announcements.mm(k(z)));
+            8 === y && (t !== wsManager.remote || singleplayer || announcements.mm(k(z)));
             return
         }
         g()
@@ -5168,18 +5160,18 @@ function kD() {
     this.vS = function(t) {
         n =
             t;
-        8 === aJ.pY() ? announcements.mm(k(t)) : g()
+        8 === aJ.getState() ? announcements.mm(k(t)) : g()
     };
     this.lv = function() {
         jh.uo[2].nY = k(n)
     };
-    this.c7 = function(t, z) {
+    this.mouseDown = function(t, z) {
         3 === jh.pP(t, z, 3, 1) && this.vj(t, z)
     };
     this.vj = function(t, z) {
-        nameInput.bp();
+        nameInput.init();
         jh.lm(t, z, !1);
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.cG = function() {
         jh.uu()
@@ -5190,7 +5182,7 @@ function kE() {
     function g() {
         k.push({
             input: document.createElement("INPUT"),
-            lC: !1,
+            hidden: !1,
             color: n
         });
         var x = k.length - 1;
@@ -5198,8 +5190,8 @@ function kE() {
         k[x].input.value = "";
         k[x].input.style.textAlign = 0 === x ? "center" : "left";
         k[x].input.style.backgroundColor = n;
-        k[x].input.style.border = "3px solid " + cK;
-        k[x].input.style.color = cK;
+        k[x].input.style.border = "3px solid " + whiteRGB2;
+        k[x].input.style.color = whiteRGB2;
         k[x].input.style.position = "absolute";
         k[x].input.readOnly = 3 === x;
         k[x].input.addEventListener("input", function() {
@@ -5207,9 +5199,9 @@ function kE() {
         })
     }
     var k, n, l;
-    this.bp = function() {
+    this.init = function() {
         n = "rgba(0,0,0,0.6)";
-        l = oT;
+        l = redMoreOpaque;
         void 0 !==
             k && this.cE(0, !1);
         k = [];
@@ -5217,54 +5209,54 @@ function kE() {
         this.lv()
     };
     this.lv = function() {
-        var x = Math.floor(.22 * jh.cw / pM);
-        k[0].input.style.font = bt + x + bu;
+        var x = Math.floor(.22 * jh.height / pM);
+        k[0].input.style.font = fontWeightBold + x + fontSizeArial;
         k[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
-        k[0].input.style.width = Math.floor(jh.c1 / pM - 13) + "px"
+        k[0].input.style.width = Math.floor(jh.width / pM - 13) + "px"
     };
-    this.bz = function(x) {
+    this.getValuebyID = function(x) {
         return k[x]
     };
     this.rq = function(x) {
-        k[x].input.style.left = Math.floor((gE / pM - (jh.c1 / pM - 3) - 7) / 2) + "px";
+        k[x].input.style.left = Math.floor((gE / pM - (jh.width / pM - 3) - 7) / 2) + "px";
         0 === x && (k[x].input.style.bottom = Math.floor((cB - jh.fK + jh.f6) / pM) + "px")
     };
     this.cE = function(x, t) {
-        k[x].lC !== t && ((k[x].lC = t) ? document.body.appendChild(k[x].input) : document.body.removeChild(k[x].input))
+        k[x].hidden !== t && ((k[x].hidden = t) ? document.body.appendChild(k[x].input) : document.body.removeChild(k[x].input))
     };
     this.w3 = function(x, t) {
         t && k[x].color === n || !t && k[x].color === l || (k[x].color = t ? n : l, k[x].input.style.backgroundColor = k[x].color)
     }
 }
 
-function kh() {
+function SetGameOrigin() {
     this.myID = this.gameHash = 0;
     var g, k, n, l;
-    this.bp = function(x) {
-        if (7 === aJ.pY()) {
+    this.init = function(x) {
+        if (7 === aJ.getState()) {
             g = x;
             k = 0;
             n = c4.time + 4500;
-            l = jp.wB(g) ? 2 : 0;
+            l = dataDecoder.wB(g) ? 2 : 0;
             aJ.setState(10);
-            cH.imageSmoothingEnabled = !0;
+            mainCanvasCtx.imageSmoothingEnabled = !0;
             aJ.hr();
-            x = bw.l9("loading");
+            x = sprites.l9("loading");
             var t = (isZoom ? .396 : .25) * bq / x.width;
-            cH.setTransform(t, 0, 0, t, Math.floor((r - t * x.width) / 2), Math.floor((s - t * x.height) / 2));
-            cH.drawImage(x, 0, 0);
-            cH.setTransform(1, 0, 0, 1, 0, 0)
+            mainCanvasCtx.setTransform(t, 0, 0, t, Math.floor((r - t * x.width) / 2), Math.floor((s - t * x.height) / 2));
+            mainCanvasCtx.drawImage(x, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     };
     this.eZ = function() {
-        0 < l && c4.time > n && (l--, n += 4500, 0 === c4.wD && 0 === c4.wE && (0 === l && wsManager.remote < wsManager.wF && (wsManager.remote += wsManager.wG), wsManager.ri(wsManager.remote, 5)))
+        0 < l && c4.time > n && (l--, n += 4500, 0 === c4.wD && 0 === c4.wE && (0 === l && wsManager.remote < wsManager.serverCount && (wsManager.remote += wsManager.gameServerCount), wsManager.ri(wsManager.remote, 5)))
     };
     this.wH = function() {
-        10 === aJ.pY() && (k++, 2 <= k && (jp.wI(g), g = null))
+        10 === aJ.getState() && (k++, 2 <= k && (dataDecoder.wI(g), g = null))
     }
 }
 
-function ke() {
+function Lobby() {
     function g(P, U) {
         var W = E[P].getContext("2d", {
             alpha: !0
@@ -5286,24 +5278,24 @@ function ke() {
     }
 
     function n() {
-        if (7 === aJ.pY()) {
-            for (var P = -1, U = F.length - 1; 0 <= U; U--)
-                if (null === F[U].lq) {
+        if (7 === aJ.getState()) {
+            for (var P = -1, U = lobbyGames.length - 1; 0 <= U; U--)
+                if (null === lobbyGames[U].canvas) {
                     P = U;
                     break
                 } if (-1 !== P) {
-                U = l(F[P].wz, F[P].x0);
-                if (null !== U) F[P].lq = U;
+                U = getPreviewCanvas(lobbyGames[P].mapID, lobbyGames[P].seedMap);
+                if (null !== U) lobbyGames[P].canvas = U;
                 else {
-                    U = aZ;
-                    var W = aa,
+                    U = currentMapWidth;
+                    var W = currentMapHeight,
                         X = hs,
                         V = pj,
                         na = x6,
                         ba = x7,
-                        ca = wv,
-                        pa = ww;
-                    x8(F[P].wz, F[P].x0);
+                        ca = currentMapID,
+                        pa = currentSeed;
+                    loadMap(lobbyGames[P].mapID, lobbyGames[P].seedMap);
                     x9.xA();
                     var S = document.createElement("canvas");
                     S.width = 128;
@@ -5311,58 +5303,58 @@ function ke() {
                     var O = S.getContext("2d", {
                             alpha: !1
                         }),
-                        T = 128 / aZ,
-                        Y = 128 / aa;
+                        T = 128 / currentMapWidth,
+                        Y = 128 / currentMapHeight;
                     Y > T && (T = Y);
                     O.imageSmoothingEnabled = !0;
-                    O.setTransform(T, 0, 0, T, (128 - T * aZ) / 2, (128 - T * aa) / 2);
+                    O.setTransform(T, 0, 0, T, (128 - T * currentMapWidth) / 2, (128 - T * currentMapHeight) / 2);
                     O.drawImage(hs, 0, 0);
-                    aZ = U;
-                    aa = W;
+                    currentMapWidth = U;
+                    currentMapHeight = W;
                     hs = X;
                     pj = V;
                     x6 = na;
                     x7 = ba;
-                    wv = ca;
-                    ww = pa;
-                    F[P].lq = S
+                    currentMapID = ca;
+                    currentSeed = pa;
+                    lobbyGames[P].canvas = S
                 }
-                c4.c5 = !0
+                c4.canvasDirty = !0
             }
         }
     }
 
-    function l(P, U) {
-        for (var W = F.length - 1; 0 <= W; W--)
-            if (null !== F[W].lq && F[W].wz === P && F[W].x0 === U) return F[W].lq;
+    function getPreviewCanvas(mapID, mapSeed) {
+        for (var gameIndex = lobbyGames.length - 1; 0 <= gameIndex; gameIndex--)
+            if (null !== lobbyGames[gameIndex].canvas && lobbyGames[gameIndex].mapID === mapID && lobbyGames[gameIndex].seedMap === mapSeed) return lobbyGames[gameIndex].canvas;
         return null
     }
 
     function x(P, U) {
         var W, X;
-        if (0 === F.length) return !1;
+        if (0 === lobbyGames.length) return !1;
         var V = 0;
         var na = B;
         for (X = 0; X < y[1]; X++) {
             var ba = A;
             for (W = 0; W < y[0]; W++) {
-                if (P > ba && P < ba + t && U > na && U < na + t) return dataEncoder.joinGame(F[V].wx), N = F[V].wx !== N ? F[V].wx : -1, c4.c5 = !0;
+                if (P > ba && P < ba + t && U > na && U < na + t) return dataEncoder.joinGame(lobbyGames[V].gameID), gameSelected = lobbyGames[V].gameID !== gameSelected ? lobbyGames[V].gameID : -1, c4.canvasDirty = !0;
                 V++;
-                if (V >= F.length) return !1;
+                if (V >= lobbyGames.length) return !1;
                 ba += t + cA
             }
             na += t + cA
         }
         return !1
     }
-    var t, z, y, A, B, C, E, F, G, N, I, D, K = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
-        J = [0, 0, 0, 0],
+    var t, z, y, A, B, C, E, lobbyGames, G, gameSelected, I, D, K = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
+        lobbyStats = [0, 0, 0, 0],
         L, H, M, Q, R;
-    this.bp = function() {
+    this.init = function() {
         R = 0;
-        N = -1;
+        gameSelected = -1;
         aJ.setState(7);
-        F = [];
+        lobbyGames = [];
         this.lv();
         var P;
         E = Array(11);
@@ -5375,14 +5367,14 @@ function ke() {
                 }),
                 X = 1.5 * Math.PI;
             W.lineWidth = 2;
-            W.strokeStyle = cK;
+            W.strokeStyle = whiteRGB2;
             W.clearRect(0, 0, 48, 48);
             for (var V = 0; V < U; V++) {
                 var na = X + 2 * Math.PI / U;
                 var ba = X,
                     ca = na,
                     pa = W;
-                pa.fillStyle = dW.wn[V + 1];
+                pa.fillStyle = teams.wn[V + 1];
                 pa.beginPath();
                 pa.arc(24, 24, 23, ba, ca);
                 pa.lineTo(24, 24);
@@ -5395,20 +5387,20 @@ function ke() {
             W.arc(24, 24, 23, 0, 2 * Math.PI);
             W.stroke()
         }
-        g(7, bw.bz(4));
+        g(7, sprites.getValuebyID(4));
         g(8, a5.l5[27]);
         g(9, a5.l5[46]);
         g(10, a5.l5[36]);
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.vi = function() {
         this.th();
         wsManager.vU(3240);
-        nameInput.bp();
-        c4.c5 = !0
+        nameInput.init();
+        c4.canvasDirty = !0
     };
     this.th = function() {
-        F = [];
+        lobbyGames = [];
         E = []
     };
     this.lv = function() {
@@ -5417,147 +5409,147 @@ function ke() {
         G = [0, 0, 0, 0];
         isZoom ? (I = Math.floor(.8 * .4 * bq), D = Math.floor(.56 * I), G[0] = cA, r < s ? (G[1] = D + 2 * cA, G[2] = r - 3 * G[0], G[3] = uO.cF() - 3 * cA - D, H = Math.floor(.95 * D), M = Math.floor((r - I - cA) / 2), Q = Math.floor(cA + D / 2)) : (G[1] = cA, G[2] = r - 3 * cA - I, G[3] = uO.cF() - 2 * cA, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = getMax(D, H)), M = Math.floor(r - I / 2 - cA), Q = Math.floor(cA + D + (G[3] - D) / 2), Q = getMax(Q, Math.floor(D + 2 * cA + H / 2)))) : (I = Math.floor(.2016 * bq), D = Math.floor(.56 *
             I), G[2] = Math.floor(.5 * r), G[3] = Math.floor(.5 * s), G[1] = Math.floor(.45 * (s - G[3])), G[0] = Math.floor((r - G[2]) / 2), H = Math.floor(.75 * D), M = Math.floor(r / 2), Q = Math.floor(G[1] + G[3] + (s - G[3] - G[1]) / 2));
-        L = bt + Math.floor(.65 * D / 4) + bu;
-        for (P = U = 1; P * U < F.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
+        L = fontWeightBold + Math.floor(.65 * D / 4) + fontSizeArial;
+        for (P = U = 1; P * U < lobbyGames.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
         var W = (G[2] - (P - 1) * cA) / P;
         var X = (G[3] - (U - 1) * cA) / U;
         t = W < X ? W : X;
         z = Math.floor(t);
-        C = bt + Math.floor(.5 * t / 5) + bu;
+        C = fontWeightBold + Math.floor(.5 * t / 5) + fontSizeArial;
         y[0] = P;
         y[1] = U;
         A = G[0] + Math.floor((G[2] - y[0] * t - (y[0] - 1) * cA) / 2);
         B = G[1] + Math.floor((G[3] - y[1] * t - (y[1] - 1) * cA) / 2)
     };
-    this.uP = function(P, U) {
-        var W,
-            X = F.length;
-        J = P;
-        for (W = 0; W < U.length; W++) {
-            var V = l(U[W].wv, U[W].ww);
-            F.push({
-                wx: U[W].id,
-                jJ: U[W].jJ,
-                jK: U[W].wy,
-                wz: U[W].wv,
-                x0: U[W].ww,
-                joined: U[W].x1,
-                nd: U[W].vY,
-                x2: U[W].x2,
-                lq: V
+    this.updateObjects = function(param_lobbyStats, param_lobbyGames) {
+        var gameIndex, gamesCount = lobbyGames.length;
+        lobbyStats = param_lobbyStats;
+        for (gameIndex = 0; gameIndex < param_lobbyGames.length; gameIndex++) {
+            var previewCanvas = getPreviewCanvas(param_lobbyGames[gameIndex].mapID, param_lobbyGames[gameIndex].seedMap);
+            lobbyGames.push({
+                gameID: param_lobbyGames[gameIndex].id,
+                gamemode: param_lobbyGames[gameIndex].gamemode,
+                isContest: param_lobbyGames[gameIndex].isContest,
+                mapID: param_lobbyGames[gameIndex].mapID,
+                seedMap: param_lobbyGames[gameIndex].seedMap,
+                joined: param_lobbyGames[gameIndex].joinCount,
+                timeLeft: param_lobbyGames[gameIndex].timeLeft,
+                maxPlayers: param_lobbyGames[gameIndex].maxPlayers,
+                canvas: previewCanvas
             })
         }
-        for (W = X - 1; 0 <= W; W--) F.shift();
-        if (-1 !== N)
-            for (V = N, N = -1, W = F.length - 1; 0 <= W; W--)
-                if (F[W].wx === V) {
-                    N = V;
+        for (gameIndex = gamesCount - 1; 0 <= gameIndex; gameIndex--) lobbyGames.shift();
+        if (-1 !== gameSelected)
+            var selection = gameSelected;
+            gameSelected = -1;
+            for (gameIndex = lobbyGames.length - 1; 0 <= gameIndex; gameIndex--)
+                if (lobbyGames[gameIndex].gameID === selection) {
+                    gameSelected = selection;
                     break
-                } if (F.length > R || F.length < R) R = F.length, this.lv();
+                } if (lobbyGames.length > R || lobbyGames.length < R) R = lobbyGames.length, this.lv();
         this.x3();
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.x3 = function() {
-        for (var P = F.length - 1; 0 <= P; P--) null === F[P].lq && setTimeout(n, 0)
+        for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
     };
-    this.c7 = function(P, U) {
-        return 4 * ((P - M) * (P - M) + (U - Q) * (U - Q)) <= H * H ? (this.vi(), jh.lm(P,
-            U, !1), !0) : x(P, U)
+    this.mouseDown = function(P, U) {
+        return 4 * ((P - M) * (P - M) + (U - Q) * (U - Q)) <= H * H ? (this.vi(), jh.lm(P, U, !1), !0) : x(P, U)
     };
     this.cG = function() {
         var P = 0,
             U = B;
-        cH.imageSmoothingEnabled = !0;
-        cH.lineWidth = 3;
+        mainCanvasCtx.imageSmoothingEnabled = !0;
+        mainCanvasCtx.lineWidth = 3;
         var W = Math.floor(.5 * H);
-        cH.fillStyle = oE;
-        cH.beginPath();
-        cH.arc(M, Q, W, 0, 2 * Math.PI);
-        cH.fill();
-        cH.strokeStyle = cK;
-        cH.beginPath();
-        cH.arc(M, Q, W, 0, 2 * Math.PI);
-        cH.stroke();
-        W = bw.bz(0).height;
+        mainCanvasCtx.fillStyle = blackSemiTransparent;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
+        mainCanvasCtx.fill();
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
+        mainCanvasCtx.stroke();
+        W = sprites.getValuebyID(0).height;
         var X = .6 * H / W;
-        cH.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * bw.bz(0).width), Math.floor(Q - .5 * X * W));
-        cH.drawImage(bw.bz(0), 0, 0);
-        cH.setTransform(1, 0, 0, 1, 0, 0);
-        cH.fillStyle = oE;
-        cH.fillRect(r - I - cA, cA, I, D);
-        0 <= N ? (cH.fillStyle = oM, cH.fillRect(r - I -
-            cA, cA, I, Math.floor(.25 * D))) : (cH.fillStyle = oh, cH.fillRect(r - I - cA, cA + Math.floor(.25 * D), I, Math.floor(.25 * D)));
-        cH.strokeStyle = cK;
-        cH.strokeRect(r - I - cA, cA, I, D);
-        cH.fillStyle = cK;
-        cH.font = L;
-        cH.textBaseline = cI;
+        mainCanvasCtx.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * sprites.getValuebyID(0).width), Math.floor(Q - .5 * X * W));
+        mainCanvasCtx.drawImage(sprites.getValuebyID(0), 0, 0);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        mainCanvasCtx.fillStyle = blackSemiTransparent;
+        mainCanvasCtx.fillRect(r - I - cA, cA, I, D);
+        0 <= gameSelected ? (mainCanvasCtx.fillStyle = greenBrightSemiTransparent, mainCanvasCtx.fillRect(r - I -
+            cA, cA, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = yellowSemiTransparent, mainCanvasCtx.fillRect(r - I - cA, cA + Math.floor(.25 * D), I, Math.floor(.25 * D)));
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(r - I - cA, cA, I, D);
+        mainCanvasCtx.fillStyle = whiteRGB2;
+        mainCanvasCtx.font = L;
+        mainCanvasCtx.textBaseline = middleAlign;
         W = Math.floor(.04 * I);
         X = Math.floor(.08 * D);
         for (var V = 3; 0 <= V; V--) {
             var na = Math.floor(cA + (V + 1) * (D + 2 * X) / 5 - X);
-            cH.textAlign = mh;
-            cH.fillText(K[V], r - I - cA + W, na);
-            cH.textAlign = oj;
-            cH.fillText(eP.gJ(J[V]), r - cA - W, na)
+            mainCanvasCtx.textAlign = leftAlign;
+            mainCanvasCtx.fillText(K[V], r - I - cA + W, na);
+            mainCanvasCtx.textAlign = rightAlign;
+            mainCanvasCtx.fillText(eP.gJ(lobbyStats[V]), r - cA - W, na)
         }
-        if (0 !== F.length)
+        if (0 !== lobbyGames.length)
             for (X = 0; X < y[1]; X++) {
                 na = A;
                 for (W = 0; W < y[0]; W++) {
                     V = P;
                     var ba = Math.floor(na),
                         ca = Math.floor(U);
-                    if (null === F[V].lq) cH.fillStyle = oE, cH.fillRect(ba, ca, z, z);
+                    if (null === lobbyGames[V].canvas) mainCanvasCtx.fillStyle = blackSemiTransparent, mainCanvasCtx.fillRect(ba, ca, z, z);
                     else {
                         var pa = z / 128;
-                        cH.setTransform(pa, 0, 0, pa, ba, ca);
-                        cH.drawImage(F[V].lq, 0, 0);
-                        cH.setTransform(1, 0, 0, 1, 0, 0)
+                        mainCanvasCtx.setTransform(pa, 0, 0, pa, ba, ca);
+                        mainCanvasCtx.drawImage(lobbyGames[V].canvas, 0, 0);
+                        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
                     }
-                    if (N === F[V].wx) {
+                    if (gameSelected === lobbyGames[V].gameID) {
                         pa = ba;
                         var S = ca,
                             O = Math.floor(.2 * z),
                             T = Math.floor(.3 * O);
-                        cH.fillStyle = oO;
-                        cH.fillRect(pa + z - O, S, O, O);
-                        cH.fillStyle = gH;
-                        cH.fillRect(pa + z - O, S, 2, O);
-                        cH.fillRect(pa + z - O, S + O - 2, O, 2);
+                        mainCanvasCtx.fillStyle = greenDarkerMoreOpaque;
+                        mainCanvasCtx.fillRect(pa + z - O, S, O, O);
+                        mainCanvasCtx.fillStyle = blackRGB;
+                        mainCanvasCtx.fillRect(pa + z - O, S, 2, O);
+                        mainCanvasCtx.fillRect(pa + z - O, S + O - 2, O, 2);
                         fq.m9(pa + z - O + T, S + T, O - 2 * T);
-                        cH.setTransform(1, 0, 0, 1, 0, 0);
-                        cH.lineWidth = 3;
-                        cH.fillStyle = oO
-                    } else cH.fillStyle = oD;
+                        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                        mainCanvasCtx.lineWidth = 3;
+                        mainCanvasCtx.fillStyle = greenDarkerMoreOpaque
+                    } else mainCanvasCtx.fillStyle = blackOpaque;
                     S = Math.floor(t / 4);
-                    cH.fillRect(ba, Math.floor(ca + .8 *
+                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 *
                         t), z, Math.floor(t / 5));
-                    cH.fillRect(ba, ca, S, S);
-                    cH.fillStyle = gH;
-                    cH.fillRect(ba, Math.floor(ca + .8 * t), z, 2);
-                    cH.fillRect(ba + S - 2, ca, 2, S);
-                    cH.fillRect(ba, ca + S - 2, S, 2);
-                    cH.font = C;
-                    cH.textBaseline = cI;
-                    cH.textAlign = mh;
-                    cH.fillStyle = ob;
-                    cH.fillText(F[V].joined.toString(), Math.floor(ba + .07 * t), Math.floor(ca + .9 * t));
-                    256 >= F[V].x2 && (cH.textAlign = cJ, cH.fillStyle = oK, cH.fillText(F[V].x2.toString(), Math.floor(ba + .5 * t), Math.floor(ca + .9 * t)));
-                    cH.textAlign = oj;
-                    cH.fillStyle = oW;
-                    cH.fillText(F[V].nd.toString(), Math.floor(ba + .93 * t), Math.floor(ca +
+                    mainCanvasCtx.fillRect(ba, ca, S, S);
+                    mainCanvasCtx.fillStyle = blackRGB;
+                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 * t), z, 2);
+                    mainCanvasCtx.fillRect(ba + S - 2, ca, 2, S);
+                    mainCanvasCtx.fillRect(ba, ca + S - 2, S, 2);
+                    mainCanvasCtx.font = C;
+                    mainCanvasCtx.textBaseline = middleAlign;
+                    mainCanvasCtx.textAlign = leftAlign;
+                    mainCanvasCtx.fillStyle = blueBrightRGB;
+                    mainCanvasCtx.fillText(lobbyGames[V].joined.toString(), Math.floor(ba + .07 * t), Math.floor(ca + .9 * t));
+                    256 >= lobbyGames[V].maxPlayers && (mainCanvasCtx.textAlign = centerAlign, mainCanvasCtx.fillStyle = greenBrightRGB, mainCanvasCtx.fillText(lobbyGames[V].maxPlayers.toString(), Math.floor(ba + .5 * t), Math.floor(ca + .9 * t)));
+                    mainCanvasCtx.textAlign = rightAlign;
+                    mainCanvasCtx.fillStyle = redLighterRGB;
+                    mainCanvasCtx.fillText(lobbyGames[V].timeLeft.toString(), Math.floor(ba + .93 * t), Math.floor(ca +
                         .9 * t));
-                    cH.strokeStyle = oc;
-                    cH.strokeRect(ba, ca, z, z);
+                    mainCanvasCtx.strokeStyle = whiteMoreOpaque;
+                    mainCanvasCtx.strokeRect(ba, ca, z, z);
                     O = Math.floor(.16 * t);
                     pa = O / 48;
-                    cH.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
-                    E.length > F[V].jJ && cH.drawImage(E[F[V].jJ], 0, 0);
-                    cH.setTransform(1, 0, 0, 1, 0, 0);
-                    F[V].jK && (V = bw.bz(4), pa = .5 * t / V.width, cH.setTransform(pa, 0, 0, pa, Math.floor(ba + (t - pa * V.width) / 2), Math.floor(ca + (t - pa * V.height) / 2)), cH.globalAlpha = .6, cH.drawImage(V, 0, 0), cH.globalAlpha = 1, cH.setTransform(1, 0, 0, 1, 0, 0));
+                    mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
+                    E.length > lobbyGames[V].gamemode && mainCanvasCtx.drawImage(E[lobbyGames[V].gamemode], 0, 0);
+                    mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    lobbyGames[V].isContest && (V = sprites.getValuebyID(4), pa = .5 * t / V.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (t - pa * V.width) / 2), Math.floor(ca + (t - pa * V.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(V, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
                     P++;
-                    if (P >= F.length) return;
+                    if (P >= lobbyGames.length) return;
                     na += t + cA
                 }
                 U += t + cA
@@ -5566,47 +5558,47 @@ function ke() {
 }
 
 function kF() {
-    this.bp = function(g, k) {
+    this.init = function(g, k) {
         aJ.setState(5);
         jh.lm(g, k, !1);
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.cG = function() {
         jh.uv()
     };
-    this.c7 = function(g, k) {
+    this.mouseDown = function(g, k) {
         var n = jh.pP(g, k, 5, 2);
-        5 === n ? aC() : 6 === n && (nameInput.bp(), jh.lm(g, k, !1), c4.c5 = !0)
+        5 === n ? aC() : 6 === n && (nameInput.init(), jh.lm(g, k, !1), c4.canvasDirty = !0)
     }
 }
 
-function kG() {
+function SingleSettings() {
     function g(n, l, x, t, z, y, A, B, C) {
-        cH.fillStyle = z;
-        cH.fillRect(n, l, x, t);
-        0 <= B && (cH.fillStyle = "rgba(" + 22 * B + "," + (110 - 22 * B) + ",0,0.75)", cH.fillRect(n, l, (1 + B) * x / 6, t));
-        0 < C && (cH.fillStyle = "rgba(255,255,255,0.3)", cH.fillRect(n, l, C * x / b8, t));
-        cH.strokeStyle = cK;
-        cH.strokeRect(n, l, x, t);
-        0 !== y && (cH.fillStyle = cK, cH.font = bt + Math.floor(y * t) + bu, cH.fillText(A, Math.floor(n + x / 2), Math.floor(l + .52 * t)))
+        mainCanvasCtx.fillStyle = z;
+        mainCanvasCtx.fillRect(n, l, x, t);
+        0 <= B && (mainCanvasCtx.fillStyle = "rgba(" + 22 * B + "," + (110 - 22 * B) + ",0,0.75)", mainCanvasCtx.fillRect(n, l, (1 + B) * x / 6, t));
+        0 < C && (mainCanvasCtx.fillStyle = "rgba(255,255,255,0.3)", mainCanvasCtx.fillRect(n, l, C * x / maxEntities, t));
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(n, l, x, t);
+        0 !== y && (mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.font = fontWeightBold + Math.floor(y * t) + fontSizeArial, mainCanvasCtx.fillText(A, Math.floor(n + x / 2), Math.floor(l + .52 * t)))
     }
     var k = [0, 0, 0, 0];
     this.dz = [{
         bD: 0,
         mt: 512
     }];
-    this.bp = function() {
-        js.lC = !1;
+    this.init = function() {
+        js.hidden = !1;
         aJ.setState(2);
         this.lv();
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.th = function() {};
     this.lv = function() {
         k[2] = Math.floor((isZoom ? .49 : .4) * bq);
         k[1] = Math.floor((s - k[2] / 6 - this.dz.length * (cA + k[2] / 10)) / 2);
         k[0] = Math.floor((r - k[2]) / 2);
-        js.lC && js.lv()
+        js.hidden && js.lv()
     };
     this.xL = function(n) {
         var l;
@@ -5624,67 +5616,67 @@ function kG() {
         }
     };
     this.vj = function() {
-        c4.c5 = !0;
-        js.lC ? js.lC = !1 : (this.th(), nameInput.bp())
+        c4.canvasDirty = !0;
+        js.hidden ? js.hidden = !1 : (this.th(), nameInput.init())
     };
-    this.jM = function() {
+    this.getEntityCount = function() {
         var n;
-        if (dr.ds) return dr.dt.xN;
+        if (customMap.ds) return customMap.dt.xN;
         var l = 0;
         for (n = this.dz.length - 1; 0 <= n; n--) l += this.dz[n].mt;
         return l
     };
     this.lm = function(n, l) {
-        return js.lC && js.lm(n,
+        return js.hidden && js.lm(n,
             l) ? !0 : -1 === this.pP(n, l) ? !1 : !0
     };
     this.xO = function() {
         wsManager.remote = 0;
         wsManager.ri(0, 3) && dataEncoder.singlePlayed(0);
         aJ.ve();
-        if (dr.ds) dr.xQ();
+        if (customMap.ds) customMap.xQ();
         else {
             var n = this.dz.length - 2;
             n = 0 > n ? 7 : n;
-            jG(Math.floor(16384 * Math.random()), 0, [{
+            gameInit(Math.floor(16384 * Math.random()), 0, [{
                 name: nameInput.getInput(),
-                xS: mainSettings.buttons[2].buttonClass.getRGB64(),
-                xT: 0
+                color: mainSettings.buttons[2].buttonClass.getRGB64(),
+                status: 0
             }], n, !1)
         }
     };
     this.click = function(n, l) {
         return !1
     };
-    this.c7 = function(n, l) {
-        if (mainLeaderboard.lC || mainSettings.buttons[1].buttonClass.lC || mainSettings.buttons[2].buttonClass.lC) return !1;
-        if (js.lC && !dr.ds) return js.c7(n, l);
+    this.mouseDown = function(n, l) {
+        if (mainLeaderboard.hidden || mainSettings.buttons[1].buttonClass.hidden || mainSettings.buttons[2].buttonClass.hidden) return !1;
+        if (js.hidden && !customMap.ds) return js.mouseDown(n, l);
         var x = this.pP(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.vj(), !0;
-        if (1 === x) return dr.ds ? (dr.pU(), c4.c5 = !0) : js.show(), !0;
+        if (1 === x) return customMap.ds ? (customMap.pU(), c4.canvasDirty = !0) : js.show(), !0;
         if (2 === x) return this.th(),
             this.xO(), !0;
-        if (dr.ds) return !1;
+        if (customMap.ds) return !1;
         if (27 === x) return 8 > this.dz.length && (this.dz.push({
             bD: 0,
-            mt: b8
-        }), this.xM(), this.lv(), c4.c5 = !0), !0;
+            mt: maxEntities
+        }), this.xM(), this.lv(), c4.canvasDirty = !0), !0;
         var t = Math.floor((x - 3) / 3);
-        if (0 === x % 3) return 1 < this.dz.length && (this.dz.splice(t, 1), this.lv(), c4.c5 = !0), !0;
+        if (0 === x % 3) return 1 < this.dz.length && (this.dz.splice(t, 1), this.lv(), c4.canvasDirty = !0), !0;
         var z = (k[2] - k[2] / 10 - 2 * cA) / 2;
         if (1 === x % 3) {
             if (0 === t && 1 === this.dz[t].mt) return !0;
             n < k[0] + k[2] - 1.5 * z - cA ? this.dz[t].bD-- : this.dz[t].bD++;
             0 > this.dz[t].bD ? this.dz[t].bD = 5 : 5 < this.dz[t].bD && (this.dz[t].bD = 0);
-            return c4.c5 = !0
+            return c4.canvasDirty = !0
         }
-        c4.c5 = !0;
+        c4.canvasDirty = !0;
         var y = (n - (k[0] + k[2] - z)) / z - .5;
         y = Math.floor((0 > y ?
-            -(y * y) : y * y) * b8);
+            -(y * y) : y * y) * maxEntities);
         y = 0 === y ? 1 : y;
-        z = b8;
+        z = maxEntities;
         for (x = this.dz.length - 1; 0 <= x; x--) t !== x && (z -= this.dz[x].mt);
         if (0 > y) {
             if (1 === this.dz[t].mt) return this.dz[t].mt = z, !0
@@ -5694,7 +5686,7 @@ function kG() {
         return !0
     };
     this.xM = function() {
-        for (var n = Math.floor(b8 / this.dz.length), l = b8 % this.dz.length, x = this.dz.length - 1; 0 <= x; x--) this.dz[x].mt = n;
+        for (var n = Math.floor(maxEntities / this.dz.length), l = maxEntities % this.dz.length, x = this.dz.length - 1; 0 <= x; x--) this.dz[x].mt = n;
         this.dz[0].mt += l
     };
     this.pP = function(n, l) {
@@ -5714,40 +5706,40 @@ function kG() {
     };
     this.cG = function() {
         var n;
-        cH.lineWidth = 2;
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.textBaseline = middleAlign;
         var l = (k[2] - 2 * cA) / 3,
             x = k[2] / 6;
         g(k[0],
             k[1], l, x, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
-        g(k[0] + l + cA, k[1], l, x, "rgba(" + (dr.ds ? 128 : 0) + ",128,128,0.75)", .4, dr.ds ? "Reset" : "Maps", -1, -1);
+        g(k[0] + l + cA, k[1], l, x, "rgba(" + (customMap.ds ? 128 : 0) + ",128,128,0.75)", .4, customMap.ds ? "Reset" : "Maps", -1, -1);
         g(k[0] + k[2] - l, k[1], l, x, "rgba(0,128,0,0.75)", .4, "Start", -1, -1);
-        if (!dr.ds) {
+        if (!customMap.ds) {
             var t = k[2] / 10;
             l = (k[2] - t - 2 * cA) / 2;
             for (n = 0; n < this.dz.length; n++) {
                 var z = k[1] + x + cA + n * (t + cA);
                 g(k[0], z, t, t, "rgba(0,128,0,0.75)", 0, null, -1);
-                g(k[0] + t + cA, z, l, t, hy, .4, this.xV(n), this.dz[n].bD, -1);
-                g(k[0] + k[2] - l, z, l, t, hy, .4, this.xW(n), -1, this.dz[n].mt)
+                g(k[0] + t + cA, z, l, t, blackMoreOpaque, .4, this.xV(n), this.dz[n].bD, -1);
+                g(k[0] + k[2] - l, z, l, t, blackMoreOpaque, .4, this.xW(n), -1, this.dz[n].mt)
             }
             if (8 > this.dz.length) {
                 z = k[1] + x + cA + this.dz.length * (t +
                     cA);
                 g(k[0], z, t, t, "rgba(128,128,20,0.75)", 0, null, -1, -1);
                 n = k[0];
-                cH.fillStyle = cK;
+                mainCanvasCtx.fillStyle = whiteRGB2;
                 l = getMax(2, Math.floor(.5 * t));
                 l -= l % 2;
                 x = getMax(2, Math.floor(.1 * t));
                 x -= x % 2;
                 t = Math.floor((t - l) / 2);
                 var y = Math.floor(t + (l - x) / 2);
-                cH.fillRect(n + t, z + y, l, x);
-                cH.fillRect(n + y, z + t, x, l)
+                mainCanvasCtx.fillRect(n + t, z + y, l, x);
+                mainCanvasCtx.fillRect(n + y, z + t, x, l)
             }
-            js.lC && js.cG()
+            js.hidden && js.cG()
         }
     };
     this.xV = function(n) {
@@ -5759,9 +5751,9 @@ function kG() {
 }
 
 function MainSettings() {
-    this.c1 = this.b3 = 0;
+    this.width = this.b3 = 0;
     this.buttons = null;
-    this.bp = function() {
+    this.init = function() {
         this.buttons = [];
         this.buttons.push({
             fJ: 0,
@@ -5783,80 +5775,78 @@ function MainSettings() {
         });
         this.buttons[2].buttonClass.v3();
         this.b3 = this.buttons.length;
-        this.c1 = 0
+        this.width = 0
     };
     this.rq = function() {
-        this.c1 = Math.floor((isZoom ? .063 : .04) * bq);
-        this.c1 += 4 - this.c1 % 4;
+        this.width = Math.floor((isZoom ? .063 : .04) * bq);
+        this.width += 4 - this.width % 4;
         this.buttons[0].fJ = cA;
-        this.buttons[0].fK = cB - this.c1 - cA;
-        for (var g = 1; g < this.b3; g++) this.buttons[g].fJ = this.buttons[g - 1].fJ + Math.floor(isZoom ? 1.5 * cA : 3.7 * cA) + this.c1, this.buttons[g].fK = this.buttons[0].fK
+        this.buttons[0].fK = cB - this.width - cA;
+        for (var g = 1; g < this.b3; g++) this.buttons[g].fJ = this.buttons[g - 1].fJ + Math.floor(isZoom ? 1.5 * cA : 3.7 * cA) + this.width, this.buttons[g].fK = this.buttons[0].fK
     };
-    this.pP =
-        function(g, k) {
-            if (!bw.bx()) return -1;
-            for (var n = this.b3 - 1; 0 <= n; n--)
-                if (g >= this.buttons[n].fJ && k >= this.buttons[n].fK && g < this.buttons[n].fJ + this.c1 && k < this.buttons[n].fK + this.c1) return n;
-            return -1
-        };
+    this.pP = function(g, k) {
+        if (!sprites.bx()) return -1;
+        for (var n = this.b3 - 1; 0 <= n; n--)
+            if (g >= this.buttons[n].fJ && k >= this.buttons[n].fK && g < this.buttons[n].fJ + this.width && k < this.buttons[n].fK + this.width) return n;
+        return -1
+    };
     this.xZ = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.lC) return !0;
+            if (this.buttons[g].buttonClass.hidden) return !0;
         return !1
     };
-    this.uh = function() {
-        return this.buttons[1].buttonClass.lC ? (this.buttons[1].buttonClass.c7(-5E3, -5E3, 0), !0) : this.buttons[2].buttonClass.lC ? (this.buttons[2].buttonClass.c7(-5E3, -5E3), !0) : !1
+    this.hideIfNotHidden = function() {
+        return this.buttons[1].buttonClass.hidden ? (this.buttons[1].buttonClass.mouseDown(-5E3, -5E3, 0), !0) : this.buttons[2].buttonClass.hidden ? (this.buttons[2].buttonClass.mouseDown(-5E3, -5E3), !0) : !1
     };
-    this.c7 = function(g, k, n) {
+    this.mouseDown = function(g, k, n) {
         if (n) {
-            if (this.buttons[1].buttonClass.lC) return this.buttons[1].buttonClass.c7(g, k, 0), !0;
-            if (this.buttons[2].buttonClass.lC) return this.buttons[2].buttonClass.c7(g,
-                k), !0
+            if (this.buttons[1].buttonClass.hidden) return this.buttons[1].buttonClass.mouseDown(g, k, 0), !0;
+            if (this.buttons[2].buttonClass.hidden) return this.buttons[2].buttonClass.mouseDown(g, k), !0
         }
         g = this.pP(g, k);
         if (n) {
             if (0 === g) return this.buttons[g].m1 = !this.buttons[g].m1, isZoom = this.buttons[g].m1, jq.xa(), a1(this.buttons[0].m1, !1), !0;
-            if (1 <= g && 3 > g) return this.buttons[g].buttonClass.bp(), nameInput.th(), c4.c5 = !0
+            if (1 <= g && 3 > g) return this.buttons[g].buttonClass.init(), nameInput.th(), c4.canvasDirty = !0
         }
         return !1
     };
     this.lm = function(g, k) {
-        return this.buttons[1].buttonClass.lC ? (this.buttons[1].buttonClass.lm(g, k), !0) : this.buttons[2].buttonClass.lC ? (this.buttons[2].buttonClass.lm(g), !0) : !1
+        return this.buttons[1].buttonClass.hidden ? (this.buttons[1].buttonClass.lm(g, k), !0) : this.buttons[2].buttonClass.hidden ? (this.buttons[2].buttonClass.lm(g), !0) : !1
     };
     this.v8 = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.lC) return this.buttons[g].buttonClass.v8(), !0;
+            if (this.buttons[g].buttonClass.hidden) return this.buttons[g].buttonClass.v8(), !0;
         return !1
     };
     this.cG = function() {
-        if (bw.bx()) {
-            cH.imageSmoothingEnabled = !0;
-            for (var g = this.b3 - 1; 0 <= g; g--) cH.fillStyle =
-                this.buttons[g].m1 ? mZ : hy, cH.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.c1, this.c1), 0 === g ? this.xb(g, bw.bz(15)) : 1 === g ? this.xc() : 2 === g && this.xd(), cH.setTransform(1, 0, 0, 1, 0, 0), cH.lineWidth = ow, cH.strokeStyle = cK, cH.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.c1, this.c1);
-            cH.imageSmoothingEnabled = !1
+        if (sprites.bx()) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            for (var g = this.b3 - 1; 0 <= g; g--) mainCanvasCtx.fillStyle =
+                this.buttons[g].m1 ? greenDarkMoreOpaque : blackMoreOpaque, mainCanvasCtx.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width), 0 === g ? this.xb(g, sprites.getValuebyID(15)) : 1 === g ? this.xc() : 2 === g && this.xd(), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+            mainCanvasCtx.imageSmoothingEnabled = !1
         }
     };
     this.xb = function(g, k) {
-        var n = .08 * this.c1,
-            l = (this.c1 - 2 * n) / k.width;
-        cH.setTransform(l, 0, 0, l, this.buttons[g].fJ + n, this.buttons[g].fK + (this.c1 - l * k.height) / 2);
-        cH.drawImage(k, 0, 0)
+        var n = .08 * this.width,
+            l = (this.width - 2 * n) / k.width;
+        mainCanvasCtx.setTransform(l, 0, 0, l, this.buttons[g].fJ + n, this.buttons[g].fK + (this.width - l * k.height) / 2);
+        mainCanvasCtx.drawImage(k, 0, 0)
     };
     this.xc = function() {
-        var g = .06 * this.c1,
-            k = (this.c1 - 2 *
-                g) / a5.c1;
-        cH.setTransform(k, 0, 0, k, this.buttons[1].fJ + g, this.buttons[1].fK + g);
-        cH.drawImage(a5.l5[4], 0, 0)
+        var g = .06 * this.width,
+            k = (this.width - 2 *
+                g) / a5.width;
+        mainCanvasCtx.setTransform(k, 0, 0, k, this.buttons[1].fJ + g, this.buttons[1].fK + g);
+        mainCanvasCtx.drawImage(a5.l5[4], 0, 0)
     };
     this.xd = function() {
-        cH.setTransform(1, 0, 0, 1, this.buttons[2].fJ, this.buttons[2].fK);
-        for (var g = this.c1 / 4, k = 3; 0 <= k; k--)
-            for (var n = 3; 0 <= n; n--) cH.fillStyle = "rgb(" + Math.floor(367 * (k + 1) * (n + 1) % 256) + "," + Math.floor(687 * (k + 1) * (n + 1) % 256) + "," + Math.floor(651 * (k + 1) * (n + 1) % 256) + ")", cH.fillRect(k * g, n * g, g, g)
+        mainCanvasCtx.setTransform(1, 0, 0, 1, this.buttons[2].fJ, this.buttons[2].fK);
+        for (var g = this.width / 4, k = 3; 0 <= k; k--)
+            for (var n = 3; 0 <= n; n--) mainCanvasCtx.fillStyle = "rgb(" + Math.floor(367 * (k + 1) * (n + 1) % 256) + "," + Math.floor(687 * (k + 1) * (n + 1) % 256) + "," + Math.floor(651 * (k + 1) * (n + 1) % 256) + ")", mainCanvasCtx.fillRect(k * g, n * g, g, g)
     };
     this.vn = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.lC) {
+            if (this.buttons[g].buttonClass.hidden) {
                 this.buttons[g].buttonClass.cG();
                 break
             }
@@ -5871,27 +5861,27 @@ function NameInput() {
         nameInput.candidateID = t[1];
         k();
         wsManager.ri(0, 7) && dataEncoder.discordVote(0);
-        jj.vS(3252);
+        showError.vS(3252);
         return !0
     }
 
     function k() {
         x = a();
-        jk.bz(0).input.value = x;
+        jk.getValuebyID(0).input.value = x;
         jk.w3(0, !0)
     }
 
     function n() {
         if (0 !== x.indexOf("account ")) return !1;
         var t = x.split(" ");
-        if (2 !== t.length) return k(), jj.vS(3266), !0;
+        if (2 !== t.length) return k(), showError.vS(3266), !0;
         var z = Math.floor(Math.pow(2, 48));
         t = parseInt(characters.n(t[1]));
-        if (0 >= t || t >= z) return k(), jj.vS(3266), !0;
-        if (o(t)) return k(), jj.vS(3231), !0;
+        if (0 >= t || t >= z) return k(), showError.vS(3266), !0;
+        if (o(t)) return k(), showError.vS(3231), !0;
         k();
-        5 <= deviceVersion ? jj.vS(3232) : (jj.vS(3265), vc.lC = !0,
-            vc.bs = -1);
+        5 <= androidVersion ? showError.vS(3232) : (showError.vS(3265), cookiesPrompt.hidden = !0,
+            cookiesPrompt.bs = -1);
         return !0
     }
 
@@ -5903,48 +5893,48 @@ function NameInput() {
     var x;
     this.candidateID = "";
     this.lastVoteTime = -7E3;
-    this.bp = function() {
+    this.init = function() {
         aJ.setState(0);
         jh.rq();
         jk.cE(0, !0);
         jk.rq(0);
-        jf.bp();
+        jf.init();
         mainSettings.rq();
-        void 0 === x && (x = a(), jk.bz(0).input.value = x, l())
+        void 0 === x && (x = a(), jk.getValuebyID(0).input.value = x, l())
     };
     this.th = function() {
         jk.cE(0, !1)
     };
     this.xh = function(t) {
-        return 0 === t ? jh.c1 : 1 === t ? Math.floor(.3 * jh.cw) : 2 === t ? jk.bz(0).input.style.font : x
+        return 0 === t ? jh.width : 1 === t ? Math.floor(.3 * jh.height) : 2 === t ? jk.getValuebyID(0).input.style.font : x
     };
     this.w2 = function() {
-        x = jk.bz(0).input.value.trim();
+        x = jk.getValuebyID(0).input.value.trim();
         l();
         if ("password" === x || "account" === x) {
             var t = characters.z(j().toString());
             x = "account " + t;
-            jk.bz(0).input.value = x
+            jk.getValuebyID(0).input.value = x
         }
     };
-    this.c7 = function(t, z) {
+    this.mouseDown = function(t, z) {
         c4.xi();
-        1 === jh.pP(t, z, 1, 1) ? n() || g() || (a9(10), l() ? (this.th(), w(x), dy.bp()) : jj.vS(4214)) : 0 === jh.pP(t, z, 0, 1) && this.vh()
+        1 === jh.pP(t, z, 1, 1) ? n() || g() || (a9(10), l() ? (this.th(), w(x), singleSettings.init()) : showError.vS(4214)) : 0 === jh.pP(t, z, 0, 1) && this.vh()
     };
     this.vh = function() {
-        n() || g() || (a9(10), void 0 !== x && characters.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vK((Math.abs(x.charCodeAt(1)) + 7) % wsManager.vM) : ji.vK(jt.xn - 1), l() ? bw.bx() ? (this.th(), w(x), dr.pU(), ji.bp()) : jj.vS(3228) : jj.vS(4214))
+        n() || g() || (a9(10), void 0 !== x && characters.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vK((Math.abs(x.charCodeAt(1)) + 7) % wsManager.terriWsCount) : ji.vK(jt.xn - 1), l() ? sprites.bx() ? (this.th(), w(x), customMap.pU(), ji.init()) : showError.vS(3228) : showError.vS(4214))
     };
     this.xr = function() {
-        return !mainSettings.xZ() && !mainLeaderboard.lC && !nU.lC
+        return !mainSettings.xZ() && !mainLeaderboard.hidden && !openLinkBox.hidden
     };
     this.cG = function() {
         if (this.xr()) {
-            cH.imageSmoothingEnabled = !0;
-            var t = bw.l9("territorial.io"),
-                z = 1.1 * jh.c1 / t.width;
-            cH.setTransform(z, 0, 0, z, Math.floor((gE - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.cw);
-            cH.drawImage(t, 0, 0);
-            cH.setTransform(1, 0, 0, 1, 0, 0);
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            var t = sprites.l9("territorial.io"),
+                z = 1.1 * jh.width / t.width;
+            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((gE - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.height);
+            mainCanvasCtx.drawImage(t, 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             jh.us()
         }
     };
@@ -5953,21 +5943,21 @@ function NameInput() {
     }
 }
 
-function kI() {
+function Sprites() {
     function g(t, z, y, A) {
         l[t] = z;
-        n[t] = new Image;
-        n[t].onload = function() {
+        spriteImages[t] = new Image;
+        spriteImages[t].onload = function() {
             if (0 < y) {
                 var B, C, E = document.createElement("canvas"),
-                    F = n[t].width,
-                    G = n[t].height;
+                    F = spriteImages[t].width,
+                    G = spriteImages[t].height;
                 E.width = F;
                 E.height = G;
                 var N = E.getContext("2d", {
                     alpha: !0
                 });
-                N.drawImage(n[t], 0, 0);
+                N.drawImage(spriteImages[t], 0, 0);
                 var I = N.getImageData(0, 0, F, G),
                     D = I.data;
                 if (3 > y) {
@@ -5995,24 +5985,23 @@ function kI() {
                     for (B = F - 1; 0 <= B; B--)
                         for (C = G - 1; 0 <= C; C--) J = 4 * (B + C * F), D[J + 1] > D[J + 2] + 10 && (D[J + 3] = D[J], D[J + 1] = D[J + 2]);
                 N.putImageData(I, 0, 0);
-                n[t] = E
+                spriteImages[t] = E
             }
             k--;
-            bw.bx() && (uO.bv(), hu.l1(), a5.bp(), vk.uk([n[8], n[16], n[7], n[9], n[10]], [!isIOS, 0 === deviceVersion, !0, !0, !0]), c4.c5 = !0, n[7] = x, n[8] = x, n[9] = x, n[10] = x)
+            sprites.bx() && (uO.bv(), hu.l1(), a5.init(), vk.uk([spriteImages[8], spriteImages[16], spriteImages[7], spriteImages[9], spriteImages[10]], [!isIOS, 0 === androidVersion, !0, !0, !0]), c4.canvasDirty = !0, spriteImages[7] = x, spriteImages[8] = x, spriteImages[9] = x, spriteImages[10] = x)
         };
-        n[t].src = A
+        spriteImages[t].src = A
     }
-    var k, n, l, x;
-    this.bp = function() {
-        if (void 0 === n) {
+    var k, spriteImages, l, x;
+    this.init = function() {
+        if (void 0 === spriteImages) {
             k = 20;
-            n = Array(k);
-            l =
-                Array(k);
+            spriteImages = Array(k);
+            l = Array(k);
             x = document.createElement("canvas");
             x.width = 1;
             x.height = 1;
-            for (var t = k - 1; 0 <= t; t--) n[t] = x;
+            for (var t = k - 1; 0 <= t; t--) spriteImages[t] = x;
             g(0, "exit", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAABGBAMAAACkrn5fAAAAHlBMVEUAAAAiJCI4OjdcXltoameIioejpqPExsPY29j///9xarZIAAAAyUlEQVRIx+3WQQqCQBTG8TdOB5DUI+S6nRcoPIFhu1bBHGGO4Any3TYxAkWTv1DSYr71D4b5mOE9kWmszkeC/ZptT6Ocl+xj5qgtbVR1iZn9VE2wU2uO2Jryhm2h2OaKbdZgu/NKrXVK7f6q1JpaqTWFYpvrUtqhPTTYpst0aBOv2Drltlxh392iu0U1t5I4biX13PZvF7+zvOFWihXWlNy+aqZ/M3LcivXcds1xK9kKK3GYAVtYe+8CZ/c/7Br9blSNcgn75O/tE26TasUvH0ImAAAAAElFTkSuQmCC");
             g(1, "victory", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUIAAABBBAMAAABWYLC1AAAAElBMVEUAAAA6PDlbXVqEhoO4urf///8hX3N2AAAEcklEQVRo3s2ZyZKcMAyGWdx3alLcSaW4k8lwZ9LjuwH3+79KlkljLb/czFJp+tYusD8k/ZItF/5y/a0F/dXb+KW472/cQCIbd8b4//+dDFu12/ByZ8Jkq0uHbRvuTFglwomOezx8j5/HxkrgTXEYqSxQyvcWCpVEhOG53p3QQTGfDiMUlppJxPXHEQrVxIT0092fEOaVw9Q8LpV5GysPJGUsWweojyCVCAgPIBQYc8nzwxEIvcYZjyQUmPv8kYQC68dhNoeWmOsD1Tyc/G5L+elvHLzs0tG3l7/PPn6KVJTfGxqpG0+9vXFW2w+ZGaoU0x3YrfwZP3dkrONijUK5ndBOLBAh2Wz8CwybMAESRPX4kDwZuGODMNkkjLoiwtLTyac8IXs2NpbJO2E0YVInhSH/c8LxolY1CVs+tFiEi2TqGW8lZqikTRlhLSYPGcIK2Ao/3gi/ilwiErQz4nIAJnx9xyJsga3w4xN3s6EbTVhowhJNbhCWyFaYcOVUvShpLZ+glfmREurZZ5MQ2wqOx/Q9k3YyeWNgJp0B4YgmNwh7aCv8eJp61U4mwT+xsJwA4Zarv37xm+ENQr89+/BCAwc93qXhRjmZpJeZ/Rs0YU1scU2MU1FkM/tKbT8kwt8+LB+8TtrT9dMCqHsrsyhYmdnfiYkEoaPBXRG/sPd8eunqZqfPmS1MHRGsfGLF5nX2Z4OwZWm6T15ihK3+/D7XBKFFcAErjzKVx3NTGIT8WZe+jRGSl0pdC7RUBqJW5D3P7O/iI9itDzx2Gla5oiAs6YwjKEBSKhOQMiDMnicGNmkUwc6V8sPTmHeyWAGpBELbgJWzx5c3Emqc0nIyya1Lqvax+BhhKfoE4/bdgHDR+6YOn6Zien0FK5fZpiInrITeRpWaL6qr5SwnUzGftJXTytUbCGszIzhjR8HcHKzTVNfqU9SHCGeRdAdjB1vgE4mWyuR1Q0QRLm8gDHsI9SErmg334HVD5EOE8w4vP2tnBrPxsICPeJ9SjDgESnkGpurMxkMEnUOVbT5Xy2cAEnN3U7rd8Kn5EGRscJOz5LqIunNoElbx+0eq3hev17IJRyNDwbpMGjwv3V5CsHOotRFtwhYWSmvn0BB9nfftbUq0txlV3rAJHTry6JVR+yG+f3/oVNDbhKiVYO+xWftkNQhPbLEW7bEr5WabsLClDM4p7Og/7zmnlPic4mVMZQj9xdzgkpUrmmTfctbr4VlvC/9hB2FvCoWtnM7A31SukJ1Qcl5+Audl2pMKOwidKRS2cm81WwHhmO85BOL8dQdhLZsxmNDhRSHhjb5NoF+xg7AwhcJX9nZ5lIRFvvcV6JZl2kHojZonVm7t4tMbG0ujfxio6+YdhD2MLbVyZZd9RVjhYo+6InEH4ck8q/KVezMt9daeA/exWc/h6oocoTP2Q/m7gKXIEZa5u4DAlp1uE5aWUHL3KbHIEvL7FFFsAouE+TYhlcqQIyR3UrG5QZi7kwoFCMT6k648n17v6n7uv9eL5/et9Asv0oTxJYkUxgAAAABJRU5ErkJggg==");
             g(2, "defeat", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARMAAABABAMAAADL6o5mAAAAHlBMVEUAAAAlJyU7PTtUVlNsbmuJi4ijpaLCxMHX2db///+Cup+UAAACo0lEQVRo3s3ZsW7bMBAAUNqyZWUzsnT1VECbhy7ZvHTwlqmAN6PoUG0CggzairpIyi1Nk1b629awTPGOpHm0DyE1WYJEPlHk3UkW6w5t7eMXEWczKHvN52QoXfcjHUoUi4PSbdOhtItkKBEekZPSLdOh7NKhtOlQ3nwRnaC8pENp06F0t+lQvsWi/O/4+uPXiJNljcbgvUb5G5ci3mmWeVyKqGLNW5MyGyh1ZMo41hIyKaJRh573u9JY5HDo1LMsjBOfBLq9/oC0Rg4L5UYdeuWi5HqDAZShyT9clAKGBzJlBgMLB0UN9CKMksOEyEFpYOFBpkxBpywU1AmZkrFThpv7HUYZwcjPQEGzj04RsOpnoJRwnGNScFo7h7JS16HqcmbJDIUzW0hrWstQVfQWlMkhXg655BzKkoVyOPn7EMDjUa4Os0SidsIoCxbK5tBWhV7FCZSRJ8RtT1M6mE2PYb/tE1EdQsnoFNCpizLudwqYDCiUqScdhlLyfunkeslCo+TMlKJvPkNvNASKr14JpayPV0mtZKFRfFVcKKU5Cir4rYRAWXtq21CKetY31uVxiiI9FX8gZap+F7BrP2WC3oMupRSqZprBeeunlCiNXkopVesTrWShUDJpLS7sgd9GwYG/cn1B8lFGVWctuc7PQcao1hTK9YdP0hjgCykTo1579lLM7RcHxSg9VZYMoWw5KFfOL58BlHbOQdmYDa+CKeC1/2yKpbqvgyk1B2VsafgplNI6b6smVnH7wJq7h5tO2bFQCvdNkintkoVibX8RRtkJFkoDUmCpRwkqpZ3zUMDsgDObStkKFspUj9tqEr+EUO4EDwUt8Ez/ykKj3AkmSonGWGopn0J5WAkuSoX+KG60ksVL+Xm/8kXuAAoO1RvtOkT5B9F51EylDpRdAAAAAElFTkSuQmCC");
@@ -6035,12 +6024,12 @@ function kI() {
             g(19, "target", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAMFBMVEXUAADUISLWQkLMTQDZZmXAdwC0lADgiIioqQCWvgCE0QAA/wDnra1i6ADw0tL////afMd+AAAC6klEQVRIx42WTWgTURCApzFNY2lLBKEX0dy8iA0UxB8CKgUv0gaKBS2B3HOJnkUDQrENQi6KEITcgydR0l0CUYReJBZCi3YpaC+9FANS6GXZ5+6+eT+z+1adS/ImX97Mzs4f2ET2916vPV9/61At6Ifeq2UIZWXDSYK+IxLIlY4Z+ga6jL8xQbsFoFQrDtF7QqoThaxSDIKsE4HqYJAyhXZNDJxq6VCvZIQgq0NDSJCGgnqFJCiroB2lHTvjS06dWxJSHl0cjBjztm5JxXUBdaXqro8E4j2UD+gg1BamFpkQ75GgVjkkn/8SU+LVUHmaQx/wmB5pEHNzyh4oa08ZkU+oroZQhR8mKMO8PNdPBpBlvoixA67PBBC6lI4yzJVOgb3Nv1+OQawm3h9gJo19jUPHHLrhQ4UEazIKkzZYHJoRvxwuLAzE95voOWzyO5dQ/zkw/QQPfe65DfhwGO2T8JBCB39zqAM8l1Ij3QBMkSC0YFsP94nIB/4fj3vegLb+175IkCX94io0w8/zXJkX0IwezjLUNciTKZrWoSJCF4hLvlCookHHChppPhaB5+7c36BpvOm/oH+Y0x13VSFTx5vGEEzQOPGInyO5KPOUR3yVvrsDIFWBBVOFoR5hlwYczTfgPUmVj1y9SJKiBdhSMM3c0ItZzMwfWFMifeeYomZHpKb89MVWOCWr++hXpNCzfkmViFO6oEvTPtROaAWM/RRtDOx3QO0pyYveCjZ6HreH1saDhiGaeKxj9GUrBzl70iNj54FiCA3BeFVNtXsfEq2Odh/xrjPYxyuG9nuU00YC6DPqrKTcvD6nAshSNclbk3coR1BGDqCmpFJ3Hg++bN2OTNgQ6uojTh9kfP7g5KwnDcWiNl67CQy/SEzzhKvKZORvGqdwxqHLw47JWCOyYfSexaEHsYUmvj9cM6xG1jJlrjqmJcsiFu875nWt91I+4/yLxMXP3lu753PzK+tO8nYY3LbvS2SDtP8A+ntynBIvYeAAAAAASUVORK5CYII=")
         }
     };
-    this.bz = function(t) {
-        return n[t]
+    this.getValuebyID = function(spriteID) {
+        return spriteImages[spriteID]
     };
     this.l9 = function(t) {
         for (var z = l.length - 1; 0 <= z; z--)
-            if (l[z] === t) return n[z];
+            if (l[z] === t) return spriteImages[z];
         return x
     };
     this.bx = function() {
@@ -6048,19 +6037,19 @@ function kI() {
     }
 }
 
-function kJ() {
+function Pixel() {
     function g(D, K) {
-        tx[D] = 0;
-        tx[D + 1] = 0;
-        tx[D + 2] = K;
-        tx[D + 3] = 0;
+        pixelRGBA[D] = 0;
+        pixelRGBA[D + 1] = 0;
+        pixelRGBA[D + 2] = K;
+        pixelRGBA[D + 3] = 0;
         k(D)
     }
 
     function k(D) {
         if (!h8.h9) {
-            var K = b5.gF(D);
-            D = b5.cF(D);
+            var K = pixel.gF(D);
+            D = pixel.cF(D);
             h8.h9 = K >= gy.tw[0] && K <= gy.tw[2] && D >= gy.tw[1] && D <= gy.tw[3]
         }
     }
@@ -6088,50 +6077,50 @@ function kJ() {
             [4, 4, 4, 13]
         ],
         t, z, y, A, B, C, E, F, G, N, I;
-    this.bp = function(D) {
-        t = new Uint8Array(b8);
-        z = new Uint8Array(b8);
-        y = new Uint8Array(b8);
-        A = new Uint8Array(b8);
-        B = new Uint8Array(b8);
-        C = new Uint8Array(b8);
-        E = new Uint8Array(b8);
-        F = new Uint8Array(b8);
-        G = new Uint8Array(b8);
-        N = new Uint8Array(b8);
-        this.qv = new Uint8Array(b8);
+    this.init = function(D) {
+        t = new Uint8Array(maxEntities);
+        z = new Uint8Array(maxEntities);
+        y = new Uint8Array(maxEntities);
+        A = new Uint8Array(maxEntities);
+        B = new Uint8Array(maxEntities);
+        C = new Uint8Array(maxEntities);
+        E = new Uint8Array(maxEntities);
+        F = new Uint8Array(maxEntities);
+        G = new Uint8Array(maxEntities);
+        N = new Uint8Array(maxEntities);
+        this.qv = new Uint8Array(maxEntities);
         I = new Int32Array(4);
-        I[0] = -4 * aZ;
+        I[0] = -4 * currentMapWidth;
         I[1] = 4;
         I[2] = -I[0];
         I[3] = -I[1];
-        if (dA)
-            for (var K, J = b8 - 1; 0 <= J; J--) K = dW.im[dW.dX[J]], D = divideFloor((x[K][3] + 1) * ce.random(), ce.value(100)), t[J] = l[K][0] + D * x[K][0], z[J] = l[K][1] + D * x[K][1], y[J] = l[K][2] + D * x[K][2];
-        else if (dr.ds && dr.dt.yP)
-            for (D = dr.dt.yP, K = hM - 1; 0 <= K; K--) t[K] = 4 * D[K][0], z[K] = 4 * D[K][1], y[K] = 4 * D[K][2];
+        if (teamGame)
+            for (var K, J = maxEntities - 1; 0 <= J; J--) K = teams.im[teams.dX[J]], D = divideFloor((x[K][3] + 1) * fakeRandom.random(), fakeRandom.value(100)), t[J] = l[K][0] + D * x[K][0], z[J] = l[K][1] + D * x[K][1], y[J] = l[K][2] + D * x[K][2];
+        else if (customMap.ds && customMap.dt.yP)
+            for (D = customMap.dt.yP, K = entityCount - 1; 0 <= K; K--) t[K] = 4 * D[K][0], z[K] = 4 * D[K][1], y[K] = 4 * D[K][2];
         else {
             for (K =
-                b8 - 1; K >= cq; K--) t[K] = 4 * divideFloor(64 * ce.random(), ce.value(100)), z[K] = 4 * divideFloor(64 * ce.random(), ce.value(100)), y[K] = 4 * divideFloor(64 * ce.random(), ce.value(100));
-            for (K = cq - 1; 0 <= K; K--) t[K] = 4 * D[K].xS[0], z[K] = 4 * D[K].xS[1], y[K] = 4 * D[K].xS[2]
+                maxEntities - 1; K >= playerCount; K--) t[K] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100)), z[K] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100)), y[K] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
+            for (K = playerCount - 1; 0 <= K; K--) t[K] = 4 * D[K].color[0], z[K] = 4 * D[K].color[1], y[K] = 4 * D[K].color[2]
         }
-        for (D = b8 - 1; 0 <= D; D--) K = divideFloor(t[D] + z[D] + y[D], 3), t[D] += allDivideFloor(K - t[D], 2), z[D] += allDivideFloor(K - z[D], 2), y[D] += allDivideFloor(K - y[D], 2), t[D] -= t[D] % 4, z[D] -= z[D] % 4, y[D] -= y[D] % 4;
-        for (D = b8 - 1; 0 <= D; D--) t[D] += divideFloor(D, 128), z[D] += divideFloor(D % 128, 32), y[D] += divideFloor(D % 32, 8), A[D] = D % 8;
+        for (D = maxEntities - 1; 0 <= D; D--) K = divideFloor(t[D] + z[D] + y[D], 3), t[D] += allDivideFloor(K - t[D], 2), z[D] += allDivideFloor(K - z[D], 2), y[D] += allDivideFloor(K - y[D], 2), t[D] -= t[D] % 4, z[D] -= z[D] % 4, y[D] -= y[D] % 4;
+        for (D = maxEntities - 1; 0 <= D; D--) t[D] += divideFloor(D, 128), z[D] += divideFloor(D % 128, 32), y[D] += divideFloor(D % 32, 8), A[D] = D % 8;
         this.yV();
-        for (D = b8 - 1; 0 <= D; D--) B[D] = 32 > t[D] ? t[D] + 32 : t[D] - 32, C[D] = 32 > z[D] ?
+        for (D = maxEntities - 1; 0 <= D; D--) B[D] = 32 > t[D] ? t[D] + 32 : t[D] - 32, C[D] = 32 > z[D] ?
             z[D] + 32 : z[D] - 32, E[D] = 32 > y[D] ? y[D] + 32 : y[D] - 32;
-        for (D = b8 - 1; 0 <= D; D--) F[D] = 235 < t[D] ? t[D] - 20 : t[D] + 20, G[D] = 235 < z[D] ? z[D] - 20 : z[D] + 20, N[D] = 235 < y[D] ? y[D] - 20 : y[D] + 20
+        for (D = maxEntities - 1; 0 <= D; D--) F[D] = 235 < t[D] ? t[D] - 20 : t[D] + 20, G[D] = 235 < z[D] ? z[D] - 20 : z[D] + 20, N[D] = 235 < y[D] ? y[D] - 20 : y[D] + 20
     };
     this.yV = function() {
-        for (var D = b8 - 1; 0 <= D; D--) this.qv[D] = 280 > t[D] + z[D] + y[D] ? 0 : 1
+        for (var D = maxEntities - 1; 0 <= D; D--) this.qv[D] = 280 > t[D] + z[D] + y[D] ? 0 : 1
     };
     this.gF = function(D) {
-        return divideFloor(D, 4) % aZ
+        return divideFloor(D, 4) % currentMapWidth
     };
     this.cF = function(D) {
-        return divideFloor(D, 4 * aZ)
+        return divideFloor(D, 4 * currentMapWidth)
     };
     this.f1 = function(D, K) {
-        return Math.floor(4 * (K * aZ + D))
+        return Math.floor(4 * (K * currentMapWidth + D))
     };
     this.hh = function(D) {
         return this.yZ(D + I[0]) || this.yZ(D + I[1]) || this.yZ(D + I[2]) || this.yZ(D + I[3])
@@ -6141,7 +6130,7 @@ function kJ() {
             K) || this.ya(D + I[1], K) || this.ya(D + I[2], K) || this.ya(D + I[3], K)
     };
     this.bE = function(D) {
-        return 208 <= tx[D + 3]
+        return 208 <= pixelRGBA[D + 3]
     };
     this.hm = function(D, K) {
         return this.bE(K) && this.yb(D, K)
@@ -6150,10 +6139,10 @@ function kJ() {
         return D === this.bF(K)
     };
     this.yc = function(D) {
-        return 208 <= tx[D + 3] && 224 > tx[D + 3]
+        return 208 <= pixelRGBA[D + 3] && 224 > pixelRGBA[D + 3]
     };
     this.cU = function(D) {
-        return 224 <= tx[D + 3] && 248 > tx[D + 3]
+        return 224 <= pixelRGBA[D + 3] && 248 > pixelRGBA[D + 3]
     };
     this.hg = function(D) {
         for (var K = 3; 0 <= K; K--)
@@ -6161,7 +6150,7 @@ function kJ() {
         return !1
     };
     this.ye = function(D) {
-        return 192 <= tx[D + 3] && 208 > tx[D + 3]
+        return 192 <= pixelRGBA[D + 3] && 208 > pixelRGBA[D + 3]
     };
     this.yf = function(D, K) {
         return this.ye(D) && K === this.bF(D)
@@ -6171,19 +6160,19 @@ function kJ() {
             return this.bE(D) || this.bG(D)
         };
     this.yd = function(D) {
-        return 0 === tx[D + 3] && 2 === tx[D + 2] || this.ye(D)
+        return 0 === pixelRGBA[D + 3] && 2 === pixelRGBA[D + 2] || this.ye(D)
     };
     this.bG = function(D) {
-        return 0 === tx[D + 3] && 1 === tx[D + 2]
+        return 0 === pixelRGBA[D + 3] && 1 === pixelRGBA[D + 2]
     };
     this.yZ = function(D) {
-        return 0 === tx[D + 3] && 3 === tx[D + 2]
+        return 0 === pixelRGBA[D + 3] && 3 === pixelRGBA[D + 2]
     };
     this.ya = function(D, K) {
         return this.bG(D) || this.bE(D) && K !== this.bF(D)
     };
     this.bF = function(D) {
-        return tx[D] % 4 * 128 + tx[D + 1] % 4 * 32 + tx[D + 2] % 4 * 8 + tx[D + 3] % 8
+        return pixelRGBA[D] % 4 * 128 + pixelRGBA[D + 1] % 4 * 32 + pixelRGBA[D + 2] % 4 * 8 + pixelRGBA[D + 3] % 8
     };
     this.hn = function(D) {
         g(D, 1)
@@ -6192,37 +6181,37 @@ function kJ() {
         g(D, 2)
     };
     this.he = function(D, K) {
-        tx[D] = t[K];
-        tx[D + 1] = z[K];
-        tx[D + 2] = y[K];
-        tx[D + 3] = 208 + A[K];
+        pixelRGBA[D] = t[K];
+        pixelRGBA[D + 1] = z[K];
+        pixelRGBA[D + 2] = y[K];
+        pixelRGBA[D + 3] = 208 + A[K];
         k(D)
     };
     this.b7 =
         function(D, K) {
-            tx[D] = B[K];
-            tx[D + 1] = C[K];
-            tx[D + 2] = E[K];
-            tx[D + 3] = 224 + A[K];
+            pixelRGBA[D] = B[K];
+            pixelRGBA[D + 1] = C[K];
+            pixelRGBA[D + 2] = E[K];
+            pixelRGBA[D + 3] = 224 + A[K];
             k(D)
         };
     this.cW = function(D, K) {
-        tx[D] = F[K];
-        tx[D + 1] = G[K];
-        tx[D + 2] = N[K];
-        tx[D + 3] = 248 + A[K];
+        pixelRGBA[D] = F[K];
+        pixelRGBA[D + 1] = G[K];
+        pixelRGBA[D + 2] = N[K];
+        pixelRGBA[D + 3] = 248 + A[K];
         k(D)
     };
     this.yk = function(D, K) {
-        tx[D] = n[0] + t[K] % 4;
-        tx[D + 1] = n[1] + z[K] % 4;
-        tx[D + 2] = n[2] + y[K] % 4;
-        tx[D + 3] = 192 + A[K];
+        pixelRGBA[D] = n[0] + t[K] % 4;
+        pixelRGBA[D + 1] = n[1] + z[K] % 4;
+        pixelRGBA[D + 2] = n[2] + y[K] % 4;
+        pixelRGBA[D + 3] = 192 + A[K];
         k(D)
     }
 }
 
-function kK() {
+function UserSettings() {
     function g() {
         for (var C = 0, E = 1; 5 > E; E++) C += z[E] % 1024;
         return C
@@ -6243,7 +6232,7 @@ function kK() {
         z[7] = "0";
         z[8] = "0";
         z[9] = "0";
-        f.y()
+        userSettings.y()
     }
 
     function l() {
@@ -6259,8 +6248,8 @@ function kK() {
         document.cookie = C
     }
     var t, z, y, A, B;
-    this.bp = function() {
-        if (!(5 <= deviceVersion || isIOS)) {
+    this.init = function() {
+        if (!(5 <= androidVersion || isIOS)) {
             B = 4;
             A = 0;
             t = [];
@@ -6303,10 +6292,10 @@ function kK() {
         this.y()
     };
     this.x = function(C, E) {
-        5 <= deviceVersion || isIOS || (z[C] = E)
+        5 <= androidVersion || isIOS || (z[C] = E)
     };
     this.g = function(C) {
-        return 5 <= deviceVersion || isIOS ? 0 : z[C]
+        return 5 <= androidVersion || isIOS ? 0 : z[C]
     }
 }
 
@@ -6316,20 +6305,20 @@ function kj() {
     }
     var k = 0,
         n = new Uint16Array(32);
-    this.bp = function() {
+    this.init = function() {
         k = 0
     };
     this.dF = function() {
         if (0 !== k)
-            if (0 === fF[myID] || ae.z2(myID) === ae.af(myID)) k = 0;
+            if (0 === isAlive[myID] || attacks.z2(myID) === attacks.af(myID)) k = 0;
             else {
                 var l;
                 for (l = k - 2; 0 <= l; l -= 2) {
                     var x = n[l];
-                    if (x < b8 && 0 === fF[x]) g(l);
+                    if (x < maxEntities && 0 === isAlive[x]) g(l);
                     else {
                         var t = n[l + 1];
-                        if (x >= b8 && lf(myID) || x < b8 && lk(myID, x)) dx ? fL(myID, x, t) : dataEncoder.attack(t, x === b8 ? myID : x), g(l)
+                        if (x >= maxEntities && lf(myID) || x < maxEntities && lk(myID, x)) singleplayer ? fL(myID, x, t) : dataEncoder.attack(t, x === maxEntities ? myID : x), g(l)
                     }
                 }
             }
@@ -6353,68 +6342,68 @@ function fm(g) {
     z5(g);
     z6(g);
     z7(g);
-    au.av(g);
+    speed.av(g);
     eK.g3(g);
-    ae.z8(g)
+    attacks.z8(g)
 }
 
 function z5(g) {
-    hu.lE(g) && iw++;
-    var k = ae.zA(g);
+    hu.lE(g) && spectatorCount++;
+    var k = attacks.zA(g);
     0 === k.length ? g === myID && zB() : (zC(g, k), zD(g, k))
 }
 
 function zB() {
-    b0.b1[17] += ax[myID] + ae.zE(myID);
-    eW.show(!1, !1);
+    statistics.b1[17] += troops[myID] + attacks.zE(myID);
+    gameResultBox.show(!1, !1);
     eB.tI()
 }
 
 function zC(g, k) {
     var n;
-    for (n = k.length - 1; 0 <= n; n--) ae.zF(k[n], g)
+    for (n = k.length - 1; 0 <= n; n--) attacks.zF(k[n], g)
 }
 
 function zG(g) {
     var k, n = 0;
-    for (k = g.length - 1; 1 <= k; k--) bU[g[k]] > bU[g[n]] && (n = k);
+    for (k = g.length - 1; 1 <= k; k--) land[g[k]] > land[g[n]] && (n = k);
     return n
 }
 
 function zD(g, k) {
     var n, l = k[zG(k)];
-    9 === dv && 1 === dW.dX[g] && ce.dP(8) && e2.zI(l);
+    9 === gamemode && 1 === teams.dX[g] && fakeRandom.dP(8) && e2.zI(l);
     if (g === myID) announcements.fl(l, 1), zB();
     else {
         for (n = k.length - 1; 0 <= n; n--)
             if (k[n] === myID) {
                 announcements.fl(g, 0);
                 return
-            } g < cq && announcements.mj(0, g, l)
+            } g < playerCount && announcements.mj(0, g, l)
     }
 }
 
 function z7(g) {
-    fF[g] = ax[g] = 0;
-    b4[g] = null;
-    bM[g] = null;
-    bN[g] = null;
-    bQ[g] = null;
-    eI.fh(g)
+    isAlive[g] = troops[g] = 0;
+    potentialBorderAdvances[g] = null;
+    landBorderPixels[g] = null;
+    waterBorderPixels[g] = null;
+    mountainBorderPixels[g] = null;
+    humanBots.fh(g)
 }
 
 function z6(g) {
     var k, n;
-    for (k = cz[g]; k >= d0[g]; k--)
-        for (n = d2[g]; n >= d3[g]; n--) {
-            var l = 4 * (n * aZ + k);
-            b5.hm(g, l) && (b5.hn(l), bU[g]--)
+    for (k = xMax[g]; k >= xMin[g]; k--)
+        for (n = yMax[g]; n >= yMin[g]; n--) {
+            var l = 4 * (n * currentMapWidth + k);
+            pixel.hm(g, l) && (pixel.hn(l), land[g]--)
         }
 }
 
-function kp() {
+function LoadCustom() {
     function g(x) {
-        (x = x.target.files) && 0 < x.length && jv.zN(x[0])
+        (x = x.target.files) && 0 < x.length && loadCustom.zN(x[0])
     }
 
     function k(x) {
@@ -6427,10 +6416,10 @@ function kp() {
         var t = x.target;
         x = t.width;
         var z = t.height;
-        4096 < x || 4096 < z || 10 > x || 10 > z ? alert("Image w & h must be between 10 and 4096.") : (wv = zV, ww = 0, aZ = x, aa = z, hs.width = aZ, hs.height = aa, pj.drawImage(t, 0, 0), x7 = pj.getImageData(0, 0, aZ, aa).data)
+        4096 < x || 4096 < z || 10 > x || 10 > z ? alert("Image w & h must be between 10 and 4096.") : (currentMapID = customMapID, currentSeed = 0, currentMapWidth = x, currentMapHeight = z, hs.width = currentMapWidth, hs.height = currentMapHeight, pj.drawImage(t, 0, 0), x7 = pj.getImageData(0, 0, currentMapWidth, currentMapHeight).data)
     }
     var l;
-    this.bp = function() {
+    this.init = function() {
         l = document.createElement("input");
         l.type = "file";
         l.onchange = g
@@ -6444,34 +6433,34 @@ function kp() {
     this.zN = function(x) {
         var t = x.name.split(".");
         var z = t[t.length - 1].toLowerCase();
-        if ("json" === z) dr.zR(x);
-        else if ("gif" === z || "jpg" === z || "jpeg" === z || "png" === z) dr.zS = t[0], z = new FileReader, z.onload = k, z.readAsDataURL(x)
+        if ("json" === z) customMap.zR(x);
+        else if ("gif" === z || "jpg" === z || "jpeg" === z || "png" === z) customMap.mapName = t[0], z = new FileReader, z.onload = k, z.readAsDataURL(x)
     };
     this.pZ = function(x) {
-        if (0 === aJ.pY() || 2 === aJ.pY()) x.stopPropagation(), x.preventDefault(), x.dataTransfer.dropEffect = "copy"
+        if (0 === aJ.getState() || 2 === aJ.getState()) x.stopPropagation(), x.preventDefault(), x.dataTransfer.dropEffect = "copy"
     };
     this.pa = function(x) {
-        if (0 === aJ.pY() || 2 === aJ.pY()) x.stopPropagation(), x.preventDefault(), (x = x.dataTransfer.files) && 0 < x.length && jv.zN(x[0])
+        if (0 === aJ.getState() || 2 === aJ.getState()) x.stopPropagation(), x.preventDefault(), (x = x.dataTransfer.files) && 0 < x.length && loadCustom.zN(x[0])
     }
 }
 
-function kn() {
+function AntiFullSend() {
     this.zY = null;
-    this.bp = function() {
-        this.zY = 10 !== dv ? null : new Uint32Array(b8)
+    this.init = function() {
+        this.zY = 10 !== gamemode ? null : new Uint32Array(maxEntities)
     };
     this.dF = function() {
-        10 === dv && this.zZ()
+        10 === gamemode && this.zZ()
     };
     this.zZ = function() {
         var g, k = this.zY,
             n = dZ,
-            l = ax;
+            l = troops;
         for (g = dY - 1; 0 <= g; g--) {
             var x = n[g];
-            if (!(x >= cq)) {
+            if (!(x >= playerCount)) {
                 var t = Math.max(divideFloor(l[x], 4), 2048);
-                var z = Math.max(ay.tU(x), 100);
+                var z = Math.max(interest.tU(x), 100);
                 k[x] += divideFloor(z * t, 1E4);
                 k[x] > t && (k[x] = t)
             }
@@ -6484,28 +6473,28 @@ function kn() {
     }
 }
 
-function kq() {
+function CustomMap() {
     function g(z) {
-        dr.ds = !0;
-        dr.zf(JSON.parse(z.target.result));
-        dr.lH()
+        customMap.ds = !0;
+        customMap.zf(JSON.parse(z.target.result));
+        customMap.lH()
     }
 
     function k(z) {
         var y;
         if (22 >= z.length) return !1;
-        dr.dt.wv = 0;
-        dr.dt.x0 = 0;
-        x8(0, 0);
+        customMap.dt.mapID = 0;
+        customMap.dt.seedMap = 0;
+        loadMap(0, 0);
         "data:image/png;base64," !== z.substring(0, 22) && (z = "data:image/png;base64," + z);
         var A = new Image;
         A.onload = function() {
-            aZ = A.width;
-            aa = A.height;
-            4096 < aZ || 4096 < aa || 10 > aZ || 10 > aa ? (x8(0, 0), alert("Image w & h must be between 10 and 4096.")) : (wv = zV, ww = 0, hs.width = aZ, hs.height = aa, pj.drawImage(A, 0, 0), y = pj.getImageData(0, 0, aZ, aa), x7 = y.data)
+            currentMapWidth = A.width;
+            currentMapHeight = A.height;
+            4096 < currentMapWidth || 4096 < currentMapHeight || 10 > currentMapWidth || 10 > currentMapHeight ? (loadMap(0, 0), alert("Image w & h must be between 10 and 4096.")) : (currentMapID = customMapID, currentSeed = 0, hs.width = currentMapWidth, hs.height = currentMapHeight, pj.drawImage(A, 0, 0), y = pj.getImageData(0, 0, currentMapWidth, currentMapHeight), x7 = y.data)
         };
         A.src = z;
-        dr.dt.zq = "";
+        customMap.dt.zq = "";
         return !0
     }
 
@@ -6531,7 +6520,7 @@ function kq() {
     }
     this.ds = !1;
     this.dt = null;
-    this.zS = "";
+    this.mapName = "";
     this.pU = function() {
         this.ds = !1;
         this.dt = null
@@ -6539,13 +6528,13 @@ function kq() {
     this.xQ = function() {
         this.dt.yP &&
             this.dt.za && (this.dt.yP[0] = mainSettings.buttons[2].buttonClass.getRGB64());
-        jG(this.dt.zb, 0, this.zc(), this.dt.jJ, !1)
+        gameInit(this.dt.seedSpawn, 0, this.zc(), this.dt.gamemode, !1)
     };
     this.zc = function() {
         return [{
             name: this.dt.zd ? nameInput.getInput() : this.dt.ze[0],
-            xS: [0, 0, 0],
-            xT: 0
+            color: [0, 0, 0],
+            status: 0
         }]
     };
     this.zR = function(z) {
@@ -6557,14 +6546,14 @@ function kq() {
         this.dt = {};
         this.dt.xN = l(z.numberPlayers, 1, 512);
         this.dt.zi = l(z.modeID, 0, 1);
-        this.dt.wv = l(z.mapID, 0, zV - 1);
-        this.dt.x0 = l(z.seedMap, 0, 16383);
-        this.dt.zb = l(z.seedSpawn, 0, 16383);
+        this.dt.mapID = l(z.mapID, 0, customMapID - 1);
+        this.dt.seedMap = l(z.seedMap, 0, 16383);
+        this.dt.seedSpawn = l(z.seedSpawn, 0, 16383);
         this.dt.jL = x(z.selectableSpawn, !1);
         this.dt.zd = x(z.selectableName, !1);
         this.dt.za =
             x(z.selectableColor, !1);
-        this.zS = this.dt.zS = n(z.mapName, 1, 25, "Custom Map");
+        this.mapName = this.dt.mapName = n(z.mapName, 1, 25, "Custom Map");
         var y = this.dt;
         var A = z.description;
         var B;
@@ -6602,11 +6591,11 @@ function kq() {
         y.ze = A;
         this.dt.zq = "string" === typeof z.mapBase64 ? z.mapBase64 : "";
         this.dt.zd = this.dt.zd || !this.dt.ze;
-        this.dt.jJ = 0 === this.dt.zi ? 7 : 2 === this.dt.zi ? 9 : 6;
+        this.dt.gamemode = 0 === this.dt.zi ? 7 : 2 === this.dt.zi ? 9 : 6;
         this.dt.hH = this.dt.hS ? this.dt.hH : null
     };
     this.lH = function() {
-        k(this.dt.zq) || x8(this.dt.wv, this.dt.x0)
+        k(this.dt.zq) || loadMap(this.dt.mapID, this.dt.seedMap)
     };
     this.zx = function() {
         var z, y = 0,
@@ -6617,16 +6606,16 @@ function kq() {
     }
 }
 
-function kL() {
+function Attacks() {
     function g(y) {
-        return y < cq ? k * y : k * cq + n * (y - cq)
+        return y < playerCount ? k * y : k * playerCount + n * (y - playerCount)
     }
     var k, n, l, x, t, z;
-    this.bp = function() {
-        k = 16 > cq ? 12 : 8;
+    this.init = function() {
+        k = 16 > playerCount ? 12 : 8;
         n = 4;
-        var y = g(b8);
-        l = new Uint8Array(b8);
+        var y = g(maxEntities);
+        l = new Uint8Array(maxEntities);
         x = new Uint16Array(y);
         t = new Uint32Array(y);
         z = new Uint16Array(y)
@@ -6641,7 +6630,7 @@ function kL() {
             for (B = l[y] - 1; 0 <= B; B--)
                 if (0 === z[C + B] && x[C + B] === A) break a;B = l[y]
         }
-        B !== l[y] && (C = t[g(y) + B], this.b2(y, B), this.cQ(y, C, b8))
+        B !== l[y] && (C = t[g(y) + B], this.b2(y, B), this.set(y, C, maxEntities))
     };
     this.co = function(y, A) {
         var B, C = g(y);
@@ -6651,7 +6640,7 @@ function kL() {
     };
     this.dD =
         function(y) {
-            return y < cq ? l[y] < k : l[y] < n
+            return y < playerCount ? l[y] < k : l[y] < n
         };
     this.af = function(y) {
         return l[y]
@@ -6702,23 +6691,23 @@ function kL() {
     this.bT = function(y, A, B) {
         t[g(y) + A] = B
     };
-    this.cQ = function(y, A, B) {
+    this.set = function(y, A, B) {
         var C, E = g(y);
-        B === myID && b0.b1[y < cq ? 6 : 5]++;
+        B === myID && statistics.b1[y < playerCount ? 6 : 5]++;
         for (C = l[y] - 1; 0 <= C; C--)
             if (0 === z[E + C] && x[E + C] === B) {
                 t[E + C] += A;
-                t[E + C] = t[E + C] > jA ? jA : t[E + C];
+                t[E + C] = t[E + C] > troopCap ? troopCap : t[E + C];
                 return
             } x[E + l[y]] = B;
         t[E + l[y]] = A;
         z[E + l[y]] = 0;
         l[y]++;
-        y < cq && (B === myID ? announcements.fl(y, 5) : y === myID && eA.ml(B))
+        y < playerCount && (B === myID ? announcements.fl(y, 5) : y === myID && eA.ml(B))
     };
     this.tr = function(y, A, B) {
         var C = g(y);
-        fF[y] = 2;
+        isAlive[y] = 2;
         x[C + l[y]] = 0;
         t[C + l[y]] = A;
         z[C + l[y]] = B;
@@ -6746,9 +6735,9 @@ function kL() {
     }
 }
 
-function kM() {
+function Interest() {
     var g, k, n, l, x, t;
-    this.bp = function() {
+    this.init = function() {
         l = n = k = g = 10
     };
     this.a09 = function() {
@@ -6762,39 +6751,39 @@ function kM() {
     this.dF = function() {
         if (0 >= --n) {
             n = g;
-            var z, y = ax[myID];
-            dx && !dA && 0 !== fF[0] && 0 === dy.dz[0].bD && (ax[0] += divideFloor(bU[0], 6));
+            var z, y = troops[myID];
+            singleplayer && !teamGame && 0 !== isAlive[0] && 0 === singleSettings.dz[0].bD && (troops[0] += divideFloor(land[0], 6));
             for (z = dY - 1; 0 <= z; z--) {
-                var A = divideFloor(ay.tU(dZ[z]) * ax[dZ[z]], 1E4);
-                ax[dZ[z]] += 1 > A ? 1 : A;
-                ay.az(dZ[z])
+                var A = divideFloor(interest.tU(dZ[z]) * troops[dZ[z]], 1E4);
+                troops[dZ[z]] += 1 > A ? 1 : A;
+                interest.az(dZ[z])
             }
-            b0.b1[9] += ax[myID] - y;
+            statistics.b1[9] += troops[myID] - y;
             if (0 >= --l) {
                 l = k;
-                z = ax[myID];
-                for (A = dY - 1; 0 <= A; A--) ax[dZ[A]] += bU[dZ[A]], ay.az(dZ[A]);
-                b0.b1[8] += ax[myID] - z
+                z = troops[myID];
+                for (A = dY - 1; 0 <= A; A--) troops[dZ[A]] += land[dZ[A]], interest.az(dZ[A]);
+                statistics.b1[8] += troops[myID] - z
             }
         }
     };
     this.tU = function(z) {
-        var y = x[divideFloor((t - 1) * bU[z], j9)];
+        var y = x[divideFloor((t - 1) * land[z], j9)];
         if (1920 > c4.dU()) {
             var A = divideFloor(100 * (13440 - 6 * c4.dU()), 1920);
             y = A > y ? A : y
         }
         A = this.dJ(z);
-        ax[z] > A && (y -= divideFloor(2 * y * (ax[z] - A), A));
+        troops[z] > A && (y -= divideFloor(2 * y * (troops[z] - A), A));
         return 0 > y ? 0 : 700 < y ? 700 : y
     };
     this.dJ = function(z) {
-        z = 100 * bU[z];
-        return z > jB ? jB : z
+        z = 100 * land[z];
+        return z > maxTroopsBeforeRedInterest ? maxTroopsBeforeRedInterest : z
     };
     this.az = function(z) {
-        var y = bU[z] * j7;
-        ax[z] = ax[z] > jA ? jA : ax[z] > y ? y : ax[z]
+        var y = land[z] * j7;
+        troops[z] = troops[z] > troopCap ? troopCap : troops[z] > y ? y : troops[z]
     }
 }
 
@@ -6805,8 +6794,8 @@ function kN() {
         V = X.getContext("2d", {
             alpha: !0
         });
-        V.textAlign = cJ;
-        V.textBaseline = cI;
+        V.textAlign = centerAlign;
+        V.textBaseline = middleAlign;
         V.imageSmoothingEnabled = !0
     }
 
@@ -6815,16 +6804,16 @@ function kN() {
         U = 1;
         R = P = 0;
         V.clearRect(0, 0, gE, cB);
-        for (var O = gC / g7, T = gD / g7, Y = (gE + gC) / g7, Z = (cB + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== fF[myID] && hu.lE(myID), za = dY - 1; 0 <= za; za--)
+        for (var O = gC / g7, T = gD / g7, Y = (gE + gC) / g7, Z = (cB + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== isAlive[myID] && hu.lE(myID), za = dY - 1; 0 <= za; za--)
             if (ia = dZ[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
                 la = Math.floor(gE * (E[ia] + G[ia] / 2 - O) / (Y - O));
                 ma = Math.floor(cB * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
-                V.font = om[fT[ia]] + fa + bu;
+                V.font = fontStyles[playerStatus[ia]] + fa + fontSizeArial;
                 qa = V;
                 var ra = ia;
-                ra = fa >= J && fa < K ? dW.a10[b5.qv[ra]] + x(fa).toFixed(3) + ")" : dW.a11[b5.qv[ra]];
+                ra = fa >= J && fa < K ? teams.a10[pixel.qv[ra]] + x(fa).toFixed(3) + ")" : teams.a11[pixel.qv[ra]];
                 qa.fillStyle = ra;
-                V.fillText(8 === dv ? eP.gJ(ax[ia]) : gI[ia], la, ma);
+                V.fillText(8 === gamemode ? eP.gJ(troops[ia]) : nickname[ia], la, ma);
                 W = !0;
                 if (0 < ca[ia]) {
                     qa = la;
@@ -6837,10 +6826,10 @@ function kN() {
                                 ta = va,
                                 ya = sa;
                             sa = ba[sa];
-                            var wa = .9 * ta / a5.c1,
-                                Ca = Math.floor(ra - .5 * wa * a5.c1 - .05 * ta);
+                            var wa = .9 * ta / a5.width,
+                                Ca = Math.floor(ra - .5 * wa * a5.width - .05 * ta);
                             V.globalAlpha = x(ta);
-                            for (var Ba = Math.floor(Aa - .5 * ta / D[ya] - .4 * ta - wa * a5.c1), xa = 0; 2 > xa; xa++) V.setTransform(wa, 0, 0, wa, Ba, Ca), V.drawImage(a5.l5[sa], 0, 0), Ba = Math.floor(Aa +
+                            for (var Ba = Math.floor(Aa - .5 * ta / D[ya] - .4 * ta - wa * a5.width), xa = 0; 2 > xa; xa++) V.setTransform(wa, 0, 0, wa, Ba, Ca), V.drawImage(a5.l5[sa], 0, 0), Ba = Math.floor(Aa +
                                 .5 * ta / D[ya] + .4 * ta);
                             V.globalAlpha = 1;
                             V.setTransform(1, 0, 0, 1, 0, 0);
@@ -6848,18 +6837,18 @@ function kN() {
                         } else a5.oA(ba[sa]) ? (l(qa, ra, va, ba[sa], 0), n(qa, ra, va, 0, 1)) : (l(qa, ra, va, ba[sa], 1), n(qa, ra, va, 1, 0));
                     else l(qa, ra, va, ba[sa], 0)
                 } else 0 === sK[ia] && n(la, ma, fa, 0, 0);
-                if (ua && (0 < ca[ia + b8] || 0 < ca[ia + 2 * b8] || 0 < ca[ia + 3 * b8] || 0 < ca[ia + 4 * b8])) {
+                if (ua && (0 < ca[ia + maxEntities] || 0 < ca[ia + 2 * maxEntities] || 0 < ca[ia + 3 * maxEntities] || 0 < ca[ia + 4 * maxEntities])) {
                     ra = la;
                     va = ma;
                     Aa = fa;
                     ta = ia;
                     ya = -1;
-                    for (qa = 4; 1 <= qa; qa--) 0 < ca[ta + qa * b8] && ya++;
-                    for (qa = 1; 5 > qa; qa++) 0 < ca[ta + qa * b8] && (sa = Aa, wa = qa, Ca = ta, Ba = ca[ta + qa * b8], xa = .8 * sa / a5.c1, V.setTransform(xa, 0, 0, xa, Math.floor(ra - .5 * xa *
-                        a5.c1 - .534 * ya * sa), Math.floor(va + 1.4 * xa * a5.c1)), V.globalAlpha = x(sa), V.drawImage(1 === wa ? a5.l5[ba[Ca + b8]] : 2 === wa && 255 > Ba ? hu.l3[2] : hu.l2[wa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), ya -= 2)
+                    for (qa = 4; 1 <= qa; qa--) 0 < ca[ta + qa * maxEntities] && ya++;
+                    for (qa = 1; 5 > qa; qa++) 0 < ca[ta + qa * maxEntities] && (sa = Aa, wa = qa, Ca = ta, Ba = ca[ta + qa * maxEntities], xa = .8 * sa / a5.width, V.setTransform(xa, 0, 0, xa, Math.floor(ra - .5 * xa *
+                        a5.width - .534 * ya * sa), Math.floor(va + 1.4 * xa * a5.width)), V.globalAlpha = x(sa), V.drawImage(1 === wa ? a5.l5[ba[Ca + maxEntities]] : 2 === wa && 255 > Ba ? hu.l3[2] : hu.l2[wa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), ya -= 2)
                 }
                 qa = Math.floor(L * fa);
-                qa < M || (V.font = bt + qa + bu, V.fillText(8 === dv ? gI[ia] : eP.gJ(ax[ia]), la, ma + Math.floor(.78 * fa)))
+                qa < M || (V.font = fontWeightBold + qa + fontSizeArial, V.fillText(8 === gamemode ? nickname[ia] : eP.gJ(troops[ia]), la, ma + Math.floor(.78 * fa)))
             }
     }
 
@@ -6867,15 +6856,15 @@ function kN() {
         var ma = .95 * Y / S;
         V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * pa + .8 * Z * Y), Math.floor(T - 1.76 * ma * S - .82 * la * Y));
         V.globalAlpha = x(Y);
-        V.drawImage(bw.bz(4), 0, 0);
+        V.drawImage(sprites.getValuebyID(4), 0, 0);
         V.globalAlpha = 1;
         V.setTransform(1,
             0, 0, 1, 0, 0)
     }
 
     function l(O, T, Y, Z, la) {
-        var ma = 1.2 * Y / a5.c1;
-        V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * a5.c1 - .8 * la * Y), Math.floor(T - 1.5 * ma * a5.c1));
+        var ma = 1.2 * Y / a5.width;
+        V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * a5.width - .8 * la * Y), Math.floor(T - 1.5 * ma * a5.width));
         V.globalAlpha = x(Y);
         V.drawImage(a5.l5[Z], 0, 0);
         V.globalAlpha = 1;
@@ -6888,24 +6877,24 @@ function kN() {
 
     function t(O) {
         var T, Y = E[O];
-        for (T = E[O] - d0[O] - 1; 0 <= T; T--)
+        for (T = E[O] - xMin[O] - 1; 0 <= T; T--)
             if (Y--, !y(O, Y, F[O], N[O])) {
                 Y++;
                 break
             } var Z = E[O];
-        for (T = cz[O] - E[O] - G[O]; 0 <= T; T--)
+        for (T = xMax[O] - E[O] - G[O]; 0 <= T; T--)
             if (Z++, !y(O, Z + G[O] - 1, F[O], N[O])) {
                 Z--;
                 break
             } Y = Math.floor((Y + Z) / 2);
         Z = F[O];
-        for (T = F[O] - d3[O] - 1; 0 <=
+        for (T = F[O] - yMin[O] - 1; 0 <=
             T; T--)
             if (Z--, !A(O, Y, Z, G[O])) {
                 Z++;
                 break
             } var la = F[O];
-        for (T = d2[O] - F[O] - N[O]; 0 <= T; T--)
+        for (T = yMax[O] - F[O] - N[O]; 0 <= T; T--)
             if (la++, !A(O, Y, la + N[O] - 1, G[O])) {
                 la--;
                 break
@@ -6925,62 +6914,62 @@ function kN() {
     }
 
     function y(O, T, Y, Z) {
-        return b5.hm(O, 4 * (Y * aZ + T)) && b5.hm(O, 4 * ((Y + Z - 1) * aZ + T))
+        return pixel.hm(O, 4 * (Y * currentMapWidth + T)) && pixel.hm(O, 4 * ((Y + Z - 1) * currentMapWidth + T))
     }
 
     function A(O, T, Y, Z) {
-        return b5.hm(O, 4 * (Y * aZ + T)) && b5.hm(O, 4 * (Y *
-            aZ + T + Z - 1))
+        return pixel.hm(O, 4 * (Y * currentMapWidth + T)) && pixel.hm(O, 4 * (Y *
+            currentMapWidth + T + Z - 1))
     }
     var B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, W, X, V, na, ba, ca, pa, S;
-    this.bp = function() {
+    this.init = function() {
         W = !1;
         Q = .88;
         L = .5;
         H = 1.8;
         K = Math.floor(.5 * pI);
         J = Math.floor(.2 * K);
-        M = 8 === dv ? jt.a0g ? 6 : 4 : jt.a0g ? 10 : 7;
+        M = 8 === gamemode ? jt.a0g ? 6 : 4 : jt.a0g ? 10 : 7;
         C = B = 0;
-        E = new Uint16Array(b8);
-        F = new Uint16Array(b8);
-        G = new Uint16Array(b8);
-        N = new Uint16Array(b8);
-        I = new Float32Array(b8);
-        D = new Float32Array(b8);
-        ba = new Uint8Array(2 * b8);
-        ca = new Uint8Array(5 * b8);
+        E = new Uint16Array(maxEntities);
+        F = new Uint16Array(maxEntities);
+        G = new Uint16Array(maxEntities);
+        N = new Uint16Array(maxEntities);
+        I = new Float32Array(maxEntities);
+        D = new Float32Array(maxEntities);
+        ba = new Uint8Array(2 * maxEntities);
+        ca = new Uint8Array(5 * maxEntities);
         X = X ? X : document.createElement("canvas");
         g();
         P = R = 0;
         U = 1;
         na = 0;
-        if (8 === dv) {
+        if (8 === gamemode) {
             var O;
-            V.font = bt + 100 + bu;
+            V.font = fontWeightBold + 100 + fontSizeArial;
             var T = 100 / Math.floor(V.measureText("20 000 000").width);
-            for (O = b8 - 1; 0 <= O; O--) D[O] = I[O] = T
+            for (O = maxEntities - 1; 0 <= O; O--) D[O] = I[O] = T
         } else
-            for (V.font = bt + Math.floor(100 * L) + bu, T = 80 / Math.floor(V.measureText(eP.gJ(jA)).width), V.font = bt + 100 + bu, O = b8 - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(gI[O]).width), I[O] = T < D[O] ? T : D[O];
-        for (O = b8 - 1; 0 <= O; O--) 12 > bU[O] ? (E[O] = d0[O] + 1, F[O] = d3[O] + 1, G[O] = 1, N[O] = 1) : (E[O] = d0[O], F[O] = d3[O] + 1, G[O] = 4, N[O] = 2);
-        if (fc)
-            for (O = 0; O < cq; O++) G[O] = 0;
-        pa = bw.bz(4).width;
-        S = bw.bz(4).height
+            for (V.font = fontWeightBold + Math.floor(100 * L) + fontSizeArial, T = 80 / Math.floor(V.measureText(eP.gJ(troopCap)).width), V.font = fontWeightBold + 100 + fontSizeArial, O = maxEntities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), I[O] = T < D[O] ? T : D[O];
+        for (O = maxEntities - 1; 0 <= O; O--) 12 > land[O] ? (E[O] = xMin[O] + 1, F[O] = yMin[O] + 1, G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2);
+        if (inSpawn)
+            for (O = 0; O < playerCount; O++) G[O] = 0;
+        pa = sprites.getValuebyID(4).width;
+        S = sprites.getValuebyID(4).height
     };
     this.lv = function() {
         g();
         k()
     };
     this.j4 = function() {
-        for (var O = na = 0; O < cq; O++) 3 !== cz[O] - d0[O] || 3 !== d2[O] - d3[O] ?
-            (E[O] = d0[O] + (cz[O] !== d0[O] ? 1 : 0), F[O] = d3[O], G[O] = 1, N[O] = 1) : (E[O] = d0[O], F[O] = d3[O] + 1, G[O] = 4, N[O] = 2)
+        for (var O = na = 0; O < playerCount; O++) 3 !== xMax[O] - xMin[O] || 3 !== yMax[O] - yMin[O] ?
+            (E[O] = xMin[O] + (xMax[O] !== xMin[O] ? 1 : 0), F[O] = yMin[O], G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2)
     };
-    this.n2 = function(O, T, Y) {
-        0 === fF[O] || 4 !== T && 2 === fT[O] || (O += T * b8, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oB(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
+    this.showIcon = function(O, T, Y) {
+        0 === isAlive[O] || 4 !== T && 2 === playerStatus[O] || (O += T * maxEntities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oB(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
     };
     this.cG = function() {
-        W && (1 !== U ? (cH.imageSmoothingEnabled = !0, cH.setTransform(U, 0, 0, U, 0, 0), cH.drawImage(X, -R / U, -P / U), cH.setTransform(1, 0, 0, 1, 0, 0)) : (cH.imageSmoothingEnabled = !1, cH.drawImage(X, -R, -P)))
+        W && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
     };
     this.rQ = function(O, T) {
         R += O;
@@ -7007,10 +6996,10 @@ function kN() {
             C = 0;
             for (T = 4; 1 <= T; T--)
                 for (O = dY - 1; 0 <= O; O--) {
-                    var Y = dZ[O] + T * b8;
+                    var Y = dZ[O] + T * maxEntities;
                     0 < ca[Y] && 255 > ca[Y] && ca[Y]--
                 }
-            if (2 !== fZ)
+            if (2 !== clientStatus)
                 for (O = dY - 1; 0 <= O; O--) Y = dZ[O], 0 < ca[Y] && 255 > ca[Y] && ca[Y]--
         }
         O = Math.floor(.1 * dY);
@@ -7022,7 +7011,7 @@ function kN() {
                         T, qa = !1, ua = 0; 8 > ua; ua++) {
                     la = G[fa] + 2;
                     Z = N[fa] + 2;
-                    if (la > cz[fa] - d0[fa] + 1 || Z > d2[fa] - d3[fa] + 1) break;
+                    if (la > xMax[fa] - xMin[fa] + 1 || Z > yMax[fa] - yMin[fa] + 1) break;
                     ia = E[fa] - 1;
                     ma = F[fa] - 1;
                     if (z(fa, ia, ma, la, Z)) E[fa] = ia, F[fa] = ma, G[fa] = la, N[fa] = Z, qa = !0;
@@ -7034,11 +7023,11 @@ function kN() {
                     ua = G[fa];
                     for (var za = 1 + Math.floor(.02 * ua), ra = 1; 5 > ra; ra++) {
                         la = ua + ra * za;
-                        if (la > cz[fa] - d0[fa] + 1) break;
+                        if (la > xMax[fa] - xMin[fa] + 1) break;
                         Z = 1 + Math.floor(H * I[fa] * la);
-                        if (Z > d2[fa] - d3[fa] + 1) break;
-                        ia = d0[fa] + Math.floor(Math.random() * (cz[fa] - d0[fa] + 2 - la));
-                        ma = d3[fa] + Math.floor(Math.random() * (d2[fa] - d3[fa] + 2 - Z));
+                        if (Z > yMax[fa] - yMin[fa] + 1) break;
+                        ia = xMin[fa] + Math.floor(Math.random() * (xMax[fa] - xMin[fa] + 2 - la));
+                        ma = yMin[fa] + Math.floor(Math.random() * (yMax[fa] - yMin[fa] + 2 - Z));
                         z(fa, ia, ma, la, Z) && (E[fa] = ia, F[fa] =
                             ma, G[fa] = la, N[fa] = Z, qa = !0)
                     }
@@ -7070,8 +7059,8 @@ function kN() {
                 }
                 if (Z) t(T);
                 else
-                    for (Z = T, ma = cz[Z] - d0[Z] + 1, la = Math.floor(.02 * ma), la = 1 > la ? 1 : la, T = -6 * la; ma >= T; ma -= la)
-                        if (fa = 0 < ma ? ma : 1, ia = 1 + Math.floor(H * I[Z] * fa), ua = d0[Z] + Math.floor(Math.random() * (cz[Z] - d0[Z] + 2 - fa)), qa = d3[Z] + Math.floor(Math.random() * (d2[Z] - d3[Z] + 2 - ia)), z(Z, ua, qa, fa, ia)) {
+                    for (Z = T, ma = xMax[Z] - xMin[Z] + 1, la = Math.floor(.02 * ma), la = 1 > la ? 1 : la, T = -6 * la; ma >= T; ma -= la)
+                        if (fa = 0 < ma ? ma : 1, ia = 1 + Math.floor(H * I[Z] * fa), ua = xMin[Z] + Math.floor(Math.random() * (xMax[Z] - xMin[Z] + 2 - fa)), qa = yMin[Z] + Math.floor(Math.random() * (yMax[Z] - yMin[Z] + 2 - ia)), z(Z, ua, qa, fa, ia)) {
                             E[Z] =
                                 ua;
                             F[Z] = qa;
@@ -7083,18 +7072,18 @@ function kN() {
         B %= dY
     };
     this.ml = function(O) {
-        var T = O + 2 * b8,
+        var T = O + 2 * maxEntities,
             Y = ca[T];
         return 0 < Y ? (announcements.n7(50, O), ca[T] = 0, 255 === Y) : !1
     };
     this.li = function(O) {
-        return 255 === ca[O + 2 * b8]
+        return 255 === ca[O + 2 * maxEntities]
     }
 }
 
-function kO() {
+function NickNames() {
     var g, k;
-    this.bp = function() {
+    this.init = function() {
         var n, l;
         g = "Abbasid Caliphate;Aceh s;Achaemenid Z;Afsharid z;Aghlabid Emirate;Ahom z;Akkadian Z;Aksumite Z;Akwamu;Alaouite z;Almohad Caliphate;Almoravid z;Angevin Z;Aq Qoyunlu;Armenian Z;Assyria;Ashanti Z;Austrian Z;Austria-Hungary;Ayyubid z;Aztec Z;Aulikara Z;Babylonian Z;Balhae;Banten s;S Banjar;Bamana Z;Bengal s;Benin Z;Kadamba z;Bornu Z;E Brazil;Britannic Z;British Z;British Raj;Bruneian Z;Bukhara Z;Burgundian State;Buyid z;Byzantine Z;Caliphate of C\u00f3rdoba;Cao Wei;Carthaginian Z;Cebu Rajahnate;Chagatai Khanate;Chalukya z;Chauhan z;Chav\u00edn Z;Chenla;Chera z;Chola z;Comanche Z;Congo Free State;Crimean Khanate;Dacian Z;Delhi s;Demak s;Durrani Z;Dutch Z;Egyptian Z;Elamite Z;Exarchate of Africa;Abyssinia;Fatimid Caliphate;First French Z;Frankish Z;Funan;Gallic Z;Gaza Z;Republic of Genoa;German Z;Ghana Z;Ghaznavid z;Ghurid z;Goguryeo;Goryeo;Gorkha Z;G\u00f6kt\u00fcrk Khaganate;Golden Horde;S Gowa;Seljuq Z;Gupta Z;Hafsid Y;Han z;Hanseatic League;E Harsha;Hephthalite Z;Hittite Z;Holy Roman Z;Hotak z;Hoysala Z;Hunnic Z;Husainid z;Idrisid z;Ilkhanate;K Israel;K Judah;Inca Z;Italian Z;E Japan;Jin z;Johor Z;Jolof Z;Joseon;Kaabu Z;Kachari Y;Kalmar Union;Kanem Z;Kanva z;Kara-Khanid Khanate;Kazakh Khanate;Khazar Khaganate;Khmer Z;Khilji z;Khwarazmian z;Kievan Rus';Konbaung z;Kong Z;Korean Z;Kushan Z;K Kush;Lakota;Latin Z;Later L\u00ea z;Liao z;Lodi s;Khmer Z;Macedonian Z;Majapahit Z;Mali Z;Malacca Z;Mamluk s;Manchukuo;Maratha Z;Marinid z;Massina Z;Mataram s;Mauretania;Mauryan Z;Median Z;Mlechchha z;Ming z;Mitanni Z;Mongol Z;Mughal Z;Nanda Z;Nguy\u1ec5n z;North Sea Z;E Nicaea;Numidia;Omani Z;Ottoman Z;Oyo Z;Pagan Z;Pahlavi z;Pala Z;Palmyrene Z;Parthian Z;Pontic Z;Portuguese Z;K Prussia;Ptolemaic Z;Qajar z;Qara Qoyunlu;Qin z;Qing z;Ramnad Sethupathis;Rashidun Caliphate;Rashtrakuta z;Roman Z;Rouran Khaganate;Rozwi Z;Rustamid z;Russian Z;Tsardom of Russia;Saadi z;Safavid z;Saffarid z;Sassanid z;Satavahana z;Samanid Z;Soviet Union;Saudeleur z;Duchy of Savoy;Seleucid Z;Serbian Z;Shu Han;Shang z;Siam Z;Sikh Z;Singhasari;Sokoto Caliphate;Song z;Songhai Z;Spanish Z;Srivijaya Z;Sui z;K Mysore;Shunga Z;S Sulu;Sumer;Sur Z;Swedish Z;Tahirid z;Tang z;T\u00e2y S\u01a1n z;S Ternate;E Thessalonica;German Reich;Tibetan Z;Tondo z;S Tidore;Timurid Z;K Tlemcen;E Trebizond;Toltec Z;Toungoo z;Toucouleur Z;Tu'i Tonga Z;Turgesh Khaganate;Umayyad Caliphate;Uyunid Emirate;Uyghur Khaganate;Uzbek Khanate;Vandal Y;Vijayanagara Z;Republic of Venice;Wari Z;Wassoulou Z;Wattasids;Western Roman Z;Eastern Wu;Western Xia z;Xin z;Yuan z;Zand z;Zhou z;Zulu Z;Yugoslavia;Kosovo;Sikkim;Kanem\u2013Bornu Z;Wadai Z;Ethiopian Z;Rozvi Z;Sasanian Z;E Vietnam;Shilluk Y;K Aksum;Gwiriko Y;Toro Y;Malindi Y;K Loango;K Mapungubwe;Ryukyu Y;K Cyprus;K Jerusalem;Garhwal Y;K Nepal;K Cambodia;Champa Y;Hanthawaddy Y;Phayao Y;K Sardinia;K Sicily;K Gwynedd;K Scotland;K Desmond;K Poland;K Hungary;K Croatia;K Bohemia;Albanian Y;K Georgia;K Portugal;Khanate of Sibir;K Romania;Cossack Hetmanate;Duchy of Bouillon;K Ireland;Lordship of Ireland;K Italy;Republic of Pisa;Idrisid z;Almoravid z;Almohad Caliphate;Marinid z;Wattasid z;Saadian z;Republic of Sal\u00e9;Rif Republic;K Kush;Makuria;Alodia;Ayyubid z;Mamluk s;Egypt Eyalet;K Fazughli;S Sennar;S Darfur;Mahdist State;S Egypt;K Egypt;Emirate of Cyrenaica;K Libya;Republic of Egypt;Republic of the Sudan;United Arab Republic;Libyan Arab Republic;Zirid z;Hafsid z;K Kuku;Regency of Algiers;Gurunsi;Liptako;Tenkodogo;Wogodogo;Yatenga;Bilanga;Bilayanga;Bongandini;Con;Macakoali;Piela;Nungu;K Sine;K Saloum;K Baol;K Cayor;K Waalo;Bundu;Bonoman;Gyaaman;Denkyira;Mankessim Y;K Dahomey;Oyo Z;K Nri;Aro Confederacy;Kwararafa;Biafra;Buganda;Bunyoro;Ankole;Busoga;Tanganyika;Kuba Y;K Luba;K Lunda;Yeke Y;K Ndongo;Kasanje Y;K Matamba;Mbunda Y;Chokwe Y;Kazembe Y;K Butua;Ndebele Y;Mthethwa Z;Bophuthatswana;Ciskei;Transkei;Venda;Rhodesia;Kart z;Nogai Horde;Khanate of Bukhara;Khanate of Khiva;Khamag Mongol;Northern Fujiwara;Kamakura Shogunate;Ashikaga Shogunate;Jaxa;Republic of Ezo;Jiangxi Soviet;Hunan Soviet;Guangzhou Commune;Gojoseon;Alaiye;Beylik of Bafra;Kara Koyunlu;Kars Republic;K Iraq;Arab Federation;Kar-Kiya z;Baduspanids;Marashiyan z;Afrasiyab z;Mihrabanid z;Safavid Iran;Sheikhdom of Kuwait;Bani Khalid Emirate;Emirate of Diriyah;Emirate of Najd;Muscat and Oman;Emirate of Riyadh;S Najd;K Hejaz;Fadhli s;Emirate of Beihan;Emirate of Dhala;S Lahej;Republic of Kuwait;K Cochin;Jaffna Y;Laur Y;Pandya z;Jaunpur s;Jaintia Y;Hyderabad State;Travancore;Udaipur State;Manikya z;Lan Xang;K Vientiane;K Champasak;Lao Issara;K Laos;Pyu States;Ava;Mon Ys;Pegu;K Mrauk U;Taungoo z;Shan States;Arakan;Raktamaritika;Singhanavati;Dvaravati;Ngoenyang;Hariphunchai;Tambralinga;Lavo Y;Langkasuka;Sukhothai Y;S Singora;Ayutthaya Y;Thonburi Y;Lan Na;Pattani Y;Jambi s;Palembang s;S Deli;S Langkat;S Serdang;S Cirebon;K Pajang;K Bali;Bima s;K Larantuka;K Banggai;Luwu;S Bone;Caucasian Albania;Kabardia;Circassia;K Abkhazia;Elisu s;Avar Khanate;Caucasian Imamate;K Imereti;K Kartli;K Kakheti;Crown of Aragon;Emirate of Granada;K Majorca;Crown of Castile;K Haiti;Cocoll\u00e1n;Zapotec Civilization;Mosquito Y;Somoza Regime;Iroquois Confederacy;Cherokee Nation;Vermont Republic;State of Muskogee;K Alo;K Sigave;K Fiji;K Nauru;K Chile;Muisca Confederation;El Stronato;K Chimor;Jungle Republic;Liga Federal;Supreme Junta;Weimar Republic;K Bavaria;Bremen;Frankfurt;Hamburg;K Hanover;Holstein;Lippe;Nassau;Oldenburg;Pomerania;Reuss;Saxe-Altenburg;Saxony;Schleswig;Waldeck;W\u00fcrttemberg;Helvetic Republic;Republic of Florence;Duchy of Urbino;Republic of Cospaia;Duchy of Lucca;Duchy of Mantua;Duchy of Milan;Papal States".split(";");
         k =
@@ -7105,29 +7094,29 @@ function kO() {
             for (l = x.length - 1; 0 <= l; l--) g[n] = g[n].replace(x[l], t[l])
     };
     this.jT = function() {
-        if (dr.ds && dr.dt.ze) {
+        if (customMap.ds && customMap.dt.ze) {
             var n;
-            for (n = cq; n < b8; n++) gI[n] = dr.dt.ze[n % hM]
-        } else if (9 === dv) {
-            var l = ce.random(),
+            for (n = playerCount; n < maxEntities; n++) nickname[n] = customMap.dt.ze[n % entityCount]
+        } else if (9 === gamemode) {
+            var l = fakeRandom.random(),
                 x = k.length,
-                t = cq + e2.e3;
-            for (n = t - 1; n >= cq; n--) gI[n] = "[Bot] " + k[(n + l) % x];
-            for (n = t; n < b8; n++) gI[n] = "[Zombie] " + k[(n + l) % x]
-        } else if (dx)
-            for (l = ce.random(), n = cq; n < b8; n++) gI[n] = g[(n + l) % b8];
+                t = playerCount + e2.e3;
+            for (n = t - 1; n >= playerCount; n--) nickname[n] = "[Bot] " + k[(n + l) % x];
+            for (n = t; n < maxEntities; n++) nickname[n] = "[Zombie] " + k[(n + l) % x]
+        } else if (singleplayer)
+            for (l = fakeRandom.random(), n = playerCount; n < maxEntities; n++) nickname[n] = g[(n + l) % maxEntities];
         else
-            for (l = k.length, x = ce.random(), n = cq; n < b8; n++) gI[n] = "[Bot] " + k[(n + x) % l]
+            for (l = k.length, x = fakeRandom.random(), n = playerCount; n < maxEntities; n++) nickname[n] = "[Bot] " + k[(n + x) % l]
     };
     this.jU = function() {
         var n;
-        if (jt.a1L && !dx) {
-            a1M = Array(cq);
-            var l = cq;
+        if (jt.a1L && !singleplayer) {
+            tempNickname = Array(playerCount);
+            var l = playerCount;
             var x = k.length;
-            var t = ce.a1N();
-            for (n = 0; n < l; n++) a1M[n] = gI[n], gI[n] = k[(n + t) % x];
-            gI[myID] = a1M[myID]
+            var t = fakeRandom.a1N();
+            for (n = 0; n < l; n++) tempNickname[n] = nickname[n], nickname[n] = k[(n + t) % x];
+            nickname[myID] = tempNickname[myID]
         }
     }
 }
@@ -7135,7 +7124,7 @@ function kO() {
 function ko() {
     this.a1R = [];
     this.a1S = [];
-    this.bp = function() {
+    this.init = function() {
         this.a1R = [];
         this.a1S = []
     };
@@ -7179,46 +7168,46 @@ function ko() {
         return !0
     }
 }
-var gI, a1M, fF, d0, d3, cz, d2, bU, ha, ax, b4, bM, bN, bQ, fT;
+var nickname, tempNickname, isAlive, xMin, yMin, xMax, yMax, land, tempLand, troops, potentialBorderAdvances, landBorderPixels, waterBorderPixels, mountainBorderPixels, playerStatus;
 
-function jO(g) {
-    var k;
-    a1M = gI = Array(b8);
-    fF = new Uint8Array(b8);
-    d0 = new Uint16Array(b8);
-    d3 = new Uint16Array(b8);
-    cz = new Uint16Array(b8);
-    d2 = new Uint16Array(b8);
-    bU = new Uint32Array(b8);
-    ha = new Uint32Array(b8);
-    ax = new Uint32Array(b8);
-    b4 = Array(b8);
-    bM = Array(b8);
-    bN = Array(b8);
-    bQ = Array(b8);
-    fT = new Uint8Array(b8);
-    for (k = g.length - 1; 0 <= k; k--) gI[k] = g[k].name, fT[k] = g[k].xT
+function setupPlayerInfoArrays(playerInfo) {
+    var idIndex;
+    tempNickname = nickname = Array(maxEntities);
+    isAlive = new Uint8Array(maxEntities);
+    xMin = new Uint16Array(maxEntities);
+    yMin = new Uint16Array(maxEntities);
+    xMax = new Uint16Array(maxEntities);
+    yMax = new Uint16Array(maxEntities);
+    land = new Uint32Array(maxEntities);
+    tempLand = new Uint32Array(maxEntities);
+    troops = new Uint32Array(maxEntities);
+    potentialBorderAdvances = Array(maxEntities);
+    landBorderPixels = Array(maxEntities);
+    waterBorderPixels = Array(maxEntities);
+    mountainBorderPixels = Array(maxEntities);
+    playerStatus = new Uint8Array(maxEntities);
+    for (idIndex = playerInfo.length - 1; 0 <= idIndex; idIndex--) nickname[idIndex] = playerInfo[idIndex].name, playerStatus[idIndex] = playerInfo[idIndex].status
 }
 
-function km() {
-    this.nZ = 0;
-    this.i8 = null;
-    this.bp = function() {
-        this.nZ = 0;
-        this.i8 = []
+function HumanBots() {
+    this.botAttackInterval = 0;
+    this.players = null;
+    this.init = function() {
+        this.botAttackInterval = 0;
+        this.players = []
     };
     this.fo = function(g) {
-        this.i8.push(g);
-        iw++;
-        fT[g] = 2;
-        b5.qv[g] = (b5.qv[g] + 2) % 4;
-        g === myID && (eW.show(!1, !1), eB.tI());
+        this.players.push(g);
+        spectatorCount++;
+        playerStatus[g] = 2;
+        pixel.qv[g] = (pixel.qv[g] + 2) % 4;
+        g === myID && (gameResultBox.show(!1, !1), eB.tI());
         eA.ml(g)
     };
     this.fh = function(g) {
         var k;
-        if (2 !== fT[g]) {
-            var n = this.i8;
+        if (2 !== playerStatus[g]) {
+            var n = this.players;
             for (k = n.length - 1; 0 <= k; k--)
                 if (n[k] === g) {
                     n.splice(k, 1);
@@ -7227,16 +7216,16 @@ function km() {
         }
     };
     this.dF = function() {
-        dx || (30 === this.nZ && this.a1Z(), this.nZ = (this.nZ + 1) % 60)
+        singleplayer || (30 === this.botAttackInterval && this.a1Z(), this.botAttackInterval = (this.botAttackInterval + 1) % 60)
     };
     this.a1Z = function() {
-        var g, k = this.i8;
+        var g, k = this.players;
         for (g = k.length - 1; 0 <= g; g--) {
             var n = k[g];
-            if (ae.dD(n)) {
-                var l = divideFloor(20 * ax[n], 100);
+            if (attacks.dD(n)) {
+                var l = divideFloor(20 * troops[n], 100);
                 60 > l || (0 ===
-                    bM[n].length ? !dE.dF(n, 2) && dA && dI(n, l, 0, 0) : dA ? dT(n, l) : db(n, l))
+                    landBorderPixels[n].length ? !dE.dF(n, 2) && teamGame && dI(n, l, 0, 0) : teamGame ? dT(n, l) : db(n, l))
             }
         }
     }
@@ -7244,85 +7233,85 @@ function km() {
 
 function WsManager() {
     function g(l) {
-        return n[l].wsCreated && k[l].a1l()
+        return websocketsInfo[l].wsCreated && websockets[l].a1l()
     }
-    this.wF = 4;
-    this.wG = this.wF - 1;
-    this.vM = this.wF + this.wG;
-    var k;
-    this.a1c = null;
-    var n;
+    this.serverCount = 4;
+    this.gameServerCount = this.serverCount - 1;
+    this.terriWsCount = this.serverCount + this.gameServerCount;
+    var websockets;
+    this.originURLs = null;
+    var websocketsInfo;
     this.lobby = this.remote = 0;
-    this.bp = function() {
-        var l;
-        this.a1c = Array(this.wF);
-        this.a1c[0] = "territorial.io";
-        var x = ce.a1N(0);
-        ce.jN(0);
-        for (l = 1; l < this.wF; l++) this.a1c[l] = characters.iZ() + ".com";
-        ce.jN(x);
-        k = Array(this.vM);
-        n = Array(this.vM);
-        for (l = this.vM - 1; 0 <= l; l--) n[l] = {
+    this.init = function() {
+        var serverIndex;
+        this.originURLs = Array(this.serverCount);
+        this.originURLs[0] = "territorial.io";
+        var x = fakeRandom.a1N(0);
+        fakeRandom.jN(0);
+        for (serverIndex = 1; serverIndex < this.serverCount; serverIndex++) this.originURLs[serverIndex] = characters.generateOriginURLs() + ".com";
+        fakeRandom.jN(x);
+        websockets = Array(this.terriWsCount);
+        websocketsInfo = Array(this.terriWsCount);
+        for (serverIndex = this.terriWsCount - 1; 0 <= serverIndex; serverIndex--) websocketsInfo[serverIndex] = {
             wsCreated: !1,
             time: 0,
             humanLastAction: !1
         }
     };
     this.getConnectedLobby = function() {
-        return this.lobby < this.wF ? this.lobby : this.lobby - this.wG
+        return this.lobby < this.serverCount ? this.lobby : this.lobby - this.gameServerCount
     };
     this.dF = function() {
-        for (var l = this.vM - 1; 0 <= l; l--) this.vI(l) && c4.time > n[l].time + 15E3 && dataEncoder.antiDisconnect(l, n[l].humanLastAction)
+        for (var l = this.terriWsCount - 1; 0 <= l; l--) this.vI(l) && c4.time > websocketsInfo[l].time + 15E3 && dataEncoder.antiDisconnect(l, websocketsInfo[l].humanLastAction)
     };
     this.ri = function(l, x) {
-        if (!n[l].wsCreated) return this.a1k(l, x), !1;
-        if (k[l].a1l()) return k[l].a1m(x), k[l].vI();
-        k[l].lF();
+        if (!websocketsInfo[l].wsCreated) return this.a1k(l, x), !1;
+        if (websockets[l].a1l()) return websockets[l].a1m(x), websockets[l].vI();
+        websockets[l].lF();
         this.a1k(l, x);
         return !1
     };
     this.a1k = function(l, x) {
-        n[l].wsCreated = !0;
-        n[l].time = c4.time;
-        n[l].humanLastAction = !1;
-        k[l] = new a1o;
-        k[l].bp(l, x)
+        websocketsInfo[l].wsCreated = !0;
+        websocketsInfo[l].time = c4.time;
+        websocketsInfo[l].humanLastAction = !1;
+        websockets[l] = new a1o;
+        websockets[l].init(l, x)
     };
     this.a1m = function(l, x) {
-        g(l) && k[l].a1m(x)
+        g(l) && websockets[l].a1m(x)
     };
     this.a1p = function(l, x) {
-        0 === x ? jg.rk() : 3 > x ? dataEncoder.loadLeaderboard(l, x - 1) : 3 === x ? dataEncoder.singlePlayed(l) : 4 === x ? ji.rk(l) : 5 === x ? l === this.remote && dataEncoder.authenticateGameConnection() : 6 === x ? dataEncoder.uploadError(l) : 7 === x && dataEncoder.discordVote(l)
+        0 === x ? playtime.rk() : 3 > x ? dataEncoder.loadLeaderboard(l, x - 1) : 3 === x ? dataEncoder.singlePlayed(l) : 4 === x ? ji.rk(l) : 5 === x ? l === this.remote && dataEncoder.authenticateGameConnection() : 6 === x ? dataEncoder.uploadError(l) : 7 === x && dataEncoder.discordVote(l)
     };
     this.vI = function(l) {
-        return n[l].wsCreated &&
-            k[l].vI()
+        return websocketsInfo[l].wsCreated &&
+            websockets[l].vI()
     };
     this.send = function(l, x) {
-        n[l].time = c4.time;
-        n[l].humanLastAction = !1;
-        k[l].send(x)
+        websocketsInfo[l].time = c4.time;
+        websocketsInfo[l].humanLastAction = !1;
+        websockets[l].send(x)
     };
     this.pK = function(l) {
-        n[l].humanLastAction = !0
+        websocketsInfo[l].humanLastAction = !0
     };
     this.close = function(l, x) {
-        g(l) && k[l].close(x)
+        g(l) && websockets[l].close(x)
     };
-    this.a1t = function(l, x) {
-        jj.vS(x);
-        g(l) && k[l].close(x)
+    this.closeByError = function(l, x) {
+        showError.vS(x);
+        g(l) && websockets[l].close(x)
     };
     this.vU = function(l) {
-        for (var x = this.vM - 1; 0 <= x; x--) this.close(x, l)
+        for (var x = this.terriWsCount - 1; 0 <= x; x--) this.close(x, l)
     };
     this.a1u = function(l, x) {
-        for (var t = this.vM - 1; 0 <= t; t--) t !== l && this.close(t, x)
+        for (var t = this.terriWsCount - 1; 0 <= t; t--) t !== l && this.close(t, x)
     };
     this.a1v = function(l, x) {
-        k[l].lF();
-        jj.bp(l, x.code)
+        websockets[l].lF();
+        showError.init(l, x.code)
     }
 }
 var dZ, dY;
@@ -7330,10 +7319,10 @@ var dZ, dY;
 function jV() {
     var g;
     dY = 0;
-    for (g = b8 - 1; 0 <= g; g--) 0 !== fF[g] && dY++;
+    for (g = maxEntities - 1; 0 <= g; g--) 0 !== isAlive[g] && dY++;
     dZ = new Uint16Array(dY);
     var k = 0;
-    for (g = 0; g < b8; g++) 0 !== fF[g] && (dZ[k++] = g)
+    for (g = 0; g < maxEntities; g++) 0 !== isAlive[g] && (dZ[k++] = g)
 }
 
 function eL() {
@@ -7342,7 +7331,7 @@ function eL() {
 }
 
 function fn() {
-    for (var g = dY - 1; 0 <= g; g--) 0 === fF[dZ[g]] && a1x(g)
+    for (var g = dY - 1; 0 <= g; g--) 0 === isAlive[dZ[g]] && a1x(g)
 }
 
 function a1x(g) {
@@ -7350,16 +7339,16 @@ function a1x(g) {
 }
 
 function a1w() {
-    for (var g, k = dY - 1; 0 <= k; k--) bU[dZ[k]] <= divideFloor(ha[dZ[k]], 4) ? 1E3 >= bU[dZ[k]] && (2 !== fF[dZ[k]] || 0 === bU[dZ[k]]) && fm(dZ[k]) : bU[dZ[k]] >= ha[dZ[k]] ? ha[dZ[k]] = bU[dZ[k]] : (g = divideFloor(ha[dZ[k]] - bU[dZ[k]], 1E3), ha[dZ[k]] -= 1 > g ? 1 : g)
+    for (var g, k = dY - 1; 0 <= k; k--) land[dZ[k]] <= divideFloor(tempLand[dZ[k]], 4) ? 1E3 >= land[dZ[k]] && (2 !== isAlive[dZ[k]] || 0 === land[dZ[k]]) && fm(dZ[k]) : land[dZ[k]] >= tempLand[dZ[k]] ? tempLand[dZ[k]] = land[dZ[k]] : (g = divideFloor(tempLand[dZ[k]] - land[dZ[k]], 1E3), tempLand[dZ[k]] -= 1 > g ? 1 : g)
 }
 
 function getTroopHash() {
     var g, k = 0;
-    for (g = dY - 1; 0 <= g; g--) k += ax[dZ[g]];
+    for (g = dY - 1; 0 <= g; g--) k += troops[dZ[g]];
     return k % 4096
 }
-var p5, cH, a1y, versionHash, r, s, pI, bq, gE, cB, pM, a20, isIOS, c, e, deviceVersion, isZoom, a21 = !1,
-    isNotTopWindow, isNotClient, i, gy, sm, h8, a5, b0, hv, vc, c4, dW, eT, mainLeaderboard, fi, vk, nU, uO, timeHash, a25, errorLineNo = 0,
+var mainCanvas, mainCanvasCtx, a1y, versionHash, r, s, pI, bq, gE, cB, pM, hostname, isIOS, c, androidObject, androidVersion, isZoom, hasHadError = !1,
+    isNotTopWindow, isNotClient, i, gy, sm, h8, a5, statistics, hv, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, vk, openLinkBox, uO, timeHash, a25, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
@@ -7367,11 +7356,11 @@ function main() {
     a25 = 2;
     versionHash = 2526;
     a1y = "1.83.3   3 February 2023";
-    jw();
+    construct();
     d8();
     isMainCalled = !0;
-    deviceVersion = (e = "undefined" !== typeof Android ? Android : null) ? e.getVersion() : 0;
-    12 <= deviceVersion && e.prepareAd("6685097465");
+    androidVersion = (androidObject = "undefined" !== typeof Android ? Android : null) ? androidObject.getVersion() : 0;
+    12 <= androidVersion && androidObject.prepareAd("6685097465");
     isIOS = !1;
     window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iosCommandA && (isIOS = !0, window.webkit.messageHandlers.iosCommandA.postMessage("prepare ad 5907904081"), c = "undefined" !== typeof mwIOSdataX ? mwIOSdataX : {
         username: "iOS User " + Math.floor(1E3 * Math.random()),
@@ -7387,8 +7376,8 @@ function main() {
     });
     timeHash = (new Date).getTime() % 1024;
     isNotTopWindow = a2A();
-    jq.bp();
-    f.bp();
+    jq.init();
+    userSettings.init();
     h();
     p();
     aD();
@@ -7397,48 +7386,47 @@ function main() {
     }, !1) : document.attachEvent("oncontextmenu", function() {
         window.event.returnValue = !1
     });
-    a2B();
-    document.addEventListener("keyup", a2C);
-    document.addEventListener("keydown", a2D);
-    document.addEventListener("visibilitychange", a2E);
-    window.addEventListener("error",
-        a2F, !0);
+    setIsNotClientFlag();
+    document.addEventListener("keyup", onKeyup);
+    document.addEventListener("keydown", onKeydown);
+    document.addEventListener("visibilitychange", onVisibilitychange);
+    window.addEventListener("error", onError, !0);
     sm = 10;
     x9 = new a2G;
     gy = new a2H;
     h8 = new ts;
     a5 = new ng;
-    b0 = new a2I;
+    statistics = new Statistics;
     hv = new a2J;
-    vc = new nO;
+    cookiesPrompt = new CookiesPrompt;
     c4 = new a2K;
     c4.jd();
-    c4.bp();
-    dW = new a2L;
+    c4.init();
+    teams = new Teams;
     eT = new a2M;
     uO = new bm;
-    uO.bp();
+    uO.init();
     mainLeaderboard = new MainLeaderboard;
-    mainLeaderboard.bp();
-    fi = new ib;
+    mainLeaderboard.init();
+    endGame = new EndGame;
     vk = new ui;
-    nU = new uX;
+    openLinkBox = new OpenLinkBox;
     p1();
-    ce.bp();
-    ay.a09();
-    jm.bp();
-    jQ.bp();
-    aJ.bp();
-    jv.bp();
-    jt.bp();
-    wsManager.bp();
-    jg.bp();
-    jS.bp();
-    p4();
-    bw.bp();
-    c4.c5 = !0;
+    fakeRandom.init();
+    interest.a09();
+    mapInfo.init();
+    configFakeMap.init();
+    aJ.init();
+    loadCustom.init();
+    jt.init();
+    wsManager.init();
+    playtime.init();
+    nickNames.init();
+    addMainCanvasEventListeners();
+    sprites.init();
+    c4.canvasDirty = !0;
     setTimeout(function() {
-        x8(2, 14071)
+        loadMap(1, 14071)
     }, 0)
 }
 
@@ -7454,87 +7442,87 @@ function a2A() {
     }
 }
 
-function a2F(error) {
-    a21 || (a21 = !0, error.message ? (errorLineNo = error.lineno, errorMessage = error.message, wsManager.ri(0, 6) && dataEncoder.uploadError(0), error = "[A_ERROR " + errorLineNo + "][" + errorMessage + "]", a2N(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
+function onError(error) {
+    hasHadError || (hasHadError = !0, error.message ? (errorLineNo = error.lineno, errorMessage = error.message, wsManager.ri(0, 6) && dataEncoder.uploadError(0), error = "[A_ERROR " + errorLineNo + "][" + errorMessage + "]", showErrorWarning(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
 }
 
-function a2N(g) {
-    e ? e.showToast(g) : alert(g)
+function showErrorWarning(error) {
+    androidObject ? androidObject.showToast(error) : alert(error)
 }
 
-function a2D(g) {
-    "ArrowLeft" === g.key ? gn.w3(3) : "ArrowUp" === g.key ? gn.w3(0) : "ArrowRight" === g.key ? gn.w3(1) : "ArrowDown" === g.key ? gn.w3(2) : "a" === g.key ? eR.r3(.96875) : "d" === g.key ? eR.r3(32 / 31) : "s" === g.key ? eR.r3(.875) : "w" === g.key ? eR.r3(8 / 7) : "1" === g.key ? eR.r3(5 / 6) : "2" === g.key ? eR.r3(1.2) : "c" === g.key && 0 !== fZ && hv.a2O()
+function onKeydown(g) {
+    "ArrowLeft" === g.key ? gn.w3(3) : "ArrowUp" === g.key ? gn.w3(0) : "ArrowRight" === g.key ? gn.w3(1) : "ArrowDown" === g.key ? gn.w3(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : "c" === g.key && 0 !== clientStatus && hv.a2O()
 }
 
-function a2E() {
+function onVisibilitychange() {
     "hidden" === document.visibilityState ? c4.a2P() : c4.xi()
 }
 
-function a2C(g) {
-    400 > c4.time || (8 !== aJ.pY() && aJ.uh(g) ? c4.c5 = !0 : "Escape" === g.key ? aJ.aK() : "ArrowLeft" === g.key ? gn.a2Q(3) : "ArrowUp" === g.key ? gn.a2Q(0) : "ArrowRight" === g.key ? gn.a2Q(1) : "ArrowDown" === g.key ? gn.a2Q(2) : "h" === g.key && 1 <= fZ && (gi = !gi, c4.c5 = !0))
+function onKeyup(g) {
+    400 > c4.time || (8 !== aJ.getState() && aJ.hideIfNotHidden(g) ? c4.canvasDirty = !0 : "Escape" === g.key ? aJ.aK() : "ArrowLeft" === g.key ? gn.a2Q(3) : "ArrowUp" === g.key ? gn.a2Q(0) : "ArrowRight" === g.key ? gn.a2Q(1) : "ArrowDown" === g.key ? gn.a2Q(2) : "h" === g.key && 1 <= clientStatus && (isCanvasHidden = !isCanvasHidden, c4.canvasDirty = !0))
 }
 
-function a2B() {
-    a20 = window.location.hostname;
-    isNotClient = 0 <= a20.toLowerCase().indexOf("territorial.io")
+function setIsNotClientFlag() {
+    hostname = window.location.hostname;
+    isNotClient = 0 <= hostname.toLowerCase().indexOf("territorial.io")
 }
 
 function kP() {
     var g;
-    this.bp = function() {
+    this.init = function() {
         g = [];
-        9 === dv && this.a2S()
+        9 === gamemode && this.a2S()
     };
     this.a2S = function() {
         var k = [8, 51, 68, 88, 138, 178, 313];
         var n = [35, 330];
         this.e3 = 0;
         this.e4 = [0, 0, 0, 0, 0, 0];
-        cq <= k[0] ? (this.e3 = n[0] - cq, this.e4[1] = n[1] - divideFloor(n[1] * cq, k[0]), this.e4[0] = 512 - this.e4[1] - n[0]) : cq <= k[1] ? (this.e3 = n[0] - k[0] - divideFloor((n[0] - k[0]) * (cq - k[0]), k[1] - k[0]), this.e4[0] = 512 - this.e3 - cq) : cq <= k[2] ? (this.e4[0] = 512 - k[1] - divideFloor((512 - k[1]) * (cq - k[1]), k[2] - k[1]), this.e4[1] = 512 - cq - this.e4[0]) : cq <= k[3] ? (this.e4[1] = 512 - k[2] - divideFloor((512 - k[2]) * (cq - k[2]), k[3] - k[2]),
-            this.e4[2] = 512 - cq - this.e4[1]) : cq <= k[4] ? (this.e4[2] = 512 - k[3] - divideFloor((512 - k[3]) * (cq - k[3]), k[4] - k[3]), this.e4[3] = 512 - cq - this.e4[2]) : cq <= k[5] ? (this.e4[3] = 512 - k[4] - divideFloor((512 - k[4]) * (cq - k[4]), k[5] - k[4]), this.e4[4] = 512 - cq - this.e4[3]) : cq <= k[6] ? (this.e4[4] = 512 - k[5] - divideFloor((512 - k[5]) * (cq - k[5]), k[6] - k[5]), this.e4[5] = 512 - cq - this.e4[4]) : this.e4[5] = 512 - cq;
+        playerCount <= k[0] ? (this.e3 = n[0] - playerCount, this.e4[1] = n[1] - divideFloor(n[1] * playerCount, k[0]), this.e4[0] = 512 - this.e4[1] - n[0]) : playerCount <= k[1] ? (this.e3 = n[0] - k[0] - divideFloor((n[0] - k[0]) * (playerCount - k[0]), k[1] - k[0]), this.e4[0] = 512 - this.e3 - playerCount) : playerCount <= k[2] ? (this.e4[0] = 512 - k[1] - divideFloor((512 - k[1]) * (playerCount - k[1]), k[2] - k[1]), this.e4[1] = 512 - playerCount - this.e4[0]) : playerCount <= k[3] ? (this.e4[1] = 512 - k[2] - divideFloor((512 - k[2]) * (playerCount - k[2]), k[3] - k[2]),
+            this.e4[2] = 512 - playerCount - this.e4[1]) : playerCount <= k[4] ? (this.e4[2] = 512 - k[3] - divideFloor((512 - k[3]) * (playerCount - k[3]), k[4] - k[3]), this.e4[3] = 512 - playerCount - this.e4[2]) : playerCount <= k[5] ? (this.e4[3] = 512 - k[4] - divideFloor((512 - k[4]) * (playerCount - k[4]), k[5] - k[4]), this.e4[4] = 512 - playerCount - this.e4[3]) : playerCount <= k[6] ? (this.e4[4] = 512 - k[5] - divideFloor((512 - k[5]) * (playerCount - k[5]), k[6] - k[5]), this.e4[5] = 512 - playerCount - this.e4[4]) : this.e4[5] = 512 - playerCount;
         n = this.e3;
         for (k = 0; 6 > k; k++) n += this.e4[k];
-        if (n > dq) {
+        if (n > botCount) {
             for (k = this.e3 = 0; 5 > k; k++) this.e4[k] = 0;
-            this.e4[5] = dq
+            this.e4[5] = botCount
         }
     };
     this.zI = function(k) {
         g.push({
             player: k,
-            mt: 14 + ce.cf(20)
+            mt: 14 + fakeRandom.cf(20)
         })
     };
     this.dF = function() {
         if (9 ===
-            dv) {
+            gamemode) {
             var k;
-            for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].mt && (eA.n2(g[k].player, 0, 46), g.splice(k))
+            for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].mt && (eA.showIcon(g[k].player, 0, 46), g.splice(k))
         }
     }
 }
-var aZ, aa, hs, pj, x6, x7, wv, ww, vf, zV = 15,
+var currentMapWidth, currentMapHeight, hs, pj, x6, x7, currentMapID, currentSeed, vf, customMapID = 15,
     x9;
 
-function x8(g, k) {
-    g %= zV;
-    if (g !== wv || a2Z(wv) && k !== ww) {
+function loadMap(mapID, k) {
+    mapID %= customMapID;
+    if (mapID !== currentMapID || isnotBAnorRealMap(currentMapID) && k !== currentSeed) {
         var n = performance.now();
         vf = !1;
         x9.xA();
-        ce.jN(g);
-        wv = g;
-        ww = k;
-        a2Z(g) && (jm.bz(g).a1f = k);
-        if (a2a(wv)) a2b(n);
+        fakeRandom.jN(mapID);
+        currentMapID = mapID;
+        currentSeed = k;
+        isnotBAnorRealMap(mapID) && (mapInfo.getValuebyID(mapID).a1f = k);
+        if (isRealMap(currentMapID)) configRealMap(n);
         else {
-            var l = jm.bz(wv);
-            aZ = l.c1;
-            aa = l.cw;
-            ce.jN(l.a1f);
-            jn.jT([aZ, aa, l.gO, l.gL]);
+            var l = mapInfo.getValuebyID(currentMapID);
+            currentMapWidth = l.width;
+            currentMapHeight = l.height;
+            fakeRandom.jN(l.a1f);
+            jn.jT([currentMapWidth, currentMapHeight, l.gO, l.gL]);
             a2c();
-            jQ.a2d();
+            configFakeMap.a2d();
             jn.a2e();
             a2f(n)
         }
@@ -7543,28 +7531,28 @@ function x8(g, k) {
 
 function a2f(g) {
     var k = performance.now();
-    sm = Math.floor(29 - (k - g) / (33 * jm.bz(wv).per));
+    sm = Math.floor(29 - (k - g) / (33 * mapInfo.getValuebyID(currentMapID).per));
     sm = 0 > sm ? 0 : 20 < sm ? 20 : sm
 }
 
-function a2h() {
+function getRealMapStartingIndex() {
     return 10
 }
 
-function a2a(g) {
-    return g >= a2h()
+function isRealMap(mapID) {
+    return mapID >= getRealMapStartingIndex()
 }
 
-function a2Z(g) {
-    return !(1 === g || g >= a2h())
+function isnotBAnorRealMap(mapID) {
+    return !(1 === mapID || mapID >= getRealMapStartingIndex())
 }
 
-function a2i(g) {
-    return 3 === g || 7 === g || 9 === g || g === zV
+function mapHasMountains(mapID) {
+    return 3 === mapID || 7 === mapID || 9 === mapID || mapID === customMapID
 }
 
-function a2j(g) {
-    return 2 === g || 7 === g || 9 === g
+function mapIsSurroundedByWater(mapID) {
+    return 2 === mapID || 7 === mapID || 9 === mapID
 }
 
 function a2G() {
@@ -7596,17 +7584,17 @@ function a2G() {
         this.a2q = null;
         jn.a2e()
     };
-    this.bp = function() {
-        7 === aJ.pY() || this.a2s || (this.a2r = !0, this.aA = 0, this.a2k = 1, this.a2p = [jm.bz(wv).a2t[0], jm.bz(wv).a2u[0]], this.qv = [jm.bz(wv).a2v[3], jm.bz(wv).a2v[4], jm.bz(wv).a2v[5], jm.bz(wv).a2v[6]], this.a2l = jm.bz(wv).a2v[7], this.a2m = jm.bz(wv).a2v[8], this.a2n = jm.bz(wv).a2v[9], this.a2o = jm.bz(wv).a2v[10], this.a2r ? this.rd = setTimeout(g, 16) : this.dF())
+    this.init = function() {
+        7 === aJ.getState() || this.a2s || (this.a2r = !0, this.aA = 0, this.a2k = 1, this.a2p = [mapInfo.getValuebyID(currentMapID).a2t[0], mapInfo.getValuebyID(currentMapID).a2u[0]], this.qv = [mapInfo.getValuebyID(currentMapID).a2v[3], mapInfo.getValuebyID(currentMapID).a2v[4], mapInfo.getValuebyID(currentMapID).a2v[5], mapInfo.getValuebyID(currentMapID).a2v[6]], this.a2l = mapInfo.getValuebyID(currentMapID).a2v[7], this.a2m = mapInfo.getValuebyID(currentMapID).a2v[8], this.a2n = mapInfo.getValuebyID(currentMapID).a2v[9], this.a2o = mapInfo.getValuebyID(currentMapID).a2v[10], this.a2r ? this.rd = setTimeout(g, 16) : this.dF())
     };
     this.dF = function() {
-        if (8 === aJ.pY() && eV.gd()) this.rd = setTimeout(g, 16);
+        if (8 === aJ.getState() && eV.gd()) this.rd = setTimeout(g, 16);
         else {
             if (0 === this.aA) {
-                var l = ce.a1N();
-                ce.jN(jm.bz(wv).a2v[2]);
-                jn.jT([aZ, aa, jm.bz(wv).a2v[0], jm.bz(wv).a2v[1]]);
-                ce.jN(l);
+                var l = fakeRandom.a1N();
+                fakeRandom.jN(mapInfo.getValuebyID(currentMapID).a2v[2]);
+                jn.jT([currentMapWidth, currentMapHeight, mapInfo.getValuebyID(currentMapID).a2v[0], mapInfo.getValuebyID(currentMapID).a2v[1]]);
+                fakeRandom.jN(l);
                 this.a2q = jn.a2x();
                 this.aA++;
                 if (this.a2r) {
@@ -7616,18 +7604,18 @@ function a2G() {
             }
             l = this.a2r ? 10 : 1E6;
             l =
-                aa - this.a2k - 1 < l ? aa - this.a2k - 1 : l;
+                currentMapHeight - this.a2k - 1 < l ? currentMapHeight - this.a2k - 1 : l;
             l = this.a2k + l;
             for (var x, t, z = this.a2k; z < l; z++)
-                for (var y = 1; y < aZ - 1; y++)
-                    if (t = y + z * aZ, x = 4 * t, n(x)) this.a2z(x, t, 1);
+                for (var y = 1; y < currentMapWidth - 1; y++)
+                    if (t = y + z * currentMapWidth, x = 4 * t, n(x)) this.a2z(x, t, 1);
                     else {
                         this.a2z(x, t, 0);
                         t = y;
                         var A = z;
-                        (1 < t && n(x - 4) || t < aZ - 2 && n(x + 4) || 1 < A && n(x - 4 * aZ) || A < aa - 2 && n(x + 4 * aZ)) && this.a30(y, z)
+                        (1 < t && n(x - 4) || t < currentMapWidth - 2 && n(x + 4) || 1 < A && n(x - 4 * currentMapWidth) || A < currentMapHeight - 2 && n(x + 4 * currentMapWidth)) && this.a30(y, z)
                     } this.a2k = l;
-            this.a2k >= aa - 1 ? (pj.putImageData(x6, 0, 0, 1, 1, aZ - 2, aa - 2), c4.c5 = !0, this.xA()) : this.a2r && (this.rd = setTimeout(g, 16))
+            this.a2k >= currentMapHeight - 1 ? (pj.putImageData(x6, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2), c4.canvasDirty = !0, this.xA()) : this.a2r && (this.rd = setTimeout(g, 16))
         }
     };
     this.a2z = function(l, x, t) {
@@ -7643,28 +7631,28 @@ function a2G() {
         var y = l + this.a2m,
             A = x + this.a2m;
         t = 1 > t ? 1 : t;
-        y = y > aZ - 2 ? aZ - 2 : y;
-        A = A > aa - 2 ? aa - 2 : A;
+        y = y > currentMapWidth - 2 ? currentMapWidth - 2 : y;
+        A = A > currentMapHeight - 2 ? currentMapHeight - 2 : A;
         for (var B = 1 > z ? 1 : z; B <= A; B++)
             for (var C = t; C <= y; C++)
-                if (z = 4 * (C + B * aZ), n(z)) {
-                    var E = this.a2l + (this.a2m - this.a2l) * this.a2q[C + aZ * B] / 1E4;
+                if (z = 4 * (C + B * currentMapWidth), n(z)) {
+                    var E = this.a2l + (this.a2m - this.a2l) * this.a2q[C + currentMapWidth * B] / 1E4;
                     if (!(Math.abs(l - C) > E || Math.abs(x - B) > E)) {
                         var F = Math.sqrt((l - C) * (l - C) + (x - B) * (x - B));
                         F >= E || this.a34(z, F, E, 1, this.qv[3])
                     }
-                } else E = this.a2n + (this.a2o - this.a2n) * this.a2q[C + aZ * B] / 1E4, Math.abs(l - C) > E || Math.abs(x - B) > E || (F = Math.sqrt((l - C) *
+                } else E = this.a2n + (this.a2o - this.a2n) * this.a2q[C + currentMapWidth * B] / 1E4, Math.abs(l - C) > E || Math.abs(x - B) > E || (F = Math.sqrt((l - C) *
                     (l - C) + (x - B) * (x - B)), F >= E || this.a34(z, F, E, 0, this.qv[2]))
     }
 }
 
 function a2c() {
-    2 === wv ? a36([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0]) : 7 === wv ? a36([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0]) : 8 === wv ? a36([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0]) : 9 === wv && a36([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
+    2 === currentMapID ? a36([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0]) : 7 === currentMapID ? a36([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0]) : 8 === currentMapID ? a36([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0]) : 9 === currentMapID && a36([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
 }
 
 function a36(g, k, n, l, x) {
     var t, z, y, A = g.length - 1,
-        B = aZ + aa;
+        B = currentMapWidth + currentMapHeight;
     B *= B;
     var C = n.length;
     for (t = C - 1; 0 <= t; t--) n[t] *= n[t];
@@ -7675,8 +7663,8 @@ function a36(g, k, n, l, x) {
     if (void 0 === x)
         for (x = Array(C), t = C - 1; 0 <= t; t--) x[t] = 0;
     for (t = 1; t < C; t++) E[t] = n[t] - n[t - 1], F[t] = l[t] - l[t - 1], G[t] = x[t] - x[t - 1];
-    for (z = aZ - 1; 0 <= z; z--)
-        for (y = aa - 1; 0 <= y; y--) {
+    for (z = currentMapWidth - 1; 0 <= z; z--)
+        for (y = currentMapHeight - 1; 0 <= y; y--) {
             var I = B;
             for (t = A; 0 <= t; t--) {
                 var D = (z - g[t]) * (z - g[t]) + (y - k[t]) * (y - k[t]);
@@ -7690,7 +7678,7 @@ function a36(g, k, n, l, x) {
                     K = x[t - 1] + allDivideFloor((I - n[t - 1]) * G[t],
                         E[t]);
                     break
-                } a3K(aZ * y + z, D, K, N)
+                } a3K(currentMapWidth * y + z, D, K, N)
         }
 }
 
@@ -7699,31 +7687,31 @@ function a3K(g, k, n, l) {
     l[g] += divideFloor(n * (10 * k - l[g]), 1E3)
 }
 
-function kQ() {
+function ConfigFakeMap() {
     var g;
     this.nJ = this.nI = this.nF = this.nE = 0;
-    this.bp = function() {
-        g = Array(a2h());
+    this.init = function() {
+        g = Array(getRealMapStartingIndex());
         g[0] = {
-            c1: [0, 5E3, 8E3, 1E4],
+            width: [0, 5E3, 8E3, 1E4],
             fB: [220, 250, 255, 220],
             n4: [190, 220, 0, 0],
             cm: [170, 200, 0, 0]
         };
         g[1] = {
-            c1: [0, 4E3, 5E3, 6E3, 1E4],
+            width: [0, 4E3, 5E3, 6E3, 1E4],
             fB: [25, 0, 100, 0, 25],
             n4: [25, 0, 0, 0, 25],
             cm: [25, 0, 0, 0, 25]
         };
         g[2] = {
-            c1: [0, 500, 2500, 2999, 3E3, 3200, 4200, 5200, 5700, 8800, 1E4],
+            width: [0, 500, 2500, 2999, 3E3, 3200, 4200, 5200, 5700, 8800, 1E4],
             fB: [15, 15, 70, 40, 40, 40, 252, 40, 40, 20, 30],
             n4: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
             cm: [120, 120, 220, 110, 40, 40, 217, 10, 10, 10, 10]
         };
         g[3] = {
-            c1: [0, 400, 1800, 2E3, 3200, 4500, 6E3, 7700, 8500, 9500, 1E4],
+            width: [0, 400, 1800, 2E3, 3200, 4500, 6E3, 7700, 8500, 9500, 1E4],
             fB: [10,
                 10, 20, 10, 30, 10, 16, 40, 55, 230, 230
             ],
@@ -7731,37 +7719,37 @@ function kQ() {
             cm: [80, 80, 200, 10, 60, 10, 16, 40, 55, 230, 230]
         };
         g[4] = {
-            c1: [0, 300, 1400, 1700, 3E3, 4E3, 1E4],
+            width: [0, 300, 1400, 1700, 3E3, 4E3, 1E4],
             fB: [10, 10, 20, 10, 10, 170, 212],
             n4: [20, 20, 60, 100, 100, 110, 170],
             cm: [70, 70, 160, 30, 30, 60, 120]
         };
         g[5] = {
-            c1: [0, 1E3, 3E3, 3500, 4E3, 4500, 7E3, 7500, 8E3, 1E4],
+            width: [0, 1E3, 3E3, 3500, 4E3, 4500, 7E3, 7500, 8E3, 1E4],
             fB: [10, 10, 20, 10, 5, 10, 20, 5, 20, 25],
             n4: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
             cm: [80, 80, 200, 10, 5, 10, 20, 5, 20, 25]
         };
         g[6] = {
-            c1: [0, 700, 2650, 3200, 5E3, 8E3, 1E4],
+            width: [0, 700, 2650, 3200, 5E3, 8E3, 1E4],
             fB: [10, 10, 60, 255, 255, 200, 200],
             n4: [10, 10, 60, 255, 255, 200, 200],
             cm: [80, 80, 255, 255, 255, 200, 200]
         };
         g[7] = {
-            c1: [0, 400, 1999, 2E3, 3200, 4E3, 4700, 5500, 6500, 9500, 1E4],
+            width: [0, 400, 1999, 2E3, 3200, 4E3, 4700, 5500, 6500, 9500, 1E4],
             fB: [10, 10, 80, 255, 255, 55, 6, 70, 20, 155, 255],
             n4: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
             cm: [80, 80, 255, 235, 235, 55, 26, 10, 20, 155, 255]
         };
         g[8] = {
-            c1: [0, 700, 1300, 1900, 1901, 2500, 3400, 6E3, 1E4],
+            width: [0, 700, 1300, 1900, 1901, 2500, 3400, 6E3, 1E4],
             fB: [25, 30, 30, 30, 255, 255, 30, 40, 20],
             n4: [25, 30, 150, 150, 245, 245, 80, 150, 70],
             cm: [60, 170, 170, 170, 235, 235, 30, 40, 40]
         };
         g[9] = {
-            c1: [0, 400, 2009, 2010, 3300, 4E3, 5200, 6500, 8E3, 9500, 1E4],
+            width: [0, 400, 2009, 2010, 3300, 4E3, 5200, 6500, 8E3, 9500, 1E4],
             fB: [10, 10, 80, 255, 255, 55, 23, 36, 20, 155, 255],
             n4: [10, 10, 90, 245, 245,
                 170, 60, 160, 20, 155, 255
@@ -7771,17 +7759,17 @@ function kQ() {
     };
     this.a2d = function() {
         hs = document.createElement("canvas");
-        hs.width = aZ;
-        hs.height = aa;
+        hs.width = currentMapWidth;
+        hs.height = currentMapHeight;
         pj = hs.getContext("2d", {
             alpha: !1
         });
-        var k = pj.getImageData(0, 0, aZ, aa);
+        var k = pj.getImageData(0, 0, currentMapWidth, currentMapHeight);
         x7 = k.data;
-        var n = g[wv].c1,
-            l = g[wv].fB,
-            x = g[wv].n4,
-            t = g[wv].cm,
+        var n = g[currentMapID].width,
+            l = g[currentMapID].fB,
+            x = g[currentMapID].n4,
+            t = g[currentMapID].cm,
             z, y, A = jn.a2x(),
             B = n.length - 2,
             C = Array(B + 1),
@@ -7789,7 +7777,7 @@ function kQ() {
             F = Array(B + 1),
             G = Array(B + 1);
         for (y = B; 0 <= y; y--) C[y] = n[y + 1] - n[y], E[y] = l[y + 1] - l[y], F[y] = x[y + 1] - x[y], G[y] = t[y + 1] - t[y];
-        for (z = aZ * aa - 1; 0 <= z; z--)
+        for (z = currentMapWidth * currentMapHeight - 1; 0 <= z; z--)
             for (y = B; 0 <= y; y--)
                 if (A[z] >= n[y]) {
                     var N = A[z] -
@@ -7800,53 +7788,53 @@ function kQ() {
                     x7[4 * z + 3] = 255;
                     break
                 } pj.putImageData(k, 0, 0);
-        jm.a3O() && bw.bx() && jm.a3O() && (n = bw.l9("arena"), pj.save(), pj.globalAlpha = 1 === wv ? .1 : 1, pj.imageSmoothingEnabled = !0, k = 2.8, pj.scale(k, k), pj.drawImage(n, Math.floor((aZ / k - n.width) / 2), Math.floor(.5 * aa / k - n.height / 2)), pj.restore(), n = bw.l9("territorial.io"), pj.save(), pj.globalAlpha = 1 === wv ? .1 : 1, pj.imageSmoothingEnabled = !0, k = .87, pj.scale(k, k), pj.drawImage(n, Math.floor(.745 *
-            (aZ / k - n.width)), Math.floor(.422 * aa / k - n.height / 2)), pj.restore());
+        mapInfo.isBA() && sprites.bx() && mapInfo.isBA() && (n = sprites.l9("arena"), pj.save(), pj.globalAlpha = 1 === currentMapID ? .1 : 1, pj.imageSmoothingEnabled = !0, k = 2.8, pj.scale(k, k), pj.drawImage(n, Math.floor((currentMapWidth / k - n.width) / 2), Math.floor(.5 * currentMapHeight / k - n.height / 2)), pj.restore(), n = sprites.l9("territorial.io"), pj.save(), pj.globalAlpha = 1 === currentMapID ? .1 : 1, pj.imageSmoothingEnabled = !0, k = .87, pj.scale(k, k), pj.drawImage(n, Math.floor(.745 *
+            (currentMapWidth / k - n.width)), Math.floor(.422 * currentMapHeight / k - n.height / 2)), pj.restore());
         vf = !0;
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.jR = function() {
         var k, n = 0;
-        var l = aa * aZ * 4;
-        var x = tx,
+        var l = currentMapHeight * currentMapWidth * 4;
+        var x = pixelRGBA,
             t = x7;
-        for (k = aZ - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
-        l = 4 * aZ;
-        for (k = aa - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
-        for (k = aZ * aa - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (t[l + 2] > t[l + 1] && t[l + 2] > t[l] ? x[l + 2] = 2 : (x[l + 2] = 1, n++));
-        this.nE = (aZ - 2) * (aa - 2);
+        for (k = currentMapWidth - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
+        l = 4 * currentMapWidth;
+        for (k = currentMapHeight - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
+        for (k = currentMapWidth * currentMapHeight - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (t[l + 2] > t[l + 1] && t[l + 2] > t[l] ? x[l + 2] = 2 : (x[l + 2] = 1, n++));
+        this.nE = (currentMapWidth - 2) * (currentMapHeight - 2);
         this.nJ = 0;
-        if (a2i(wv)) {
+        if (mapHasMountains(currentMapID)) {
             t = 0;
-            l = tx;
+            l = pixelRGBA;
             var z = x7;
-            for (x = aZ * aa - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (t++, l[k + 2] = 3);
-            jQ.nJ = t
+            for (x = currentMapWidth * currentMapHeight - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (t++, l[k + 2] = 3);
+            configFakeMap.nJ = t
         }
         this.nF = j9 = n - this.nJ;
         this.nI = this.nE - this.nF - this.nJ
     }
 }
 
-function a2b(g) {
+function configRealMap(g) {
     var k;
-    wv === a2h() ? k = "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86fRU8Av6gRK76AeCE66hQ9IAw6iQ7IUu6kQ6IUu6lQy87EQmQofAK6Ak6nQUdA7F9D56nQAKAUQAKBA9F8D56nP9A9BKIBe57DaqQAGBeIBoSAKBAKjDGsQAFB6AySA7BUiDQrSKFCKCA6AyEDUcAKD6rV6AyFAoBCUc6yV6AyOB6C865WkBAEAKZ655X7Aod66M6a69Z967W5967W5967W5967W5867g5867g5867g5767q56675Z6675Z5676Z5676Z5676Z5676Zu77U6AKu678UyFEk78UyID9679UyID768L9yBA8A8DABAu8qEA8C769WEA8Cu95UoICG99T7AKGA9B9699UoKB77AUoLB56dAe69UyMBucAe69QUCBUCC7B6BGbAe7B58BABAeEAyYCAI6ZAe7B57B6AeHCUXAabAe7L57B7AKJCQ5UEHB57C7CQ5UEHB56C8CQ5eDHB57AUBCoV65eEG9QAZB965oEG9QAZB965yDG9QKZAUBAKCBa5yDG9QKZAKGAKEA665yDG9QUmAk5yDHB56AUED8AkxAUEAe7B565oAeCALyA7HV575oA8AyBOKGHf585qA8AKEN9Ay7p585sBVmAy7p595sBVkAo76P95uBLjAo76P9AKCAUB5rA8N6AK78Q55sA6V6Q65tAKQAMCQ756AGT8RF58AKBAz96RP6AFTz7P6oBTz7b59Rl58Rv57R675z7975V7975V7875f8HzSlwSbxSbxSbxSbxSlwSvvS56ZApRSuYA6L7S66WA6L7S656yBFeJL7S656yBFeIL8S656yDE8A9MB8556yEEoNMB8t6yFEAPMV8t6KJD7B8MV8t56BokB6Mz8t5UQD7B6M6S65yAyIAUlB7M6S65yAyuB7M7S75xAovB7M7S65yAeuCLZS75xAUuB6AoBM6S75xAKvB6NL87596BzhS759oPNz8959UPNz89589B8Nz9FsAKrB9Np9PqAUpCLiTV6oClyCD9C9M8Tf6oCloCD8DVaTz6UCloCDomMp9p6oCleBDUqMf9p6yClUBDUrMV9p67AN97AKFEABAfWTj66AKFD8M8TACAZ6yDAUnM8TACAZ66ELeT556ypNB9j67ELeTZ67EVeTP6ytNB9F67EffTF66EpfTZMAyDAUpEzfTZHByoE6NL9jDBKFAUpEfhTjCA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6Ao8i58m7Ae8Y59m7AK8O6O67us67us65u6ui68r6AKau8q6AyEAUau9qUUCE69p9B8AeFB7u8qASAyEB6u6qUSA7AUQu6qyPC5u6qyQC5u5q8BoZuscByZuifBAcA8A5s9rKHDKIA5s8r6AUmAUCtO78ti78AeCs9v7AUDs9wiwwsvwiwwsuw6s5w5s6wsuw6s5w7AyBr8xslx5r5x9rY99rZCq8ysay6q6y6qtJqPMBeGoFgP6BWe5lPKQW65pO7B8W55rOoXV95zN7C7V655VbEMK55pZEWI557MKtU8557MKuUj66LowP6AeFA7DF69LKyPySCZ8VDFL5oWB858pBFVyC8B5588J7FpqAeEC9Bt89Jy68M6EAJ59e9o7BYEUD598Je7pU6sJU76AoOKQsJU96J96sJU96J66vJU96JkyJK97Ja5U89J9B6AK7k5o88J9BKHAeFA9AK5k5y88KAKC6AeDEu58I7KKBEAs658I6OeGAoh659Iz5yf66K86PeFA7B666y8z68Bk6y8z7KH668Iz7eF669IwwI58vIwyISzIS6K7S66G587U59X9AQhF8X8AeqAZ9U5qlAopAj9e5gkAypAj96E9X7A6EAD6BEgmA7D9AkBEWoA6D8AuED8YKHD7AkID5YKHD7AkJDqrA6D6AkKDWsA6D6AkLDCtA7DyD6MC8Y8A6DoD6OC5ZAHDUE6NCqzA8DAE6QCM5eJC8AkTB8ZoKC7AkUB6ZyKC6AuYA9Z8BAZA56ZA7Z9BAaA589KJC6A589UIC6Aw9eJCoE6bAM67A8CoE6bAW67A7CoE6bAg66A9CUF897A8CKE899A9B9AeDAUGAS9AJB7A9AKH889A9B6B8888BKOCI87BKOCI88BKMCI89BKKCS9KLA7Cc9ULA6Cw9Un89Uo89Kq889Em88E5887E688yu886E5887E6887Ew87E5887E5887Ew88E5886E6886E788ov88ow88ov88yv88ow88ew88ey88K5m8Az88Az88AzH" : wv ===
-        a2h() + 1 ? k = "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Fs69FKxJ6556KX78Fs7AxFATAK75558KX78Fi7KuFeSAU7t59KN8AzvKuFyQAU7t6BBmAxvetF7BoDHj6U99mUvvetF8BeEHZ6e98metvUvF9BUEHZ6e98monv7E7GKJAy7Z6o7UBC5mocAKGAUCv7C7IKHA6Hj6o7UCCr86B8BUCwKZIoGA6HZ66HUDCX88B6x7Ce8yFA6AeBG8567HUHB8nAHy6CA8yFA7AUCG8L6AOyHeIB5nUEy9B6I8AeJAUCG7L7AOyHyJBJIBe9ADA8AUDG6L8AOyH79aBK9UCA7AUEGzTAYxH99eAVBAyDG6L9AsvIJ99AAhAKHGpUA5s7IJ99AAoGpVA6sy8T99AAmAoCF9MUGsy8T99AAfAoJF8MeGsy8T99AAdA8A7F7MoFs6Id99AAcAyKF7MyEs6Id99AArF6M6AsuIx99AApFzdAYuI6999AAnFzcAYvI6999AAnFpcAeDAOrI6999AAmFpdAUEAOrI6999AAmFpdAoBAYrI6999AAlFpeAoBAYpI8999AAlFpeA6sU87999AAmFfeA7sU86999AAoFBgA7BACrK85999AAoE9NUJA7AsgIx99AAoEBpBKDA5re8x99AAqCACBpqB9ro8n99AAtB7AeMOeTr6IT99AAuAKDBKDAUBA9OoTr7H9999AA5yGA8A8OoUr8H5999AA59AoKAzuB7sU69999AA78AVwB7se58999AA9ABOyUso57999AChB8s9F8999ACgB6tK58999ACgB6tK59999ACgBs5U59999AA7eCP8Bi5U58999AA7eCB9AVnBO5U59999AA9oCN9BE5e59999AA9oBOAIt6F9999AA9eBOAHt7F9999AChA6t9GJ99AA7eBOUCBeGuAuAeK999AA7eFBKDMoEBAHuKuA6A6999AA7oGAyIMeFAUCAKBAeGuot999AA8yTMeKAeHuyu999AA8oSMeKAoFu8AoBEJ99AA8oSMULA6AO7KDAen999AA8eRMAOv8AKEEJ99AA8eRL8B5v8AeFD8999AA8eQL8Bs8AEAymAyB999AA76BpTBs8KEAeqAeC999AA7oOL9Bs8UDAyqAKE999AA7UOL9Bi8yCAypAeD999AA7UOL8BY87AeEEKDAn99AA7UNL7Bi88AeFET99AA77A9AUBL6Bs89AoEEd99AA76A9AUBLoNxeDAeq999AA77A6L8BtAET99AA79AzQB5yUo999AA8KBL6B6yon999AB9yUyen999AB9USy7ET99AB89B7zKo999AB87B7zon999AB8yRzyo999AB8oRzKCAKBAKn999AB8eSz8D9999AB8ATzyCAUk999AB8KUz6AUCDx99AB8KU5XDd99AB8UT5WDn99AB8KU5UAKCAKBDT99AB8AU5WAKDDT99AB78CFWAoCDT99AB78B85YAoDDJ99AB77B85ZAyCDJ99AB8KM5ZA8AKf999AB8UI5bAKCD8999AB8eD5eAKDD9999AB7yC5tD6999AB7eC5vEJ99AB67AjuEn99AHOEn99AHQET99AHQET99AHUD7999AHRAKDD6999AHLAeDD9999AHMAyCD7999AHNAyBD7999AHSAKCD5999AHTAUBD567UB999AAuD767UC999AAsAKBAyBDQ7UDAUD999AAoAyBDQ7UI999AAoAoDDQ7AF999AAtAKBAUBDa7ABAoC999AArAKCAKCDT99AHXAKDDJ99AHVAUDC8999AHZAKDC8999AHfC5999AHaAKDAKBC5999ABvAP8KCAoW999ABuAP8UDAKY999AHiCx99AHeAKECeyAT99AG76AKHCUsAoBA5999AG8KWEeEAUG999AG8eBAUSEUDAKG999AG76AKGAKEB8EADAUE999AG89CKlAUEAn99AG8oBAUU999AHmB9999AHkAKDBoDAd99AHmBUFA5999AHjBUDA9999AHkA9AeJ999AHhAKCA9AeJ999AHkBAIA6999AHgBKHA7999AHhAyCAoBAKCBT99AHfAUBAUHAUBBn99AHgAKCAUBAKDAKDBVoAn99AF96AKHBVpAn99AF9yBAeROAE999AF9KYOAD999AF9oZN6Ad99AF98CT99AHgAUCBn99AHtBn99AHuAKCAn99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AGIAd99AJ99AJ99AJ99AJ99ACdAd99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AH7oE999AH5eB999AJ99AJ99AFGAKBAT99AJ99AJ99AJ99AJ99AC9KB999AH5UBAoF999AHtAyCAd99AHtAyCAd99AHvAx99AHxA7AUC999AHlAUFA9AUF668Ad99AA6ABAeCAyJAeE668Ax99AA57AeCAKEA7AeBA7AQ67Ax99AA56AyFA6999AHrAKBAKDA7999AHwA88mAdFBHDAVgAxFA97FALfA5898AKHA969KEOAF899AKGA98kAxGBE89A8YeII7AnGBoCAs76B7TUOC8Bo8yF9EA9AKDAeCAKBvyUN6AUyCUVB6G7CxDA9AeCv7C7NUDE8DABAULB7AeED9AyNDw9yJAyCvydNADA7BoDAoEAyBAyDD7A8C7CKFAeEAeHBKr88ACA6BE8KbNAwAKoAKhB7CyKFABAc7UDAUCAKIAUBveCAycM6M9AKoA7F6AKE86yEAKLvoHAUhKoIAguAKE858AeCBO6yDA7Ee9yEAM6m58AoDA9u6AoGFo8g6686UCAoCAUGueGAU7o65bS69A6t7KoubyDAm6UGtVJD9c786yHszND7c886yHA6AOkL6DrABKC8sA7AoCoKFC6L9DhCBKD8cAUNB5n8A6CfUD5eAFAKGAcbA7BUPn7A7CBWDrP8aA9BUOAyCm8BUQMUggABAKCAwRBAFAUCB8AeCm6ByEAUIMUch58MAUCBADCyBAN8eSAUDA8MAZAKBiIMAKDBADCr8UbAKCAVWCXv799AoMBADCr7V58AKDB7jl99AyMBADC5c7AUOAUKAeEA6D7QUTj68RBKDCg8KDAeEBeKAKTCf69CD6ABAcIByDCWaAKLAKYAUOBoIEAHR8AUCBr6wAAeGByDCqjAecC6A5W6AKDBX76AKB78eIBUKAeZWAEA9AoUa7BD85777A8BeMAeaUeDBAFDC69BD8779UTAeZUeGA6AyOAKMbAMm9787AKCCKDCp96AUEA7AyHAKPAKDAq7AOnKDAR78AUBCyDCz9oDAUJA5d9Br9568yCA6AK8yLAUQAoXT7foNn667yIAeDAUBAKEIyGBALAySUXMBX9u79Cy96BeGCp95fUIn669oNG8AoTB6A8Cf9rQAN9969UCAKCByCBeCHAOA9Cf9bR68oDA7A6DACA6Ao8UbSvT68ABAyEBeEC6AUDA6FKGCUiR87S68oBA6CAeA7AUCA6AKUAeQA6AUBB6D7R87P6CA7GAFCU68B9A7AUCA8A6AKBA8D9R77W6DA9BABE6A8De5yRA9AoEA7AUEE9RbL6UA9AoKEAJB9A8Ae6yIB7Ao58RHI6cA8AoPA8AUHAUPBKSQB7KGAk9ulAeGBUJAUHAyRA7CL56R869QRAeLAoRAyZAyHA6A7AUXPp5yDB969aHAeZAKhCKGA6D7O8P6AUR69kEBAFAoKGUEAymOUBAf58AUL6896LKKnOKCAV7Q886FK8AyDBKOA9N8Ru8aMc9RQ8kEd8RQ8aBd8Q9AoD68F97Z6AKrQu9j9KHAM5yHDf587B59eKAM5eJCp6HF6IZeKCB5vJ6OZV777M6AAoMZp7RN577AKEBKQAyFZ6Q57QBKC56yRAeGA9az577VA9BF6KcAq77OvWA9AeDAj6q8AHCVp7Y585cKQA7JeND57YA8AZ6yEC5bzCB9DRa57oHCM5oGB7DeEGeVC97bAUB57UJB6Z9A8BUdA7GeWC87R588BASZ7EeJGoYC77I6AA9Cq5UmA8G7CoeCUF6696MAyiY7AeOB6A7G8CokA8A967a6C58B6Ao7AaE767k7MxFeFDAdE966668MpFyGC8C8F666D68" :
-        wv === a2h() + 2 ? k = "ANAAHvAE6ADs8AmvAYvA68uAOtAwyAYsAm5UDAyEreC85oEAKIrAC85yNq9Am57A6AUFq6Am6ADAoEq6Ac68A5qyC868AsZAm68AsZAc69AsYAm7ADqoD869AsYAc7KCqoD87ADqoD87KCqoD87KCqoD87UBqyC87UBqyC87UCqeD87eCqUD87oDqAC87yFp7AiZAOzA5pyDqoDtUFpUEqoDteGCUDmyEqeDt6A6B9Ar8oFqUDt8A6B8Ar8oEqeCuAHB6Ah8yDqeCuUIBoDmoDqoCueIBeDmoC89KJBKDmeC89eKA9Ah8eC89oLA6A5mKD89yLA6A5mAD896BAGA6l9Ac99BADA7l8Am99B9l9AnBB7l8AocAc7URl7AedAm7URlyEC9Am7eRloEC9Am7yQleEC9Am76B6lUD9KB6lKD9MB5lADFAD86APk9AewA6E6AcNBr68AewA7EKG8NB6k6AUwA8EUD8QB5k6AUxA7EeC8QB6koDFAC867AKBAUCBD6KE9bBN58AnlAh57A57rAp9ACj6A57rAf9UCjyE7pAp9yDjUF9qAhyAxsArvAnvArtA59vA7iAF95UDh9A5WAE7fAoDANgAgWAvgA7hUDWUFf8AONA5heCWoDf8AYOA5hUCF8As8UCpoIhACF9As8KBpyBAUFhABA8AowAnCA5g7AeIAoyATEAhaAeJAn57AhZAd7KDgeCu9APDAhWAO68AtCArUAY66A6yyCf9AO6yHy7AW98AeQAi6KJy9AW9UGAUCBoDt7A8zoDcyBAeDA8AeMAKEAOtAKGA9z7AW8eGBUDBABAeDr9B85UAq8KEB6AeIAUDAOpA95eAq78AoTAKJA7r9A75jAUNAW6UDCKCA6AUFAd8KIA6AW6KDCeCAoCA7AoFA8A6AUCAT5yCAeDAoCaUCCyFBUHA6AeDA896ADAUBaUCF8A7AeD96KEaKCGAEA7An6KCZUDAUFHeE96ABZUJH6An59AW5UIH8Ax57AM5UJH9AobAnZAM5eHIUCC7AnZAW5UHIeCC6AxZAMzA7I6AUYA59YAMzA6I8AeCAKUAxXAM5UGI9AeBAKUAKCATXAWzAe9oD9vAWyAozAUqAdvAWyAozAUqAdvAWvA7J6ATuAguA8JyC9sA5YeKJ6AKCAToA7YeKJ6AKDATnAWxA8J7AKDAdmAWxA8J7AKEATmAgwA7J8AKEATmAUBAMvA7J8AdqAeBAMvA9J6AdqAWxA9J7AdpAWwA7BUCI6A59mAWwA6BAGI8AnmAWvA6K6AdkAWhAUNA7JKBBoC9kAMhAUNA7JKBByC9jAMhAUNA8JACByC9iAMhAUNA8K9AThAMhAUMBBHAngAWgAUKBVIAxfAMgAeIA9AKDLAD9eAMgAoEBKDAU5oCF6AdcAWfA6AKMAoCFyBF8AdaAMgBeBAKBAKGAU5oDF8AdZAMeBo67Ae59AdYAgbBo68AU6KC9WA5WyOHABGUB9AA6ByGWoPNoB887AUEAUEA8BeHWeONyC88UHAeEAUOA6A8WUMAKCN6Ac8KfAKMWKMOKCRyDBeE68ouV7BLuAVrAKgAeFAKDA668oVAoVVKHAeFO9AzhA9AKCC7B968eRA9CCIAoLAV5oCNAPC7B968eQBKRU6Af7UBM6CAaCG8UNAKCBUPUoERyBMoVC6Ca8ADAoDB9Bf98A7R9AVUCAdCu79AebAz99A7S6ALTCUcCu79AecAV9ALNKCGABL9CoHAoPC5678AgRAfqAe6ABL6AKBCyGAyCAeIC6677AqOApuAU59ALODKIA8A6C6677AgMApzAK58AVNDUJA8Aoa677AgJAgPAfJDyCB6AKc67yDU9AWSAfID6AKv67eDU7AgVAVCAeCIuHAK6eEU8AMYAVAJQFAU6KGU6AWaAVAJGFAU6KFU7AMcAU97AKBJQEAK6UDRAEDoBXADJo9uEAU6ADQ6BAgAMgAe9e9uFAK6ADQ6C7BoBXoFI9J56FAU57Az66BAQBKCAWoAU87J56FAU56A6QoMC6AqpAU87J66FAU5oFQyNC9A8XyBIo996GAU5eDPeBA9B7D6BgXAK8pA557AKUAKaAU5eCPAgE8A6V7AU8VB556AUUAUYAe5eBOeBAojFKGVoDIBC556AUUAUYAU5eCM6B9AUkF6AqMA6H6Kj5yCCACCeCFeCM6CABD6F8AgPAo7zDAUB55eBCACCUCFoCMy58GKCVyCHpEAUB55eBCABCeCFoCMo56AUCGUEVUCHABALI55eCB9AKXAU5eDMe5e7eBVoBG8K9AKB55eDB7AUXAUwA8MezH6AWMAU67LF56AURAKXAUnAUFAoCAVSAKFFK78AWMAK67K9557AoOAUXAUjBfWAoDFK79AqKAU66LF57A6BKCA8AKNAogAfgA7AKyIUFU9AK66LF6KEAoJAoEAoBA7AocAzfGA87AWIAUJAK5zK56UYAUHAUFCyDNy57JUBU9AKJAU5pJ56eqCAEN6FK99AMJAUKAK5fJ56UsB6ApmFLAAMKAUKAK5VJ56UsBoDOA5VAAMLAU6LK56UdAeRA8AVgA6Ae5VBAMMAe59LF6UbA7ByGAVfBACFVBAgMAo5zM5pAKSC9A8BoEAVdG7KeDVeDFfM5oAeRC9BKQJoCDU7fBAgOAeyLZnAyQDACAoLAy98AUUHoDA9KUBV6AedAoQLPnAyQD8BUBJ9AUQH6AyJKeBV7AUbAyDAeKLPnAyOEVKAUNG6AKLA7A9KeCV7AKbAyDA8AzK5oAyMEpJAUMG7AUIBUDK8AMQAUaAyFA7ApK5pA6A9E7K6AeLG8NoBV6AUaA7AeGAfLC8AtKA6A8E6K7AeKHBiAWBAKNAUVAUCA8AVUCyJy9AyHEpKAeJHLkAf97AUPAKUAeCMydBFJAoHEVNAeHHfmAp9eBB6AUUAUCMydBZJAUGD9L7AeFHznB6SABB7AUYMybBjJAeEEVQIVzAz78AKTAUYMyaB5y8AeDEzNIf5eBR9AKUAKXM7CKTy8AoBE9KyCAe8f5oCR6AKWAKVM8CKTy8F6KeCAe8f5eET9AKUNATB9y9FzCAeDIzzA9ToBBeCAzfBUEAKVy8F8J8JpyBB9eBBUDAzgA9DFEGA6oBDK98O7Bp9ABBKEAfjA8DPBGK6oBDBBO6Bf9KBBKEAVkA9DE99GUxA6A9AUcKftAKDA9TUBA9OoKC8x8GyvA9A6AUWLB5eETeBA7O7A9C8x6G8BeCA6AoVA8AyECBMPoCPKDEACAzyA6DE9o7KEBKCA9B7A9AoEAoBBpOAeBPACToDAV5oDDO9U99BACAyBAUFAoCAUBAUDAeBAoBApPAKDO9AV96T5w7KUHAeJAyDAUCAKCAoCAKCAoCMLxAL97Ts86I6AePA6AeKA8AeHAUBAUFAKJAfJPACTz95v6AKEAKCI8AeOAoFBoEAeHAyNApJPUDS9AUCT5v6AUCL7B7BUFA6AKFAfLPyDS6UO6eBBBWB8A9AyEApUP7A6R6AKES8AeMt9AUKMUTA8AyEApNAUHP8Af76AUDM8AK6ADBO59AUFM7CKBAKDAyGAfNAeHP8Af7yDAVcAK7s59AeEM8CeDAoIALMAyHP7Af7yDAWCq7AKSAKMAoFM9CUCAfWA6A7P7Af7oDAWAq9AKSAKMAyFM7CpZA8Az6ACR8T9q9AUSAKMAyDM8C6AeCLeDAeJAUEAL59Ap7f99rACB7AKNA6ALaAKCC6AUEA7ALDAeEByCQKDNUBD8T9rACB6AKNNekA6AVCAoDB7AV6UCNeBD6K9AUxAoirKCBABAyBBfcD8A9AVCAyBB8AV6oCNKCDzBBeqAUCAyhrADA9AUEAUOM6D9A9AVBA6AL8yDN8AeJAeCAUCAeFJ8B7AeJAKCCeLDYWAeGAeJAUVMeoAeBA6AVBC8AL6yDNyEAeBAeFAeIAK99DeWBUfqeEAyDA9AUVMArAUCA6ALCC8AV66AVjAeCAUDA6AfGDyTByeqoDAyDA9AUUL8FABAVGA7AeSAf66AVhAoBAeDLeoBUUC8qyCA6AUKAUVLy56KoJAV88ALkAKBAeDLKzAUUByDA9q8AKGAUlK9F7KyJAf88ALcAeEAKCAeCK9HoQAoFr8AUlK6F9K6BADS7AfZAoDAUCLU7yQs8AejKy67J9BKDS9AfXAoEAKDLA7yQs9AoiKo68J9BKDTUCMKCAKCAeCAVJHoSs8AyiKU7A99BUBToCMAGAUCALKHoQteBDzBHo95VACL7AoBAeBLe7oOxLAHy9gOALQMU7eIAoBxe99H7JCRAVOMK7oIx7J7IA88WKBLfWHUIx8Jo8o86WUDLBXHUHx9Je8y86WoDKzaHUHxyBAe9U87I5W6AVEM6HUHZ9AWbAoDJy88I5W7BA9pbHKHaACXACAe9y87I5XUFJpbHKHaABX6JyIAy7e85XyDJpbHKGx8JyHBK68I5hVYHeHx7J9AUNG6I7hVXHoHx7Le67C7AUIA9ENgMe7oIx6Le68CyDA7BykhU96AUYHyIvKBAKCCBOG9CeFAySA7AeYhU9oECe76A8vAGB9Ly69CKHAeTA6A6CKEANbJ6AUYHyIvAIB7L7G9CAdA6A7CAEAXaJ6AUYHyIvAGB9L8HKQDAGA9B7he96AUYHyHvKGB9L8A9Ay58BobAUCA6BKNhpbHAIvKFCBTA7A6GAIDUKBKGAeChzbHAHveECBVAeJGADDoRAyDipcG9A7veGB8M9KATAoEA7AXhNA67A8veHB7NA99B7A6AoHAhgK9AUUG6A8vUIB6NU98BKMAeJAheNU66A8vKIB6Ne97BN58Ne6yIu9A9AfvJ8A6kLiGyHu9A7AfyJ8A7A8A7izjGeIu9A7AL5e67AUcA7A7BDrN6GUHvB6K6yHCyIA6AeBA8iBlGKHvKDAf5y6eKCoJA8A9iBsE9AeCA7vV6A6UMCeaiBuE6A8AKBvp6K6UNCKaiLUAyXEoJvp6e6APA8AeFDDpKyHAKNCUsA9vf6o59B7AKqAKBiLECeKAUBAKDE6BY7V6e58GoBAU7KEafECoJFeMvKDAL6A57G6HAHafECyHFoLvUDAL6A5y7A6yKafEC7Ao56BE7UBAV59F6HK6eLaABAfDI8BE7z6A5o7U6oIaUCAVEI8A9vf6U5e7o6eHaeDALEI9A7vf6U5o7y6eCa7K8JAFvf6eoA9Ao76g9AKCK8JUCvp6elJXaLt67QojJ5gpP56z6yiJ7gpQ56p6eiJ9gpS56L6ohKNXL9559QohKXYMoCAPyQohKhYNZtQUhK5gfh5sQUhK6BACfBi5rQefLAHAhIN6TABjL6odLoDA5ezmTACjB6yaM5eyBAVjS9AXyQ8CVae9Np89AhxRASM9e9Nf89ArvRKRNNJNV89ArvRUPNhJNV88A5i6RUNN7e8NL88A5i6R8Appe7NV87A6irYe7NV87A7irYe7Np8oIiXae6Np8oIiXbe8AKCM9SeJiDdfBdSeJh9hXJM7SoKh8h6ezbSoKh8iDBM8SeNhrsd9M8SUNhrud7M8SUOhhwd6M8SKQhDyd6M8SARg9jM96BKELf79B7g9jg9yKAzNR8B7g9jq9oKApPR7B8g8jq9oLAfPR7B8g8j5doJAVTRyTg7j8dKIAfVReUg6j9dKFApYRKVA9ANPj9dKEApaRAVA7A9e8kM9UBAzaRAWA6A9e9kW96M6RAXA6A7fD6W9zbRAXA7A6e9kq9pbRAYA6A6e8k5dpbRAYA6A6e7k8dVcQ9CyGA6doBAUCA7k9dBdQ9CyGA6dKKAr7W88M9Q9CyIAq9KMAN7g88M9Q9CyJAg9D88c6NB69CyKAUXAg6h9C8zeQ9CyjAq6X9M8peQ9CylAg6D9g8feQ9C6d9ng79AUCNB69C6d7n6b8AUCNB69C7d5n8b7AUCNAKAf56C8diAb6AUCNAHA6P6C9dYBbyCAVeAKMP6DC9OCb8Of56DC9EFbzuPogc8o5bzvPejcsGbzwPUkciJbVxPKlcYKbVxPAlcYKbVyO9D7cYLbVxO9D7cOMbVyA8ApkD7cONbLyA6A7AyGMolcOPa9PKEA8AoJMUkcYQa8PUBBUBBLVD6cYRa7SBSD6cYRa6SLSD6cYSaz8VRD6cYUap8LRDg8sWaf8VQDg8sYaB8fQDg8saZ8SfQDg79AKCrC56SABALRDg78r6Zp8LSDg78r7Zp8BSC9cEoZf8BSC9b9sM5p79L8C8cEpZz78L8C8b7sqgAUWR7L8C8bsvXKECf7zSC8bswAeCW7AUZRfSC8bi57WyBC6RVSC9bY58ZL7LTC9b7tqyRLTC9b8t6Y8RBTC9b9ugoRBTC9b9uqnQ9MAccE6qnQ9D7Ae8AbcY66X6Q8DyMHoaci67X6Q7DASHeaci68Xz67C9B9Heaci68X6QycCK7eZcs69X6QoXC7HUZcs69X8QKXC8HUZc5u9X8QAWC9HUYc6u9X9P9CKeHUYc7u9X8P9CAeHeXc9vClP8CAfHUXdE7giP7B9De7KXEUCY6v6XL57B8Do7KWEeDY5v7XL57B6D6HAWEUFY5v7XV5yQD7G9CUqA5Y6v7XV5yOD9G8CUqA5Y7v6XV56BeoG7CKrA5Y7v6XV57BKpG7CKrAqwv7Xf5yLEK67CKqA5Y8v7Xp5oLEK67CArA5Y9v7Xp5ULEU67B9EoEAyDYY77XzzBKrG6B9FeEYO77XzzBAsG6B8FoFYE76X7PAKEo66B8FyEYE77X7O9A9Ey66B9FoEG9AV67v9X7O8BAuGyTFoEG8Af66wMkO9BAtGyTFeFG8Ap65wMlPAIE7GeUFKGG9AV67v9X9PKHE6GeUFAFYE8CnPAGAoBEo6KUFABYs8MnO9A6AeCE6F9CC95wWmO9A7AKDE8F7CC95wWmO9BAzFyUd6wMnO9A9Fe5eUd6wWnO7BA56FAQAKDd6wWoO6BA59E7B6AUBd8wMrOyIGKtB6AUBd8wMsOyHGUsB6eO8MuOyGGUrB6eV8KGdgvOyFGeqB7eL79BW9CwOoDGypB7eV76B9EyDX7Y9OoCG7D9B8eV7eiDUEX6Y9OoCG8D8B8ef68EKbBCgZLrAU68D7B9ef6owCKLXqzOUCG9D6B9ep5o6eFA6AUMX5ZLrAU68D6CNDPA9CkZVqAU67D7CXEO8JClZVqAK67D7CXFOU95X8ZVpAU67D6Cf6eGN6OA96X8ZfoAU68DyYQKIB6ALTN8J8X8ZfoAU67DyZP9BAMA6L9Ny99X8ZfoAU66D6C6P7BKKA8MBeK5X6ZzmAe6olC6K6AUeAeQBUIA9MVbK6X6Z6N8AU6olC7KoEC7A7BUPAoQL9MzIX5Z6N8AU6emC9KAGC7A8A9EBRMfJX5Z8N6Ae6UmC9J6BAbBAEEpSL9LWiZ8N7Ae6AnC9JoMC7F9L8LzQXg59N7AewAUJD9C9JoIDKeAebL9LBVXC6L87AeGEKeJeIDUbA6C8L9K6M5W8aVlAKwAyBAKCEKeJeIDUaA8DBWJ8M8B7AqGaVlAUxAeFEAeJeIDeZA8DfTJpiBeHUq6pjAe56EKfJUJDUZA8D7LyCAK89N8A8BMDapjAo5oqDK9KKDUZA8EVIAeIIV59UM66NoECKBDKrDU9AKDUZA8EfHAULH9QMAa7NeECKCDArCKCA8JKLDKcAotF8AKMA7C8AKPHp6f99a8NeFCACCywCAIAe9ANC9DKBEy5ULA7BUZAKSG9Qz98bBgAyUAePAKFFKUA9AU9APC7H7FUMAyOCeCCK6f68T7bLgAyTAoOF8B9BABJAQC8H6FKOAeRCACCySAKoQ9T7bLfAySA6BU6AUA8AU9ASC7H6FAkB8AUcBeFD7RB95bffAyMBeIGeUA7Ao88CAaHyyEKNAUkA6A7Dp7L95bpeAyLBoHGoUA6Ao89CKXAKDHeyEULAUzDf7L95bpeA6A9ByGGyVAyEI9CeQA7A7G9E8E8AeFFycRf9g7zeA7AK9eWAyEI8CoEAUJA9A6G8E7F8F9Cf7f9W77NBACeEA6I6CoDAyHBAGG7E6GA59CB76TC78NBACeEA7IyZAKHA6BKGG7Eo6U6UOR8TC79M9KAYAeIIoZAKJAoMAy7AoGo69AL8z87cLdJ9CeEA9IeZAUKAeOAesAogAUBAUFB8G6ZyNAL7M8fbKAXAoJIeZAULAUPAerA6EKPG9ZyLAz66c6M6KAYAeIIyXAoKAeOAesAyoBo7W5oLA9QC88M6KAYAeII6CUEBAEBeEEeFD9Be75ZoJBV56dLYKKZAUII6CUEBKFBUEIoKIM5oHBp5q9pWKKaAKII6CeEBAHBKDIUJCUFF7Z6AoRPM96MLBC6AeGI6CeFBAGBKDH9A9CyEF9b7O9d8L9KUbAeGI6CUFBAHBKCH6A9C8Ae6M7zwT9AVAL8KUcAUHI6CKFBKGI6BA96bpuT8AzCLzCC9AKHI6CKHA9A6IoLK5a6Oz98A7KLPKUkI7CUHA9Ay8UMK9azoR7AKBAKWA8J9LzCD6I7C6AyHAy8ANAUHI5cphSUFB9BA97LzCD6I8C7AeIAo79BeCA9AyHB6AesA6AM89M7S6A7B6BU9zPKUlI8C8AUHAe8ALAeMAUJByID6epWS8A8BeOJpOKUlI8D8AU66AUMBADCoPA9DXIBADK7JADJ8A6B7BU9VOKUlI8KUHBKIAeaByKC8fUIAo58AosI9AzbA8JUPAK96KUmI7KKIBKHAecByJC9fUGAyxAeEA7EK9UEM9A8JKMA6JfCEA8zAA9BKGAeeByFDXQAKHEySD8JyDNKIJACAKCAKCBA9fBEK8pAA9BAFAeiBeEDrXD9A9AeNC9KoCNoGJUBBy9VBEU8fCAeBAKLAyCD9BUCD5gejDAaj6JVAEU8e77AemAyCEoGA6AKIC8BUBfAdD8B8j9JBAEU8o76AyjAyCE8AKYCeJA7fKQAeCEUPkK9A99Ee8e7yIAUDC7A6AU78B8A9BDOA9FyHke89J9Ee8e7yIAKEC6AyDIKCAoKA9BNSAK59Ar66I8J9Eo8e7oMC7AeDJKGBUL7wI7C8Ao67Eo8o7eLDfLBHxI6CeMGotIo7UKDe58Ao5eE75U86CUQGKtIo7yHDABAK57A7798A7Ae87BoCAoRGKuIe76AKCAUeGAH79KCAeLAK88A9B9AoFGAvIe78AUeGAH79BGAyVHKvIo78AKdG6Ab89K9AUVHUvAUFH8K7IoC77BLAUUHUvAUHH6K6I6Al67LUCCA7UvAUHH7Ky87At9eBQ9Ny7e6A7fBAKEI7AWJAh8eCQ6N6He6A6oCA7K6d6Ah8yFQLlHo6K6eDA7Kq96AX86A7P9N8Ho6K6eFA6Kk86A7P6OA7exA7Ay59BAFKk87A7PpqHUvBAEBABE7BUFKa89A7PLrHUrAUCBAEBKBE6BUFKa89BLvOe7UqAoBCyDEyMAo6ABEQ9AKO7Oo7KqAoBCyDEyMAy59AKp69UJO6Oo7KpAyBCyDE6BKFKG9eKOpuHApAyBAUCCUCE7BAEKQ9oLOVuHAoAyGHUJAo99696BpoOy7AnA6A6HUJAoWAK76696BzoOy69D9A6A7HUIAKHAUPAU75697BzoN9AoCG9D9A6A7HeVAUIAU76697BznN9H6D9AKBAeHHoWAKHAK77699Bo88AUwN6IAqAKLHKWAe8k99Bo8KFAeDAeCELjIK5o7LKBUQ67ALIAHAyIEBjIK5o7KFAzd67AGI9AK5piIU5o69AoJM7756AU6phIU5o5oDA8A7BLa756AU6phIU5o5yFAeHBfY758AU6phAyGHKlAKQF7A8B8KABCb6ABGfjAoKG7D7AKCAKNF9AyEAKPJ7A7B776KBGfjAeNGykAUCAUOF9AoDAUOJ6A8B68aN6AKOGykAeBAUOGKIBe88B6B58bPK6ykAUDAKOGULA9I7B8BcePK6okAUDAUNGyIA9I6B9BSfPKCAe59DKCAUDAeCBe68A6A8I6CAJ8fP7F9DAIAeCBe68A7A9IoUA98eP8F9DABAUFB7G9A8A8DoBE9BKCA8A88dP9F9C9AUCAyRG9BAHDeCE9A9AeJA88cP9F9C9AUCA7ByGAU6UKA7DUDE9A7AoJA88cP9F9C9AeBA8B6AeEGKKA8DKDFAFAyJA98bQA58DABAUIB7AKGGKKA9C9Ae5eBAoMA98ZQ7FUhA8C6GKIBAcAe56BoJ8ZQ7FUiA8Cy6oGBAeAK5oPBIYQ7FUhA9C6AKEAoHE8A6BKbAe5oOBSXRKwDyHD6AyDE6A6BeZAe5yNBSYRAwD8AohA9AetA7BeZAK58BKL8YRAwD9AofBKDBUCDAHBo8oLBSZQ8E8HeNAeKAedA8B9IKHBmaQ6E9GeDA7BoIAoEC9A8B9IeDBcdQyxGeEA6BoQDAIB8J78eQ6E8GUaByCAecAySJ78ZAeDQoxGKbByBAyeAKUJ68ZRAxGKcB9DKCB9J78YRAxGAfB8DKBCK9yDASUQ9FA59DoRDACCBB8SQ9FA58D7B7C9AUTKSIAUIQ9FAlAUSD9ByfAURKSKAKIQ9FAjAyNEyODADB6J98LAeHQ9FAjA6BKxBybAoCAKLJ98JAeBAKHQ8FKjA7BAyBycA6AKDAy998JAeCAUFRAyD6A7A9FKQC6BKEJ98KAKCAoDRAzD6A7A8FeRCyKAo978PR7FKlA7A9FUQC7A8Ao9mSR8FKlA8A9FUQC8A6Ay6eBBoDBSSR8FKmA7BA5UQC9AoFF8A8BUEBISR9FAnAeOFUQC9AeFF8A9BAGA88TR9FAoAKPFUGAeHDADAo59A9A9A6A88TR9FA56FUEA9AUfAoDGAJA8A6A8Y7AZ7B8AxF6FeEEKEAe6AJA8A7A8YoF569SAxF6FeFD9A6AU6AIA9A7A9YeG568SAxF6FyED7A7Ae6AHBAHA8YeHC7AOAAVlSAxF7F7AKkA8Ao59A6BUGA9YUIC6Ar97A6Nf8AxF9FyCB8AUPA8Ay58A6BUGBCvAeZA5oAENL8KwGA5yBBoGByIA8FyGBeFBAoAgFAeYA6oAEM9SUwGK5oCAoLAKDByIBA5oFBeEBKnAp9eBBeBrAEM9SUwGK5oPAoCByKBAzA6BUFBUoAL9oCBUCrUBM8SewGU5ePAeEBoLA9FAIBKFBeBAKCAMdAUNA5556SowGe5oNAUGBeLA9E9A9AyBAoHAUBBqeAUNA5556SewGo5yVBKMA8E9A8AyNAUNAMfAUPAj56SewGo56CALBeHE9A7A6aAC57p8ewGo56CAKBoBAKFE9A6A7Z9At7f8ovGy5yVBAQAezAoIZ8A557p8evGy5yVBA7UBBg5UH57p8evGy5yVBA86ZKH57z8UwGy5yKAKMA8CoEF9ZAH57z8UwG6FoKAeLA7CoEGKIAL6ADHyIHACyf8UwG6FeMAUMA6CoEGKEA6P9Ao7oIHAEdyHUB8KwG6D7AeNC6A6CoEGUDA7P7Ay7eKG9ApdAV6eMT6SKwG6D7AeNC6A6CoGGADA7P7Ay7eLUKCQKPTz8KwG6D7AoNC6AyaAy6ACA7P7Ay7eLT7AKCAV56B8T8SKwGymAyNAoCB9AybAy69XoMAUBTUDAKCP6B6UB8KwGooA6BUDAKWAebAy69XoMAUCTKEAKBAKCPePUL8KwGepA8BKBAUWAUdAo7B69AK6oLAeBTALPUPUL8KwGUqBAMFeDHL67AU6yLTUXOeMUf8UvGKrBKMFeDHp6KEG6BB9UYOUIU8SKvGAsBULFoDHp59Ao59AKHBB97AyCAUEA6OUIU8SKvGAsBUMDKDB9AU76P9Ae58AeGBB98AeKA6NeCAoJU9SKvGAsBUNC9Ae99P9AK59AoGA9VUBAUDMyUVL8KvGAtBAOC8ApDV6AeIAqTAVUCoNAf96SUuGAtBAGAyCC9AfFVyDjKaBeETz8UuGAtBAED8AKZAK8WPAhwC8BeETz8UuGAuBACG6Ao78J6AY68C7BoDT6SUuGKtH9Ay76JyDu9C6BoBT8SetGUsCUBF7Ay7y96AX57ALLC6Vp8UtGUsCADF7A6Hs5oEK9C7Vf8UtGUsFyBCyEFUFB7NKDgADLKcVV8esGerFyBC7AUyA9BzdA5f9AfKDWLSUsGUKAydFoDH8BKNM9AsgDqKSerGUKA7C7FoDB6AK6KNAKBA9M8A5rKjVB8erGUKA7C8FeCB6AUpAKFAoLAKCBKJM8Aq8KBO9D7U9SerGUKA7C9FKCB7AUoA8B8A8BBeAg8KBO8AoBAeBC8VB8oqGUKA7C9FKBB8AUnA8CAEBVhAg8ACD8ALHAULCqLSeqGUJA9C8I6AUWAoBAegAKCNyEb8AyiApTAoDBqOSopGoHBAbLKCDzpAq79AKBAeeApWAUHBCPSopG7AoKC7O9OAEQACMeBC7AfhA9V6SopG7AoLC7PBlAp6KDMeFP8A9V6SopG8AeLC6PVkAz59AfaAf58A9V6SopG8AUNCz5phA6P9AW9AEAKBV7SopIeaPfgA7P8Ah7eGAKBNV8opIeaFeBJ9NUGP8Ar7AMNL8opIoZFeBJ9NUFByBOoClKNNL8epIoKAUNPfgAyOA6zeNNL8ooIoJA6BB5eHALaAeOA7zyKNL8ynIoJA7A9PUIAfYAUQA7zyKNL8onIoHA9BBzLAFD8A7zyJNf8omIyGBAJPLJAyoA7zoINp8omIoHBAJH6AeJAU6LIAoqA8zeINz8emIyFBKIF8AUPAyGAy6KFAVAAosA7zKKNz8olIyEBUHF9AUOA6AyGGUCAo99AeuA7zKKN6SelIyDBoGF9AeNA6AoHG8KABE8A6y9BVkSokIyDByFGACBeGAoHG8O9A6y9BVlSekIoEByFGABByCA7A7G8O9A8y7BVmSejIeFB6Ao8yHHLvA8yyNN9SUjIoEB6Ao8yGHfuA8y8BLnSKjIyDB6Ao86Ay7fuA9y7BLsR7Do8yCB8Ao8yFHzrBFJA9O6RyiKyFIoEE7AKcOeJzAIO9ReiK7Af6fsAyCAPNA6PeBAz6ohK7AorALROyBAKBz9Az76OeBAehK8AoqAeDALCAKI669Ap79NyDAyhK8AeqA8KAEA667AFA6AL7VgAeHDfKAKqAKCAU56AUhAKLA6Aa7UFAUFRfaAUNDgLAyhAUK68ANRVoDp88AKVAUlAeJ68ANRfUAUPD6KUCIoBB9AUmAoIr8AgoBp7VRAUQD8KKCH8AUFAUQAenAeJr7AqoBp7fMAyMEfBAe8yBHKCA6q7A5YAPRVKA8A6E8KKDQ6q7AqoB6RVHGpBAz7eCA8AeCooDYAQRVFG6KKGTX78AKFAKNAgpB7RVCG8KKGO9AykmABAoCA9A6YURRe99HBBAzwA8Dh8UCAUDA9A6YeRRo9y7VCAfvA9Dr8UCAKCBKGYeSRy9K7pCAfsA7D8meEAyJY7B8R7I7H6Y8A7Dh89AeFA8ZARR8Io78Y7AUCAUkmyFA6A5ZeRSA78IW89CKDkAGAyFZoRSe7e8q7eGA9CKEkKFAoGZoOAKCSo69I7WoDEARAoVAh6UFAeHZyMAUCS6Go9CYAemDUCBKBkoEAUIZyLTo59JV9KCDKBD8BeJAKCA8BD7ANZyKT7Fy9p9KCHUKByGBX69BM56A9UAzJ6TACIADBoHBh7UEaKHUUvJ8TABJ8A6Br7oDaKGUyqKCDAK8oGB5lyDaKEVKCAeDAUaKMEAK8eFB66pAMaB8K5b8AUIAyQ87KMAUBK5b8AeIAeTA8Ac7ABK8b9AUJAKYAeF977f6AUFGKB9Pgy58A79Kgy58BxDaACGo56CI97g6F7Cm9haF7C6888hA56C988hhFye88NjFof878d6A6Dy5oh87q9yJDy5oi87W9eMDo5yk87C9UNDo5om87C89BoiA8AUtEI8C76ByiA8AKuEL66ARMb6BojFyqQoD7LMABPoOD7FetQKG7JMABAoCO7BynFKuP9A87IMACAUEO6BooFAwLAGEKJ7IMAKOeOEUwFfCBAnBbHL9BeFAViBesE7Fy99BekBvGL9CVhBUtEy57J6B7DKRYUEAKDt6L9CVhBUuEy57DeCF9CAYCWsAUBAs5zSCLiBexEU59DUDFyYCeVZADtfRCfhA8FypF9DUDFyZCeUZAEtVRCfhA7F7C7A7A6GAgAK5obAyCB7B8ZUEtLRCzfA6GUSAKDBADGU8yfAeCByTHUBR9A8s7L7CzfAy66BATAU6e8yhAUCBeUHUBSoEs6L8CpfAo68A7CKBGy8KlAUCBKWHKCSeFszRC6NACHUDJA79EABAKDAKGCU7eFR8A6szSC7BKDcU77EeCAyCCU7oESUCs6MAqI9AL9A7y7vJMyoI6AL9A7o757JM9EK8KBTK7K767KNApbU7A757MNemH9AL9e68HvONylH8AL9e68HbQN8D9HUBTy67HRROKnG8AV96Gy7RSOylGyCT8F7AUEHRTO8Dy6oCT9FoFAU7RUO9Dy6eDT8Fo777VPAtFUDUAyH87WPKtFKEUAvIHWPeqFUEUUpI57VPopFUEUoUAeFA8AK87jKDk7P7D8FKFUyLAyBK7i7A6k7P8D7EoBA7AgIA6L6i6A6k8P9D6EeDWABL9i6A6k7P9D6EeBiU8yCaAFk7P9D6BUCAoCk7IoCaKEk7P8D7A8A7AUDk7IeDaUDk7P8F6k9IUDaeDk6NeBCy55k9IKEaoCk6QK5h7A8AE6gQ6AUCEr7A8AE6gSeflA59AyQAkhTKXlA58BAMAugT7AUEBD7K59A9BUF6fU7A5lU6AIBeG6d58e6UGByG6c58U6oFB6A66b58U6oFB7A76Z58A67AeTA76Y579G8AeUBQT578G9AUWBQS578G9AKYBQR579JyJ6R579J7A76R579J6A66T5bAUyJyE6W5YAoy7W5UA8E97Xz9A7FHYzyJFbYzoJFbZzeJFlZzUIF57Zy9BA567Zu6AejBU597Zu6A9CoPGbYu6BoPB8GuUAo99u6CADCU676TAy98u6Ey686RA7J7u6Eo7GHAUHA8J6u6D9H56IAeFA9J5uynH76JAeCBK9szA7A6EA776KBy9sxBKDEK776LBy9ixFo786NBo9YxFo786NBy9OqAKFFy786MB9I8sKDAK59H76LCA88sK6e776KCK88sK6o766JCU88sK6o766JCU88sK6y7uJCe88sK66HaJCU9EpG7HQJCA9YqG7G96LB8JiqG7G96MBy95seyAyGAeCG96OA7KOrE9I67WsowI67WsowI67WsewI77WsotI97Ws7EK9HWs8D7JlWs9De967WtAeJ87WtKWAeBKbVuUGLRVueELlUueELlUuoDLlUDeF5q7UDKJ5o7UC9BZo7TBUFBAQ5m7TA7BoDC85d7T" :
-        wv === a2h() + 3 ? k = "AKVAGAL8jKGBKUU9D7Pe98B8L8jKGBKUVAkG9AofAUvJ8B8K7A8ArzAyKCWKC6AUGG9A7C7AKBAeuJ8B8K7A8ArzA6AKDAUBAUXU9CyDA6G9A6C8AytJ9B8K7A9AyDANuA9AKCAeWGACO6CyEA6G8AogAeuJ9ByBAVHBKEAUBjydFeHO9DU69Ao8K99BfMBKIh9AyRCU5oEP6C7G8Ay8A99BfNBKIh8A8CePVyZG8Ay8A99BLQBKIh6AyCAoVBqRCy67Ay8K98BBTA9A7hKKAeHB6B6V9Co66Ao8UYA9AKBGoJL8BKGheIAeIBeSWARAKGGyEIUVB6GeGMANA5hyFAUCAKGBUTWUPAUGGoEIUTB9GeDMUPArjAoDAKDAyMB9WUNAyFGeEIUQCf87B6A5hoDAeBAeFBUTWUNA8AU6eDIoPCV88B9AhiAKEAKEAoNB9WULBABGeDIoOCz86CKDhUCA8AoNB9WeKHoDIoNC7SoXArfAKJAeOB9WUJD7AKlAe8oMC9SeCAKXAhdAKJAeOCCVA9D6AekAo8eLDB87jeCA9AePB9WoHDyDD6AK8oMDV86CoCg7AUIAoQB8W8AejAojAK8oLDf87CoCAeCgKBA9AoRB8m6BehS8CoCAeChKDB9B7myODV89CoCAeDg9AeUB8meODf89CyBAUGg6AoVB7mUODf9KYAyDANaAoWB6mKNDz9UYA5g9AoWB7l9BojTUXA7g8AyWAyDA8l9BekTUXA5hAFAUCB9AoEA7l9BekTUXA5hAFAUCCADAoBAKHl6BUkTyVA6hKEAKEBoBAoCA7A7l6BUkF7AVlCAGhKEAKBAUBBoBBeHlyMD6EABB6AflAKBB9A5hKGAUBBoBBeHlyLD7F7AplCAGhAFAeBBoCBUIleLD7F8AzkCKFhKEAeDBKDBUIleLC9AyBGAGN6CAGhADAeEBKCBeGAKClUKC9G7A6N7CAJg7AeCA7A7AeNAyCAh7KJCyBAeNA6E8A8NyVA8g9AUCBAEAKPAoEAh7AIC6B7A6E8A8N6B9A9hoBAeFAoBByDA6AX7AHDKMA7E9A7N6B9A9h8AyUAUHAh69A6D9AoIE9A7N7B9A9h9AeUAUGAr68A6EKCA8FAHN8B9A7iADC8A5k7A6EKCA9E9A7N8CAHg7AKLAebA6k7A6FUxA8N8B9A8g6AUKAoaA7kyGFowA8AoDNKUA8AyCf9AKKAyYAeBA5koGFowB8M9CAIAoDf8AeLAeaA6koFFyxB7M9CKNf9AeLAoYA7koFFyxB8M9CKMf9AoKAeYA7hAGC9Ay5yMAKkB8M9AUDB6BXhAeYA7g7BAcAo5yNAUiB8N7B6BheAeXA8g8A9C7Ay5yNAUWAeJB8N7B6A9hoDCeIg9A7C8Ay5yCAeIAUUAoKA8AKBAKFN9B8A7hoCCoIhAGC8Ay5oBA6A7AeSAyKBABAzkCKGhyBCyIhKEC9Ay6AHA6BoHBAIAeFN6CAHhyDCeJkeFGAHA8BKIBKHAeFN7B9A7hyFCKJd8AK6oEGUGA9AyBAUKBKHAeFN8B8BDhA6B9BArAWzAe6eEGeGAKCCeMA6AeEOARBDiA6B9A9EoCZKCGeDGyJCUMAyCA6OARAKBA8hoHB8AoyAK6eBS8AK6eDG6A8CeMBLqB6BNiA7B7AoyAo56AKDAL89Ae6KCG7A8AeCB6BeIAKBOoQBDiA7B7AoyAy5oIS8Ae59Ae68BeHAUGBoHO8BeLhyHB6Ao5UDAUCE9BB87Ao58Ae69BUFAyEA8AUFA7O9BeKhyHB6Ae5oHE8BB87Ay56Ao7AgAeEAp5oMBNiA7B6Ae5yGE8BB8KCA8AK56Ae7KgA6AKFO7AUFBKMheHM8A9SUCGyDHeDAKCAUWBVvAeGA9AUBA9heHM8BB8UCGeEIKVBeCAVqAyGA8AUBAKBA7hoGM9AeBAz8eCGUEIAOAyBCBpA6A6A6BXkAzbBMvAo8KLC7OUHAyDB5h6AVdBWuAy8eDAeCC7OUICi67BWuAo9KBCzsA9B8vKMYyFL7OoKB6vyKYoEL7OoQBO7yLYeEL7OoUA7vyCAKIYUFL6O6CUEv8A9YKFL6O6CUEAeCnABIKDAUFYKFLzwCeCAeCnACIKBAoCYUEIKBDzwCeDAUCnAChKDIKBBKCCLxCoCAUCnADhACIKCA9AeVPAYAeBAX9AEg8AU8UCA6AyVPAZA5nKEg8AU8UBAyGCVyCoFnKGg6AU8KDAeICLzCUGnKDAoBgeDIKEAeHCL5UVAUCAX9KCA6AXVAe8KEAeICB5eTAeDAX89AoHANUAU8eFAUDAeBCB5oZAX89A6AyCf8AU8eKCz5oZAN9KGAKBAeBIyIWoCIoJCz5yZAN9ANI6BKGA7U7AK8oJCz56CyBnAMI7C5UyCIeJCp58CyBm9Be9AWUoCIeKCf59CoCm9BU5oDCyCA6CgEAK8eKCp59CoCm8BK5yECyEAoYUUBIeKCp6ASAKDAX89BK56AeaDgAAK8UMCp6ASAr9KBAUGI8Df98AU8UMCp6UQAh98Ae88Df98AK8UNB7AKFQikAe68Dz96AK8UNB7AeCQinAoCAU58AKDDz96AK8KNB7Q8sKHF6AeCD7TeCIUNB7Q8sUIFeDAelTUBD9AUpBoSQ8seJFAEAUnTABEADDyBAKRB8Q9soBAKFFAvS7AUpAeiB8B9RFAE8BAFRKBEeCDoSCB68yKxA8A6RKBIKPCL68yA5UBBB7UBIUOCV6tDA8Ae5V7KBIeOCV6tCA9AU5f7KBIeNCf6jCA8Ae5p7KBIeNCV6tCA7Ao5p7KBIeNCL66yAGAo56RKBIUOCL68x7A7Ae58RABIUOCB7Y9e7B68AU8ARCB6yCA8w7Hf67AK8ASCB65ZoBX8IB6oBIATB9Q5ZUDQ6AU69IV6UCH7CKUQq5eCQ6Ao66Ip6UBH7CUTQ5ZeCQyGGo8z6UBH7CeSQ5ZKDXolAevQUBH7CeRQ5Y8A6XemA6Ep6eBH8CoPQ5Y7A7XUkA9Ep6UCHocBUBAL66wykA8E6QKBH6C9BL67w6D6A7E8P8AU77C9BL67wykA7FU69AU8oBG9AUFAKBDABAUHQ7wokA6Fy6yHIKBHAEAUmAp67wokA7Fy6oLH7AK7AtAf68welA7Fy6eLH7AU7KtAV68wUlA7F6G7AU8KCHWOwekA8E6AoGG6AU8KBHqOwUkA9EyEA7O8AK75VsmAKqDyKAUEDyJA6O8AKRAK58VimAUpDyLAKJDAKA7O6AKRAe57VimAUoDyYCeQA7OoBB8Ae57VilAemDocCATAoBAVrAKSAe57VY78DodB9C6ApnAKTAo56VY78BKFB6DURDAEAyCBoIBoCJKBB9Ao5gPv7A9A8BojBogB8AKTAeMI6AKVAe5gPv6A8A9BomBKhAeGEy8oBCUEFMPv7A7BAMEUBEeEAUcAKDAUNIeBCUEFMOv8AoNBK89A8AUQAUDAeBAeNIUBCoDE9V5v9AUTAy9UGAUJAUFBePIABCyCE6V8yKCJ6AeEA6AyBB6B7H7AKaAUtV9599AUEA7CURH6AUaAUtV8577AeKAeBCAEAKQB8HyBC8AKtV8576A7A7DoKCK7UBC9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo" :
-        wv === a2h() + 4 && (k = "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okA8BoDWK57x8D8A7FeCC7AoCAKDAUZDeMBAGWK56x8D8A8IeBDogBoIA7WU55x8D8A8L9DAQA6A8We55x7D7BKCAzLC8DCaFi97D8B7LKbDCdD9AUKx7EoPK9CoeXUiA6APFE8B6K6B8DMkC8z7E8B9KoODqoB95WFUPK9AonYoO5XFUQPMyA55aFUPAeEO578K5UWO678A5UWO678A6oJO778A7ADO778CTC6Ab5gSC8AUEAltV8DyE7rV7D7AvqV7D7A67oTUCCemAbrS9AoY78f7UEA9A7C578f7KSC878f7ASDH8V6UFAKTDR8V6UZDR8V6UZDR8V6eYDR8V6eZC978f6eTAeDC978f6eTD578f6UTD678f6eRD778f66AeEA6D878gR78gQ78qQ78qQ78qQ78qR787Vl9CK79MI79qG79qE798UM58APpUC57AjpT8Z7A55pT6Z8A65rTg58A75qTfCAp5UH5pTfDAzyA75qTfDAyMAQ86TLWAQ86TBXAa8z9BXAk8z88MoE68z86MyE686SzZA5686SfaA6688R9M6A869B76M6A769V7pbA669p7fcA569z7VdAvAQ68mQSrP78rP78sP68rP78rP68sP68sPmvPmwPcxPS5yDApm86Vl866Nm68NZ8ABdLc58ABdpZ58ABdzY58ACd9L958ADd8L858UCd8L758eCd9L658eCezK58eDezI58oDeymAe66586AXFDyHAyBAUFFZ86AXIDKKAUKAoCEt88ANNCegEZ89AXNCKhEP9KBfyQD7EJIBonD89KBAqD7B7AS9oIE6DUSAc9yEFAeB9AdyC9B8AnzC6CAD9zBUEA7CeC95eJA6An99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99ACeAT99AT99AT98Ad97Ax96Ax97AT99AABAT99AJ99AJ99AH6AC997Ax9yF99yE996A55lAO57A55lAY56A55lAY56A5bUBaoCt7Aq7UCaUEt7Aq7KDBUBY8A5t6Aq7KKAyFYyEt6Aq7KKAoHYoCt8A5a9BUBA97EAyhAMiClEA6DKCWoBAKf7EA7C9AgYDo5yF6sA6C7AqaDo5eH6qA8C6AqaDy5UH6qA9CyEW6D6FKC6wA8CyEW6D7FAG6sA8CyEWynFAG6rA8CyCW6EKzA56qA7CyDWKv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");
+    currentMapID === getRealMapStartingIndex() ? k = "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86fRU8Av6gRK76AeCE66hQ9IAw6iQ7IUu6kQ6IUu6lQy87EQmQofAK6Ak6nQUdA7F9D56nQAKAUQAKBA9F8D56nP9A9BKIBe57DaqQAGBeIBoSAKBAKjDGsQAFB6AySA7BUiDQrSKFCKCA6AyEDUcAKD6rV6AyFAoBCUc6yV6AyOB6C865WkBAEAKZ655X7Aod66M6a69Z967W5967W5967W5967W5867g5867g5867g5767q56675Z6675Z5676Z5676Z5676Z5676Zu77U6AKu678UyFEk78UyID9679UyID768L9yBA8A8DABAu8qEA8C769WEA8Cu95UoICG99T7AKGA9B9699UoKB77AUoLB56dAe69UyMBucAe69QUCBUCC7B6BGbAe7B58BABAeEAyYCAI6ZAe7B57B6AeHCUXAabAe7L57B7AKJCQ5UEHB57C7CQ5UEHB56C8CQ5eDHB57AUBCoV65eEG9QAZB965oEG9QAZB965yDG9QKZAUBAKCBa5yDG9QKZAKGAKEA665yDG9QUmAk5yDHB56AUED8AkxAUEAe7B565oAeCALyA7HV575oA8AyBOKGHf585qA8AKEN9Ay7p585sBVmAy7p595sBVkAo76P95uBLjAo76P9AKCAUB5rA8N6AK78Q55sA6V6Q65tAKQAMCQ756AGT8RF58AKBAz96RP6AFTz7P6oBTz7b59Rl58Rv57R675z7975V7975V7875f8HzSlwSbxSbxSbxSbxSlwSvvS56ZApRSuYA6L7S66WA6L7S656yBFeJL7S656yBFeIL8S656yDE8A9MB8556yEEoNMB8t6yFEAPMV8t6KJD7B8MV8t56BokB6Mz8t5UQD7B6M6S65yAyIAUlB7M6S65yAyuB7M7S75xAovB7M7S65yAeuCLZS75xAUuB6AoBM6S75xAKvB6NL87596BzhS759oPNz8959UPNz89589B8Nz9FsAKrB9Np9PqAUpCLiTV6oClyCD9C9M8Tf6oCloCD8DVaTz6UCloCDomMp9p6oCleBDUqMf9p6yClUBDUrMV9p67AN97AKFEABAfWTj66AKFD8M8TACAZ6yDAUnM8TACAZ66ELeT556ypNB9j67ELeTZ67EVeTP6ytNB9F67EffTF66EpfTZMAyDAUpEzfTZHByoE6NL9jDBKFAUpEfhTjCA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6Ao8i58m7Ae8Y59m7AK8O6O67us67us65u6ui68r6AKau8q6AyEAUau9qUUCE69p9B8AeFB7u8qASAyEB6u6qUSA7AUQu6qyPC5u6qyQC5u5q8BoZuscByZuifBAcA8A5s9rKHDKIA5s8r6AUmAUCtO78ti78AeCs9v7AUDs9wiwwsvwiwwsuw6s5w5s6wsuw6s5w7AyBr8xslx5r5x9rY99rZCq8ysay6q6y6qtJqPMBeGoFgP6BWe5lPKQW65pO7B8W55rOoXV95zN7C7V655VbEMK55pZEWI557MKtU8557MKuUj66LowP6AeFA7DF69LKyPySCZ8VDFL5oWB858pBFVyC8B5588J7FpqAeEC9Bt89Jy68M6EAJ59e9o7BYEUD598Je7pU6sJU76AoOKQsJU96J96sJU96J66vJU96JkyJK97Ja5U89J9B6AK7k5o88J9BKHAeFA9AK5k5y88KAKC6AeDEu58I7KKBEAs658I6OeGAoh659Iz5yf66K86PeFA7B666y8z68Bk6y8z7KH668Iz7eF669IwwI58vIwyISzIS6K7S66G587U59X9AQhF8X8AeqAZ9U5qlAopAj9e5gkAypAj96E9X7A6EAD6BEgmA7D9AkBEWoA6D8AuED8YKHD7AkID5YKHD7AkJDqrA6D6AkKDWsA6D6AkLDCtA7DyD6MC8Y8A6DoD6OC5ZAHDUE6NCqzA8DAE6QCM5eJC8AkTB8ZoKC7AkUB6ZyKC6AuYA9Z8BAZA56ZA7Z9BAaA589KJC6A589UIC6Aw9eJCoE6bAM67A8CoE6bAW67A7CoE6bAg66A9CUF897A8CKE899A9B9AeDAUGAS9AJB7A9AKH889A9B6B8888BKOCI87BKOCI88BKMCI89BKKCS9KLA7Cc9ULA6Cw9Un89Uo89Kq889Em88E5887E688yu886E5887E6887Ew87E5887E5887Ew88E5886E6886E788ov88ow88ov88yv88ow88ew88ey88K5m8Az88Az88AzH" : currentMapID ===
+        getRealMapStartingIndex() + 1 ? k = "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Fs69FKxJ6556KX78Fs7AxFATAK75558KX78Fi7KuFeSAU7t59KN8AzvKuFyQAU7t6BBmAxvetF7BoDHj6U99mUvvetF8BeEHZ6e98metvUvF9BUEHZ6e98monv7E7GKJAy7Z6o7UBC5mocAKGAUCv7C7IKHA6Hj6o7UCCr86B8BUCwKZIoGA6HZ66HUDCX88B6x7Ce8yFA6AeBG8567HUHB8nAHy6CA8yFA7AUCG8L6AOyHeIB5nUEy9B6I8AeJAUCG7L7AOyHyJBJIBe9ADA8AUDG6L8AOyH79aBK9UCA7AUEGzTAYxH99eAVBAyDG6L9AsvIJ99AAhAKHGpUA5s7IJ99AAoGpVA6sy8T99AAmAoCF9MUGsy8T99AAfAoJF8MeGsy8T99AAdA8A7F7MoFs6Id99AAcAyKF7MyEs6Id99AArF6M6AsuIx99AApFzdAYuI6999AAnFzcAYvI6999AAnFpcAeDAOrI6999AAmFpdAUEAOrI6999AAmFpdAoBAYrI6999AAlFpeAoBAYpI8999AAlFpeA6sU87999AAmFfeA7sU86999AAoFBgA7BACrK85999AAoE9NUJA7AsgIx99AAoEBpBKDA5re8x99AAqCACBpqB9ro8n99AAtB7AeMOeTr6IT99AAuAKDBKDAUBA9OoTr7H9999AA5yGA8A8OoUr8H5999AA59AoKAzuB7sU69999AA78AVwB7se58999AA9ABOyUso57999AChB8s9F8999ACgB6tK58999ACgB6tK59999ACgBs5U59999AA7eCP8Bi5U58999AA7eCB9AVnBO5U59999AA9oCN9BE5e59999AA9oBOAIt6F9999AA9eBOAHt7F9999AChA6t9GJ99AA7eBOUCBeGuAuAeK999AA7eFBKDMoEBAHuKuA6A6999AA7oGAyIMeFAUCAKBAeGuot999AA8yTMeKAeHuyu999AA8oSMeKAoFu8AoBEJ99AA8oSMULA6AO7KDAen999AA8eRMAOv8AKEEJ99AA8eRL8B5v8AeFD8999AA8eQL8Bs8AEAymAyB999AA76BpTBs8KEAeqAeC999AA7oOL9Bs8UDAyqAKE999AA7UOL9Bi8yCAypAeD999AA7UOL8BY87AeEEKDAn99AA7UNL7Bi88AeFET99AA77A9AUBL6Bs89AoEEd99AA76A9AUBLoNxeDAeq999AA77A6L8BtAET99AA79AzQB5yUo999AA8KBL6B6yon999AB9yUyen999AB9USy7ET99AB89B7zKo999AB87B7zon999AB8yRzyo999AB8oRzKCAKBAKn999AB8eSz8D9999AB8ATzyCAUk999AB8KUz6AUCDx99AB8KU5XDd99AB8UT5WDn99AB8KU5UAKCAKBDT99AB8AU5WAKDDT99AB78CFWAoCDT99AB78B85YAoDDJ99AB77B85ZAyCDJ99AB8KM5ZA8AKf999AB8UI5bAKCD8999AB8eD5eAKDD9999AB7yC5tD6999AB7eC5vEJ99AB67AjuEn99AHOEn99AHQET99AHQET99AHUD7999AHRAKDD6999AHLAeDD9999AHMAyCD7999AHNAyBD7999AHSAKCD5999AHTAUBD567UB999AAuD767UC999AAsAKBAyBDQ7UDAUD999AAoAyBDQ7UI999AAoAoDDQ7AF999AAtAKBAUBDa7ABAoC999AArAKCAKCDT99AHXAKDDJ99AHVAUDC8999AHZAKDC8999AHfC5999AHaAKDAKBC5999ABvAP8KCAoW999ABuAP8UDAKY999AHiCx99AHeAKECeyAT99AG76AKHCUsAoBA5999AG8KWEeEAUG999AG8eBAUSEUDAKG999AG76AKGAKEB8EADAUE999AG89CKlAUEAn99AG8oBAUU999AHmB9999AHkAKDBoDAd99AHmBUFA5999AHjBUDA9999AHkA9AeJ999AHhAKCA9AeJ999AHkBAIA6999AHgBKHA7999AHhAyCAoBAKCBT99AHfAUBAUHAUBBn99AHgAKCAUBAKDAKDBVoAn99AF96AKHBVpAn99AF9yBAeROAE999AF9KYOAD999AF9oZN6Ad99AF98CT99AHgAUCBn99AHtBn99AHuAKCAn99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AGIAd99AJ99AJ99AJ99AJ99ACdAd99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AH7oE999AH5eB999AJ99AJ99AFGAKBAT99AJ99AJ99AJ99AJ99AC9KB999AH5UBAoF999AHtAyCAd99AHtAyCAd99AHvAx99AHxA7AUC999AHlAUFA9AUF668Ad99AA6ABAeCAyJAeE668Ax99AA57AeCAKEA7AeBA7AQ67Ax99AA56AyFA6999AHrAKBAKDA7999AHwA88mAdFBHDAVgAxFA97FALfA5898AKHA969KEOAF899AKGA98kAxGBE89A8YeII7AnGBoCAs76B7TUOC8Bo8yF9EA9AKDAeCAKBvyUN6AUyCUVB6G7CxDA9AeCv7C7NUDE8DABAULB7AeED9AyNDw9yJAyCvydNADA7BoDAoEAyBAyDD7A8C7CKFAeEAeHBKr88ACA6BE8KbNAwAKoAKhB7CyKFABAc7UDAUCAKIAUBveCAycM6M9AKoA7F6AKE86yEAKLvoHAUhKoIAguAKE858AeCBO6yDA7Ee9yEAM6m58AoDA9u6AoGFo8g6686UCAoCAUGueGAU7o65bS69A6t7KoubyDAm6UGtVJD9c786yHszND7c886yHA6AOkL6DrABKC8sA7AoCoKFC6L9DhCBKD8cAUNB5n8A6CfUD5eAFAKGAcbA7BUPn7A7CBWDrP8aA9BUOAyCm8BUQMUggABAKCAwRBAFAUCB8AeCm6ByEAUIMUch58MAUCBADCyBAN8eSAUDA8MAZAKBiIMAKDBADCr8UbAKCAVWCXv799AoMBADCr7V58AKDB7jl99AyMBADC5c7AUOAUKAeEA6D7QUTj68RBKDCg8KDAeEBeKAKTCf69CD6ABAcIByDCWaAKLAKYAUOBoIEAHR8AUCBr6wAAeGByDCqjAecC6A5W6AKDBX76AKB78eIBUKAeZWAEA9AoUa7BD85777A8BeMAeaUeDBAFDC69BD8779UTAeZUeGA6AyOAKMbAMm9787AKCCKDCp96AUEA7AyHAKPAKDAq7AOnKDAR78AUBCyDCz9oDAUJA5d9Br9568yCA6AK8yLAUQAoXT7foNn667yIAeDAUBAKEIyGBALAySUXMBX9u79Cy96BeGCp95fUIn669oNG8AoTB6A8Cf9rQAN9969UCAKCByCBeCHAOA9Cf9bR68oDA7A6DACA6Ao8UbSvT68ABAyEBeEC6AUDA6FKGCUiR87S68oBA6CAeA7AUCA6AKUAeQA6AUBB6D7R87P6CA7GAFCU68B9A7AUCA8A6AKBA8D9R77W6DA9BABE6A8De5yRA9AoEA7AUEE9RbL6UA9AoKEAJB9A8Ae6yIB7Ao58RHI6cA8AoPA8AUHAUPBKSQB7KGAk9ulAeGBUJAUHAyRA7CL56R869QRAeLAoRAyZAyHA6A7AUXPp5yDB969aHAeZAKhCKGA6D7O8P6AUR69kEBAFAoKGUEAymOUBAf58AUL6896LKKnOKCAV7Q886FK8AyDBKOA9N8Ru8aMc9RQ8kEd8RQ8aBd8Q9AoD68F97Z6AKrQu9j9KHAM5yHDf587B59eKAM5eJCp6HF6IZeKCB5vJ6OZV777M6AAoMZp7RN577AKEBKQAyFZ6Q57QBKC56yRAeGA9az577VA9BF6KcAq77OvWA9AeDAj6q8AHCVp7Y585cKQA7JeND57YA8AZ6yEC5bzCB9DRa57oHCM5oGB7DeEGeVC97bAUB57UJB6Z9A8BUdA7GeWC87R588BASZ7EeJGoYC77I6AA9Cq5UmA8G7CoeCUF6696MAyiY7AeOB6A7G8CokA8A967a6C58B6Ao7AaE767k7MxFeFDAdE966668MpFyGC8C8F666D68" :
+        currentMapID === getRealMapStartingIndex() + 2 ? k = "ANAAHvAE6ADs8AmvAYvA68uAOtAwyAYsAm5UDAyEreC85oEAKIrAC85yNq9Am57A6AUFq6Am6ADAoEq6Ac68A5qyC868AsZAm68AsZAc69AsYAm7ADqoD869AsYAc7KCqoD87ADqoD87KCqoD87KCqoD87UBqyC87UBqyC87UCqeD87eCqUD87oDqAC87yFp7AiZAOzA5pyDqoDtUFpUEqoDteGCUDmyEqeDt6A6B9Ar8oFqUDt8A6B8Ar8oEqeCuAHB6Ah8yDqeCuUIBoDmoDqoCueIBeDmoC89KJBKDmeC89eKA9Ah8eC89oLA6A5mKD89yLA6A5mAD896BAGA6l9Ac99BADA7l8Am99B9l9AnBB7l8AocAc7URl7AedAm7URlyEC9Am7eRloEC9Am7yQleEC9Am76B6lUD9KB6lKD9MB5lADFAD86APk9AewA6E6AcNBr68AewA7EKG8NB6k6AUwA8EUD8QB5k6AUxA7EeC8QB6koDFAC867AKBAUCBD6KE9bBN58AnlAh57A57rAp9ACj6A57rAf9UCjyE7pAp9yDjUF9qAhyAxsArvAnvArtA59vA7iAF95UDh9A5WAE7fAoDANgAgWAvgA7hUDWUFf8AONA5heCWoDf8AYOA5hUCF8As8UCpoIhACF9As8KBpyBAUFhABA8AowAnCA5g7AeIAoyATEAhaAeJAn57AhZAd7KDgeCu9APDAhWAO68AtCArUAY66A6yyCf9AO6yHy7AW98AeQAi6KJy9AW9UGAUCBoDt7A8zoDcyBAeDA8AeMAKEAOtAKGA9z7AW8eGBUDBABAeDr9B85UAq8KEB6AeIAUDAOpA95eAq78AoTAKJA7r9A75jAUNAW6UDCKCA6AUFAd8KIA6AW6KDCeCAoCA7AoFA8A6AUCAT5yCAeDAoCaUCCyFBUHA6AeDA896ADAUBaUCF8A7AeD96KEaKCGAEA7An6KCZUDAUFHeE96ABZUJH6An59AW5UIH8Ax57AM5UJH9AobAnZAM5eHIUCC7AnZAW5UHIeCC6AxZAMzA7I6AUYA59YAMzA6I8AeCAKUAxXAM5UGI9AeBAKUAKCATXAWzAe9oD9vAWyAozAUqAdvAWyAozAUqAdvAWvA7J6ATuAguA8JyC9sA5YeKJ6AKCAToA7YeKJ6AKDATnAWxA8J7AKDAdmAWxA8J7AKEATmAgwA7J8AKEATmAUBAMvA7J8AdqAeBAMvA9J6AdqAWxA9J7AdpAWwA7BUCI6A59mAWwA6BAGI8AnmAWvA6K6AdkAWhAUNA7JKBBoC9kAMhAUNA7JKBByC9jAMhAUNA8JACByC9iAMhAUNA8K9AThAMhAUMBBHAngAWgAUKBVIAxfAMgAeIA9AKDLAD9eAMgAoEBKDAU5oCF6AdcAWfA6AKMAoCFyBF8AdaAMgBeBAKBAKGAU5oDF8AdZAMeBo67Ae59AdYAgbBo68AU6KC9WA5WyOHABGUB9AA6ByGWoPNoB887AUEAUEA8BeHWeONyC88UHAeEAUOA6A8WUMAKCN6Ac8KfAKMWKMOKCRyDBeE68ouV7BLuAVrAKgAeFAKDA668oVAoVVKHAeFO9AzhA9AKCC7B968eRA9CCIAoLAV5oCNAPC7B968eQBKRU6Af7UBM6CAaCG8UNAKCBUPUoERyBMoVC6Ca8ADAoDB9Bf98A7R9AVUCAdCu79AebAz99A7S6ALTCUcCu79AecAV9ALNKCGABL9CoHAoPC5678AgRAfqAe6ABL6AKBCyGAyCAeIC6677AqOApuAU59ALODKIA8A6C6677AgMApzAK58AVNDUJA8Aoa677AgJAgPAfJDyCB6AKc67yDU9AWSAfID6AKv67eDU7AgVAVCAeCIuHAK6eEU8AMYAVAJQFAU6KGU6AWaAVAJGFAU6KFU7AMcAU97AKBJQEAK6UDRAEDoBXADJo9uEAU6ADQ6BAgAMgAe9e9uFAK6ADQ6C7BoBXoFI9J56FAU57Az66BAQBKCAWoAU87J56FAU56A6QoMC6AqpAU87J66FAU5oFQyNC9A8XyBIo996GAU5eDPeBA9B7D6BgXAK8pA557AKUAKaAU5eCPAgE8A6V7AU8VB556AUUAUYAe5eBOeBAojFKGVoDIBC556AUUAUYAU5eCM6B9AUkF6AqMA6H6Kj5yCCACCeCFeCM6CABD6F8AgPAo7zDAUB55eBCACCUCFoCMy58GKCVyCHpEAUB55eBCABCeCFoCMo56AUCGUEVUCHABALI55eCB9AKXAU5eDMe5e7eBVoBG8K9AKB55eDB7AUXAUwA8MezH6AWMAU67LF56AURAKXAUnAUFAoCAVSAKFFK78AWMAK67K9557AoOAUXAUjBfWAoDFK79AqKAU66LF57A6BKCA8AKNAogAfgA7AKyIUFU9AK66LF6KEAoJAoEAoBA7AocAzfGA87AWIAUJAK5zK56UYAUHAUFCyDNy57JUBU9AKJAU5pJ56eqCAEN6FK99AMJAUKAK5fJ56UsB6ApmFLAAMKAUKAK5VJ56UsBoDOA5VAAMLAU6LK56UdAeRA8AVgA6Ae5VBAMMAe59LF6UbA7ByGAVfBACFVBAgMAo5zM5pAKSC9A8BoEAVdG7KeDVeDFfM5oAeRC9BKQJoCDU7fBAgOAeyLZnAyQDACAoLAy98AUUHoDA9KUBV6AedAoQLPnAyQD8BUBJ9AUQH6AyJKeBV7AUbAyDAeKLPnAyOEVKAUNG6AKLA7A9KeCV7AKbAyDA8AzK5oAyMEpJAUMG7AUIBUDK8AMQAUaAyFA7ApK5pA6A9E7K6AeLG8NoBV6AUaA7AeGAfLC8AtKA6A8E6K7AeKHBiAWBAKNAUVAUCA8AVUCyJy9AyHEpKAeJHLkAf97AUPAKUAeCMydBFJAoHEVNAeHHfmAp9eBB6AUUAUCMydBZJAUGD9L7AeFHznB6SABB7AUYMybBjJAeEEVQIVzAz78AKTAUYMyaB5y8AeDEzNIf5eBR9AKUAKXM7CKTy8AoBE9KyCAe8f5oCR6AKWAKVM8CKTy8F6KeCAe8f5eET9AKUNATB9y9FzCAeDIzzA9ToBBeCAzfBUEAKVy8F8J8JpyBB9eBBUDAzgA9DFEGA6oBDK98O7Bp9ABBKEAfjA8DPBGK6oBDBBO6Bf9KBBKEAVkA9DE99GUxA6A9AUcKftAKDA9TUBA9OoKC8x8GyvA9A6AUWLB5eETeBA7O7A9C8x6G8BeCA6AoVA8AyECBMPoCPKDEACAzyA6DE9o7KEBKCA9B7A9AoEAoBBpOAeBPACToDAV5oDDO9U99BACAyBAUFAoCAUBAUDAeBAoBApPAKDO9AV96T5w7KUHAeJAyDAUCAKCAoCAKCAoCMLxAL97Ts86I6AePA6AeKA8AeHAUBAUFAKJAfJPACTz95v6AKEAKCI8AeOAoFBoEAeHAyNApJPUDS9AUCT5v6AUCL7B7BUFA6AKFAfLPyDS6UO6eBBBWB8A9AyEApUP7A6R6AKES8AeMt9AUKMUTA8AyEApNAUHP8Af76AUDM8AK6ADBO59AUFM7CKBAKDAyGAfNAeHP8Af7yDAVcAK7s59AeEM8CeDAoIALMAyHP7Af7yDAWCq7AKSAKMAoFM9CUCAfWA6A7P7Af7oDAWAq9AKSAKMAyFM7CpZA8Az6ACR8T9q9AUSAKMAyDM8C6AeCLeDAeJAUEAL59Ap7f99rACB7AKNA6ALaAKCC6AUEA7ALDAeEByCQKDNUBD8T9rACB6AKNNekA6AVCAoDB7AV6UCNeBD6K9AUxAoirKCBABAyBBfcD8A9AVCAyBB8AV6oCNKCDzBBeqAUCAyhrADA9AUEAUOM6D9A9AVBA6AL8yDN8AeJAeCAUCAeFJ8B7AeJAKCCeLDYWAeGAeJAUVMeoAeBA6AVBC8AL6yDNyEAeBAeFAeIAK99DeWBUfqeEAyDA9AUVMArAUCA6ALCC8AV66AVjAeCAUDA6AfGDyTByeqoDAyDA9AUUL8FABAVGA7AeSAf66AVhAoBAeDLeoBUUC8qyCA6AUKAUVLy56KoJAV88ALkAKBAeDLKzAUUByDA9q8AKGAUlK9F7KyJAf88ALcAeEAKCAeCK9HoQAoFr8AUlK6F9K6BADS7AfZAoDAUCLU7yQs8AejKy67J9BKDS9AfXAoEAKDLA7yQs9AoiKo68J9BKDTUCMKCAKCAeCAVJHoSs8AyiKU7A99BUBToCMAGAUCALKHoQteBDzBHo95VACL7AoBAeBLe7oOxLAHy9gOALQMU7eIAoBxe99H7JCRAVOMK7oIx7J7IA88WKBLfWHUIx8Jo8o86WUDLBXHUHx9Je8y86WoDKzaHUHxyBAe9U87I5W6AVEM6HUHZ9AWbAoDJy88I5W7BA9pbHKHaACXACAe9y87I5XUFJpbHKHaABX6JyIAy7e85XyDJpbHKGx8JyHBK68I5hVYHeHx7J9AUNG6I7hVXHoHx7Le67C7AUIA9ENgMe7oIx6Le68CyDA7BykhU96AUYHyIvKBAKCCBOG9CeFAySA7AeYhU9oECe76A8vAGB9Ly69CKHAeTA6A6CKEANbJ6AUYHyIvAIB7L7G9CAdA6A7CAEAXaJ6AUYHyIvAGB9L8HKQDAGA9B7he96AUYHyHvKGB9L8A9Ay58BobAUCA6BKNhpbHAIvKFCBTA7A6GAIDUKBKGAeChzbHAHveECBVAeJGADDoRAyDipcG9A7veGB8M9KATAoEA7AXhNA67A8veHB7NA99B7A6AoHAhgK9AUUG6A8vUIB6NU98BKMAeJAheNU66A8vKIB6Ne97BN58Ne6yIu9A9AfvJ8A6kLiGyHu9A7AfyJ8A7A8A7izjGeIu9A7AL5e67AUcA7A7BDrN6GUHvB6K6yHCyIA6AeBA8iBlGKHvKDAf5y6eKCoJA8A9iBsE9AeCA7vV6A6UMCeaiBuE6A8AKBvp6K6UNCKaiLUAyXEoJvp6e6APA8AeFDDpKyHAKNCUsA9vf6o59B7AKqAKBiLECeKAUBAKDE6BY7V6e58GoBAU7KEafECoJFeMvKDAL6A57G6HAHafECyHFoLvUDAL6A5y7A6yKafEC7Ao56BE7UBAV59F6HK6eLaABAfDI8BE7z6A5o7U6oIaUCAVEI8A9vf6U5e7o6eHaeDALEI9A7vf6U5o7y6eCa7K8JAFvf6eoA9Ao76g9AKCK8JUCvp6elJXaLt67QojJ5gpP56z6yiJ7gpQ56p6eiJ9gpS56L6ohKNXL9559QohKXYMoCAPyQohKhYNZtQUhK5gfh5sQUhK6BACfBi5rQefLAHAhIN6TABjL6odLoDA5ezmTACjB6yaM5eyBAVjS9AXyQ8CVae9Np89AhxRASM9e9Nf89ArvRKRNNJNV89ArvRUPNhJNV88A5i6RUNN7e8NL88A5i6R8Appe7NV87A6irYe7NV87A7irYe7Np8oIiXae6Np8oIiXbe8AKCM9SeJiDdfBdSeJh9hXJM7SoKh8h6ezbSoKh8iDBM8SeNhrsd9M8SUNhrud7M8SUOhhwd6M8SKQhDyd6M8SARg9jM96BKELf79B7g9jg9yKAzNR8B7g9jq9oKApPR7B8g8jq9oLAfPR7B8g8j5doJAVTRyTg7j8dKIAfVReUg6j9dKFApYRKVA9ANPj9dKEApaRAVA7A9e8kM9UBAzaRAWA6A9e9kW96M6RAXA6A7fD6W9zbRAXA7A6e9kq9pbRAYA6A6e8k5dpbRAYA6A6e7k8dVcQ9CyGA6doBAUCA7k9dBdQ9CyGA6dKKAr7W88M9Q9CyIAq9KMAN7g88M9Q9CyJAg9D88c6NB69CyKAUXAg6h9C8zeQ9CyjAq6X9M8peQ9CylAg6D9g8feQ9C6d9ng79AUCNB69C6d7n6b8AUCNB69C7d5n8b7AUCNAKAf56C8diAb6AUCNAHA6P6C9dYBbyCAVeAKMP6DC9OCb8Of56DC9EFbzuPogc8o5bzvPejcsGbzwPUkciJbVxPKlcYKbVxPAlcYKbVyO9D7cYLbVxO9D7cOMbVyA8ApkD7cONbLyA6A7AyGMolcOPa9PKEA8AoJMUkcYQa8PUBBUBBLVD6cYRa7SBSD6cYRa6SLSD6cYSaz8VRD6cYUap8LRDg8sWaf8VQDg8sYaB8fQDg8saZ8SfQDg79AKCrC56SABALRDg78r6Zp8LSDg78r7Zp8BSC9cEoZf8BSC9b9sM5p79L8C8cEpZz78L8C8b7sqgAUWR7L8C8bsvXKECf7zSC8bswAeCW7AUZRfSC8bi57WyBC6RVSC9bY58ZL7LTC9b7tqyRLTC9b8t6Y8RBTC9b9ugoRBTC9b9uqnQ9MAccE6qnQ9D7Ae8AbcY66X6Q8DyMHoaci67X6Q7DASHeaci68Xz67C9B9Heaci68X6QycCK7eZcs69X6QoXC7HUZcs69X8QKXC8HUZc5u9X8QAWC9HUYc6u9X9P9CKeHUYc7u9X8P9CAeHeXc9vClP8CAfHUXdE7giP7B9De7KXEUCY6v6XL57B8Do7KWEeDY5v7XL57B6D6HAWEUFY5v7XV5yQD7G9CUqA5Y6v7XV5yOD9G8CUqA5Y7v6XV56BeoG7CKrA5Y7v6XV57BKpG7CKrAqwv7Xf5yLEK67CKqA5Y8v7Xp5oLEK67CArA5Y9v7Xp5ULEU67B9EoEAyDYY77XzzBKrG6B9FeEYO77XzzBAsG6B8FoFYE76X7PAKEo66B8FyEYE77X7O9A9Ey66B9FoEG9AV67v9X7O8BAuGyTFoEG8Af66wMkO9BAtGyTFeFG8Ap65wMlPAIE7GeUFKGG9AV67v9X9PKHE6GeUFAFYE8CnPAGAoBEo6KUFABYs8MnO9A6AeCE6F9CC95wWmO9A7AKDE8F7CC95wWmO9BAzFyUd6wMnO9A9Fe5eUd6wWnO7BA56FAQAKDd6wWoO6BA59E7B6AUBd8wMrOyIGKtB6AUBd8wMsOyHGUsB6eO8MuOyGGUrB6eV8KGdgvOyFGeqB7eL79BW9CwOoDGypB7eV76B9EyDX7Y9OoCG7D9B8eV7eiDUEX6Y9OoCG8D8B8ef68EKbBCgZLrAU68D7B9ef6owCKLXqzOUCG9D6B9ep5o6eFA6AUMX5ZLrAU68D6CNDPA9CkZVqAU67D7CXEO8JClZVqAK67D7CXFOU95X8ZVpAU67D6Cf6eGN6OA96X8ZfoAU68DyYQKIB6ALTN8J8X8ZfoAU67DyZP9BAMA6L9Ny99X8ZfoAU66D6C6P7BKKA8MBeK5X6ZzmAe6olC6K6AUeAeQBUIA9MVbK6X6Z6N8AU6olC7KoEC7A7BUPAoQL9MzIX5Z6N8AU6emC9KAGC7A8A9EBRMfJX5Z8N6Ae6UmC9J6BAbBAEEpSL9LWiZ8N7Ae6AnC9JoMC7F9L8LzQXg59N7AewAUJD9C9JoIDKeAebL9LBVXC6L87AeGEKeJeIDUbA6C8L9K6M5W8aVlAKwAyBAKCEKeJeIDUaA8DBWJ8M8B7AqGaVlAUxAeFEAeJeIDeZA8DfTJpiBeHUq6pjAe56EKfJUJDUZA8D7LyCAK89N8A8BMDapjAo5oqDK9KKDUZA8EVIAeIIV59UM66NoECKBDKrDU9AKDUZA8EfHAULH9QMAa7NeECKCDArCKCA8JKLDKcAotF8AKMA7C8AKPHp6f99a8NeFCACCywCAIAe9ANC9DKBEy5ULA7BUZAKSG9Qz98bBgAyUAePAKFFKUA9AU9APC7H7FUMAyOCeCCK6f68T7bLgAyTAoOF8B9BABJAQC8H6FKOAeRCACCySAKoQ9T7bLfAySA6BU6AUA8AU9ASC7H6FAkB8AUcBeFD7RB95bffAyMBeIGeUA7Ao88CAaHyyEKNAUkA6A7Dp7L95bpeAyLBoHGoUA6Ao89CKXAKDHeyEULAUzDf7L95bpeA6A9ByGGyVAyEI9CeQA7A7G9E8E8AeFFycRf9g7zeA7AK9eWAyEI8CoEAUJA9A6G8E7F8F9Cf7f9W77NBACeEA6I6CoDAyHBAGG7E6GA59CB76TC78NBACeEA7IyZAKHA6BKGG7Eo6U6UOR8TC79M9KAYAeIIoZAKJAoMAy7AoGo69AL8z87cLdJ9CeEA9IeZAUKAeOAesAogAUBAUFB8G6ZyNAL7M8fbKAXAoJIeZAULAUPAerA6EKPG9ZyLAz66c6M6KAYAeIIyXAoKAeOAesAyoBo7W5oLA9QC88M6KAYAeII6CUEBAEBeEEeFD9Be75ZoJBV56dLYKKZAUII6CUEBKFBUEIoKIM5oHBp5q9pWKKaAKII6CeEBAHBKDIUJCUFF7Z6AoRPM96MLBC6AeGI6CeFBAGBKDH9A9CyEF9b7O9d8L9KUbAeGI6CUFBAHBKCH6A9C8Ae6M7zwT9AVAL8KUcAUHI6CKFBKGI6BA96bpuT8AzCLzCC9AKHI6CKHA9A6IoLK5a6Oz98A7KLPKUkI7CUHA9Ay8UMK9azoR7AKBAKWA8J9LzCD6I7C6AyHAy8ANAUHI5cphSUFB9BA97LzCD6I8C7AeIAo79BeCA9AyHB6AesA6AM89M7S6A7B6BU9zPKUlI8C8AUHAe8ALAeMAUJByID6epWS8A8BeOJpOKUlI8D8AU66AUMBADCoPA9DXIBADK7JADJ8A6B7BU9VOKUlI8KUHBKIAeaByKC8fUIAo58AosI9AzbA8JUPAK96KUmI7KKIBKHAecByJC9fUGAyxAeEA7EK9UEM9A8JKMA6JfCEA8zAA9BKGAeeByFDXQAKHEySD8JyDNKIJACAKCAKCBA9fBEK8pAA9BAFAeiBeEDrXD9A9AeNC9KoCNoGJUBBy9VBEU8fCAeBAKLAyCD9BUCD5gejDAaj6JVAEU8e77AemAyCEoGA6AKIC8BUBfAdD8B8j9JBAEU8o76AyjAyCE8AKYCeJA7fKQAeCEUPkK9A99Ee8e7yIAUDC7A6AU78B8A9BDOA9FyHke89J9Ee8e7yIAKEC6AyDIKCAoKA9BNSAK59Ar66I8J9Eo8e7oMC7AeDJKGBUL7wI7C8Ao67Eo8o7eLDfLBHxI6CeMGotIo7UKDe58Ao5eE75U86CUQGKtIo7yHDABAK57A7798A7Ae87BoCAoRGKuIe76AKCAUeGAH79KCAeLAK88A9B9AoFGAvIe78AUeGAH79BGAyVHKvIo78AKdG6Ab89K9AUVHUvAUFH8K7IoC77BLAUUHUvAUHH6K6I6Al67LUCCA7UvAUHH7Ky87At9eBQ9Ny7e6A7fBAKEI7AWJAh8eCQ6N6He6A6oCA7K6d6Ah8yFQLlHo6K6eDA7Kq96AX86A7P9N8Ho6K6eFA6Kk86A7P6OA7exA7Ay59BAFKk87A7PpqHUvBAEBABE7BUFKa89A7PLrHUrAUCBAEBKBE6BUFKa89BLvOe7UqAoBCyDEyMAo6ABEQ9AKO7Oo7KqAoBCyDEyMAy59AKp69UJO6Oo7KpAyBCyDE6BKFKG9eKOpuHApAyBAUCCUCE7BAEKQ9oLOVuHAoAyGHUJAo99696BpoOy7AnA6A6HUJAoWAK76696BzoOy69D9A6A7HUIAKHAUPAU75697BzoN9AoCG9D9A6A7HeVAUIAU76697BznN9H6D9AKBAeHHoWAKHAK77699Bo88AUwN6IAqAKLHKWAe8k99Bo8KFAeDAeCELjIK5o7LKBUQ67ALIAHAyIEBjIK5o7KFAzd67AGI9AK5piIU5o69AoJM7756AU6phIU5o5oDA8A7BLa756AU6phIU5o5yFAeHBfY758AU6phAyGHKlAKQF7A8B8KABCb6ABGfjAoKG7D7AKCAKNF9AyEAKPJ7A7B776KBGfjAeNGykAUCAUOF9AoDAUOJ6A8B68aN6AKOGykAeBAUOGKIBe88B6B58bPK6ykAUDAKOGULA9I7B8BcePK6okAUDAUNGyIA9I6B9BSfPKCAe59DKCAUDAeCBe68A6A8I6CAJ8fP7F9DAIAeCBe68A7A9IoUA98eP8F9DABAUFB7G9A8A8DoBE9BKCA8A88dP9F9C9AUCAyRG9BAHDeCE9A9AeJA88cP9F9C9AUCA7ByGAU6UKA7DUDE9A7AoJA88cP9F9C9AeBA8B6AeEGKKA8DKDFAFAyJA98bQA58DABAUIB7AKGGKKA9C9Ae5eBAoMA98ZQ7FUhA8C6GKIBAcAe56BoJ8ZQ7FUiA8Cy6oGBAeAK5oPBIYQ7FUhA9C6AKEAoHE8A6BKbAe5oOBSXRKwDyHD6AyDE6A6BeZAe5yNBSYRAwD8AohA9AetA7BeZAK58BKL8YRAwD9AofBKDBUCDAHBo8oLBSZQ8E8HeNAeKAedA8B9IKHBmaQ6E9GeDA7BoIAoEC9A8B9IeDBcdQyxGeEA6BoQDAIB8J78eQ6E8GUaByCAecAySJ78ZAeDQoxGKbByBAyeAKUJ68ZRAxGKcB9DKCB9J78YRAxGAfB8DKBCK9yDASUQ9FA59DoRDACCBB8SQ9FA58D7B7C9AUTKSIAUIQ9FAlAUSD9ByfAURKSKAKIQ9FAjAyNEyODADB6J98LAeHQ9FAjA6BKxBybAoCAKLJ98JAeBAKHQ8FKjA7BAyBycA6AKDAy998JAeCAUFRAyD6A7A9FKQC6BKEJ98KAKCAoDRAzD6A7A8FeRCyKAo978PR7FKlA7A9FUQC7A8Ao9mSR8FKlA8A9FUQC8A6Ay6eBBoDBSSR8FKmA7BA5UQC9AoFF8A8BUEBISR9FAnAeOFUQC9AeFF8A9BAGA88TR9FAoAKPFUGAeHDADAo59A9A9A6A88TR9FA56FUEA9AUfAoDGAJA8A6A8Y7AZ7B8AxF6FeEEKEAe6AJA8A7A8YoF569SAxF6FeFD9A6AU6AIA9A7A9YeG568SAxF6FyED7A7Ae6AHBAHA8YeHC7AOAAVlSAxF7F7AKkA8Ao59A6BUGA9YUIC6Ar97A6Nf8AxF9FyCB8AUPA8Ay58A6BUGBCvAeZA5oAENL8KwGA5yBBoGByIA8FyGBeFBAoAgFAeYA6oAEM9SUwGK5oCAoLAKDByIBA5oFBeEBKnAp9eBBeBrAEM9SUwGK5oPAoCByKBAzA6BUFBUoAL9oCBUCrUBM8SewGU5ePAeEBoLA9FAIBKFBeBAKCAMdAUNA5556SowGe5oNAUGBeLA9E9A9AyBAoHAUBBqeAUNA5556SewGo5yVBKMA8E9A8AyNAUNAMfAUPAj56SewGo56CALBeHE9A7A6aAC57p8ewGo56CAKBoBAKFE9A6A7Z9At7f8ovGy5yVBAQAezAoIZ8A557p8evGy5yVBA7UBBg5UH57p8evGy5yVBA86ZKH57z8UwGy5yKAKMA8CoEF9ZAH57z8UwG6FoKAeLA7CoEGKIAL6ADHyIHACyf8UwG6FeMAUMA6CoEGKEA6P9Ao7oIHAEdyHUB8KwG6D7AeNC6A6CoEGUDA7P7Ay7eKG9ApdAV6eMT6SKwG6D7AeNC6A6CoGGADA7P7Ay7eLUKCQKPTz8KwG6D7AoNC6AyaAy6ACA7P7Ay7eLT7AKCAV56B8T8SKwGymAyNAoCB9AybAy69XoMAUBTUDAKCP6B6UB8KwGooA6BUDAKWAebAy69XoMAUCTKEAKBAKCPePUL8KwGepA8BKBAUWAUdAo7B69AK6oLAeBTALPUPUL8KwGUqBAMFeDHL67AU6yLTUXOeMUf8UvGKrBKMFeDHp6KEG6BB9UYOUIU8SKvGAsBULFoDHp59Ao59AKHBB97AyCAUEA6OUIU8SKvGAsBUMDKDB9AU76P9Ae58AeGBB98AeKA6NeCAoJU9SKvGAsBUNC9Ae99P9AK59AoGA9VUBAUDMyUVL8KvGAtBAOC8ApDV6AeIAqTAVUCoNAf96SUuGAtBAGAyCC9AfFVyDjKaBeETz8UuGAtBAED8AKZAK8WPAhwC8BeETz8UuGAuBACG6Ao78J6AY68C7BoDT6SUuGKtH9Ay76JyDu9C6BoBT8SetGUsCUBF7Ay7y96AX57ALLC6Vp8UtGUsCADF7A6Hs5oEK9C7Vf8UtGUsFyBCyEFUFB7NKDgADLKcVV8esGerFyBC7AUyA9BzdA5f9AfKDWLSUsGUKAydFoDH8BKNM9AsgDqKSerGUKA7C7FoDB6AK6KNAKBA9M8A5rKjVB8erGUKA7C8FeCB6AUpAKFAoLAKCBKJM8Aq8KBO9D7U9SerGUKA7C9FKCB7AUoA8B8A8BBeAg8KBO8AoBAeBC8VB8oqGUKA7C9FKBB8AUnA8CAEBVhAg8ACD8ALHAULCqLSeqGUJA9C8I6AUWAoBAegAKCNyEb8AyiApTAoDBqOSopGoHBAbLKCDzpAq79AKBAeeApWAUHBCPSopG7AoKC7O9OAEQACMeBC7AfhA9V6SopG7AoLC7PBlAp6KDMeFP8A9V6SopG8AeLC6PVkAz59AfaAf58A9V6SopG8AUNCz5phA6P9AW9AEAKBV7SopIeaPfgA7P8Ah7eGAKBNV8opIeaFeBJ9NUGP8Ar7AMNL8opIoZFeBJ9NUFByBOoClKNNL8epIoKAUNPfgAyOA6zeNNL8ooIoJA6BB5eHALaAeOA7zyKNL8ynIoJA7A9PUIAfYAUQA7zyKNL8onIoHA9BBzLAFD8A7zyJNf8omIyGBAJPLJAyoA7zoINp8omIoHBAJH6AeJAU6LIAoqA8zeINz8emIyFBKIF8AUPAyGAy6KFAVAAosA7zKKNz8olIyEBUHF9AUOA6AyGGUCAo99AeuA7zKKN6SelIyDBoGF9AeNA6AoHG8KABE8A6y9BVkSokIyDByFGACBeGAoHG8O9A6y9BVlSekIoEByFGABByCA7A7G8O9A8y7BVmSejIeFB6Ao8yHHLvA8yyNN9SUjIoEB6Ao8yGHfuA8y8BLnSKjIyDB6Ao86Ay7fuA9y7BLsR7Do8yCB8Ao8yFHzrBFJA9O6RyiKyFIoEE7AKcOeJzAIO9ReiK7Af6fsAyCAPNA6PeBAz6ohK7AorALROyBAKBz9Az76OeBAehK8AoqAeDALCAKI669Ap79NyDAyhK8AeqA8KAEA667AFA6AL7VgAeHDfKAKqAKCAU56AUhAKLA6Aa7UFAUFRfaAUNDgLAyhAUK68ANRVoDp88AKVAUlAeJ68ANRfUAUPD6KUCIoBB9AUmAoIr8AgoBp7VRAUQD8KKCH8AUFAUQAenAeJr7AqoBp7fMAyMEfBAe8yBHKCA6q7A5YAPRVKA8A6E8KKDQ6q7AqoB6RVHGpBAz7eCA8AeCooDYAQRVFG6KKGTX78AKFAKNAgpB7RVCG8KKGO9AykmABAoCA9A6YURRe99HBBAzwA8Dh8UCAUDA9A6YeRRo9y7VCAfvA9Dr8UCAKCBKGYeSRy9K7pCAfsA7D8meEAyJY7B8R7I7H6Y8A7Dh89AeFA8ZARR8Io78Y7AUCAUkmyFA6A5ZeRSA78IW89CKDkAGAyFZoRSe7e8q7eGA9CKEkKFAoGZoOAKCSo69I7WoDEARAoVAh6UFAeHZyMAUCS6Go9CYAemDUCBKBkoEAUIZyLTo59JV9KCDKBD8BeJAKCA8BD7ANZyKT7Fy9p9KCHUKByGBX69BM56A9UAzJ6TACIADBoHBh7UEaKHUUvJ8TABJ8A6Br7oDaKGUyqKCDAK8oGB5lyDaKEVKCAeDAUaKMEAK8eFB66pAMaB8K5b8AUIAyQ87KMAUBK5b8AeIAeTA8Ac7ABK8b9AUJAKYAeF977f6AUFGKB9Pgy58A79Kgy58BxDaACGo56CI97g6F7Cm9haF7C6888hA56C988hhFye88NjFof878d6A6Dy5oh87q9yJDy5oi87W9eMDo5yk87C9UNDo5om87C89BoiA8AUtEI8C76ByiA8AKuEL66ARMb6BojFyqQoD7LMABPoOD7FetQKG7JMABAoCO7BynFKuP9A87IMACAUEO6BooFAwLAGEKJ7IMAKOeOEUwFfCBAnBbHL9BeFAViBesE7Fy99BekBvGL9CVhBUtEy57J6B7DKRYUEAKDt6L9CVhBUuEy57DeCF9CAYCWsAUBAs5zSCLiBexEU59DUDFyYCeVZADtfRCfhA8FypF9DUDFyZCeUZAEtVRCfhA7F7C7A7A6GAgAK5obAyCB7B8ZUEtLRCzfA6GUSAKDBADGU8yfAeCByTHUBR9A8s7L7CzfAy66BATAU6e8yhAUCBeUHUBSoEs6L8CpfAo68A7CKBGy8KlAUCBKWHKCSeFszRC6NACHUDJA79EABAKDAKGCU7eFR8A6szSC7BKDcU77EeCAyCCU7oESUCs6MAqI9AL9A7y7vJMyoI6AL9A7o757JM9EK8KBTK7K767KNApbU7A757MNemH9AL9e68HvONylH8AL9e68HbQN8D9HUBTy67HRROKnG8AV96Gy7RSOylGyCT8F7AUEHRTO8Dy6oCT9FoFAU7RUO9Dy6eDT8Fo777VPAtFUDUAyH87WPKtFKEUAvIHWPeqFUEUUpI57VPopFUEUoUAeFA8AK87jKDk7P7D8FKFUyLAyBK7i7A6k7P8D7EoBA7AgIA6L6i6A6k8P9D6EeDWABL9i6A6k7P9D6EeBiU8yCaAFk7P9D6BUCAoCk7IoCaKEk7P8D7A8A7AUDk7IeDaUDk7P8F6k9IUDaeDk6NeBCy55k9IKEaoCk6QK5h7A8AE6gQ6AUCEr7A8AE6gSeflA59AyQAkhTKXlA58BAMAugT7AUEBD7K59A9BUF6fU7A5lU6AIBeG6d58e6UGByG6c58U6oFB6A66b58U6oFB7A76Z58A67AeTA76Y579G8AeUBQT578G9AUWBQS578G9AKYBQR579JyJ6R579J7A76R579J6A66T5bAUyJyE6W5YAoy7W5UA8E97Xz9A7FHYzyJFbYzoJFbZzeJFlZzUIF57Zy9BA567Zu6AejBU597Zu6A9CoPGbYu6BoPB8GuUAo99u6CADCU676TAy98u6Ey686RA7J7u6Eo7GHAUHA8J6u6D9H56IAeFA9J5uynH76JAeCBK9szA7A6EA776KBy9sxBKDEK776LBy9ixFo786NBo9YxFo786NBy9OqAKFFy786MB9I8sKDAK59H76LCA88sK6e776KCK88sK6o766JCU88sK6o766JCU88sK6y7uJCe88sK66HaJCU9EpG7HQJCA9YqG7G96LB8JiqG7G96MBy95seyAyGAeCG96OA7KOrE9I67WsowI67WsowI67WsewI77WsotI97Ws7EK9HWs8D7JlWs9De967WtAeJ87WtKWAeBKbVuUGLRVueELlUueELlUuoDLlUDeF5q7UDKJ5o7UC9BZo7TBUFBAQ5m7TA7BoDC85d7T" :
+        currentMapID === getRealMapStartingIndex() + 3 ? k = "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C9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo" :
+        currentMapID === getRealMapStartingIndex() + 4 && (k = "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okA8BoDWK57x8D8A7FeCC7AoCAKDAUZDeMBAGWK56x8D8A8IeBDogBoIA7WU55x8D8A8L9DAQA6A8We55x7D7BKCAzLC8DCaFi97D8B7LKbDCdD9AUKx7EoPK9CoeXUiA6APFE8B6K6B8DMkC8z7E8B9KoODqoB95WFUPK9AonYoO5XFUQPMyA55aFUPAeEO578K5UWO678A5UWO678A6oJO778A7ADO778CTC6Ab5gSC8AUEAltV8DyE7rV7D7AvqV7D7A67oTUCCemAbrS9AoY78f7UEA9A7C578f7KSC878f7ASDH8V6UFAKTDR8V6UZDR8V6UZDR8V6eYDR8V6eZC978f6eTAeDC978f6eTD578f6UTD678f6eRD778f66AeEA6D878gR78gQ78qQ78qQ78qQ78qR787Vl9CK79MI79qG79qE798UM58APpUC57AjpT8Z7A55pT6Z8A65rTg58A75qTfCAp5UH5pTfDAzyA75qTfDAyMAQ86TLWAQ86TBXAa8z9BXAk8z88MoE68z86MyE686SzZA5686SfaA6688R9M6A869B76M6A769V7pbA669p7fcA569z7VdAvAQ68mQSrP78rP78sP68rP78rP68sP68sPmvPmwPcxPS5yDApm86Vl866Nm68NZ8ABdLc58ABdpZ58ABdzY58ACd9L958ADd8L858UCd8L758eCd9L658eCezK58eDezI58oDeymAe66586AXFDyHAyBAUFFZ86AXIDKKAUKAoCEt88ANNCegEZ89AXNCKhEP9KBfyQD7EJIBonD89KBAqD7B7AS9oIE6DUSAc9yEFAeB9AdyC9B8AnzC6CAD9zBUEA7CeC95eJA6An99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99ACeAT99AT99AT98Ad97Ax96Ax97AT99AABAT99AJ99AJ99AH6AC997Ax9yF99yE996A55lAO57A55lAY56A55lAY56A5bUBaoCt7Aq7UCaUEt7Aq7KDBUBY8A5t6Aq7KKAyFYyEt6Aq7KKAoHYoCt8A5a9BUBA97EAyhAMiClEA6DKCWoBAKf7EA7C9AgYDo5yF6sA6C7AqaDo5eH6qA8C6AqaDy5UH6qA9CyEW6D6FKC6wA8CyEW6D7FAG6sA8CyEWynFAG6rA8CyCW6EKzA56qA7CyDWKv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");
     k = characters.iX(k);
-    var n = jm.bz(wv).a2t,
-        l = jm.bz(wv).a2u;
-    aZ = 1E3 * k[0] + k[1];
-    aa = 1E3 * k[2] + k[3];
+    var n = mapInfo.getValuebyID(currentMapID).a2t,
+        l = mapInfo.getValuebyID(currentMapID).a2u;
+    currentMapWidth = 1E3 * k[0] + k[1];
+    currentMapHeight = 1E3 * k[2] + k[3];
     hs = document.createElement("canvas");
-    hs.width = aZ;
-    hs.height = aa;
+    hs.width = currentMapWidth;
+    hs.height = currentMapHeight;
     pj = hs.getContext("2d", {
         alpha: !1
     });
-    x6 = pj.getImageData(0, 0, aZ, aa);
+    x6 = pj.getImageData(0, 0, currentMapWidth, currentMapHeight);
     x7 = x6.data;
     for (var x = k.length, t = !0, z = 0, y = 4; y < x; y++)
         if (t) {
@@ -7858,126 +7846,126 @@ function a2b(g) {
         } pj.putImageData(x6, 0, 0);
     vf = !0;
     a2f(g);
-    x9.bp();
-    c4.c5 = !0
+    x9.init();
+    c4.canvasDirty = !0
 }
 
-function kR() {
-    var g;
-    this.bp = function() {
-        g = Array(zV);
-        g[0] = {
+function MapInfo() {
+    var mapInfoArray;
+    this.init = function() {
+        mapInfoArray = Array(customMapID);
+        mapInfoArray[0] = {
             name: "White Arena",
-            c1: 230,
-            cw: 230,
+            width: 230,
+            height: 230,
             gO: 1E3,
             gL: 2E3,
             a1f: 173,
             per: 1
         };
-        g[1] = {
+        mapInfoArray[1] = {
             name: "Black Arena",
-            c1: 800,
-            cw: 800,
+            width: 800,
+            height: 800,
             gO: 100,
             gL: 50,
             a1f: 43,
             per: 1
         };
-        g[2] = {
+        mapInfoArray[2] = {
             name: "Island",
-            c1: 512,
-            cw: 512,
+            width: 512,
+            height: 512,
             gO: 128,
             gL: 32,
             a1f: 0,
             per: 1.5
         };
-        g[3] = {
+        mapInfoArray[3] = {
             name: "Mountains",
-            c1: 960,
-            cw: 960,
+            width: 960,
+            height: 960,
             gO: 60,
             gL: 8,
             a1f: 0,
             per: 1.2
         };
-        g[4] = {
+        mapInfoArray[4] = {
             name: "Desert",
-            c1: 900,
-            cw: 900,
+            width: 900,
+            height: 900,
             gO: 100,
             gL: 5,
             a1f: 0,
             per: 1.2
         };
-        g[5] = {
+        mapInfoArray[5] = {
             name: "Swamp",
-            c1: 1E3,
-            cw: 1E3,
+            width: 1E3,
+            height: 1E3,
             gO: 100,
             gL: 40,
             a1f: 0,
             per: 1.2
         };
-        g[6] = {
+        mapInfoArray[6] = {
             name: "Snow",
-            c1: 1E3,
-            cw: 1E3,
+            width: 1E3,
+            height: 1E3,
             gO: 100,
             gL: 20,
             a1f: 0,
             per: 1.2
         };
-        g[7] = {
+        mapInfoArray[7] = {
             name: "Cliffs",
-            c1: 1024,
-            cw: 1024,
+            width: 1024,
+            height: 1024,
             gO: 128,
             gL: 32,
             a1f: 0,
             per: 1.5
         };
-        g[8] = {
+        mapInfoArray[8] = {
             name: "Pond",
-            c1: 820,
-            cw: 820,
+            width: 820,
+            height: 820,
             gO: 200,
             gL: 100,
             a1f: 0,
             per: 1.2
         };
-        g[9] = {
+        mapInfoArray[9] = {
             name: "Halo",
-            c1: 1024,
-            cw: 1024,
+            width: 1024,
+            height: 1024,
             gO: 128,
             gL: 32,
             a1f: 0,
             per: 1.5
         };
-        g[10] = {
+        mapInfoArray[10] = {
             name: "Europe",
             a2t: [140, 130, 120],
             a2u: [12, 12, 76],
             a2v: [240, 120, 4672, 30, 26, 30, 90, 8, 32, 3, 9],
             per: 1
         };
-        g[11] = {
+        mapInfoArray[11] = {
             name: "World",
             a2t: [165, 145, 125],
             a2u: [15, 15, 69],
             a2v: [250, 100, 8, 25, 15, 25, 90, 8, 32, 3, 9],
             per: 1
         };
-        g[12] = {
+        mapInfoArray[12] = {
             name: "Caucasia",
             a2t: [140, 130, 120],
             a2u: [20, 20, 84],
             a2v: [240, 120, 100, 30, 25, 30, 90, 8, 32, 3, 9],
             per: 1
         };
-        g[13] = {
+        mapInfoArray[13] = {
             name: "USA 48",
             a2t: [120, 105,
                 92
@@ -7986,7 +7974,7 @@ function kR() {
             a2v: [300, 300, 9827, 26, 18, 36, 36, 8, 32, 3, 9],
             per: 1
         };
-        g[14] = {
+        mapInfoArray[14] = {
             name: "Middle East",
             a2t: [140, 130, 120],
             a2u: [12, 12, 76],
@@ -7994,33 +7982,33 @@ function kR() {
             per: 1
         }
     };
-    this.a3O = function() {
-        return 1 === wv
+    this.isBA = function() {
+        return 1 === currentMapID
     };
-    this.bz = function(k) {
-        return g[k]
+    this.getValuebyID = function(mapID) {
+        return mapInfoArray[mapID]
     };
-    this.nD = function() {
-        return wv === zV ? dr.zS : this.bz(wv).name
+    this.getMapName = function() {
+        return currentMapID === customMapID ? customMap.mapName : this.getValuebyID(currentMapID).name
     }
 }
-var ht, tx, jW, jX;
+var mapCanvas, pixelRGBA, mapCanvasCtx, mapCanvasImgData;
 
-function jP() {
-    void 0 === ht && (ht = document.createElement("canvas"));
-    ht.width = aZ;
-    ht.height = aa;
-    jW = ht.getContext("2d", {
+function setMapCanvas() {
+    void 0 === mapCanvas && (mapCanvas = document.createElement("canvas"));
+    mapCanvas.width = currentMapWidth;
+    mapCanvas.height = currentMapHeight;
+    mapCanvasCtx = mapCanvas.getContext("2d", {
         alpha: !0
     });
-    jX = jW.getImageData(0, 0, aZ, aa);
-    tx = jX.data
+    mapCanvasImgData = mapCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
+    pixelRGBA = mapCanvasImgData.data
 }
 
 function kS() {
     function g(J, L, H) {
         C[0] = J;
-        for (J = 1; J < H; J++) C[J] = C[J - 1] + L, 1E4 <= C[J] ? (C[J] = 9999, L = -L) : 0 > C[J] ? (C[J] = 0, L = -L) : (L += 16384 <= ce.random() ? B : -B, L = L < -A ? -A : L > A ? A : L)
+        for (J = 1; J < H; J++) C[J] = C[J - 1] + L, 1E4 <= C[J] ? (C[J] = 9999, L = -L) : 0 > C[J] ? (C[J] = 0, L = -L) : (L += 16384 <= fakeRandom.random() ? B : -B, L = L < -A ? -A : L > A ? A : L)
     }
 
     function k(J, L, H, M) {
@@ -8070,8 +8058,8 @@ function kS() {
         D = new Int16Array(t);
         K = new Int16Array(z);
         J = y;
-        var L = ce.random() % 1E4,
-            H = ce.random() % (2 * A + 1) - A;
+        var L = fakeRandom.random() % 1E4,
+            H = fakeRandom.random() % (2 * A + 1) - A;
         g(L, H, J);
         J = K;
         L = C;
@@ -8081,7 +8069,7 @@ function kS() {
             !0, t);
         J = x[0];
         L = y;
-        H = ce.random() % (2 * A + 1) - A;
+        H = fakeRandom.random() % (2 * A + 1) - A;
         g(J, H, L);
         J = D;
         L = C;
@@ -8212,7 +8200,7 @@ function kk() {
         var y = jt.a1L ? 1 : 0,
             A = jt.a4F ? 1 : 0,
             B = jt.a0g ? 1 : 0;
-        isIOS ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= deviceVersion ? (e.saveNumber(25, y), e.saveNumber(26, A)) : (f.x(6, 4 * B + 2 * A + y), f.y())
+        isIOS ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= androidVersion ? (androidObject.saveNumber(25, y), androidObject.saveNumber(26, A)) : (userSettings.x(6, 4 * B + 2 * A + y), userSettings.y())
     }
 
     function k(y, A, B, C) {
@@ -8238,23 +8226,23 @@ function kk() {
 
     function l(y, A, B, C, E, F, G, N, I, D) {
         D = Math.floor(D * C);
-        cH.font = bt + D + bu;
+        mainCanvasCtx.font = fontWeightBold + D + fontSizeArial;
         N && (E += 80, F += 80, G += 80);
-        cH.fillStyle = "rgba(" + E + "," + F + "," + G + ",0.6)";
-        cH.fillRect(y, A, B, C);
-        cH.fillStyle = cK;
-        cH.fillRect(y, A, B, 2);
-        cH.fillRect(y, A + C - 2, B, 2);
-        cH.fillRect(y, A, 2, C);
-        cH.fillRect(y + B - 2, A, 2, C);
-        cH.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
+        mainCanvasCtx.fillStyle = "rgba(" + E + "," + F + "," + G + ",0.6)";
+        mainCanvasCtx.fillRect(y, A, B, C);
+        mainCanvasCtx.fillStyle = whiteRGB2;
+        mainCanvasCtx.fillRect(y, A, B, 2);
+        mainCanvasCtx.fillRect(y, A + C - 2, B, 2);
+        mainCanvasCtx.fillRect(y, A, 2, C);
+        mainCanvasCtx.fillRect(y + B - 2, A, 2, C);
+        mainCanvasCtx.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
     }
     this.xn = 1;
     this.a0g = this.a4F = this.a1L = !1;
     var x = -1,
         t = !1,
         z = [];
-    this.bp =
+    this.init =
         function() {
             z = [];
             z.push({
@@ -8285,7 +8273,7 @@ function kk() {
                 n4: 0,
                 cm: 0
             });
-            !isIOS && 5 > deviceVersion && z.push({
+            !isIOS && 5 > androidVersion && z.push({
                 name: "High Resolution",
                 id: 4,
                 fB: 0,
@@ -8320,7 +8308,7 @@ function kk() {
                 n4: 0,
                 cm: 0
             });
-            !isIOS && 5 > deviceVersion && z.push({
+            !isIOS && 5 > androidVersion && z.push({
                 name: "Cookie Policy",
                 id: 9,
                 fB: 0,
@@ -8335,37 +8323,37 @@ function kk() {
                 cm: 0
             });
             if (isIOS) this.a1L = c.freeSpawn, this.a4F = c.unlimitedTime, this.a0g = !1;
-            else if (5 <= deviceVersion) this.a1L = 1 === e.loadNumber(25), this.a4F = 1 === e.loadNumber(26), this.a0g = !1;
+            else if (5 <= androidVersion) this.a1L = 1 === androidObject.loadNumber(25), this.a4F = 1 === androidObject.loadNumber(26), this.a0g = !1;
             else {
-                var y = f.g(6);
+                var y = userSettings.g(6);
                 this.a1L = 1 === (y & 1);
                 this.a4F = 2 === (y & 2);
                 this.a0g = 4 === (y & 4)
             }
             z[2].n4 = this.a1L ? 130 : 0;
             z[3].n4 = this.a4F ? 130 : 0;
-            !isIOS && 5 > deviceVersion && (z[4].n4 = this.a0g ? 130 : 0);
+            !isIOS && 5 > androidVersion && (z[4].n4 = this.a0g ? 130 : 0);
             this.a4F && (vk.uj[2] = vk.uj[3] = vk.uj[4] = !1)
         };
-    this.c7 = function(y, A) {
+    this.mouseDown = function(y, A) {
         var B;
-        if (!(7 <= aJ.pY())) {
+        if (!(7 <= aJ.getState())) {
             var C = n();
             if (t) {
                 for (B = 1; B < z.length; B++)
                     if (k(y,
-                            A, C, B)) return 1 === z[B].id ? (jt.xn = 1 === jt.xn ? 2 : 2 === jt.xn ? wsManager.wF : 1, z[1].name = "Lobby " + (jt.xn === wsManager.wF ? "1B" : jt.xn), c4.c5 = !0) : 2 === z[B].id ? (jt.a1L = !jt.a1L, z[B].n4 = jt.a1L ? 130 : 0, g(), c4.c5 = !0) : 3 === z[B].id ? (jt.a4F = !jt.a4F, z[B].n4 = jt.a4F ? 130 : 0, g(), c4.c5 = !0) : 4 === z[B].id ? (jt.a0g = !jt.a0g, z[B].n4 = jt.a0g ? 130 : 0, g(), jq.xa(), c4.c5 = !0) : 5 === z[B].id ? (nU.bp(ot, !0), nU.bp(ot, !1)) : 6 === z[B].id ? (nU.bp(ou[0], !0), nU.bp(ou[0], !1)) : 7 === z[B].id ? (nU.bp(ou[1], !0), nU.bp(ou[1], !1)) : 8 === z[B].id ? (nU.bp(os, !0), nU.bp(os, !1)) : 9 === z[B].id &&
-                        (nU.bp(nV, !0), nU.bp(nV, !1)), !0;
+                            A, C, B)) return 1 === z[B].id ? (jt.xn = 1 === jt.xn ? 2 : 2 === jt.xn ? wsManager.serverCount : 1, z[1].name = "Lobby " + (jt.xn === wsManager.serverCount ? "1B" : jt.xn), c4.canvasDirty = !0) : 2 === z[B].id ? (jt.a1L = !jt.a1L, z[B].n4 = jt.a1L ? 130 : 0, g(), c4.canvasDirty = !0) : 3 === z[B].id ? (jt.a4F = !jt.a4F, z[B].n4 = jt.a4F ? 130 : 0, g(), c4.canvasDirty = !0) : 4 === z[B].id ? (jt.a0g = !jt.a0g, z[B].n4 = jt.a0g ? 130 : 0, g(), jq.xa(), c4.canvasDirty = !0) : 5 === z[B].id ? (openLinkBox.init(tutorialLink, !0), openLinkBox.init(tutorialLink, !1)) : 6 === z[B].id ? (openLinkBox.init(leaderboardLinks[0], !0), openLinkBox.init(leaderboardLinks[0], !1)) : 7 === z[B].id ? (openLinkBox.init(leaderboardLinks[1], !0), openLinkBox.init(leaderboardLinks[1], !1)) : 8 === z[B].id ? (openLinkBox.init(privacyPolicyLink, !0), openLinkBox.init(privacyPolicyLink, !1)) : 9 === z[B].id &&
+                        (openLinkBox.init(cookiePolicyLink, !0), openLinkBox.init(cookiePolicyLink, !1)), !0;
                 t = !1;
-                c4.c5 = !0;
+                c4.canvasDirty = !0;
                 return !1
             }
-            return k(y, A, C, 0) ? (t = !0, c4.c5 = !0) : !1
+            return k(y, A, C, 0) ? (t = !0, c4.canvasDirty = !0) : !1
         }
     };
     this.lm = function(y, A) {
         var B;
-        if (!(7 <= aJ.pY())) {
+        if (!(7 <= aJ.getState())) {
             var C = n();
             var E = x;
             var F = t ? z.length - 1 : 1;
@@ -8374,15 +8362,15 @@ function kk() {
                 if (k(y, A, C, B)) {
                     x = B;
                     break
-                } E !== x && (c4.c5 = !0)
+                } E !== x && (c4.canvasDirty = !0)
         }
     };
     this.cG = function() {
         var y;
-        if (!(7 <= aJ.pY())) {
+        if (!(7 <= aJ.getState())) {
             var A = n();
-            cH.textAlign = cJ;
-            cH.textBaseline = cI;
+            mainCanvasCtx.textAlign = centerAlign;
+            mainCanvasCtx.textBaseline = middleAlign;
             l(A.f7, A.f8, A.i4, A.nP, z[0].fB, z[0].n4, z[0].cm, 0 === x, z[0].name, .6);
             if (t) {
                 var B = z.length;
@@ -8409,18 +8397,18 @@ function kT() {
 
     function k() {
         if (-1 !== l)
-            if (0 !== fZ && eV.h0()) {
+            if (0 !== clientStatus && eV.h0()) {
                 for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gC += t[A], gD += z[A], eA.lm(t[A], z[A]), gj.rI());
-                y ? c4.c5 = !0 : gn.go()
+                y ? c4.canvasDirty = !0 : gn.go()
             } else gn.go()
     }
     var n = !1,
         l, x, t, z;
     this.w3 = function(y) {
-        0 !== fZ && eV.h0() && (n || g(), x[y] = !0, -1 === l && (l = setInterval(k, 20), k()))
+        0 !== clientStatus && eV.h0() && (n || g(), x[y] = !0, -1 === l && (l = setInterval(k, 20), k()))
     };
     this.a2Q = function(y) {
-        if (0 !== fZ && (n || g(), x[y] = !1, -1 !== l)) {
+        if (0 !== clientStatus && (n || g(), x[y] = !1, -1 !== l)) {
             y = !1;
             for (var A =
                     3; 0 <= A; A--) y = y || x[A];
@@ -8436,7 +8424,7 @@ function kT() {
     }
 }
 
-function kU() {
+function BoatPathChecker() {
     var g;
     this.f0 = function() {
         console.log(g)
@@ -8444,32 +8432,32 @@ function kU() {
     };
     this.co = function(k, n) {
         var l;
-        if (0 === bN[k].length || !b5.b6(n) || !b5.bG(n) && b5.bF(n) === k) return !1;
+        if (0 === waterBorderPixels[k].length || !pixel.b6(n) || !pixel.bG(n) && pixel.bF(n) === k) return !1;
         for (l = 21; 0 <= l; l--) {
             if (21 === l) {
-                var x = bN[k],
+                var x = waterBorderPixels[k],
                     t = n,
-                    z = b5.gF(t);
-                t = b5.cF(t);
+                    z = pixel.gF(t);
+                t = pixel.cF(t);
                 var y = 0;
-                var A = b5.gF(x[0]);
-                var B = b5.cF(x[0]);
+                var A = pixel.gF(x[0]);
+                var B = pixel.cF(x[0]);
                 A = Math.abs(A - z) + Math.abs(B - t);
                 for (B = x.length - 1; 1 <= B; B--) {
-                    var C = b5.gF(x[B]);
-                    var E = b5.cF(x[B]);
+                    var C = pixel.gF(x[B]);
+                    var E = pixel.cF(x[B]);
                     C = Math.abs(C - z) + Math.abs(E - t);
                     C < A && (A = C, y = B)
                 }
                 g = x[y]
-            } else g = bN[k][divideFloor(l * bN[k].length, 21)];
+            } else g = waterBorderPixels[k][divideFloor(l * waterBorderPixels[k].length, 21)];
             a: {
-                B = g;y = n;x = b5.gF(B);z = b5.cF(B);t = b5.gF(y);y = b5.cF(y);A = Math.abs(t -
+                B = g;y = n;x = pixel.gF(B);z = pixel.cF(B);t = pixel.gF(y);y = pixel.cF(y);A = Math.abs(t -
                     x) + Math.abs(y - z);
                 if (!(2 > A))
                     for (C = B, B = 0; B < A; B++)
-                        if (C = Math.abs(t - b5.gF(C)) >= Math.abs(y - b5.cF(C)) ? C + aV[t > x ? 1 : 3] : C + aV[y > z ? 2 : 0], !b5.yd(C)) {
-                            if (b5.b6(C)) {
+                        if (C = Math.abs(t - pixel.gF(C)) >= Math.abs(y - pixel.cF(C)) ? C + aV[t > x ? 1 : 3] : C + aV[y > z ? 2 : 0], !pixel.yd(C)) {
+                            if (pixel.b6(C)) {
                                 if (0 === B || B + 20 < A) break;
                                 x = !0;
                                 break a
@@ -8490,37 +8478,37 @@ function a2M() {
             F = Math.floor(x / 2),
             G = Math.floor(t / 2),
             N = 1.5 * Math.PI;
-        for (B = jD; 0 <= B; B--) E += A[B], 0 === A[B] && C++;
+        for (B = teamCount; 0 <= B; B--) E += A[B], 0 === A[B] && C++;
         n = !1;
         y.clearRect(0, 0, x, x);
-        y.fillStyle = hy;
+        y.fillStyle = blackMoreOpaque;
         y.fillRect(0, 0, x, x);
-        y.fillStyle = oH;
+        y.fillStyle = whiteRGB;
         y.fillRect(0, 0, x, 2);
         y.fillRect(0, 0, 2, x);
         y.fillRect(x - 2, 0, 2, x);
         y.fillRect(0, x - 2, x, 2);
         if (0 < E)
-            if (C === jD)
-                for (B = jD; 0 <= B; B--) {
+            if (C === teamCount)
+                for (B = teamCount; 0 <= B; B--) {
                     if (0 < A[B]) {
                         E = F;
                         N = G;
-                        y.fillStyle = dW.wn[dW.im[B]];
+                        y.fillStyle = teams.wn[teams.im[B]];
                         y.beginPath();
                         y.arc(E, E, N, 0, 2 * Math.PI);
                         y.fill();
                         break
                     }
                 } else {
-                    for (B = 0; B <= jD; B++)
+                    for (B = 0; B <= teamCount; B++)
                         if (0 < A[B]) {
                             C = N + 2 * Math.PI * A[B] / E;
                             var I = F,
                                 D = G,
                                 K = N,
                                 J = C;
-                            y.fillStyle = dW.wn[dW.im[B]];
+                            y.fillStyle = teams.wn[teams.im[B]];
                             y.beginPath();
                             y.arc(I, I, D, K, J);
                             y.lineTo(I, I);
@@ -8547,11 +8535,11 @@ function a2M() {
         z = null,
         y = null,
         A = null;
-    this.bp = function() {
-        if (dA) {
+    this.init = function() {
+        if (teamGame) {
             l = 16;
-            A = new Uint32Array(jD + 1);
-            for (var B = jD; 0 < B; B--) A[B] = 1;
+            A = new Uint32Array(teamCount + 1);
+            for (var B = teamCount; 0 < B; B--) A[B] = 1;
             this.lv()
         } else A = y = z = null
     };
@@ -8559,10 +8547,10 @@ function a2M() {
         return x
     };
     this.lv = function() {
-        dA && (x = Math.floor(.18 *
+        teamGame && (x = Math.floor(.18 *
             pI), x += x % 2, t = Math.floor(7 * x / 8), z = z ? z : document.createElement("canvas"), z.width = x, z.height = x, y = z.getContext("2d", {
             alpha: !0
-        }), y.lineWidth = 2, y.strokeStyle = cK, g())
+        }), y.lineWidth = 2, y.strokeStyle = whiteRGB2, g())
     };
     this.qm = function() {
         return A[this.mw()]
@@ -8573,30 +8561,30 @@ function a2M() {
         return this.mw()
     };
     this.mw = function() {
-        for (var B = 0, C = jD; 0 < C; C--) A[C] > A[B] && (B = C);
+        for (var B = 0, C = teamCount; 0 < C; C--) A[C] > A[B] && (B = C);
         return B
     };
     this.dF = function() {
-        if (dA && 32 <= ++l) {
+        if (teamGame && 32 <= ++l) {
             l = 0;
             var B;
-            for (B = jD; 0 <= B; B--) A[B] = 0;
-            for (B = dY - 1; 0 <= B; B--) A[dW.dX[dZ[B]]] += bU[dZ[B]];
+            for (B = teamCount; 0 <= B; B--) A[B] = 0;
+            for (B = dY - 1; 0 <= B; B--) A[teams.dX[dZ[B]]] += land[dZ[B]];
             n = !0
         }
     };
     this.bv = function() {
-        dA && n && g()
+        teamGame && n && g()
     };
     this.cG = function() {
-        dA &&
-            cH.drawImage(z, m5, qS + 2 * m5)
+        teamGame &&
+            mainCanvasCtx.drawImage(z, m5, qS + 2 * m5)
     }
 }
 
-function kV() {
+function FakeRandom() {
     var g, k;
-    this.bp = function() {
+    this.init = function() {
         k = Array(101);
         for (var n = k.length - 1; 0 <= n; n--) k[n] = divideFloor(32768 * n, 100);
         this.jN(0)
@@ -8622,14 +8610,14 @@ function kV() {
 }
 
 function kc() {
-    function g() {
+    function onResize() {
         (500 <= z || 5 < t) && k()
     }
 
     function k() {
         t = 0;
         z += 700 > z ? 200 : 0;
-        bw.bx() && (l() || x) && (x = !1, p2(), uO.bp(), jh.bp(), jk.lv(), vk.bp(), ji.lv(), jg.lv(), jf.lv(), vc.lv(), mainLeaderboard.lv(), a5.bp(), 1 <= fZ ? (eM.lv(!1), eO.lv(), eB.lv(), gj.lv(), eR.lv(), announcements.lv(), fq.lv(), eS.lv(), eP.lv(), c2.lv(), hu.l1(), hv.lv(), eA.lv(), eW.lv(), eT.lv(), gj.rI()) : (0 === aJ.pY() ? jk.cE(0, !0) : 2 === aJ.pY() ? dy.lv() : 3 === aJ.pY() && jj.lv(), aJ.vg(), aJ.vl()), c4.c5 = !0)
+        sprites.bx() && (l() || x) && (x = !1, p2(), uO.init(), jh.init(), jk.lv(), vk.init(), ji.lv(), playtime.lv(), jf.lv(), cookiesPrompt.lv(), mainLeaderboard.lv(), a5.init(), 1 <= clientStatus ? (eM.lv(!1), eO.lv(), eB.lv(), gj.lv(), troopBar.lv(), announcements.lv(), fq.lv(), peace.lv(), eP.lv(), c2.lv(), hu.l1(), hv.lv(), eA.lv(), gameResultBox.lv(), eT.lv(), gj.rI()) : (0 === aJ.getState() ? jk.cE(0, !0) : 2 === aJ.getState() ? singleSettings.lv() : 3 === aJ.getState() && showError.lv(), aJ.vg(), aJ.vl()), c4.canvasDirty = !0)
     }
 
     function n(y) {
@@ -8637,7 +8625,7 @@ function kc() {
     }
 
     function l() {
-        if (5 <= deviceVersion) {
+        if (5 <= androidVersion) {
             var y = n(document.documentElement.clientWidth);
             var A = n(document.documentElement.clientHeight);
             pM = 1;
@@ -8648,18 +8636,18 @@ function kc() {
                 s = cB;
                 pI = getMin(r, s);
                 bq = divideFloor(s + r, 2);
-                if (5 <= deviceVersion) {
-                    var B = e.loadNumber(23);
-                    var C = e.loadNumber(24);
-                    y > B && (B = y, e.saveNumber(23, B));
-                    A > C && (C = A, e.saveNumber(24, C))
+                if (5 <= androidVersion) {
+                    var B = androidObject.loadNumber(23);
+                    var C = androidObject.loadNumber(24);
+                    y > B && (B = y, androidObject.saveNumber(23, B));
+                    A > C && (C = A, androidObject.saveNumber(24, C))
                 } else B = y, C = A;
-                y = p5.width;
-                A = p5.height;
-                B > y && (y = B, p5.width = B);
-                C > A && (A = C, p5.height = C);
-                p5.style.width = y + "px";
-                p5.style.height = A + "px";
+                y = mainCanvas.width;
+                A = mainCanvas.height;
+                B > y && (y = B, mainCanvas.width = B);
+                C > A && (A = C, mainCanvas.height = C);
+                mainCanvas.style.width = y + "px";
+                mainCanvas.style.height = A + "px";
                 B = !0
             } else B = !1;
             return B
@@ -8674,26 +8662,26 @@ function kc() {
         cB = s = A;
         pI = getMin(r, s);
         bq = divideFloor(s + r, 2);
-        p5.width = y;
-        p5.height = A;
-        p5.style.width = B + "px";
-        p5.style.height = C + "px";
+        mainCanvas.width = y;
+        mainCanvas.height = A;
+        mainCanvas.style.width = B + "px";
+        mainCanvas.style.height = C + "px";
         return !0
     }
     var x = !1,
         t, z;
-    this.bp = function() {
+    this.init = function() {
         t = 1;
         z = 100;
         r = s = pI = gE = cB = bq = 0;
         pM = 1;
-        p5 = document.getElementById("canvasA");
-        cH = p5.getContext("2d", {
+        mainCanvas = document.getElementById("canvasA");
+        mainCanvasCtx = mainCanvas.getContext("2d", {
             alpha: !1
         });
-        cH.imageSmoothingEnabled = !1;
+        mainCanvasCtx.imageSmoothingEnabled = !1;
         l();
-        window.addEventListener("resize", g)
+        window.addEventListener("resize", onResize)
     };
     this.dF = function() {
         ju.dF();
@@ -8708,63 +8696,63 @@ function kc() {
 function kW() {
     function g(G) {
         eK.av(n, F);
-        ae.b2(n, E);
-        G && (ax[n] += l)
+        attacks.b2(n, E);
+        G && (troops[n] += l)
     }
 
     function k() {
-        b5.yf(x, n) && b5.yh(x)
+        pixel.yf(x, n) && pixel.yh(x)
     }
     var n, l, x, t, z, y, A, B, C, E, F;
     this.dF = function(G, N, I, D, K) {
         C = G;
         F = N;
         n = I;
-        z = b5.gF(D);
-        y = b5.cF(D);
-        A = b5.gF(K);
-        B = b5.cF(K);
-        t = x = b5.f1(z, y);
-        E = ae.fV(n, F); - 1 === E ? (k(), eK.av(n, F), G = !1) : (l = ae.am(n, E), G = !0);
-        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (b0.b1[15] += G), l <= at ? (n === myID && (b0.b1[15] += l), g(!1), G = !1) : (ae.bT(n, E, l), G = !0), G))
-            if (G = b5.f1(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + aV[A > z ? 1 : 3] : G + aV[B > y ? 2 : 0], z = b5.gF(x), y = b5.cF(x),
-                eK.g0(C, x), G = b5.b6(x) ? !1 : !0, G) b5.yd(x) && b5.yk(x, n);
+        z = pixel.gF(D);
+        y = pixel.cF(D);
+        A = pixel.gF(K);
+        B = pixel.cF(K);
+        t = x = pixel.f1(z, y);
+        E = attacks.fV(n, F); - 1 === E ? (k(), eK.av(n, F), G = !1) : (l = attacks.am(n, E), G = !0);
+        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statistics.b1[15] += G), l <= at ? (n === myID && (statistics.b1[15] += l), g(!1), G = !1) : (attacks.bT(n, E, l), G = !0), G))
+            if (G = pixel.f1(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + aV[A > z ? 1 : 3] : G + aV[B > y ? 2 : 0], z = pixel.gF(x), y = pixel.cF(x),
+                eK.g0(C, x), G = pixel.b6(x) ? !1 : !0, G) pixel.yd(x) && pixel.yk(x, n);
             else a: {
-                if (b5.bG(x)) G = b8;
+                if (pixel.bG(x)) G = maxEntities;
                 else {
-                    G = b5.bF(x);
+                    G = pixel.bF(x);
                     if (G === n) {
                         g(!0);
                         break a
                     }
                     if (!ch(n, G)) {
-                        N = bU[G] * j7 - ax[G];
-                        0 >= N || (N = l > N ? N : l, l -= N, n === myID && (announcements.n8(N, G), b0.b1[16] += N), G === myID && (announcements.nA(N, n), b0.b1[10] += N), ax[G] += N);
+                        N = land[G] * j7 - troops[G];
+                        0 >= N || (N = l > N ? N : l, l -= N, n === myID && (announcements.n8(N, G), statistics.b1[16] += N), G === myID && (announcements.nA(N, n), statistics.b1[10] += N), troops[G] += N);
                         g(!0);
                         break a
                     }
                 }
-                n === myID && (b0.b1[13] += l);eK.av(n, F);ae.b2(n, E);b4[n].push(t);ae.cQ(n, l, G);au.cR(n, !0)
+                n === myID && (statistics.b1[13] += l);eK.av(n, F);attacks.b2(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.cR(n, !0)
             }
     };
     this.g4 = function(G, N) {
         n = G;
-        x = b5.f1(b5.gF(N), b5.cF(N));
+        x = pixel.f1(pixel.gF(N), pixel.cF(N));
         k()
     }
 }
 
 function kX() {
     var g, k, n, l;
-    this.bp = function() {
+    this.init = function() {
         var x, t, z;
         n = !0;
         l = "rgb(" + x7[0] + "," + x7[1] + "," + x7[2] + ")";
-        var y = a2j(wv) ? !0 : n = !1;
+        var y = mapIsSurroundedByWater(currentMapID) ? !0 : n = !1;
         if (y) k = null;
         else {
             g = divideFloor(96, 4);
-            if (1 === wv) {
+            if (1 === currentMapID) {
                 var A = 0;
                 var B = 160
             } else A = 128, B = 32;
@@ -8772,8 +8760,8 @@ function kX() {
             k = Array(4);
             for (y = 3; 0 <= y; y--) {
                 k[y] = document.createElement("canvas");
-                var C = 0 === y % 2 ? aZ : g;
-                var E = 0 === y % 2 ? g : aa + 2 * g;
+                var C = 0 === y % 2 ? currentMapWidth : g;
+                var E = 0 === y % 2 ? g : currentMapHeight + 2 * g;
                 k[y].width = C;
                 k[y].height = E;
                 var F = k[y].getContext("2d", {
@@ -8802,19 +8790,19 @@ function kX() {
                 F.putImageData(G, 0, 0)
             }
             pj.fillStyle = "rgb(" + B + "," + B + "," + B + ")";
-            pj.fillRect(0, 0, aZ, 1);
-            pj.fillRect(0, aa - 1, aZ, 1);
-            pj.fillRect(0, 0, 1, aa);
-            pj.fillRect(aZ - 1, 0, 1, aa)
+            pj.fillRect(0, 0, currentMapWidth, 1);
+            pj.fillRect(0, currentMapHeight - 1, currentMapWidth, 1);
+            pj.fillRect(0, 0, 1, currentMapHeight);
+            pj.fillRect(currentMapWidth - 1, 0, 1, currentMapHeight)
         }
     };
     this.hr = function() {
         var x = n ? 0 : -g;
-        rectEqualOrInside(x, x, aZ - 2 * x, aa - 2 * x, gy.a59, gy.a5A, gy.a5B, gy.a5C) || (cH.fillStyle = l, cH.fillRect(0, 0, gE, cB))
+        rectEqualOrInside(x, x, currentMapWidth - 2 * x, currentMapHeight - 2 * x, gy.a59, gy.a5A, gy.a5B, gy.a5C) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, gE, cB))
     };
     this.cG = function() {
-        n || (rectIntersect(0, -g, aZ, g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && cH.drawImage(k[0], gy.a5D, gy.a5E - g), rectIntersect(aZ, -g, g, aa + 2 * g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && cH.drawImage(k[1], gy.a5D + aZ, gy.a5E - g), rectIntersect(0, aa, aZ, g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && cH.drawImage(k[2], gy.a5D, gy.a5E + aa), rectIntersect(-g, -g, g,
-            aa + 2 * g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && cH.drawImage(k[3], gy.a5D - g, gy.a5E - g))
+        n || (rectIntersect(0, -g, currentMapWidth, g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[0], gy.a5D, gy.a5E - g), rectIntersect(currentMapWidth, -g, g, currentMapHeight + 2 * g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[1], gy.a5D + currentMapWidth, gy.a5E - g), rectIntersect(0, currentMapHeight, currentMapWidth, g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[2], gy.a5D, gy.a5E + currentMapHeight), rectIntersect(-g, -g, g,
+            currentMapHeight + 2 * g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[3], gy.a5D - g, gy.a5E - g))
     }
 }
 
@@ -8830,9 +8818,9 @@ function a1o() {
         1 === A ? C.readAsArrayBuffer(F.data) : B.push(F.data)
     }
 
-    function l() {
+    function onLoadend() {
         A--;
-        jp.a5O(z, new Uint8Array(C.result));
+        dataDecoder.mainDecoder(z, new Uint8Array(C.result));
         0 < A && (C.readAsArrayBuffer(B[0]), B.shift())
     }
 
@@ -8842,15 +8830,15 @@ function a1o() {
         wsManager.a1v(z, F)
     }
     var z, y, A, B, C, E;
-    this.bp = function(F, G) {
+    this.init = function(F, G) {
         z = F;
         y = G;
         A = 0;
         B = [];
         C = new FileReader;
-        C.addEventListener("loadend", l);
-        var N = p0[0];
-        N = z < wsManager.wF ? N + (wsManager.a1c[z] + p0[1 + a25]) : N + (wsManager.a1c[0] + "/i" + (1 + a25) + (z - wsManager.wG) + "/");
+        C.addEventListener("loadend", onLoadend);
+        var N = wsUrlStrings[0];
+        N = z < wsManager.serverCount ? N + (wsManager.originURLs[z] + wsUrlStrings[1 + a25]) : N + (wsManager.originURLs[0] + "/i" + (1 + a25) + (z - wsManager.gameServerCount) + "/");
         E = new WebSocket(N);
         E.onopen = k;
         E.onmessage = n;
@@ -8881,11 +8869,11 @@ function a1o() {
         E.onmessage = g;
         E.onclose = g;
         E.onerror = g;
-        C.removeEventListener("loadend", l)
+        C.removeEventListener("loadend", onLoadend)
     }
 }
 
-function a2I() {
+function Statistics() {
     this.cV = 501;
     this.a5P = new Uint32Array(this.cV);
     this.s6 = new Uint32Array(this.cV);
@@ -8896,7 +8884,7 @@ function a2I() {
     this.max = [0, 0, 0];
     this.b1 = 0;
     this.a5R = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
-    this.bp = function() {
+    this.init = function() {
         this.m4 = 0;
         this.a5Q = 1;
         this.dV = 0;
@@ -8907,7 +8895,7 @@ function a2I() {
         0 < this.dV-- || this.a5U()
     };
     this.a5U = function() {
-        0 !== fF[myID] && (this.a5P[this.m4] = bU[myID], this.s6[this.m4] = ax[myID], this.tT[this.m4] = ay.tU(myID), this.a5V(this.m4), this.m4++, this.m4 === this.cV && this.a5W(), this.dV = this.a5Q - 1, hv.bv())
+        0 !== isAlive[myID] && (this.a5P[this.m4] = land[myID], this.s6[this.m4] = troops[myID], this.tT[this.m4] = interest.tU(myID), this.a5V(this.m4), this.m4++, this.m4 === this.cV && this.a5W(), this.dV = this.a5Q - 1, hv.bv())
     };
     this.a5W = function() {
         this.a5S();
@@ -8931,66 +8919,66 @@ function a2I() {
 }
 
 function a2J() {
-    this.bs = this.qI = this.a5Y = this.a5X = this.xJ = this.nQ = this.nP = this.uT = this.uS = this.i5 = this.i4 = this.cw = this.c1 = 0;
+    this.bs = this.qI = this.a5Y = this.a5X = this.xJ = this.nQ = this.nP = this.uT = this.uS = this.i5 = this.i4 = this.height = this.width = 0;
     this.lr = ["Territory", "Balance", "Interest", "Numbers"];
-    this.lC = !1;
+    this.hidden = !1;
     this.a5Z = -1;
     this.a5a = !1;
     this.a5b = [0, 0];
-    this.bp = function() {
-        this.lC = !1;
+    this.init = function() {
+        this.hidden = !1;
         this.a5Z = -1;
         this.a5a = !1;
         this.lv()
     };
     this.lv = function() {
-        this.c1 = r < 1.618 * s ? r : 1.618 * s;
-        this.c1 = Math.floor((isZoom && r < s ? 1 : isZoom ? .8 : r < s ? .65 : .5) * this.c1);
-        this.qI = Math.floor(1 + .006 * this.c1);
-        this.c1 -= isZoom && r < s ? 2 * m5 + this.qI : 0;
-        this.cw = Math.floor(this.c1 / 1.618);
+        this.width = r < 1.618 * s ? r : 1.618 * s;
+        this.width = Math.floor((isZoom && r < s ? 1 : isZoom ? .8 : r < s ? .65 : .5) * this.width);
+        this.qI = Math.floor(1 + .006 * this.width);
+        this.width -= isZoom && r < s ? 2 * m5 + this.qI : 0;
+        this.height = Math.floor(this.width / 1.618);
         this.i4 =
-            Math.floor(1 + .02 * this.c1);
-        this.nP = this.i5 = Math.floor(1 + .04 * this.c1);
-        this.nQ = Math.floor(1 + .075 * this.c1);
-        this.a5X = Math.floor(this.c1 * (isZoom ? .028 : .02));
+            Math.floor(1 + .02 * this.width);
+        this.nP = this.i5 = Math.floor(1 + .04 * this.width);
+        this.nQ = Math.floor(1 + .075 * this.width);
+        this.a5X = Math.floor(this.width * (isZoom ? .028 : .02));
         this.a5X = 6 > this.a5X ? 6 : this.a5X;
-        this.a5Y = Math.floor(.028 * this.c1);
+        this.a5Y = Math.floor(.028 * this.width);
         this.a5Y = 6 > this.a5Y ? 6 : this.a5Y;
-        this.xJ = this.cw - 2 * this.nP - this.nQ;
-        this.lC && this.a5c()
+        this.xJ = this.height - 2 * this.nP - this.nQ;
+        this.hidden && this.a5c()
     };
-    this.c7 = function(g, k) {
-        if (!this.lC) return !1;
+    this.mouseDown = function(g, k) {
+        if (!this.hidden) return !1;
         var n = g,
             l = k;
-        g -= divideFloor(gE - this.c1, 2);
-        k -= divideFloor(cB - this.cw, 2);
-        if (0 > g || 0 > k || g >= this.c1 || k >= this.cw) {
-            if (1 < fq.c7(n, l)) return !0;
+        g -= divideFloor(gE - this.width, 2);
+        k -= divideFloor(cB - this.height, 2);
+        if (0 > g || 0 > k || g >= this.width || k >= this.height) {
+            if (1 < fq.mouseDown(n, l)) return !0;
             this.lF();
             return !0
         }
-        if (k < this.cw - this.nQ) return this.a5a = !0, this.a5Z = (g - 2 * this.i4 - this.uS) / this.uT, !0;
-        n = Math.floor(g / (this.c1 / this.lr.length));
+        if (k < this.height - this.nQ) return this.a5a = !0, this.a5Z = (g - 2 * this.i4 - this.uS) / this.uT, !0;
+        n = Math.floor(g / (this.width / this.lr.length));
         n = 0 > n ? 0 : n >= this.lr.length ? this.lr.length - 1 : n;
-        n !== this.bs && (this.bs = n, this.a5c(), c4.c5 = !0);
+        n !== this.bs && (this.bs = n, this.a5c(), c4.canvasDirty = !0);
         return !0
     };
     this.a2O = function() {
         var g = Math.floor((this.a5b[0] + gC) / g7),
             k = Math.floor((this.a5b[1] + gD) / g7);
-        1 > g || 1 > k || g >= aZ - 1 || k >= aa - 1 || console.log(g + " " + k)
+        1 > g || 1 > k || g >= currentMapWidth - 1 || k >= currentMapHeight - 1 || console.log(g + " " + k)
     };
     this.lm = function(g, k) {
         this.a5b[0] = g;
         this.a5b[1] = k;
-        if (this.lC && this.a5a) {
-            g -= divideFloor(gE - this.c1, 2);
+        if (this.hidden && this.a5a) {
+            g -= divideFloor(gE - this.width, 2);
             var n = this.a5Z;
             this.a5Z = (g - 2 * this.i4 - this.uS) / this.uT;
             if (0 <= this.a5Z && 1 >= this.a5Z ||
-                0 <= n && 1 >= n) c4.c5 = !0;
+                0 <= n && 1 >= n) c4.canvasDirty = !0;
             return !0
         }
         return !1
@@ -8999,169 +8987,167 @@ function a2J() {
         this.a5a && (this.a5a = !1)
     };
     this.m0 = function() {
-        this.lC ? this.lF() : this.show()
+        this.hidden ? this.lF() : this.show()
     };
     this.show = function() {
-        2 > b0.m4 || (this.lC = !0, this.a5c())
+        2 > statistics.m4 || (this.hidden = !0, this.a5c())
     };
     this.lF = function() {
-        this.lC = !1;
+        this.hidden = !1;
         this.a5Z = -1
     };
     this.a5c = function() {
-        2 > this.bs ? this.uS = c2.measureText(eP.gJ(b0.max[this.bs]), bt + this.a5X + bu) : 2 === this.bs && (this.uS = c2.measureText(eB.nG(6, 2), bt + this.a5X + bu));
-        this.uT = this.c1 - 2 * this.i4 - this.uS - this.i5
+        2 > this.bs ? this.uS = c2.measureText(eP.gJ(statistics.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = c2.measureText(eB.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
+        this.uT = this.width - 2 * this.i4 - this.uS - this.i5
     };
     this.bv = function() {
-        this.lC && this.a5c()
+        this.hidden && this.a5c()
     };
     this.cG = function() {
-        this.lC && this.nW()
+        this.hidden && this.nW()
     };
     this.nW = function() {
-        var g = divideFloor(gE - this.c1, 2),
-            k = divideFloor(cB - this.cw, 2);
-        cH.setTransform(1, 0, 0, 1, g, k);
-        cH.fillStyle = hy;
-        cH.fillRect(0, 0, this.c1, this.cw);
+        var g = divideFloor(gE - this.width, 2),
+            k = divideFloor(cB - this.height, 2);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        mainCanvasCtx.fillStyle = blackMoreOpaque;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.height);
         this.a5d();
-        cH.strokeRect(0, 0, this.c1, this.cw);
-        cH.textAlign = oj;
-        cH.font = bt + this.a5X + bu;
-        0 === this.bs ? this.a5e(b0.a5P, g, k) : 1 === this.bs ? this.a5e(b0.s6, g, k) : 2 === this.bs ? this.a5f(g, k) : 3 === this.bs && (this.a5g(g, k), this.a5h(g, k));
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
+        mainCanvasCtx.textAlign = rightAlign;
+        mainCanvasCtx.font = fontWeightBold + this.a5X + fontSizeArial;
+        0 === this.bs ? this.a5e(statistics.a5P, g, k) : 1 === this.bs ? this.a5e(statistics.s6, g, k) : 2 === this.bs ? this.a5f(g, k) : 3 === this.bs && (this.a5g(g, k), this.a5h(g, k));
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.a5d = function() {
-        cH.lineWidth = this.qI;
-        cH.textBaseline = cI;
-        cH.textAlign = cJ;
-        cH.strokeStyle = cK;
-        cH.font = bt + this.a5Y +
-            bu;
-        var g = this.c1 / this.lr.length;
-        cH.fillStyle = oN;
-        cH.fillRect(this.bs * g, this.cw - this.nQ, g, this.nQ);
-        cH.fillStyle = cK;
-        for (var k = this.lr.length - 1; 0 <= k; k--) cH.strokeRect(k * g, this.cw - this.nQ, g, this.nQ), cH.fillText(this.lr[k], (k + .5) * g, this.cw - .46 * this.nQ)
+        mainCanvasCtx.lineWidth = this.qI;
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.font = fontWeightBold + this.a5Y +
+            fontSizeArial;
+        var g = this.width / this.lr.length;
+        mainCanvasCtx.fillStyle = greenSemiTransparent;
+        mainCanvasCtx.fillRect(this.bs * g, this.height - this.nQ, g, this.nQ);
+        mainCanvasCtx.fillStyle = whiteRGB2;
+        for (var k = this.lr.length - 1; 0 <= k; k--) mainCanvasCtx.strokeRect(k * g, this.height - this.nQ, g, this.nQ), mainCanvasCtx.fillText(this.lr[k], (k + .5) * g, this.height - .46 * this.nQ)
     };
     this.a5e = function(g, k, n) {
-        var l = b0.max[this.bs];
-        cH.setTransform(1, 0, 0, 1, k + 2 * this.i4 + this.uS, n + this.nP);
-        cH.lineWidth = 2;
+        var l = statistics.max[this.bs];
+        mainCanvasCtx.setTransform(1, 0, 0, 1, k + 2 * this.i4 + this.uS, n + this.nP);
+        mainCanvasCtx.lineWidth = 2;
         k = this.xJ / Math.sqrt(l);
-        cH.beginPath();
-        cH.moveTo(this.uT, this.xJ - k * Math.sqrt(g[b0.m4 - 1]));
-        for (n = b0.m4 - 2; 0 <= n; n--) cH.lineTo(n * this.uT / (b0.m4 -
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(this.uT, this.xJ - k * Math.sqrt(g[statistics.m4 - 1]));
+        for (n = statistics.m4 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.uT / (statistics.m4 -
             1), this.xJ - k * Math.sqrt(g[n]));
-        cH.stroke();
+        mainCanvasCtx.stroke();
         g = this.m9(g, k, .5);
-        .95 > g && cH.fillText(eP.gJ(l), -this.i4, 0);
-        .05 < Math.abs(g - .5) && cH.fillText(eP.gJ(Math.floor(l / 4)), -this.i4, Math.floor(this.xJ / 2));
-        .05 < g && cH.fillText("0", -this.i4, this.xJ)
+        .95 > g && mainCanvasCtx.fillText(eP.gJ(l), -this.i4, 0);
+        .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(eP.gJ(Math.floor(l / 4)), -this.i4, Math.floor(this.xJ / 2));
+        .05 < g && mainCanvasCtx.fillText("0", -this.i4, this.xJ)
     };
     this.a5f = function(g, k) {
-        cH.setTransform(1, 0, 0, 1, g + 2 * this.i4 + this.uS, k + this.nP);
-        cH.lineWidth = 2;
-        var n = this.xJ / b0.max[this.bs];
-        cH.beginPath();
-        cH.moveTo(this.uT, this.xJ - n * b0.tT[b0.m4 - 1]);
-        for (var l = b0.m4 - 2; 0 <= l; l--) cH.lineTo(l * this.uT / (b0.m4 - 1), this.xJ - n * b0.tT[l]);
-        cH.stroke();
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + 2 * this.i4 + this.uS, k + this.nP);
+        mainCanvasCtx.lineWidth = 2;
+        var n = this.xJ / statistics.max[this.bs];
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(this.uT, this.xJ - n * statistics.tT[statistics.m4 - 1]);
+        for (var l = statistics.m4 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.uT / (statistics.m4 - 1), this.xJ - n * statistics.tT[l]);
+        mainCanvasCtx.stroke();
         n =
-            this.m9(b0.tT, n, 1);
-        l = b0.max[this.bs] / 100;
-        .95 > n && cH.fillText(eB.nG(l, 2), -this.i4, 0);
-        .05 < Math.abs(n - .5) && cH.fillText(eB.nG(l / 2, 2), -this.i4, Math.floor(this.xJ / 2));
-        .05 < n && cH.fillText(eB.nG(0, 2), -this.i4, this.xJ)
+            this.m9(statistics.tT, n, 1);
+        l = statistics.max[this.bs] / 100;
+        .95 > n && mainCanvasCtx.fillText(eB.nG(l, 2), -this.i4, 0);
+        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nG(l / 2, 2), -this.i4, Math.floor(this.xJ / 2));
+        .05 < n && mainCanvasCtx.fillText(eB.nG(0, 2), -this.i4, this.xJ)
     };
     this.a5g = function(g, k) {
         var n;
-        cH.setTransform(1, 0, 0, 1, g + .34 * this.c1, k + 2 * this.nP);
-        cH.textAlign = oj;
-        var l = this.cw - 4 * this.nP - this.nQ;
-        for (n = 7; 0 <= n; n--) cH.fillText(b0.a5R[n], 0, n * l / 7);
-        cH.setTransform(1, 0, 0, 1, g + .39 * this.c1, k + 2 * this.nP);
-        cH.textAlign = mh;
-        n = b0.b1[1];
-        cH.fillText(eB.nG(b0.b1[0] / (10 * (1 > n ? 1 :
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .34 * this.width, k + 2 * this.nP);
+        mainCanvasCtx.textAlign = rightAlign;
+        var l = this.height - 4 * this.nP - this.nQ;
+        for (n = 7; 0 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n], 0, n * l / 7);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .39 * this.width, k + 2 * this.nP);
+        mainCanvasCtx.textAlign = leftAlign;
+        n = statistics.b1[1];
+        mainCanvasCtx.fillText(eB.nG(statistics.b1[0] / (10 * (1 > n ? 1 :
             n)), 1), 0, 0);
-        for (n = 6; 1 <= n; n--) cH.fillText(b0.b1[n].toString(), 0, n * l / 7);
-        cH.fillText(eB.nG(100 * (1 - bU[myID] / b0.b1[7]), 0), 0, l)
+        for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statistics.b1[n].toString(), 0, n * l / 7);
+        mainCanvasCtx.fillText(eB.nG(100 * (1 - land[myID] / statistics.b1[7]), 0), 0, l)
     };
     this.a5h = function(g, k) {
         var n;
-        cH.setTransform(1, 0, 0, 1, g + .74 * this.c1, k + 2 * this.nP);
-        cH.textAlign = oj;
-        var l = this.cw - 4 * this.nP - this.nQ;
-        cH.fillStyle = oJ;
-        for (n = 2; 0 <= n; n--) cH.fillText(b0.a5R[n + 8], 0, n * l / 9);
-        cH.fillStyle = oI;
-        cH.fillText(b0.a5R[11], 0, 3 * l / 9);
-        cH.fillStyle = oZ;
-        for (n = 8; 4 <= n; n--) cH.fillText(b0.a5R[n + 8], 0, n * l / 9);
-        cH.fillStyle = oY;
-        cH.fillText(b0.a5R[17], 0, 9 * l / 9);
-        cH.fillStyle = oJ;
-        n = eP.gJ(b0.b1[8] +
-            b0.b1[9] + b0.b1[10] + b0.b1[11]);
-        var x = cH.measureText(n).width;
-        cH.setTransform(1, 0, 0, 1, g + .79 * this.c1 + x, k + 2 * this.nP);
-        cH.fillText(eP.gJ(b0.b1[8]), 0, 0);
-        cH.fillText(eP.gJ(b0.b1[9]), 0, 1 * l / 9);
-        cH.fillText(eP.gJ(b0.b1[10]), 0, 2 * l / 9);
-        cH.fillStyle = oI;
-        cH.fillText(n, 0, 3 * l / 9);
-        cH.fillStyle = oZ;
-        n = b0.b1[13] - ae.a02(myID);
-        cH.fillText(eP.gJ(b0.b1[12]), 0, 4 * l / 9);
-        cH.fillText(eP.gJ(n), 0, 5 * l / 9);
-        cH.fillText(eP.gJ(b0.b1[14]), 0, 6 * l / 9);
-        cH.fillText(eP.gJ(b0.b1[15]), 0, 7 * l / 9);
-        cH.fillText(eP.gJ(b0.b1[16]), 0, 8 * l / 9);
-        n = b0.b1[12] + n + b0.b1[14] +
-            b0.b1[15] + b0.b1[16] + b0.b1[17];
-        cH.fillStyle = oY;
-        cH.fillText(eP.gJ(n), 0, l);
-        cH.fillStyle = cK
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .74 * this.width, k + 2 * this.nP);
+        mainCanvasCtx.textAlign = rightAlign;
+        var l = this.height - 4 * this.nP - this.nQ;
+        mainCanvasCtx.fillStyle = greenRGB;
+        for (n = 2; 0 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n + 8], 0, n * l / 9);
+        mainCanvasCtx.fillStyle = limeGreenRGB;
+        mainCanvasCtx.fillText(statistics.a5R[11], 0, 3 * l / 9);
+        mainCanvasCtx.fillStyle = redBrightRGB;
+        for (n = 8; 4 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n + 8], 0, n * l / 9);
+        mainCanvasCtx.fillStyle = redLightRGB;
+        mainCanvasCtx.fillText(statistics.a5R[17], 0, 9 * l / 9);
+        mainCanvasCtx.fillStyle = greenRGB;
+        n = eP.gJ(statistics.b1[8] +
+            statistics.b1[9] + statistics.b1[10] + statistics.b1[11]);
+        var x = mainCanvasCtx.measureText(n).width;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .79 * this.width + x, k + 2 * this.nP);
+        mainCanvasCtx.fillText(eP.gJ(statistics.b1[8]), 0, 0);
+        mainCanvasCtx.fillText(eP.gJ(statistics.b1[9]), 0, 1 * l / 9);
+        mainCanvasCtx.fillText(eP.gJ(statistics.b1[10]), 0, 2 * l / 9);
+        mainCanvasCtx.fillStyle = limeGreenRGB;
+        mainCanvasCtx.fillText(n, 0, 3 * l / 9);
+        mainCanvasCtx.fillStyle = redBrightRGB;
+        n = statistics.b1[13] - attacks.a02(myID);
+        mainCanvasCtx.fillText(eP.gJ(statistics.b1[12]), 0, 4 * l / 9);
+        mainCanvasCtx.fillText(eP.gJ(n), 0, 5 * l / 9);
+        mainCanvasCtx.fillText(eP.gJ(statistics.b1[14]), 0, 6 * l / 9);
+        mainCanvasCtx.fillText(eP.gJ(statistics.b1[15]), 0, 7 * l / 9);
+        mainCanvasCtx.fillText(eP.gJ(statistics.b1[16]), 0, 8 * l / 9);
+        n = statistics.b1[12] + n + statistics.b1[14] +
+            statistics.b1[15] + statistics.b1[16] + statistics.b1[17];
+        mainCanvasCtx.fillStyle = redLightRGB;
+        mainCanvasCtx.fillText(eP.gJ(n), 0, l);
+        mainCanvasCtx.fillStyle = whiteRGB2
     };
     this.m9 = function(g, k, n) {
         if (0 > this.a5Z || 1 < this.a5Z) return .25;
-        var l = this.a5Z * (b0.m4 - 1),
+        var l = this.a5Z * (statistics.m4 - 1),
             x = Math.floor(l),
             t = g[x];
-        t += (l - x) * (g[x < b0.m4 - 1 ? x + 1 : x] - t);
-        cH.strokeStyle = od;
-        .04 < this.a5Z && this.a5n(0, this.xJ - k * Math.pow(t, n), l * this.uT / (b0.m4 - 1), this.xJ - k * Math.pow(t, n));
-        .04 < t / b0.max[this.bs] && this.a5n(l * this.uT / (b0.m4 - 1), this.xJ, l * this.uT / (b0.m4 - 1), this.xJ - k * Math.pow(t, n));
-        cH.fillStyle = oU;
-        cH.beginPath();
-        cH.arc(l * this.uT / (b0.m4 -
+        t += (l - x) * (g[x < statistics.m4 - 1 ? x + 1 : x] - t);
+        mainCanvasCtx.strokeStyle = whiteMoreTransparent;
+        .04 < this.a5Z && this.a5n(0, this.xJ - k * Math.pow(t, n), l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n));
+        .04 < t / statistics.max[this.bs] && this.a5n(l * this.uT / (statistics.m4 - 1), this.xJ, l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n));
+        mainCanvasCtx.fillStyle = redBrightMoreOpaque;
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.arc(l * this.uT / (statistics.m4 -
             1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
-        cH.fill();
+        mainCanvasCtx.fill();
         g = this.a5Z * c4.tV();
-        g = 0 === fF[myID] ? Math.floor(g * eW.tb) : Math.floor(g * c4.dU());
-        cH.fillStyle = cK;
-        cH.fillText(1 === n ? eB.nG(t / 100, 2) : eP.gJ(Math.floor(t)), -this.i4, this.xJ - k * Math.pow(t, n));
-        cH.textAlign = cJ;
-        cH.fillText(eB.sF(g), l * this.uT / (b0.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
-        cH.textAlign = oj;
+        g = 0 === isAlive[myID] ? Math.floor(g * gameResultBox.tb) : Math.floor(g * c4.dU());
+        mainCanvasCtx.fillStyle = whiteRGB2;
+        mainCanvasCtx.fillText(1 === n ? eB.nG(t / 100, 2) : eP.gJ(Math.floor(t)), -this.i4, this.xJ - k * Math.pow(t, n));
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.fillText(eB.sF(g), l * this.uT / (statistics.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
+        mainCanvasCtx.textAlign = rightAlign;
         return k * Math.pow(t, n) / this.xJ
     };
     this.a5n = function(g, k, n, l) {
-        cH.beginPath();
-        cH.moveTo(g, k);
-        cH.lineTo(n, l);
-        cH.stroke()
+        mainCanvasCtx.beginPath();
+        mainCanvasCtx.moveTo(g, k);
+        mainCanvasCtx.lineTo(n, l);
+        mainCanvasCtx.stroke()
     }
 }
 
-function a2L() {
+function Teams() {
     this.wn = "rgba(130,130,130,0.88) rgba(130,12,12,0.88) rgba(12,130,12,0.88) rgba(12,12,130,0.88) rgba(130,130,12,0.88) rgba(130,12,130,0.88) rgba(12,130,130,0.88) rgba(130,130,130,0.88) rgba(0,0,0,0.88)".split(" ");
-    this.ss = [cK, "rgb(255,120,120)", "rgb(0,230,0)", "rgb(150,150,255)", "rgb(240,240,25)", "rgb(240,25,240)", "rgb(25,240,240)", cK, "rgb(170,170,170)"];
-    this.a5o = [cK, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", cK, gH];
-    this.a5p = [gH, cK,
-        cK, cK, gH, gH, gH, gH, cK
-    ];
+    this.ss = [whiteRGB2, "rgb(255,120,120)", "rgb(0,230,0)", "rgb(150,150,255)", "rgb(240,240,25)", "rgb(240,25,240)", "rgb(25,240,240)", whiteRGB2, "rgb(170,170,170)"];
+    this.a5o = [whiteRGB2, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", whiteRGB2, blackRGB];
+    this.a5p = [blackRGB, whiteRGB2, whiteRGB2, whiteRGB2, blackRGB, blackRGB, blackRGB, blackRGB, whiteRGB2];
     this.a10 = ["rgba(255,255,255,", "rgba(0,0,0,", "rgba(170,170,170,", "rgba(85,85,85,"];
     this.a11 = ["rgb(255,255,255)", "rgb(0,0,0)", "rgb(170,170,170)", "rgb(85,85,85)"];
     this.bo = "White Red Green Blue Yellow Magenta Cyan White Black".split(" ");
@@ -9184,22 +9170,20 @@ function a2L() {
         [255, 255, 0],
         [255, 0, 255],
         [0, 255, 255],
-        [255, 255,
-            255
-        ],
+        [255, 255, 255],
         [0, 0, 0]
     ];
     this.im = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     var k, n;
-    this.bp = function(l) {
-        this.dX = new Uint8Array(b8);
+    this.init = function(l) {
+        this.dX = new Uint8Array(maxEntities);
         this.a5v();
-        dA && (dr.ds && dr.dt.zn ? this.yQ() : 9 === dv ? this.a5w() : this.dF(l))
+        teamGame && (customMap.ds && customMap.dt.zn ? this.yQ() : 9 === gamemode ? this.a5w() : this.dF(l))
     };
     this.yQ = function() {
-        var l, x = hM;
+        var l, x = entityCount;
         this.im = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-        for (l = 0; l < x; l++) this.dX[l] = dr.dt.zn[l]
+        for (l = 0; l < x; l++) this.dX[l] = customMap.dt.zn[l]
     };
     this.a5v = function() {
         for (var l = this.im.length - 1; 0 <= l; l--) this.im[l] = l;
@@ -9208,28 +9192,28 @@ function a2L() {
     };
     this.a5w = function() {
         var l;
-        for (l = cq + e2.e3 - 1; 0 <= l; l--) this.dX[l] = 1;
-        for (l = cq + e2.e3; l < b8; l++) this.dX[l] = 2;
+        for (l = playerCount + e2.e3 - 1; 0 <= l; l--) this.dX[l] = 1;
+        for (l = playerCount + e2.e3; l < maxEntities; l++) this.dX[l] = 2;
         this.im[1] = 7;
         this.im[2] = 8
     };
     this.dF = function(l) {
         var x =
-            new Uint8Array(cq),
-            t = new Uint8Array(cq),
+            new Uint8Array(playerCount),
+            t = new Uint8Array(playerCount),
             z = new Uint16Array(8),
             y = new Uint16Array(this.im.length);
         this.a60(l, x, t, z);
         this.yO(z);
-        dx || this.a61(y, x, t);
+        singleplayer || this.a61(y, x, t);
         this.a62(x, t, y);
-        dx ? this.a63() : this.a64()
+        singleplayer ? this.a63() : this.a64()
     };
     this.a60 = function(l, x, t, z) {
         var y, A, B = this.im.length - 1,
             C = new Uint16Array(B);
-        for (y = cq - 1; 0 <= y; y--) {
-            for (A = B; 1 <= A; A--) C[A - 1] = Math.abs(4 * l[y].xS[0] - g[A][0]) + Math.abs(4 * l[y].xS[1] - g[A][1]) + Math.abs(4 * l[y].xS[2] - g[A][2]);
+        for (y = playerCount - 1; 0 <= y; y--) {
+            for (A = B; 1 <= A; A--) C[A - 1] = Math.abs(4 * l[y].color[0] - g[A][0]) + Math.abs(4 * l[y].color[1] - g[A][1]) + Math.abs(4 * l[y].color[2] - g[A][2]);
             var E = 768;
             for (A = B - 1; 0 <= A; A--) {
                 var F = (A + y) % B;
@@ -9257,14 +9241,14 @@ function a2L() {
         var z = this.im.length - 1,
             y = new Uint16Array(z),
             A = [];
-        var B = cq - 1;
+        var B = playerCount - 1;
         a: for (; 0 <= B; B--) {
             var C = B;
-            var E = a1M[C].indexOf("[");
+            var E = tempNickname[C].indexOf("[");
             if (0 > E) E = null;
             else {
-                var F = a1M[C].indexOf("]");
-                E = 1 < F - E && 8 >= F - E ? a1M[C].substring(E + 1, F).toUpperCase().trim() : null
+                var F = tempNickname[C].indexOf("]");
+                E = 1 < F - E && 8 >= F - E ? tempNickname[C].substring(E + 1, F).toUpperCase().trim() : null
             }
             if (null !== E) {
                 for (F =
@@ -9287,15 +9271,15 @@ function a2L() {
                 var G = C % z;
                 for (E = z - 1; 0 <= E; E--) y[E] > y[G] && (G = E);
                 var N = -1;
-                for (E = jD; 0 < E; E--)
+                for (E = teamCount; 0 < E; E--)
                     if (this.im[E] === G + 1) {
                         N = E;
                         break
                     } y[G] = 0;
                 if (-1 !== N) {
                     G = 0;
-                    for (E = jD; 0 < E; E--) l[N] > l[E] && G++;
-                    if (G !== jD - 1) {
+                    for (E = teamCount; 0 < E; E--) l[N] > l[E] && G++;
+                    if (G !== teamCount - 1) {
                         for (E =
                             n[C].length - 1; 0 <= E; E--) l[N]++, this.dX[n[C][E]] = N;
                         break
@@ -9308,94 +9292,94 @@ function a2L() {
     this.a62 = function(l, x, t) {
         var z;
         var y = this.im.length - 1;
-        var A = divideFloor(cq, jD);
-        0 < cq % jD && A++;
+        var A = divideFloor(playerCount, teamCount);
+        0 < playerCount % teamCount && A++;
         var B = new Uint8Array(y + 1);
         for (z = y; 1 <= z; z--) B[this.im[z]] = z;
-        for (y = 0; y < cq; y++) z = B[l[y] + 1], 0 === this.dX[y] && z <= jD && t[z] < A && (t[z]++, this.dX[y] = z);
-        for (y = 0; y < cq; y++) z = B[x[y] + 1], 0 === this.dX[y] && z <= jD && t[z] < A && (t[z]++, this.dX[y] = z);
-        for (z = jD; 1 <= z; z--)
-            for (y = cq - 1; 0 <= y && !(t[z] >= A); y--) 0 === this.dX[y] && (t[z]++, this.dX[y] = z)
+        for (y = 0; y < playerCount; y++) z = B[l[y] + 1], 0 === this.dX[y] && z <= teamCount && t[z] < A && (t[z]++, this.dX[y] = z);
+        for (y = 0; y < playerCount; y++) z = B[x[y] + 1], 0 === this.dX[y] && z <= teamCount && t[z] < A && (t[z]++, this.dX[y] = z);
+        for (z = teamCount; 1 <= z; z--)
+            for (y = playerCount - 1; 0 <= y && !(t[z] >= A); y--) 0 === this.dX[y] && (t[z]++, this.dX[y] = z)
     };
     this.a63 = function() {
-        var l, x = new Uint16Array(jD);
-        x[jD - 1] = b8;
-        for (l = jD - 2; 0 <= l; l--) x[l] = dy.dz[l].mt;
+        var l, x = new Uint16Array(teamCount);
+        x[teamCount - 1] = maxEntities;
+        for (l = teamCount - 2; 0 <= l; l--) x[l] = singleSettings.dz[l].mt;
         x[0]--;
         var t = 0 === x[0] ? 1 : 0;
-        for (l = cq; l < b8; l++) this.dX[l] = t + 1, x[t]--, 0 >= x[t] && t++
+        for (l = playerCount; l < maxEntities; l++) this.dX[l] = t + 1, x[t]--, 0 >= x[t] && t++
     };
     this.a64 = function() {
-        for (var l = cq; l < b8; l++) this.dX[l] = 1 + l % jD
+        for (var l = playerCount; l < maxEntities; l++) this.dX[l] = 1 + l % teamCount
     };
     this.il = function(l) {
-        if (dx) return [512, ""];
+        if (singleplayer) return [512, ""];
         var x, t, z = -1,
             y = -1;
         for (t = k.length - 1; 0 <= t; t--)
             for (x = n[t].length - 1; 0 <= x && this.im[this.dX[n[t][x]]] === l; x--)
                 if (-1 === z || sK[n[t][x]] < sK[z]) z = n[t][x], y = t;
-        return -1 === z || 0 === fF[z] ? [512, ""] : [z, k[y]]
+        return -1 === z || 0 === isAlive[z] ? [512, ""] : [z, k[y]]
     }
 }
 
 function bV() {
-    for (var g, k, n = aQ - 1; 0 <= n; n--) g = divideFloor(aS[n], 4) % aZ, k = divideFloor(aS[n], 4 * aZ), d0[aM] = d0[aM] > g ? g : d0[aM], d3[aM] = d3[aM] > k ? k : d3[aM], cz[aM] = cz[aM] < g ? g : cz[aM], d2[aM] = d2[aM] < k ? k : d2[aM]
+    for (var g, k, n = aQ - 1; 0 <= n; n--) g = divideFloor(aS[n], 4) % currentMapWidth, k = divideFloor(aS[n], 4 * currentMapWidth), xMin[aM] = xMin[aM] > g ? g : xMin[aM], yMin[aM] = yMin[aM] > k ? k : yMin[aM], xMax[aM] = xMax[aM] < g ? g : xMax[aM], yMax[aM] = yMax[aM] < k ? k : yMax[aM]
 }
 
 function aj() {
-    var g = b4[aM].length,
+    var g = potentialBorderAdvances[aM].length,
         k;
     var n = g - 1;
     a: for (; 0 <= n; n--) {
         for (k = 3; 0 <= k; k--) {
-            var l = b4[aM][n] + aV[k];
-            if (b5.bG(l) || b5.bE(l) && b5.bF(l) !== aM) {
-                b5.cW(b4[aM][n], aM);
+            var l = potentialBorderAdvances[aM][n] + aV[k];
+            if (pixel.bG(l) || pixel.bE(l) && pixel.bF(l) !== aM) {
+                pixel.cW(potentialBorderAdvances[aM][n], aM);
                 continue a
             }
         }
-        b4[aM][n] = b4[aM][g - 1];
-        b4[aM].pop();
+        potentialBorderAdvances[aM][n] = potentialBorderAdvances[aM][g - 1];
+        potentialBorderAdvances[aM].pop();
         g--
     }
 }
 
 function ak() {
-    var g = bM[aM].length,
+    var g = landBorderPixels[aM].length,
         k, n, l = g - 1;
     a: for (; 0 <= l; l--) {
         var x = n = !1;
         for (k = 3; 0 <= k; k--) {
-            var t = bM[aM][l] + aV[k];
-            if (b5.ya(t, aM)) continue a;
-            x = x || b5.yd(t);
-            n = n || b5.yZ(t)
+            var t = landBorderPixels[aM][l] + aV[k];
+            if (pixel.ya(t, aM)) continue a;
+            x = x || pixel.yd(t);
+            n = n || pixel.yZ(t)
         }
-        x ? bN[aM].push(bM[aM][l]) : n ? bQ[aM].push(bM[aM][l]) : b5.he(bM[aM][l], aM);
-        bM[aM][l] = bM[aM][g - 1];
-        bM[aM].pop();
+        x ? waterBorderPixels[aM].push(landBorderPixels[aM][l]) : n ? mountainBorderPixels[aM].push(landBorderPixels[aM][l]) : pixel.he(landBorderPixels[aM][l], aM);
+        landBorderPixels[aM][l] = landBorderPixels[aM][g - 1];
+        landBorderPixels[aM].pop();
         g--
     }
 }
 
 function bK() {
-    bU[aP] -= aQ
+    land[aP] -= aQ
 }
 
 function bL(g) {
-    for (var k = g.length, n = k - 1; 0 <= n; n--) b5.hm(aP, g[n]) || (g[n] = g[k - 1], g.pop(), k--)
+    for (var k = g.length, n = k - 1; 0 <= n; n--) pixel.hm(aP, g[n]) || (g[n] = g[k - 1], g.pop(), k--)
 }
 
 function bO(g) {
-    for (var k = g.length, n = k - 1; 0 <= n; n--) !b5.hm(aP, g[n]) && b5.b6(g[n]) && (g[n] = g[k - 1], g.pop(), k--)
+    for (var k = g.length, n = k - 1; 0 <= n; n--) !pixel.hm(aP, g[n]) && pixel.b6(g[n]) && (g[n] = g[k - 1], g.pop(), k--)
 }
 
 function bP(g) {
     for (var k = g.length, n, l, x = k - 1; 0 <= x; x--)
         for (n = 3; 0 <= n; n--)
-            if (l = g[x] + aV[n], b5.ya(l, aP)) {
-                bM[aP].push(g[x]);
+            if (l = g[x] + aV[n], pixel.ya(l, aP)) {
+                landBorderPixels[aP].push(g[x]);
                 g[x] = g[k - 1];
                 g.pop();
                 k--;
@@ -9405,71 +9389,71 @@ function bP(g) {
 
 function bR() {
     for (var g, k, n = aQ - 1; 0 <= n; n--)
-        for (g = 3; 0 <= g; g--) k = aS[n] + aV[g], b5.yb(aP, k) && b5.yc(k) && (bM[aP].push(k), b5.b7(k, aP))
+        for (g = 3; 0 <= g; g--) k = aS[n] + aV[g], pixel.yb(aP, k) && pixel.yc(k) && (landBorderPixels[aP].push(k), pixel.b7(k, aP))
 }
 
 function bS() {
     var g;
-    a: for (; d3[aP] < d2[aP];) {
-        for (g = cz[aP]; g >= d0[aP]; g--)
-            if (b5.hm(aP, 4 * (d3[aP] * aZ + g))) break a;
-        d3[aP]++
+    a: for (; yMin[aP] < yMax[aP];) {
+        for (g = xMax[aP]; g >= xMin[aP]; g--)
+            if (pixel.hm(aP, 4 * (yMin[aP] * currentMapWidth + g))) break a;
+        yMin[aP]++
     }
-    a: for (; d3[aP] < d2[aP];) {
-        for (g = cz[aP]; g >= d0[aP]; g--)
-            if (b5.hm(aP, 4 * (d2[aP] * aZ + g))) break a;
-        d2[aP]--
+    a: for (; yMin[aP] < yMax[aP];) {
+        for (g = xMax[aP]; g >= xMin[aP]; g--)
+            if (pixel.hm(aP, 4 * (yMax[aP] * currentMapWidth + g))) break a;
+        yMax[aP]--
     }
-    a: for (; d0[aP] < cz[aP];) {
-        for (g = d2[aP]; g >= d3[aP]; g--)
-            if (b5.hm(aP, 4 * (g * aZ + d0[aP]))) break a;
-        d0[aP]++
+    a: for (; xMin[aP] < xMax[aP];) {
+        for (g = yMax[aP]; g >= yMin[aP]; g--)
+            if (pixel.hm(aP, 4 * (g * currentMapWidth + xMin[aP]))) break a;
+        xMin[aP]++
     }
-    a: for (; d0[aP] < cz[aP];) {
-        for (g = d2[aP]; g >= d3[aP]; g--)
-            if (b5.hm(aP, 4 * (g * aZ + cz[aP]))) break a;
-        cz[aP]--
+    a: for (; xMin[aP] < xMax[aP];) {
+        for (g = yMax[aP]; g >= yMin[aP]; g--)
+            if (pixel.hm(aP, 4 * (g * currentMapWidth + xMax[aP]))) break a;
+        xMax[aP]--
     }
 }
 
 function ch(g, k) {
-    return 0 === dW.dX[g] || dW.dX[g] !== dW.dX[k]
+    return 0 === teams.dX[g] || teams.dX[g] !== teams.dX[k]
 }
 
 function lg(g, k) {
-    var n, l = ae.af(g);
+    var n, l = attacks.af(g);
     for (n = 0; n < l; n++)
-        if (0 === ae.ag(g, n)) {
-            var x = ae.al(g, n);
-            if (x === b8) {
-                if (k === b8) break;
+        if (0 === attacks.ag(g, n)) {
+            var x = attacks.al(g, n);
+            if (x === maxEntities) {
+                if (k === maxEntities) break;
                 if (lf(k)) return !0
-            } else if (k === b8) {
+            } else if (k === maxEntities) {
                 if (lf(x)) return !0
             } else if (lk(k, x)) return !0
         } return !1
 }
 
 function lf(g) {
-    var k, n, l = bM[g].length;
+    var k, n, l = landBorderPixels[g].length;
     for (k = 3; 0 <= k; k--) {
         var x = aV[k];
         for (n = 0; n < l; n++)
-            if (b5.bG(bM[g][n] + x)) return !0
+            if (pixel.bG(landBorderPixels[g][n] + x)) return !0
     }
     return !1
 }
 
 function lk(g, k) {
     var n;
-    var l = bM[g].length;
-    var x = bM[k].length;
+    var l = landBorderPixels[g].length;
+    var x = landBorderPixels[k].length;
     x < l && (l = g, g = k, k = l, l = x);
     for (n = 3; 0 <= n; n--) {
         var t = aV[n];
         for (x = 0; x < l; x++) {
-            var z = bM[g][x] + t;
-            if (b5.bE(z) && b5.bF(z) === k) return !0
+            var z = landBorderPixels[g][x] + t;
+            if (pixel.bE(z) && pixel.bF(z) === k) return !0
         }
     }
     return !1
@@ -9486,25 +9470,25 @@ function a2K() {
         var n = performance.now();
         c4.time + 1500 < n && (c4.time = n, c4.a6O())
     }
-    this.c5 = !1;
+    this.canvasDirty = !1;
     this.a6Q = this.a6P = this.a6O = null;
     this.time = 0;
     this.a6R = -1;
-    this.bp = function() {
+    this.init = function() {
         window.requestAnimationFrame(g);
         this.time = performance.now()
     };
     this.a2P = function() {
-        1 !== fZ || !dx || fq.lu || fc || fq.m0(); - 1 === this.a6R && (this.a6R = setInterval(k, 2E3))
+        1 !== clientStatus || !singleplayer || fq.lu || inSpawn || fq.m0(); - 1 === this.a6R && (this.a6R = setInterval(k, 2E3))
     };
     this.xi = function() {
-        this.c5 = !0; - 1 !== this.a6R && (clearInterval(this.a6R), this.a6R = -1)
+        this.canvasDirty = !0; - 1 !== this.a6R && (clearInterval(this.a6R), this.a6R = -1)
     };
     this.jd = function() {
         this.a6O =
             this.a6U;
         this.a6P = null;
-        this.c5 = !0
+        this.canvasDirty = !0
     };
     this.jY = function() {
         this.a6P = new a6V;
@@ -9512,7 +9496,7 @@ function a2K() {
     };
     this.jZ = function() {
         this.a6Q = new a6X;
-        this.a6Q.bp();
+        this.a6Q.init();
         this.a6O = this.a6Y
     };
     this.a6U = function() {
@@ -9520,9 +9504,9 @@ function a2K() {
         ji.dF();
         jq.dF();
         wsManager.dF();
-        setOrigin.wH();
+        setGameOrigin.wH();
         mainLeaderboard.dF();
-        this.c5 && (this.c5 = !1, aJ.cG())
+        this.canvasDirty && (this.canvasDirty = !1, aJ.cG())
     };
     this.a6W = function() {
         this.a6P.dF()
@@ -9531,7 +9515,7 @@ function a2K() {
         this.a6Q.dF()
     };
     this.dU = function() {
-        return dx ? this.a6P.wE : this.a6Q.wE
+        return singleplayer ? this.a6P.wE : this.a6Q.wE
     };
     this.tV = function() {
         return 56
@@ -9545,9 +9529,9 @@ function a6V() {
     this.a6Z = !1;
     this.dF = function() {
         jq.dF();
-        fc ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === fZ || fq.lu ? e8() : (eE(), this.wE++, h8.tv()), this.bs++) : (fq.lu ? ec() : (c4.c5 = !0, ea()), this.bs = 0);
+        inSpawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === clientStatus || fq.lu ? e8() : (eE(), this.wE++, h8.tv()), this.bs++) : (fq.lu ? ec() : (c4.canvasDirty = !0, ea()), this.bs = 0);
         eU();
-        c4.c5 && (c4.c5 = !1, hp())
+        c4.canvasDirty && (c4.canvasDirty = !1, hp())
     }
 }
 
@@ -9558,30 +9542,30 @@ function a6X() {
     this.a6a = null;
     this.a0a = 7;
     var g;
-    this.bp = function() {
+    this.init = function() {
         this.wD = 0;
         this.a6a = [];
         g = this.wE = this.bs = 0
     };
     this.a6b = function(k) {
-        if (fc) this.tW(k);
-        else if (this.a6a.push(k), 2 === fZ) {
-            for (k = 0; k < this.a6a.length; k++) jp.a6c(this.a6a[k], g), g = (g + 1) % 8;
+        if (inSpawn) this.tW(k);
+        else if (this.a6a.push(k), 2 === clientStatus) {
+            for (k = 0; k < this.a6a.length; k++) dataDecoder.a6c(this.a6a[k], g), g = (g + 1) % 8;
             this.a6a = []
         }
     };
     this.tW = function(k) {
-        jp.a6c(k, g);
+        dataDecoder.a6c(k, g);
         g = (g + 1) % 8;
         eB.tW(this.wD);
-        this.wD === jF ? (fd.dF(), this.wE = this.bs = this.wD = 0, this.time = c4.time) : (this.wD++, eA.j4(), eA.eb(), h8.tv())
+        this.wD === spawnTime ? (spawn.dF(), this.wE = this.bs = this.wD = 0, this.time = c4.time) : (this.wD++, eA.j4(), eA.eb(), h8.tv())
     };
     this.dF = function() {
         jq.dF();
-        fc ? (c4.c5 =
-            eB.tW(-1) || c4.c5, ec()) : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === fZ ? e8() : this.a6d(), this.bs++) : (c4.c5 = !0, ea(), this.bs = 0);
+        inSpawn ? (c4.canvasDirty =
+            eB.tW(-1) || c4.canvasDirty, ec()) : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === clientStatus ? e8() : this.a6d(), this.bs++) : (c4.canvasDirty = !0, ea(), this.bs = 0);
         eU();
-        c4.c5 && (c4.c5 = !1, hp())
+        c4.canvasDirty && (c4.canvasDirty = !1, hp())
     };
     this.a6d = function() {
         if (this.wE !== 7 * this.wD) eE(), this.wE++, h8.tv();
@@ -9594,14 +9578,14 @@ function a6X() {
         }
     };
     this.a6f = function() {
-        return 0 < this.a6a.length ? (this.wD++, jp.a6c(this.a6a[0], g), g = (g +
+        return 0 < this.a6a.length ? (this.wD++, dataDecoder.a6c(this.a6a[0], g), g = (g +
             1) % 8, this.a6a.shift(), !0) : !1
     }
 }
 
 function kl() {
     function g(k, n) {
-        8 !== aJ.pY() || 0 !== n && n !== dv || dx || announcements.my(k)
+        8 !== aJ.getState() || 0 !== n && n !== gamemode || singleplayer || announcements.my(k)
     }
     this.gW = 0;
     this.a6g = !0;
@@ -9632,164 +9616,215 @@ function kY() {
         return 1 < z.touches.length ? (k(z), hu.lF(), !0) : !1
     };
     this.pS = function(z) {
-        if (0 === fZ) return !1;
+        if (0 === clientStatus) return !1;
         if (1 < z.touches.length) {
             if (!eV.h0()) return !0;
             var y = g();
             k(z);
             z = g();
             gj.rJ(Math.floor((n + x) / 2), Math.floor((l + t) / 2), z / y);
-            return c4.c5 = !0
+            return c4.canvasDirty = !0
         }
         return !1
     }
 }
 
-function kZ() {
-    function g(x, t) {
-        for (var z = Array(x), y = 0; y < x; y++) z[y] = k(t, 10);
-        return characters.iU(z)
+function DataDecoder() {
+    function decodeNames(length, array) {
+        for (var name = Array(length), nameIndex = 0; nameIndex < length; nameIndex++) name[nameIndex] = decoder(array, 10);
+        return characters.convertToString(name)
     }
 
-    function k(x, t) {
-        for (var z = 0, y, A, B = l; B < l + t; B++) y = divideFloor(B, 8), A = 7 - B % 8, z |= (x[y] >> A & 1) << l + t - B - 1;
-        l += t;
-        return z
+    function decoder(array, bitsToDecode) {
+        for (var data = 0, byteIndex, bitIndex, currentBit = arrayIndex; currentBit < arrayIndex + bitsToDecode; currentBit++) byteIndex = divideFloor(currentBit, 8), bitIndex = 7 - currentBit % 8, data |= (array[byteIndex] >> bitIndex & 1) << arrayIndex + bitsToDecode - currentBit - 1;
+        arrayIndex += bitsToDecode;
+        return data
     }
-    var n, l;
-    this.a5O = function(x, t) {
-        l = 0;
-        n = t.length;
-        if (0 === n) wsManager.a1t(x, 3205);
+
+    var messageLength, arrayIndex;
+    this.mainDecoder = function(remote, array) {
+        arrayIndex = 0;
+        messageLength = array.length;
+        if (0 === messageLength) wsManager.closeByError(remote, 3205);
         else {
-            var z = k(t, 1);
-            if (0 === z)
-                if (z = k(t, 2), 0 === z)
-                    if (0 === k(t, 1)) {
-                        if (0 === x && 8 !== aJ.pY() && !(4 > n)) {
-                            uO.br(0, g(k(t, 5), t));
-                            uO.br(1, "[" + g(k(t, 3), t) + "]");
-                            var y = k(t, 12),
-                                A = k(t, 6),
-                                B = Array(y);
-                            for (z = 0; z < y; z++) B[z] = k(t, A);
-                            jg.rm(B)
+            var data = decoder(array, 1);
+            if (0 === data) {
+                data = decoder(array, 2);
+                if (0 === data) {
+                    if (0 === decoder(array, 1)) {
+                        if (0 === remote && 8 !== aJ.getState() && !(4 > messageLength)) {
+                            uO.br(0, decodeNames(decoder(array, 5), array));
+                            uO.br(1, "[" + decodeNames(decoder(array, 3), array) + "]");
+                            var timeStampCount = decoder(array, 12),
+                                bitsNeeded = decoder(array, 6),
+                                playtimesArray = Array(timeStampCount);
+                            for (var timeStampIndex = 0; timeStampIndex < timeStampCount; timeStampIndex++) playtimesArray[timeStampIndex] = decoder(array, bitsNeeded);
+                            playtime.addPlaytimes(playtimesArray);
                         }
                     } else {
-                        if (8 !== aJ.pY())
-                            if (3 > n) wsManager.a1t(x,
-                                3208);
+                        if (8 !== aJ.getState()) {
+                            if (3 > messageLength) wsManager.closeByError(remote, 3208);
                             else {
-                                y = k(t, 1);
-                                A = k(t, 16);
-                                B = k(t, 4);
-                                var C = [];
-                                for (z = 0; z < B; z++) {
-                                    var E = k(t, 14);
-                                    var F = k(t, 5);
-                                    F = g(F, t);
-                                    C.push({
-                                        name: F,
-                                        iC: E
+                                var boardType = decoder(array, 1),
+                                    page = decoder(array, 16),
+                                    pageEntries = decoder(array, 4),
+                                    bestEntries = [];
+                                for (var entryIndex = 0; entryIndex < pageEntries; entryIndex++) {
+                                    var entryPoints = decoder(array, 14),
+                                        entryNameLength = decoder(array, 5),
+                                        entryName = decodeNames(entryNameLength, array);
+                                    bestEntries.push({
+                                        name: entryName,
+                                        elo: entryPoints
                                     })
                                 }
-                                0 === y ? mainLeaderboard.uH(0, C, 10, 1, .36, .55, A) : mainLeaderboard.uH(1, C, 100, 2, .47, .5, A)
+                                0 === boardType ? mainLeaderboard.updateLeaderboard(0, bestEntries, 10, 1, .36, .55, page) : mainLeaderboard.updateLeaderboard(1, bestEntries, 100, 2, .47, .5, page)
                             }
+                        }
                     }
-            else if (1 === z)
-                if (x !== wsManager.lobby) wsManager.close(x, 3239);
-                else if (6 === aJ.pY() && jr.bp(), 7 !== aJ.pY()) wsManager.close(x, 3251);
+                }       
+                else if (1 === data) {
+                    if (remote !== wsManager.lobby) wsManager.close(remote, 3239);
+                    else if (6 === aJ.getState() && lobby.init(), 7 !== aJ.getState()) wsManager.close(remote, 3251);
+                    else {
+                        var lobbyStats = [0, 0, 0, 0],
+                            bitsNeeded = decoder(array, 6);
+                        for (data = 0; 4 > data; data++) lobbyStats[data] = decoder(array, bitsNeeded);
+                        var gamesCount = decoder(array, 4),
+                            lobbyGames = [];
+                        for (data = 0; data < gamesCount; data++) lobbyGames.push({
+                            id: decoder(array, 5),
+                            gamemode: decoder(array, 4),
+                            isContest: 1 === decoder(array, 1),
+                            mapID: decoder(array, 6),
+                            seedMap: decoder(array, 14),
+                            joinCount: decoder(array, bitsNeeded),
+                            maxPlayers: decoder(array, 9) + 1,
+                            timeLeft: decoder(array, 10)
+                        });
+                        lobby.updateObjects(lobbyStats, lobbyGames)
+                    }
+                }
+                else 2 !== data && 3 !== data || setGameOrigin.init(array);
+            }
             else {
-                y = [0, 0, 0, 0];
-                A = k(t, 6);
-                for (z = 0; 4 > z; z++) y[z] = k(t, A);
-                B = k(t, 4);
-                C = [];
-                for (z = 0; z < B; z++) C.push({
-                    id: k(t, 5),
-                    jJ: k(t, 4),
-                    wy: 1 === k(t, 1),
-                    wv: k(t, 6),
-                    ww: k(t, 14),
-                    x1: k(t, A),
-                    x2: k(t, 9) + 1,
-                    vY: k(t, 10)
-                });
-                jr.uP(y, C)
-            } else 2 !== z && 3 !== z || setOrigin.bp(t);
-            else 1 === z && (z = aJ.pY(), 8 !== z ? 10 === z && wsManager.a1t(x, 3243) : x !== wsManager.remote ? wsManager.a1t(x, 3244) : 0 === k(t, 1) ? c4.a6Q.a6b(t) : (z = k(t, 2), 0 === z ? 3 !== n ? wsManager.a1t(wsManager.remote, 3230) : (z = k(t, 9), y = k(t, 7), 0 !== fF[z] && 0 !== fF[myID] && (y %= a5.a6, announcements.newEmojiMessage(z, myID, y), eA.n2(z, 1, y))) : 1 === z ? 2 !== n ? wsManager.a1t(wsManager.remote, 3235) : (z = k(t, 9), 0 !== fF[z] && 0 !== fF[myID] && eQ.a1W(0, [z], !0) && announcements.lY(z, 1)) : 3 !== n ? wsManager.a1t(wsManager.remote, 3236) : (z = k(t, 9), y = k(t, 9), 0 !== fF[z] && 0 !== fF[y] && 0 !== fF[myID] && eQ.a1W(1, [z], !0) && (eA.n2(z, 3, 96), eA.n2(y, 4, 96), announcements.n5(z, y)))))
+                if (1 === data) {
+                    if (data = aJ.getState(), 8 !== data) {
+                        if (10 === data)  wsManager.closeByError(remote, 3243);
+                    } else {
+                        if (remote !== wsManager.remote) wsManager.closeByError(remote, 3244);
+                        else {
+                            if (0 === decoder(array, 1)) c4.a6Q.a6b(array);
+                            else {
+                                data = decoder(array, 2);
+                                if (0 === data) {
+                                    if (3 !== messageLength) wsManager.closeByError(wsManager.remote, 3230);
+                                    else {
+                                        data = decoder(array, 9);
+                                        var emojiID = decoder(array, 7);
+                                        if (0 !== isAlive[data] && 0 !== isAlive[myID]) {
+                                            emojiID %= a5.a6;
+                                            announcements.newEmojiMessage(data, myID, emojiID);
+                                            eA.showIcon(data, 1, emojiID);
+                                        }
+                                    }
+                                } else {
+                                    if (1 === data) {
+                                        if (2 !== messageLength) wsManager.closeByError(wsManager.remote, 3235);
+                                        else {
+                                            data = decoder(array, 9);
+                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && eQ.a1W(0, [data], !0)) announcements.nonAggression(data, 1);
+                                        }
+                                    } else {
+                                        if (3 !== messageLength) wsManager.closeByError(wsManager.remote, 3236);
+                                        else {
+                                            data = decoder(array, 9);
+                                            var requester = decoder(array, 9);
+                                            if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && eQ.a1W(1, [data], !0)) {
+                                                eA.showIcon(data, 3, 96);
+                                                eA.showIcon(requester, 4, 96);
+                                                announcements.requestToAttack(data, requester);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+            }
         }
     };
     this.wI = function(x) {
-        l = 1;
-        n = x.length;
+        arrayIndex = 1;
+        messageLength = x.length;
         if (2 ===
-            k(x, 2)) {
-            l += 20;
-            for (var t = k(x, 9), z = k(x, 14), y = k(x, 4), A = 1 === k(x, 1), B = k(x, 6), C = k(x, 14), E = k(x, 9) + 1, F = [], G, N, I, D = 0; D < E; D++) G = k(x, 1), N = [k(x, 6), k(x, 6), k(x, 6)], I = g(k(x, 5), x), F.push({
+            decoder(x, 2)) {
+            arrayIndex += 20;
+            for (var t = decoder(x, 9), z = decoder(x, 14), y = decoder(x, 4), A = 1 === decoder(x, 1), B = decoder(x, 6), C = decoder(x, 14), E = decoder(x, 9) + 1, F = [], G, N, I, D = 0; D < E; D++) G = decoder(x, 1), N = [decoder(x, 6), decoder(x, 6), decoder(x, 6)], I = decodeNames(decoder(x, 5), x), F.push({
                 name: I,
-                xS: N,
-                xT: G
+                color: N,
+                status: G
             });
             aJ.ve();
-            x8(B, C);
-            1 === F.length && dy.xL(y);
-            jG(z, t, F, y, A)
+            loadMap(B, C);
+            1 === F.length && singleSettings.xL(y);
+            gameInit(z, t, F, y, A)
         } else {
-            l += 20;
-            t = k(x, 1);
-            z = k(x, 14);
-            y = k(x, 4);
-            A = 1 === k(x, 1);
-            B = k(x, 6);
-            C = k(x, 14);
+            arrayIndex += 20;
+            t = decoder(x, 1);
+            z = decoder(x, 14);
+            y = decoder(x, 4);
+            A = 1 === decoder(x, 1);
+            B = decoder(x, 6);
+            C = decoder(x, 14);
             E = [];
-            for (D = 0; 2 > D; D++) F = k(x, 1), G = [k(x, 6), k(x, 6), k(x, 6)], N = k(x, 14), I = g(k(x, 5), x), E.push({
+            for (D = 0; 2 > D; D++) F = decoder(x, 1), G = [decoder(x, 6), decoder(x, 6), decoder(x, 6)], N = decoder(x, 14), I = decodeNames(decoder(x, 5), x), E.push({
                 name: I,
-                xS: G,
-                iC: N,
-                xT: F
+                color: G,
+                elo: N,
+                status: F
             });
             aJ.ve();
-            x8(B, C);
-            jG(z, t, E, y, A)
+            loadMap(B, C);
+            gameInit(z, t, E, y, A)
         }
     };
-    this.wB = function(x) {
-        l = 1;
-        n = x.length;
-        var t = k(x,
-                2),
-            z = k(x, 10);
-        wsManager.lobby > wsManager.wG && (z += wsManager.wG);
-        if (wsManager.lobby === z) return wsManager.remote = z, !1;
+    this.wB = function(array) {
+        arrayIndex = 1;
+        messageLength = array.length;
+        var check1v1 = decoder(array, 2),
+            remote = decoder(array, 10);
+        wsManager.lobby > wsManager.gameServerCount && (remote += wsManager.gameServerCount);
+        if (wsManager.lobby === remote) return wsManager.remote = remote, !1;
         wsManager.close(wsManager.lobby, 3247);
-        wsManager.remote = z;
-        setOrigin.gameHash = k(x, 10);
-        setOrigin.myID = k(x, 2 === t ? 9 : 1);
-        wsManager.ri(z, 5) && dataEncoder.authenticateGameConnection();
+        wsManager.remote = remote;
+        setGameOrigin.gameHash = decoder(array, 10);
+        setGameOrigin.myID = decoder(array, 2 === check1v1 ? 9 : 1);
+        wsManager.ri(remote, 5) && dataEncoder.authenticateGameConnection();
         return !0
     };
     this.a6c = function(x, t) {
-        l = 2;
+        arrayIndex = 2;
         var z = 8 * x.length;
-        if (k(x, 3) !== t) wsManager.a1t(wsManager.remote, 3248);
+        if (decoder(x, 3) !== t) wsManager.closeByError(wsManager.remote, 3248);
         else
-            for (; l + 8 <= z;) {
-                var y = k(x, 3);
-                var A = k(x, 9);
+            for (; arrayIndex + 8 <= z;) {
+                var y = decoder(x, 3);
+                var A = decoder(x, 9);
                 if (0 === y) {
-                    y = k(x, 10);
-                    var B = k(x, 9);
-                    B = B === A ? b8 : B;
-                    eG.fY(A, y, B)
+                    y = decoder(x, 10);
+                    var B = decoder(x, 9);
+                    B = B === A ? maxEntities : B;
+                    processAction.fY(A, y, B)
                 } else if (1 === y) {
-                    y = k(x, 10);
-                    B = k(x, 11);
-                    var C = k(x, 11);
-                    eG.fb(A, y, B, C)
-                } else 2 === y ? (B = k(x, 9), B = B === A ? b8 : B, eG.fe(A, B)) : 3 === y ? eG.fh(A) : 4 === y ? (y = k(x, 7), eA.n2(A, 0, y)) : 5 ===
-                    y ? eG.fp(A) : 6 === y ? eG.fg(A, k(x, 1)) : 7 === y && eG.ff(A, 1 + k(x, 11))
+                    y = decoder(x, 10);
+                    B = decoder(x, 11);
+                    var C = decoder(x, 11);
+                    processAction.fb(A, y, B, C)
+                } else 2 === y ? (B = decoder(x, 9), B = B === A ? maxEntities : B, processAction.fe(A, B)) : 3 === y ? processAction.fh(A) : 4 === y ? (y = decoder(x, 7), eA.showIcon(A, 0, y)) : 5 ===
+                    y ? processAction.fp(A) : 6 === y ? processAction.fg(A, decoder(x, 1)) : 7 === y && processAction.ff(A, 1 + decoder(x, 11))
             }
     }
 }
@@ -9814,31 +9849,31 @@ function a2H() {
 
 function ka() {
     var g, k;
-    this.bp = function() {
+    this.init = function() {
         g = 1;
         k = 0
     };
     this.dF = function() {
-        0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.c5 = !0)
+        0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.canvasDirty = !0)
     };
     this.cG = function() {
-        0 < g && (cH.fillStyle = "rgba(0,0,0," + g + ")", cH.fillRect(0, 0, gE, cB))
+        0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, gE, cB))
     }
 }
 
 function kf() {
     function g(k, n, l, x, t) {
-        k >= zV || (wv === k && (cH.fillStyle = oG, cH.fillRect(n, l, x, t), cH.fillStyle = cK), cH.strokeRect(n, l, x, t), cH.fillText(jm.bz(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
+        k >= customMapID || (currentMapID === k && (mainCanvasCtx.fillStyle = blueMoreOpaque, mainCanvasCtx.fillRect(n, l, x, t), mainCanvasCtx.fillStyle = whiteRGB2), mainCanvasCtx.strokeRect(n, l, x, t), mainCanvasCtx.fillText(mapInfo.getValuebyID(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
     }
-    this.lC = !1;
+    this.hidden = !1;
     this.xK = [0, 0, 0, 0];
     this.show = function() {
-        this.lC = !0;
+        this.hidden = !0;
         this.lv();
-        c4.c5 = !0
+        c4.canvasDirty = !0
     };
     this.lv = function() {
-        var k = divideFloor(zV + zV % 2, 2);
+        var k = divideFloor(customMapID + customMapID % 2, 2);
         k = s - k * cA;
         this.xK[2] = isZoom ? Math.floor(.75 * pI) : Math.floor(.5 * pI);
         this.xK[3] = Math.floor(1.2 * this.xK[2]);
@@ -9850,43 +9885,43 @@ function kf() {
     this.lm = function(k, n) {
         return k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3] ? !1 : !0
     };
-    this.c7 = function(k, n) {
-        var l = divideFloor(zV + zV % 2, 2);
-        c4.c5 = !0;
-        if (k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3]) return this.lC = !1, !0;
+    this.mouseDown = function(k, n) {
+        var l = divideFloor(customMapID + customMapID % 2, 2);
+        c4.canvasDirty = !0;
+        if (k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3]) return this.hidden = !1, !0;
         var x = Math.floor(.13 * this.xK[3]);
-        if (n < this.xK[1] + x) return k > this.xK[0] + this.xK[2] - 1.2 * x && (this.lC = !1), !0;
+        if (n < this.xK[1] + x) return k > this.xK[0] + this.xK[2] - 1.2 * x && (this.hidden = !1), !0;
         x = Math.floor(l * (n - this.xK[1] - x) / (this.xK[3] - x));
         x = 0 > x ? 0 : x > l - 1 ? l - 1 : x;
         k > this.xK[0] + this.xK[2] /
             2 && (x += l);
-        if (x >= zV) return !0;
-        x8(x, Math.floor(16384 * Math.random()));
+        if (x >= customMapID) return !0;
+        loadMap(x, Math.floor(16384 * Math.random()));
         return !0
     };
     this.cG = function() {
         var k, n = Math.floor(.13 * this.xK[3]),
-            l = divideFloor(zV + zV % 2, 2),
+            l = divideFloor(customMapID + customMapID % 2, 2),
             x = (this.xK[3] - n - (l + 1) * cA) / l,
             t = Math.floor((this.xK[2] - 3 * cA) / 2);
-        cH.lineWidth = 2;
-        cH.textAlign = cJ;
-        cH.textBaseline = cI;
-        cH.font = bt + Math.floor(.48 * x) + bu;
-        cH.fillStyle = hy;
-        cH.fillRect(this.xK[0], this.xK[1], this.xK[2], this.xK[3]);
-        cH.fillStyle = oG;
-        cH.fillRect(this.xK[0], this.xK[1], this.xK[2], n);
-        cH.strokeStyle = cK;
-        cH.strokeRect(this.xK[0], this.xK[1], this.xK[2], this.xK[3]);
-        cH.fillStyle = cK;
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.font = fontWeightBold + Math.floor(.48 * x) + fontSizeArial;
+        mainCanvasCtx.fillStyle = blackMoreOpaque;
+        mainCanvasCtx.fillRect(this.xK[0], this.xK[1], this.xK[2], this.xK[3]);
+        mainCanvasCtx.fillStyle = blueMoreOpaque;
+        mainCanvasCtx.fillRect(this.xK[0], this.xK[1], this.xK[2], n);
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(this.xK[0], this.xK[1], this.xK[2], this.xK[3]);
+        mainCanvasCtx.fillStyle = whiteRGB2;
         for (k = l - 1; 0 <= k; k--) {
             var z = Math.floor(this.xK[1] + n + cA + k * (x + cA));
             g(k, this.xK[0] + cA, z, t, x);
             g(k + l, this.xK[0] + t + 2 * cA, z, t, x)
         }
         fq.m9(Math.floor(this.xK[0] + this.xK[2] - .8 * n), Math.floor(this.xK[1] + .25 * n), Math.floor(.5 * n));
-        cH.setTransform(1, 0, 0, 1, 0, 0)
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
 
@@ -9900,7 +9935,7 @@ function DataEncoder() {
 
     function encodeClientInfo(array) {
         encoder(array, 14, versionHash);
-        encoder(array, 4, isIOS ? 2 : 12 <= deviceVersion ? 1 : 0 < deviceVersion ? 3 : 0);
+        encoder(array, 4, isIOS ? 2 : 12 <= androidVersion ? 1 : 0 < androidVersion ? 3 : 0);
         encoder(array, 1, isNotClient ? 1 : 0);
         encoder(array, 1, isNotTopWindow ? 1 : 0);
         encoder(array, 5, (new Date).getHours() % 24)
@@ -10006,8 +10041,8 @@ function DataEncoder() {
         encoder(array, 1, 0);
         encoder(array, 3, 6);
         encoder(array, 8, wsManager.getConnectedLobby());
-        encoder(array, 10, setOrigin.gameHash);
-        encoder(array, 9, setOrigin.myID);
+        encoder(array, 10, setGameOrigin.gameHash);
+        encoder(array, 9, setGameOrigin.myID);
         encoder(array, 10, timeHash);
         encoder(array, 14, versionHash);
         wsManager.send(wsManager.remote, array)
