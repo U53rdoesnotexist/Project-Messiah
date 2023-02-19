@@ -462,8 +462,8 @@ function d9() {
 function dB(g, k) {
     teamGame && (d7[g] = 0);
     if (attacks.dD(g) && !(60 > k))
-        if (0 === landBorderPixels[g].length) dE.dF(g, dG.cN[g - playerCount]) || (dG.dH(g - playerCount, 200), dI(g, k, dG.cN[g - playerCount], interest.dJ(g)));
-        else if (!(0 < waterBorderPixels[g].length && fakeRandom.random() < fakeRandom.value(waterBorderPixels[g].length > landBorderPixels[g].length ? 7 : 3) && dE.dF(g, dG.cN[g - playerCount]))) {
+        if (0 === landBorderPixels[g].length) dE.update(g, dG.cN[g - playerCount]) || (dG.dH(g - playerCount, 200), dI(g, k, dG.cN[g - playerCount], interest.dJ(g)));
+        else if (!(0 < waterBorderPixels[g].length && fakeRandom.random() < fakeRandom.value(waterBorderPixels[g].length > landBorderPixels[g].length ? 7 : 3) && dE.update(g, dG.cN[g - playerCount]))) {
         var n = interest.dJ(g);
         troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
         teamGame ? dK(g, k, dG.cN[g - playerCount], n) : dL(g, k, dG.cN[g - playerCount])
@@ -471,7 +471,7 @@ function dB(g, k) {
 }
 
 function dK(g, k, n, l) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, maxEntities, n)) : (fakeRandom.dP(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < waterBorderPixels[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.dF(g, n) || (dG.dH(g - playerCount, 200), dI(g, k, n, l))
+    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, maxEntities, n)) : (fakeRandom.dP(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < waterBorderPixels[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.update(g, n) || (dG.dH(g - playerCount, 200), dI(g, k, n, l))
 }
 
 function dT(g, k) {
@@ -484,8 +484,8 @@ function dO(g, k, n) {
 
 function dI(g, k, n, l) {
     if (0 !== teams.dX[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divideFloor(l, 2)))
-        for (n = fakeRandom.cf(dY), l = 0; l < dY; l++) {
-            var x = dZ[(l + n) % dY];
+        for (n = fakeRandom.cf(aliveCount), l = 0; l < aliveCount; l++) {
+            var x = aliveEntities[(l + n) % aliveCount];
             if (teams.dX[x] === teams.dX[g] && 1 === d7[x]) {
                 da(g, x, k);
                 x < playerCount && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
@@ -543,9 +543,9 @@ function de() {
         else if (singleplayer)
             if (teamGame)
                 for (z = botCount - 1; 0 <=
-                    z; z--) this.cN[z] = singleSettings.dz[teams.dX[z + playerCount] - 1].bD;
+                    z; z--) this.cN[z] = singleSettings.botSettings[teams.dX[z + playerCount] - 1].difficulty;
             else
-                for (z = botCount - 1; 0 <= z; z--) this.cN[z] = singleSettings.dz[0].bD;
+                for (z = botCount - 1; 0 <= z; z--) this.cN[z] = singleSettings.botSettings[0].difficulty;
         else {
             var y = 8 === gamemode ? 1 : 0;
             for (z = botCount - 1; 0 <= z; z--) this.cN[z] = y
@@ -566,7 +566,7 @@ function de() {
     this.dH = function(z, y) {
         0 <= z && (g[z] = y)
     };
-    this.dF = function(z) {
+    this.update = function(z) {
         if (0 === --g[z]) {
             x[z] !== t[z] && (x[z] += x[z] < t[z] ? 3 : -3);
             k[z] !== n[z] && (k[z] += k[z] < n[z] ? l[z] : -l[z], k[z] = Math.abs(k[z] - n[z]) <= l[z] ? n[z] : k[z]);
@@ -578,43 +578,43 @@ function de() {
 }
 
 function e8() {
-    announcements.dF();
-    eA.dF();
+    announcements.update();
+    eA.update();
     eB.eC();
-    wsManager.dF()
+    wsManager.update()
 }
 
 function eE() {
-    interest.dF();
-    antiFullSend.dF();
-    processAction.dF();
-    eH.dF();
-    humanBots.dF();
-    eJ.dF();
-    speed.dF();
-    eK.dF();
+    interest.update();
+    antiFullSend.update();
+    processAction.update();
+    eH.update();
+    humanBots.update();
+    eJ.update();
+    speed.update();
+    eK.update();
     eL();
-    eM.dF();
-    e2.dF();
-    eA.dF();
-    eB.dF();
-    eN.dF();
-    eO.dF();
-    eP.dF();
-    announcements.dF();
-    eQ.dF();
-    troopBar.dF();
-    peace.dF();
-    statistics.dF();
-    eT.dF();
-    wsManager.dF()
+    eM.update();
+    e2.update();
+    eA.update();
+    eB.update();
+    eN.update();
+    eO.update();
+    eP.update();
+    announcements.update();
+    eQ.update();
+    troopBar.update();
+    peace.update();
+    statistics.update();
+    eT.update();
+    wsManager.update()
 }
 
 function eU() {
-    eV.dF();
-    gameResultBox.dF();
-    c2.dF();
-    eX.dF();
+    eV.update();
+    gameResultBox.update();
+    c2.update();
+    eX.update();
     setGameOrigin.eZ()
 }
 
@@ -631,7 +631,7 @@ function ea() {
 
 function ec() {
     eA.eb() && (c4.canvasDirty = !0);
-    wsManager.dF()
+    wsManager.update()
 }
 
 function Speed() {
@@ -651,7 +651,7 @@ function Speed() {
         x = new Uint16Array(maxEntities);
         t = new Uint8Array(maxEntities)
     };
-    this.dF = function() {
+    this.update = function() {
         var A;
         z = statistics.b1[13];
         y = troops[myID];
@@ -711,7 +711,7 @@ function er() {
         return 1
     }
     var l, x, t, z;
-    this.dF = function(y, A) {
+    this.update = function(y, A) {
         z = y;
         if (0 === waterBorderPixels[z].length) return !1;
         if (g()) {
@@ -730,46 +730,49 @@ function fC() {
         k = new Uint16Array(botCount);
         for (var n = botCount - 1; 0 <= n; n--) k[n] = n
     };
-    this.dF = function() {
+    this.update = function() {
         for (var n = g - 1; 0 <= n; n--)
             if (0 === isAlive[k[n] + playerCount]) {
                 var l = n;
                 for (g--; l < g; l++) k[l] = k[l + 1]
-            } else dG.dF(k[n])
+            } else dG.update(k[n])
     }
 }
 
 function ProcessAction() {
-    function g(y, A, B, C, E, F) {
-        0 < B && 1E3 >= B && (k.push(y), n.push(A), l.push(B), x.push(C), t.push(E), z.push(F))
+    function addPendingAction(authorID, actionType, param1, param2, param3, param4) {
+        if (0 < param1 && 1E3 >= param1) {
+            authors.push(authorID), actionsType.push(actionType), 
+            actionsParam1.push(param1), actionsParam2.push(param2), actionsParam3.push(param3), actionsParam4.push(param4);
+        }
     }
-    var k, n, l, x, t, z;
+    var authors, actionsType, actionsParam1, actionsParam2, actionsParam3, actionsParam4;
     this.init = function() {
-        k = [];
-        n = [];
-        l = [];
-        x = [];
-        t = [];
-        z = []
+        authors = [];
+        actionsType = [];
+        actionsParam1 = [];
+        actionsParam2 = [];
+        actionsParam3 = [];
+        actionsParam4 = []
     };
-    this.dF = function() {
-        var y, A = k.length;
-        for (y = 0; y < A; y++)
-            if (0 === n[y]) fL(k[y], x[y], l[y]);
-            else if (1 === n[y]) this.fM(k[y], l[y], t[y], z[y]);
-        else if (2 === n[y]) this.fN(k[y], x[y]);
-        else if (6 === n[y]) {
-            var B = k[y];
-            0 !== isAlive[B] && 2 !== playerStatus[k] && peace.fX(B, 1 === x[y])
-        } else 7 === n[y] && this.fP(k[y], x[y]);
-        0 < A && this.init()
+    this.update = function() {
+        var actionIndex, authorsCount = authors.length;
+        for (actionIndex = 0; actionIndex < authorsCount; actionIndex++)
+            if (0 === actionsType[actionIndex]) fL(authors[actionIndex], actionsParam2[actionIndex], actionsParam1[actionIndex]);
+            else if (1 === actionsType[actionIndex]) this.fM(authors[actionIndex], actionsParam1[actionIndex], actionsParam3[actionIndex], actionsParam4[actionIndex]);
+        else if (2 === actionsType[actionIndex]) this.fN(authors[actionIndex], actionsParam2[actionIndex]);
+        else if (6 === actionsType[actionIndex]) {
+            var B = authors[actionIndex];
+            0 !== isAlive[B] && 2 !== playerStatus[authors] && peace.fX(B, 1 === actionsParam2[actionIndex])
+        } else 7 === actionsType[actionIndex] && this.fP(authors[actionIndex], actionsParam2[actionIndex]);
+        0 < authorsCount && this.init()
     };
     this.fM = function(y, A, B, C) {
         0 !== isAlive[y] && 2 !==
-            playerStatus[k] && boatPathChecker.co(y, pixel.f1(B, C)) && ey(y, boatPathChecker.f0(), pixel.f1(B, C), divideFloor(A * troops[y], 1E3)) && y === myID && (statistics.b1[0] += A, statistics.b1[1]++, statistics.b1[2]++)
+            playerStatus[authors] && boatPathChecker.co(y, pixel.f1(B, C)) && ey(y, boatPathChecker.f0(), pixel.f1(B, C), divideFloor(A * troops[y], 1E3)) && y === myID && (statistics.b1[0] += A, statistics.b1[1]++, statistics.b1[2]++)
     };
     this.fN = function(y, A) {
-        if (0 !== isAlive[y] && 2 !== playerStatus[k] && attacks.co(y, A)) {
+        if (0 !== isAlive[y] && 2 !== playerStatus[authors] && attacks.co(y, A)) {
             var B = attacks.bi(y, A);
             attacks.bh(y, A, 0);
             if (y !== myID) troops[y] += B, interest.az(y);
@@ -782,7 +785,7 @@ function ProcessAction() {
         }
     };
     this.fP = function(y, A) {
-        if (0 !== isAlive[y] && 2 !== playerStatus[k]) {
+        if (0 !== isAlive[y] && 2 !== playerStatus[authors]) {
             var B = attacks.fV(y, A);
             if (-1 !== B) {
                 var C = attacks.am(y, B);
@@ -792,30 +795,30 @@ function ProcessAction() {
             }
         }
     };
-    this.fY = function(y, A, B) {
-        1 === clientStatus && g(y, 0, A, B, 0, 0)
+    this.pendingAttack = function(authorID, ratio, targetID) {
+        1 === clientStatus && addPendingAction(authorID, 0, ratio, targetID, 0, 0)
     };
-    this.fb = function(y, A, B, C) {
-        1 === clientStatus && (inSpawn ? spawn.set(y, B, C) : g(y, 1, A, 0, B, C))
+    this.pendingSetLocation = function(authorID, ratio, xCoord, yCoord) {
+        1 === clientStatus && (inSpawn ? spawn.set(authorID, xCoord, yCoord) : addPendingAction(authorID, 1, ratio, 0, xCoord, yCoord))
     };
-    this.fe = function(y, A) {
-        1 === clientStatus && g(y, 2, 1, A, 0, 0)
+    this.pendingCancel = function(authorID, targetID) {
+        1 === clientStatus && addPendingAction(authorID, 2, 1, targetID, 0, 0)
     };
-    this.ff = function(y, A) {
-        1 === clientStatus && g(y, 7, 1, A, 0, 0)
+    this.pendingCancelBoat = function(authorID, boatID) {
+        1 === clientStatus && addPendingAction(authorID, 7, 1, boatID, 0, 0)
     };
-    this.fg = function(y, A) {
-        1 === clientStatus && g(y, 6, 1, A, 0, 0)
+    this.pendingPeace = function(id, choice) {
+        1 === clientStatus && addPendingAction(id, 6, 1, choice, 0, 0)
     };
-    this.fh = function(y) {
-        1 === clientStatus && 0 !== isAlive[y] && 2 !== playerStatus[y] && (8 === gamemode ? endGame.endGame(1 - y) : this.fk(y));
-        announcements.fl(y, 4)
+    this.onLeave = function(id) {
+        1 === clientStatus && 0 !== isAlive[id] && 2 !== playerStatus[id] && (8 === gamemode ? endGame.endGame(1 - id) : this.leave(id));
+        announcements.genericAnnouncement(id, 4)
     };
-    this.fk = function(y) {
-        inSpawn ? (fm(y), fn()) : humanBots.fo(y)
+    this.leave = function(id) {
+        inSpawn ? (fm(id), fn()) : humanBots.turnToBot(id)
     };
-    this.fp = function(y) {
-        0 !== isAlive[y] && 2 !== playerStatus[y] && fq.fr(y) && (1 === dY ? endGame.endGame(y) : (announcements.fl(y, y === myID ? 21 : 22), 8 === gamemode ? endGame.endGame(1 - y) : singleplayer ? (fm(y), fn(), inSpawn && spawn.dF()) : this.fk(y)))
+    this.surrender = function(id) {
+        0 !== isAlive[id] && 2 !== playerStatus[id] && fq.canSurrender(id) && (1 === aliveCount ? endGame.endGame(id) : (announcements.genericAnnouncement(id, id === myID ? 21 : 22), 8 === gamemode ? endGame.endGame(1 - id) : singleplayer ? (fm(id), fn(), inSpawn && spawn.update()) : this.leave(id)))
     }
 }
 
@@ -837,8 +840,8 @@ function fu() {
     this.g0 = function(B, C) {
         y[B] = C
     };
-    this.dF = function() {
-        for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, g1.dF(B, z[B], x[B], y[B], A[B]))
+    this.update = function() {
+        for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, g1.update(B, z[B], x[B], y[B], A[B]))
     };
     this.av = function(B, C) {
         var E;
@@ -927,22 +930,22 @@ function gK() {
     this.ge = function() {
         g(1);
         this.gf(0, 0, currentMapWidth - 1, currentMapHeight - 1);
-        inSpawn || this.gg(myID, 3E3, !0, .3)
+        inSpawn || this.hoverTo(myID, 3E3, !0, .3)
     };
-    this.gg = function(J, L, H, M) {
-        if (!(isCanvasHidden || D && !H && K || 0 === land[J])) {
+    this.hoverTo = function(targetID, L, H, M) {
+        if (!(isCanvasHidden || D && !H && K || 0 === land[targetID])) {
             gj.gk = !1;
             K = H;
             g(L);
-            E = (xMin[J] + xMax[J] + 1) / 2;
-            F = (yMin[J] + yMax[J] + 1) / 2;
-            L = xMax[J] -
-                xMin[J] + 1;
-            J = yMax[J] - yMin[J] + 1;
+            E = (xMin[targetID] + xMax[targetID] + 1) / 2;
+            F = (yMin[targetID] + yMax[targetID] + 1) / 2;
+            L = xMax[targetID] -
+                xMin[targetID] + 1;
+            targetID = yMax[targetID] - yMin[targetID] + 1;
             H = gE / L;
-            var Q = cB / J;
+            var Q = cB / targetID;
             G = H < Q ? H : Q;
-            G *= 0 !== M ? M : 20 > L && 20 > J ? .5 : .9;
+            G *= 0 !== M ? M : 20 > L && 20 > targetID ? .5 : .9;
             k(.875);
             D = !0;
             gn.go()
@@ -969,7 +972,7 @@ function gK() {
         D = !1;
         return !0
     };
-    this.dF = function() {
+    this.update = function() {
         if (D) {
             .5 > x ? z < y && (z += y * l, t = x) : x > 1 - t && (z -= y * l, z = z < y * l ? y * l : z);
             N = N >= c4.time ? c4.time - 1 : N;
@@ -1135,7 +1138,7 @@ function hp() {
     hq.hr();
     mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0);
     mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
-    mainCanvasCtx.drawImage(hs, gj.gF(), gj.cF());
+    mainCanvasCtx.drawImage(mapBaseCanvas, gj.gF(), gj.cF());
     eN.cG();
     mainCanvasCtx.drawImage(mapCanvas, gj.gF(), gj.cF());
     mainCanvasCtx.imageSmoothingEnabled = !1;
@@ -1298,7 +1301,7 @@ function EndGame() {
         if (!k) {
             if (8 === gamemode) {
                 var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
-                (k = winner === myID) ? announcements.fl(winner, 2): announcements.fl(1 - myID, 3);
+                (k = winner === myID) ? announcements.genericAnnouncement(winner, 2): announcements.genericAnnouncement(1 - myID, 3);
                 points1v1.calculateElo(winner)
             } else teamGame ? (winner = eT.ik(), k = teams.dX[myID] === winner, 9 === gamemode ? result = k ? em[0] : 512 : (winner = teams.il(teams.im[winner]), result = winner[0], 512 !== result && announcements.io(winner[1])), announcements.ip(k)) : (result = em[0], k = result === myID, announcements.iq(result));
             singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
@@ -1317,7 +1320,7 @@ function Spawn() {
     this.set = function(g, k, n) {
         0 !== isAlive[g] && j1.hi(g, k, n) && (c4.canvasDirty = !0)
     };
-    this.dF = function() {
+    this.update = function() {
         inSpawn = !1;
         for (var g = 0; g < playerCount; g++) 0 !== isAlive[g] && 0 === land[g] && j1.ho(g);
         0 !== isAlive[myID] ? (statistics.b1[7] = land[myID], statistics.b1[8] = troops[myID], troopBar.cE(), eB.j2(), eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5), eX.init()) : gameResultBox.show(!1, !1);
@@ -1334,7 +1337,7 @@ var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
     entityCount = 512,
     j7 = 150,
     singleplayer, j8, clientStatus = 0,
-    j9, troopCap, maxTroopsBeforeRedInterest, startingTroops = 512,
+    currentLandPixelsCount, troopCap, maxTroopsBeforeRedInterest, startingTroops = 512,
     at = 2,
     myID, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
@@ -1377,7 +1380,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     nickNames.jT();
     nickNames.jU();
     j1.init();
-    jV();
+    updateAliveInfo();
     eN.init();
     hv.init();
     mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0);
@@ -1426,7 +1429,7 @@ function jb() {
     a9(0);
     aB()
 }
-var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopBar, gj, playtime, eO, eM, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, e2, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, ju, humanBots, antiFullSend, eQ, loadCustom, customMap;
+var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, eP, c2, troopBar, gj, playtime, eO, eM, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, e2, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustom, customMap;
 
 function construct() {
     dG = new de;
@@ -1489,7 +1492,7 @@ function construct() {
     wsManager = new WsManager;
     eH = new kj;
     jt = new kk;
-    ju = new kl;
+    specialGames = new SpecialGames;
     humanBots = new HumanBots;
     antiFullSend = new AntiFullSend;
     eQ = new ko;
@@ -1572,24 +1575,24 @@ function jx() {
     };
     this.mouseDown = function(L, H) {
         C = B = -1E3;
-        if (2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return this.lF(), 1;
+        if (2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return this.end(), 1;
         if (t) {
-            this.lF();
+            this.end();
             if (a5.lG(L, H)) a5.lH(L, H, targetID) && (t = !0);
             else return a5.lI(), 2;
             return 1
         }
         var type = l(L, H);
-        if (!n(type) || 0 === type || 6 === type || !x[2] && 3 === type) return this.lF(), 2;
+        if (!n(type) || 0 === type || 6 === type || !x[2] && 3 === type) return this.end(), 2;
         if (1 === type) {
             if (x[6]) {
                 type = (new Date).getTime();
                 type > J + 4E3 && (K = []);
                 J = type;
-                if (k(targetID)) return this.lF(), 1;
+                if (k(targetID)) return this.end(), 1;
                 K.push(targetID);
                 16 < K.length && K.shift();
-                this.lF();
+                this.end();
                 return 1
             }
             return 0
@@ -1598,23 +1601,23 @@ function jx() {
             if (x[7]) {
                 for (type = K.length - 1; 0 <= type; type--) 0 === isAlive[K[type]] && K.splice(type, 1);
                 0 < K.length && (eQ.lO(1, K, !0) && (announcements.lP(K, targetID), dataEncoder.requestAttack(K, targetID)), K = []);
-                this.lF();
+                this.end();
                 return 1
             }
             return 0
         }
         if (3 === type) {
-            this.lF();
+            this.end();
             if (this.lE(targetID) && 7 > gamemode && 1071 > c4.dU()) return announcements.lR(), 1;
             announcements.lS();
             singleplayer ? da(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
             return 1
         }
-        if (4 === type) return x[0] ? inSpawn ? (this.lF(), singleplayer ? (spawn.set(0, pixel.gF(G), pixel.cF(G)), spawn.dF()) : dataEncoder.setLocation(1E3, pixel.gF(G), pixel.cF(G))) : (this.lF(), announcements.lS(), singleplayer ? fL(myID, targetID, troopBar.getRatio()) : (!freeSpawn || 300 < eB.lV()) && dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID)) : x[8] ? (this.lF(), eH.lX(targetID, troopBar.getRatio())) : this.lF(), 1;
-        if (5 === type) return x[1] ? (this.lF(), announcements.lS(), singleplayer ? processAction.fM(myID, troopBar.getRatio(), pixel.gF(G), pixel.cF(G)) : dataEncoder.setLocation(troopBar.getRatio(), pixel.gF(G), pixel.cF(G)), 1) : 0;
-        if (7 === type && x[4]) return this.lF(), t = a5.show(L, H), 1;
-        if (8 === type) return x[5] ? (eQ.lO(0, [targetID], !0) && (announcements.nonAggression(targetID, 0), dataEncoder.nonAggression(targetID)), this.lF(), 1) : 0;
-        this.lF();
+        if (4 === type) return x[0] ? inSpawn ? (this.end(), singleplayer ? (spawn.set(0, pixel.gF(G), pixel.cF(G)), spawn.update()) : dataEncoder.setLocation(1E3, pixel.gF(G), pixel.cF(G))) : (this.end(), announcements.lS(), singleplayer ? fL(myID, targetID, troopBar.getRatio()) : (!freeSpawn || 300 < eB.lV()) && dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID)) : x[8] ? (this.end(), eH.lX(targetID, troopBar.getRatio())) : this.end(), 1;
+        if (5 === type) return x[1] ? (this.end(), announcements.lS(), singleplayer ? processAction.fM(myID, troopBar.getRatio(), pixel.gF(G), pixel.cF(G)) : dataEncoder.setLocation(troopBar.getRatio(), pixel.gF(G), pixel.cF(G)), 1) : 0;
+        if (7 === type && x[4]) return this.end(), t = a5.show(L, H), 1;
+        if (8 === type) return x[5] ? (eQ.lO(0, [targetID], !0) && (announcements.nonAggression(targetID, 0), dataEncoder.nonAggression(targetID)), this.end(), 1) : 0;
+        this.end();
         return 2
     };
     this.click = function(L, H) {
@@ -1626,14 +1629,14 @@ function jx() {
         if (1 > M || 1 > Q || M >= currentMapWidth - 1 || Q >= currentMapHeight - 1) return !1;
         var R = Q * currentMapWidth * 4 + 4 * M;
         if (!pixel.b6(R)) return !1;
-        if (2 === clientStatus) return 1 <= a5.ld && (targetID = pixel.bF(R), this.lE(targetID)) ? (targetID === myID && this.lF(), x[4] = !0, this.le(L, H)) : !1;
+        if (2 === clientStatus) return 1 <= a5.ld && (targetID = pixel.bF(R), this.lE(targetID)) ? (targetID === myID && this.end(), x[4] = !0, this.le(L, H)) : !1;
         G = pixel.f1(M, Q);
         if (inSpawn) return x[0] = !0, this.le(L, H);
         x[1] = boatPathChecker.co(myID, G);
         if (pixel.bG(R)) return targetID = maxEntities, lf(myID) ? x[0] = !0 : lg(myID, targetID) && (x[8] = !0), this.le(L, H);
         targetID = pixel.bF(R);
         if (targetID === myID) {
-            this.lF();
+            this.end();
             if (0 === a5.ld) return !1;
             x[4] = !0;
             return this.le(L, H)
@@ -1684,15 +1687,15 @@ function jx() {
             t = !1;
             return c4.canvasDirty = !0
         }
-        return n(l(L, H)) ? !1 : (this.lF(), c4.canvasDirty = !0)
+        return n(l(L, H)) ? !1 : (this.end(), c4.canvasDirty = !0)
     };
-    this.lF = function() {
+    this.end = function() {
         var L;
         for (L = x.length - 1; 0 <= L; L--) x[L] = !1;
         t = !1
     };
     this.ln = function() {
-        this.lF()
+        this.end()
     };
     this.hidden = function() {
         var L;
@@ -1792,7 +1795,7 @@ function jy() {
     };
     this.mouseDown = function(B, C) {
         var E = k(B, C);
-        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.fr(myID) && (singleplayer ? processAction.fp(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statistics.m4 ? (hv.m0(), c4.canvasDirty = !0, 2) : hv.hidden ||
+        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.canSurrender(myID) && (singleplayer ? processAction.surrender(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statistics.m4 ? (hv.m0(), c4.canvasDirty = !0, 2) : hv.hidden ||
             singleplayer && !inSpawn ? 1 : (this.m0(), 2) : 0 === E ? (this.m0(), 2) : 0
     };
     this.lm = function(B, C) {
@@ -1823,12 +1826,12 @@ function jy() {
             mainCanvasCtx.fillText(z[0], 2 * l, .54 * l);
             B = .4 * l;
             fq.m9(m5 + 4 * l + (1.5 * l - B) / 2, troopBar.fK + .3 * l, B);
-            n(1, fq.fr(myID) ? whiteRGB2 : gray128RGB);
+            n(1, fq.canSurrender(myID) ? whiteRGB2 : gray128RGB);
             2 <= statistics.m4 && n(2, whiteRGB2);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(x, m5, troopBar.fK)
     };
-    this.fr = function(B) {
+    this.canSurrender = function(B) {
         return 0 !== isAlive[B] && 2 !== clientStatus && hu.lE(B)
     };
     this.m9 = function(B, C, E) {
@@ -1845,47 +1848,47 @@ function jy() {
 }
 
 function Announcements() {
-    var g, k, n, l, x, t, z;
+    var g, k, n, l, x, pluralLeaveLabels, monoLeaveLabels;
 
     function y() {
         return troopBar.md(announcements.ma()) ? peace.hidden ? troopBar.fK - troopBar.height - 2 * N : troopBar.fK - N : peace.hidden ? s - troopBar.height - (isZoom ? 3 : 2) * N : s - N
     }
 
-    function announce(H, M, Q, R, P, U, W, X) {
-        var V = 1E3 <= Q;
-        var na = Math.floor(c2.measureText(M, announcements.c0) + 1.5 * I + (V ? G : 1.5 * I));
-        if (na + N > r && !V && 50 !== Q && 20 < M.length) {
-            var ba = Math.floor(.5 * M.length);
-            announce(H, M.substring(0, ba), Q, R, P, U, W, X);
-            announce(H, M.substring(ba), Q, R, P, U, W, X)
+    function announce(displayTime, message, messageID, playerID, P, U, W, X) {
+        var isEmoji = 1E3 <= messageID;
+        var messageWidth = Math.floor(c2.measureText(message, announcements.c0) + 1.5 * I + (isEmoji ? G : 1.5 * I));
+        if (messageWidth + N > r && !isEmoji && 50 !== messageID && 20 < message.length) {
+            var ba = Math.floor(.5 * message.length);
+            announce(displayTime, message.substring(0, ba), messageID, playerID, P, U, W, X);
+            announce(displayTime, message.substring(ba), messageID, playerID, P, U, W, X)
         } else {
-            var ca = Q - 1E3;
-            ba = na + (50 === Q ? D : 0);
-            var pa = document.createElement("canvas");
-            pa.width = na;
-            pa.height = G;
-            var S = pa.getContext("2d", {
+            var ca = messageID - 1E3;
+            ba = messageWidth + (50 === messageID ? D : 0);
+            var messageCanvas = document.createElement("canvas");
+            messageCanvas.width = messageWidth;
+            messageCanvas.height = G;
+            var S = messageCanvas.getContext("2d", {
                 alpha: !0
             });
             S.font =
                 announcements.c0;
             S.textBaseline = middleAlign;
             S.textAlign = leftAlign;
-            S.clearRect(0, 0, na, G);
+            S.clearRect(0, 0, messageWidth, G);
             S.fillStyle = U;
-            S.fillRect(0, 0, na, G);
+            S.fillRect(0, 0, messageWidth, G);
             S.fillStyle = P;
-            S.fillText(M, Math.floor(1.5 * I), Math.floor(G / 2));
-            V && (V = G / a5.width, S.imageSmoothingEnabled = !0, S.setTransform(V, 0, 0, V, na - G, 0), S.drawImage(a5.l5[ca], 0, 0));
-            F.unshift({
-                time: H,
-                l: M,
-                id: Q,
-                player: R,
-                canvas: pa,
+            S.fillText(message, Math.floor(1.5 * I), Math.floor(G / 2));
+            isEmoji && (isEmoji = G / a5.width, S.imageSmoothingEnabled = !0, S.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - G, 0), S.drawImage(a5.l5[ca], 0, 0));
+            pendingAnnouncements.unshift({
+                time: displayTime,
+                l: message,
+                id: messageID,
+                player: playerID,
+                canvas: messageCanvas,
                 mU: P,
                 mV: U,
-                width: na,
+                width: messageWidth,
                 mb: ba,
                 mW: W,
                 mX: X
@@ -1895,10 +1898,10 @@ function Announcements() {
 
     function B(H, M) {
         var Q, R = 0,
-            P = F.length;
+            P = pendingAnnouncements.length;
         for (Q = 0; Q < P; Q++)
-            if (F[Q].id === H && (R++, R >= M)) {
-                F.splice(Q, 1);
+            if (pendingAnnouncements[Q].id === H && (R++, R >= M)) {
+                pendingAnnouncements.splice(Q, 1);
                 break
             }
     }
@@ -1910,10 +1913,10 @@ function Announcements() {
     function E(H, M) {
         var Q,
             R = !1;
-        for (Q = F.length - 1; 0 <= Q; Q--) F[Q].id !== H || M !== maxEntities && F[Q].player !== M || (F.splice(Q, 1), R = !0);
+        for (Q = pendingAnnouncements.length - 1; 0 <= Q; Q--) pendingAnnouncements[Q].id !== H || M !== maxEntities && pendingAnnouncements[Q].player !== M || (pendingAnnouncements.splice(Q, 1), R = !0);
         return R
     }
-    var F, G, N, I, D, K, J, L;
+    var pendingAnnouncements, G, N, I, D, K, J, L;
     this.init = function() {
         J = 0;
         K = isZoom ? 7 : 12;
@@ -1922,18 +1925,18 @@ function Announcements() {
         n = [220, 180, 180];
         l = [0, 0, 0];
         x = [0, 0, 0];
-        t = [" were conquered.", " left the game.", " surrendered."];
-        z = [" was conquered by ", " left the game.", " surrendered."];
-        F = [];
+        pluralLeaveLabels = [" were conquered.", " left the game.", " surrendered."];
+        monoLeaveLabels = [" was conquered by ", " left the game.", " surrendered."];
+        pendingAnnouncements = [];
         this.lv();
-        inSpawn && this.fl(0, 18);
-        var H = "Map: " + mapInfo.getMapName() + "   Pixels: " + eP.gJ(configFakeMap.nE) + "   Land: " + eP.gJ(configFakeMap.nF) + " (" + eB.nG(100 * configFakeMap.nF / configFakeMap.nE, 1) + ")",
-            M = "";
-        0 < configFakeMap.nI && (M += "Water: " + eP.gJ(configFakeMap.nI) +
-            " (" + eB.nG(100 * configFakeMap.nI / configFakeMap.nE, 1) + ")");
-        0 < configFakeMap.nJ && (M += 0 < configFakeMap.nI ? "   " : "", M += "Mountains: " + eP.gJ(configFakeMap.nJ) + " (" + eB.nG(100 * configFakeMap.nJ / configFakeMap.nE, 1) + ")");
-        announce(340, H, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
-        0 < M.length && announce(340, M, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
+        inSpawn && this.genericAnnouncement(0, 18);
+        var mapLandInfoLabel = "Map: " + mapInfo.getMapName() + "   Pixels: " + eP.gJ(configFakeMap.totalNonBorderPixelsCount) + "   Land: " + eP.gJ(configFakeMap.landPixelsCount) + " (" + eB.nG(100 * configFakeMap.landPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")",
+            mapSpecialInfoLabel = "";
+        0 < configFakeMap.waterPixelsCount && (mapSpecialInfoLabel += "Water: " + eP.gJ(configFakeMap.waterPixelsCount) +
+            " (" + eB.nG(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
+        0 < configFakeMap.mountainPixelsCount && (mapSpecialInfoLabel += 0 < configFakeMap.waterPixelsCount ? "   " : "", mapSpecialInfoLabel += "Mountains: " + eP.gJ(configFakeMap.mountainPixelsCount) + " (" + eB.nG(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
+        announce(340, mapLandInfoLabel, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
+        0 < mapSpecialInfoLabel.length && announce(340, mapSpecialInfoLabel, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
         10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, C(235, 255, 120), blackMoreOpaque, -1, !1);
         this.mP()
     };
@@ -1947,15 +1950,14 @@ function Announcements() {
     this.lv = function() {
         var H;
         G = Math.floor((isZoom ? .031 : .0249) * bq);
-        G =
-            10 > G ? 10 : G;
+        G = 10 > G ? 10 : G;
         this.by = Math.floor(2 * G / 3);
         this.c0 = fontWeightBold + this.by + fontSizeArial;
         N = m5;
         I = Math.floor(G / 5);
-        if (0 < F.length) {
-            var M = F;
-            F = [];
+        if (0 < pendingAnnouncements.length) {
+            var M = pendingAnnouncements;
+            pendingAnnouncements = [];
             for (H = M.length - 1; 0 <= H; H--) announce(M[H].time, M[H].l, M[H].id, M[H].player, M[H].mU, M[H].mV, M[H].mW, M[H].mX)
         }
         this.mY()
@@ -1975,31 +1977,46 @@ function Announcements() {
         H.fillStyle = greenDarkMoreOpaque;
         H.fillRect(0, 0, D, G);
         H.fillStyle = whiteRGB2;
-        H.fillText("Accept",
-            Math.floor(D / 2), Math.floor(G / 2))
+        H.fillText("Accept", Math.floor(D / 2), Math.floor(G / 2))
     };
     this.ma = function() {
         if (peace.hidden) return peace.width;
-        var H = F.length;
-        return 0 === H ? 0 : 1 === H ? F[0].mb : getMax(F[0].mb, F[1].mb)
+        var H = pendingAnnouncements.length;
+        return 0 === H ? 0 : 1 === H ? pendingAnnouncements[0].mb : getMax(pendingAnnouncements[0].mb, pendingAnnouncements[1].mb)
     };
-    this.mouseDown = function(H, M) {
-        for (var Q = y(), R, P = F.length - 1; 0 <= P; P--)
-            if (R = Q - (P + 1) * G, M >= R && M < R + G) {
-                if (50 === F[P].id) {
-                    if (H >= gE - D - N - F[P].width) return H >= gE - D - N ? (P = F[P].player, this.nonAggression(P, 0), dataEncoder.nonAggression(P)) : eV.gg(F[P].player, 800, !1, 0), !0;
+    this.mouseDown = function(xPos, yPos) {
+        for (var Q = y(), R, mIndex = pendingAnnouncements.length - 1; 0 <= mIndex; mIndex--)
+            if (R = Q - (mIndex + 1) * G, yPos >= R && yPos < R + G) {
+                if (50 === pendingAnnouncements[mIndex].id) {
+                    if (xPos >= gE - D - N - pendingAnnouncements[mIndex].width) {
+                        if (xPos >= gE - D - N) {
+                            mIndex = pendingAnnouncements[mIndex].player;
+                            this.nonAggression(mIndex, 0);
+                            dataEncoder.nonAggression(mIndex);
+                        } else eV.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
+                        return true;
+                    }
                     break
                 }
-                if (H >= gE - F[P].width - N) return F[P].mX && (eV.gg(F[P].player, 800, !1, 0), 0 <= F[P].mW && (Q = F[P].mW, F[P].mW = F[P].player, F[P].player = Q)), !0;
+                if (xPos >= gE - pendingAnnouncements[mIndex].width - N) {
+                    if (pendingAnnouncements[mIndex].mX) {
+                        eV.gg(pendingAnnouncements[mIndex].player, 800, !1, 0);
+                        if (0 <= pendingAnnouncements[mIndex].mW) {
+                            Q = pendingAnnouncements[mIndex].mW;
+                            pendingAnnouncements[mIndex].mW = pendingAnnouncements[mIndex].player;
+                            pendingAnnouncements[mIndex].player = Q;
+                        }
+                    }
+                    return !0;
+                }
                 break
             } return !1
     };
-    this.j3 =
-        function(H) {
-            for (var M = F.length - 1; 0 <= M; M--) F[M].id === H && (F[M].time = 1)
-        };
-    this.fl = function(H, M) {
-        0 === M ? (statistics.b1[H < playerCount ? 4 : 3]++, c2.set(H, 0), announce(isZoom ? 100 : 160, "You conquered " + nickname[H] + ".", 0, H, "rgb(10,220,10)", blackMoreOpaque, -1, !1)) : 1 === M ? (E(50, maxEntities), c2.set(H, 1), announce(360, "You were conquered by " + nickname[H] + ".", 0, H, "rgb(255,40,40)", blackMoreOpaque, -1, !0), eV.gg(H, 2700, !0, 0)) : 2 === M ? (c2.set(H, 2), announce(0, "Congratulations! You won the game.", 0, H, "rgb(10,255,255)", blackMoreOpaque, -1, !0), eV.gg(H, 2700, !0, 0)) : 3 === M ? (c2.set(H, 2), announce(0, nickname[H] + " won the game.", 0, H, whiteRGB2, blackMoreOpaque, -1, !0), eV.gg(H, 2700,
+    this.j3 = function(H) {
+        for (var M = pendingAnnouncements.length - 1; 0 <= M; M--) pendingAnnouncements[M].id === H && (pendingAnnouncements[M].time = 1)
+    };
+    this.genericAnnouncement = function(H, M) {
+        0 === M ? (statistics.b1[H < playerCount ? 4 : 3]++, c2.set(H, 0), announce(isZoom ? 100 : 160, "You conquered " + nickname[H] + ".", 0, H, "rgb(10,220,10)", blackMoreOpaque, -1, !1)) : 1 === M ? (E(50, maxEntities), c2.set(H, 1), announce(360, "You were conquered by " + nickname[H] + ".", 0, H, "rgb(255,40,40)", blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700, !0, 0)) : 2 === M ? (c2.set(H, 2), announce(0, "Congratulations! You won the game.", 0, H, "rgb(10,255,255)", blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700, !0, 0)) : 3 === M ? (c2.set(H, 2), announce(0, nickname[H] + " won the game.", 0, H, whiteRGB2, blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700,
             !0, 0)) : 4 === M ? (playersIngame--, spectatorCount--, this.mj(1, H, H)) : 5 === M ? 2 !== playerStatus[H] && hu.lE(myID) && (B(1, 5), eA.ml(H) ? announce(180, nickname[H] + " has broken the non-aggression pact and invades you!", 1, H, C(255, 200, 180), blackMoreOpaque, -1, !0) : announce(180, nickname[H] + " is attacking you!", 1, H, "rgb(255,70,10)", blackMoreOpaque, -1, !0)) : 18 === M ? announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, !1) : 21 === M ? announce(220, "You surrendered!", M, 0, "rgb(255,40,40)", blackMoreOpaque, -1, !1) : 22 === M && this.mj(2, H, H)
     };
     this.mm = function(H) {
@@ -2009,7 +2026,7 @@ function Announcements() {
         c2.set(H, 2);
         100 > playerCount ? announce(0, nickname[H] +
             " won the game.", 3, H, whiteRGB2, blackMoreOpaque, -1, !0) : announce(0, nickname[H] + " has been immortalized!", 3, H, whiteRGB2, blackMoreOpaque, -1, !0);
-        eV.gg(H, 2700, !0, 0)
+        eV.hoverTo(H, 2700, !0, 0)
     };
     this.newEmojiMessage = function(H, M, Q) {
         H === myID ? announce(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, C(200, 255, 210), blackMoreOpaque, -1, !0) : this.ms(H, Q)
@@ -2017,9 +2034,9 @@ function Announcements() {
     this.ms = function(H, M) {
         var Q, R = 0;
         announce(175, nickname[H] + ": ", 1E3 + M, H, whiteRGB2, "rgba(5,60,25,0.9)", -1, !0);
-        for (Q = 0; Q < F.length; Q++)
-            if (1E3 <= F[Q].id && F[Q].player === H && (R++, 3 < R)) {
-                F.splice(Q, 1);
+        for (Q = 0; Q < pendingAnnouncements.length; Q++)
+            if (1E3 <= pendingAnnouncements[Q].id && pendingAnnouncements[Q].player === H && (R++, 3 < R)) {
+                pendingAnnouncements.splice(Q, 1);
                 break
             }
     };
@@ -2030,12 +2047,11 @@ function Announcements() {
         9 !== gamemode && c2.mx("Team " + teams.bo[M], 2, 1, 12);
         eV.gp(2700)
     };
-    this.new1v1 = function(H) {
-        announce(300, H[0].name + " [" + points1v1.formatElo(H[0].elo) + "] vs " + H[1].name + " [" + points1v1.formatElo(H[1].elo) + "]", 65, 0, blackRGB, "rgba(100,255,255,0.75)", -1, !1)
+    this.new1v1 = function(players) {
+        announce(300, players[0].name + " [" + points1v1.formatElo(players[0].elo) + "] vs " + players[1].name + " [" + points1v1.formatElo(players[1].elo) + "]", 65, 0, blackRGB, "rgba(100,255,255,0.75)", -1, !1)
     };
-    this.my = function(H) {
-        announce(200, H, 0, 0, "rgb(40,255,200)",
-            "rgba(10,60,40,0.9)", -1, !1)
+    this.upcomingGame = function(message) {
+        announce(200, message, 0, 0, "rgb(40,255,200)", "rgba(10,60,40,0.9)", -1, !1)
     };
     this.result1v1 = function(H, M, Q, R) {
         1 === wsManager.getConnectedLobby() && (announce(0, H[0].name + ": " + points1v1.formatElo(H[0].elo) + " -> " + M, 66, 0, whiteRGB2, R[0], -1, !1), announce(0, H[1].name + ": " + points1v1.formatElo(H[1].elo) + " -> " + Q, 66, 1, whiteRGB2, R[1], -1, !1))
@@ -2080,7 +2096,7 @@ function Announcements() {
     this.nA = function(H, M) {
         if (2 !== playerStatus[myID]) {
             var Q = 2 === playerStatus[M] || M >= playerCount;
-            var R = 200 - 20 * F.length;
+            var R = 200 - 20 * pendingAnnouncements.length;
             announce(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + eP.gJ(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, blackRGB, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
             B(31, isZoom ? 4 : 6)
         }
@@ -2093,8 +2109,8 @@ function Announcements() {
         var M = l[H];
         var Q = g[H];
         l[H] = 0;
-        1 === M ? (M = nickname[Q] + z[H], 0 === H && (M +=
-            nickname[k[H]] + "."), announce(n[H], M, 7, k[H], whiteRGB2, blackMoreOpaque, -1, !0)) : 2 <= M && (M = nickname[Q] + " and " + (M - 1) + " other player" + (2 === M ? "" : "s") + t[H], announce(n[H], M, 7, Q, whiteRGB2, blackMoreOpaque, -1, !1))
+        1 === M ? (M = nickname[Q] + monoLeaveLabels[H], 0 === H && (M +=
+            nickname[k[H]] + "."), announce(n[H], M, 7, k[H], whiteRGB2, blackMoreOpaque, -1, !0)) : 2 <= M && (M = nickname[Q] + " and " + (M - 1) + " other player" + (2 === M ? "" : "s") + pluralLeaveLabels[H], announce(n[H], M, 7, Q, whiteRGB2, blackMoreOpaque, -1, !1))
     };
     this.mj = function(H, M, Q) {
         var R = c4.dU(),
@@ -2105,17 +2121,17 @@ function Announcements() {
         1 === P && (x[H] = R);
         1 === P && (32 > playersIngame || 2 === clientStatus) ? this.nL(H) : 1 < P && (x[H] < R - 140 || 2 === clientStatus) && this.nL(H)
     };
-    this.dF = function() {
-        var H, M = F.length - K;
+    this.update = function() {
+        var H, M = pendingAnnouncements.length - K;
         M = 1 >= M ? 1 : M * M;
-        for (H = F.length - 1; 0 <= H; H--) 0 < F[H].time && (F[H].time -= M, 0 >= F[H].time && F.splice(H, 1));
+        for (H = pendingAnnouncements.length - 1; 0 <= H; H--) 0 < pendingAnnouncements[H].time && (pendingAnnouncements[H].time -= M, 0 >= pendingAnnouncements[H].time && pendingAnnouncements.splice(H, 1));
         if (128 !== J && (J++, !(128 > J)))
-            for (H = 5, M = dY - 1; 0 <= M; M--) 1 === playerStatus[dZ[M]] && 0 < H-- && announce(240, nickname[dZ[M]] +
-                " joined the game.", 1, dZ[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
+            for (H = 5, M = aliveCount - 1; 0 <= M; M--) 1 === playerStatus[aliveEntities[M]] && 0 < H-- && announce(240, nickname[aliveEntities[M]] +
+                " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
         this.iy(!1)
     };
     this.cG = function() {
-        for (var H = y(), M, Q = F.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === F[Q].id ? (mainCanvasCtx.drawImage(F[Q].canvas, gE - F[Q].width - D - N, M), mainCanvasCtx.drawImage(L, gE - D - N, M)) : mainCanvasCtx.drawImage(F[Q].canvas, gE - F[Q].width - N, M)
+        for (var H = y(), M, Q = pendingAnnouncements.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === pendingAnnouncements[Q].id ? (mainCanvasCtx.drawImage(pendingAnnouncements[Q].canvas, gE - pendingAnnouncements[Q].width - D - N, M), mainCanvasCtx.drawImage(L, gE - D - N, M)) : mainCanvasCtx.drawImage(pendingAnnouncements[Q].canvas, gE - pendingAnnouncements[Q].width - N, M)
     }
 }
 
@@ -2196,7 +2212,7 @@ function k0() {
         l--;
         this.setTime()
     };
-    this.dF = function() {
+    this.update = function() {
         this.setTime() && (c4.canvasDirty = !0)
     };
     this.setTime = function() {
@@ -2477,12 +2493,12 @@ function p2() {
 
 function onMousedown(g) {
     g.preventDefault();
-    isTouch || (wsManager.pK(wsManager.remote), pL(Math.floor(pM * g.clientX), Math.floor(pM * g.clientY)))
+    isTouch || (wsManager.setHumanLastAction(wsManager.remote), pL(Math.floor(pM * g.clientX), Math.floor(pM * g.clientY)))
 }
 
 function onTouchstart(g) {
     g.preventDefault();
-    wsManager.pK(wsManager.remote);
+    wsManager.setHumanLastAction(wsManager.remote);
     isTouch = !0;
     0 < g.touches.length && (oy = Math.floor(pM * g.touches[0].clientX), oz = Math.floor(pM * g.touches[0].clientY), jo.pN(g) || pL(oy, oz))
 }
@@ -2548,7 +2564,7 @@ function pX(g, k) {
 
 function onWheel(g) {
     g.preventDefault();
-    wsManager.pK(wsManager.remote);
+    wsManager.setHumanLastAction(wsManager.remote);
     var k = Math.floor(pM * g.clientX),
         n = Math.floor(pM * g.clientY),
         l = g.deltaY;
@@ -2601,9 +2617,9 @@ function k1() {
 
     function n(C) {
         C.canvas = document.createElement("canvas");
-        pj.font = y;
+        mapBaseCanvasCtx.font = y;
         var E = z;
-        C.cM < maxEntities && 0 === C.id && (E += Math.floor(pj.measureText(nickname[C.cM] +
+        C.cM < maxEntities && 0 === C.id && (E += Math.floor(mapBaseCanvasCtx.measureText(nickname[C.cM] +
             "000").width));
         E += A;
         0 === C.id && (E += A);
@@ -2635,8 +2651,8 @@ function k1() {
         A = Math.floor(1.25 * A);
         isZoom && (A = Math.floor(1.25 * A));
         B = Math.floor(.15 * A);
-        pj.font = y;
-        z = Math.floor(pj.measureText("02 000 000 0000").width);
+        mapBaseCanvasCtx.font = y;
+        z = Math.floor(mapBaseCanvasCtx.measureText("02 000 000 0000").width);
         for (var C =
                 t.length - 1; 0 <= C; C--) n(t[C]), g(C)
     };
@@ -2667,7 +2683,7 @@ function k1() {
         }
         return !1
     };
-    this.dF = function() {
+    this.update = function() {
         if (2 !== clientStatus && 0 !== isAlive[myID] && !j8 && hu.lE(myID)) {
             var C = attacks.af(myID);
             b: if (t.length !== C) var E = !0;
@@ -2792,7 +2808,7 @@ function k2() {
             k()
         }
     };
-    this.dF = function() {
+    this.update = function() {
         if (0 !== x)
             if (4 === x) c4.time > J && (x = 0, 1 === clientStatus && c2.mx(mapInfo.getMapName(), 3, 1, 9));
             else {
@@ -2926,14 +2942,14 @@ function Peace() {
         singleplayer ? this.fX(0, J) : hu.lE(myID) && 0 !== isAlive[myID] && dataEncoder.votePeace(J);
         return !0
     };
-    this.dF = function() {
+    this.update = function() {
         if (0 < I) I--, 0 === I && k();
         else if (this.hidden) {
             F--;
             var D;
             if (D = 270 === F && 2 <= N) a: {
-                for (D = dY - 1; 0 <= D; D--)
-                    if (hu.lE(dZ[D])) {
+                for (D = aliveCount - 1; 0 <= D; D--)
+                    if (hu.lE(aliveEntities[D])) {
                         D = !1;
                         break a
                     } D = !0
@@ -2947,10 +2963,10 @@ function Peace() {
                 this.hidden = !0;
                 F = 360;
                 var K = 0;
-                for (D = dY - 1; 0 <= D; D--) hu.lE(dZ[D]) && (K += land[dZ[D]]);
+                for (D = aliveCount - 1; 0 <= D; D--) hu.lE(aliveEntities[D]) && (K += land[aliveEntities[D]]);
                 B[0] = getMax(divideFloor(3 * K, 5), 1);
                 teamGame && 9 !== gamemode && (B[0] =
-                    getMin(getMax(divideFloor(K * (100 - divideFloor(100 * eT.qm(), j9)), 100), 1), B[0]));
+                    getMin(getMax(divideFloor(K * (100 - divideFloor(100 * eT.qm(), currentLandPixelsCount)), 100), 1), B[0]));
                 B[1] = getMax(K - B[0], 1);
                 N++
             }
@@ -3104,7 +3120,7 @@ function TroopBar() {
     this.pW = function() {
         this.pT = !1
     };
-    this.dF = function() {
+    this.update = function() {
         this.hidden() && Math.floor(troops[myID] * C) !== E && (G = !0)
     };
     this.cG = function() {
@@ -3270,162 +3286,162 @@ function Playtime() {
         B = .3;
         R = [];
         R.push({
-            mt: "Plateau A",
+            group: "Plateau A",
             b3: 0,
             pJ: 57
         });
         R.push({
-            mt: "Max A",
+            group: "Max A",
             b3: 1,
             pJ: 1
         });
         R.push({
-            mt: "Black Friday",
+            group: "Black Friday",
             b3: 15,
             pJ: 15
         });
         R.push({
-            mt: "Max B",
+            group: "Max B",
             b3: 19,
             pJ: 19
         });
         R.push({
-            mt: "Max C",
+            group: "Max C",
             b3: 44,
             pJ: 44
         });
         R.push({
-            mt: "First Android Version",
+            group: "First Android Version",
             b3: 58,
             pJ: 58
         });
         R.push({
-            mt: "Max D",
+            group: "Max D",
             b3: 67,
             pJ: 67
         });
         R.push({
-            mt: "The iFrame Explosion",
+            group: "The iFrame Explosion",
             b3: 98,
             pJ: 99
         });
         R.push({
-            mt: "The 155-Day Uptrend",
+            group: "The 155-Day Uptrend",
             b3: 58,
             pJ: 213
         });
         R.push({
-            mt: "Max E",
+            group: "Max E",
             b3: 213,
             pJ: 213
         });
         R.push({
-            mt: "Plateau B",
+            group: "Plateau B",
             b3: 214,
             pJ: 259
         });
         R.push({
-            mt: "Turbulent Times",
+            group: "Turbulent Times",
             b3: 260,
             pJ: 344
         });
         R.push({
-            mt: "Max F",
+            group: "Max F",
             b3: 262,
             pJ: 262
         });
         R.push({
-            mt: "Max G",
+            group: "Max G",
             b3: 282,
             pJ: 282
         });
         R.push({
-            mt: "Max H",
+            group: "Max H",
             b3: 333,
             pJ: 333
         });
         R.push({
-            mt: "The 19-Day Downtrend",
+            group: "The 19-Day Downtrend",
             b3: 283,
             pJ: 301
         });
         R.push({
-            mt: "Plateau C",
+            group: "Plateau C",
             b3: 345,
             pJ: 385
         });
         R.push({
-            mt: "The Alliance Ascent",
+            group: "The Alliance Ascent",
             b3: 386,
             pJ: 395
         });
         R.push({
-            mt: "Max I",
+            group: "Max I",
             b3: 395,
             pJ: 395
         });
         R.push({
-            mt: "First iOS Version",
+            group: "First iOS Version",
             b3: 411,
             pJ: 411
         });
         R.push({
-            mt: "Plateau D",
+            group: "Plateau D",
             b3: 396,
             pJ: 453
         });
         R.push({
-            mt: "The TikTok Revolution",
+            group: "The TikTok Revolution",
             b3: 454,
             pJ: 470
         });
         R.push({
-            mt: "Max J",
+            group: "Max J",
             b3: 456,
             pJ: 456
         });
         R.push({
-            mt: "Max K",
+            group: "Max K",
             b3: 472,
             pJ: 472
         });
         R.push({
-            mt: "Max L",
+            group: "Max L",
             b3: 478,
             pJ: 478
         });
         R.push({
-            mt: "YT Drew",
+            group: "YT Drew",
             b3: 471,
             pJ: 485
         });
         R.push({
-            mt: "Plateau E",
+            group: "Plateau E",
             b3: 485,
             pJ: 600
         });
         R.push({
-            mt: "Uptrend A",
+            group: "Uptrend A",
             b3: 600,
             pJ: 613
         });
         R.push({
-            mt: "Max M",
+            group: "Max M",
             b3: 613,
             pJ: 613
         });
         R.push({
-            mt: "Downtrend A",
+            group: "Downtrend A",
             b3: 614,
             pJ: 635
         });
         R.push({
-            mt: "Plateau F",
+            group: "Plateau F",
             b3: 636,
             pJ: 737
         });
         R.push({
-            mt: "End of Record",
+            group: "End of Record",
             b3: 738,
             pJ: 738
         });
@@ -3442,7 +3458,7 @@ function Playtime() {
             34452, 41048, 51372, 61916, 43236, 55172, 26776, 47E3, 57424, 93100, 64980, 37288, 44296, 34588, 40700, 29200, 24604, 18184, 42660, 31404, 38096, 18556, 17388, 19568, 17604, 22328, 40300, 39392, 33440, 17960, 7984, 11612, 67700, 14108, 22444, 19756, 9436, 16864, 14400, 17216, 14436, 8612, 15952, 29764, 18748, 16348, 23976, 22080, 20268, 20984, 9480, 30736, 15996, 9484, 9392, 9716, 21540, 57428, 24788, 18728, 8528, 5972, 20560, 18268, 28088, 15364, 15300, 29348, 30992, 20564, 34420, 16716, 14424, 12360, 15124, 51172, 13176
         ];
         this.lv();
-        wsManager.ri(0, 0)
+        wsManager.manageFirstAction(0, 0)
     };
     this.lv = function() {
         y = Math.floor(.15 *
@@ -3518,7 +3534,7 @@ function Playtime() {
             V = -1;
             na = t.length - G - 1;
             for (ba = R.length - 1; 0 <= ba; ba--) na >= R[ba].b3 && na <= R[ba].pJ && (-1 ===
-                V || R[ba].pJ - R[ba].b3 < R[V].pJ - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(mainCanvasCtx.measureText(R[V].mt).width), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(gE - na - N, X, na + N, ca), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(R[V].mt, Math.floor(gE - .5 * N), X + ca));
+                V || R[ba].pJ - R[ba].b3 < R[V].pJ - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(mainCanvasCtx.measureText(R[V].group).width), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(gE - na - N, X, na + N, ca), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(R[V].group, Math.floor(gE - .5 * N), X + ca));
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.fillText(P, U, cB);
             mainCanvasCtx.strokeStyle = whiteMore3Transparent;
@@ -3550,7 +3566,7 @@ function k6() {
         k = Math.floor(6 * this.height);
         g = fontWeightBold + Math.floor(.8 * this.height) + fontSizeArial;
         F = Math.floor(.5 * this.height);
-        pj.font = g;
+        mapBaseCanvasCtx.font = g;
         n = m5;
         l = Math.floor(1 + .13 * this.height);
         t = document.createElement("canvas");
@@ -3598,7 +3614,7 @@ function k6() {
     this.sE = function() {
         z.fillRect(l, this.height - l, Math.floor((k - 2 * l) * troops[myID] / x), l)
     };
-    this.dF = function() {
+    this.update = function() {
         0 !== isAlive[myID] && 2 !== playerStatus[myID] && A !== troops[myID] && (x = getMax(troops[myID], x), B = troops[myID] > A && 10 <= troops[myID], A = troops[myID], y = !0)
     };
     this.cG = function() {
@@ -3743,7 +3759,7 @@ function k7() {
     this.eb = function(S) {
         W && (S || 14 >= sm && 0 === c4.dU() % 6 || 14 < sm) && (W = !1, g())
     };
-    this.dF = function() {
+    this.update = function() {
         for (var S = E - 1; 0 <= S; S--)
             if (0 === isAlive[em[S]]) {
                 var O =
@@ -3799,7 +3815,7 @@ function k7() {
         if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, y), T = T !== y && z(S, O) ? T : -1, -1 !== T)) {
             var Y = em[T + V];
             T === y - 1 && sK[myID] >= V + y - 1 && (Y = myID);
-            0 !== isAlive[Y] && eV.gg(Y, 800, !1, 0)
+            0 !== isAlive[Y] && eV.hoverTo(Y, 800, !1, 0)
         }
         return !0
     };
@@ -3841,15 +3857,15 @@ function k8() {
     }
 
     function n(P) {
-        P = divideFloor(1E4 * P, j9);
+        P = divideFloor(1E4 * P, currentLandPixelsCount);
         8 === gamemode && (0 === isAlive[0] ? endGame.endGame(1) : 0 === isAlive[1] && endGame.endGame(0));
         P >= K[3] && (endGame.endGame(-1), K[4] = -1);
         K[4] !== P && (I++, K[4] = P)
     }
 
     function l() {
-        for (var P = dY - 1; 0 <= P; P--)
-            if (0 < potentialBorderAdvances[dZ[P]].length) return !1;
+        for (var P = aliveCount - 1; 0 <= P; P--)
+            if (0 < potentialBorderAdvances[aliveEntities[P]].length) return !1;
         return !0
     }
 
@@ -3869,13 +3885,13 @@ function k8() {
         D[5] = "Interest";
         D[6] = "Income";
         D[7] = "Time";
-        R = j9 - divideFloor(j9, 100);
+        R = currentLandPixelsCount - divideFloor(currentLandPixelsCount, 100);
         K = Array(D.length);
         K[0] = singleplayer ? 0 : playerCount;
-        K[1] = singleplayer ? dY : botCount;
+        K[1] = singleplayer ? aliveCount : botCount;
         K[2] = spectatorCount;
         K[3] = 1E4;
-        K[4] = divideFloor(1E4 * land[0], j9);
+        K[4] = divideFloor(1E4 * land[0], currentLandPixelsCount);
         K[5] = 700;
         K[6] = 0;
         x();
@@ -3937,9 +3953,9 @@ function k8() {
     this.nG = function(P, U) {
         return P.toFixed(U) + "%"
     };
-    this.dF = function() {
+    this.update = function() {
         J[0] && playersIngame - spectatorCount !== K[0] && (K[0] = playersIngame - spectatorCount, I++);
-        dY - K[0] !== K[1] && (K[1] = dY - K[0], I++);
+        aliveCount - K[0] !== K[1] && (K[1] = aliveCount - K[0], I++);
         this.eC();
         if (teamGame) {
             var P = eT.qm();
@@ -4031,7 +4047,7 @@ function GameResultBox() {
         g || (k = C ? 1 : 2, g = !0, this.lv(), hu.ln(), troopBar.qh(), B = c4.time, -1 === this.tb &&
             (this.tb = c4.dU()), y = E ? 1 : 0)
     };
-    this.dF = function() {
+    this.update = function() {
         !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.canvasDirty = !0)
     };
     this.mouseDown = function(C, E) {
@@ -4061,7 +4077,7 @@ function kd() {
                 for (t = 0; t <= teamCount; t++) n.push(this.ti(teams.tj[teams.im[t]], l));
             else n.push(this.ti(teams.tj[0], l)), n.push(this.ti(teams.tj[4], l))
     };
-    this.dF = function() {
+    this.update = function() {
         k && 349 === ++x && (n = [], k = !1)
     };
     this.ti = function(t, z) {
@@ -4246,11 +4262,11 @@ function MainLeaderboard() {
         nameInput.th();
         c4.canvasDirty = !0
     };
-    this.dF = function() {
+    this.update = function() {
         this.hidden && this.bv()
     };
     this.bv = function() {
-        c4.time - 12E4 >= n[this.tz] && (n[this.tz] = c4.time, this.paginationDirection = [0, 0], wsManager.ri(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
+        c4.time - 12E4 >= n[this.tz] && (n[this.tz] = c4.time, this.paginationDirection = [0, 0], wsManager.manageFirstAction(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
     };
     this.lv = function() {
         var l;
@@ -4331,7 +4347,7 @@ function MainLeaderboard() {
         this.paginationDirection[this.tz] = l < this.width / 2 ? -t : t;
         if (n[this.tz] + 50 > c4.time) return !0;
         n[this.tz] = c4.time;
-        wsManager.ri(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz);
+        wsManager.manageFirstAction(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz);
         return !0
     };
     this.cG = function() {
@@ -4452,7 +4468,7 @@ function OpenLinkBox() {
             c4.canvasDirty = !0
         }
     };
-    this.lF = function() {
+    this.end = function() {
         if (!this.hidden) return !1;
         document.body.removeChild(F);
         this.hidden = !1;
@@ -4790,11 +4806,11 @@ function kB() {
     function k() {
         D++;
         I = c4.time;
-        wsManager.ri(g(), 4) && (J = !0, dataEncoder.joinLobby(g()))
+        wsManager.manageFirstAction(g(), 4) && (J = !0, dataEncoder.joinLobby(g()))
     }
 
     function n() {
-        0 === D ? showError.vS(3249) : (D === wsManager.terriWsCount - 1 && (D = -1), k())
+        0 === D ? showError.displayError(3249) : (D === wsManager.terriWsCount - 1 && (D = -1), k())
     }
 
     function l(L, H, M) {
@@ -4846,13 +4862,13 @@ function kB() {
         return L > M && L < M + A && H > Q && H < Q + B ? (this.vT(), jh.lm(L, H, !1), !0) : !1
     };
     this.vT = function() {
-        wsManager.vU(3260);
+        wsManager.closeAll(3260);
         nameInput.init();
         c4.canvasDirty = !0
     };
-    this.dF = function() {
+    this.update = function() {
         6 === aJ.getState() &&
-            (J ? c4.time > I + 2E4 && showError.vS(3250) : c4.time > I + 2E4 && n(), x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasDirty = !0)
+            (J ? c4.time > I + 2E4 && showError.displayError(3250) : c4.time > I + 2E4 && n(), x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasDirty = !0)
     };
     this.cG = function() {
         var L = Math.floor((gE - A) / 2),
@@ -4925,7 +4941,7 @@ function kC() {
         }
     };
     this.vg = function() {
-        return openLinkBox.lF() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.hidden ? (mainLeaderboard.hidden = !1, !0) : !1
+        return openLinkBox.end() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.hidden ? (mainLeaderboard.hidden = !1, !0) : !1
     };
     this.aK =
         function() {
@@ -5015,7 +5031,7 @@ function kC() {
             k = k > n ? k : n;
             mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((r - k * currentMapWidth) /
                 2), Math.floor((s - k * currentMapHeight) / 2));
-            mainCanvasCtx.drawImage(hs, 0, 0);
+            mainCanvasCtx.drawImage(mapBaseCanvas, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             mainCanvasCtx.fillStyle = blackSemiTransparent
         } else mainCanvasCtx.fillStyle = blackRGB;
@@ -5075,7 +5091,7 @@ function Emojis() {
 function ShowError() {
     function g() {
         var t = aJ.getState();
-        0 === t ? nameInput.th() : 6 === t ? wsManager.vU(n) : 7 === t ? (lobby.th(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.th());
+        0 === t ? nameInput.th() : 6 === t ? wsManager.closeAll(n) : 7 === t ? (lobby.th(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.th());
         aJ.setState(3);
         jh.rq();
         jh.uo[2].nY = k(n);
@@ -5157,7 +5173,7 @@ function ShowError() {
         }
         g()
     };
-    this.vS = function(t) {
+    this.displayError = function(t) {
         n =
             t;
         8 === aJ.getState() ? announcements.mm(k(t)) : g()
@@ -5231,13 +5247,13 @@ function kE() {
 
 function SetGameOrigin() {
     this.myID = this.gameHash = 0;
-    var g, k, n, l;
+    var g, k, n, changeOrigins;
     this.init = function(x) {
         if (7 === aJ.getState()) {
             g = x;
             k = 0;
             n = c4.time + 4500;
-            l = dataDecoder.wB(g) ? 2 : 0;
+            changeOrigins = dataDecoder.decodeGameServerInfo(g) ? 2 : 0;
             aJ.setState(10);
             mainCanvasCtx.imageSmoothingEnabled = !0;
             aJ.hr();
@@ -5249,10 +5265,10 @@ function SetGameOrigin() {
         }
     };
     this.eZ = function() {
-        0 < l && c4.time > n && (l--, n += 4500, 0 === c4.wD && 0 === c4.wE && (0 === l && wsManager.remote < wsManager.serverCount && (wsManager.remote += wsManager.gameServerCount), wsManager.ri(wsManager.remote, 5)))
+        0 < changeOrigins && c4.time > n && (changeOrigins--, n += 4500, 0 === c4.wD && 0 === c4.wE && (0 === changeOrigins && wsManager.remote < wsManager.serverCount && (wsManager.remote += wsManager.gameServerCount), wsManager.manageFirstAction(wsManager.remote, 5)))
     };
     this.wH = function() {
-        10 === aJ.getState() && (k++, 2 <= k && (dataDecoder.wI(g), g = null))
+        10 === aJ.getState() && (k++, 2 <= k && (dataDecoder.gameInitDecoder(g), g = null))
     }
 }
 
@@ -5289,10 +5305,10 @@ function Lobby() {
                 else {
                     U = currentMapWidth;
                     var W = currentMapHeight,
-                        X = hs,
-                        V = pj,
+                        X = mapBaseCanvas,
+                        V = mapBaseCanvasCtx,
                         na = x6,
-                        ba = x7,
+                        ba = mapBaseCanvasImageData,
                         ca = currentMapID,
                         pa = currentSeed;
                     loadMap(lobbyGames[P].mapID, lobbyGames[P].seedMap);
@@ -5308,13 +5324,13 @@ function Lobby() {
                     Y > T && (T = Y);
                     O.imageSmoothingEnabled = !0;
                     O.setTransform(T, 0, 0, T, (128 - T * currentMapWidth) / 2, (128 - T * currentMapHeight) / 2);
-                    O.drawImage(hs, 0, 0);
+                    O.drawImage(mapBaseCanvas, 0, 0);
                     currentMapWidth = U;
                     currentMapHeight = W;
-                    hs = X;
-                    pj = V;
+                    mapBaseCanvas = X;
+                    mapBaseCanvasCtx = V;
                     x6 = na;
-                    x7 = ba;
+                    mapBaseCanvasImageData = ba;
                     currentMapID = ca;
                     currentSeed = pa;
                     lobbyGames[P].canvas = S
@@ -5395,7 +5411,7 @@ function Lobby() {
     };
     this.vi = function() {
         this.th();
-        wsManager.vU(3240);
+        wsManager.closeAll(3240);
         nameInput.init();
         c4.canvasDirty = !0
     };
@@ -5583,9 +5599,9 @@ function SingleSettings() {
         0 !== y && (mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.font = fontWeightBold + Math.floor(y * t) + fontSizeArial, mainCanvasCtx.fillText(A, Math.floor(n + x / 2), Math.floor(l + .52 * t)))
     }
     var k = [0, 0, 0, 0];
-    this.dz = [{
-        bD: 0,
-        mt: 512
+    this.botSettings = [{
+        difficulty: 0,
+        group: 512
     }];
     this.init = function() {
         js.hidden = !1;
@@ -5596,23 +5612,23 @@ function SingleSettings() {
     this.th = function() {};
     this.lv = function() {
         k[2] = Math.floor((isZoom ? .49 : .4) * bq);
-        k[1] = Math.floor((s - k[2] / 6 - this.dz.length * (cA + k[2] / 10)) / 2);
+        k[1] = Math.floor((s - k[2] / 6 - this.botSettings.length * (cA + k[2] / 10)) / 2);
         k[0] = Math.floor((r - k[2]) / 2);
         js.hidden && js.lv()
     };
-    this.xL = function(n) {
-        var l;
-        if (6 < n) this.dz = [{
-            bD: 0,
-            mt: 512
+    this.setBotSettings = function(param_gamemode) {
+        var teamIndex;
+        if (6 < param_gamemode) this.botSettings = [{
+            difficulty: 0,
+            group: 512
         }];
         else {
-            this.dz = [];
-            for (l = 0; l < n + 2; l++) this.dz.push({
-                bD: 0,
-                mt: 0
+            this.botSettings = [];
+            for (teamIndex = 0; teamIndex < param_gamemode + 2; teamIndex++) this.botSettings.push({
+                difficulty: 0,
+                group: 0
             });
-            this.xM()
+            this.assignBotGroups()
         }
     };
     this.vj = function() {
@@ -5623,20 +5639,19 @@ function SingleSettings() {
         var n;
         if (customMap.ds) return customMap.dt.xN;
         var l = 0;
-        for (n = this.dz.length - 1; 0 <= n; n--) l += this.dz[n].mt;
+        for (n = this.botSettings.length - 1; 0 <= n; n--) l += this.botSettings[n].group;
         return l
     };
     this.lm = function(n, l) {
-        return js.hidden && js.lm(n,
-            l) ? !0 : -1 === this.pP(n, l) ? !1 : !0
+        return js.hidden && js.lm(n, l) ? !0 : -1 === this.pP(n, l) ? !1 : !0
     };
     this.xO = function() {
         wsManager.remote = 0;
-        wsManager.ri(0, 3) && dataEncoder.singlePlayed(0);
+        wsManager.manageFirstAction(0, 3) && dataEncoder.singlePlayed(0);
         aJ.ve();
         if (customMap.ds) customMap.xQ();
         else {
-            var n = this.dz.length - 2;
+            var n = this.botSettings.length - 2;
             n = 0 > n ? 7 : n;
             gameInit(Math.floor(16384 * Math.random()), 0, [{
                 name: nameInput.getInput(),
@@ -5658,17 +5673,17 @@ function SingleSettings() {
         if (2 === x) return this.th(),
             this.xO(), !0;
         if (customMap.ds) return !1;
-        if (27 === x) return 8 > this.dz.length && (this.dz.push({
-            bD: 0,
-            mt: maxEntities
-        }), this.xM(), this.lv(), c4.canvasDirty = !0), !0;
+        if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
+            difficulty: 0,
+            group: maxEntities
+        }), this.assignBotGroups(), this.lv(), c4.canvasDirty = !0), !0;
         var t = Math.floor((x - 3) / 3);
-        if (0 === x % 3) return 1 < this.dz.length && (this.dz.splice(t, 1), this.lv(), c4.canvasDirty = !0), !0;
+        if (0 === x % 3) return 1 < this.botSettings.length && (this.botSettings.splice(t, 1), this.lv(), c4.canvasDirty = !0), !0;
         var z = (k[2] - k[2] / 10 - 2 * cA) / 2;
         if (1 === x % 3) {
-            if (0 === t && 1 === this.dz[t].mt) return !0;
-            n < k[0] + k[2] - 1.5 * z - cA ? this.dz[t].bD-- : this.dz[t].bD++;
-            0 > this.dz[t].bD ? this.dz[t].bD = 5 : 5 < this.dz[t].bD && (this.dz[t].bD = 0);
+            if (0 === t && 1 === this.botSettings[t].group) return !0;
+            n < k[0] + k[2] - 1.5 * z - cA ? this.botSettings[t].difficulty-- : this.botSettings[t].difficulty++;
+            0 > this.botSettings[t].difficulty ? this.botSettings[t].difficulty = 5 : 5 < this.botSettings[t].difficulty && (this.botSettings[t].difficulty = 0);
             return c4.canvasDirty = !0
         }
         c4.canvasDirty = !0;
@@ -5677,17 +5692,22 @@ function SingleSettings() {
             -(y * y) : y * y) * maxEntities);
         y = 0 === y ? 1 : y;
         z = maxEntities;
-        for (x = this.dz.length - 1; 0 <= x; x--) t !== x && (z -= this.dz[x].mt);
+        for (x = this.botSettings.length - 1; 0 <= x; x--) t !== x && (z -= this.botSettings[x].group);
         if (0 > y) {
-            if (1 === this.dz[t].mt) return this.dz[t].mt = z, !0
-        } else if (this.dz[t].mt === z) return this.dz[t].mt = 1, !0;
-        this.dz[t].mt += y;
-        1 > this.dz[t].mt ? this.dz[t].mt = 1 : this.dz[t].mt > z && (this.dz[t].mt = z);
+            if (1 === this.botSettings[t].group) return this.botSettings[t].group = z, !0
+        } else if (this.botSettings[t].group === z) return this.botSettings[t].group = 1, !0;
+        this.botSettings[t].group += y;
+        1 > this.botSettings[t].group ? this.botSettings[t].group = 1 : this.botSettings[t].group > z && (this.botSettings[t].group = z);
         return !0
     };
-    this.xM = function() {
-        for (var n = Math.floor(maxEntities / this.dz.length), l = maxEntities % this.dz.length, x = this.dz.length - 1; 0 <= x; x--) this.dz[x].mt = n;
-        this.dz[0].mt += l
+    this.assignBotGroups = function() {
+        var averageEntitiesPerTeam = Math.floor(maxEntities / this.botSettings.length),
+            unsortedEntities = maxEntities % this.botSettings.length,
+            teamIndex = this.botSettings.length - 1;
+        for (; 0 <= teamIndex; teamIndex--) {
+            this.botSettings[teamIndex].group = averageEntitiesPerTeam;
+        }
+        this.botSettings[0].group += unsortedEntities
     };
     this.pP = function(n, l) {
         var x, t = (k[2] - 2 * cA) / 3,
@@ -5697,12 +5717,12 @@ function SingleSettings() {
         if (l < k[1] + z) return n < k[0] + t ? 0 : n < k[0] + t + cA ? -1 : n < k[0] + 2 * t + cA ? 1 : n < k[0] + 2 * t + 2 * cA ? -1 : 2;
         var y = k[2] / 10;
         t = (k[2] - y - 2 * cA) / 2;
-        for (x = 0; x < this.dz.length; x++) {
+        for (x = 0; x < this.botSettings.length; x++) {
             var A = k[1] + z + cA + x * (y + cA);
             if (l < A) return -1;
             if (!(l > A + y)) return n < k[0] + y ? 3 + 3 * x : n < k[0] + y + cA ? -1 : n < k[0] + k[2] - t - cA ? 4 + 3 * x : n < k[0] + k[2] - t ? -1 : 5 + 3 * x
         }
-        return 8 > this.dz.length ? (A = k[1] + z + cA + this.dz.length * (y + cA), l < A || l > A + y || n > k[0] + y ? -1 : 27) : -1
+        return 8 > this.botSettings.length ? (A = k[1] + z + cA + this.botSettings.length * (y + cA), l < A || l > A + y || n > k[0] + y ? -1 : 27) : -1
     };
     this.cG = function() {
         var n;
@@ -5718,14 +5738,14 @@ function SingleSettings() {
         if (!customMap.ds) {
             var t = k[2] / 10;
             l = (k[2] - t - 2 * cA) / 2;
-            for (n = 0; n < this.dz.length; n++) {
+            for (n = 0; n < this.botSettings.length; n++) {
                 var z = k[1] + x + cA + n * (t + cA);
                 g(k[0], z, t, t, "rgba(0,128,0,0.75)", 0, null, -1);
-                g(k[0] + t + cA, z, l, t, blackMoreOpaque, .4, this.xV(n), this.dz[n].bD, -1);
-                g(k[0] + k[2] - l, z, l, t, blackMoreOpaque, .4, this.xW(n), -1, this.dz[n].mt)
+                g(k[0] + t + cA, z, l, t, blackMoreOpaque, .4, this.xV(n), this.botSettings[n].difficulty, -1);
+                g(k[0] + k[2] - l, z, l, t, blackMoreOpaque, .4, this.xW(n), -1, this.botSettings[n].group)
             }
-            if (8 > this.dz.length) {
-                z = k[1] + x + cA + this.dz.length * (t +
+            if (8 > this.botSettings.length) {
+                z = k[1] + x + cA + this.botSettings.length * (t +
                     cA);
                 g(k[0], z, t, t, "rgba(128,128,20,0.75)", 0, null, -1, -1);
                 n = k[0];
@@ -5743,10 +5763,10 @@ function SingleSettings() {
         }
     };
     this.xV = function(n) {
-        return 0 === n && 1 === this.dz[n].mt ? "You" : dG.dl[this.dz[n].bD]
+        return 0 === n && 1 === this.botSettings[n].group ? "You" : dG.dl[this.botSettings[n].difficulty]
     };
     this.xW = function(n) {
-        return 1 === this.dz[n].mt ? "1 Player" : this.dz[n].mt + " Players"
+        return 1 === this.botSettings[n].group ? "1 Player" : this.botSettings[n].group + " Players"
     }
 }
 
@@ -5860,8 +5880,8 @@ function NameInput() {
         if (2 !== t.length) return !1;
         nameInput.candidateID = t[1];
         k();
-        wsManager.ri(0, 7) && dataEncoder.discordVote(0);
-        showError.vS(3252);
+        wsManager.manageFirstAction(0, 7) && dataEncoder.discordVote(0);
+        showError.displayError(3252);
         return !0
     }
 
@@ -5874,13 +5894,13 @@ function NameInput() {
     function n() {
         if (0 !== x.indexOf("account ")) return !1;
         var t = x.split(" ");
-        if (2 !== t.length) return k(), showError.vS(3266), !0;
+        if (2 !== t.length) return k(), showError.displayError(3266), !0;
         var z = Math.floor(Math.pow(2, 48));
         t = parseInt(characters.n(t[1]));
-        if (0 >= t || t >= z) return k(), showError.vS(3266), !0;
-        if (o(t)) return k(), showError.vS(3231), !0;
+        if (0 >= t || t >= z) return k(), showError.displayError(3266), !0;
+        if (o(t)) return k(), showError.displayError(3231), !0;
         k();
-        5 <= androidVersion ? showError.vS(3232) : (showError.vS(3265), cookiesPrompt.hidden = !0,
+        5 <= androidVersion ? showError.displayError(3232) : (showError.displayError(3265), cookiesPrompt.hidden = !0,
             cookiesPrompt.bs = -1);
         return !0
     }
@@ -5919,10 +5939,10 @@ function NameInput() {
     };
     this.mouseDown = function(t, z) {
         c4.xi();
-        1 === jh.pP(t, z, 1, 1) ? n() || g() || (a9(10), l() ? (this.th(), w(x), singleSettings.init()) : showError.vS(4214)) : 0 === jh.pP(t, z, 0, 1) && this.vh()
+        1 === jh.pP(t, z, 1, 1) ? n() || g() || (a9(10), l() ? (this.th(), w(x), singleSettings.init()) : showError.displayError(4214)) : 0 === jh.pP(t, z, 0, 1) && this.vh()
     };
     this.vh = function() {
-        n() || g() || (a9(10), void 0 !== x && characters.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vK((Math.abs(x.charCodeAt(1)) + 7) % wsManager.terriWsCount) : ji.vK(jt.xn - 1), l() ? sprites.bx() ? (this.th(), w(x), customMap.pU(), ji.init()) : showError.vS(3228) : showError.vS(4214))
+        n() || g() || (a9(10), void 0 !== x && characters.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vK((Math.abs(x.charCodeAt(1)) + 7) % wsManager.terriWsCount) : ji.vK(jt.xn - 1), l() ? sprites.bx() ? (this.th(), w(x), customMap.pU(), ji.init()) : showError.displayError(3228) : showError.displayError(4214))
     };
     this.xr = function() {
         return !mainSettings.xZ() && !mainLeaderboard.hidden && !openLinkBox.hidden
@@ -6308,7 +6328,7 @@ function kj() {
     this.init = function() {
         k = 0
     };
-    this.dF = function() {
+    this.update = function() {
         if (0 !== k)
             if (0 === isAlive[myID] || attacks.z2(myID) === attacks.af(myID)) k = 0;
             else {
@@ -6373,11 +6393,11 @@ function zG(g) {
 function zD(g, k) {
     var n, l = k[zG(k)];
     9 === gamemode && 1 === teams.dX[g] && fakeRandom.dP(8) && e2.zI(l);
-    if (g === myID) announcements.fl(l, 1), zB();
+    if (g === myID) announcements.genericAnnouncement(l, 1), zB();
     else {
         for (n = k.length - 1; 0 <= n; n--)
             if (k[n] === myID) {
-                announcements.fl(g, 0);
+                announcements.genericAnnouncement(g, 0);
                 return
             } g < playerCount && announcements.mj(0, g, l)
     }
@@ -6389,7 +6409,7 @@ function z7(g) {
     landBorderPixels[g] = null;
     waterBorderPixels[g] = null;
     mountainBorderPixels[g] = null;
-    humanBots.fh(g)
+    humanBots.onLeave(g)
 }
 
 function z6(g) {
@@ -6416,7 +6436,7 @@ function LoadCustom() {
         var t = x.target;
         x = t.width;
         var z = t.height;
-        4096 < x || 4096 < z || 10 > x || 10 > z ? alert("Image w & h must be between 10 and 4096.") : (currentMapID = customMapID, currentSeed = 0, currentMapWidth = x, currentMapHeight = z, hs.width = currentMapWidth, hs.height = currentMapHeight, pj.drawImage(t, 0, 0), x7 = pj.getImageData(0, 0, currentMapWidth, currentMapHeight).data)
+        4096 < x || 4096 < z || 10 > x || 10 > z ? alert("Image w & h must be between 10 and 4096.") : (currentMapID = customMapID, currentSeed = 0, currentMapWidth = x, currentMapHeight = z, mapBaseCanvas.width = currentMapWidth, mapBaseCanvas.height = currentMapHeight, mapBaseCanvasCtx.drawImage(t, 0, 0), mapBaseCanvasImageData = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight).data)
     }
     var l;
     this.init = function() {
@@ -6449,14 +6469,14 @@ function AntiFullSend() {
     this.init = function() {
         this.zY = 10 !== gamemode ? null : new Uint32Array(maxEntities)
     };
-    this.dF = function() {
+    this.update = function() {
         10 === gamemode && this.zZ()
     };
     this.zZ = function() {
         var g, k = this.zY,
-            n = dZ,
+            n = aliveEntities,
             l = troops;
-        for (g = dY - 1; 0 <= g; g--) {
+        for (g = aliveCount - 1; 0 <= g; g--) {
             var x = n[g];
             if (!(x >= playerCount)) {
                 var t = Math.max(divideFloor(l[x], 4), 2048);
@@ -6491,7 +6511,7 @@ function CustomMap() {
         A.onload = function() {
             currentMapWidth = A.width;
             currentMapHeight = A.height;
-            4096 < currentMapWidth || 4096 < currentMapHeight || 10 > currentMapWidth || 10 > currentMapHeight ? (loadMap(0, 0), alert("Image w & h must be between 10 and 4096.")) : (currentMapID = customMapID, currentSeed = 0, hs.width = currentMapWidth, hs.height = currentMapHeight, pj.drawImage(A, 0, 0), y = pj.getImageData(0, 0, currentMapWidth, currentMapHeight), x7 = y.data)
+            4096 < currentMapWidth || 4096 < currentMapHeight || 10 > currentMapWidth || 10 > currentMapHeight ? (loadMap(0, 0), alert("Image w & h must be between 10 and 4096.")) : (currentMapID = customMapID, currentSeed = 0, mapBaseCanvas.width = currentMapWidth, mapBaseCanvas.height = currentMapHeight, mapBaseCanvasCtx.drawImage(A, 0, 0), y = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight), mapBaseCanvasImageData = y.data)
         };
         A.src = z;
         customMap.dt.zq = "";
@@ -6703,7 +6723,7 @@ function Attacks() {
         t[E + l[y]] = A;
         z[E + l[y]] = 0;
         l[y]++;
-        y < playerCount && (B === myID ? announcements.fl(y, 5) : y === myID && eA.ml(B))
+        y < playerCount && (B === myID ? announcements.genericAnnouncement(y, 5) : y === myID && eA.ml(B))
     };
     this.tr = function(y, A, B) {
         var C = g(y);
@@ -6723,11 +6743,11 @@ function Attacks() {
     };
     this.zA = function(y) {
         var A, B, C = [];
-        for (A = dY - 1; 0 <= A; A--) {
-            var E = g(dZ[A]);
-            for (B = l[dZ[A]] - 1; 0 <= B; B--)
+        for (A = aliveCount - 1; 0 <= A; A--) {
+            var E = g(aliveEntities[A]);
+            for (B = l[aliveEntities[A]] - 1; 0 <= B; B--)
                 if (0 === z[E + B] && x[E + B] === y) {
-                    C.push(dZ[A]);
+                    C.push(aliveEntities[A]);
                     break
                 }
         }
@@ -6748,27 +6768,27 @@ function Interest() {
     this.sF = function() {
         return l
     };
-    this.dF = function() {
+    this.update = function() {
         if (0 >= --n) {
             n = g;
             var z, y = troops[myID];
-            singleplayer && !teamGame && 0 !== isAlive[0] && 0 === singleSettings.dz[0].bD && (troops[0] += divideFloor(land[0], 6));
-            for (z = dY - 1; 0 <= z; z--) {
-                var A = divideFloor(interest.tU(dZ[z]) * troops[dZ[z]], 1E4);
-                troops[dZ[z]] += 1 > A ? 1 : A;
-                interest.az(dZ[z])
+            singleplayer && !teamGame && 0 !== isAlive[0] && 0 === singleSettings.botSettings[0].difficulty && (troops[0] += divideFloor(land[0], 6));
+            for (z = aliveCount - 1; 0 <= z; z--) {
+                var A = divideFloor(interest.tU(aliveEntities[z]) * troops[aliveEntities[z]], 1E4);
+                troops[aliveEntities[z]] += 1 > A ? 1 : A;
+                interest.az(aliveEntities[z])
             }
             statistics.b1[9] += troops[myID] - y;
             if (0 >= --l) {
                 l = k;
                 z = troops[myID];
-                for (A = dY - 1; 0 <= A; A--) troops[dZ[A]] += land[dZ[A]], interest.az(dZ[A]);
+                for (A = aliveCount - 1; 0 <= A; A--) troops[aliveEntities[A]] += land[aliveEntities[A]], interest.az(aliveEntities[A]);
                 statistics.b1[8] += troops[myID] - z
             }
         }
     };
     this.tU = function(z) {
-        var y = x[divideFloor((t - 1) * land[z], j9)];
+        var y = x[divideFloor((t - 1) * land[z], currentLandPixelsCount)];
         if (1920 > c4.dU()) {
             var A = divideFloor(100 * (13440 - 6 * c4.dU()), 1920);
             y = A > y ? A : y
@@ -6804,8 +6824,8 @@ function kN() {
         U = 1;
         R = P = 0;
         V.clearRect(0, 0, gE, cB);
-        for (var O = gC / g7, T = gD / g7, Y = (gE + gC) / g7, Z = (cB + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== isAlive[myID] && hu.lE(myID), za = dY - 1; 0 <= za; za--)
-            if (ia = dZ[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
+        for (var O = gC / g7, T = gD / g7, Y = (gE + gC) / g7, Z = (cB + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== isAlive[myID] && hu.lE(myID), za = aliveCount - 1; 0 <= za; za--)
+            if (ia = aliveEntities[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
                 la = Math.floor(gE * (E[ia] + G[ia] / 2 - O) / (Y - O));
                 ma = Math.floor(cB * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
                 V.font = fontStyles[playerStatus[ia]] + fa + fontSizeArial;
@@ -6990,23 +7010,23 @@ function kN() {
     this.gG = function(O) {
         return I[O]
     };
-    this.dF = function() {
+    this.update = function() {
         if (4 <= ++C) {
             var O, T;
             C = 0;
             for (T = 4; 1 <= T; T--)
-                for (O = dY - 1; 0 <= O; O--) {
-                    var Y = dZ[O] + T * maxEntities;
+                for (O = aliveCount - 1; 0 <= O; O--) {
+                    var Y = aliveEntities[O] + T * maxEntities;
                     0 < ca[Y] && 255 > ca[Y] && ca[Y]--
                 }
             if (2 !== clientStatus)
-                for (O = dY - 1; 0 <= O; O--) Y = dZ[O], 0 < ca[Y] && 255 > ca[Y] && ca[Y]--
+                for (O = aliveCount - 1; 0 <= O; O--) Y = aliveEntities[O], 0 < ca[Y] && 255 > ca[Y] && ca[Y]--
         }
-        O = Math.floor(.1 * dY);
+        O = Math.floor(.1 * aliveCount);
         O = 8 > O ? 8 : O;
-        O = O > dY ? dY : O;
+        O = O > aliveCount ? aliveCount : O;
         for (Y = B + O - 1; Y >= B; Y--)
-            if (T = Y % dY, T = dZ[T], 0 < G[T] && z(T, E[T], F[T], G[T], N[T])) {
+            if (T = Y % aliveCount, T = aliveEntities[T], 0 < G[T] && z(T, E[T], F[T], G[T], N[T])) {
                 for (var Z, la, ma, ia, fa =
                         T, qa = !1, ua = 0; 8 > ua; ua++) {
                     la = G[fa] + 2;
@@ -7069,7 +7089,7 @@ function kN() {
                             break
                         }
             } B += O;
-        B %= dY
+        B %= aliveCount
     };
     this.ml = function(O) {
         var T = O + 2 * maxEntities,
@@ -7128,7 +7148,7 @@ function ko() {
         this.a1R = [];
         this.a1S = []
     };
-    this.dF = function() {
+    this.update = function() {
         0 <= this.a1R.length && this.a1T(this.a1R);
         0 <= this.a1S.length && this.a1T(this.a1S)
     };
@@ -7196,7 +7216,7 @@ function HumanBots() {
         this.botAttackInterval = 0;
         this.players = []
     };
-    this.fo = function(g) {
+    this.turnToBot = function(g) {
         this.players.push(g);
         spectatorCount++;
         playerStatus[g] = 2;
@@ -7204,7 +7224,7 @@ function HumanBots() {
         g === myID && (gameResultBox.show(!1, !1), eB.tI());
         eA.ml(g)
     };
-    this.fh = function(g) {
+    this.onLeave = function(g) {
         var k;
         if (2 !== playerStatus[g]) {
             var n = this.players;
@@ -7215,7 +7235,7 @@ function HumanBots() {
                 }
         }
     };
-    this.dF = function() {
+    this.update = function() {
         singleplayer || (30 === this.botAttackInterval && this.a1Z(), this.botAttackInterval = (this.botAttackInterval + 1) % 60)
     };
     this.a1Z = function() {
@@ -7225,15 +7245,15 @@ function HumanBots() {
             if (attacks.dD(n)) {
                 var l = divideFloor(20 * troops[n], 100);
                 60 > l || (0 ===
-                    landBorderPixels[n].length ? !dE.dF(n, 2) && teamGame && dI(n, l, 0, 0) : teamGame ? dT(n, l) : db(n, l))
+                    landBorderPixels[n].length ? !dE.update(n, 2) && teamGame && dI(n, l, 0, 0) : teamGame ? dT(n, l) : db(n, l))
             }
         }
     }
 }
 
 function WsManager() {
-    function g(l) {
-        return websocketsInfo[l].wsCreated && websockets[l].a1l()
+    function isCreatedAndConnectingOrOpen(l) {
+        return websocketsInfo[l].wsCreated && websockets[l].isConnectingOrOpen()
     }
     this.serverCount = 4;
     this.gameServerCount = this.serverCount - 1;
@@ -7261,68 +7281,75 @@ function WsManager() {
     this.getConnectedLobby = function() {
         return this.lobby < this.serverCount ? this.lobby : this.lobby - this.gameServerCount
     };
-    this.dF = function() {
-        for (var l = this.terriWsCount - 1; 0 <= l; l--) this.vI(l) && c4.time > websocketsInfo[l].time + 15E3 && dataEncoder.antiDisconnect(l, websocketsInfo[l].humanLastAction)
+    this.update = function() {
+        for (var remoteIndex = this.terriWsCount - 1; 0 <= remoteIndex; remoteIndex--) this.isOpen(remoteIndex) && c4.time > websocketsInfo[remoteIndex].time + 15E3 && dataEncoder.antiDisconnect(remoteIndex, websocketsInfo[remoteIndex].humanLastAction)
     };
-    this.ri = function(l, x) {
-        if (!websocketsInfo[l].wsCreated) return this.a1k(l, x), !1;
-        if (websockets[l].a1l()) return websockets[l].a1m(x), websockets[l].vI();
-        websockets[l].lF();
-        this.a1k(l, x);
+    this.manageFirstAction = function(remote, firstAction) {
+        if (!websocketsInfo[remote].wsCreated) return this.createNewTerriWS(remote, firstAction), !1;
+        if (websockets[remote].isConnectingOrOpen()) return websockets[remote].setFirstAction(firstAction), websockets[remote].isOpen();
+        websockets[remote].end();
+        this.createNewTerriWS(remote, firstAction);
         return !1
     };
-    this.a1k = function(l, x) {
-        websocketsInfo[l].wsCreated = !0;
-        websocketsInfo[l].time = c4.time;
-        websocketsInfo[l].humanLastAction = !1;
-        websockets[l] = new a1o;
-        websockets[l].init(l, x)
+    this.createNewTerriWS = function(remote, firstAction) {
+        websocketsInfo[remote].wsCreated = !0;
+        websocketsInfo[remote].time = c4.time;
+        websocketsInfo[remote].humanLastAction = !1;
+        websockets[remote] = new TerriWS;
+        websockets[remote].init(remote, firstAction)
     };
-    this.a1m = function(l, x) {
-        g(l) && websockets[l].a1m(x)
+    this.setFirstAction = function(remote, firstAction) {
+        isCreatedAndConnectingOrOpen(remote) && websockets[remote].setFirstAction(firstAction)
     };
-    this.a1p = function(l, x) {
-        0 === x ? playtime.rk() : 3 > x ? dataEncoder.loadLeaderboard(l, x - 1) : 3 === x ? dataEncoder.singlePlayed(l) : 4 === x ? ji.rk(l) : 5 === x ? l === this.remote && dataEncoder.authenticateGameConnection() : 6 === x ? dataEncoder.uploadError(l) : 7 === x && dataEncoder.discordVote(l)
+    this.doFirstAction = function(remote, firstAction) {
+        if (0 === firstAction) playtime.rk()
+        else if (3 > firstAction) dataEncoder.loadLeaderboard(remote, firstAction - 1)
+        else if (3 === firstAction) dataEncoder.singlePlayed(remote)
+        else if (4 === firstAction) ji.rk(remote)
+        else if (5 === firstAction) {
+            if (remote === this.remote) dataEncoder.authenticateGameConnection()
+        }
+        else if (6 === firstAction) dataEncoder.uploadError(remote)
+        else if (7 === firstAction) dataEncoder.discordVote(remote)
     };
-    this.vI = function(l) {
-        return websocketsInfo[l].wsCreated &&
-            websockets[l].vI()
+    this.isOpen = function(l) {
+        return websocketsInfo[l].wsCreated && websockets[l].isOpen()
     };
-    this.send = function(l, x) {
-        websocketsInfo[l].time = c4.time;
-        websocketsInfo[l].humanLastAction = !1;
-        websockets[l].send(x)
+    this.send = function(remote, message) {
+        websocketsInfo[remote].time = c4.time;
+        websocketsInfo[remote].humanLastAction = !1;
+        websockets[remote].send(message)
     };
-    this.pK = function(l) {
-        websocketsInfo[l].humanLastAction = !0
+    this.setHumanLastAction = function(remote) {
+        websocketsInfo[remote].humanLastAction = !0
     };
-    this.close = function(l, x) {
-        g(l) && websockets[l].close(x)
+    this.close = function(remote, reason) {
+        isCreatedAndConnectingOrOpen(remote) && websockets[remote].close(reason)
     };
-    this.closeByError = function(l, x) {
-        showError.vS(x);
-        g(l) && websockets[l].close(x)
+    this.closeByError = function(remote, reason) {
+        showError.displayError(reason);
+        isCreatedAndConnectingOrOpen(remote) && websockets[remote].close(reason)
     };
-    this.vU = function(l) {
-        for (var x = this.terriWsCount - 1; 0 <= x; x--) this.close(x, l)
+    this.closeAll = function(reason) {
+        for (var remoteIndex = this.terriWsCount - 1; 0 <= remoteIndex; remoteIndex--) this.close(remoteIndex, reason)
     };
-    this.a1u = function(l, x) {
-        for (var t = this.terriWsCount - 1; 0 <= t; t--) t !== l && this.close(t, x)
+    this.closeAllOther = function(remote, reason) {
+        for (var remoteIndex = this.terriWsCount - 1; 0 <= remoteIndex; remoteIndex--) remoteIndex !== remote && this.close(remoteIndex, reason)
     };
-    this.a1v = function(l, x) {
-        websockets[l].lF();
-        showError.init(l, x.code)
+    this.unexpectedClose = function(remote, reason) {
+        websockets[remote].end();
+        showError.init(remote, reason.code)
     }
 }
-var dZ, dY;
+var aliveEntities, aliveCount;
 
-function jV() {
-    var g;
-    dY = 0;
-    for (g = maxEntities - 1; 0 <= g; g--) 0 !== isAlive[g] && dY++;
-    dZ = new Uint16Array(dY);
-    var k = 0;
-    for (g = 0; g < maxEntities; g++) 0 !== isAlive[g] && (dZ[k++] = g)
+function updateAliveInfo() {
+    var idIndex;
+    aliveCount = 0;
+    for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) 0 !== isAlive[idIndex] && aliveCount++;
+    aliveEntities = new Uint16Array(aliveCount);
+    var aliveIndex = 0;
+    for (idIndex = 0; idIndex < maxEntities; idIndex++) 0 !== isAlive[idIndex] && (aliveEntities[aliveIndex++] = idIndex)
 }
 
 function eL() {
@@ -7331,29 +7358,29 @@ function eL() {
 }
 
 function fn() {
-    for (var g = dY - 1; 0 <= g; g--) 0 === isAlive[dZ[g]] && a1x(g)
+    for (var g = aliveCount - 1; 0 <= g; g--) 0 === isAlive[aliveEntities[g]] && a1x(g)
 }
 
 function a1x(g) {
-    for (dY--; g < dY; g++) dZ[g] = dZ[g + 1]
+    for (aliveCount--; g < aliveCount; g++) aliveEntities[g] = aliveEntities[g + 1]
 }
 
 function a1w() {
-    for (var g, k = dY - 1; 0 <= k; k--) land[dZ[k]] <= divideFloor(tempLand[dZ[k]], 4) ? 1E3 >= land[dZ[k]] && (2 !== isAlive[dZ[k]] || 0 === land[dZ[k]]) && fm(dZ[k]) : land[dZ[k]] >= tempLand[dZ[k]] ? tempLand[dZ[k]] = land[dZ[k]] : (g = divideFloor(tempLand[dZ[k]] - land[dZ[k]], 1E3), tempLand[dZ[k]] -= 1 > g ? 1 : g)
+    for (var g, k = aliveCount - 1; 0 <= k; k--) land[aliveEntities[k]] <= divideFloor(tempLand[aliveEntities[k]], 4) ? 1E3 >= land[aliveEntities[k]] && (2 !== isAlive[aliveEntities[k]] || 0 === land[aliveEntities[k]]) && fm(aliveEntities[k]) : land[aliveEntities[k]] >= tempLand[aliveEntities[k]] ? tempLand[aliveEntities[k]] = land[aliveEntities[k]] : (g = divideFloor(tempLand[aliveEntities[k]] - land[aliveEntities[k]], 1E3), tempLand[aliveEntities[k]] -= 1 > g ? 1 : g)
 }
 
 function getTroopHash() {
     var g, k = 0;
-    for (g = dY - 1; 0 <= g; g--) k += troops[dZ[g]];
+    for (g = aliveCount - 1; 0 <= g; g--) k += troops[aliveEntities[g]];
     return k % 4096
 }
 var mainCanvas, mainCanvasCtx, a1y, versionHash, r, s, pI, bq, gE, cB, pM, hostname, isIOS, c, androidObject, androidVersion, isZoom, hasHadError = !1,
-    isNotTopWindow, isNotClient, i, gy, sm, h8, a5, statistics, hv, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, vk, openLinkBox, uO, timeHash, a25, errorLineNo = 0,
+    isNotTopWindow, isNotClient, i, gy, sm, h8, a5, statistics, hv, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, vk, openLinkBox, uO, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
 function main() {
-    a25 = 2;
+    const_2_s52 = 2;
     versionHash = 2526;
     a1y = "1.83.3   3 February 2023";
     construct();
@@ -7443,7 +7470,7 @@ function a2A() {
 }
 
 function onError(error) {
-    hasHadError || (hasHadError = !0, error.message ? (errorLineNo = error.lineno, errorMessage = error.message, wsManager.ri(0, 6) && dataEncoder.uploadError(0), error = "[A_ERROR " + errorLineNo + "][" + errorMessage + "]", showErrorWarning(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
+    hasHadError || (hasHadError = !0, error.message ? (errorLineNo = error.lineno, errorMessage = error.message, wsManager.manageFirstAction(0, 6) && dataEncoder.uploadError(0), error = "[A_ERROR " + errorLineNo + "][" + errorMessage + "]", showErrorWarning(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
 }
 
 function showErrorWarning(error) {
@@ -7490,18 +7517,17 @@ function kP() {
     this.zI = function(k) {
         g.push({
             player: k,
-            mt: 14 + fakeRandom.cf(20)
+            group: 14 + fakeRandom.cf(20)
         })
     };
-    this.dF = function() {
-        if (9 ===
-            gamemode) {
+    this.update = function() {
+        if (9 === gamemode) {
             var k;
-            for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].mt && (eA.showIcon(g[k].player, 0, 46), g.splice(k))
+            for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].group && (eA.showIcon(g[k].player, 0, 46), g.splice(k))
         }
     }
 }
-var currentMapWidth, currentMapHeight, hs, pj, x6, x7, currentMapID, currentSeed, vf, customMapID = 15,
+var currentMapWidth, currentMapHeight, mapBaseCanvas, mapBaseCanvasCtx, x6, mapBaseCanvasImageData, currentMapID, currentSeed, vf, customMapID = 15,
     x9;
 
 function loadMap(mapID, k) {
@@ -7522,7 +7548,7 @@ function loadMap(mapID, k) {
             fakeRandom.jN(l.a1f);
             jn.jT([currentMapWidth, currentMapHeight, l.gO, l.gL]);
             a2c();
-            configFakeMap.a2d();
+            configFakeMap.renderBaseMap();
             jn.a2e();
             a2f(n)
         }
@@ -7557,15 +7583,15 @@ function mapIsSurroundedByWater(mapID) {
 
 function a2G() {
     function g() {
-        x9.dF()
+        x9.update()
     }
 
     function k(l, x) {
-        0 < x && (x7[l] += x, x7[l + 1] += x, x7[l + 2] += x)
+        0 < x && (mapBaseCanvasImageData[l] += x, mapBaseCanvasImageData[l + 1] += x, mapBaseCanvasImageData[l + 2] += x)
     }
 
     function n(l) {
-        return x7[l + 2] > x7[l] && x7[l + 2] > x7[l + 1]
+        return mapBaseCanvasImageData[l + 2] > mapBaseCanvasImageData[l] && mapBaseCanvasImageData[l + 2] > mapBaseCanvasImageData[l + 1]
     }
     this.rd = -1;
     this.a2k = this.aA = 0;
@@ -7585,9 +7611,9 @@ function a2G() {
         jn.a2e()
     };
     this.init = function() {
-        7 === aJ.getState() || this.a2s || (this.a2r = !0, this.aA = 0, this.a2k = 1, this.a2p = [mapInfo.getValuebyID(currentMapID).a2t[0], mapInfo.getValuebyID(currentMapID).a2u[0]], this.qv = [mapInfo.getValuebyID(currentMapID).a2v[3], mapInfo.getValuebyID(currentMapID).a2v[4], mapInfo.getValuebyID(currentMapID).a2v[5], mapInfo.getValuebyID(currentMapID).a2v[6]], this.a2l = mapInfo.getValuebyID(currentMapID).a2v[7], this.a2m = mapInfo.getValuebyID(currentMapID).a2v[8], this.a2n = mapInfo.getValuebyID(currentMapID).a2v[9], this.a2o = mapInfo.getValuebyID(currentMapID).a2v[10], this.a2r ? this.rd = setTimeout(g, 16) : this.dF())
+        7 === aJ.getState() || this.a2s || (this.a2r = !0, this.aA = 0, this.a2k = 1, this.a2p = [mapInfo.getValuebyID(currentMapID).a2t[0], mapInfo.getValuebyID(currentMapID).a2u[0]], this.qv = [mapInfo.getValuebyID(currentMapID).a2v[3], mapInfo.getValuebyID(currentMapID).a2v[4], mapInfo.getValuebyID(currentMapID).a2v[5], mapInfo.getValuebyID(currentMapID).a2v[6]], this.a2l = mapInfo.getValuebyID(currentMapID).a2v[7], this.a2m = mapInfo.getValuebyID(currentMapID).a2v[8], this.a2n = mapInfo.getValuebyID(currentMapID).a2v[9], this.a2o = mapInfo.getValuebyID(currentMapID).a2v[10], this.a2r ? this.rd = setTimeout(g, 16) : this.update())
     };
-    this.dF = function() {
+    this.update = function() {
         if (8 === aJ.getState() && eV.gd()) this.rd = setTimeout(g, 16);
         else {
             if (0 === this.aA) {
@@ -7615,15 +7641,15 @@ function a2G() {
                         var A = z;
                         (1 < t && n(x - 4) || t < currentMapWidth - 2 && n(x + 4) || 1 < A && n(x - 4 * currentMapWidth) || A < currentMapHeight - 2 && n(x + 4 * currentMapWidth)) && this.a30(y, z)
                     } this.a2k = l;
-            this.a2k >= currentMapHeight - 1 ? (pj.putImageData(x6, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2), c4.canvasDirty = !0, this.xA()) : this.a2r && (this.rd = setTimeout(g, 16))
+            this.a2k >= currentMapHeight - 1 ? (mapBaseCanvasCtx.putImageData(x6, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2), c4.canvasDirty = !0, this.xA()) : this.a2r && (this.rd = setTimeout(g, 16))
         }
     };
     this.a2z = function(l, x, t) {
-        k(l, Math.floor(this.a2p[t] + this.qv[t] * this.a2q[x] / 1E4) - x7[l])
+        k(l, Math.floor(this.a2p[t] + this.qv[t] * this.a2q[x] / 1E4) - mapBaseCanvasImageData[l])
     };
     this.a34 = function(l, x, t, z, y) {
         k(l, Math.floor(this.a2p[z] +
-            (1 - x / t) * y) - x7[l])
+            (1 - x / t) * y) - mapBaseCanvasImageData[l])
     };
     this.a30 = function(l, x) {
         var t = l - this.a2m;
@@ -7688,131 +7714,157 @@ function a3K(g, k, n, l) {
 }
 
 function ConfigFakeMap() {
-    var g;
-    this.nJ = this.nI = this.nF = this.nE = 0;
+    var mapValues;
+    this.mountainPixelsCount = this.waterPixelsCount = this.landPixelsCount = this.totalNonBorderPixelsCount = 0;
     this.init = function() {
-        g = Array(getRealMapStartingIndex());
-        g[0] = {
+        mapValues = Array(getRealMapStartingIndex());
+        mapValues[0] = {
             width: [0, 5E3, 8E3, 1E4],
-            fB: [220, 250, 255, 220],
-            n4: [190, 220, 0, 0],
-            cm: [170, 200, 0, 0]
+            red: [220, 250, 255, 220],
+            green: [190, 220, 0, 0],
+            blue: [170, 200, 0, 0]
         };
-        g[1] = {
+        mapValues[1] = {
             width: [0, 4E3, 5E3, 6E3, 1E4],
-            fB: [25, 0, 100, 0, 25],
-            n4: [25, 0, 0, 0, 25],
-            cm: [25, 0, 0, 0, 25]
+            red: [25, 0, 100, 0, 25],
+            green: [25, 0, 0, 0, 25],
+            blue: [25, 0, 0, 0, 25]
         };
-        g[2] = {
+        mapValues[2] = {
             width: [0, 500, 2500, 2999, 3E3, 3200, 4200, 5200, 5700, 8800, 1E4],
-            fB: [15, 15, 70, 40, 40, 40, 252, 40, 40, 20, 30],
-            n4: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
-            cm: [120, 120, 220, 110, 40, 40, 217, 10, 10, 10, 10]
+            red: [15, 15, 70, 40, 40, 40, 252, 40, 40, 20, 30],
+            green: [80, 80, 190, 90, 40, 40, 248, 180, 180, 90, 140],
+            blue: [120, 120, 220, 110, 40, 40, 217, 10, 10, 10, 10]
         };
-        g[3] = {
+        mapValues[3] = {
             width: [0, 400, 1800, 2E3, 3200, 4500, 6E3, 7700, 8500, 9500, 1E4],
-            fB: [10,
-                10, 20, 10, 30, 10, 16, 40, 55, 230, 230
-            ],
-            n4: [10, 10, 40, 50, 100, 40, 80, 120, 55, 230, 230],
-            cm: [80, 80, 200, 10, 60, 10, 16, 40, 55, 230, 230]
+            red: [10, 10, 20, 10, 30, 10, 16, 40, 55, 230, 230],
+            green: [10, 10, 40, 50, 100, 40, 80, 120, 55, 230, 230],
+            blue: [80, 80, 200, 10, 60, 10, 16, 40, 55, 230, 230]
         };
-        g[4] = {
+        mapValues[4] = {
             width: [0, 300, 1400, 1700, 3E3, 4E3, 1E4],
-            fB: [10, 10, 20, 10, 10, 170, 212],
-            n4: [20, 20, 60, 100, 100, 110, 170],
-            cm: [70, 70, 160, 30, 30, 60, 120]
+            red: [10, 10, 20, 10, 10, 170, 212],
+            green: [20, 20, 60, 100, 100, 110, 170],
+            blue: [70, 70, 160, 30, 30, 60, 120]
         };
-        g[5] = {
+        mapValues[5] = {
             width: [0, 1E3, 3E3, 3500, 4E3, 4500, 7E3, 7500, 8E3, 1E4],
-            fB: [10, 10, 20, 10, 5, 10, 20, 5, 20, 25],
-            n4: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
-            cm: [80, 80, 200, 10, 5, 10, 20, 5, 20, 25]
+            red: [10, 10, 20, 10, 5, 10, 20, 5, 20, 25],
+            green: [30, 30, 50, 100, 30, 100, 140, 60, 140, 200],
+            blue: [80, 80, 200, 10, 5, 10, 20, 5, 20, 25]
         };
-        g[6] = {
+        mapValues[6] = {
             width: [0, 700, 2650, 3200, 5E3, 8E3, 1E4],
-            fB: [10, 10, 60, 255, 255, 200, 200],
-            n4: [10, 10, 60, 255, 255, 200, 200],
-            cm: [80, 80, 255, 255, 255, 200, 200]
+            red: [10, 10, 60, 255, 255, 200, 200],
+            green: [10, 10, 60, 255, 255, 200, 200],
+            blue: [80, 80, 255, 255, 255, 200, 200]
         };
-        g[7] = {
+        mapValues[7] = {
             width: [0, 400, 1999, 2E3, 3200, 4E3, 4700, 5500, 6500, 9500, 1E4],
-            fB: [10, 10, 80, 255, 255, 55, 6, 70, 20, 155, 255],
-            n4: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
-            cm: [80, 80, 255, 235, 235, 55, 26, 10, 20, 155, 255]
+            red: [10, 10, 80, 255, 255, 55, 6, 70, 20, 155, 255],
+            green: [10, 10, 90, 245, 245, 170, 80, 190, 20, 155, 255],
+            blue: [80, 80, 255, 235, 235, 55, 26, 10, 20, 155, 255]
         };
-        g[8] = {
+        mapValues[8] = {
             width: [0, 700, 1300, 1900, 1901, 2500, 3400, 6E3, 1E4],
-            fB: [25, 30, 30, 30, 255, 255, 30, 40, 20],
-            n4: [25, 30, 150, 150, 245, 245, 80, 150, 70],
-            cm: [60, 170, 170, 170, 235, 235, 30, 40, 40]
+            red: [25, 30, 30, 30, 255, 255, 30, 40, 20],
+            green: [25, 30, 150, 150, 245, 245, 80, 150, 70],
+            blue: [60, 170, 170, 170, 235, 235, 30, 40, 40]
         };
-        g[9] = {
+        mapValues[9] = {
             width: [0, 400, 2009, 2010, 3300, 4E3, 5200, 6500, 8E3, 9500, 1E4],
-            fB: [10, 10, 80, 255, 255, 55, 23, 36, 20, 155, 255],
-            n4: [10, 10, 90, 245, 245,
-                170, 60, 160, 20, 155, 255
-            ],
-            cm: [80, 80, 255, 235, 235, 55, 9, 72, 20, 155, 255]
+            red: [10, 10, 80, 255, 255, 55, 23, 36, 20, 155, 255],
+            green: [10, 10, 90, 245, 245, 170, 60, 160, 20, 155, 255],
+            blue: [80, 80, 255, 235, 235, 55, 9, 72, 20, 155, 255]
         }
     };
-    this.a2d = function() {
-        hs = document.createElement("canvas");
-        hs.width = currentMapWidth;
-        hs.height = currentMapHeight;
-        pj = hs.getContext("2d", {
+    this.renderBaseMap = function() {
+        mapBaseCanvas = document.createElement("canvas");
+        mapBaseCanvas.width = currentMapWidth;
+        mapBaseCanvas.height = currentMapHeight;
+        mapBaseCanvasCtx = mapBaseCanvas.getContext("2d", {
             alpha: !1
         });
-        var k = pj.getImageData(0, 0, currentMapWidth, currentMapHeight);
-        x7 = k.data;
-        var n = g[currentMapID].width,
-            l = g[currentMapID].fB,
-            x = g[currentMapID].n4,
-            t = g[currentMapID].cm,
-            z, y, A = jn.a2x(),
-            B = n.length - 2,
+        var mapBaseCanvasImg = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
+        mapBaseCanvasImageData = mapBaseCanvasImg.data;
+        var widthValues = mapValues[currentMapID].width,
+            redValues = mapValues[currentMapID].red,
+            greenValues = mapValues[currentMapID].green,
+            blueValues = mapValues[currentMapID].blue,
+            pixelIndex, y, A = jn.a2x(),
+            B = widthValues.length - 2,
             C = Array(B + 1),
             E = Array(B + 1),
             F = Array(B + 1),
             G = Array(B + 1);
-        for (y = B; 0 <= y; y--) C[y] = n[y + 1] - n[y], E[y] = l[y + 1] - l[y], F[y] = x[y + 1] - x[y], G[y] = t[y + 1] - t[y];
-        for (z = currentMapWidth * currentMapHeight - 1; 0 <= z; z--)
-            for (y = B; 0 <= y; y--)
-                if (A[z] >= n[y]) {
-                    var N = A[z] -
-                        n[y];
-                    x7[4 * z] = l[y] + allDivideFloor(E[y] * N, C[y]);
-                    x7[4 * z + 1] = x[y] + allDivideFloor(F[y] * N, C[y]);
-                    x7[4 * z + 2] = t[y] + allDivideFloor(G[y] * N, C[y]);
-                    x7[4 * z + 3] = 255;
+        for (y = B; 0 <= y; y--) {
+            C[y] = widthValues[y + 1] - widthValues[y];
+            E[y] = redValues[y + 1] - redValues[y];
+            F[y] = greenValues[y + 1] - greenValues[y];
+            G[y] = blueValues[y + 1] - blueValues[y];
+        }
+        for (pixelIndex = currentMapWidth * currentMapHeight - 1; 0 <= pixelIndex; pixelIndex--) 
+            for (y = B; 0 <= y; y--) 
+                if (A[pixelIndex] >= widthValues[y]) {
+                    var N = A[pixelIndex] - widthValues[y];
+                    mapBaseCanvasImageData[4 * pixelIndex] = redValues[y] + allDivideFloor(E[y] * N, C[y]);
+                    mapBaseCanvasImageData[4 * pixelIndex + 1] = greenValues[y] + allDivideFloor(F[y] * N, C[y]);
+                    mapBaseCanvasImageData[4 * pixelIndex + 2] = blueValues[y] + allDivideFloor(G[y] * N, C[y]);
+                    mapBaseCanvasImageData[4 * pixelIndex + 3] = 255;
                     break
-                } pj.putImageData(k, 0, 0);
-        mapInfo.isBA() && sprites.bx() && mapInfo.isBA() && (n = sprites.l9("arena"), pj.save(), pj.globalAlpha = 1 === currentMapID ? .1 : 1, pj.imageSmoothingEnabled = !0, k = 2.8, pj.scale(k, k), pj.drawImage(n, Math.floor((currentMapWidth / k - n.width) / 2), Math.floor(.5 * currentMapHeight / k - n.height / 2)), pj.restore(), n = sprites.l9("territorial.io"), pj.save(), pj.globalAlpha = 1 === currentMapID ? .1 : 1, pj.imageSmoothingEnabled = !0, k = .87, pj.scale(k, k), pj.drawImage(n, Math.floor(.745 *
-            (currentMapWidth / k - n.width)), Math.floor(.422 * currentMapHeight / k - n.height / 2)), pj.restore());
+                }
+                mapBaseCanvasCtx.putImageData(mapBaseCanvasImg, 0, 0);
+                if (mapInfo.isBA() && sprites.bx() && mapInfo.isBA()) {
+                    widthValues = sprites.l9("arena");
+                    mapBaseCanvasCtx.save();
+                    mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
+                    mapBaseCanvasCtx.imageSmoothingEnabled = !0;
+                    mapBaseCanvasImg = 2.8;
+                    mapBaseCanvasCtx.scale(mapBaseCanvasImg, mapBaseCanvasImg);
+                    mapBaseCanvasCtx.drawImage(
+                        widthValues,
+                        Math.floor((currentMapWidth / mapBaseCanvasImg - widthValues.width) / 2),
+                        Math.floor(.5 * currentMapHeight / mapBaseCanvasImg - widthValues.height / 2)
+                    );
+                    mapBaseCanvasCtx.restore();
+                    
+                    widthValues = sprites.l9("territorial.io");
+                    mapBaseCanvasCtx.save();
+                    mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
+                    mapBaseCanvasCtx.imageSmoothingEnabled = !0;
+                    mapBaseCanvasImg = .87;
+                    mapBaseCanvasCtx.scale(mapBaseCanvasImg, mapBaseCanvasImg);
+                    mapBaseCanvasCtx.drawImage(
+                        widthValues,
+                        Math.floor(.745 * (currentMapWidth / mapBaseCanvasImg - widthValues.width)),
+                        Math.floor(.422 * currentMapHeight / mapBaseCanvasImg - widthValues.height / 2)
+                    );
+                    mapBaseCanvasCtx.restore();
+                }                
         vf = !0;
         c4.canvasDirty = !0
     };
     this.jR = function() {
-        var k, n = 0;
+        var k, totalLandMountainPixels = 0;
         var l = currentMapHeight * currentMapWidth * 4;
         var x = pixelRGBA,
-            t = x7;
+            t = mapBaseCanvasImageData;
         for (k = currentMapWidth - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
         l = 4 * currentMapWidth;
         for (k = currentMapHeight - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
-        for (k = currentMapWidth * currentMapHeight - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (t[l + 2] > t[l + 1] && t[l + 2] > t[l] ? x[l + 2] = 2 : (x[l + 2] = 1, n++));
-        this.nE = (currentMapWidth - 2) * (currentMapHeight - 2);
-        this.nJ = 0;
+        for (k = currentMapWidth * currentMapHeight - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (t[l + 2] > t[l + 1] && t[l + 2] > t[l] ? x[l + 2] = 2 : (x[l + 2] = 1, totalLandMountainPixels++));
+        this.totalNonBorderPixelsCount = (currentMapWidth - 2) * (currentMapHeight - 2);
+        this.mountainPixelsCount = 0;
         if (mapHasMountains(currentMapID)) {
             t = 0;
             l = pixelRGBA;
-            var z = x7;
+            var z = mapBaseCanvasImageData;
             for (x = currentMapWidth * currentMapHeight - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (t++, l[k + 2] = 3);
-            configFakeMap.nJ = t
+            configFakeMap.mountainPixelsCount = t
         }
-        this.nF = j9 = n - this.nJ;
-        this.nI = this.nE - this.nF - this.nJ
+        this.landPixelsCount = currentLandPixelsCount = totalLandMountainPixels - this.mountainPixelsCount;
+        this.waterPixelsCount = this.totalNonBorderPixelsCount - this.landPixelsCount - this.mountainPixelsCount
     }
 }
 
@@ -7828,22 +7880,22 @@ function configRealMap(g) {
         l = mapInfo.getValuebyID(currentMapID).a2u;
     currentMapWidth = 1E3 * k[0] + k[1];
     currentMapHeight = 1E3 * k[2] + k[3];
-    hs = document.createElement("canvas");
-    hs.width = currentMapWidth;
-    hs.height = currentMapHeight;
-    pj = hs.getContext("2d", {
+    mapBaseCanvas = document.createElement("canvas");
+    mapBaseCanvas.width = currentMapWidth;
+    mapBaseCanvas.height = currentMapHeight;
+    mapBaseCanvasCtx = mapBaseCanvas.getContext("2d", {
         alpha: !1
     });
-    x6 = pj.getImageData(0, 0, currentMapWidth, currentMapHeight);
-    x7 = x6.data;
+    x6 = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
+    mapBaseCanvasImageData = x6.data;
     for (var x = k.length, t = !0, z = 0, y = 4; y < x; y++)
         if (t) {
-            for (; 0 < k[y]--;) x7[z] = l[0], x7[z + 1] = l[1], x7[z + 2] = l[2], x7[z + 3] = 255, z += 4;
+            for (; 0 < k[y]--;) mapBaseCanvasImageData[z] = l[0], mapBaseCanvasImageData[z + 1] = l[1], mapBaseCanvasImageData[z + 2] = l[2], mapBaseCanvasImageData[z + 3] = 255, z += 4;
             t = !1
         } else {
-            for (; 0 < k[y]--;) x7[z] = n[0], x7[z + 1] = n[1], x7[z + 2] = n[2], x7[z + 3] = 255, z += 4;
+            for (; 0 < k[y]--;) mapBaseCanvasImageData[z] = n[0], mapBaseCanvasImageData[z + 1] = n[1], mapBaseCanvasImageData[z + 2] = n[2], mapBaseCanvasImageData[z + 3] = 255, z += 4;
             t = !0
-        } pj.putImageData(x6, 0, 0);
+        } mapBaseCanvasCtx.putImageData(x6, 0, 0);
     vf = !0;
     a2f(g);
     x9.init();
@@ -8248,79 +8300,79 @@ function kk() {
             z.push({
                 name: "More",
                 id: 0,
-                fB: 140,
-                n4: 120,
-                cm: 0
+                red: 140,
+                green: 120,
+                blue: 0
             });
             z.push({
                 name: "Lobby 1",
                 id: 1,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             z.push({
                 name: "Hide Usernames",
                 id: 2,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             z.push({
                 name: "Hide Links",
                 id: 3,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             !isIOS && 5 > androidVersion && z.push({
                 name: "High Resolution",
                 id: 4,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             z.push({
                 name: "Tutorial",
                 id: 5,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             z.push({
                 name: "Player List",
                 id: 6,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             z.push({
                 name: "Clan List",
                 id: 7,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             z.push({
                 name: "Privacy Policy",
                 id: 8,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             !isIOS && 5 > androidVersion && z.push({
                 name: "Cookie Policy",
                 id: 9,
-                fB: 0,
-                n4: 0,
-                cm: 0
+                red: 0,
+                green: 0,
+                blue: 0
             });
             z.push({
                 name: a1y,
                 id: 10,
-                fB: 90,
-                n4: 0,
-                cm: 0
+                red: 90,
+                green: 0,
+                blue: 0
             });
             if (isIOS) this.a1L = c.freeSpawn, this.a4F = c.unlimitedTime, this.a0g = !1;
             else if (5 <= androidVersion) this.a1L = 1 === androidObject.loadNumber(25), this.a4F = 1 === androidObject.loadNumber(26), this.a0g = !1;
@@ -8330,9 +8382,9 @@ function kk() {
                 this.a4F = 2 === (y & 2);
                 this.a0g = 4 === (y & 4)
             }
-            z[2].n4 = this.a1L ? 130 : 0;
-            z[3].n4 = this.a4F ? 130 : 0;
-            !isIOS && 5 > androidVersion && (z[4].n4 = this.a0g ? 130 : 0);
+            z[2].green = this.a1L ? 130 : 0;
+            z[3].green = this.a4F ? 130 : 0;
+            !isIOS && 5 > androidVersion && (z[4].green = this.a0g ? 130 : 0);
             this.a4F && (vk.uj[2] = vk.uj[3] = vk.uj[4] = !1)
         };
     this.mouseDown = function(y, A) {
@@ -8342,7 +8394,7 @@ function kk() {
             if (t) {
                 for (B = 1; B < z.length; B++)
                     if (k(y,
-                            A, C, B)) return 1 === z[B].id ? (jt.xn = 1 === jt.xn ? 2 : 2 === jt.xn ? wsManager.serverCount : 1, z[1].name = "Lobby " + (jt.xn === wsManager.serverCount ? "1B" : jt.xn), c4.canvasDirty = !0) : 2 === z[B].id ? (jt.a1L = !jt.a1L, z[B].n4 = jt.a1L ? 130 : 0, g(), c4.canvasDirty = !0) : 3 === z[B].id ? (jt.a4F = !jt.a4F, z[B].n4 = jt.a4F ? 130 : 0, g(), c4.canvasDirty = !0) : 4 === z[B].id ? (jt.a0g = !jt.a0g, z[B].n4 = jt.a0g ? 130 : 0, g(), jq.xa(), c4.canvasDirty = !0) : 5 === z[B].id ? (openLinkBox.init(tutorialLink, !0), openLinkBox.init(tutorialLink, !1)) : 6 === z[B].id ? (openLinkBox.init(leaderboardLinks[0], !0), openLinkBox.init(leaderboardLinks[0], !1)) : 7 === z[B].id ? (openLinkBox.init(leaderboardLinks[1], !0), openLinkBox.init(leaderboardLinks[1], !1)) : 8 === z[B].id ? (openLinkBox.init(privacyPolicyLink, !0), openLinkBox.init(privacyPolicyLink, !1)) : 9 === z[B].id &&
+                            A, C, B)) return 1 === z[B].id ? (jt.xn = 1 === jt.xn ? 2 : 2 === jt.xn ? wsManager.serverCount : 1, z[1].name = "Lobby " + (jt.xn === wsManager.serverCount ? "1B" : jt.xn), c4.canvasDirty = !0) : 2 === z[B].id ? (jt.a1L = !jt.a1L, z[B].green = jt.a1L ? 130 : 0, g(), c4.canvasDirty = !0) : 3 === z[B].id ? (jt.a4F = !jt.a4F, z[B].green = jt.a4F ? 130 : 0, g(), c4.canvasDirty = !0) : 4 === z[B].id ? (jt.a0g = !jt.a0g, z[B].green = jt.a0g ? 130 : 0, g(), jq.xa(), c4.canvasDirty = !0) : 5 === z[B].id ? (openLinkBox.init(tutorialLink, !0), openLinkBox.init(tutorialLink, !1)) : 6 === z[B].id ? (openLinkBox.init(leaderboardLinks[0], !0), openLinkBox.init(leaderboardLinks[0], !1)) : 7 === z[B].id ? (openLinkBox.init(leaderboardLinks[1], !0), openLinkBox.init(leaderboardLinks[1], !1)) : 8 === z[B].id ? (openLinkBox.init(privacyPolicyLink, !0), openLinkBox.init(privacyPolicyLink, !1)) : 9 === z[B].id &&
                         (openLinkBox.init(cookiePolicyLink, !0), openLinkBox.init(cookiePolicyLink, !1)), !0;
                 t = !1;
                 c4.canvasDirty = !0;
@@ -8371,10 +8423,10 @@ function kk() {
             var A = n();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            l(A.f7, A.f8, A.i4, A.nP, z[0].fB, z[0].n4, z[0].cm, 0 === x, z[0].name, .6);
+            l(A.f7, A.f8, A.i4, A.nP, z[0].red, z[0].green, z[0].blue, 0 === x, z[0].name, .6);
             if (t) {
                 var B = z.length;
-                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nP - 2 * y, A.i5, A.nP, z[y].fB, z[y].n4, z[y].cm, x === y, z[y].name,
+                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nP - 2 * y, A.i5, A.nP, z[y].red, z[y].green, z[y].blue, x === y, z[y].name,
                     y === B - 1 ? .32 : .45)
             }
         }
@@ -8427,7 +8479,6 @@ function kT() {
 function BoatPathChecker() {
     var g;
     this.f0 = function() {
-        console.log(g)
         return g
     };
     this.co = function(k, n) {
@@ -8557,19 +8608,19 @@ function a2M() {
     };
     this.ik = function() {
         l = 31;
-        this.dF();
+        this.update();
         return this.mw()
     };
     this.mw = function() {
         for (var B = 0, C = teamCount; 0 < C; C--) A[C] > A[B] && (B = C);
         return B
     };
-    this.dF = function() {
+    this.update = function() {
         if (teamGame && 32 <= ++l) {
             l = 0;
             var B;
             for (B = teamCount; 0 <= B; B--) A[B] = 0;
-            for (B = dY - 1; 0 <= B; B--) A[teams.dX[dZ[B]]] += land[dZ[B]];
+            for (B = aliveCount - 1; 0 <= B; B--) A[teams.dX[aliveEntities[B]]] += land[aliveEntities[B]];
             n = !0
         }
     };
@@ -8683,8 +8734,8 @@ function kc() {
         l();
         window.addEventListener("resize", onResize)
     };
-    this.dF = function() {
-        ju.dF();
+    this.update = function() {
+        specialGames.update();
         ++t >= z && k()
     };
     this.xa = function() {
@@ -8704,7 +8755,7 @@ function kW() {
         pixel.yf(x, n) && pixel.yh(x)
     }
     var n, l, x, t, z, y, A, B, C, E, F;
-    this.dF = function(G, N, I, D, K) {
+    this.update = function(G, N, I, D, K) {
         C = G;
         F = N;
         n = I;
@@ -8747,7 +8798,7 @@ function kX() {
     this.init = function() {
         var x, t, z;
         n = !0;
-        l = "rgb(" + x7[0] + "," + x7[1] + "," + x7[2] + ")";
+        l = "rgb(" + mapBaseCanvasImageData[0] + "," + mapBaseCanvasImageData[1] + "," + mapBaseCanvasImageData[2] + ")";
         var y = mapIsSurroundedByWater(currentMapID) ? !0 : n = !1;
         if (y) k = null;
         else {
@@ -8789,11 +8840,11 @@ function kX() {
                     }
                 F.putImageData(G, 0, 0)
             }
-            pj.fillStyle = "rgb(" + B + "," + B + "," + B + ")";
-            pj.fillRect(0, 0, currentMapWidth, 1);
-            pj.fillRect(0, currentMapHeight - 1, currentMapWidth, 1);
-            pj.fillRect(0, 0, 1, currentMapHeight);
-            pj.fillRect(currentMapWidth - 1, 0, 1, currentMapHeight)
+            mapBaseCanvasCtx.fillStyle = "rgb(" + B + "," + B + "," + B + ")";
+            mapBaseCanvasCtx.fillRect(0, 0, currentMapWidth, 1);
+            mapBaseCanvasCtx.fillRect(0, currentMapHeight - 1, currentMapWidth, 1);
+            mapBaseCanvasCtx.fillRect(0, 0, 1, currentMapHeight);
+            mapBaseCanvasCtx.fillRect(currentMapWidth - 1, 0, 1, currentMapHeight)
         }
     };
     this.hr = function() {
@@ -8806,70 +8857,69 @@ function kX() {
     }
 }
 
-function a1o() {
-    function g() {}
+function TerriWS() {
+    function pass() {}
 
-    function k() {
-        wsManager.a1p(z, y)
+    function onOpen() {
+        wsManager.doFirstAction(remote, firstAction)
     }
 
-    function n(F) {
-        A++;
-        1 === A ? C.readAsArrayBuffer(F.data) : B.push(F.data)
+    function onMessage(m) {
+        unreadMessagesCount++;
+        1 === unreadMessagesCount ? dataReader.readAsArrayBuffer(m.data) : unreadMessages.push(m.data)
     }
 
     function onLoadend() {
-        A--;
-        dataDecoder.mainDecoder(z, new Uint8Array(C.result));
-        0 < A && (C.readAsArrayBuffer(B[0]), B.shift())
+        unreadMessagesCount--;
+        dataDecoder.mainDecoder(remote, new Uint8Array(dataReader.result));
+        0 < unreadMessagesCount && (dataReader.readAsArrayBuffer(unreadMessages[0]), unreadMessages.shift())
     }
 
-    function x() {}
+    function onError() {}
 
-    function t(F) {
-        wsManager.a1v(z, F)
+    function onClose(reason) {
+        wsManager.unexpectedClose(remote, reason)
     }
-    var z, y, A, B, C, E;
-    this.init = function(F, G) {
-        z = F;
-        y = G;
-        A = 0;
-        B = [];
-        C = new FileReader;
-        C.addEventListener("loadend", onLoadend);
-        var N = wsUrlStrings[0];
-        N = z < wsManager.serverCount ? N + (wsManager.originURLs[z] + wsUrlStrings[1 + a25]) : N + (wsManager.originURLs[0] + "/i" + (1 + a25) + (z - wsManager.gameServerCount) + "/");
-        E = new WebSocket(N);
-        E.onopen = k;
-        E.onmessage = n;
-        E.onclose =
-            t;
-        E.onerror = x
+    var remote, firstAction, unreadMessagesCount, unreadMessages, dataReader, ws;
+    this.init = function(param_remote, param_firstAction) {
+        remote = param_remote;
+        firstAction = param_firstAction;
+        unreadMessagesCount = 0;
+        unreadMessages = [];
+        dataReader = new FileReader;
+        dataReader.addEventListener("loadend", onLoadend);
+        var url = wsUrlStrings[0];
+        url = remote < wsManager.serverCount ? url + (wsManager.originURLs[remote] + wsUrlStrings[1 + const_2_s52]) : url + (wsManager.originURLs[0] + "/i" + (1 + const_2_s52) + (remote - wsManager.gameServerCount) + "/");
+        ws = new WebSocket(url);
+        ws.onopen = onOpen;
+        ws.onmessage = onMessage;
+        ws.onclose = onClose;
+        ws.onerror = onError
     };
-    this.a5J = function() {
-        return E.readyState === E.CONNECTING
+    this.isConnecting = function() {
+        return ws.readyState === ws.CONNECTING
     };
-    this.vI = function() {
-        return E.readyState === E.OPEN
+    this.isOpen = function() {
+        return ws.readyState === ws.OPEN
     };
-    this.a1l = function() {
-        return this.a5J() || this.vI()
+    this.isConnectingOrOpen = function() {
+        return this.isConnecting() || this.isOpen()
     };
-    this.a1m = function(F) {
-        y = F
+    this.setFirstAction = function(param_firstAction) {
+        firstAction = param_firstAction
     };
-    this.send = function(F) {
-        this.vI() && E.send(F)
+    this.send = function(m) {
+        this.isOpen() && ws.send(m)
     };
-    this.close = function(F) {
-        this.a1l() && (E.close(F), this.lF())
+    this.close = function(reason) {
+        this.isConnectingOrOpen() && (ws.close(reason), this.end())
     };
-    this.lF = function() {
-        E.onopen = g;
-        E.onmessage = g;
-        E.onclose = g;
-        E.onerror = g;
-        C.removeEventListener("loadend", onLoadend)
+    this.end = function() {
+        ws.onopen = pass;
+        ws.onmessage = pass;
+        ws.onclose = pass;
+        ws.onerror = pass;
+        dataReader.removeEventListener("loadend", onLoadend)
     }
 }
 
@@ -8891,7 +8941,7 @@ function Statistics() {
         this.a5S();
         this.a5T()
     };
-    this.dF = function() {
+    this.update = function() {
         0 < this.dV-- || this.a5U()
     };
     this.a5U = function() {
@@ -8956,7 +9006,7 @@ function a2J() {
         k -= divideFloor(cB - this.height, 2);
         if (0 > g || 0 > k || g >= this.width || k >= this.height) {
             if (1 < fq.mouseDown(n, l)) return !0;
-            this.lF();
+            this.end();
             return !0
         }
         if (k < this.height - this.nQ) return this.a5a = !0, this.a5Z = (g - 2 * this.i4 - this.uS) / this.uT, !0;
@@ -8987,12 +9037,12 @@ function a2J() {
         this.a5a && (this.a5a = !1)
     };
     this.m0 = function() {
-        this.hidden ? this.lF() : this.show()
+        this.hidden ? this.end() : this.show()
     };
     this.show = function() {
         2 > statistics.m4 || (this.hidden = !0, this.a5c())
     };
-    this.lF = function() {
+    this.end = function() {
         this.hidden = !1;
         this.a5Z = -1
     };
@@ -9178,7 +9228,7 @@ function Teams() {
     this.init = function(l) {
         this.dX = new Uint8Array(maxEntities);
         this.a5v();
-        teamGame && (customMap.ds && customMap.dt.zn ? this.yQ() : 9 === gamemode ? this.a5w() : this.dF(l))
+        teamGame && (customMap.ds && customMap.dt.zn ? this.yQ() : 9 === gamemode ? this.a5w() : this.update(l))
     };
     this.yQ = function() {
         var l, x = entityCount;
@@ -9197,7 +9247,7 @@ function Teams() {
         this.im[1] = 7;
         this.im[2] = 8
     };
-    this.dF = function(l) {
+    this.update = function(l) {
         var x =
             new Uint8Array(playerCount),
             t = new Uint8Array(playerCount),
@@ -9304,7 +9354,7 @@ function Teams() {
     this.a63 = function() {
         var l, x = new Uint16Array(teamCount);
         x[teamCount - 1] = maxEntities;
-        for (l = teamCount - 2; 0 <= l; l--) x[l] = singleSettings.dz[l].mt;
+        for (l = teamCount - 2; 0 <= l; l--) x[l] = singleSettings.botSettings[l].group;
         x[0]--;
         var t = 0 === x[0] ? 1 : 0;
         for (l = playerCount; l < maxEntities; l++) this.dX[l] = t + 1, x[t]--, 0 >= x[t] && t++
@@ -9500,19 +9550,19 @@ function a2K() {
         this.a6O = this.a6Y
     };
     this.a6U = function() {
-        jf.dF();
-        ji.dF();
-        jq.dF();
-        wsManager.dF();
+        jf.update();
+        ji.update();
+        jq.update();
+        wsManager.update();
         setGameOrigin.wH();
-        mainLeaderboard.dF();
+        mainLeaderboard.update();
         this.canvasDirty && (this.canvasDirty = !1, aJ.cG())
     };
     this.a6W = function() {
-        this.a6P.dF()
+        this.a6P.update()
     };
     this.a6Y = function() {
-        this.a6Q.dF()
+        this.a6Q.update()
     };
     this.dU = function() {
         return singleplayer ? this.a6P.wE : this.a6Q.wE
@@ -9527,8 +9577,8 @@ function a6V() {
     this.a5Q = 56;
     this.wE = this.bs = 0;
     this.a6Z = !1;
-    this.dF = function() {
-        jq.dF();
+    this.update = function() {
+        jq.update();
         inSpawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === clientStatus || fq.lu ? e8() : (eE(), this.wE++, h8.tv()), this.bs++) : (fq.lu ? ec() : (c4.canvasDirty = !0, ea()), this.bs = 0);
         eU();
         c4.canvasDirty && (c4.canvasDirty = !1, hp())
@@ -9558,10 +9608,10 @@ function a6X() {
         dataDecoder.a6c(k, g);
         g = (g + 1) % 8;
         eB.tW(this.wD);
-        this.wD === spawnTime ? (spawn.dF(), this.wE = this.bs = this.wD = 0, this.time = c4.time) : (this.wD++, eA.j4(), eA.eb(), h8.tv())
+        this.wD === spawnTime ? (spawn.update(), this.wE = this.bs = this.wD = 0, this.time = c4.time) : (this.wD++, eA.j4(), eA.eb(), h8.tv())
     };
-    this.dF = function() {
-        jq.dF();
+    this.update = function() {
+        jq.update();
         inSpawn ? (c4.canvasDirty =
             eB.tW(-1) || c4.canvasDirty, ec()) : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === clientStatus ? e8() : this.a6d(), this.bs++) : (c4.canvasDirty = !0, ea(), this.bs = 0);
         eU();
@@ -9583,13 +9633,13 @@ function a6X() {
     }
 }
 
-function kl() {
+function SpecialGames() {
     function g(k, n) {
-        8 !== aJ.getState() || 0 !== n && n !== gamemode || singleplayer || announcements.my(k)
+        8 !== aJ.getState() || 0 !== n && n !== gamemode || singleplayer || announcements.upcomingGame(k)
     }
     this.gW = 0;
     this.a6g = !0;
-    this.dF = function() {
+    this.update = function() {
         c4.time > this.gW && (this.gW = c4.time + 2500, this.a6h())
     };
     this.a6h = function() {
@@ -9613,7 +9663,7 @@ function kY() {
     }
     var n, l, x, t;
     this.pN = function(z) {
-        return 1 < z.touches.length ? (k(z), hu.lF(), !0) : !1
+        return 1 < z.touches.length ? (k(z), hu.end(), !0) : !1
     };
     this.pS = function(z) {
         if (0 === clientStatus) return !1;
@@ -9756,42 +9806,61 @@ function DataDecoder() {
             }
         }
     };
-    this.wI = function(x) {
+    this.gameInitDecoder = function(array) {
         arrayIndex = 1;
-        messageLength = x.length;
-        if (2 ===
-            decoder(x, 2)) {
+        messageLength = array.length;
+        if (2 === decoder(array, 2)) {
             arrayIndex += 20;
-            for (var t = decoder(x, 9), z = decoder(x, 14), y = decoder(x, 4), A = 1 === decoder(x, 1), B = decoder(x, 6), C = decoder(x, 14), E = decoder(x, 9) + 1, F = [], G, N, I, D = 0; D < E; D++) G = decoder(x, 1), N = [decoder(x, 6), decoder(x, 6), decoder(x, 6)], I = decodeNames(decoder(x, 5), x), F.push({
-                name: I,
-                color: N,
-                status: G
-            });
+            var var_myID = decoder(array, 9),
+                var_gameSeed = decoder(array, 14), 
+                var_gamemode = decoder(array, 4), 
+                var_isContest = 1 === decoder(array, 1), 
+                var_mapID = decoder(array, 6), 
+                var_mapSeed = decoder(array, 14), 
+                var_playerCount = decoder(array, 9) + 1, 
+                var_playerInfo = [];
+            for (var playerIndex = 0; playerIndex < var_playerCount; playerIndex++) {
+                var var_playerStatus = decoder(array, 1), 
+                    var_playerColor = [decoder(array, 6), decoder(array, 6), decoder(array, 6)], 
+                    var_playerName = decodeNames(decoder(array, 5), array);
+                var_playerInfo.push({
+                    name: var_playerName,
+                    color: var_playerColor,
+                    status: var_playerStatus
+                })
+            };
             aJ.ve();
-            loadMap(B, C);
-            1 === F.length && singleSettings.xL(y);
-            gameInit(z, t, F, y, A)
+            loadMap(var_mapID, var_mapSeed);
+            1 === var_playerInfo.length && singleSettings.setBotSettings(var_gamemode);
+            gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
+
         } else {
             arrayIndex += 20;
-            t = decoder(x, 1);
-            z = decoder(x, 14);
-            y = decoder(x, 4);
-            A = 1 === decoder(x, 1);
-            B = decoder(x, 6);
-            C = decoder(x, 14);
-            E = [];
-            for (D = 0; 2 > D; D++) F = decoder(x, 1), G = [decoder(x, 6), decoder(x, 6), decoder(x, 6)], N = decoder(x, 14), I = decodeNames(decoder(x, 5), x), E.push({
-                name: I,
-                color: G,
-                elo: N,
-                status: F
-            });
+            var var_myID = decoder(array, 1),
+                var_gameSeed = decoder(array, 14),
+                var_gamemode = decoder(array, 4),
+                var_isContest = 1 === decoder(array, 1),
+                var_mapID = decoder(array, 6),
+                var_mapSeed = decoder(array, 14);
+                var_playerInfo = [];
+            for (playerIndex = 0; 2 > playerIndex; playerIndex++) {
+                var var_playerStatus = decoder(array, 1),
+                    var_playerColor = [decoder(array, 6), decoder(array, 6), decoder(array, 6)], 
+                    var_playerElo = decoder(array, 14), 
+                    var_playerName = decodeNames(decoder(array, 5), array);
+                var_playerInfo.push({
+                    name: var_playerName,
+                    color: var_playerColor,
+                    elo: var_playerElo,
+                    status: var_playerStatus
+                })
+            };
             aJ.ve();
-            loadMap(B, C);
-            gameInit(z, t, E, y, A)
+            loadMap(var_mapID, var_mapSeed);
+            gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
         }
     };
-    this.wB = function(array) {
+    this.decodeGameServerInfo = function(array) {
         arrayIndex = 1;
         messageLength = array.length;
         var check1v1 = decoder(array, 2),
@@ -9802,7 +9871,7 @@ function DataDecoder() {
         wsManager.remote = remote;
         setGameOrigin.gameHash = decoder(array, 10);
         setGameOrigin.myID = decoder(array, 2 === check1v1 ? 9 : 1);
-        wsManager.ri(remote, 5) && dataEncoder.authenticateGameConnection();
+        wsManager.manageFirstAction(remote, 5) && dataEncoder.authenticateGameConnection();
         return !0
     };
     this.a6c = function(x, t) {
@@ -9817,14 +9886,14 @@ function DataDecoder() {
                     y = decoder(x, 10);
                     var B = decoder(x, 9);
                     B = B === A ? maxEntities : B;
-                    processAction.fY(A, y, B)
+                    processAction.pendingAttack(A, y, B)
                 } else if (1 === y) {
                     y = decoder(x, 10);
                     B = decoder(x, 11);
                     var C = decoder(x, 11);
-                    processAction.fb(A, y, B, C)
-                } else 2 === y ? (B = decoder(x, 9), B = B === A ? maxEntities : B, processAction.fe(A, B)) : 3 === y ? processAction.fh(A) : 4 === y ? (y = decoder(x, 7), eA.showIcon(A, 0, y)) : 5 ===
-                    y ? processAction.fp(A) : 6 === y ? processAction.fg(A, decoder(x, 1)) : 7 === y && processAction.ff(A, 1 + decoder(x, 11))
+                    processAction.pendingSetLocation(A, y, B, C)
+                } else 2 === y ? (B = decoder(x, 9), B = B === A ? maxEntities : B, processAction.pendingCancel(A, B)) : 3 === y ? processAction.onLeave(A) : 4 === y ? (y = decoder(x, 7), eA.showIcon(A, 0, y)) : 5 ===
+                    y ? processAction.surrender(A) : 6 === y ? processAction.pendingPeace(A, decoder(x, 1)) : 7 === y && processAction.pendingCancelBoat(A, 1 + decoder(x, 11))
             }
     }
 }
@@ -9853,7 +9922,7 @@ function ka() {
         g = 1;
         k = 0
     };
-    this.dF = function() {
+    this.update = function() {
         0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.canvasDirty = !0)
     };
     this.cG = function() {
