@@ -3741,7 +3741,7 @@ function k7() {
     }
 
     function k(S) {
-        teamGame && (B.fillStyle = teams.ss[teams.teamIDs[teams.teamArray[S]]])
+        teamGame && (B.fillStyle = teams.leaderboardColors[teams.teamIDs[teams.teamArray[S]]])
     }
 
     function n(S, O) {
@@ -4160,8 +4160,8 @@ function kd() {
         k = !1;
         if (inSpawn)
             if (x = 0, l = 63, k = !0, teamGame)
-                for (t = 0; t <= teamCount; t++) n.push(this.ti(teams.tj[teams.teamIDs[t]], l));
-            else n.push(this.ti(teams.tj[0], l)), n.push(this.ti(teams.tj[4], l))
+                for (t = 0; t <= teamCount; t++) n.push(this.ti(teams.auraColors[teams.teamIDs[t]], l));
+            else n.push(this.ti(teams.auraColors[0], l)), n.push(this.ti(teams.auraColors[4], l))
     };
     this.update = function() {
         k && 349 === ++x && (n = [], k = !1)
@@ -6963,7 +6963,7 @@ function kN() {
                 V.font = fontStyles[playerStatus[ia]] + fa + fontSizeArial;
                 qa = V;
                 var ra = ia;
-                ra = fa >= J && fa < K ? teams.a10[pixel.shading[ra]] + x(fa).toFixed(3) + ")" : teams.a11[pixel.shading[ra]];
+                ra = fa >= J && fa < K ? teams.impostorfontColors[pixel.shading[ra]] + x(fa).toFixed(3) + ")" : teams.fontColors[pixel.shading[ra]];
                 qa.fillStyle = ra;
                 V.fillText(8 === gamemode ? attacksBar.splitText(troops[ia]) : nickname[ia], la, ma);
                 W = !0;
@@ -9336,13 +9336,13 @@ function a2J() {
 
 function Teams() {
     this.piechartColors = "rgba(130,130,130,0.88) rgba(130,12,12,0.88) rgba(12,130,12,0.88) rgba(12,12,130,0.88) rgba(130,130,12,0.88) rgba(130,12,130,0.88) rgba(12,130,130,0.88) rgba(130,130,130,0.88) rgba(0,0,0,0.88)".split(" ");
-    this.ss = [whiteRGB2, "rgb(255,120,120)", "rgb(0,230,0)", "rgb(150,150,255)", "rgb(240,240,25)", "rgb(240,25,240)", "rgb(25,240,240)", whiteRGB2, "rgb(170,170,170)"];
-    this.a5o = [whiteRGB2, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", whiteRGB2, blackRGB];
-    this.a5p = [blackRGB, whiteRGB2, whiteRGB2, whiteRGB2, blackRGB, blackRGB, blackRGB, blackRGB, whiteRGB2];
-    this.a10 = ["rgba(255,255,255,", "rgba(0,0,0,", "rgba(170,170,170,", "rgba(85,85,85,"];
-    this.a11 = ["rgb(255,255,255)", "rgb(0,0,0)", "rgb(170,170,170)", "rgb(85,85,85)"];
+    this.leaderboardColors = [whiteRGB2, "rgb(255,120,120)", "rgb(0,230,0)", "rgb(150,150,255)", "rgb(240,240,25)", "rgb(240,25,240)", "rgb(25,240,240)", whiteRGB2, "rgb(170,170,170)"];
+    this.a5o = [whiteRGB2, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", whiteRGB2, blackRGB];//not used
+    this.a5p = [blackRGB, whiteRGB2, whiteRGB2, whiteRGB2, blackRGB, blackRGB, blackRGB, blackRGB, whiteRGB2];//not used
+    this.impostorfontColors = ["rgba(255,255,255,", "rgba(0,0,0,", "rgba(170,170,170,", "rgba(85,85,85,"];
+    this.fontColors = ["rgb(255,255,255)", "rgb(0,0,0)", "rgb(170,170,170)", "rgb(85,85,85)"];
     this.colorLabels = "White Red Green Blue Yellow Magenta Cyan White Black".split(" ");
-    this.tj = [
+    this.auraColors = [
         [255, 255, 255, 180],
         [255, 0, 0, 180],
         [0, 255, 0, 180],
@@ -9353,7 +9353,7 @@ function Teams() {
         [255, 255, 255, 180],
         [0, 0, 0, 180]
     ];
-    var g = [
+    var teamAssignColors = [ //array compares each player's color value to the color values of the available team colors and assign the player to the closest matching team
         [255, 255, 255],
         [255, 0, 0],
         [0, 255, 0],
@@ -9404,7 +9404,7 @@ function Teams() {
         var y, A, B = this.teamIDs.length - 1,
             C = new Uint16Array(B);
         for (y = playerCount - 1; 0 <= y; y--) {
-            for (A = B; 1 <= A; A--) C[A - 1] = Math.abs(4 * l[y].color[0] - g[A][0]) + Math.abs(4 * l[y].color[1] - g[A][1]) + Math.abs(4 * l[y].color[2] - g[A][2]);
+            for (A = B; 1 <= A; A--) C[A - 1] = Math.abs(4 * l[y].color[0] - teamAssignColors[A][0]) + Math.abs(4 * l[y].color[1] - teamAssignColors[A][1]) + Math.abs(4 * l[y].color[2] - teamAssignColors[A][2]);
             var E = 768;
             for (A = B - 1; 0 <= A; A--) {
                 var F = (A + y) % B;
