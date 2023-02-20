@@ -101,7 +101,7 @@ function aD() {
 self.aiCommand746 = function(g) {
     0 === g ? init() : 1 !== g || 14 > androidVersion || aJ.aK()
 };
-var lastAttackIndex, lastAuthorID, lastRemaining, lastRemainingPerPixel, lastTargetID, lastBorderLength, lastArrayMaxLength, lastBorderLand, lastLandGained, lastInnerPixels, offset, editingMatrix, aX;
+var lastAttackIndex, lastAuthorID, lastRemaining, lastRemainingPerPixel, lastTargetID, lastBorderLength, lastArrayMaxLength, lastBorderLand, lastLandGained, lastInnerPixels, offset, editingMatrix, lastBorderTaken;
 
 function attackMatrixInit() {
     lastBorderLength = 0;
@@ -117,63 +117,75 @@ function attackMatrixInit() {
     editingMatrix = new Uint8Array(currentMapWidth * currentMapHeight)
 }
 
-function ab(g) {
-    lastAuthorID = g;
-    aX = !1;
-    ac();
-    ad();
-    for (g = attacks.getCurrentAttackCount(lastAuthorID) - 1; 0 <= g; g--) 0 === attacks.getBoatIDFromIndex(lastAuthorID, g) && (lastAttackIndex = g, ah());
-    aX && ai()
+function attackProcessInit(id) {
+    lastAuthorID = id;
+    lastBorderTaken = !1;
+    setBorderToInnerPixels();
+    setMarkedLandToBorderPixel();
+    for (var aIndex = attacks.getCurrentAttackCount(lastAuthorID) - 1; 0 <= aIndex; aIndex--) {
+        if (0 === attacks.getBoatIDFromIndex(lastAuthorID, aIndex)) {
+            lastAttackIndex = aIndex;
+            startTestingTakingProcess();
+        }
+    }
+    lastBorderTaken && updateTakenPixelArrays()
 }
 
-function ai() {
-    aj();
-    ak()
+function updateTakenPixelArrays() {
+    updateEditingBorderPixels();
+    updatePixelsBorderingTerrain()
 }
 
-function ah() {
+function startTestingTakingProcess() {
     lastTargetID = attacks.getTargetFromIndex(lastAuthorID, lastAttackIndex);
     lastRemaining = attacks.getRemainingTroopsFromIndex(lastAuthorID, lastAttackIndex);
-    an();
-    0 === lastBorderLength ? ao() : (ap(), aq() ? ar() : ao())
+    markPossibleExpansion();
+    if (0 === lastBorderLength) returnRemaining()
+    else {
+        resetEditingMatrix();
+        if (canTakeMarkedPixels()) tryTakingMarkedPixels()
+        else returnRemaining()
+    }
 }
 
-function aq() {
+function canTakeMarkedPixels() {
     lastRemainingPerPixel = divideFloor(lastRemaining, lastBorderLength);
-    return lastRemainingPerPixel > at
+    return lastRemainingPerPixel > neutralLandCost
 }
 
-function ap() {
-    var g;
-    for (g = lastBorderLength - 1; 0 <= g; g--) editingMatrix[divideFloor(lastBorderLand[g], 4)] = 0
+function resetEditingMatrix() {
+    var bIndex;
+    for (bIndex = lastBorderLength - 1; 0 <= bIndex; bIndex--) editingMatrix[divideFloor(lastBorderLand[bIndex], 4)] = 0
 }
 
-function ao() {
-    1 === attacks.getCurrentAttackCount(lastAuthorID) && speed.av(lastAuthorID);
+function returnRemaining() {
+    1 === attacks.getCurrentAttackCount(lastAuthorID) && speed.removeEntry(lastAuthorID);
     if (lastAuthorID !== myID) troops[lastAuthorID] += lastRemaining, interest.limitTroops(lastAuthorID);
     else {
-        var g = troops[lastAuthorID];
+        var oldTroop = troops[lastAuthorID];
         troops[lastAuthorID] += lastRemaining;
         interest.limitTroops(lastAuthorID);
-        statistics.numbers[13] -= troops[lastAuthorID] - g
+        statistics.numbers[13] -= troops[lastAuthorID] - oldTroop
     }
     attacks.removeAttack(lastAuthorID, lastAttackIndex)
 }
 
-function ac() {
-    var g = potentialBorderAdvances[lastAuthorID].length;
-    g = g > lastArrayMaxLength ? lastArrayMaxLength : g;
+function setBorderToInnerPixels() {
+    var potentialBorderLength = potentialBorderAdvances[lastAuthorID].length;
+    potentialBorderLength = potentialBorderLength > lastArrayMaxLength ? lastArrayMaxLength : potentialBorderLength;
     lastLandGained = 0;
-    for (--g; 0 <= g; g--) lastInnerPixels[lastLandGained++] = potentialBorderAdvances[lastAuthorID][g]
+    for (--potentialBorderLength; 0 <= potentialBorderLength; potentialBorderLength--) lastInnerPixels[lastLandGained++] = potentialBorderAdvances[lastAuthorID][potentialBorderLength]
 }
 
-function ad() {
-    var g;
-    for (g = potentialBorderAdvances[lastAuthorID].length - 1; 0 <= g; g--) pixel.canOwn(potentialBorderAdvances[lastAuthorID][g]) && pixel.changeToBorderPixel(potentialBorderAdvances[lastAuthorID][g], lastAuthorID);
+function setMarkedLandToBorderPixel() {
+    var bIndex;
+    for (bIndex = potentialBorderAdvances[lastAuthorID].length - 1; 0 <= bIndex; bIndex--) {
+        if (pixel.canOwn(potentialBorderAdvances[lastAuthorID][bIndex])) pixel.changeToBorderPixel(potentialBorderAdvances[lastAuthorID][bIndex], lastAuthorID);
+    }
     potentialBorderAdvances[lastAuthorID] = []
 }
 
-function an() {
+function markPossibleExpansion() {
     lastBorderLength = 0;
     lastTargetID === maxEntities ? b9() : bA()
 }
@@ -198,8 +210,8 @@ function b9() {
         }
 }
 
-function ar() {
-    bH() ? (bI(), lastTargetID !== maxEntities && bJ()) : ao()
+function tryTakingMarkedPixels() {
+    bH() ? (bI(), lastTargetID !== maxEntities && bJ()) : returnRemaining()
 }
 
 function bJ() {
@@ -214,7 +226,7 @@ function bJ() {
 }
 
 function bI() {
-    aX = !0;
+    lastBorderTaken = !0;
     attacks.setRemainingTroopsFromIndex(lastAuthorID, lastAttackIndex, lastRemaining);
     land[lastAuthorID] += lastBorderLength;
     bV();
@@ -226,7 +238,7 @@ function bH() {
 }
 
 function bY() {
-    var g = lastBorderLength * at,
+    var g = lastBorderLength * neutralLandCost,
         k = bb(),
         n = bd();
     k = g + 2 * k + n;
@@ -264,7 +276,7 @@ function bk() {
 }
 
 function bX() {
-    lastRemaining -= lastBorderLength * at;
+    lastRemaining -= lastBorderLength * neutralLandCost;
     return !0
 }
 
@@ -635,46 +647,49 @@ function ec() {
 }
 
 function Speed() {
-    function g(A) {
-        var B;
-        for (B = l - 1; 0 <= B; B--) 0 === t[x[B]] && land[x[B]] >= A && ab(x[B])
+    function checkHigherSpeed(thresholdLand) {
+        var idIndex;
+        for (idIndex = attackerCount - 1; 0 <= idIndex; idIndex--) 0 === intervalsLeft[attackers[idIndex]] && land[attackers[idIndex]] >= thresholdLand && attackProcessInit(attackers[idIndex])
     }
 
-    function k(A) {
-        t[A] = 10 === t[A] ? n : 1E3 > land[A] ? 3 : 1E4 > land[A] ? 2 : 6E4 > land[A] ? 1 : 0
+    function setSpeedInterval(id) {
+        intervalsLeft[id] = 10 === intervalsLeft[id] ? newAttackIntervalsLeft : 1E3 > land[id] ? 3 : 1E4 > land[id] ? 2 : 6E4 > land[id] ? 1 : 0
     }
-    var n, l, x, t, z, y;
+    var newAttackIntervalsLeft, attackerCount, attackers, intervalsLeft, old_AttackLoses, old_myTroops;
     this.init = function() {
-        z = y = 0;
-        n = 6;
-        l = 0;
-        x = new Uint16Array(maxEntities);
-        t = new Uint8Array(maxEntities)
+        old_AttackLoses = old_myTroops = 0;
+        newAttackIntervalsLeft = 6;
+        attackerCount = 0;
+        attackers = new Uint16Array(maxEntities);
+        intervalsLeft = new Uint8Array(maxEntities)
     };
     this.update = function() {
-        var A;
-        z = statistics.numbers[13];
-        y = troops[myID];
-        for (A = l - 1; 0 <= A; A--) 10 === t[x[A]] ? k(x[A]) : 0 === t[x[A]]-- && (k(x[A]), ab(x[A]));
-        16E4 <= land[em[0]] && (g(16E4), 3E5 <= land[em[0]] && g(3E5));
+        var attackerIndex;
+        old_AttackLoses = statistics.numbers[13];
+        old_myTroops = troops[myID];
+        for (attackerIndex = attackerCount - 1; 0 <= attackerIndex; attackerIndex--) {
+            if (10 === intervalsLeft[attackers[attackerIndex]]) setSpeedInterval(attackers[attackerIndex])
+            else if (0 === intervalsLeft[attackers[attackerIndex]]--) setSpeedInterval(attackers[attackerIndex]), attackProcessInit(attackers[attackerIndex]);
+        }
+        16E4 <= land[orderedLand[0]] && (checkHigherSpeed(16E4), 3E5 <= land[orderedLand[0]] && checkHigherSpeed(3E5));
         land[myID] > statistics.numbers[7] && (statistics.numbers[7] = land[myID]);
-        statistics.numbers[14] += y - troops[myID] + z - statistics.numbers[13]
+        statistics.numbers[14] += old_myTroops - troops[myID] + old_AttackLoses - statistics.numbers[13]
     };
-    this.av = function(A) {
-        var B;
-        for (B = l - 1; 0 <= B; B--)
-            if (A === x[B]) {
-                l--;
-                for (A = B; A < l; A++) x[A] = x[A + 1];
+    this.removeEntry = function(id) {
+        var attackerIndex;
+        for (attackerIndex = attackerCount - 1; 0 <= attackerIndex; attackerIndex--)
+            if (id === attackers[attackerIndex]) {
+                attackerCount--;
+                for (id = attackerIndex; id < attackerCount; id++) attackers[id] = attackers[id + 1];
                 break
             }
     };
-    this.cR = function(A, B) {
-        var C;
-        for (C = l - 1; 0 <= C; C--)
-            if (A === x[C]) return;
-        x[l++] = A;
-        t[A] = B ? 2 : 10
+    this.cR = function(id, shortAttack) {
+        var attackerIndex;
+        for (attackerIndex = attackerCount - 1; 0 <= attackerIndex; attackerIndex--)
+            if (id === attackers[attackerIndex]) return;
+        attackers[attackerCount++] = id;
+        intervalsLeft[id] = shortAttack ? 2 : 10
     }
 }
 
@@ -850,7 +865,7 @@ function fu() {
     this.update = function() {
         for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, g1.update(B, z[B], x[B], y[B], A[B]))
     };
-    this.av = function(B, C) {
+    this.removeEntry = function(B, C) {
         var E;
         for (E = l - 1; 0 <= E; E--)
             if (B === x[E] && C === z[E]) {
@@ -1310,7 +1325,7 @@ function EndGame() {
                 var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
                 (k = winner === myID) ? announcements.genericAnnouncement(winner, 2): announcements.genericAnnouncement(1 - myID, 3);
                 points1v1.calculateElo(winner)
-            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? em[0] : 512 : (winner = teams.il(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.io(winner[1])), announcements.ip(k)) : (result = em[0], k = result === myID, announcements.iq(result));
+            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : (winner = teams.il(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.io(winner[1])), announcements.ip(k)) : (result = orderedLand[0], k = result === myID, announcements.iq(result));
             singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(k, !1);
             announcements.iy(!0);
@@ -1345,7 +1360,7 @@ var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
     maxTroopsToLandRatio = 150,
     singleplayer, j8, clientStatus = 0,
     currentLandPixelsCount, absMaxTroopCap, absMaxTroopsBeforeRedI, startingTroops = 512,
-    at = 2,
+    neutralLandCost = 2,
     myID, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
 function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isContest) {
@@ -3044,7 +3059,7 @@ function Peace() {
             D && (E = !0, A[0] += B[0]);
             180 === F && 3 * A[0] < B[0] ? k() : A[0] >= B[0] ? endGame.endGame(-1) : A[1] >= B[1] ? I = 4 : 0 >= F && k()
         } else {
-            for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[em[D]]) && (F = 140), G[D] = land[em[D]];
+            for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[orderedLand[D]]) && (F = 140), G[D] = land[orderedLand[D]];
             D = 0 >= --F ? !0 : !1;
             if (D) {
                 this.hidden = !0;
@@ -3707,7 +3722,7 @@ function k6() {
         0 === isAlive[myID] || inSpawn || 2 === playerStatus[myID] || mainCanvasCtx.drawImage(t, this.fJ, n)
     }
 }
-var sG, qS, sH, sI, sJ, em, sK;
+var sG, qS, sH, sI, sJ, orderedLand, sK;
 
 function k7() {
     function g() {
@@ -3732,10 +3747,10 @@ function k7() {
         var O = sK[myID] < V + y - 1 ? 1 : 2;
         B.font = sI;
         B.textAlign = leftAlign;
-        for (S = y - O; 0 <= S; S--) k(em[S + V]),
-            l(S, S + V, em[S + V]);
+        for (S = y - O; 0 <= S; S--) k(orderedLand[S + V]),
+            l(S, S + V, orderedLand[S + V]);
         B.textAlign = rightAlign;
-        for (S = y - O; 0 <= S; S--) k(em[S + V]), x(S, em[S + V]);
+        for (S = y - O; 0 <= S; S--) k(orderedLand[S + V]), x(S, orderedLand[S + V]);
         2 === O && (k(myID), B.textAlign = leftAlign, l(y - 1, sK[myID], myID), B.textAlign = rightAlign, x(y - 1, myID));
         0 === V && (S = .7 * I / sprites.getValuebyID(4).height, B.setTransform(S, 0, 0, S, Math.floor(D + .58 * I + .5 * S * sprites.getValuebyID(4).width), Math.floor(F + sJ + .4 * I)), B.imageSmoothingEnabled = !0, B.drawImage(sprites.getValuebyID(4), -Math.floor(sprites.getValuebyID(4).width / 2), -Math.floor(sprites.getValuebyID(4).height / 2)), B.setTransform(1, 0, 0, 1, 0, 0))
     }
@@ -3790,9 +3805,9 @@ function k7() {
         P = new Uint16Array(y + 1);
         U = new Uint32Array(y + 1);
         E = maxEntities;
-        em = new Uint16Array(E);
+        orderedLand = new Uint16Array(E);
         sK = new Uint16Array(E);
-        for (S = E - 1; 0 <= S; S--) em[S] = S, sK[S] = S;
+        for (S = E - 1; 0 <= S; S--) orderedLand[S] = S, sK[S] = S;
         this.setCanvasVariables(!0);
         L = [];
         H = new Uint16Array(maxEntities);
@@ -3847,22 +3862,22 @@ function k7() {
     };
     this.update = function() {
         for (var S = E - 1; 0 <= S; S--)
-            if (0 === isAlive[em[S]]) {
+            if (0 === isAlive[orderedLand[S]]) {
                 var O =
                     S,
-                    T = em[O];
-                for (E--; O < E; O++) em[O] = em[O + 1], sK[em[O]] = O;
-                em[E] = T;
-                sK[em[E]] = E
+                    T = orderedLand[O];
+                for (E--; O < E; O++) orderedLand[O] = orderedLand[O + 1], sK[orderedLand[O]] = O;
+                orderedLand[E] = T;
+                sK[orderedLand[E]] = E
             } T = E - 1;
-        for (O = 0; O < T; O++) land[em[O]] < land[em[O + 1]] && (S = em[O], em[O] = em[O + 1], em[O + 1] = S, sK[em[O]] = O, sK[em[O + 1]] = O + 1);
+        for (O = 0; O < T; O++) land[orderedLand[O]] < land[orderedLand[O + 1]] && (S = orderedLand[O], orderedLand[O] = orderedLand[O + 1], orderedLand[O + 1] = S, sK[orderedLand[O]] = O, sK[orderedLand[O + 1]] = O + 1);
         a: {
             S = W;W = !0;
             for (O = T = sK[myID] >= y - 1 ? y - 2 : y - 1; 0 <= O; O--)
-                if (P[O] !== em[O] || U[O] !== land[em[O]]) break a;
+                if (P[O] !== orderedLand[O] || U[O] !== land[orderedLand[O]]) break a;
             if (T !== y - 2 || P[y] === sK[myID] && U[y] === land[myID]) W = S
         }
-        for (S = y - 1; 0 <= S; S--) P[S] = em[S], U[S] = land[em[S]];
+        for (S = y - 1; 0 <= S; S--) P[S] = orderedLand[S], U[S] = land[orderedLand[S]];
         P[y] = sK[myID];
         U[y] = land[myID]
     };
@@ -3899,7 +3914,7 @@ function k7() {
         var T = t(O);
         isTouch && -1 !== X && (X = -1, g(), c4.canvasDirty = !0);
         if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, y), T = T !== y && z(S, O) ? T : -1, -1 !== T)) {
-            var Y = em[T + V];
+            var Y = orderedLand[T + V];
             T === y - 1 && sK[myID] >= V + y - 1 && (Y = myID);
             0 !== isAlive[Y] && eV.hoverTo(Y, 800, !1, 0)
         }
@@ -4046,7 +4061,7 @@ function k8() {
         if (teamGame) {
             var P = eT.qm();
             P >= R && l() ? (endGame.endGame(-1), n(eT.qm())) : n(P)
-        } else P = land[em[0]], P >= R && l() && endGame.endGame(-1), n(P);
+        } else P = land[orderedLand[0]], P >= R && l() && endGame.endGame(-1), n(P);
         P = interest.getInterestRate(myID);
         P !== K[5] && (K[5] = P, I++);
         x();
@@ -4224,7 +4239,7 @@ function processAttack(g, k, n) {
             k < maxEntities && 0 === isAlive[k] && (k = maxEntities);
             var x = divideFloor(3 * troops[g], 256);
             l -= 500 <= n ? x : 0;
-            if (!(l <= at) && attacks.isUnderAttackCap(g)) {
+            if (!(l <= neutralLandCost) && attacks.isUnderAttackCap(g)) {
                 var t = potentialBorderAdvances[g].length;
                 k === maxEntities ? cX(g) : cS(g, k);
                 if (0 !== t || 0 !== potentialBorderAdvances[g].length) teamGame && (d7[g] = 1), g === myID && (statistics.numbers[0] += 500 <= n ? n - 12 : n, statistics.numbers[1]++, statistics.numbers[12] += x, statistics.numbers[13] += l), cP(t, g), attacks.set(g, l, k), troops[g] -= l + x, speed.cR(g, !1)
@@ -4235,7 +4250,7 @@ function processAttack(g, k, n) {
 
 function processSendBoat(g, k, n, l) {
     10 === gamemode && g < playerCount && (l = antiFullSend.tq(g, l));
-    if (l <= at || !attacks.isUnderAttackCap(g)) return !1;
+    if (l <= neutralLandCost || !attacks.isUnderAttackCap(g)) return !1;
     k = eK.cR(g, k, n);
     if (0 === k) return !1;
     n = divideFloor(3 * troops[g], 128);
@@ -6483,7 +6498,7 @@ function fm(g) {
     z5(g);
     z6(g);
     z7(g);
-    speed.av(g);
+    speed.removeEntry(g);
     eK.g3(g);
     attacks.resetCurrentAttackCount(g)
 }
@@ -7180,8 +7195,7 @@ function kN() {
                         if (Z > yMax[fa] - yMin[fa] + 1) break;
                         ia = xMin[fa] + Math.floor(Math.random() * (xMax[fa] - xMin[fa] + 2 - la));
                         ma = yMin[fa] + Math.floor(Math.random() * (yMax[fa] - yMin[fa] + 2 - Z));
-                        z(fa, ia, ma, la, Z) && (E[fa] = ia, F[fa] =
-                            ma, G[fa] = la, N[fa] = Z, qa = !0)
+                        z(fa, ia, ma, la, Z) && (E[fa] = ia, F[fa] = ma, G[fa] = la, N[fa] = Z, qa = !0)
                     }
                     Z = qa
                 }
@@ -8887,7 +8901,7 @@ function kc() {
 
 function kW() {
     function g(G) {
-        eK.av(n, F);
+        eK.removeEntry(n, F);
         attacks.removeAttack(n, E);
         G && (troops[n] += l)
     }
@@ -8905,8 +8919,8 @@ function kW() {
         A = pixel.toX(K);
         B = pixel.toY(K);
         t = x = pixel.toIndex(z, y);
-        E = attacks.findAttackIndexFromBoatID(n, F); - 1 === E ? (k(), eK.av(n, F), G = !1) : (l = attacks.getRemainingTroopsFromIndex(n, E), G = !0);
-        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statistics.numbers[15] += G), l <= at ? (n === myID && (statistics.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
+        E = attacks.findAttackIndexFromBoatID(n, F); - 1 === E ? (k(), eK.removeEntry(n, F), G = !1) : (l = attacks.getRemainingTroopsFromIndex(n, E), G = !0);
+        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statistics.numbers[15] += G), l <= neutralLandCost ? (n === myID && (statistics.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
             if (G = pixel.toIndex(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.toX(x), y = pixel.toY(x),
                 eK.g0(C, x), G = pixel.canOwn(x) ? !1 : !0, G) pixel.isWater(x) && pixel.changeToBoatPixel(x, n);
             else a: {
@@ -8924,7 +8938,7 @@ function kW() {
                         break a
                     }
                 }
-                n === myID && (statistics.numbers[13] += l);eK.av(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.cR(n, !0)
+                n === myID && (statistics.numbers[13] += l);eK.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.cR(n, !0)
             }
     };
     this.g4 = function(G, N) {
@@ -9314,8 +9328,7 @@ function a2J() {
         .04 < t / statistics.max[this.bs] && this.a5n(l * this.uT / (statistics.m4 - 1), this.xJ, l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n));
         mainCanvasCtx.fillStyle = redBrightMoreOpaque;
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.arc(l * this.uT / (statistics.m4 -
-            1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
+        mainCanvasCtx.arc(l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
         mainCanvasCtx.fill();
         g = this.a5Z * c4.tV();
         g = 0 === isAlive[myID] ? Math.floor(g * gameResultBox.tb) : Math.floor(g * c4.ticksElapsed());
@@ -9518,7 +9531,7 @@ function bV() {
     for (var g, k, n = lastBorderLength - 1; 0 <= n; n--) g = divideFloor(lastBorderLand[n], 4) % currentMapWidth, k = divideFloor(lastBorderLand[n], 4 * currentMapWidth), xMin[lastAuthorID] = xMin[lastAuthorID] > g ? g : xMin[lastAuthorID], yMin[lastAuthorID] = yMin[lastAuthorID] > k ? k : yMin[lastAuthorID], xMax[lastAuthorID] = xMax[lastAuthorID] < g ? g : xMax[lastAuthorID], yMax[lastAuthorID] = yMax[lastAuthorID] < k ? k : yMax[lastAuthorID]
 }
 
-function aj() {
+function updateEditingBorderPixels() {
     var g = potentialBorderAdvances[lastAuthorID].length,
         k;
     var n = g - 1;
@@ -9536,7 +9549,7 @@ function aj() {
     }
 }
 
-function ak() {
+function updatePixelsBorderingTerrain() {
     var g = landBorderPixels[lastAuthorID].length,
         k, n, l = g - 1;
     a: for (; 0 <= l; l--) {
