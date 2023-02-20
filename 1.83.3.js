@@ -567,12 +567,12 @@ function de() {
     };
     this.dw = function() {
         var z, y;
-        var A = e2.e3;
+        var A = zombieSettings.e3;
         for (z = A - 1; 0 <= z; z--) this.difficulty[z] = 5;
         for (y = 0; 6 > y; y++)
-            if (0 < e2.e4[y]) {
-                for (z = A + e2.e4[y] - 1; z >= A; z--) this.difficulty[z] = y;
-                A += e2.e4[y]
+            if (0 < zombieSettings.e4[y]) {
+                for (z = A + zombieSettings.e4[y] - 1; z >= A; z--) this.difficulty[z] = y;
+                A += zombieSettings.e4[y]
             }
     };
     this.dH = function(z, y) {
@@ -607,7 +607,7 @@ function eE() {
     eK.update();
     eL();
     eM.update();
-    e2.update();
+    zombieSettings.update();
     eA.update();
     eB.update();
     eN.update();
@@ -1384,7 +1384,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     myID = param_myID;
     fakeRandom.jN(param_Seed);
     setupPlayerInfoArrays(playerInfo);
-    e2.init();
+    zombieSettings.init();
     teams.init(playerInfo);
     clientStatus = 1;
     absMaxTroopCap = 15E8;
@@ -1451,7 +1451,7 @@ function jb() {
     a9(0);
     aB()
 }
-var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, eM, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, e2, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustom, customMap;
+var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, eM, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustom, customMap;
 
 function construct() {
     dG = new de;
@@ -1492,7 +1492,7 @@ function construct() {
     interest = new Interest;
     eA = new kN;
     nickNames = new NickNames;
-    e2 = new kP;
+    zombieSettings = new ZombieSettings;
     configFakeMap = new ConfigFakeMap;
     mapInfo = new MapInfo;
     jn = new kS;
@@ -6528,7 +6528,7 @@ function zG(g) {
 
 function zD(g, k) {
     var n, l = k[zG(k)];
-    9 === gamemode && 1 === teams.teamArray[g] && fakeRandom.dP(8) && e2.zI(l);
+    9 === gamemode && 1 === teams.teamArray[g] && fakeRandom.dP(8) && zombieSettings.zI(l);
     if (g === myID) announcements.genericAnnouncement(l, 1), zB();
     else {
         for (n = k.length - 1; 0 <= n; n--)
@@ -7266,7 +7266,7 @@ function NickNames() {
         } else if (9 === gamemode) {
             var l = fakeRandom.random(),
                 x = k.length,
-                t = playerCount + e2.e3;
+                t = playerCount + zombieSettings.e3;
             for (n = t - 1; n >= playerCount; n--) nickname[n] = "[Bot] " + k[(n + l) % x];
             for (n = t; n < maxEntities; n++) nickname[n] = "[Zombie] " + k[(n + l) % x]
         } else if (singleplayer)
@@ -7640,7 +7640,7 @@ function setIsNotClientFlag() {
     isNotClient = 0 <= hostname.toLowerCase().indexOf("territorial.io")
 }
 
-function kP() {
+function ZombieSettings() {
     var g;
     this.init = function() {
         g = [];
@@ -9366,7 +9366,7 @@ function Teams() {
         [255, 255, 255, 180],
         [0, 0, 0, 180]
     ];
-    var teamAssignColors = [ //array compares each player's color value to the color values of the available team colors and assign the player to the closest matching team
+    var allTeamColors = [ //array compares each player's color value to the color values of the available team colors and assign the player to the closest matching team
         [255, 255, 255],
         [255, 0, 0],
         [0, 255, 0],
@@ -9379,69 +9379,76 @@ function Teams() {
     ];
     this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     var k, n;
-    this.init = function(l) {
+    this.init = function(playerInfo) {
         this.teamArray = new Uint8Array(maxEntities);
-        this.a5v();
-        teamGame && (customMap.ds && customMap.dt.zn ? this.yQ() : 9 === gamemode ? this.a5w() : this.update(l))
+        this.setDefault_teamIDs();
+        teamGame && (customMap.ds && customMap.dt.zn ? this.teamsCustomGames() : 9 === gamemode ? this.teamsZombieMode() : this.update(playerInfo))
     };
-    this.yQ = function() {
+    this.teamsCustomGames = function() {
         var l, x = entityCount;
         this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
         for (l = 0; l < x; l++) this.teamArray[l] = customMap.dt.zn[l]
     };
-    this.a5v = function() {
+    this.setDefault_teamIDs = function() {
         for (var l = this.teamIDs.length - 1; 0 <= l; l--) this.teamIDs[l] = l;
         k = [];
         n = []
     };
-    this.a5w = function() {
+    this.teamsZombieMode = function() {
         var l;
-        for (l = playerCount + e2.e3 - 1; 0 <= l; l--) this.teamArray[l] = 1;
-        for (l = playerCount + e2.e3; l < maxEntities; l++) this.teamArray[l] = 2;
+        for (l = playerCount + zombieSettings.e3 - 1; 0 <= l; l--) this.teamArray[l] = 1;//Players
+        for (l = playerCount + zombieSettings.e3; l < maxEntities; l++) this.teamArray[l] = 2;//Zombies
         this.teamIDs[1] = 7;
         this.teamIDs[2] = 8
     };
-    this.update = function(l) {
-        var x =
-            new Uint8Array(playerCount),
-            t = new Uint8Array(playerCount),
-            z = new Uint16Array(8),
+    this.update = function(playerInfo) {
+        var playersTeamColor = new Uint8Array(playerCount),
+            players2ndTeamColor = new Uint8Array(playerCount),
+            teamColorScore = new Uint16Array(8),//the teams with the highest scores based on players colors will be chosen
             y = new Uint16Array(this.teamIDs.length);
-        this.a60(l, x, t, z);
-        this.yO(z);
-        singleplayer || this.a61(y, x, t);
-        this.a62(x, t, y);
+        this.setPlayerTeamColor(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore);
+        this.sortTeamColorsByScore(teamColorScore);
+        singleplayer || this.a61(y, playersTeamColor, players2ndTeamColor);
+        this.a62(playersTeamColor, players2ndTeamColor, y);
         singleplayer ? this.a63() : this.a64()
     };
-    this.a60 = function(l, x, t, z) {
+    this.setPlayerTeamColor = function(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
         var y, A, B = this.teamIDs.length - 1,
-            C = new Uint16Array(B);
+            comparedColors = new Uint16Array(B);//the color assigned is the one with the lowest value
         for (y = playerCount - 1; 0 <= y; y--) {
-            for (A = B; 1 <= A; A--) C[A - 1] = Math.abs(4 * l[y].color[0] - teamAssignColors[A][0]) + Math.abs(4 * l[y].color[1] - teamAssignColors[A][1]) + Math.abs(4 * l[y].color[2] - teamAssignColors[A][2]);
-            var E = 768;
-            for (A = B - 1; 0 <= A; A--) {
+            for (A = B; 1 <= A; A--) comparedColors[A - 1] = Math.abs(4 * playerInfo[y].color[0] - allTeamColors[A][0]) + Math.abs(4 * playerInfo[y].color[1] - allTeamColors[A][1]) + Math.abs(4 * playerInfo[y].color[2] - allTeamColors[A][2]);
+            var lowestComparedValue = 768;
+            for (A = B - 1; A >= 0; A--) {
                 var F = (A + y) % B;
-                C[F] < E && (E = C[F], x[y] = F)
+                if (comparedColors[F] < lowestComparedValue) {
+                    lowestComparedValue = comparedColors[F];
+                    playersTeamColor[y] = F;
+                }
             }
-            z[x[y]] += 4;
-            E = 768;
-            for (A = B - 1; 0 <= A; A--) F =
-                (A + y) % B, C[F] < E && F !== x[y] && (E = C[F], t[y] = F);
-            z[t[y]]++
+            teamColorScore[playersTeamColor[y]] += 4;
+            lowestComparedValue = 768;
+            for (A = B - 1; A >= 0; A--) {
+                F = (A + y) % B;
+                if (comparedColors[F] < lowestComparedValue && F !== playersTeamColor[y]) {
+                    lowestComparedValue = comparedColors[F];
+                    players2ndTeamColor[y] = F;
+                }
+            }
+            teamColorScore[players2ndTeamColor[y]]++
         }
     };
-    this.yO = function(l) {
+    this.sortTeamColorsByScore = function(teamColorScore) {//sorting teamsIDs from the color with the highest score to the color with the lowest
         var x, t, z = this.teamIDs.length - 1;
         for (x = z; 0 <= x; x--) this.teamIDs[x] = x;
-        for (x = z - 1; 0 <= x; x--) l[x]++;
+        for (x = z - 1; 0 <= x; x--) teamColorScore[x]++;
         for (x = 1; x <= z; x++) {
             var y = 0;
-            for (t = 1; t < z; t++) l[t] > l[y] && (y = t);
-            l[y] = 0;
+            for (t = 1; t < z; t++) teamColorScore[t] > teamColorScore[y] && (y = t);
+            teamColorScore[y] = 0;
             this.teamIDs[x] = y + 1
         }
     };
-    this.a61 = function(l, x, t) {
+    this.a61 = function(l, playersTeamColor, players2ndTeamColor) {
         var z = this.teamIDs.length - 1,
             y = new Uint16Array(z),
             A = [];
@@ -9470,7 +9477,7 @@ function Teams() {
             C = -1;
             for (E = k.length - 1; 0 <= E; E--) !A[E] && (-1 === C || n[E].length > n[C].length) && (C = E);
             for (E = z - 1; 0 <= E; E--) y[E] = 1;
-            for (E = n[C].length - 1; 0 <= E; E--) y[x[n[C][E]]] += 3, y[t[n[C][E]]]++;
+            for (E = n[C].length - 1; 0 <= E; E--) y[playersTeamColor[n[C][E]]] += 3, y[players2ndTeamColor[n[C][E]]]++;
             for (B = z - 1; 0 <= B; B--) {
                 var G = C % z;
                 for (E = z - 1; 0 <= E; E--) y[E] > y[G] && (G = E);
@@ -9493,17 +9500,17 @@ function Teams() {
             A[C] = !0
         }
     };
-    this.a62 = function(l, x, t) {
+    this.a62 = function(playersTeamColor, players2ndTeamColor, y) {
         var z;
-        var y = this.teamIDs.length - 1;
+        var a = this.teamIDs.length - 1;
         var A = divideFloor(playerCount, teamCount);
         0 < playerCount % teamCount && A++;
-        var B = new Uint8Array(y + 1);
-        for (z = y; 1 <= z; z--) B[this.teamIDs[z]] = z;
-        for (y = 0; y < playerCount; y++) z = B[l[y] + 1], 0 === this.teamArray[y] && z <= teamCount && t[z] < A && (t[z]++, this.teamArray[y] = z);
-        for (y = 0; y < playerCount; y++) z = B[x[y] + 1], 0 === this.teamArray[y] && z <= teamCount && t[z] < A && (t[z]++, this.teamArray[y] = z);
+        var B = new Uint8Array(a + 1);
+        for (z = a; 1 <= z; z--) B[this.teamIDs[z]] = z;
+        for (a = 0; a < playerCount; a++) z = B[playersTeamColor[a] + 1], 0 === this.teamArray[a] && z <= teamCount && y[z] < A && (y[z]++, this.teamArray[a] = z);
+        for (a = 0; a < playerCount; a++) z = B[players2ndTeamColor[a] + 1], 0 === this.teamArray[a] && z <= teamCount && y[z] < A && (y[z]++, this.teamArray[a] = z);
         for (z = teamCount; 1 <= z; z--)
-            for (y = playerCount - 1; 0 <= y && !(t[z] >= A); y--) 0 === this.teamArray[y] && (t[z]++, this.teamArray[y] = z)
+            for (a = playerCount - 1; 0 <= a && !(y[z] >= A); a--) 0 === this.teamArray[a] && (y[z]++, this.teamArray[a] = z)
     };
     this.a63 = function() {
         var l, x = new Uint16Array(teamCount);
