@@ -9665,7 +9665,7 @@ function Teams() {
         [0, 0, 0]
     ];
     this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-    var k, n;
+    var clanTags, clanTagOfPlayerIDs;//stores the Clan Tag for each Player ID
     this.init = function(playerInfo) {
         this.teamArray = new Uint8Array(maxEntities);
         this.setDefault_teamIDs();
@@ -9678,8 +9678,8 @@ function Teams() {
     };
     this.setDefault_teamIDs = function() {
         for (var l = this.teamIDs.length - 1; 0 <= l; l--) this.teamIDs[l] = l;
-        k = [];
-        n = []
+        clanTags = [];
+        clanTagOfPlayerIDs = []
     };
     this.teamsZombieMode = function() {
         var l;
@@ -9725,66 +9725,95 @@ function Teams() {
         }
     };
     this.sortTeamColorsByScore = function(teamColorScore) {//sorting teamsIDs from the color with the highest score to the color with the lowest
-        var x, t, z = this.teamIDs.length - 1;
-        for (x = z; 0 <= x; x--) this.teamIDs[x] = x;
-        for (x = z - 1; 0 <= x; x--) teamColorScore[x]++;
-        for (x = 1; x <= z; x++) {
+        var x, t, numTeams = this.teamIDs.length - 1;
+        for (x = numTeams; 0 <= x; x--) this.teamIDs[x] = x;//setting default teamIDs
+        for (x = numTeams - 1; 0 <= x; x--) teamColorScore[x]++;//adding 1 to the score so that every team has score != 0 and bigger then the score of index 0
+        for (x = 1; x <= numTeams; x++) {//sorts the color scores and resets their scores to 0
             var y = 0;
-            for (t = 1; t < z; t++) teamColorScore[t] > teamColorScore[y] && (y = t);
+            for (t = 1; t < numTeams; t++) 
+            if (teamColorScore[t] > teamColorScore[y]) y = t;
             teamColorScore[y] = 0;
             this.teamIDs[x] = y + 1
         }
     };
     this.distributePlayersToTeams = function(playersPerTeam, playersTeamColor, players2ndTeamColor) {
-        var z = this.teamIDs.length - 1,
-            y = new Uint16Array(z),
-            A = [];
-        var B = playerCount - 1;
-        a: for (; 0 <= B; B--) {
-            var C = B;
-            var E = tempNickname[C].indexOf("[");
-            if (0 > E) E = null;
-            else {
-                var F = tempNickname[C].indexOf("]");
-                E = 1 < F - E && 8 >= F - E ? tempNickname[C].substring(E + 1, F).toUpperCase().trim() : null
-            }
-            if (null !== E) {
-                for (F = k.length - 1; 0 <= F; F--)
-                    if (E === k[F]) {
-                        n[F].push(B);
+        var numTeams = this.teamIDs.length - 1,
+            teamColorScore = new Uint16Array(numTeams),
+            hasClanTag = [],
+            playerID = playerCount - 1;
+        a: for (; 0 <= playerID; playerID--) {
+            var tempPlayerID = playerID;
+            var bracketIndex = tempNickname[tempPlayerID].indexOf("[");
+
+            if (0 > bracketIndex) bracketIndex = null;
+            else {clanTag
+                var closeBracketIndex = tempNickname[tempPlayerID].indexOf("]");
+                if (1 < closeBracketIndex - bracketIndex && 8 >= closeBracketIndex - bracketIndex) {
+                    var clanTag = tempNickname[tempPlayerID].substring(bracketIndex + 1, closeBracketIndex).toUpperCase().trim();
+                } 
+                else {
+                    clanTag = null;
+                }
+            }          
+            if (null !== clanTag) {
+                for (let i = clanTags.length - 1; 0 <= i; i--)
+                    if (clanTag === clanTags[i]) {
+                        clanTagOfPlayerIDs[i].push(playerID);
                         continue a
                     } 
-                k.push(E);
-                A.push(!1);
-                n.push([]);
-                n[k.length - 1].push(B)
+                clanTags.push(clanTag);
+                hasClanTag.push(!1);
+                clanTagOfPlayerIDs.push([]);
+                clanTagOfPlayerIDs[clanTags.length - 1].push(playerID)
             }
-        }
-        for (F = k.length - 1; 0 <= F; F--) {
-            C = -1;
-            for (E = k.length - 1; 0 <= E; E--) !A[E] && (-1 === C || n[E].length > n[C].length) && (C = E);
-            for (E = z - 1; 0 <= E; E--) y[E] = 1;
-            for (E = n[C].length - 1; 0 <= E; E--) y[playersTeamColor[n[C][E]]] += 3, y[players2ndTeamColor[n[C][E]]]++;
-            for (B = z - 1; 0 <= B; B--) {
-                var G = C % z;
-                for (E = z - 1; 0 <= E; E--) y[E] > y[G] && (G = E);
+        } 
+        for (let numClanTags = clanTags.length - 1; 0 <= numClanTags; numClanTags--) {
+            clanTagIndex = -1;
+            var i;
+            for (i = clanTags.length - 1; 0 <= i; i--) {
+                if (!hasClanTag[i] && (-1 === clanTagIndex || clanTagOfPlayerIDs[i].length > clanTagOfPlayerIDs[clanTagIndex].length)) {//It sets clanTagIndex to the index of the first unused clan tag that it finds. If it finds more than one unused clan tag, it chooses the one that has the most players associated with it.
+                    clanTagIndex = i;
+                }
+            }
+            for (i = numTeams - 1; 0 <= i; i--) teamColorScore[i] = 1;//sets the score of each team to 1
+            for (i = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= i; i--) {//assigns score to each team based on the players that have the clan tag with the most members
+                teamColorScore[playersTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]] += 3;
+                teamColorScore[players2ndTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]]++;
+            }
+            for (i = numTeams - 1; 0 <= i; i--) {
+                var G = clanTagIndex % numTeams;
+
+                for (i = numTeams - 1; 0 <= i; i--) {
+                    if (teamColorScore[i] > teamColorScore[G]) G = i;
+                }
+
                 var N = -1;
-                for (E = teamCount; 0 < E; E--)
-                    if (this.teamIDs[E] === G + 1) {
-                        N = E;
-                        break
+
+                for (i = teamCount; 0 < i; i--) {
+                    if (this.teamIDs[i] === G + 1) {
+                        N = i;
+                        break;
                     }
-                y[G] = 0;
+                }
+
+                teamColorScore[G] = 0;
+                
                 if (-1 !== N) {
                     G = 0;
-                    for (E = teamCount; 0 < E; E--) playersPerTeam[N] > playersPerTeam[E] && G++;
+
+                    for (i = teamCount; 0 < i; i--) {
+                        if (playersPerTeam[N] > playersPerTeam[i]) G++;
+                    }
                     if (G !== teamCount - 1) {
-                        for (E = n[C].length - 1; 0 <= E; E--) playersPerTeam[N]++, this.teamArray[n[C][E]] = N;
-                        break
+                        for (i = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= i; i--) {
+                            playersPerTeam[N]++;
+                            this.teamArray[clanTagOfPlayerIDs[clanTagIndex][i]] = N;
+                        }
+                        break;
                     }
                 }
             }
-            A[C] = !0
+            hasClanTag[clanTagIndex] = !0;
         }
     };
     this.a62 = function(playersTeamColor, players2ndTeamColor, playersPerTeam) {
@@ -9814,10 +9843,10 @@ function Teams() {
         if (singleplayer) return [512, ""];
         var x, t, z = -1,
             y = -1;
-        for (t = k.length - 1; 0 <= t; t--)
-            for (x = n[t].length - 1; 0 <= x && this.teamIDs[this.teamArray[n[t][x]]] === l; x--)
-                if (-1 === z || landOrder[n[t][x]] < landOrder[z]) z = n[t][x], y = t;
-        return -1 === z || 0 === isAlive[z] ? [512, ""] : [z, k[y]]
+        for (t = clanTags.length - 1; 0 <= t; t--)
+            for (x = clanTagOfPlayerIDs[t].length - 1; 0 <= x && this.teamIDs[this.teamArray[clanTagOfPlayerIDs[t][x]]] === l; x--)
+                if (-1 === z || landOrder[clanTagOfPlayerIDs[t][x]] < landOrder[z]) z = clanTagOfPlayerIDs[t][x], y = t;
+        return -1 === z || 0 === isAlive[z] ? [512, ""] : [z, clanTags[y]]
     }
 }
 
