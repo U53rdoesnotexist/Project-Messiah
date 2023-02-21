@@ -7003,65 +7003,74 @@ function kN() {
             camRight = (prevClientWidth + gridWidth) / scaleFactor, camBottom = (prevClientHeight + gridHeight) / scaleFactor,
             landCenterX, landCenterY, idIndex, fontSize, infoCanvasCtx, 
             isAlivePlayer = 0 !== isAlive[myID] && hu.isHuman(myID), aliveIndex;
+
         for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
             idIndex = aliveEntities[aliveIndex];
             fontSize = Math.floor(Q * scaleFactor * I[idIndex] * G[idIndex]);
-            if (!(fontSize < M || fontSize >= K) && E[idIndex] + G[idIndex] > camLeft && E[idIndex] < camRight && F[idIndex] + N[idIndex] > camTop && F[idIndex] < camBottom) {
+
+            if (!(fontSize < minFontSize || fontSize >= maxFontSize) && E[idIndex] + G[idIndex] > camLeft && E[idIndex] < camRight && F[idIndex] + N[idIndex] > camTop && F[idIndex] < camBottom) {
                 landCenterX = Math.floor(prevClientWidth * (E[idIndex] + G[idIndex] / 2 - camLeft) / (camRight - camLeft));
                 landCenterY = Math.floor(prevClientHeight * (F[idIndex] + N[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
                 infoCanvas.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
                 infoCanvasCtx = infoCanvas;
-                var fontColor = fontSize >= J && fontSize < K ? teams.impostorfontColors[pixel.shading[idIndex]] + x(fontSize).toFixed(3) + ")" : teams.fontColors[pixel.shading[idIndex]];
-                infoCanvasCtx.fillStyle = fontColor;
+
+                var fontColor = fontSize >= J && fontSize < maxFontSize ? teams.impostorfontColors[pixel.shading[idIndex]] + x(fontSize).toFixed(3) + ")" : teams.fontColors[pixel.shading[idIndex]];
+                infoCanvas.fillStyle = fontColor;
                 infoCanvas.fillText(8 === gamemode ? attacksBar.splitText(troops[idIndex]) : nickname[idIndex], landCenterX, landCenterY);
                 needsDrawImage = !0;
+
                 if (0 < ca[idIndex]) {
-                    infoCanvasCtx = landCenterX;
-                    fontColor = landCenterY;
-                    var va = fontSize,
-                        sa = idIndex;
-                    if (0 === landOrder[sa])
-                        if (a5.oB(ba[sa])) {
-                            var Aa = infoCanvasCtx,
-                                ta = va,
-                                level = sa;
-                            sa = ba[sa];
-                            var transform = .9 * ta / a5.width,
-                                Ca = Math.floor(fontColor - .5 * transform * a5.width - .05 * ta);
-                            infoCanvas.globalAlpha = x(ta);
-                            var Ba = Math.floor(Aa - .5 * ta / D[level] - .4 * ta - transform * a5.width), 
-                                xa = 0
-                            for (; 2 > xa; xa++) {
+                    if (0 === landOrder[idIndex])
+                        if (a5.oB(ba[idIndex])) {
+                            var transform = .9 * fontSize / a5.width,
+                                Ca = Math.floor(landCenterY - .5 * transform * a5.width - .05 * fontSize);
+                            infoCanvas.globalAlpha = x(fontSize);
+                            var Ba = Math.floor(landCenterX - .5 * fontSize / D[idIndex] - .4 * fontSize - transform * a5.width)
+                            for (var index = 0; 2 > index; index++) {
                                 infoCanvas.setTransform(transform, 0, 0, transform, Ba, Ca);
-                                infoCanvas.drawImage(a5.l5[sa], 0, 0);
-                                Ba = Math.floor(Aa + .5 * ta / D[level] + .4 * ta);
+                                infoCanvas.drawImage(a5.l5[ba[sa]], 0, 0);
+                                Ba = Math.floor(landCenterX + .5 * fontSize / D[idIndex] + .4 * fontSize);
                             }
                             infoCanvas.globalAlpha = 1;
                             infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
-                            n(infoCanvasCtx, fontColor, va, 0, 0)
-                        } else if (a5.oA(ba[sa])) {
-                            l(infoCanvasCtx, fontColor, va, ba[sa], 0);
-                            n(infoCanvasCtx, fontColor, va, 0, 1)
+                            n(landCenterX, landCenterY, fontSize, 0, 0)
+
+                        } else if (a5.oA(ba[idIndex])) {
+                            l(landCenterX, landCenterY, fontSize, ba[idIndex], 0);
+                            n(landCenterX, landCenterY, fontSize, 0, 1)
                         }
                         else {
-                            l(infoCanvasCtx, fontColor, va, ba[sa], 1);
-                            n(infoCanvasCtx, fontColor, va, 1, 0)
+                            l(landCenterX, landCenterY, fontSize, ba[idIndex], 1);
+                            n(landCenterX, landCenterY, fontSize, 1, 0)
                         }
-                    else l(infoCanvasCtx, fontColor, va, ba[sa], 0)
+                    else l(landCenterX, landCenterY, fontSize, ba[idIndex], 0)
+
                 } else if (0 === landOrder[idIndex]) n(landCenterX, landCenterY, fontSize, 0, 0);
+
                 if (isAlivePlayer && (0 < ca[idIndex + maxEntities] || 0 < ca[idIndex + 2 * maxEntities] || 0 < ca[idIndex + 3 * maxEntities] || 0 < ca[idIndex + 4 * maxEntities])) {
                     fontColor = landCenterX;
-                    va = landCenterY;
-                    Aa = fontSize;
-                    ta = idIndex;
-                    level = -1;
-                    for (infoCanvasCtx = 4; 1 <= infoCanvasCtx; infoCanvasCtx--) 0 < ca[ta + infoCanvasCtx * maxEntities] && level++;
-                    for (infoCanvasCtx = 1; 5 > infoCanvasCtx; infoCanvasCtx++) 0 < ca[ta + infoCanvasCtx * maxEntities] && (sa = Aa, transform = infoCanvasCtx, Ca = ta, Ba = ca[ta + infoCanvasCtx * maxEntities], xa = .8 * sa / a5.width, infoCanvas.setTransform(xa, 0, 0, xa, Math.floor(fontColor - .5 * xa *
-                        a5.width - .534 * level * sa), Math.floor(va + 1.4 * xa * a5.width)), infoCanvas.globalAlpha = x(sa), infoCanvas.drawImage(1 === transform ? a5.l5[ba[Ca + maxEntities]] : 2 === transform && 255 > Ba ? hu.l3[2] : hu.l2[transform + 3], 0, 0), infoCanvas.globalAlpha = 1, infoCanvas.setTransform(1, 0, 0, 1, 0, 0), level -= 2)
+                    var level = -1;
+                    for (index = 4; 1 <= index; index--) {
+                        if (0 < ca[idIndex + index * maxEntities]) level++
+                    }
+                    for (index = 1; 5 > index; index++) {
+                        if (0 < ca[idIndex + index * maxEntities]) {
+                            transform = index;
+                            Ca = idIndex;
+                            Ba = ca[idIndex + index * maxEntities];
+                            var xa = .8 * fontSize / a5.width;
+                            infoCanvas.setTransform(xa, 0, 0, xa, Math.floor(fontColor - .5 * xa * a5.width - .534 * level * fontSize), Math.floor(landCenterY + 1.4 * xa * a5.width));
+                            infoCanvas.globalAlpha = x(fontSize);
+                            infoCanvas.drawImage(1 === transform ? a5.l5[ba[Ca + maxEntities]] : 2 === transform && 255 > Ba ? hu.l3[2] : hu.l2[transform + 3], 0, 0);
+                            infoCanvas.globalAlpha = 1;
+                            infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
+                            level -= 2
+                        }
+                    }
                 }
-                infoCanvasCtx = Math.floor(L * fontSize);
-                if (infoCanvasCtx >= M) {
-                    infoCanvas.font = fontWeightBold + infoCanvasCtx + fontSizeArial;
+                var getFontSize = Math.floor(fontScaleFactor * fontSize);
+                if (getFontSize >= minFontSize) {
+                    infoCanvas.font = fontWeightBold + getFontSize + fontSizeArial;
                     infoCanvas.fillText(8 === gamemode ? nickname[idIndex] : attacksBar.splitText(troops[idIndex]), landCenterX, landCenterY + Math.floor(.78 * fontSize))
                 }
             }
@@ -7088,7 +7097,7 @@ function kN() {
     }
 
     function x(O) {
-        return O >= J && O < K ? 1 - (O - J) / (K - J) : 1
+        return O >= J && O < maxFontSize ? 1 - (O - J) / (maxFontSize - J) : 1
     }
 
     function t(O) {
@@ -7137,15 +7146,15 @@ function kN() {
         return pixel.strongIsOwner(O, 4 * (Y * currentMapWidth + T)) && pixel.strongIsOwner(O, 4 * (Y *
             currentMapWidth + T + Z - 1))
     }
-    var B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, needsDrawImage, X, infoCanvas, na, ba, ca, pa, S;
+    var B, C, E, F, G, N, I, D, maxFontSize, J, fontScaleFactor, H, minFontSize, Q, R, P, U, needsDrawImage, X, infoCanvas, na, ba, ca, pa, S;
     this.init = function() {
         needsDrawImage = !1;
         Q = .88;
-        L = .5;
+        fontScaleFactor = .5;
         H = 1.8;
-        K = Math.floor(.5 * minDim);
-        J = Math.floor(.2 * K);
-        M = 8 === gamemode ? jt.a0g ? 6 : 4 : jt.a0g ? 10 : 7;
+        maxFontSize = Math.floor(.5 * minDim);
+        J = Math.floor(.2 * maxFontSize);
+        minFontSize = 8 === gamemode ? jt.a0g ? 6 : 4 : jt.a0g ? 10 : 7;
         C = B = 0;
         E = new Uint16Array(maxEntities);
         F = new Uint16Array(maxEntities);
@@ -7166,7 +7175,7 @@ function kN() {
             var T = 100 / Math.floor(infoCanvas.measureText("20 000 000").width);
             for (O = maxEntities - 1; 0 <= O; O--) D[O] = I[O] = T
         } else
-            for (infoCanvas.font = fontWeightBold + Math.floor(100 * L) + fontSizeArial, T = 80 / Math.floor(infoCanvas.measureText(attacksBar.splitText(absMaxTroopCap)).width), infoCanvas.font = fontWeightBold + 100 + fontSizeArial, O = maxEntities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(infoCanvas.measureText(nickname[O]).width), I[O] = T < D[O] ? T : D[O];
+            for (infoCanvas.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial, T = 80 / Math.floor(infoCanvas.measureText(attacksBar.splitText(absMaxTroopCap)).width), infoCanvas.font = fontWeightBold + 100 + fontSizeArial, O = maxEntities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(infoCanvas.measureText(nickname[O]).width), I[O] = T < D[O] ? T : D[O];
         for (O = maxEntities - 1; 0 <= O; O--) 12 > land[O] ? (E[O] = xMin[O] + 1, F[O] = yMin[O] + 1, G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2);
         if (inSpawn)
             for (O = 0; O < playerCount; O++) G[O] = 0;
