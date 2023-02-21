@@ -9405,11 +9405,11 @@ function Teams() {
         var playersTeamColor = new Uint8Array(playerCount),
             players2ndTeamColor = new Uint8Array(playerCount),
             teamColorScore = new Uint16Array(8),//the teams with the highest scores based on players colors will be chosen
-            y = new Uint16Array(this.teamIDs.length);
+            playersPerTeam = new Uint16Array(this.teamIDs.length);
         this.setPlayerTeamColor(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore);
         this.sortTeamColorsByScore(teamColorScore);
-        singleplayer || this.a61(y, playersTeamColor, players2ndTeamColor);
-        this.a62(playersTeamColor, players2ndTeamColor, y);
+        singleplayer || this.distributePlayersToTeams(playersPerTeam, playersTeamColor, players2ndTeamColor);
+        this.a62(playersTeamColor, players2ndTeamColor, playersPerTeam);
         singleplayer ? this.a63() : this.a64()
     };
     this.setPlayerTeamColor = function(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
@@ -9448,7 +9448,7 @@ function Teams() {
             this.teamIDs[x] = y + 1
         }
     };
-    this.a61 = function(l, playersTeamColor, players2ndTeamColor) {
+    this.distributePlayersToTeams = function(playersPerTeam, playersTeamColor, players2ndTeamColor) {
         var z = this.teamIDs.length - 1,
             y = new Uint16Array(z),
             A = [];
@@ -9462,12 +9462,12 @@ function Teams() {
                 E = 1 < F - E && 8 >= F - E ? tempNickname[C].substring(E + 1, F).toUpperCase().trim() : null
             }
             if (null !== E) {
-                for (F =
-                    k.length - 1; 0 <= F; F--)
+                for (F = k.length - 1; 0 <= F; F--)
                     if (E === k[F]) {
                         n[F].push(B);
                         continue a
-                    } k.push(E);
+                    } 
+                k.push(E);
                 A.push(!1);
                 n.push([]);
                 n[k.length - 1].push(B)
@@ -9486,13 +9486,13 @@ function Teams() {
                     if (this.teamIDs[E] === G + 1) {
                         N = E;
                         break
-                    } y[G] = 0;
+                    }
+                y[G] = 0;
                 if (-1 !== N) {
                     G = 0;
-                    for (E = teamCount; 0 < E; E--) l[N] > l[E] && G++;
+                    for (E = teamCount; 0 < E; E--) playersPerTeam[N] > playersPerTeam[E] && G++;
                     if (G !== teamCount - 1) {
-                        for (E =
-                            n[C].length - 1; 0 <= E; E--) l[N]++, this.teamArray[n[C][E]] = N;
+                        for (E = n[C].length - 1; 0 <= E; E--) playersPerTeam[N]++, this.teamArray[n[C][E]] = N;
                         break
                     }
                 }
@@ -9500,17 +9500,17 @@ function Teams() {
             A[C] = !0
         }
     };
-    this.a62 = function(playersTeamColor, players2ndTeamColor, y) {
+    this.a62 = function(playersTeamColor, players2ndTeamColor, playersPerTeam) {
         var z;
         var a = this.teamIDs.length - 1;
         var A = divideFloor(playerCount, teamCount);
         0 < playerCount % teamCount && A++;
         var B = new Uint8Array(a + 1);
         for (z = a; 1 <= z; z--) B[this.teamIDs[z]] = z;
-        for (a = 0; a < playerCount; a++) z = B[playersTeamColor[a] + 1], 0 === this.teamArray[a] && z <= teamCount && y[z] < A && (y[z]++, this.teamArray[a] = z);
-        for (a = 0; a < playerCount; a++) z = B[players2ndTeamColor[a] + 1], 0 === this.teamArray[a] && z <= teamCount && y[z] < A && (y[z]++, this.teamArray[a] = z);
+        for (a = 0; a < playerCount; a++) z = B[playersTeamColor[a] + 1], 0 === this.teamArray[a] && z <= teamCount && playersPerTeam[z] < A && (playersPerTeam[z]++, this.teamArray[a] = z);
+        for (a = 0; a < playerCount; a++) z = B[players2ndTeamColor[a] + 1], 0 === this.teamArray[a] && z <= teamCount && playersPerTeam[z] < A && (playersPerTeam[z]++, this.teamArray[a] = z);
         for (z = teamCount; 1 <= z; z--)
-            for (a = playerCount - 1; 0 <= a && !(y[z] >= A); a--) 0 === this.teamArray[a] && (y[z]++, this.teamArray[a] = z)
+            for (a = playerCount - 1; 0 <= a && !(playersPerTeam[z] >= A); a--) 0 === this.teamArray[a] && (playersPerTeam[z]++, this.teamArray[a] = z)
     };
     this.a63 = function() {
         var l, x = new Uint16Array(teamCount);
