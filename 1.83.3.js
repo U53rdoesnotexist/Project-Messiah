@@ -317,20 +317,20 @@ function bm() {
         return Math.floor(g * sprites.getValuebyID(13).height)
     };
     this.mouseDown = function(n, l) {
-        return !sprites.bx() || n < cA || l < prevClientHeight - mainSettings.width -
-            g * sprites.getValuebyID(13).height - 2 * cA || l > prevClientHeight - mainSettings.width - 2 * cA ? !1 : n < cA + g * sprites.getValuebyID(13).width ? (mainLeaderboard.cE(0), !0) : n < 2 * cA + g * sprites.getValuebyID(13).width ? !1 : n < 2 * cA + 2 * g * sprites.getValuebyID(13).width ? (mainLeaderboard.cE(1), !0) : !1
+        return !sprites.bx() || n < bufferLength || l < prevClientHeight - mainSettings.width -
+            g * sprites.getValuebyID(13).height - 2 * bufferLength || l > prevClientHeight - mainSettings.width - 2 * bufferLength ? !1 : n < bufferLength + g * sprites.getValuebyID(13).width ? (mainLeaderboard.cE(0), !0) : n < 2 * bufferLength + g * sprites.getValuebyID(13).width ? !1 : n < 2 * bufferLength + 2 * g * sprites.getValuebyID(13).width ? (mainLeaderboard.cE(1), !0) : !1
     };
     this.toY = function() {
-        return Math.floor(prevClientHeight - mainSettings.width - g * sprites.getValuebyID(13).height - 2 * cA)
+        return Math.floor(prevClientHeight - mainSettings.width - g * sprites.getValuebyID(13).height - 2 * bufferLength)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (sprites.bx()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            mainCanvasCtx.setTransform(g, 0, 0, g, cA, this.toY());
+            mainCanvasCtx.setTransform(g, 0, 0, g, bufferLength, this.toY());
             mainCanvasCtx.drawImage(sprites.getValuebyID(14), 0, 0);
-            mainCanvasCtx.setTransform(g, 0, 0, g, 2 * cA + g * sprites.getValuebyID(13).width, this.toY());
+            mainCanvasCtx.setTransform(g, 0, 0, g, 2 * bufferLength + g * sprites.getValuebyID(13).width, this.toY());
             mainCanvasCtx.drawImage(sprites.getValuebyID(13), 0, 0);
-            for (var n = 1; 0 <= n; n--) k[n] && (mainCanvasCtx.setTransform(1, 0, 0, 1, (1 + n) * cA + n * g *
+            for (var n = 1; 0 <= n; n--) k[n] && (mainCanvasCtx.setTransform(1, 0, 0, 1, (1 + n) * bufferLength + n * g *
                 sprites.getValuebyID(13).width, this.toY()), mainCanvasCtx.font = k[n].font, mainCanvasCtx.textBaseline = middleAlign, mainCanvasCtx.textAlign = centerAlign, mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(k[n].l, .5 * g * sprites.getValuebyID(13).width, .86 * g * sprites.getValuebyID(13).height));
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
@@ -606,7 +606,7 @@ function eE() {
     speed.update();
     eK.update();
     eL();
-    eM.update();
+    gameLeaderboard.update();
     zombieSettings.update();
     eA.update();
     eB.update();
@@ -631,7 +631,7 @@ function eU() {
 }
 
 function ea() {
-    eM.eb(!1);
+    gameLeaderboard.eb(!1);
     attacksBar.eb();
     eB.eb(!1);
     eO.eb();
@@ -891,12 +891,12 @@ function fu() {
         k = k > 2 * n ? 1 : k;
         return B
     };
-    this.cG = function() {
-        if (!(40 > g7 || 0 === l)) {
-            var B, C = gC / g7,
-                E = gD / g7,
-                F = (prevClientWidth + gC) / g7,
-                G = (prevClientHeight + gD) / g7;
+    this.drawCanvasImage = function() {
+        if (!(40 > scaleFactor || 0 === l)) {
+            var B, C = gridWidth / scaleFactor,
+                E = gridHeight / scaleFactor,
+                F = (prevClientWidth + gridWidth) / scaleFactor,
+                G = (prevClientHeight + gridHeight) / scaleFactor;
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
             for (B = l - 1; 0 <= B; B--) {
@@ -904,7 +904,7 @@ function fu() {
                 var I = pixel.toY(y[B]);
                 var D = x[B];
                 if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== isAlive[D]) {
-                    var K = Math.floor(.94 * g7 * eA.gG(D));
+                    var K = Math.floor(.94 * scaleFactor * eA.gG(D));
                     if (!(6 > K)) {
                         N = Math.floor(prevClientWidth * (N + .5 - C) / (F - C));
                         I = Math.floor(prevClientHeight * (I + .48 - E) / (G - E));
@@ -928,9 +928,9 @@ function gK() {
         t = z = x = 0;
         y = I / J;
         l = 1 / (J / I / 4);
-        A = (prevClientWidth / 2 + gC) / g7;
-        B = (prevClientHeight / 2 + gD) / g7;
-        C = g7
+        A = (prevClientWidth / 2 + gridWidth) / scaleFactor;
+        B = (prevClientHeight / 2 + gridHeight) / scaleFactor;
+        C = scaleFactor
     }
 
     function k(J) {
@@ -984,7 +984,7 @@ function gK() {
     };
     this.gf = function(J, L, H, M) {
         n(J, L, H, M);
-        g7 = G;
+        scaleFactor = G;
         gj.gw(E, prevClientWidth / 2);
         gj.gx(F, prevClientHeight / 2);
         gy.gz()
@@ -1001,16 +1001,16 @@ function gK() {
             var J = c4.time - N;
             1E3 < J ? x = 1 : (x += z * J / I, x = 1 < x ? 1 : x);
             N = c4.time;
-            var L = g7;
-            J = gC;
-            var H = gD;
-            g7 = C * Math.pow(G /
+            var L = scaleFactor;
+            J = gridWidth;
+            var H = gridHeight;
+            scaleFactor = C * Math.pow(G /
                 C, x);
-            L = g7 / L;
+            L = scaleFactor / L;
             var M = 1 - (C * Math.pow(G / C, 1 - x) - C) / (G - C);
             gj.gw(A + M * (E - A), prevClientWidth / 2);
             gj.gx(B + M * (F - B), prevClientHeight / 2);
-            eA.zoom(L, (J * L - gC) / (1 - L), (H * L - gD) / (1 - L));
+            eA.zoom(L, (J * L - gridWidth) / (1 - L), (H * L - gridHeight) / (1 - L));
             gy.gz();
             1 <= x && (D = !1, h8.h9 = !0);
             c4.canvasDirty = !0
@@ -1158,17 +1158,17 @@ function hA() {
 
 function hp() {
     hq.hr();
-    mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0);
-    mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
+    mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
+    mainCanvasCtx.imageSmoothingEnabled = 3 > scaleFactor;
     mainCanvasCtx.drawImage(mapBaseCanvas, gj.toX(), gj.toY());
-    eN.cG();
+    eN.drawCanvasImage();
     mainCanvasCtx.drawImage(mapCanvas, gj.toX(), gj.toY());
     mainCanvasCtx.imageSmoothingEnabled = !1;
-    hq.cG();
+    hq.drawCanvasImage();
     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-    eA.cG();
-    eK.cG();
-    isCanvasHidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.cG(), eM.cG(), troopBar.cG(), peace.cG(), eB.cG(), gj.cG(), c2.cG(), eT.cG(), eO.cG(), attacksBar.cG(), fq.cG(), gameResultBox.cG(), hu.cG(), hv.cG(), eX.cG())
+    eA.drawCanvasImage();
+    eK.drawCanvasImage();
+    isCanvasHidden || (mainCanvasCtx.imageSmoothingEnabled = !1, announcements.drawCanvasImage(), gameLeaderboard.drawCanvasImage(), troopBar.drawCanvasImage(), peace.drawCanvasImage(), eB.drawCanvasImage(), gj.drawCanvasImage(), c2.drawCanvasImage(), eT.drawCanvasImage(), eO.drawCanvasImage(), attacksBar.drawCanvasImage(), fq.drawCanvasImage(), gameResultBox.drawCanvasImage(), hu.drawCanvasImage(), hv.drawCanvasImage(), eX.drawCanvasImage())
 }
 
 function hw(g, k, n) {
@@ -1329,7 +1329,7 @@ function EndGame() {
             singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(k, !1);
             announcements.iy(!0);
-            eM.eb(!0);
+            gameLeaderboard.eb(!0);
             eB.eb(!0);
             c4.canvasDirty = !0;
             h8.iz();
@@ -1406,7 +1406,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     eN.init();
     hv.init();
     mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0);
-    eM.init();
+    gameLeaderboard.init();
     gj.init();
     troopBar.init();
     peace.init();
@@ -1451,7 +1451,7 @@ function jb() {
     a9(0);
     aB()
 }
-var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, eM, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustom, customMap;
+var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustom, customMap;
 
 function construct() {
     dG = new de;
@@ -1473,7 +1473,7 @@ function construct() {
     gj = new k4;
     playtime = new Playtime;
     eO = new k6;
-    eM = new k7;
+    gameLeaderboard = new GameLeaderboard;
     eB = new k8;
     gameResultBox = new GameResultBox;
     jh = new kA;
@@ -1700,8 +1700,8 @@ function jx() {
         if (this.hidden() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return !1;
         var M = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - B) > M || Math.abs(yPos - C) > M || (new Date).getTime() > E + 425) return !1;
-        M = Math.floor((xPos + gC) / g7);
-        var Q = Math.floor((yPos + gD) / g7);
+        M = Math.floor((xPos + gridWidth) / scaleFactor);
+        var Q = Math.floor((yPos + gridHeight) / scaleFactor);
         if (1 > M || 1 > Q || M >= currentMapWidth - 1 || Q >= currentMapHeight - 1) return !1;
         var R = Q * currentMapWidth * 4 + 4 * M;
         if (!pixel.canOwn(R)) return !1;
@@ -1778,12 +1778,11 @@ function jx() {
             if (x[L]) return !0;
         return t
     };
-    this.cG = function() {
-        this.hidden() &&
-            this.lo()
+    this.drawCanvasImage = function() {
+        this.hidden() && this.lo()
     };
     this.lo = function() {
-        if (t) a5.cG();
+        if (t) a5.drawCanvasImage();
         else {
             var L = (A + N) / D;
             mainCanvasCtx.imageSmoothingEnabled = !0;
@@ -1881,7 +1880,7 @@ function jy() {
         c4.canvasDirty = !0;
         return -1 !== y
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (this.lu) {
             var B = Math.floor(5.5 * l);
             mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.fK);
@@ -1893,8 +1892,7 @@ function jy() {
             mainCanvasCtx.fillRect(0, 0, 1, l);
             mainCanvasCtx.fillRect(4 * l, 0, 1, l);
             mainCanvasCtx.fillRect(0, l - 1, B, 1);
-            mainCanvasCtx.fillRect(B - 1,
-                0, 1, l);
+            mainCanvasCtx.fillRect(B - 1, 0, 1, l);
             mainCanvasCtx.font = t;
             mainCanvasCtx.textBaseline = middleAlign;
             mainCanvasCtx.textAlign = centerAlign;
@@ -2205,7 +2203,7 @@ function Announcements() {
                 " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
         this.iy(!1)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         for (var H = y(), M, Q = pendingAnnouncements.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === pendingAnnouncements[Q].id ? (mainCanvasCtx.drawImage(pendingAnnouncements[Q].canvas, prevClientWidth - pendingAnnouncements[Q].width - D - N, M), mainCanvasCtx.drawImage(L, prevClientWidth - D - N, M)) : mainCanvasCtx.drawImage(pendingAnnouncements[Q].canvas, prevClientWidth - pendingAnnouncements[Q].width - N, M)
     }
 }
@@ -2244,19 +2242,19 @@ function CookiesPrompt() {
         return -1 !== this.bs
     };
     this.nS = function(g, k) {
-        g -= cA;
-        k -= Math.floor(prevClientHeight - this.height - cA);
+        g -= bufferLength;
+        k -= Math.floor(prevClientHeight - this.height - bufferLength);
         if (0 > g || 0 > k || g >= this.width || k >= this.height) return -1;
         var n = Math.floor((k - .5 * this.nP) / ((this.height - this.nP) / this.lr.length));
         return 0 >
             n ? 0 : n >= this.lr.length ? this.lr.length - 1 : n
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         this.hidden && this.nW()
     };
     this.nW = function() {
-        var g = cA,
-            k = Math.floor(prevClientHeight - this.height - cA);
+        var g = bufferLength,
+            k = Math.floor(prevClientHeight - this.height - bufferLength);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
         mainCanvasCtx.fillStyle = blackMoreOpaque;
         mainCanvasCtx.fillRect(0, 0, this.width, this.height);
@@ -2305,7 +2303,7 @@ function k0() {
             Math.floor(.4 * t);
         return !0
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         mainCanvasCtx.lineWidth = 1 + Math.floor(t / 15);
         mainCanvasCtx.translate(prevClientWidth - t, Math.floor(.5 * (prevClientHeight + x)));
         mainCanvasCtx.rotate(-Math.PI / 2);
@@ -2458,7 +2456,7 @@ function ng() {
     this.oB = function(g) {
         return g >= this.ni && g < this.ni + this.nj
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
         for (var g = this.nr * this.nm / 2, k = this.ld - 1; 0 <= k; k--) mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.np[k] + g, this.nq[k] + g), mainCanvasCtx.drawImage(this.l5[this.ns[k]], 0, 0);
         mainCanvasCtx.imageSmoothingEnabled = !1;
@@ -2531,11 +2529,11 @@ var blackRGB = "rgb(0,0,0)",
     privacyPolicyLink = "https://territorial.io/privacy_policy",
     tutorialLink = "https://territorial.io/tutorial",
     leaderboardLinks = ["https://territorial.io/players", "https://territorial.io/clans"],
-    m5, ov, cA, ow, isTouch, oy, oz, mainSettings, 
+    m5, ov, bufferLength, ow, isTouch, oy, oz, mainSettings, 
     wsUrlStrings = ["wss://", "/s50/", "/s51/", "/s52/"];
 
 function p1() {
-    p2();
+    setCanvasDisplayVariables();
     ow = 3;
     mainSettings = new MainSettings;
     mainSettings.init()
@@ -2557,9 +2555,9 @@ function addMainCanvasEventListeners() {
     isTouch = !1
 }
 
-function p2() {
-    cA = Math.floor((isZoom ? .02 : .01152) * averageDim);
-    cA = 2 > cA ? 2 : cA;
+function setCanvasDisplayVariables() {
+    bufferLength = Math.floor((isZoom ? .02 : .01152) * averageDim);
+    bufferLength = 2 > bufferLength ? 2 : bufferLength;
     m5 = Math.floor((isZoom ? .0114 : .01296) * averageDim);
     m5 = 2 > m5 ? 2 : m5;
     ov = Math.floor(.005 * minDim);
@@ -2582,7 +2580,7 @@ function pL(g, k) {
     if (0 === clientStatus) aJ.mouseDown(g, k);
     else if (!(hv.mouseDown(g, k) || hu.lB(g, k) || gameResultBox.mouseDown(g, k) || attacksBar.mouseDown(g, k))) {
         var n = fq.mouseDown(g, k);
-        2 === n || eM.mouseDown(g, k) || (gj.mouseDown(g, k) ? c4.canvasDirty = !0 : troopBar.pP(g, k) ? (gj.gk = !1, troopBar.pQ(g, k) && (c4.canvasDirty = !0)) : announcements.mouseDown(g, k) || peace.mouseDown(g, k) || 0 === n && hu.lD(g, k))
+        2 === n || gameLeaderboard.mouseDown(g, k) || (gj.mouseDown(g, k) ? c4.canvasDirty = !0 : troopBar.pP(g, k) ? (gj.gk = !1, troopBar.pQ(g, k) && (c4.canvasDirty = !0)) : announcements.mouseDown(g, k) || peace.mouseDown(g, k) || 0 === n && hu.lD(g, k))
     }
 }
 
@@ -2598,12 +2596,12 @@ function onTouchmove(g) {
 }
 
 function pR(g, k) {
-    0 === clientStatus ? aJ.lm(g, k) : hv.lm(g, k) || (hu.hidden() ? hu.lm(g, k) : fq.lm(g, k) || (troopBar.pT ? troopBar.lm(g, k) && (c4.canvasDirty = !0) : (eM.lm(g, k), gj.gk && gj.lm(g, k) && (c4.canvasDirty = !0))))
+    0 === clientStatus ? aJ.lm(g, k) : hv.lm(g, k) || (hu.hidden() ? hu.lm(g, k) : fq.lm(g, k) || (troopBar.pT ? troopBar.lm(g, k) && (c4.canvasDirty = !0) : (gameLeaderboard.lm(g, k), gj.gk && gj.lm(g, k) && (c4.canvasDirty = !0))))
 }
 
 function onMouseleave(g) {
     g.preventDefault();
-    0 === clientStatus ? (aJ.click(-1024, -1024), playtime.pU()) : (eM.pV(-1024, -1024), fq.lm(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
+    0 === clientStatus ? (aJ.click(-1024, -1024), playtime.pU()) : (gameLeaderboard.pV(-1024, -1024), fq.lm(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
 }
 
 function onMouseup(g) {
@@ -2634,7 +2632,7 @@ function onDrop(g) {
 }
 
 function pX(g, k) {
-    0 === clientStatus ? aJ.click(g, k) : (eM.pV(g, k), hv.pV(), troopBar.pW(), gj.gk = !1, hu.click(g, k) && (c4.canvasDirty = !0))
+    0 === clientStatus ? aJ.click(g, k) : (gameLeaderboard.pV(g, k), hv.pV(), troopBar.pW(), gj.gk = !1, hu.click(g, k) && (c4.canvasDirty = !0))
 }
 
 function onWheel(g) {
@@ -2644,7 +2642,7 @@ function onWheel(g) {
         n = Math.floor(pixelRatio * g.clientY),
         l = g.deltaY;
     1 === g.deltaMode && (l *= 20);
-    0 === clientStatus ? aJ.pb(k, n, l) : eM.pb(k, n, l) || (troopBar.pP(k, n) ? troopBar.pb(l) && (c4.canvasDirty = !0) : gj.pb(k, n, 2 * l) && (c4.canvasDirty = !0))
+    0 === clientStatus ? aJ.pb(k, n, l) : gameLeaderboard.pb(k, n, l) || (troopBar.pP(k, n) ? troopBar.pb(l) && (c4.canvasDirty = !0) : gj.pb(k, n, 2 * l) && (c4.canvasDirty = !0))
 }
 
 function pc(g, k, n) {
@@ -2826,7 +2824,7 @@ function AttacksBar() {
             }
         }
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (0 !== isAlive[myID] && hu.isHuman(myID) && !j8)
             for (var C = myAttacks.length - 1; 0 <= C; C--) mainCanvasCtx.drawImage(myAttacks[C].canvas, l(C), x(C))
     }
@@ -2834,7 +2832,7 @@ function AttacksBar() {
 
 function k2() {
     function g() {
-        mainCanvasCtx.drawImage(I, m5 + (teamGame ? m5 + eT.qR() : 0), qS + 2 * m5)
+        mainCanvasCtx.drawImage(I, m5 + (teamGame ? m5 + eT.qR() : 0), gameBoardHeight + 2 * m5)
     }
 
     function k() {
@@ -2941,7 +2939,7 @@ function k2() {
         });
         0 === x && (t = 0, x = 1, K = c4.time)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         0 !== x && 0 !==
             t && (1 > t ? (mainCanvasCtx.globalAlpha = t, g(), mainCanvasCtx.globalAlpha = 1) : g())
     }
@@ -3089,7 +3087,7 @@ function Peace() {
             D === myID && (y = K ? 1 : -1)
         }
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (this.hidden) {
             var D = n();
             mainCanvasCtx.drawImage(x, canvasWidth - this.width - m5, D)
@@ -3225,12 +3223,12 @@ function TroopBar() {
     this.update = function() {
         this.hidden() && Math.floor(troops[myID] * C) !== E && (G = !0)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         this.hidden() && mainCanvasCtx.drawImage(y,
             t, this.fK)
     }
 }
-var g7, gC, gD;
+var scaleFactor, gridWidth, gridHeight;
 
 function k4() {
     var g, k, n, l, x, t, z;
@@ -3238,8 +3236,8 @@ function k4() {
         g = Array(2);
         k = Array(2);
         this.gk = !1;
-        z = t = gD = gC = 0;
-        g7 = 1;
+        z = t = gridHeight = gridWidth = 0;
+        scaleFactor = 1;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
@@ -3254,16 +3252,16 @@ function k4() {
             whiteRGB, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), i1(k[A], 0, 0, n, y, .3, 0 === A)
     };
     this.toX = function() {
-        return -gC / g7
+        return -gridWidth / scaleFactor
     };
     this.toY = function() {
-        return -gD / g7
+        return -gridHeight / scaleFactor
     };
     this.gw = function(y, A) {
-        gC = g7 * y - A
+        gridWidth = scaleFactor * y - A
     };
     this.gx = function(y, A) {
-        gD = g7 * y - A
+        gridHeight = scaleFactor * y - A
     };
     this.mouseDown = function(y, A) {
         if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pb(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200) : this.pb(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
@@ -3272,17 +3270,17 @@ function k4() {
     };
     this.lm = function(y, A) {
         if (!eV.h0()) return !0;
-        var B = gC,
-            C = gD,
+        var B = gridWidth,
+            C = gridHeight,
             E = t - y,
             F = z - A;
-        gC += E;
-        gD += F;
+        gridWidth += E;
+        gridHeight += F;
         eA.lm(E, F);
         this.rI();
         t = y;
         z = A;
-        return B !== gC || C !== gD
+        return B !== gridWidth || C !== gridHeight
     };
     this.pb = function(y, A, B) {
         if (!eV.h0()) return !0;
@@ -3293,12 +3291,12 @@ function k4() {
         return !0
     };
     this.rJ = function(y, A, B) {
-        B = 1024 < B * g7 ? 1024 / g7 : B;
-        B = .125 > B * g7 ? .125 / g7 : B;
+        B = 1024 < B * scaleFactor ? 1024 / scaleFactor : B;
+        B = .125 > B * scaleFactor ? .125 / scaleFactor : B;
         eA.zoom(B, y, A);
-        g7 *= B;
-        gC = (gC + y) * B - y;
-        gD = (gD + A) * B - A;
+        scaleFactor *= B;
+        gridWidth = (gridWidth + y) * B - y;
+        gridHeight = (gridHeight + A) * B - A;
         gj.rI()
     };
     this.rI = function() {
@@ -3306,13 +3304,13 @@ function k4() {
             A = 0,
             B = canvasHeight / 16,
             C = 0;
-        gC < -canvasWidth + y && (A = -canvasWidth + y - gC);
-        gC > g7 * currentMapWidth - y && (A = g7 * currentMapWidth - y -
-            gC);
-        gD < -canvasHeight + B && (C = -canvasHeight + B - gD);
-        gD > g7 * currentMapHeight - B && (C = g7 * currentMapHeight - B - gD);
-        gC += A;
-        gD += C;
+        gridWidth < -canvasWidth + y && (A = -canvasWidth + y - gridWidth);
+        gridWidth > scaleFactor * currentMapWidth - y && (A = scaleFactor * currentMapWidth - y -
+            gridWidth);
+        gridHeight < -canvasHeight + B && (C = -canvasHeight + B - gridHeight);
+        gridHeight > scaleFactor * currentMapHeight - B && (C = scaleFactor * currentMapHeight - B - gridHeight);
+        gridWidth += A;
+        gridHeight += C;
         gy.gz();
         eA.rQ(A, C)
     };
@@ -3320,7 +3318,7 @@ function k4() {
         l = prevClientWidth - n - m5;
         x = Math.floor(prevClientHeight / 2 - 1.25 * n)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         mainCanvasCtx.drawImage(g[0], l, x);
         mainCanvasCtx.drawImage(g[1], l, Math.floor(x + 3 * n / 2))
     }
@@ -3598,7 +3596,7 @@ function Playtime() {
     this.pV = function() {
         -1 !== G && (this.rg = !1)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         mainCanvasCtx.fillStyle = whiteMoreTransparent;
         for (var P = F; P >= E; P--) l(P);
         J && 0 === E && (mainCanvasCtx.fillStyle = redMoreOpaque, l(0)); - 1 !== G && (mainCanvasCtx.fillStyle = whiteMoreOpaque, l(G));
@@ -3686,7 +3684,7 @@ function k6() {
         return isZoom && canvasWidth < 1.2 * canvasHeight
     };
     this.qs = function() {
-        this.qD() ? this.fJ = prevClientWidth - k - m5 : this.fJ = Math.floor(eM.sC() + (prevClientWidth - eM.sC() - eB.width - k) / 2 - .5 * m5)
+        this.qD() ? this.fJ = prevClientWidth - k - m5 : this.fJ = Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - eB.width - k) / 2 - .5 * m5)
     };
     this.eb = function() {
         y && (y = !1, this.sB())
@@ -3718,214 +3716,238 @@ function k6() {
     this.update = function() {
         0 !== isAlive[myID] && 2 !== playerStatus[myID] && A !== troops[myID] && (x = getMax(troops[myID], x), B = troops[myID] > A && 10 <= troops[myID], A = troops[myID], y = !0)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         0 === isAlive[myID] || inSpawn || 2 === playerStatus[myID] || mainCanvasCtx.drawImage(t, this.fJ, n)
     }
 }
-var sG, qS, sH, sI, sJ, orderedLand, sK;
+var gameBoardWidth, gameBoardHeight, gameBoardLabelFont, gameBoardFont, gameBoardLabelHeight, orderedLand, landOrder;
 
-function k7() {
-    function g() {
-        var S;
-        B.clearRect(0, 0, sG, qS);
-        B.fillStyle = blueDarkMoreOpaque;
-        B.fillRect(0, 0, sG, N);
-        B.fillStyle = blackMore2Opaque;
-        B.fillRect(0, N, sG, qS - N);
-        sK[myID] >= V && n(sK[myID] - V, greenBrightMoreTransparent);
-        0 !== sK[myID] && 0 === V && n(0, yellowMoreTransparent); - 1 !== X && n(X, whiteMore2Transparent);
-        B.fillStyle = whiteRGB;
-        B.fillRect(0, N, sG, 1);
-        B.fillRect(0, 0, sG, ov);
-        B.fillRect(0, 0, ov, qS);
-        B.fillRect(sG - ov, 0, ov, qS);
-        B.fillRect(0, qS - ov, sG, ov);
-        B.font = sH;
-        B.textBaseline = middleAlign;
-        B.textAlign = centerAlign;
-        B.fillText(Q, Math.floor(sG / 2), Math.floor(F + sJ / 2));
-        var O = sK[myID] < V + y - 1 ? 1 : 2;
-        B.font = sI;
-        B.textAlign = leftAlign;
-        for (S = y - O; 0 <= S; S--) k(orderedLand[S + V]),
-            l(S, S + V, orderedLand[S + V]);
-        B.textAlign = rightAlign;
-        for (S = y - O; 0 <= S; S--) k(orderedLand[S + V]), x(S, orderedLand[S + V]);
-        2 === O && (k(myID), B.textAlign = leftAlign, l(y - 1, sK[myID], myID), B.textAlign = rightAlign, x(y - 1, myID));
-        0 === V && (S = .7 * I / sprites.getValuebyID(4).height, B.setTransform(S, 0, 0, S, Math.floor(D + .58 * I + .5 * S * sprites.getValuebyID(4).width), Math.floor(F + sJ + .4 * I)), B.imageSmoothingEnabled = !0, B.drawImage(sprites.getValuebyID(4), -Math.floor(sprites.getValuebyID(4).width / 2), -Math.floor(sprites.getValuebyID(4).height / 2)), B.setTransform(1, 0, 0, 1, 0, 0))
+function GameLeaderboard() {
+    function drawGameLeaderboard() {
+        var bIndex;
+        leaderboard.clearRect(0, 0, gameBoardWidth, gameBoardHeight);
+        leaderboard.fillStyle = blueDarkMoreOpaque;
+        leaderboard.fillRect(0, 0, gameBoardWidth, topBarHeight);
+        leaderboard.fillStyle = blackMore2Opaque;
+        leaderboard.fillRect(0, topBarHeight, gameBoardWidth, gameBoardHeight - topBarHeight);
+        if (landOrder[myID] >= boardTopIndex) highlightRow(landOrder[myID] - boardTopIndex, greenBrightMoreTransparent)
+        if (0 !== landOrder[myID] && 0 === boardTopIndex) highlightRow(0, yellowMoreTransparent)
+        if (- 1 !== highlightedLandIndex) highlightRow(highlightedLandIndex, whiteMore2Transparent)
+        leaderboard.fillStyle = whiteRGB;
+        leaderboard.fillRect(0, topBarHeight, gameBoardWidth, 1);
+        leaderboard.fillRect(0, 0, gameBoardWidth, ov);
+        leaderboard.fillRect(0, 0, ov, gameBoardHeight);
+        leaderboard.fillRect(gameBoardWidth - ov, 0, ov, gameBoardHeight);
+        leaderboard.fillRect(0, gameBoardHeight - ov, gameBoardWidth, ov);
+        leaderboard.font = gameBoardLabelFont;
+        leaderboard.textBaseline = middleAlign;
+        leaderboard.textAlign = centerAlign;
+        leaderboard.fillText(leaderboardLabel, Math.floor(gameBoardWidth / 2), Math.floor(F + gameBoardLabelHeight / 2));
+        var checkAtBottom = landOrder[myID] < boardTopIndex + visibleLandCount - 1 ? 1 : 2;
+        leaderboard.font = gameBoardFont;
+        leaderboard.textAlign = leftAlign;
+        for (bIndex = visibleLandCount - checkAtBottom; 0 <= bIndex; bIndex--) {
+            setLeaderboardFillColor(orderedLand[bIndex + boardTopIndex]);
+            fillPlayerLabels(bIndex, bIndex + boardTopIndex, orderedLand[bIndex + boardTopIndex]);
+        }
+        leaderboard.textAlign = rightAlign;
+        for (bIndex = visibleLandCount - checkAtBottom; 0 <= bIndex; bIndex--) {
+            setLeaderboardFillColor(orderedLand[bIndex + boardTopIndex]);
+            fillPlayerLand(bIndex, orderedLand[bIndex + boardTopIndex]);
+        }
+        if (2 === checkAtBottom) {
+            setLeaderboardFillColor(myID);
+            leaderboard.textAlign = leftAlign;
+            fillPlayerLabels(visibleLandCount - 1, landOrder[myID], myID);
+            leaderboard.textAlign = rightAlign;
+            fillPlayerLand(visibleLandCount - 1, myID);
+        }
+        if (0 === boardTopIndex) {
+            bIndex = .7 * I / sprites.getValuebyID(4).height;
+            leaderboard.setTransform(bIndex, 0, 0, bIndex, Math.floor(D + .58 * I + .5 * bIndex * sprites.getValuebyID(4).width), Math.floor(F + gameBoardLabelHeight + .4 * I));
+            leaderboard.imageSmoothingEnabled = !0;
+            leaderboard.drawImage(sprites.getValuebyID(4), -Math.floor(sprites.getValuebyID(4).width / 2), -Math.floor(sprites.getValuebyID(4).height / 2));
+            leaderboard.setTransform(1, 0, 0, 1, 0, 0);
+        }
     }
 
-    function k(S) {
-        teamGame && (B.fillStyle = teams.leaderboardColors[teams.teamIDs[teams.teamArray[S]]])
+    function setLeaderboardFillColor(id) {
+        teamGame && (leaderboard.fillStyle = teams.leaderboardColors[teams.teamIDs[teams.teamArray[id]]])
     }
 
-    function n(S, O) {
-        B.fillStyle = O;
-        S = S > y - 1 ? y - 1 : S;
-        var T = Math.floor((S === y - 1 ? 2 : 0 === S ? 1.15 : 1) * I);
-        T = S === y - 2 ? Math.floor(N + 9.15 * I) - Math.floor(N + 8.15 * I) : T;
-        B.fillRect(0, Math.floor(N + (S + (0 === S ? 0 : .15)) * I), sG, T)
+    function highlightRow(localRowIndex, highlightColor) {
+        leaderboard.fillStyle = highlightColor;
+        localRowIndex = localRowIndex > visibleLandCount - 1 ? visibleLandCount - 1 : localRowIndex;
+        var T = Math.floor((localRowIndex === visibleLandCount - 1 ? 2 : 0 === localRowIndex ? 1.15 : 1) * I);
+        T = localRowIndex === visibleLandCount - 2 ? Math.floor(topBarHeight + 9.15 * I) - Math.floor(topBarHeight + 8.15 * I) : T;
+        leaderboard.fillRect(0, Math.floor(topBarHeight + (localRowIndex + (0 === localRowIndex ? 0 : .15)) * I), gameBoardWidth, T)
     }
 
-    function l(S, O, T) {
-        B.fillText(R[O], D, Math.floor(F + sJ + (S + .5) * I));
-        1 === playerStatus[T] && (B.font = fontStyleItalic + sI);
-        B.fillText(H[T] === T ? nickname[T] : L[H[T] % maxEntities], K, Math.floor(F + sJ + (S + .5) * I));
-        0 !== playerStatus[T] && (B.font = sI)
+    function fillPlayerLabels(yPos, order, id) {
+        leaderboard.fillText(orderLabels[order], D, Math.floor(F + gameBoardLabelHeight + (yPos + .5) * I));
+        if (1 === playerStatus[id]) leaderboard.font = fontStyleItalic + gameBoardFont
+        leaderboard.fillText(extendedIDs[id] === id ? nickname[id] : shorternedNames[extendedIDs[id] % maxEntities], K, Math.floor(F + gameBoardLabelHeight + (yPos + .5) * I));
+        if (0 !== playerStatus[id]) leaderboard.font = gameBoardFont
     }
 
-    function x(S, O) {
-        B.fillText(land[O], J, Math.floor(F + sJ + (S + .5) * I))
+    function fillPlayerLand(yPos, id) {
+        leaderboard.fillText(land[id], landXPos, Math.floor(F + gameBoardLabelHeight + (yPos + .5) * I))
     }
 
-    function t(S) {
-        S -= m5 + N;
-        if (0 > S) return Math.floor(S / I) - 1;
-        if (S < (y - 1) * I) return Math.floor(S / I);
-        if (S < qS - N) return y -
-            1;
-        S -= qS - N;
-        return y + Math.floor(S / I)
+    function getRowIndex(yPos) {
+        yPos -= m5 + topBarHeight;
+        if (0 > yPos) return Math.floor(yPos / I) - 1;
+        if (yPos < (visibleLandCount - 1) * I) return Math.floor(yPos / I);
+        if (yPos < gameBoardHeight - topBarHeight) return visibleLandCount - 1;
+        yPos -= gameBoardHeight - topBarHeight;
+        return visibleLandCount + Math.floor(yPos / I)
     }
 
-    function z(S, O) {
-        return S >= m5 && S < m5 + sG && O >= m5 && O < m5 + qS
+    function isInBoardCanvas(xPos, yPos) {
+        return xPos >= m5 && xPos < m5 + gameBoardWidth && yPos >= m5 && yPos < m5 + gameBoardHeight
     }
-    var y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, W, X, V, na, ba, ca, pa;
+    var visibleLandCount, leaderboardCanvas, leaderboard, C, const_maxEntities, F, G, topBarHeight, I, D, K, landXPos, shorternedNames, extendedIDs, nicknameWidths, leaderboardLabel, orderLabels, P, U, W, highlightedLandIndex, boardTopIndex, na, ba, ca, pa;
     this.init = function() {
-        var S, O;
+        var idIndex, O;
         na = 0;
         ba = !1;
         pa = ca = 0;
-        Q = "LEADERBOARD";
-        X = -1;
-        y = isZoom ? 6 : 10;
-        V = 0;
+        leaderboardLabel = "LEADERBOARD";
+        highlightedLandIndex = -1;
+        visibleLandCount = isZoom ? 6 : 10;
+        boardTopIndex = 0;
         W = !1;
-        P = new Uint16Array(y + 1);
-        U = new Uint32Array(y + 1);
-        E = maxEntities;
-        orderedLand = new Uint16Array(E);
-        sK = new Uint16Array(E);
-        for (S = E - 1; 0 <= S; S--) orderedLand[S] = S, sK[S] = S;
+        P = new Uint16Array(visibleLandCount + 1);
+        U = new Uint32Array(visibleLandCount + 1);
+        const_maxEntities = maxEntities;
+        orderedLand = new Uint16Array(const_maxEntities);
+        landOrder = new Uint16Array(const_maxEntities);
+        for (idIndex = const_maxEntities - 1; 0 <= idIndex; idIndex--) orderedLand[idIndex] = idIndex, landOrder[idIndex] = idIndex;
         this.setCanvasVariables(!0);
-        L = [];
-        H = new Uint16Array(maxEntities);
-        M = new Uint16Array(maxEntities);
-        var T = Math.floor(sG - K - D - C),
-            Y = 0;
-        R = Array(maxEntities);
-        B.font = sI;
-        for (S = maxEntities - 1; 0 <= S; S--)
-            if (R[S] =
-                S + 1 + ".", H[S] = S, M[S] = Math.floor(B.measureText(nickname[S]).width), M[S] > T) {
-                var Z = nickname[S];
-                for (O = nickname[S].length - 1; 1 <= O && !(Z = Z.substring(0, O), M[S] = Math.floor(B.measureText(Z + "...").width), M[S] <= T); O--);
-                Z += "...";
-                L.push(Z);
-                H[S] = maxEntities + Y++
-            } g()
+        shorternedNames = [];
+        extendedIDs = new Uint16Array(maxEntities);
+        nicknameWidths = new Uint16Array(maxEntities);
+        var T = Math.floor(gameBoardWidth - K - D - C),
+            extendedNameCount = 0;
+        orderLabels = Array(maxEntities);
+        leaderboard.font = gameBoardFont;
+        for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
+            orderLabels[idIndex] = idIndex + 1 + ".";
+            extendedIDs[idIndex] = idIndex;
+            nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(nickname[idIndex]).width); 
+            if (nicknameWidths[idIndex] > T) {
+                var extendedNickname = nickname[idIndex];
+                for (O = nickname[idIndex].length - 1; 1 <= O && !(extendedNickname = extendedNickname.substring(0, O), nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(extendedNickname + "...").width), nicknameWidths[idIndex] <= T); O--);
+                extendedNickname += "...";
+                shorternedNames.push(extendedNickname);
+                extendedIDs[idIndex] = maxEntities + extendedNameCount++
+            }
+            drawGameLeaderboard()
+        }
+            
     };
     this.setCanvasVariables = function(S) {
-        isZoom ? (sG = Math.floor(.335 * averageDim), qS = Math.floor(y * sG / 8)) : (sG = Math.floor(.27 * averageDim), qS = Math.floor(y * sG / 10));
-        sG = Math.floor(.97 * sG);
-        A = document.createElement("canvas");
-        A.width = sG;
-        A.height = qS;
-        B = A.getContext("2d", {
+        isZoom ? (gameBoardWidth = Math.floor(.335 * averageDim), gameBoardHeight = Math.floor(visibleLandCount * gameBoardWidth / 8)) : (gameBoardWidth = Math.floor(.27 * averageDim), gameBoardHeight = Math.floor(visibleLandCount * gameBoardWidth / 10));
+        gameBoardWidth = Math.floor(.97 * gameBoardWidth);
+        leaderboardCanvas = document.createElement("canvas");
+        leaderboardCanvas.width = gameBoardWidth;
+        leaderboardCanvas.height = gameBoardHeight;
+        leaderboard = leaderboardCanvas.getContext("2d", {
             alpha: !0
         });
-        F = .025 * sG;
-        sJ = .16 * sG;
-        G = 0 * sG;
-        N = Math.floor(.45 * F + sJ);
-        I = (qS - sJ - 2 * F - G) / y;
-        sH = fontWeightBold + Math.floor(.55 * sJ) + fontSizeArial;
-        sI = Math.floor(.6 * I) + fontSizeArial;
-        B.font = sI;
-        D = Math.floor(B.measureText("555").width);
-        K = Math.floor(B.measureText("555600.00").width);
-        C = Math.floor(B.measureText("00920600").width);
-        B.font = sH;
-        J = sG - D;
+        F = .025 * gameBoardWidth;
+        gameBoardLabelHeight = .16 * gameBoardWidth;
+        G = 0 * gameBoardWidth;
+        topBarHeight = Math.floor(.45 * F + gameBoardLabelHeight);
+        I = (gameBoardHeight - gameBoardLabelHeight - 2 * F - G) / visibleLandCount;
+        gameBoardLabelFont = fontWeightBold + Math.floor(.55 * gameBoardLabelHeight) + fontSizeArial;
+        gameBoardFont = Math.floor(.6 * I) + fontSizeArial;
+        leaderboard.font = gameBoardFont;
+        D = Math.floor(leaderboard.measureText("555").width);
+        K = Math.floor(leaderboard.measureText("555600.00").width);
+        C = Math.floor(leaderboard.measureText("00920600").width);
+        leaderboard.font = gameBoardLabelFont;
+        landXPos = gameBoardWidth - D;
         if (!S) {
-            B.font = sI;
-            for (S = maxEntities - 1; 0 <= S; S--) M[S] = Math.floor(B.measureText(H[S] === S ? nickname[S] : L[H[S] % maxEntities]).width);
-            g()
+            leaderboard.font = gameBoardFont;
+            for (var idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
+                nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(extendedIDs[idIndex] === idIndex ? nickname[idIndex] : shorternedNames[extendedIDs[idIndex] % maxEntities]).width);
+            }
+            drawGameLeaderboard()
         }
     };
     this.sC = function() {
-        return sG
+        return gameBoardWidth
     };
     this.eb = function(S) {
-        W && (S || 14 >= sm && 0 === c4.ticksElapsed() % 6 || 14 < sm) && (W = !1, g())
+        W && (S || 14 >= sm && 0 === c4.ticksElapsed() % 6 || 14 < sm) && (W = !1, drawGameLeaderboard())
     };
     this.update = function() {
-        for (var S = E - 1; 0 <= S; S--)
+        for (var S = const_maxEntities - 1; 0 <= S; S--)
             if (0 === isAlive[orderedLand[S]]) {
                 var O =
                     S,
                     T = orderedLand[O];
-                for (E--; O < E; O++) orderedLand[O] = orderedLand[O + 1], sK[orderedLand[O]] = O;
-                orderedLand[E] = T;
-                sK[orderedLand[E]] = E
-            } T = E - 1;
-        for (O = 0; O < T; O++) land[orderedLand[O]] < land[orderedLand[O + 1]] && (S = orderedLand[O], orderedLand[O] = orderedLand[O + 1], orderedLand[O + 1] = S, sK[orderedLand[O]] = O, sK[orderedLand[O + 1]] = O + 1);
+                for (const_maxEntities--; O < const_maxEntities; O++) orderedLand[O] = orderedLand[O + 1], landOrder[orderedLand[O]] = O;
+                orderedLand[const_maxEntities] = T;
+                landOrder[orderedLand[const_maxEntities]] = const_maxEntities
+            } T = const_maxEntities - 1;
+        for (O = 0; O < T; O++) land[orderedLand[O]] < land[orderedLand[O + 1]] && (S = orderedLand[O], orderedLand[O] = orderedLand[O + 1], orderedLand[O + 1] = S, landOrder[orderedLand[O]] = O, landOrder[orderedLand[O + 1]] = O + 1);
         a: {
             S = W;W = !0;
-            for (O = T = sK[myID] >= y - 1 ? y - 2 : y - 1; 0 <= O; O--)
+            for (O = T = landOrder[myID] >= visibleLandCount - 1 ? visibleLandCount - 2 : visibleLandCount - 1; 0 <= O; O--)
                 if (P[O] !== orderedLand[O] || U[O] !== land[orderedLand[O]]) break a;
-            if (T !== y - 2 || P[y] === sK[myID] && U[y] === land[myID]) W = S
+            if (T !== visibleLandCount - 2 || P[visibleLandCount] === landOrder[myID] && U[visibleLandCount] === land[myID]) W = S
         }
-        for (S = y - 1; 0 <= S; S--) P[S] = orderedLand[S], U[S] = land[orderedLand[S]];
-        P[y] = sK[myID];
-        U[y] = land[myID]
+        for (S = visibleLandCount - 1; 0 <= S; S--) P[S] = orderedLand[S], U[S] = land[orderedLand[S]];
+        P[visibleLandCount] = landOrder[myID];
+        U[visibleLandCount] = land[myID]
     };
     this.mouseDown = function(S, O) {
-        if (z(S, O)) {
+        if (isInBoardCanvas(S, O)) {
             na = c4.time;
             ba = !0;
-            ca = pa = t(O);
+            ca = pa = getRowIndex(O);
             if (isTouch) {
-                var T = rangeClamp(-1, pa, y);
-                T = T === y ? -1 : T;
-                X !== T && (X = T, g(), c4.canvasDirty = !0)
+                var T = rangeClamp(-1, pa, visibleLandCount);
+                T = T === visibleLandCount ? -1 : T;
+                highlightedLandIndex !== T && (highlightedLandIndex = T, drawGameLeaderboard(), c4.canvasDirty = !0)
             }
             return !0
         }
         return !1
     };
     this.lm = function(S, O) {
-        var T = t(O);
+        var T = getRowIndex(O);
         if (ba) {
-            var Y = V;
-            V += ca - T;
-            V = rangeClamp(0, V, maxEntities - y);
-            V !== Y && (ca = T, T = rangeClamp(-1, T, y), X = T = T !== y && z(S, O) ? T : -1, g(), c4.canvasDirty = !0);
+            var Y = boardTopIndex;
+            boardTopIndex += ca - T;
+            boardTopIndex = rangeClamp(0, boardTopIndex, maxEntities - visibleLandCount);
+            boardTopIndex !== Y && (ca = T, T = rangeClamp(-1, T, visibleLandCount), highlightedLandIndex = T = T !== visibleLandCount && isInBoardCanvas(S, O) ? T : -1, drawGameLeaderboard(), c4.canvasDirty = !0);
             return !0
         }
-        T = rangeClamp(-1, T, y);
-        T = T === y || !z(S, O) || isTouch ? -1 : T;
-        return X !== T ? (X = T, g(), c4.canvasDirty = !0) : !1
+        T = rangeClamp(-1, T, visibleLandCount);
+        T = T === visibleLandCount || !isInBoardCanvas(S, O) || isTouch ? -1 : T;
+        return highlightedLandIndex !== T ? (highlightedLandIndex = T, drawGameLeaderboard(), c4.canvasDirty = !0) : !1
     };
     this.pV = function(S, O) {
         if (!ba) return !1;
         ba = !1;
-        var T = t(O);
-        isTouch && -1 !== X && (X = -1, g(), c4.canvasDirty = !0);
-        if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, y), T = T !== y && z(S, O) ? T : -1, -1 !== T)) {
-            var Y = orderedLand[T + V];
-            T === y - 1 && sK[myID] >= V + y - 1 && (Y = myID);
+        var T = getRowIndex(O);
+        isTouch && -1 !== highlightedLandIndex && (highlightedLandIndex = -1, drawGameLeaderboard(), c4.canvasDirty = !0);
+        if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, visibleLandCount), T = T !== visibleLandCount && isInBoardCanvas(S, O) ? T : -1, -1 !== T)) {
+            var Y = orderedLand[T + boardTopIndex];
+            T === visibleLandCount - 1 && landOrder[myID] >= boardTopIndex + visibleLandCount - 1 && (Y = myID);
             0 !== isAlive[Y] && eV.hoverTo(Y, 800, !1, 0)
         }
         return !0
     };
     this.pb = function(S, O,
         T) {
-        return ba ? !1 : z(S, O) ? (S = t(O), S = rangeClamp(-1, S, y), S = S === y || isTouch ? -1 : S, 0 < T ? V < maxEntities - y && (V++, X = S, g(), c4.canvasDirty = !0) : 0 < V && (V--, X = S, g(), c4.canvasDirty = !0), !0) : !1
+        return ba ? !1 : isInBoardCanvas(S, O) ? (S = getRowIndex(O), S = rangeClamp(-1, S, visibleLandCount), S = S === visibleLandCount || isTouch ? -1 : S, 0 < T ? boardTopIndex < maxEntities - visibleLandCount && (boardTopIndex++, highlightedLandIndex = S, drawGameLeaderboard(), c4.canvasDirty = !0) : 0 < boardTopIndex && (boardTopIndex--, highlightedLandIndex = S, drawGameLeaderboard(), c4.canvasDirty = !0), !0) : !1
     };
-    this.cG = function() {
-        mainCanvasCtx.drawImage(A, m5, m5)
+    this.drawCanvasImage = function() {
+        mainCanvasCtx.drawImage(leaderboardCanvas, m5, m5)
     }
 }
 
@@ -4087,7 +4109,7 @@ function k8() {
         g();
         return H !== U
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         mainCanvasCtx.drawImage(t, y, A)
     }
 }
@@ -4159,14 +4181,14 @@ function GameResultBox() {
         C > n - l / 3 && E < l / 3 && (g = !1, c4.canvasDirty = !0);
         return !0
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((prevClientWidth - n) / 2), prevClientHeight - l - 2 * m5), mainCanvasCtx.globalAlpha = 1)
     }
 }
 
 function kd() {
     function g(t, z, y, A, B, C, E) {
-        0 !== isAlive[t] && 0 !== land[t] && (y = prevClientWidth * ((xMin[t] + xMax[t] + 1) / 2 - y) / (B - y) - .5 * z, A = prevClientHeight * ((yMin[t] + yMax[t] + 1) / 2 - A) / (C - A) - .5 * z, y > prevClientWidth || A > prevClientHeight || y < -z || A < -z || (mainCanvasCtx.setTransform(g7 * E, 0, 0, g7 * E, y, A), mainCanvasCtx.drawImage(n[teamGame ? teams.teamArray[t] : t < playerCount ? 1 : 0], 0, 0)))
+        0 !== isAlive[t] && 0 !== land[t] && (y = prevClientWidth * ((xMin[t] + xMax[t] + 1) / 2 - y) / (B - y) - .5 * z, A = prevClientHeight * ((yMin[t] + yMax[t] + 1) / 2 - A) / (C - A) - .5 * z, y > prevClientWidth || A > prevClientHeight || y < -z || A < -z || (mainCanvasCtx.setTransform(scaleFactor * E, 0, 0, scaleFactor * E, y, A), mainCanvasCtx.drawImage(n[teamGame ? teams.teamArray[t] : t < playerCount ? 1 : 0], 0, 0)))
     }
     var k, n, l, x;
     this.init = function() {
@@ -4207,25 +4229,25 @@ function kd() {
         A.putImageData(B, 0, 0);
         return y
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (k) {
             var t;
             mainCanvasCtx.imageSmoothingEnabled = !0;
             mainCanvasCtx.globalAlpha = 1 - (160 < x ? (x - 160) / 190 : 0);
-            var z = gC / g7,
-                y = gD / g7,
-                A = (prevClientWidth + gC) /
-                g7,
-                B = (prevClientHeight + gD) / g7;
+            var z = gridWidth / scaleFactor,
+                y = gridHeight / scaleFactor,
+                A = (prevClientWidth + gridWidth) /
+                scaleFactor,
+                B = (prevClientHeight + gridHeight) / scaleFactor;
             var C = .25;
-            var E = l * g7 * C;
+            var E = l * scaleFactor * C;
             for (t = maxEntities - 1; t >= playerCount; t--) g(t, E, z, y, A, B, C);
             C = .5;
-            E = l * g7 * C;
+            E = l * scaleFactor * C;
             for (t = playerCount - 1; 0 <= t; t--) g(t, E, z, y, A, B, C);
             mainCanvasCtx.globalAlpha = 1;
-            mainCanvasCtx.imageSmoothingEnabled = 3 > g7;
-            mainCanvasCtx.setTransform(g7, 0, 0, g7, 0, 0)
+            mainCanvasCtx.imageSmoothingEnabled = 3 > scaleFactor;
+            mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0)
         }
     }
 }
@@ -4451,7 +4473,7 @@ function MainLeaderboard() {
         wsManager.manageFirstAction(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz);
         return !0
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (this.hidden) {
             var l = this.u0 *
                 this.width,
@@ -4581,7 +4603,7 @@ function OpenLinkBox() {
             0 === aJ.getState() && jk.cE(0, !0);
         return !0
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         this.hidden && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValuebyID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
     }
 }
@@ -4639,7 +4661,7 @@ function ui() {
             if (x[C] && this.uj[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return openLinkBox.init(z[C], B), !0;
         return !1
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (t && this.hidden()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var y;
@@ -4865,7 +4887,7 @@ function Colors() {
     this.v8 = function() {
         0 < this.uz && (this.uz = 0, this.v5(), this.v7(), c4.canvasDirty = !0)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, (prevClientWidth - this.width) / 2, (prevClientHeight - this.height) / 2);
         mainCanvasCtx.fillStyle = blackMoreOpaque;
         mainCanvasCtx.fillRect(0, 0, this.width, this.height);
@@ -4959,7 +4981,7 @@ function kB() {
     };
     this.mouseDown = function(L, H) {
         var M = Math.floor((prevClientWidth - A) / 2),
-            Q = Math.floor(.5 * (prevClientHeight - cA - z - B)) + z + cA;
+            Q = Math.floor(.5 * (prevClientHeight - bufferLength - z - B)) + z + bufferLength;
         return L > M && L < M + A && H > Q && H < Q + B ? (this.vT(), jh.lm(L, H, !1), !0) : !1
     };
     this.vT = function() {
@@ -4971,9 +4993,9 @@ function kB() {
         6 === aJ.getState() &&
             (J ? c4.time > I + 2E4 && showError.displayError(3250) : c4.time > I + 2E4 && n(), x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasDirty = !0)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         var L = Math.floor((prevClientWidth - A) / 2),
-            H = Math.floor(.5 * (prevClientHeight - cA - z - B)),
+            H = Math.floor(.5 * (prevClientHeight - bufferLength - z - B)),
             M = x / 100;
         mainCanvasCtx.fillStyle = F;
         l(H, 3, 1);
@@ -4989,7 +5011,7 @@ function kB() {
         mainCanvasCtx.font = G;
         mainCanvasCtx.fillStyle = whiteRGB2;
         mainCanvasCtx.fillText("Loading", Math.floor(.5 * prevClientWidth), Math.floor(H + .58 * z));
-        H = H + z + cA;
+        H = H + z + bufferLength;
         M = A;
         var Q = B;
         mainCanvasCtx.fillStyle = blackSemiTransparent;
@@ -5095,12 +5117,12 @@ function kC() {
         0 === gameState ? (jk.rq(0), playtime.rq()) : 7 === gameState && lobby.setCanvasVariables();
         c4.canvasDirty = !0
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (8 !== gameState && 10 !== gameState) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             this.hr();
-            playtime.cG();
-            jf.cG();
+            playtime.drawCanvasImage();
+            jf.drawCanvasImage();
             var k = Math.floor(.3 * prevClientHeight),
                 n = sprites.l9("territorial.io"),
                 l = 1.75 * prevClientHeight / n.width;
@@ -5114,15 +5136,15 @@ function kC() {
             mainCanvasCtx.drawImage(n, x, k);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             mainCanvasCtx.globalAlpha = 1;
-            vk.cG();
-            uO.cG();
-            mainSettings.cG();
-            jt.cG();
-            0 === gameState ? nameInput.cG() : 2 === gameState ? singleSettings.cG() : 3 === gameState ? showError.cG() : 5 === gameState ? jl.cG() : 6 === gameState ? ji.cG() : 7 === gameState && lobby.cG();
+            vk.drawCanvasImage();
+            uO.drawCanvasImage();
+            mainSettings.drawCanvasImage();
+            jt.drawCanvasImage();
+            0 === gameState ? nameInput.drawCanvasImage() : 2 === gameState ? singleSettings.drawCanvasImage() : 3 === gameState ? showError.drawCanvasImage() : 5 === gameState ? jl.drawCanvasImage() : 6 === gameState ? ji.drawCanvasImage() : 7 === gameState && lobby.drawCanvasImage();
             mainSettings.vn();
-            cookiesPrompt.cG();
-            mainLeaderboard.cG();
-            openLinkBox.cG()
+            cookiesPrompt.drawCanvasImage();
+            mainLeaderboard.drawCanvasImage();
+            openLinkBox.drawCanvasImage()
         }
     };
     this.hr = function() {
@@ -5172,7 +5194,7 @@ function Emojis() {
         this.vs && (a3(), this.vs = !1);
         this.uz = this.vs = !1
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
         var g = (prevClientWidth - this.width) / 2,
             k = (prevClientHeight - this.height) / 2;
@@ -5290,7 +5312,7 @@ function ShowError() {
         jh.lm(t, z, !1);
         c4.canvasDirty = !0
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         jh.uu()
     }
 }
@@ -5387,7 +5409,7 @@ function Lobby() {
         W.setTransform(1, 0, 0, 1, 0, 0)
     }
 
-    function k(P, U, W, X) {
+    function drawPieChart(P, U, W, X) {
         X.beginPath();
         X.moveTo(P, P);
         X.lineTo(P + Math.cos(W) * U, P + Math.cos(W + 1.5 * Math.PI) * U);
@@ -5396,77 +5418,83 @@ function Lobby() {
 
     function n() {
         if (7 === aJ.getState()) {
-            for (var P = -1, U = lobbyGames.length - 1; 0 <= U; U--)
-                if (null === lobbyGames[U].canvas) {
-                    P = U;
+            for (var P = -1, lgIndex = lobbyGames.length - 1; 0 <= lgIndex; lgIndex--)
+                if (null === lobbyGames[lgIndex].canvas) {
+                    P = lgIndex;
                     break
-                } if (-1 !== P) {
-                U = getPreviewCanvas(lobbyGames[P].mapID, lobbyGames[P].seedMap);
-                if (null !== U) lobbyGames[P].canvas = U;
-                else {
-                    U = currentMapWidth;
-                    var W = currentMapHeight,
-                        X = mapBaseCanvas,
-                        V = mapBaseCanvasCtx,
-                        na = x6,
-                        ba = mapBaseCanvasImageData,
-                        ca = currentMapID,
-                        pa = currentSeed;
-                    loadMap(lobbyGames[P].mapID, lobbyGames[P].seedMap);
-                    x9.xA();
-                    var S = document.createElement("canvas");
-                    S.width = 128;
-                    S.height = 128;
-                    var O = S.getContext("2d", {
-                            alpha: !1
-                        }),
-                        T = 128 / currentMapWidth,
-                        Y = 128 / currentMapHeight;
-                    Y > T && (T = Y);
-                    O.imageSmoothingEnabled = !0;
-                    O.setTransform(T, 0, 0, T, (128 - T * currentMapWidth) / 2, (128 - T * currentMapHeight) / 2);
-                    O.drawImage(mapBaseCanvas, 0, 0);
-                    currentMapWidth = U;
-                    currentMapHeight = W;
-                    mapBaseCanvas = X;
-                    mapBaseCanvasCtx = V;
-                    x6 = na;
-                    mapBaseCanvasImageData = ba;
-                    currentMapID = ca;
-                    currentSeed = pa;
-                    lobbyGames[P].canvas = S
+                } 
+                if (-1 !== P) {
+                    lgIndex = getPreviewCanvas(lobbyGames[P].mapID, lobbyGames[P].mapSeed);
+                    if (null !== lgIndex) lobbyGames[P].canvas = lgIndex;
+                    else {
+                        var var_currentMapWidth = currentMapWidth,
+                            var_currentMapHeight = currentMapHeight,
+                            var_mapBaseCanvas = mapBaseCanvas,
+                            var_mapBaseCanvasCtx = mapBaseCanvasCtx,
+                            var_realMapBaseCanvasCtxImageData = realMapBaseCanvasCtxImageData,
+                            var_mapBaseCanvasImageDataArray = mapBaseCanvasImageDataArray,
+                            var_currentMapID = currentMapID,
+                            var_currentMapSeed = currentMapSeed;
+                        loadMap(lobbyGames[P].mapID, lobbyGames[P].mapSeed);
+                        x9.xA();
+                        var previewCanvas = document.createElement("canvas");
+                        previewCanvas.width = 128;
+                        previewCanvas.height = 128;
+                        var previewCanvasCtx = previewCanvas.getContext("2d", {
+                                alpha: !1
+                            }),
+                            T = 128 / currentMapWidth,
+                            Y = 128 / currentMapHeight;
+                        Y > T && (T = Y);
+                        previewCanvasCtx.imageSmoothingEnabled = !0;
+                        previewCanvasCtx.setTransform(T, 0, 0, T, (128 - T * currentMapWidth) / 2, (128 - T * currentMapHeight) / 2);
+                        previewCanvasCtx.drawImage(mapBaseCanvas, 0, 0);
+                        currentMapWidth = var_currentMapWidth;
+                        currentMapHeight = var_currentMapHeight;
+                        mapBaseCanvas = var_mapBaseCanvas;
+                        mapBaseCanvasCtx = var_mapBaseCanvasCtx;
+                        realMapBaseCanvasCtxImageData = var_realMapBaseCanvasCtxImageData;
+                        mapBaseCanvasImageDataArray = var_mapBaseCanvasImageDataArray;
+                        currentMapID = var_currentMapID;
+                        currentMapSeed = var_currentMapSeed;
+                        lobbyGames[P].canvas = previewCanvas
+                    }
+                    c4.canvasDirty = !0
                 }
-                c4.canvasDirty = !0
-            }
         }
     }
 
     function getPreviewCanvas(mapID, mapSeed) {
         for (var gameIndex = lobbyGames.length - 1; 0 <= gameIndex; gameIndex--)
-            if (null !== lobbyGames[gameIndex].canvas && lobbyGames[gameIndex].mapID === mapID && lobbyGames[gameIndex].seedMap === mapSeed) return lobbyGames[gameIndex].canvas;
+            if (null !== lobbyGames[gameIndex].canvas && lobbyGames[gameIndex].mapID === mapID && lobbyGames[gameIndex].mapSeed === mapSeed) return lobbyGames[gameIndex].canvas;
         return null
     }
 
-    function x(P, U) {
-        var W, X;
+    function checkGameBoxClick(xPos, yPos) {
+        var xIndex, yIndex;
         if (0 === lobbyGames.length) return !1;
-        var V = 0;
-        var na = B;
-        for (X = 0; X < y[1]; X++) {
-            var ba = A;
-            for (W = 0; W < y[0]; W++) {
-                if (P > ba && P < ba + t && U > na && U < na + t) return dataEncoder.joinGame(lobbyGames[V].gameID), gameSelected = lobbyGames[V].gameID !== gameSelected ? lobbyGames[V].gameID : -1, c4.canvasDirty = !0;
-                V++;
-                if (V >= lobbyGames.length) return !1;
-                ba += t + cA
+        var lgIndex = 0;
+        var lgBoxYMin = B;
+        for (yIndex = 0; yIndex < lobbyGamesArrangement[1]; yIndex++) {
+            var lgBoxXMin = A;
+            for (xIndex = 0; xIndex < lobbyGamesArrangement[0]; xIndex++) {
+                if (xPos > lgBoxXMin && xPos < lgBoxXMin + lgBoxLength && yPos > lgBoxYMin && yPos < lgBoxYMin + lgBoxLength) {
+                    dataEncoder.joinGame(lobbyGames[lgIndex].gameID);
+                    gameSelected = lobbyGames[lgIndex].gameID !== gameSelected ? lobbyGames[lgIndex].gameID : -1;
+                    c4.canvasDirty = !0;
+                    return true
+                }
+                lgIndex++;
+                if (lgIndex >= lobbyGames.length) return !1;
+                lgBoxXMin += lgBoxLength + bufferLength
             }
-            na += t + cA
+            lgBoxYMin += lgBoxLength + bufferLength
         }
         return !1
     }
-    var t, z, y, A, B, C, E, lobbyGames, G, gameSelected, I, D, K = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
-        lobbyStats = [0, 0, 0, 0],
-        L, H, M, Q, R;
+    var lgBoxLength, z, lobbyGamesArrangement, A, B, C, E, lobbyGames, G, gameSelected, I, D, 
+        K = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
+        lobbyStats = [0, 0, 0, 0], L, H, M, Q, R;
     this.init = function() {
         R = 0;
         gameSelected = -1;
@@ -5475,8 +5503,11 @@ function Lobby() {
         this.setCanvasVariables();
         var P;
         E = Array(11);
-        for (P = E.length; 0 <= P; P--) E[P] = document.createElement("canvas"), E[P].width =
-            48, E[P].height = 48;
+        for (P = E.length; 0 <= P; P--) {
+            E[P] = document.createElement("canvas");
+            E[P].width =48;
+            E[P].height = 48;
+        }
         for (P = 0; 7 > P; P++) {
             var U = P + 2,
                 W = E[U - 2].getContext("2d", {
@@ -5486,20 +5517,20 @@ function Lobby() {
             W.lineWidth = 2;
             W.strokeStyle = whiteRGB2;
             W.clearRect(0, 0, 48, 48);
-            for (var V = 0; V < U; V++) {
+            for (var tIndex = 0; tIndex < U; tIndex++) {
                 var na = X + 2 * Math.PI / U;
                 var ba = X,
                     ca = na,
                     pa = W;
-                pa.fillStyle = teams.piechartColors[V + 1];
+                pa.fillStyle = teams.piechartColors[tIndex + 1];
                 pa.beginPath();
                 pa.arc(24, 24, 23, ba, ca);
                 pa.lineTo(24, 24);
                 pa.fill();
-                0 !== V && k(24, 23, X, W);
+                0 !== tIndex && drawPieChart(24, 23, X, W);
                 X = na
             }
-            k(24, 23, 1.5 * Math.PI, W);
+            drawPieChart(24, 23, 1.5 * Math.PI, W);
             W.beginPath();
             W.arc(24, 24, 23, 0, 2 * Math.PI);
             W.stroke()
@@ -5522,33 +5553,33 @@ function Lobby() {
     };
     this.setCanvasVariables = function() {
         var P, U;
-        y = [0, 0];
+        lobbyGamesArrangement = [0, 0];
         G = [0, 0, 0, 0];
-        isZoom ? (I = Math.floor(.8 * .4 * averageDim), D = Math.floor(.56 * I), G[0] = cA, canvasWidth < canvasHeight ? (G[1] = D + 2 * cA, G[2] = canvasWidth - 3 * G[0], G[3] = uO.toY() - 3 * cA - D, H = Math.floor(.95 * D), M = Math.floor((canvasWidth - I - cA) / 2), Q = Math.floor(cA + D / 2)) : (G[1] = cA, G[2] = canvasWidth - 3 * cA - I, G[3] = uO.toY() - 2 * cA, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = getMax(D, H)), M = Math.floor(canvasWidth - I / 2 - cA), Q = Math.floor(cA + D + (G[3] - D) / 2), Q = getMax(Q, Math.floor(D + 2 * cA + H / 2)))) : (I = Math.floor(.2016 * averageDim), D = Math.floor(.56 *
+        isZoom ? (I = Math.floor(.8 * .4 * averageDim), D = Math.floor(.56 * I), G[0] = bufferLength, canvasWidth < canvasHeight ? (G[1] = D + 2 * bufferLength, G[2] = canvasWidth - 3 * G[0], G[3] = uO.toY() - 3 * bufferLength - D, H = Math.floor(.95 * D), M = Math.floor((canvasWidth - I - bufferLength) / 2), Q = Math.floor(bufferLength + D / 2)) : (G[1] = bufferLength, G[2] = canvasWidth - 3 * bufferLength - I, G[3] = uO.toY() - 2 * bufferLength, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = getMax(D, H)), M = Math.floor(canvasWidth - I / 2 - bufferLength), Q = Math.floor(bufferLength + D + (G[3] - D) / 2), Q = getMax(Q, Math.floor(D + 2 * bufferLength + H / 2)))) : (I = Math.floor(.2016 * averageDim), D = Math.floor(.56 *
             I), G[2] = Math.floor(.5 * canvasWidth), G[3] = Math.floor(.5 * canvasHeight), G[1] = Math.floor(.45 * (canvasHeight - G[3])), G[0] = Math.floor((canvasWidth - G[2]) / 2), H = Math.floor(.75 * D), M = Math.floor(canvasWidth / 2), Q = Math.floor(G[1] + G[3] + (canvasHeight - G[3] - G[1]) / 2));
         L = fontWeightBold + Math.floor(.65 * D / 4) + fontSizeArial;
         for (P = U = 1; P * U < lobbyGames.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
-        var W = (G[2] - (P - 1) * cA) / P;
-        var X = (G[3] - (U - 1) * cA) / U;
-        t = W < X ? W : X;
-        z = Math.floor(t);
-        C = fontWeightBold + Math.floor(.5 * t / 5) + fontSizeArial;
-        y[0] = P;
-        y[1] = U;
-        A = G[0] + Math.floor((G[2] - y[0] * t - (y[0] - 1) * cA) / 2);
-        B = G[1] + Math.floor((G[3] - y[1] * t - (y[1] - 1) * cA) / 2)
+        var W = (G[2] - (P - 1) * bufferLength) / P;
+        var X = (G[3] - (U - 1) * bufferLength) / U;
+        lgBoxLength = W < X ? W : X;
+        z = Math.floor(lgBoxLength);
+        C = fontWeightBold + Math.floor(.5 * lgBoxLength / 5) + fontSizeArial;
+        lobbyGamesArrangement[0] = P;
+        lobbyGamesArrangement[1] = U;
+        A = G[0] + Math.floor((G[2] - lobbyGamesArrangement[0] * lgBoxLength - (lobbyGamesArrangement[0] - 1) * bufferLength) / 2);
+        B = G[1] + Math.floor((G[3] - lobbyGamesArrangement[1] * lgBoxLength - (lobbyGamesArrangement[1] - 1) * bufferLength) / 2)
     };
     this.updateObjects = function(param_lobbyStats, param_lobbyGames) {
         var gameIndex, gamesCount = lobbyGames.length;
         lobbyStats = param_lobbyStats;
         for (gameIndex = 0; gameIndex < param_lobbyGames.length; gameIndex++) {
-            var previewCanvas = getPreviewCanvas(param_lobbyGames[gameIndex].mapID, param_lobbyGames[gameIndex].seedMap);
+            var previewCanvas = getPreviewCanvas(param_lobbyGames[gameIndex].mapID, param_lobbyGames[gameIndex].mapSeed);
             lobbyGames.push({
                 gameID: param_lobbyGames[gameIndex].id,
                 gamemode: param_lobbyGames[gameIndex].gamemode,
                 isContest: param_lobbyGames[gameIndex].isContest,
                 mapID: param_lobbyGames[gameIndex].mapID,
-                seedMap: param_lobbyGames[gameIndex].seedMap,
+                mapSeed: param_lobbyGames[gameIndex].mapSeed,
                 joined: param_lobbyGames[gameIndex].joinCount,
                 timeLeft: param_lobbyGames[gameIndex].timeLeft,
                 maxPlayers: param_lobbyGames[gameIndex].maxPlayers,
@@ -5570,10 +5601,10 @@ function Lobby() {
     this.x3 = function() {
         for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
     };
-    this.mouseDown = function(P, U) {
-        return 4 * ((P - M) * (P - M) + (U - Q) * (U - Q)) <= H * H ? (this.vi(), jh.lm(P, U, !1), !0) : x(P, U)
+    this.mouseDown = function(xPos, yPos) {
+        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.vi(), jh.lm(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         var P = 0,
             U = B;
         mainCanvasCtx.imageSmoothingEnabled = !0;
@@ -5593,27 +5624,26 @@ function Lobby() {
         mainCanvasCtx.drawImage(sprites.getValuebyID(0), 0, 0);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
         mainCanvasCtx.fillStyle = blackSemiTransparent;
-        mainCanvasCtx.fillRect(canvasWidth - I - cA, cA, I, D);
-        0 <= gameSelected ? (mainCanvasCtx.fillStyle = greenBrightSemiTransparent, mainCanvasCtx.fillRect(canvasWidth - I -
-            cA, cA, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = yellowSemiTransparent, mainCanvasCtx.fillRect(canvasWidth - I - cA, cA + Math.floor(.25 * D), I, Math.floor(.25 * D)));
+        mainCanvasCtx.fillRect(canvasWidth - I - bufferLength, bufferLength, I, D);
+        0 <= gameSelected ? (mainCanvasCtx.fillStyle = greenBrightSemiTransparent, mainCanvasCtx.fillRect(canvasWidth - I - bufferLength, bufferLength, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = yellowSemiTransparent, mainCanvasCtx.fillRect(canvasWidth - I - bufferLength, bufferLength + Math.floor(.25 * D), I, Math.floor(.25 * D)));
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(canvasWidth - I - cA, cA, I, D);
+        mainCanvasCtx.strokeRect(canvasWidth - I - bufferLength, bufferLength, I, D);
         mainCanvasCtx.fillStyle = whiteRGB2;
         mainCanvasCtx.font = L;
         mainCanvasCtx.textBaseline = middleAlign;
         W = Math.floor(.04 * I);
         X = Math.floor(.08 * D);
         for (var V = 3; 0 <= V; V--) {
-            var na = Math.floor(cA + (V + 1) * (D + 2 * X) / 5 - X);
+            var na = Math.floor(bufferLength + (V + 1) * (D + 2 * X) / 5 - X);
             mainCanvasCtx.textAlign = leftAlign;
-            mainCanvasCtx.fillText(K[V], canvasWidth - I - cA + W, na);
+            mainCanvasCtx.fillText(K[V], canvasWidth - I - bufferLength + W, na);
             mainCanvasCtx.textAlign = rightAlign;
-            mainCanvasCtx.fillText(attacksBar.splitText(lobbyStats[V]), canvasWidth - cA - W, na)
+            mainCanvasCtx.fillText(attacksBar.splitText(lobbyStats[V]), canvasWidth - bufferLength - W, na)
         }
         if (0 !== lobbyGames.length)
-            for (X = 0; X < y[1]; X++) {
+            for (X = 0; X < lobbyGamesArrangement[1]; X++) {
                 na = A;
-                for (W = 0; W < y[0]; W++) {
+                for (W = 0; W < lobbyGamesArrangement[0]; W++) {
                     V = P;
                     var ba = Math.floor(na),
                         ca = Math.floor(U);
@@ -5639,37 +5669,36 @@ function Lobby() {
                         mainCanvasCtx.lineWidth = 3;
                         mainCanvasCtx.fillStyle = greenDarkerMoreOpaque
                     } else mainCanvasCtx.fillStyle = blackOpaque;
-                    S = Math.floor(t / 4);
-                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 *
-                        t), z, Math.floor(t / 5));
+                    S = Math.floor(lgBoxLength / 4);
+                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 * lgBoxLength), z, Math.floor(lgBoxLength / 5));
                     mainCanvasCtx.fillRect(ba, ca, S, S);
                     mainCanvasCtx.fillStyle = blackRGB;
-                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 * t), z, 2);
+                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 * lgBoxLength), z, 2);
                     mainCanvasCtx.fillRect(ba + S - 2, ca, 2, S);
                     mainCanvasCtx.fillRect(ba, ca + S - 2, S, 2);
                     mainCanvasCtx.font = C;
                     mainCanvasCtx.textBaseline = middleAlign;
                     mainCanvasCtx.textAlign = leftAlign;
                     mainCanvasCtx.fillStyle = blueBrightRGB;
-                    mainCanvasCtx.fillText(lobbyGames[V].joined.toString(), Math.floor(ba + .07 * t), Math.floor(ca + .9 * t));
-                    256 >= lobbyGames[V].maxPlayers && (mainCanvasCtx.textAlign = centerAlign, mainCanvasCtx.fillStyle = greenBrightRGB, mainCanvasCtx.fillText(lobbyGames[V].maxPlayers.toString(), Math.floor(ba + .5 * t), Math.floor(ca + .9 * t)));
+                    mainCanvasCtx.fillText(lobbyGames[V].joined.toString(), Math.floor(ba + .07 * lgBoxLength), Math.floor(ca + .9 * lgBoxLength));
+                    256 >= lobbyGames[V].maxPlayers && (mainCanvasCtx.textAlign = centerAlign, mainCanvasCtx.fillStyle = greenBrightRGB, mainCanvasCtx.fillText(lobbyGames[V].maxPlayers.toString(), Math.floor(ba + .5 * lgBoxLength), Math.floor(ca + .9 * lgBoxLength)));
                     mainCanvasCtx.textAlign = rightAlign;
                     mainCanvasCtx.fillStyle = redLighterRGB;
-                    mainCanvasCtx.fillText(lobbyGames[V].timeLeft.toString(), Math.floor(ba + .93 * t), Math.floor(ca +
-                        .9 * t));
+                    mainCanvasCtx.fillText(lobbyGames[V].timeLeft.toString(), Math.floor(ba + .93 * lgBoxLength), Math.floor(ca +
+                        .9 * lgBoxLength));
                     mainCanvasCtx.strokeStyle = whiteMoreOpaque;
                     mainCanvasCtx.strokeRect(ba, ca, z, z);
-                    O = Math.floor(.16 * t);
+                    O = Math.floor(.16 * lgBoxLength);
                     pa = O / 48;
                     mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
                     E.length > lobbyGames[V].gamemode && mainCanvasCtx.drawImage(E[lobbyGames[V].gamemode], 0, 0);
                     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-                    lobbyGames[V].isContest && (V = sprites.getValuebyID(4), pa = .5 * t / V.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (t - pa * V.width) / 2), Math.floor(ca + (t - pa * V.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(V, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
+                    lobbyGames[V].isContest && (V = sprites.getValuebyID(4), pa = .5 * lgBoxLength / V.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (lgBoxLength - pa * V.width) / 2), Math.floor(ca + (lgBoxLength - pa * V.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(V, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
                     P++;
                     if (P >= lobbyGames.length) return;
-                    na += t + cA
+                    na += lgBoxLength + bufferLength
                 }
-                U += t + cA
+                U += lgBoxLength + bufferLength
             }
     }
 }
@@ -5680,7 +5709,7 @@ function kF() {
         jh.lm(g, k, !1);
         c4.canvasDirty = !0
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         jh.uv()
     };
     this.mouseDown = function(g, k) {
@@ -5713,7 +5742,7 @@ function SingleSettings() {
     this.th = function() {};
     this.setCanvasVariables = function() {
         k[2] = Math.floor((isZoom ? .49 : .4) * averageDim);
-        k[1] = Math.floor((canvasHeight - k[2] / 6 - this.botSettings.length * (cA + k[2] / 10)) / 2);
+        k[1] = Math.floor((canvasHeight - k[2] / 6 - this.botSettings.length * (bufferLength + k[2] / 10)) / 2);
         k[0] = Math.floor((canvasWidth - k[2]) / 2);
         js.hidden && js.setCanvasVariables()
     };
@@ -5771,8 +5800,7 @@ function SingleSettings() {
         if (-1 === x) return !1;
         if (0 === x) return this.vj(), !0;
         if (1 === x) return customMap.ds ? (customMap.pU(), c4.canvasDirty = !0) : js.show(), !0;
-        if (2 === x) return this.th(),
-            this.xO(), !0;
+        if (2 === x) return this.th(), this.xO(), !0;
         if (customMap.ds) return !1;
         if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
             difficulty: 0,
@@ -5780,10 +5808,10 @@ function SingleSettings() {
         }), this.assignBotGroups(), this.setCanvasVariables(), c4.canvasDirty = !0), !0;
         var t = Math.floor((x - 3) / 3);
         if (0 === x % 3) return 1 < this.botSettings.length && (this.botSettings.splice(t, 1), this.setCanvasVariables(), c4.canvasDirty = !0), !0;
-        var z = (k[2] - k[2] / 10 - 2 * cA) / 2;
+        var z = (k[2] - k[2] / 10 - 2 * bufferLength) / 2;
         if (1 === x % 3) {
             if (0 === t && 1 === this.botSettings[t].group) return !0;
-            n < k[0] + k[2] - 1.5 * z - cA ? this.botSettings[t].difficulty-- : this.botSettings[t].difficulty++;
+            n < k[0] + k[2] - 1.5 * z - bufferLength ? this.botSettings[t].difficulty-- : this.botSettings[t].difficulty++;
             0 > this.botSettings[t].difficulty ? this.botSettings[t].difficulty = 5 : 5 < this.botSettings[t].difficulty && (this.botSettings[t].difficulty = 0);
             return c4.canvasDirty = !0
         }
@@ -5811,43 +5839,43 @@ function SingleSettings() {
         this.botSettings[0].group += unsortedEntities
     };
     this.pP = function(n, l) {
-        var x, t = (k[2] - 2 * cA) / 3,
+        var x, t = (k[2] - 2 * bufferLength) / 3,
             z = k[2] / 6;
         if (n < k[0] || l < k[1] ||
             n >= k[0] + k[2]) return -1;
-        if (l < k[1] + z) return n < k[0] + t ? 0 : n < k[0] + t + cA ? -1 : n < k[0] + 2 * t + cA ? 1 : n < k[0] + 2 * t + 2 * cA ? -1 : 2;
+        if (l < k[1] + z) return n < k[0] + t ? 0 : n < k[0] + t + bufferLength ? -1 : n < k[0] + 2 * t + bufferLength ? 1 : n < k[0] + 2 * t + 2 * bufferLength ? -1 : 2;
         var y = k[2] / 10;
-        t = (k[2] - y - 2 * cA) / 2;
+        t = (k[2] - y - 2 * bufferLength) / 2;
         for (x = 0; x < this.botSettings.length; x++) {
-            var A = k[1] + z + cA + x * (y + cA);
+            var A = k[1] + z + bufferLength + x * (y + bufferLength);
             if (l < A) return -1;
-            if (!(l > A + y)) return n < k[0] + y ? 3 + 3 * x : n < k[0] + y + cA ? -1 : n < k[0] + k[2] - t - cA ? 4 + 3 * x : n < k[0] + k[2] - t ? -1 : 5 + 3 * x
+            if (!(l > A + y)) return n < k[0] + y ? 3 + 3 * x : n < k[0] + y + bufferLength ? -1 : n < k[0] + k[2] - t - bufferLength ? 4 + 3 * x : n < k[0] + k[2] - t ? -1 : 5 + 3 * x
         }
-        return 8 > this.botSettings.length ? (A = k[1] + z + cA + this.botSettings.length * (y + cA), l < A || l > A + y || n > k[0] + y ? -1 : 27) : -1
+        return 8 > this.botSettings.length ? (A = k[1] + z + bufferLength + this.botSettings.length * (y + bufferLength), l < A || l > A + y || n > k[0] + y ? -1 : 27) : -1
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         var n;
         mainCanvasCtx.lineWidth = 2;
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.textBaseline = middleAlign;
-        var l = (k[2] - 2 * cA) / 3,
+        var l = (k[2] - 2 * bufferLength) / 3,
             x = k[2] / 6;
         g(k[0],
             k[1], l, x, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
-        g(k[0] + l + cA, k[1], l, x, "rgba(" + (customMap.ds ? 128 : 0) + ",128,128,0.75)", .4, customMap.ds ? "Reset" : "Maps", -1, -1);
+        g(k[0] + l + bufferLength, k[1], l, x, "rgba(" + (customMap.ds ? 128 : 0) + ",128,128,0.75)", .4, customMap.ds ? "Reset" : "Maps", -1, -1);
         g(k[0] + k[2] - l, k[1], l, x, "rgba(0,128,0,0.75)", .4, "Start", -1, -1);
         if (!customMap.ds) {
             var t = k[2] / 10;
-            l = (k[2] - t - 2 * cA) / 2;
+            l = (k[2] - t - 2 * bufferLength) / 2;
             for (n = 0; n < this.botSettings.length; n++) {
-                var z = k[1] + x + cA + n * (t + cA);
+                var z = k[1] + x + bufferLength + n * (t + bufferLength);
                 g(k[0], z, t, t, "rgba(0,128,0,0.75)", 0, null, -1);
-                g(k[0] + t + cA, z, l, t, blackMoreOpaque, .4, this.xV(n), this.botSettings[n].difficulty, -1);
+                g(k[0] + t + bufferLength, z, l, t, blackMoreOpaque, .4, this.xV(n), this.botSettings[n].difficulty, -1);
                 g(k[0] + k[2] - l, z, l, t, blackMoreOpaque, .4, this.xW(n), -1, this.botSettings[n].group)
             }
             if (8 > this.botSettings.length) {
-                z = k[1] + x + cA + this.botSettings.length * (t +
-                    cA);
+                z = k[1] + x + bufferLength + this.botSettings.length * (t +
+                    bufferLength);
                 g(k[0], z, t, t, "rgba(128,128,20,0.75)", 0, null, -1, -1);
                 n = k[0];
                 mainCanvasCtx.fillStyle = whiteRGB2;
@@ -5860,7 +5888,7 @@ function SingleSettings() {
                 mainCanvasCtx.fillRect(n + t, z + y, l, x);
                 mainCanvasCtx.fillRect(n + y, z + t, x, l)
             }
-            js.hidden && js.cG()
+            js.hidden && js.drawCanvasImage()
         }
     };
     this.xV = function(n) {
@@ -5901,9 +5929,9 @@ function MainSettings() {
     this.rq = function() {
         this.width = Math.floor((isZoom ? .063 : .04) * averageDim);
         this.width += 4 - this.width % 4;
-        this.buttons[0].fJ = cA;
-        this.buttons[0].fK = prevClientHeight - this.width - cA;
-        for (var g = 1; g < this.b3; g++) this.buttons[g].fJ = this.buttons[g - 1].fJ + Math.floor(isZoom ? 1.5 * cA : 3.7 * cA) + this.width, this.buttons[g].fK = this.buttons[0].fK
+        this.buttons[0].fJ = bufferLength;
+        this.buttons[0].fK = prevClientHeight - this.width - bufferLength;
+        for (var g = 1; g < this.b3; g++) this.buttons[g].fJ = this.buttons[g - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 3.7 * bufferLength) + this.width, this.buttons[g].fK = this.buttons[0].fK
     };
     this.pP = function(g, k) {
         if (!sprites.bx()) return -1;
@@ -5939,7 +5967,7 @@ function MainSettings() {
             if (this.buttons[g].buttonClass.hidden) return this.buttons[g].buttonClass.v8(), !0;
         return !1
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (sprites.bx()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             for (var g = this.b3 - 1; 0 <= g; g--) mainCanvasCtx.fillStyle =
@@ -5968,7 +5996,7 @@ function MainSettings() {
     this.vn = function() {
         for (var g = 2; 1 <= g; g--)
             if (this.buttons[g].buttonClass.hidden) {
-                this.buttons[g].buttonClass.cG();
+                this.buttons[g].buttonClass.drawCanvasImage();
                 break
             }
     }
@@ -6048,7 +6076,7 @@ function NameInput() {
     this.xr = function() {
         return !mainSettings.xZ() && !mainLeaderboard.hidden && !openLinkBox.hidden
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         if (this.xr()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var t = sprites.l9("territorial.io"),
@@ -6572,7 +6600,7 @@ function LoadCustom() {
         var t = x.target;
         x = t.width;
         var z = t.height;
-        4096 < x || 4096 < z || 10 > x || 10 > z ? alert("Image w & h must be between 10 and 4096.") : (currentMapID = customMapID, currentSeed = 0, currentMapWidth = x, currentMapHeight = z, mapBaseCanvas.width = currentMapWidth, mapBaseCanvas.height = currentMapHeight, mapBaseCanvasCtx.drawImage(t, 0, 0), mapBaseCanvasImageData = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight).data)
+        4096 < x || 4096 < z || 10 > x || 10 > z ? alert("Image w & h must be between 10 and 4096.") : (currentMapID = customMapID, currentMapSeed = 0, currentMapWidth = x, currentMapHeight = z, mapBaseCanvas.width = currentMapWidth, mapBaseCanvas.height = currentMapHeight, mapBaseCanvasCtx.drawImage(t, 0, 0), mapBaseCanvasImageDataArray = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight).data)
     }
     var l;
     this.init = function() {
@@ -6640,14 +6668,14 @@ function CustomMap() {
         var y;
         if (22 >= z.length) return !1;
         customMap.dt.mapID = 0;
-        customMap.dt.seedMap = 0;
+        customMap.dt.mapSeed = 0;
         loadMap(0, 0);
         "data:image/png;base64," !== z.substring(0, 22) && (z = "data:image/png;base64," + z);
         var A = new Image;
         A.onload = function() {
             currentMapWidth = A.width;
             currentMapHeight = A.height;
-            4096 < currentMapWidth || 4096 < currentMapHeight || 10 > currentMapWidth || 10 > currentMapHeight ? (loadMap(0, 0), alert("Image w & h must be between 10 and 4096.")) : (currentMapID = customMapID, currentSeed = 0, mapBaseCanvas.width = currentMapWidth, mapBaseCanvas.height = currentMapHeight, mapBaseCanvasCtx.drawImage(A, 0, 0), y = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight), mapBaseCanvasImageData = y.data)
+            4096 < currentMapWidth || 4096 < currentMapHeight || 10 > currentMapWidth || 10 > currentMapHeight ? (loadMap(0, 0), alert("Image w & h must be between 10 and 4096.")) : (currentMapID = customMapID, currentMapSeed = 0, mapBaseCanvas.width = currentMapWidth, mapBaseCanvas.height = currentMapHeight, mapBaseCanvasCtx.drawImage(A, 0, 0), y = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight), mapBaseCanvasImageDataArray = y.data)
         };
         A.src = z;
         customMap.dt.zq = "";
@@ -6703,7 +6731,7 @@ function CustomMap() {
         this.dt.xN = l(z.numberPlayers, 1, 512);
         this.dt.zi = l(z.modeID, 0, 1);
         this.dt.mapID = l(z.mapID, 0, customMapID - 1);
-        this.dt.seedMap = l(z.seedMap, 0, 16383);
+        this.dt.mapSeed = l(z.mapSeed, 0, 16383);
         this.dt.seedSpawn = l(z.seedSpawn, 0, 16383);
         this.dt.jL = x(z.selectableSpawn, !1);
         this.dt.zd = x(z.selectableName, !1);
@@ -6751,7 +6779,7 @@ function CustomMap() {
         this.dt.hH = this.dt.hS ? this.dt.hH : null
     };
     this.lH = function() {
-        k(this.dt.zq) || loadMap(this.dt.mapID, this.dt.seedMap)
+        k(this.dt.zq) || loadMap(this.dt.mapID, this.dt.mapSeed)
     };
     this.zx = function() {
         var z, y = 0,
@@ -6958,84 +6986,105 @@ function kN() {
     function g() {
         X.width = prevClientWidth;
         X.height = prevClientHeight;
-        V = X.getContext("2d", {
+        infoCanvas = X.getContext("2d", {
             alpha: !0
         });
-        V.textAlign = centerAlign;
-        V.textBaseline = middleAlign;
-        V.imageSmoothingEnabled = !0
+        infoCanvas.textAlign = centerAlign;
+        infoCanvas.textBaseline = middleAlign;
+        infoCanvas.imageSmoothingEnabled = !0
     }
 
     function k() {
-        W = !1;
+        needsDrawImage = !1;
         U = 1;
         R = P = 0;
-        V.clearRect(0, 0, prevClientWidth, prevClientHeight);
-        for (var O = gC / g7, T = gD / g7, Y = (prevClientWidth + gC) / g7, Z = (prevClientHeight + gD) / g7, la, ma, ia, fa, qa, ua = 0 !== isAlive[myID] && hu.isHuman(myID), za = aliveCount - 1; 0 <= za; za--)
-            if (ia = aliveEntities[za], fa = Math.floor(Q * g7 * I[ia] * G[ia]), !(fa < M || fa >= K) && E[ia] + G[ia] > O && E[ia] < Y && F[ia] + N[ia] > T && F[ia] < Z) {
-                la = Math.floor(prevClientWidth * (E[ia] + G[ia] / 2 - O) / (Y - O));
-                ma = Math.floor(prevClientHeight * (F[ia] + N[ia] / 2 - T) / (Z - T) - .1 * fa);
-                V.font = fontStyles[playerStatus[ia]] + fa + fontSizeArial;
-                qa = V;
-                var ra = ia;
-                ra = fa >= J && fa < K ? teams.impostorfontColors[pixel.shading[ra]] + x(fa).toFixed(3) + ")" : teams.fontColors[pixel.shading[ra]];
-                qa.fillStyle = ra;
-                V.fillText(8 === gamemode ? attacksBar.splitText(troops[ia]) : nickname[ia], la, ma);
-                W = !0;
-                if (0 < ca[ia]) {
-                    qa = la;
-                    ra = ma;
-                    var va = fa,
-                        sa = ia;
-                    if (0 === sK[sa])
+        infoCanvas.clearRect(0, 0, prevClientWidth, prevClientHeight);
+        var camLeft = gridWidth / scaleFactor, camTop = gridHeight / scaleFactor, 
+            camRight = (prevClientWidth + gridWidth) / scaleFactor, camBottom = (prevClientHeight + gridHeight) / scaleFactor,
+            landCenterX, landCenterY, idIndex, fontSize, infoCanvasCtx, 
+            isAlivePlayer = 0 !== isAlive[myID] && hu.isHuman(myID), aliveIndex;
+        for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
+            idIndex = aliveEntities[aliveIndex];
+            fontSize = Math.floor(Q * scaleFactor * I[idIndex] * G[idIndex]);
+            if (!(fontSize < M || fontSize >= K) && E[idIndex] + G[idIndex] > camLeft && E[idIndex] < camRight && F[idIndex] + N[idIndex] > camTop && F[idIndex] < camBottom) {
+                landCenterX = Math.floor(prevClientWidth * (E[idIndex] + G[idIndex] / 2 - camLeft) / (camRight - camLeft));
+                landCenterY = Math.floor(prevClientHeight * (F[idIndex] + N[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
+                infoCanvas.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
+                infoCanvasCtx = infoCanvas;
+                var fontColor = fontSize >= J && fontSize < K ? teams.impostorfontColors[pixel.shading[idIndex]] + x(fontSize).toFixed(3) + ")" : teams.fontColors[pixel.shading[idIndex]];
+                infoCanvasCtx.fillStyle = fontColor;
+                infoCanvas.fillText(8 === gamemode ? attacksBar.splitText(troops[idIndex]) : nickname[idIndex], landCenterX, landCenterY);
+                needsDrawImage = !0;
+                if (0 < ca[idIndex]) {
+                    infoCanvasCtx = landCenterX;
+                    fontColor = landCenterY;
+                    var va = fontSize,
+                        sa = idIndex;
+                    if (0 === landOrder[sa])
                         if (a5.oB(ba[sa])) {
-                            var Aa = qa,
+                            var Aa = infoCanvasCtx,
                                 ta = va,
-                                ya = sa;
+                                level = sa;
                             sa = ba[sa];
-                            var wa = .9 * ta / a5.width,
-                                Ca = Math.floor(ra - .5 * wa * a5.width - .05 * ta);
-                            V.globalAlpha = x(ta);
-                            for (var Ba = Math.floor(Aa - .5 * ta / D[ya] - .4 * ta - wa * a5.width), xa = 0; 2 > xa; xa++) V.setTransform(wa, 0, 0, wa, Ba, Ca), V.drawImage(a5.l5[sa], 0, 0), Ba = Math.floor(Aa +
-                                .5 * ta / D[ya] + .4 * ta);
-                            V.globalAlpha = 1;
-                            V.setTransform(1, 0, 0, 1, 0, 0);
-                            n(qa, ra, va, 0, 0)
-                        } else a5.oA(ba[sa]) ? (l(qa, ra, va, ba[sa], 0), n(qa, ra, va, 0, 1)) : (l(qa, ra, va, ba[sa], 1), n(qa, ra, va, 1, 0));
-                    else l(qa, ra, va, ba[sa], 0)
-                } else 0 === sK[ia] && n(la, ma, fa, 0, 0);
-                if (ua && (0 < ca[ia + maxEntities] || 0 < ca[ia + 2 * maxEntities] || 0 < ca[ia + 3 * maxEntities] || 0 < ca[ia + 4 * maxEntities])) {
-                    ra = la;
-                    va = ma;
-                    Aa = fa;
-                    ta = ia;
-                    ya = -1;
-                    for (qa = 4; 1 <= qa; qa--) 0 < ca[ta + qa * maxEntities] && ya++;
-                    for (qa = 1; 5 > qa; qa++) 0 < ca[ta + qa * maxEntities] && (sa = Aa, wa = qa, Ca = ta, Ba = ca[ta + qa * maxEntities], xa = .8 * sa / a5.width, V.setTransform(xa, 0, 0, xa, Math.floor(ra - .5 * xa *
-                        a5.width - .534 * ya * sa), Math.floor(va + 1.4 * xa * a5.width)), V.globalAlpha = x(sa), V.drawImage(1 === wa ? a5.l5[ba[Ca + maxEntities]] : 2 === wa && 255 > Ba ? hu.l3[2] : hu.l2[wa + 3], 0, 0), V.globalAlpha = 1, V.setTransform(1, 0, 0, 1, 0, 0), ya -= 2)
+                            var transform = .9 * ta / a5.width,
+                                Ca = Math.floor(fontColor - .5 * transform * a5.width - .05 * ta);
+                            infoCanvas.globalAlpha = x(ta);
+                            var Ba = Math.floor(Aa - .5 * ta / D[level] - .4 * ta - transform * a5.width), 
+                                xa = 0
+                            for (; 2 > xa; xa++) {
+                                infoCanvas.setTransform(transform, 0, 0, transform, Ba, Ca);
+                                infoCanvas.drawImage(a5.l5[sa], 0, 0);
+                                Ba = Math.floor(Aa + .5 * ta / D[level] + .4 * ta);
+                            }
+                            infoCanvas.globalAlpha = 1;
+                            infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
+                            n(infoCanvasCtx, fontColor, va, 0, 0)
+                        } else if (a5.oA(ba[sa])) {
+                            l(infoCanvasCtx, fontColor, va, ba[sa], 0);
+                            n(infoCanvasCtx, fontColor, va, 0, 1)
+                        }
+                        else {
+                            l(infoCanvasCtx, fontColor, va, ba[sa], 1);
+                            n(infoCanvasCtx, fontColor, va, 1, 0)
+                        }
+                    else l(infoCanvasCtx, fontColor, va, ba[sa], 0)
+                } else if (0 === landOrder[idIndex]) n(landCenterX, landCenterY, fontSize, 0, 0);
+                if (isAlivePlayer && (0 < ca[idIndex + maxEntities] || 0 < ca[idIndex + 2 * maxEntities] || 0 < ca[idIndex + 3 * maxEntities] || 0 < ca[idIndex + 4 * maxEntities])) {
+                    fontColor = landCenterX;
+                    va = landCenterY;
+                    Aa = fontSize;
+                    ta = idIndex;
+                    level = -1;
+                    for (infoCanvasCtx = 4; 1 <= infoCanvasCtx; infoCanvasCtx--) 0 < ca[ta + infoCanvasCtx * maxEntities] && level++;
+                    for (infoCanvasCtx = 1; 5 > infoCanvasCtx; infoCanvasCtx++) 0 < ca[ta + infoCanvasCtx * maxEntities] && (sa = Aa, transform = infoCanvasCtx, Ca = ta, Ba = ca[ta + infoCanvasCtx * maxEntities], xa = .8 * sa / a5.width, infoCanvas.setTransform(xa, 0, 0, xa, Math.floor(fontColor - .5 * xa *
+                        a5.width - .534 * level * sa), Math.floor(va + 1.4 * xa * a5.width)), infoCanvas.globalAlpha = x(sa), infoCanvas.drawImage(1 === transform ? a5.l5[ba[Ca + maxEntities]] : 2 === transform && 255 > Ba ? hu.l3[2] : hu.l2[transform + 3], 0, 0), infoCanvas.globalAlpha = 1, infoCanvas.setTransform(1, 0, 0, 1, 0, 0), level -= 2)
                 }
-                qa = Math.floor(L * fa);
-                qa < M || (V.font = fontWeightBold + qa + fontSizeArial, V.fillText(8 === gamemode ? nickname[ia] : attacksBar.splitText(troops[ia]), la, ma + Math.floor(.78 * fa)))
+                infoCanvasCtx = Math.floor(L * fontSize);
+                if (infoCanvasCtx >= M) {
+                    infoCanvas.font = fontWeightBold + infoCanvasCtx + fontSizeArial;
+                    infoCanvas.fillText(8 === gamemode ? nickname[idIndex] : attacksBar.splitText(troops[idIndex]), landCenterX, landCenterY + Math.floor(.78 * fontSize))
+                }
             }
+        }
     }
 
     function n(O, T, Y, Z, la) {
         var ma = .95 * Y / S;
-        V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * pa + .8 * Z * Y), Math.floor(T - 1.76 * ma * S - .82 * la * Y));
-        V.globalAlpha = x(Y);
-        V.drawImage(sprites.getValuebyID(4), 0, 0);
-        V.globalAlpha = 1;
-        V.setTransform(1,
+        infoCanvas.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * pa + .8 * Z * Y), Math.floor(T - 1.76 * ma * S - .82 * la * Y));
+        infoCanvas.globalAlpha = x(Y);
+        infoCanvas.drawImage(sprites.getValuebyID(4), 0, 0);
+        infoCanvas.globalAlpha = 1;
+        infoCanvas.setTransform(1,
             0, 0, 1, 0, 0)
     }
 
     function l(O, T, Y, Z, la) {
         var ma = 1.2 * Y / a5.width;
-        V.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * a5.width - .8 * la * Y), Math.floor(T - 1.5 * ma * a5.width));
-        V.globalAlpha = x(Y);
-        V.drawImage(a5.l5[Z], 0, 0);
-        V.globalAlpha = 1;
-        V.setTransform(1, 0, 0, 1, 0, 0)
+        infoCanvas.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * a5.width - .8 * la * Y), Math.floor(T - 1.5 * ma * a5.width));
+        infoCanvas.globalAlpha = x(Y);
+        infoCanvas.drawImage(a5.l5[Z], 0, 0);
+        infoCanvas.globalAlpha = 1;
+        infoCanvas.setTransform(1, 0, 0, 1, 0, 0)
     }
 
     function x(O) {
@@ -7088,9 +7137,9 @@ function kN() {
         return pixel.strongIsOwner(O, 4 * (Y * currentMapWidth + T)) && pixel.strongIsOwner(O, 4 * (Y *
             currentMapWidth + T + Z - 1))
     }
-    var B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, W, X, V, na, ba, ca, pa, S;
+    var B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R, P, U, needsDrawImage, X, infoCanvas, na, ba, ca, pa, S;
     this.init = function() {
-        W = !1;
+        needsDrawImage = !1;
         Q = .88;
         L = .5;
         H = 1.8;
@@ -7113,11 +7162,11 @@ function kN() {
         na = 0;
         if (8 === gamemode) {
             var O;
-            V.font = fontWeightBold + 100 + fontSizeArial;
-            var T = 100 / Math.floor(V.measureText("20 000 000").width);
+            infoCanvas.font = fontWeightBold + 100 + fontSizeArial;
+            var T = 100 / Math.floor(infoCanvas.measureText("20 000 000").width);
             for (O = maxEntities - 1; 0 <= O; O--) D[O] = I[O] = T
         } else
-            for (V.font = fontWeightBold + Math.floor(100 * L) + fontSizeArial, T = 80 / Math.floor(V.measureText(attacksBar.splitText(absMaxTroopCap)).width), V.font = fontWeightBold + 100 + fontSizeArial, O = maxEntities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(V.measureText(nickname[O]).width), I[O] = T < D[O] ? T : D[O];
+            for (infoCanvas.font = fontWeightBold + Math.floor(100 * L) + fontSizeArial, T = 80 / Math.floor(infoCanvas.measureText(attacksBar.splitText(absMaxTroopCap)).width), infoCanvas.font = fontWeightBold + 100 + fontSizeArial, O = maxEntities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(infoCanvas.measureText(nickname[O]).width), I[O] = T < D[O] ? T : D[O];
         for (O = maxEntities - 1; 0 <= O; O--) 12 > land[O] ? (E[O] = xMin[O] + 1, F[O] = yMin[O] + 1, G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2);
         if (inSpawn)
             for (O = 0; O < playerCount; O++) G[O] = 0;
@@ -7135,8 +7184,8 @@ function kN() {
     this.showIcon = function(O, T, Y) {
         0 === isAlive[O] || 4 !== T && 2 === playerStatus[O] || (O += T * maxEntities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oB(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
     };
-    this.cG = function() {
-        W && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
+    this.drawCanvasImage = function() {
+        needsDrawImage && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
     };
     this.rQ = function(O, T) {
         R += O;
@@ -7673,18 +7722,17 @@ function ZombieSettings() {
         }
     }
 }
-var currentMapWidth, currentMapHeight, mapBaseCanvas, mapBaseCanvasCtx, x6, mapBaseCanvasImageData, currentMapID, currentSeed, vf, customMapID = 15,
-    x9;
+var currentMapWidth, currentMapHeight, mapBaseCanvas, mapBaseCanvasCtx, realMapBaseCanvasCtxImageData, mapBaseCanvasImageDataArray, currentMapID, currentMapSeed, vf, customMapID = 15, x9;
 
 function loadMap(mapID, k) {
     mapID %= customMapID;
-    if (mapID !== currentMapID || isnotBAnorRealMap(currentMapID) && k !== currentSeed) {
+    if (mapID !== currentMapID || isnotBAnorRealMap(currentMapID) && k !== currentMapSeed) {
         var n = performance.now();
         vf = !1;
         x9.xA();
         fakeRandom.jN(mapID);
         currentMapID = mapID;
-        currentSeed = k;
+        currentMapSeed = k;
         isnotBAnorRealMap(mapID) && (mapInfo.getValuebyID(mapID).a1f = k);
         if (isRealMap(currentMapID)) configRealMap(n);
         else {
@@ -7733,11 +7781,11 @@ function a2G() {
     }
 
     function k(l, x) {
-        0 < x && (mapBaseCanvasImageData[l] += x, mapBaseCanvasImageData[l + 1] += x, mapBaseCanvasImageData[l + 2] += x)
+        0 < x && (mapBaseCanvasImageDataArray[l] += x, mapBaseCanvasImageDataArray[l + 1] += x, mapBaseCanvasImageDataArray[l + 2] += x)
     }
 
     function n(l) {
-        return mapBaseCanvasImageData[l + 2] > mapBaseCanvasImageData[l] && mapBaseCanvasImageData[l + 2] > mapBaseCanvasImageData[l + 1]
+        return mapBaseCanvasImageDataArray[l + 2] > mapBaseCanvasImageDataArray[l] && mapBaseCanvasImageDataArray[l + 2] > mapBaseCanvasImageDataArray[l + 1]
     }
     this.rd = -1;
     this.a2k = this.aA = 0;
@@ -7798,15 +7846,15 @@ function a2G() {
                         var A = z;
                         (1 < t && n(x - 4) || t < currentMapWidth - 2 && n(x + 4) || 1 < A && n(x - 4 * currentMapWidth) || A < currentMapHeight - 2 && n(x + 4 * currentMapWidth)) && this.a30(y, z)
                     } this.a2k = l;
-            this.a2k >= currentMapHeight - 1 ? (mapBaseCanvasCtx.putImageData(x6, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2), c4.canvasDirty = !0, this.xA()) : this.a2r && (this.rd = setTimeout(g, 16))
+            this.a2k >= currentMapHeight - 1 ? (mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2), c4.canvasDirty = !0, this.xA()) : this.a2r && (this.rd = setTimeout(g, 16))
         }
     };
     this.a2z = function(l, x, t) {
-        k(l, Math.floor(this.a2p[t] + this.shading[t] * this.a2q[x] / 1E4) - mapBaseCanvasImageData[l])
+        k(l, Math.floor(this.a2p[t] + this.shading[t] * this.a2q[x] / 1E4) - mapBaseCanvasImageDataArray[l])
     };
     this.a34 = function(l, x, t, z, y) {
         k(l, Math.floor(this.a2p[z] +
-            (1 - x / t) * y) - mapBaseCanvasImageData[l])
+            (1 - x / t) * y) - mapBaseCanvasImageDataArray[l])
     };
     this.a30 = function(l, x) {
         var t = l - this.a2m;
@@ -7943,8 +7991,8 @@ function ConfigFakeMap() {
         mapBaseCanvasCtx = mapBaseCanvas.getContext("2d", {
             alpha: !1
         });
-        var mapBaseCanvasImg = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
-        mapBaseCanvasImageData = mapBaseCanvasImg.data;
+        var fakeMapBaseCanvasImageData = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
+        mapBaseCanvasImageDataArray = fakeMapBaseCanvasImageData.data;
         var widthValues = mapValues[currentMapID].width,
             redValues = mapValues[currentMapID].red,
             greenValues = mapValues[currentMapID].green,
@@ -7965,24 +8013,24 @@ function ConfigFakeMap() {
             for (y = B; 0 <= y; y--) 
                 if (A[pixelIndex] >= widthValues[y]) {
                     var N = A[pixelIndex] - widthValues[y];
-                    mapBaseCanvasImageData[4 * pixelIndex] = redValues[y] + allDivideFloor(E[y] * N, C[y]);
-                    mapBaseCanvasImageData[4 * pixelIndex + 1] = greenValues[y] + allDivideFloor(F[y] * N, C[y]);
-                    mapBaseCanvasImageData[4 * pixelIndex + 2] = blueValues[y] + allDivideFloor(G[y] * N, C[y]);
-                    mapBaseCanvasImageData[4 * pixelIndex + 3] = 255;
+                    mapBaseCanvasImageDataArray[4 * pixelIndex] = redValues[y] + allDivideFloor(E[y] * N, C[y]);
+                    mapBaseCanvasImageDataArray[4 * pixelIndex + 1] = greenValues[y] + allDivideFloor(F[y] * N, C[y]);
+                    mapBaseCanvasImageDataArray[4 * pixelIndex + 2] = blueValues[y] + allDivideFloor(G[y] * N, C[y]);
+                    mapBaseCanvasImageDataArray[4 * pixelIndex + 3] = 255;
                     break
                 }
-                mapBaseCanvasCtx.putImageData(mapBaseCanvasImg, 0, 0);
+                mapBaseCanvasCtx.putImageData(fakeMapBaseCanvasImageData, 0, 0);
                 if (mapInfo.isBA() && sprites.bx() && mapInfo.isBA()) {
                     widthValues = sprites.l9("arena");
                     mapBaseCanvasCtx.save();
                     mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
                     mapBaseCanvasCtx.imageSmoothingEnabled = !0;
-                    mapBaseCanvasImg = 2.8;
-                    mapBaseCanvasCtx.scale(mapBaseCanvasImg, mapBaseCanvasImg);
+                    fakeMapBaseCanvasImageData = 2.8;
+                    mapBaseCanvasCtx.scale(fakeMapBaseCanvasImageData, fakeMapBaseCanvasImageData);
                     mapBaseCanvasCtx.drawImage(
                         widthValues,
-                        Math.floor((currentMapWidth / mapBaseCanvasImg - widthValues.width) / 2),
-                        Math.floor(.5 * currentMapHeight / mapBaseCanvasImg - widthValues.height / 2)
+                        Math.floor((currentMapWidth / fakeMapBaseCanvasImageData - widthValues.width) / 2),
+                        Math.floor(.5 * currentMapHeight / fakeMapBaseCanvasImageData - widthValues.height / 2)
                     );
                     mapBaseCanvasCtx.restore();
                     
@@ -7990,12 +8038,12 @@ function ConfigFakeMap() {
                     mapBaseCanvasCtx.save();
                     mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
                     mapBaseCanvasCtx.imageSmoothingEnabled = !0;
-                    mapBaseCanvasImg = .87;
-                    mapBaseCanvasCtx.scale(mapBaseCanvasImg, mapBaseCanvasImg);
+                    fakeMapBaseCanvasImageData = .87;
+                    mapBaseCanvasCtx.scale(fakeMapBaseCanvasImageData, fakeMapBaseCanvasImageData);
                     mapBaseCanvasCtx.drawImage(
                         widthValues,
-                        Math.floor(.745 * (currentMapWidth / mapBaseCanvasImg - widthValues.width)),
-                        Math.floor(.422 * currentMapHeight / mapBaseCanvasImg - widthValues.height / 2)
+                        Math.floor(.745 * (currentMapWidth / fakeMapBaseCanvasImageData - widthValues.width)),
+                        Math.floor(.422 * currentMapHeight / fakeMapBaseCanvasImageData - widthValues.height / 2)
                     );
                     mapBaseCanvasCtx.restore();
                 }                
@@ -8006,7 +8054,7 @@ function ConfigFakeMap() {
         var k, totalLandMountainPixels = 0;
         var l = currentMapHeight * currentMapWidth * 4;
         var x = pixelRGBA,
-            t = mapBaseCanvasImageData;
+            t = mapBaseCanvasImageDataArray;
         for (k = currentMapWidth - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
         l = 4 * currentMapWidth;
         for (k = currentMapHeight - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
@@ -8016,7 +8064,7 @@ function ConfigFakeMap() {
         if (mapHasMountains(currentMapID)) {
             t = 0;
             l = pixelRGBA;
-            var z = mapBaseCanvasImageData;
+            var z = mapBaseCanvasImageDataArray;
             for (x = currentMapWidth * currentMapHeight - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (t++, l[k + 2] = 3);
             configFakeMap.mountainPixelsCount = t
         }
@@ -8043,16 +8091,16 @@ function configRealMap(g) {
     mapBaseCanvasCtx = mapBaseCanvas.getContext("2d", {
         alpha: !1
     });
-    x6 = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
-    mapBaseCanvasImageData = x6.data;
+    realMapBaseCanvasCtxImageData = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
+    mapBaseCanvasImageDataArray = realMapBaseCanvasCtxImageData.data;
     for (var x = k.length, t = !0, z = 0, y = 4; y < x; y++)
         if (t) {
-            for (; 0 < k[y]--;) mapBaseCanvasImageData[z] = l[0], mapBaseCanvasImageData[z + 1] = l[1], mapBaseCanvasImageData[z + 2] = l[2], mapBaseCanvasImageData[z + 3] = 255, z += 4;
+            for (; 0 < k[y]--;) mapBaseCanvasImageDataArray[z] = l[0], mapBaseCanvasImageDataArray[z + 1] = l[1], mapBaseCanvasImageDataArray[z + 2] = l[2], mapBaseCanvasImageDataArray[z + 3] = 255, z += 4;
             t = !1
         } else {
-            for (; 0 < k[y]--;) mapBaseCanvasImageData[z] = n[0], mapBaseCanvasImageData[z + 1] = n[1], mapBaseCanvasImageData[z + 2] = n[2], mapBaseCanvasImageData[z + 3] = 255, z += 4;
+            for (; 0 < k[y]--;) mapBaseCanvasImageDataArray[z] = n[0], mapBaseCanvasImageDataArray[z + 1] = n[1], mapBaseCanvasImageDataArray[z + 2] = n[2], mapBaseCanvasImageDataArray[z + 3] = 255, z += 4;
             t = !0
-        } mapBaseCanvasCtx.putImageData(x6, 0, 0);
+        } mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0);
     vf = !0;
     a2f(g);
     x9.init();
@@ -8423,7 +8471,7 @@ function kk() {
             B = Math.floor(.065 * (isZoom ? .53 : .36) * averageDim);
         return {
             f7: canvasWidth - y - B,
-            f8: cA,
+            f8: bufferLength,
             i4: y,
             nP: Math.floor(.35 * y),
             f9: canvasWidth - A - B,
@@ -8572,7 +8620,7 @@ function kk() {
                 } E !== x && (c4.canvasDirty = !0)
         }
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         var y;
         if (!(7 <= aJ.getState())) {
             var A = n();
@@ -8605,7 +8653,7 @@ function kT() {
     function k() {
         if (-1 !== l)
             if (0 !== clientStatus && eV.h0()) {
-                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gC += t[A], gD += z[A], eA.lm(t[A], z[A]), gj.rI());
+                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gridWidth += t[A], gridHeight += z[A], eA.lm(t[A], z[A]), gj.rI());
                 y ? c4.canvasDirty = !0 : gn.go()
             } else gn.go()
     }
@@ -8782,9 +8830,8 @@ function a2M() {
     this.bv = function() {
         teamGame && n && drawPiechart()
     };
-    this.cG = function() {
-        teamGame &&
-            mainCanvasCtx.drawImage(z, m5, qS + 2 * m5)
+    this.drawCanvasImage = function() {
+        teamGame && mainCanvasCtx.drawImage(z, m5, gameBoardHeight + 2 * m5)
     }
 }
 
@@ -8823,7 +8870,45 @@ function kc() {
     function k() {
         t = 0;
         z += 700 > z ? 200 : 0;
-        sprites.bx() && (l() || x) && (x = !1, p2(), uO.init(), jh.init(), jk.setCanvasVariables(), vk.init(), ji.setCanvasVariables(), playtime.setCanvasVariables(), jf.setCanvasVariables(), cookiesPrompt.setCanvasVariables(), mainLeaderboard.setCanvasVariables(), a5.init(), 1 <= clientStatus ? (eM.setCanvasVariables(!1), eO.setCanvasVariables(), eB.setCanvasVariables(), gj.setCanvasVariables(), troopBar.setCanvasVariables(), announcements.setCanvasVariables(), fq.setCanvasVariables(), peace.setCanvasVariables(), attacksBar.setCanvasVariables(), c2.setCanvasVariables(), hu.l1(), hv.setCanvasVariables(), eA.setCanvasVariables(), gameResultBox.setCanvasVariables(), eT.setCanvasVariables(), gj.rI()) : (0 === aJ.getState() ? jk.cE(0, !0) : 2 === aJ.getState() ? singleSettings.setCanvasVariables() : 3 === aJ.getState() && showError.setCanvasVariables(), aJ.vg(), aJ.vl()), c4.canvasDirty = !0)
+        if (sprites.bx() && (l() || x)) {
+            x = !1;
+            setCanvasDisplayVariables();
+            uO.init();
+            jh.init();
+            jk.setCanvasVariables();
+            vk.init();
+            ji.setCanvasVariables();
+            playtime.setCanvasVariables();
+            jf.setCanvasVariables();
+            cookiesPrompt.setCanvasVariables();
+            mainLeaderboard.setCanvasVariables();
+            a5.init();
+            if (1 <= clientStatus) {
+                gameLeaderboard.setCanvasVariables(!1);
+                eO.setCanvasVariables();
+                eB.setCanvasVariables();
+                gj.setCanvasVariables();
+                troopBar.setCanvasVariables();
+                announcements.setCanvasVariables();
+                fq.setCanvasVariables();
+                peace.setCanvasVariables();
+                attacksBar.setCanvasVariables();
+                c2.setCanvasVariables();
+                hu.l1();
+                hv.setCanvasVariables();
+                eA.setCanvasVariables();
+                gameResultBox.setCanvasVariables();
+                eT.setCanvasVariables();
+                gj.rI();        
+            } else {
+                if (0 === aJ.getState()) jk.cE(0, !0)
+                else if (2 === aJ.getState()) singleSettings.setCanvasVariables()
+                else if (3 === aJ.getState()) showError.setCanvasVariables();
+                aJ.vg();
+                aJ.vl();
+            }
+            c4.canvasDirty = !0
+        }
     }
 
     function limitToMinimum(y) {
@@ -8953,7 +9038,7 @@ function kX() {
     this.init = function() {
         var x, t, z;
         n = !0;
-        l = "rgb(" + mapBaseCanvasImageData[0] + "," + mapBaseCanvasImageData[1] + "," + mapBaseCanvasImageData[2] + ")";
+        l = "rgb(" + mapBaseCanvasImageDataArray[0] + "," + mapBaseCanvasImageDataArray[1] + "," + mapBaseCanvasImageDataArray[2] + ")";
         var y = mapIsSurroundedByWater(currentMapID) ? !0 : n = !1;
         if (y) k = null;
         else {
@@ -9006,7 +9091,7 @@ function kX() {
         var x = n ? 0 : -g;
         rectEqualOrInside(x, x, currentMapWidth - 2 * x, currentMapHeight - 2 * x, gy.a59, gy.a5A, gy.a5B, gy.a5C) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, prevClientWidth, prevClientHeight))
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         n || (rectIntersect(0, -g, currentMapWidth, g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[0], gy.a5D, gy.a5E - g), rectIntersect(currentMapWidth, -g, g, currentMapHeight + 2 * g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[1], gy.a5D + currentMapWidth, gy.a5E - g), rectIntersect(0, currentMapHeight, currentMapWidth, g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[2], gy.a5D, gy.a5E + currentMapHeight), rectIntersect(-g, -g, g,
             currentMapHeight + 2 * g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[3], gy.a5D - g, gy.a5E - g))
     }
@@ -9171,8 +9256,8 @@ function a2J() {
         return !0
     };
     this.a2O = function() {
-        var g = Math.floor((this.a5b[0] + gC) / g7),
-            k = Math.floor((this.a5b[1] + gD) / g7);
+        var g = Math.floor((this.a5b[0] + gridWidth) / scaleFactor),
+            k = Math.floor((this.a5b[1] + gridHeight) / scaleFactor);
         1 > g || 1 > k || g >= currentMapWidth - 1 || k >= currentMapHeight - 1 || console.log(g + " " + k)
     };
     this.lm = function(g, k) {
@@ -9208,7 +9293,7 @@ function a2J() {
     this.bv = function() {
         this.hidden && this.a5c()
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         this.hidden && this.nW()
     };
     this.nW = function() {
@@ -9350,8 +9435,8 @@ function a2J() {
 function Teams() {
     this.piechartColors = "rgba(130,130,130,0.88) rgba(130,12,12,0.88) rgba(12,130,12,0.88) rgba(12,12,130,0.88) rgba(130,130,12,0.88) rgba(130,12,130,0.88) rgba(12,130,130,0.88) rgba(130,130,130,0.88) rgba(0,0,0,0.88)".split(" ");
     this.leaderboardColors = [whiteRGB2, "rgb(255,120,120)", "rgb(0,230,0)", "rgb(150,150,255)", "rgb(240,240,25)", "rgb(240,25,240)", "rgb(25,240,240)", whiteRGB2, "rgb(170,170,170)"];
-    this.a5o = [whiteRGB2, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", whiteRGB2, blackRGB];//not used
-    this.a5p = [blackRGB, whiteRGB2, whiteRGB2, whiteRGB2, blackRGB, blackRGB, blackRGB, blackRGB, whiteRGB2];//not used
+    this.a5o = [whiteRGB2, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", whiteRGB2, blackRGB];
+    this.a5p = [blackRGB, whiteRGB2, whiteRGB2, whiteRGB2, blackRGB, blackRGB, blackRGB, blackRGB, whiteRGB2]; //both not used
     this.impostorfontColors = ["rgba(255,255,255,", "rgba(0,0,0,", "rgba(170,170,170,", "rgba(85,85,85,"];
     this.fontColors = ["rgb(255,255,255)", "rgb(0,0,0)", "rgb(170,170,170)", "rgb(85,85,85)"];
     this.colorLabels = "White Red Green Blue Yellow Magenta Cyan White Black".split(" ");
@@ -9529,7 +9614,7 @@ function Teams() {
             y = -1;
         for (t = k.length - 1; 0 <= t; t--)
             for (x = n[t].length - 1; 0 <= x && this.teamIDs[this.teamArray[n[t][x]]] === l; x--)
-                if (-1 === z || sK[n[t][x]] < sK[z]) z = n[t][x], y = t;
+                if (-1 === z || landOrder[n[t][x]] < landOrder[z]) z = n[t][x], y = t;
         return -1 === z || 0 === isAlive[z] ? [512, ""] : [z, k[y]]
     }
 }
@@ -9717,7 +9802,7 @@ function a2K() {
         wsManager.update();
         setGameOrigin.wH();
         mainLeaderboard.update();
-        this.canvasDirty && (this.canvasDirty = !1, aJ.cG())
+        this.canvasDirty && (this.canvasDirty = !1, aJ.drawCanvasImage())
     };
     this.a6W = function() {
         this.a6P.update()
@@ -9908,7 +9993,7 @@ function DataDecoder() {
                             gamemode: decoder(array, 4),
                             isContest: 1 === decoder(array, 1),
                             mapID: decoder(array, 6),
-                            seedMap: decoder(array, 14),
+                            mapSeed: decoder(array, 14),
                             joinCount: decoder(array, bitsNeeded),
                             maxPlayers: decoder(array, 9) + 1,
                             timeLeft: decoder(array, 10)
@@ -10067,8 +10152,8 @@ function a2H() {
         this.a5E = gj.toY();
         this.a59 = -this.a5D;
         this.a5A = -this.a5E;
-        this.a5B = prevClientWidth / g7;
-        this.a5C = prevClientHeight / g7;
+        this.a5B = prevClientWidth / scaleFactor;
+        this.a5C = prevClientHeight / scaleFactor;
         this.tw[0] = Math.floor(this.a59);
         this.tw[1] = Math.floor(this.a5A);
         this.tw[2] = Math.floor(this.tw[0] + this.a5B + 1);
@@ -10086,7 +10171,7 @@ function ka() {
     this.update = function() {
         0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.canvasDirty = !0)
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, prevClientWidth, prevClientHeight))
     }
 }
@@ -10104,7 +10189,7 @@ function kf() {
     };
     this.setCanvasVariables = function() {
         var k = divideFloor(customMapID + customMapID % 2, 2);
-        k = canvasHeight - k * cA;
+        k = canvasHeight - k * bufferLength;
         this.xK[2] = isZoom ? Math.floor(.75 * minDim) : Math.floor(.5 * minDim);
         this.xK[3] = Math.floor(1.2 * this.xK[2]);
         this.xK[3] > k && (this.xK[3] = k, this.xK[2] = Math.floor(k / 1.2));
@@ -10129,11 +10214,11 @@ function kf() {
         loadMap(x, Math.floor(16384 * Math.random()));
         return !0
     };
-    this.cG = function() {
+    this.drawCanvasImage = function() {
         var k, n = Math.floor(.13 * this.xK[3]),
             l = divideFloor(customMapID + customMapID % 2, 2),
-            x = (this.xK[3] - n - (l + 1) * cA) / l,
-            t = Math.floor((this.xK[2] - 3 * cA) / 2);
+            x = (this.xK[3] - n - (l + 1) * bufferLength) / l,
+            t = Math.floor((this.xK[2] - 3 * bufferLength) / 2);
         mainCanvasCtx.lineWidth = 2;
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.textBaseline = middleAlign;
@@ -10146,9 +10231,9 @@ function kf() {
         mainCanvasCtx.strokeRect(this.xK[0], this.xK[1], this.xK[2], this.xK[3]);
         mainCanvasCtx.fillStyle = whiteRGB2;
         for (k = l - 1; 0 <= k; k--) {
-            var z = Math.floor(this.xK[1] + n + cA + k * (x + cA));
-            g(k, this.xK[0] + cA, z, t, x);
-            g(k + l, this.xK[0] + t + 2 * cA, z, t, x)
+            var z = Math.floor(this.xK[1] + n + bufferLength + k * (x + bufferLength));
+            g(k, this.xK[0] + bufferLength, z, t, x);
+            g(k + l, this.xK[0] + t + 2 * bufferLength, z, t, x)
         }
         fq.m9(Math.floor(this.xK[0] + this.xK[2] - .8 * n), Math.floor(this.xK[1] + .25 * n), Math.floor(.5 * n));
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
