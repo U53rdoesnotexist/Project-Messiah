@@ -9552,8 +9552,8 @@ function Teams() {
             var tempPlayerID = playerID;
             var bracketIndex = tempNickname[tempPlayerID].indexOf("[");
 
-            if (0 > bracketIndex) bracketIndex = null;
-            else {clanTag
+            if (0 > bracketIndex) clanTag = null, bracketIndex = null;
+            else {
                 var closeBracketIndex = tempNickname[tempPlayerID].indexOf("]");
                 if (1 < closeBracketIndex - bracketIndex && 8 >= closeBracketIndex - bracketIndex) {
                     var clanTag = tempNickname[tempPlayerID].substring(bracketIndex + 1, closeBracketIndex).toUpperCase().trim();
@@ -9563,9 +9563,9 @@ function Teams() {
                 }
             }          
             if (null !== clanTag) {
-                for (let i = clanTags.length - 1; 0 <= i; i--)
-                    if (clanTag === clanTags[i]) {
-                        clanTagOfPlayerIDs[i].push(playerID);
+                for (let j = clanTags.length - 1; 0 <= j; j--)
+                    if (clanTag === clanTags[j]) {
+                        clanTagOfPlayerIDs[j].push(playerID);
                         continue a
                     } 
                 clanTags.push(clanTag);
@@ -9587,16 +9587,15 @@ function Teams() {
                 teamColorScore[playersTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]] += 3;
                 teamColorScore[players2ndTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]]++;
             }
-            for (i = numTeams - 1; 0 <= i; i--) {
+            for (let j = numTeams - 1; 0 <= j; j--) {
                 var G = clanTagIndex % numTeams;
 
-                for (i = numTeams - 1; 0 <= i; i--) {
+                for (let i = numTeams - 1; 0 <= i; i--) {
                     if (teamColorScore[i] > teamColorScore[G]) G = i;
                 }
-
                 var N = -1;
 
-                for (i = teamCount; 0 < i; i--) {
+                for (let i = teamCount; 0 < i; i--) {
                     if (this.teamIDs[i] === G + 1) {
                         N = i;
                         break;
@@ -9608,15 +9607,15 @@ function Teams() {
                 if (-1 !== N) {
                     G = 0;
 
-                    for (i = teamCount; 0 < i; i--) {
+                    for (let i = teamCount; 0 < i; i--) {
                         if (playersPerTeam[N] > playersPerTeam[i]) G++;
                     }
                     if (G !== teamCount - 1) {
-                        for (i = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= i; i--) {
+                        for (let i = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= i; i--) {
                             playersPerTeam[N]++;
                             this.teamArray[clanTagOfPlayerIDs[clanTagIndex][i]] = N;
                         }
-                        break;
+                        break
                     }
                 }
             }
