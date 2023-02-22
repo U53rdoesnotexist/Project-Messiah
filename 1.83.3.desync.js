@@ -268,7 +268,7 @@ function markPossibleEntityExpansion() {
                 lastBorderLand[lastBorderLength++] = pIndex;
             }
         }
-        }
+    }
 }
 
 function markPossibleNeutralExpansion() {
@@ -282,7 +282,7 @@ function markPossibleNeutralExpansion() {
                 lastBorderLand[lastBorderLength++] = pIndex;
             }
         }
-        }
+    }
 }
 
 function tryTakingMarkedPixels() {
@@ -444,16 +444,16 @@ function MainLeaderboardIcon() {
     }
 }
 
-function botProcessAttack(authorID, targetID, sIndex, amount) {
+function botProcessAttack(authorID, targetID, pixelStartingIndex, amount) {
     var tax = divideFloor(3 * troops[authorID], 256);
     amount -= amount >= divideFloor(troops[authorID], 2) ? tax : 0;
-    takePixelsAndChangeToMoving(sIndex, authorID);
+    botTakePixelsAndChangeToMoving(pixelStartingIndex, authorID);
     attacks.set(authorID, amount, targetID);
     troops[authorID] -= amount + tax;
     speed.cR(authorID, !1)
 }
 
-function botAddTakableTargetPixelsToAdvance(authorID, targetID) {
+function botAddTakableTargetPixelsToAdvances(authorID, targetID) {
     var bIndex, side;
     for (bIndex = landBorderPixels[authorID].length - 1; 0 <= bIndex; bIndex--)
         if (pixel.isBorder(landBorderPixels[authorID][bIndex]))
@@ -464,8 +464,8 @@ function botAddTakableTargetPixelsToAdvance(authorID, targetID) {
                 }
 }
 
-function takePixelsAndChangeToMoving(sIndex, id) {
-    for (var bIndex = potentialBorderAdvances[id].length - 1; bIndex >= sIndex; bIndex--) pixel.changeToMovingPixel(potentialBorderAdvances[id][bIndex], id)
+function botTakePixelsAndChangeToMoving(pixelStartingIndex, id) {
+    for (var bIndex = potentialBorderAdvances[id].length - 1; bIndex >= pixelStartingIndex; bIndex--) pixel.changeToMovingPixel(potentialBorderAdvances[id][bIndex], id)
 }
 
 function botAddTakableNeutralPixelsToAdvances(id) {
@@ -478,40 +478,41 @@ function botAddTakableNeutralPixelsToAdvances(id) {
                 }
 }
 
-function botChecksLoseIfBordersStuff(id, considerTeamates) {
+function botChecksIfBordersStuffLose(id, considerTeamatePixels) {
     var bsIndex, side;
     var bIndex = landBorderPixels[id].length;
     var bIndexOffset = 256 <= bIndex ? 12 : 32 <= bIndex ? 6 : 1;
-    bIndex = bIndex - 1 - fakeRandom.cf(bIndexOffset);
+    bIndex = bIndex - 1 - fakeRandom.getRandomInRange(bIndexOffset);
     botLastBorderingStuffCount = 0;
     a: for (; 0 <= bIndex; bIndex -= bIndexOffset)
         for (side = 3; 0 <= side; side--) {
             var ownerID = pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side]) ? maxEntities : pixel.getOwner(landBorderPixels[id][bIndex] + offset[side]);
-            if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamates || isNotTeamate(id, ownerID))) {
+            if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamatePixels || isNotTeamate(id, ownerID))) {
                 for (bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
                     if (botLastBorderingStuffs[bsIndex] === ownerID) continue a;
                 botLastBorderingStuffs[botLastBorderingStuffCount] = ownerID;
-                if (++botLastBorderingStuffCount >= botMaxBorderingStuffCap) return !0
+                if (++botLastBorderingStuffCount >= const_8_botMaxBorderingStuffCount) return !0
             }
         }
     return 0 < botLastBorderingStuffCount
 }
 
-function botChecksStrongIfBordersStuff(id, considerTeamates) {
+function botChecksIfBordersStuffStrong(id, considerTeamatePixels) {
     var bIndex, side;
     botLastBorderingStuffCount = 0;
-    for (bIndex = landBorderPixels[id].length - 1; 0 <= bIndex; bIndex--)
+    for (bIndex = landBorderPixels[id].length - 1; 0 <= bIndex; bIndex--) {
         for (side = 3; 0 <= side; side--) {
             var ownerID = pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side]) ? maxEntities : pixel.getOwner(landBorderPixels[id][bIndex] + offset[side]);
-            if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamates || isNotTeamate(id, ownerID))) {
+            if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamatePixels || isNotTeamate(id, ownerID))) {
                 botLastBorderingStuffs[botLastBorderingStuffCount++] = ownerID;
                 return !0
             }
         }
+    }
     return !1
 }
 
-function botChecksAndRemovesNeutral() {
+function botChecksAndRemoveNeutral() {
     for (var bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
         if (botLastBorderingStuffs[bsIndex] === maxEntities) {
             for (botLastBorderingStuffCount--; bsIndex < botLastBorderingStuffCount; bsIndex++) botLastBorderingStuffs[bsIndex] = botLastBorderingStuffs[bsIndex + 1];
@@ -527,8 +528,9 @@ function botChecksAndRemovesIfAttackingAllTargets(id) {
     return 0 === botLastBorderingStuffCount
 }
 
-function isBotBorderingOtherBots() {
-    for (var bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
+function botBorderingOtherBot() {
+    var bsIndex;
+    for (bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
         if (botLastBorderingStuffs[bsIndex] >= playerCount) return !0;
     return !1
 }
@@ -546,10 +548,7 @@ function botGetTargetWithLeastTroops(id) {
         minTroop = troops[targetID] + attacks.getRemainingTroopsFromTarget(targetID, id);
     for (bsIndex = botLastBorderingStuffCount - 1; 1 <= bsIndex; bsIndex--) {
         var tempTroop = troops[botLastBorderingStuffs[bsIndex]] + attacks.getRemainingTroopsFromTarget(botLastBorderingStuffs[bsIndex], id);
-        if (tempTroop < minTroop) {
-            targetID = botLastBorderingStuffs[bsIndex];
-            minTroop = tempTroop;
-        }
+        tempTroop < minTroop && (targetID = botLastBorderingStuffs[bsIndex], minTroop = tempTroop)
     }
     return targetID
 }
@@ -568,14 +567,14 @@ function botGetClosestTargetIndex(bsIndex) {
 }
 
 function botGetRandomTarget() {
-    return botLastBorderingStuffs[fakeRandom.cf(botLastBorderingStuffCount)]
+    return botLastBorderingStuffs[fakeRandom.getRandomInRange(botLastBorderingStuffCount)]
 }
-var botMaxBorderingStuffCap, botLastBorderingStuffCount, botLastBorderingStuffs, d7;
+var const_8_botMaxBorderingStuffCount, botLastBorderingStuffCount, botLastBorderingStuffs, d7;
 
 function botBorderingStuffInit() {
-    botMaxBorderingStuffCap = 8;
+    const_8_botMaxBorderingStuffCount = 8;
     botLastBorderingStuffCount = 0;
-    botLastBorderingStuffs = new Uint16Array(botMaxBorderingStuffCap)
+    botLastBorderingStuffs = new Uint16Array(const_8_botMaxBorderingStuffCount)
 }
 
 function d9() {
@@ -584,86 +583,123 @@ function d9() {
 
 function botProcessStrategy(id, amount) {
     teamGame && (d7[id] = 0);
-    if (attacks.isUnderAttackCap(id) && !(60 > amount)) {
+    if (attacks.isUnderAttackCap(id) && !(60 > amount))
         if (0 === landBorderPixels[id].length) {
-            if (!botBoatEngine.update(id, difficultyEngine.difficulty[id - playerCount])) (
-                difficultyEngine.setTiming(id - playerCount, 200),
-                botProcessDonation(id, amount, difficultyEngine.difficulty[id - playerCount], interest.getMaxBeforeRedI(id))
-            );
-        } else if (!(0 < waterBorderPixels[id].length && fakeRandom.random() < fakeRandom.value(waterBorderPixels[id].length > landBorderPixels[id].length ? 7 : 3) 
-            && botBoatEngine.update(id, difficultyEngine.difficulty[id - playerCount]))) {
+            if (!botBoatEngine.update(id, difficultyEngine.difficulty[id - playerCount])) {
+                difficultyEngine.setTiming(id - playerCount, 200);
+                botProcessDonation(id, amount, difficultyEngine.difficulty[id - playerCount], interest.getMaxBeforeRedI(id));
+            }
+        } else if (!(0 < waterBorderPixels[id].length && fakeRandom.random() < fakeRandom.value(waterBorderPixels[id].length > landBorderPixels[id].length ? 7 : 3) && botBoatEngine.update(id, difficultyEngine.difficulty[id - playerCount]))) {
+            var maxTroopsBelowRedI = interest.getMaxBeforeRedI(id);
+            troops[id] > maxTroopsBelowRedI && amount < troops[id] - maxTroopsBelowRedI && (amount = troops[id] - maxTroopsBelowRedI);
+            teamGame ? botProcessTeamStrategy(id, amount, difficultyEngine.difficulty[id - playerCount], maxTroopsBelowRedI) : botProcessIndividualStrategy(id, amount, difficultyEngine.difficulty[id - playerCount]);
+        }
+}
 
-            var maxBelowRedI = interest.getMaxBeforeRedI(id);
-            if (troops[id] > maxBelowRedI && amount < troops[id] - maxBelowRedI) amount = troops[id] - maxBelowRedI
-            if (teamGame) botProcessTeamStrategy(id, amount, difficultyEngine.difficulty[id - playerCount], maxBelowRedI)
-            else botProcessOwnStrategy(id, amount, difficultyEngine.difficulty[id - playerCount])
+function botProcessTeamStrategy(id, amount, difficulty, maxTroopsBelowRedI) {
+    if (botChecksIfBordersStuffLose(id, !1) || botChecksIfBordersStuffStrong(id, !1)) {
+        d7[id] = 1;
+        if (botChecksAndRemovesIfAttackingAllTargets(id)) {
+            return;
+        } else {
+            if (botChecksAndRemoveNeutral()) {
+                botCheckAdvanceAndProcessNeutralAttack(id, amount);
+                botSetFrequentTiming(id, maxEntities, difficulty);
+            } else {
+                var targetID;
+                if (fakeRandom.greaterThanRandom(difficultyEngine.chancesOfAttackingLeastTroops[difficulty])) targetID = botGetTargetWithLeastTroops(id);
+                else {
+                    if (botBorderingOtherBot() && fakeRandom.greaterThanRandom(difficultyEngine.dS[difficulty])) {
+                        botChecksNotAndRemovesIfBorderingAllHumans();
+                    }
+                    targetID = botGetClosestTargetIndex(id);
+                }
+                botSetupAttackAmount(id, amount, targetID);
+                botSetFrequentTiming(id, targetID, difficulty);
+            }
+        }
+    } else {
+        if (0 < waterBorderPixels[id].length && fakeRandom.random() < fakeRandom.value(60)) botBoatEngine.update(id, difficulty);
+        else {
+            difficultyEngine.setTiming(id - playerCount, 200);
+            botProcessDonation(id, amount, difficulty, maxTroopsBelowRedI);
         }
     }
 }
 
-function botProcessTeamStrategy(id, amount, difficulty, maxBelowRedI) {
-    botChecksLoseIfBordersStuff(id, !1) || botChecksStrongIfBordersStuff(id, !1) ? (d7[id] = 1, botChecksAndRemovesIfAttackingAllTargets(id) || (botChecksAndRemovesNeutral() ? (botCheckAdvanceAndProcessNeutralAttack(id, amount), botCheckSetFrequentTiming(id, maxEntities, difficulty)) : (fakeRandom.dP(difficultyEngine.attackLeastProbi[difficulty]) ? maxBelowRedI = botGetTargetWithLeastTroops(id) : (isBotBorderingOtherBots() && fakeRandom.dP(difficultyEngine.attackBotsProbi[difficulty]) && botChecksNotAndRemovesIfBorderingAllHumans(), maxBelowRedI = botGetClosestTargetIndex(id)), botCalculateAttackAmount(id, amount, maxBelowRedI), botCheckSetFrequentTiming(id, maxBelowRedI, difficulty)))) : 0 < waterBorderPixels[id].length && fakeRandom.random() < fakeRandom.value(60) && botBoatEngine.update(id, difficulty) || (difficultyEngine.setTiming(id - playerCount, 200), botProcessDonation(id, amount, difficulty, maxBelowRedI))
+function humanBotsProcessTeamStrategy(id, amount) {
+    if (botChecksIfBordersStuffLose(id, !1) || botChecksIfBordersStuffStrong(id, !1)) {
+        d7[id] = 1;
+        if (botChecksAndRemoveNeutral()) botCheckAdvanceAndProcessNeutralAttack(id, amount)
+        else botSetupAttackAmount(id, amount, botGetRandomTarget())
+    } else botProcessDonation(id, amount, 0, 0)
 }
 
-function humanBotProcessTeamStrategy(id, amount) {
-    botChecksLoseIfBordersStuff(id, !1) || botChecksStrongIfBordersStuff(id, !1) ? (d7[id] = 1, botChecksAndRemovesNeutral() ? botCheckAdvanceAndProcessNeutralAttack(id, amount) : botCalculateAttackAmount(id, amount, botGetRandomTarget())) : botProcessDonation(id, amount, 0, 0)
+function botSetFrequentTiming(id, targetID, difficulty) {
+    if (3 <= difficulty && 2142 < c4.ticksElapsed() && (targetID === maxEntities || troops[targetID] < divideFloor(troops[id], 20))) difficultyEngine.setTiming(id - playerCount, 25)
 }
 
-function botCheckSetFrequentTiming(authorID, targetID, difficulty) {
-    3 <= difficulty && 2142 < c4.ticksElapsed() && (targetID === maxEntities || troops[targetID] < divideFloor(troops[authorID], 20)) && difficultyEngine.setTiming(authorID - playerCount, 25)
-}
-
-function botProcessDonation(authorID, targetID, difficulty, maxBelowRedI) {
-    if (0 !== teams.teamArray[authorID] && !(5 === difficulty && troops[authorID] < maxBelowRedI || 4 === difficulty && troops[authorID] < divideFloor(maxBelowRedI, 2)))
-        for (difficulty = fakeRandom.cf(aliveCount), maxBelowRedI = 0; maxBelowRedI < aliveCount; maxBelowRedI++) {
-            var x = aliveEntities[(maxBelowRedI + difficulty) % aliveCount];
-            if (teams.teamArray[x] === teams.teamArray[authorID] && 1 === d7[x]) {
-                processDonation(authorID, x, targetID);
-                x < playerCount && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
+function botProcessDonation(authorID, amount, difficulty, maxTroopsBelowRedI) {
+    if (0 !== teams.teamArray[authorID] && !(5 === difficulty && troops[authorID] < maxTroopsBelowRedI || 4 === difficulty && troops[authorID] < divideFloor(maxTroopsBelowRedI, 2)))
+        for (var randomAlive = fakeRandom.getRandomInRange(aliveCount), aliveIndex = 0; aliveIndex < aliveCount; aliveIndex++) {
+            var targetID = aliveEntities[(aliveIndex + randomAlive) % aliveCount];
+            if (teams.teamArray[targetID] === teams.teamArray[authorID] && 1 === d7[targetID]) {
+                processDonation(authorID, targetID, amount);
+                targetID < playerCount && fakeRandom.random() < fakeRandom.value(10) && (d7[targetID] = 0);
                 break
             }
         }
 }
 
-function botProcessOwnStrategy(id, amount, difficulty) {
-    !botChecksLoseIfBordersStuff(id, !0) && !botChecksStrongIfBordersStuff(id, !0) || botChecksAndRemovesIfAttackingAllTargets(id) || (botChecksAndRemovesNeutral() ? botCheckAdvanceAndProcessNeutralAttack(id, amount) : fakeRandom.dP(difficultyEngine.attackLeastProbi[difficulty]) ? botCalculateAttackAmount(id, amount, botGetTargetWithLeastTroops(id)) : (isBotBorderingOtherBots() && fakeRandom.dP(difficultyEngine.attackBotsProbi[difficulty]) && botChecksNotAndRemovesIfBorderingAllHumans(), botCalculateAttackAmount(id, amount, botGetClosestTargetIndex(id))))
+function botProcessIndividualStrategy(id, amount, difficulty) {
+    if (!botChecksIfBordersStuffLose(id, true) && !botChecksIfBordersStuffStrong(id, true)) {
+        if (botChecksAndRemovesIfAttackingAllTargets(id)) return
+        else {
+            if (botChecksAndRemoveNeutral()) botCheckAdvanceAndProcessNeutralAttack(id, amount);
+            else {
+                if (fakeRandom.greaterThanRandom(difficultyEngine.chancesOfAttackingLeastTroops[difficulty])) botSetupAttackAmount(id, amount, botGetTargetWithLeastTroops(id));
+                else {
+                    if (botBorderingOtherBot() && fakeRandom.greaterThanRandom(difficultyEngine.dS[difficulty])) botChecksNotAndRemovesIfBorderingAllHumans();
+                    botSetupAttackAmount(id, amount, botGetClosestTargetIndex(id));
+                }
+            }
+        }
+    }
 }
 
-function humanBotProcessOwnStrategy(id, amount) {
-    if (botChecksLoseIfBordersStuff(id, !0) || botChecksStrongIfBordersStuff(id, !0)) botChecksAndRemovesNeutral() ? botCheckAdvanceAndProcessNeutralAttack(id, amount) : botCalculateAttackAmount(id, amount, botGetRandomTarget())
+
+function humanBotsProcessIndividualStrategy(g, k) {
+    if (botChecksIfBordersStuffLose(g, !0) || botChecksIfBordersStuffStrong(g, !0)) botChecksAndRemoveNeutral() ? botCheckAdvanceAndProcessNeutralAttack(g, k) : botSetupAttackAmount(g, k, botGetRandomTarget())
 }
 
-function botCalculateAttackAmount(id, amount, targetID) {
+function botSetupAttackAmount(id, amount, targetID) {
     if (divideFloor(troops[id], 8) > troops[targetID]) {
         var minAmount = divideFloor(11 * troops[targetID], 5);
         amount = amount > minAmount ? amount : minAmount
     }
     minAmount = potentialBorderAdvances[id].length;
-    botAddTakableTargetPixelsToAdvance(id, targetID);
+    botAddTakableTargetPixelsToAdvances(id, targetID);
     botProcessAttack(id, targetID, minAmount, amount)
 }
 
-function botCheckAdvanceAndProcessNeutralAttack(id, amount) {
-    var oldAdvanceLength = potentialBorderAdvances[id].length;
-    botAddTakableNeutralPixelsToAdvances(id);
-    if (potentialBorderAdvances[id].length !== oldAdvanceLength) {
-        botProcessAttack(id, maxEntities, oldAdvanceLength, amount);
-        return !0
-    } else return !1
+function botCheckAdvanceAndProcessNeutralAttack(authorID, amount) {
+    var oldAdvanceLength = potentialBorderAdvances[authorID].length;
+    botAddTakableNeutralPixelsToAdvances(authorID);
+    return potentialBorderAdvances[authorID].length !== oldAdvanceLength ? (botProcessAttack(authorID, maxEntities, oldAdvanceLength, amount), !0) : !1
 }
-var botStartingTroops = [60, 74, 112, 200, 256, 512];
+var dd = [60, 74, 112, 200, 256, 512];
 
 function DifficultyEngine() {
-    var botTiming, sendRatio, n, l, x, t;
+    var botTiming, k, n, l, x, t;
     this.difficultyLabel = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
-    this.dm = [97, 95, 93, 90, 87, 84]; //Unused
-    this.attackBotsProbi = [98, 95, 90, 40, 20, 0];
+    this.dm = [97, 95, 93, 90, 87, 84];
+    this.dS = [98, 95, 90, 40, 20, 0];
     this.boatSendRatio = [85, 70, 65, 30, 7, 3];
-    this.attackLeastProbi = [0, 0, 0, 0, 50, 90];
+    this.chancesOfAttackingLeastTroops = [0, 0, 0, 0, 50, 90];
     this.init = function() {
         var z;
         botTiming = new Uint8Array(botCount);
-        sendRatio = new Uint16Array(botCount);
+        k = new Uint16Array(botCount);
         n = new Uint16Array(botCount);
         l = new Uint8Array(botCount);
         this.difficulty = new Uint8Array(botCount);
@@ -683,8 +719,8 @@ function DifficultyEngine() {
             var y = 8 === gamemode ? 1 : 0;
             for (z = botCount - 1; 0 <= z; z--) this.difficulty[z] = y
         }
-        for (z = botCount - 1; 0 <= z; z--) 2 >= this.difficulty[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.difficulty[z] ? (sendRatio[z] = 1E3, n[z] = 1E3) : 1 === this.difficulty[z] ? (sendRatio[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (sendRatio[z] = 1E3, n[z] = 870)) : 4 >= this.difficulty[z] ? (l[z] = 1 + fakeRandom.cf(20), t[z] = 250 + fakeRandom.cf(1501), x[z] = 500 + fakeRandom.cf(501), 3 === this.difficulty[z] ? (sendRatio[z] = 600 + fakeRandom.cf(101), n[z] = 300 + fakeRandom.cf(401)) : (sendRatio[z] = 300 + fakeRandom.cf(201), n[z] = 100 + fakeRandom.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
-            35 + fakeRandom.cf(16), sendRatio[z] = 400 + fakeRandom.cf(101), n[z] = 50 + fakeRandom.cf(101)), botTiming[z] = 1 + divideFloor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
+        for (z = botCount - 1; 0 <= z; z--) 2 >= this.difficulty[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.difficulty[z] ? (k[z] = 1E3, n[z] = 1E3) : 1 === this.difficulty[z] ? (k[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (k[z] = 1E3, n[z] = 870)) : 4 >= this.difficulty[z] ? (l[z] = 1 + fakeRandom.getRandomInRange(20), t[z] = 250 + fakeRandom.getRandomInRange(1501), x[z] = 500 + fakeRandom.getRandomInRange(501), 3 === this.difficulty[z] ? (k[z] = 600 + fakeRandom.getRandomInRange(101), n[z] = 300 + fakeRandom.getRandomInRange(401)) : (k[z] = 300 + fakeRandom.getRandomInRange(201), n[z] = 100 + fakeRandom.getRandomInRange(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
+            35 + fakeRandom.getRandomInRange(16), k[z] = 400 + fakeRandom.getRandomInRange(101), n[z] = 50 + fakeRandom.getRandomInRange(101)), botTiming[z] = 1 + divideFloor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
     };
     this.dw = function() {
         var z, y;
@@ -702,10 +738,10 @@ function DifficultyEngine() {
     this.update = function(botIndex) {
         if (0 === --botTiming[botIndex]) {
             x[botIndex] !== t[botIndex] && (x[botIndex] += x[botIndex] < t[botIndex] ? 3 : -3);
-            sendRatio[botIndex] !== n[botIndex] && (sendRatio[botIndex] += sendRatio[botIndex] < n[botIndex] ? l[botIndex] : -l[botIndex], sendRatio[botIndex] = Math.abs(sendRatio[botIndex] - n[botIndex]) <= l[botIndex] ? n[botIndex] : sendRatio[botIndex]);
+            k[botIndex] !== n[botIndex] && (k[botIndex] += k[botIndex] < n[botIndex] ? l[botIndex] : -l[botIndex], k[botIndex] = Math.abs(k[botIndex] - n[botIndex]) <= l[botIndex] ? n[botIndex] : k[botIndex]);
             botTiming[botIndex] = divideFloor(x[botIndex], 10);
             var id = botIndex + playerCount;
-            botProcessStrategy(id, divideFloor(sendRatio[botIndex] * troops[id], 1E3))
+            botProcessStrategy(id, divideFloor(k[botIndex] * troops[id], 1E3))
         }
     }
 }
@@ -815,13 +851,13 @@ function Speed() {
 }
 
 function BotBoatEngine() {
-    function g() {
+    function shouldSendBoat() {
         l = 3;
         a: {
             for (var y = 40; 1 <= y; y--) {
-                x = xMin[z] + divideFloor(fakeRandom.random() * (xMax[z] - xMin[z] + 1), fakeRandom.value(100));
-                t = yMin[z] + divideFloor(fakeRandom.random() * (yMax[z] - yMin[z] + 1), fakeRandom.value(100));
-                var A = k(pixel.toIndex(x, t));
+                xCoord = xMin[id] + divideFloor(fakeRandom.random() * (xMax[id] - xMin[id] + 1), fakeRandom.value(100));
+                yCoord = yMin[id] + divideFloor(fakeRandom.random() * (yMax[id] - yMin[id] + 1), fakeRandom.value(100));
+                var A = k(pixel.toIndex(xCoord, yCoord));
                 if (1 !== A) break a
             }
             A = 1
@@ -832,9 +868,9 @@ function BotBoatEngine() {
         return 0 === A ? !1 : 2 === A ? !0 : 2 === n(54, 4)
     }
 
-    function k(y) {
-        if (pixel.canOwn(y) && (pixel.isNeutral(y) || pixel.getOwner(y) !== z && isNotTeamate(z, pixel.getOwner(y)))) {
-            if (boatPathChecker.check(z, y)) return 2;
+    function k(targetPIndex) {
+        if (pixel.canOwn(targetPIndex) && (pixel.isNeutral(targetPIndex) || pixel.getOwner(targetPIndex) !== id && isNotTeamate(id, pixel.getOwner(targetPIndex)))) {
+            if (boatPathChecker.check(id, targetPIndex)) return 2;
             if (0 === l--) return 0
         }
         return 1
@@ -842,18 +878,18 @@ function BotBoatEngine() {
 
     function n(y, A) {
         for (var B, C, E, F, G, N, I, D = y; D < y + 50 * A; D += A)
-            if (B = xMin[z] - D, B = 1 > B ? 1 : B, C = yMin[z] - D, C = 1 >
-                C ? 1 : C, E = xMax[z] + D, E = E >= currentMapWidth - 1 ? currentMapWidth - 2 : E, F = yMax[z] + D, F = F >= currentMapHeight - 1 ? currentMapHeight - 2 : F, I = divideFloor(2 * fakeRandom.random() * (E - B + F - C), fakeRandom.value(100)), G = E - B, N = F - C, I <= G ? (x = B + I, t = C) : I <= G + N ? (x = E, t = C + I - G) : I <= 2 * G + N ? (x = B + I - G - N, t = F) : (x = B, t = C + I - 2 * G - N), B = k(pixel.toIndex(x, t)), 1 !== B) return B;
+            if (B = xMin[id] - D, B = 1 > B ? 1 : B, C = yMin[id] - D, C = 1 >
+                C ? 1 : C, E = xMax[id] + D, E = E >= currentMapWidth - 1 ? currentMapWidth - 2 : E, F = yMax[id] + D, F = F >= currentMapHeight - 1 ? currentMapHeight - 2 : F, I = divideFloor(2 * fakeRandom.random() * (E - B + F - C), fakeRandom.value(100)), G = E - B, N = F - C, I <= G ? (xCoord = B + I, yCoord = C) : I <= G + N ? (xCoord = E, yCoord = C + I - G) : I <= 2 * G + N ? (xCoord = B + I - G - N, yCoord = F) : (xCoord = B, yCoord = C + I - 2 * G - N), B = k(pixel.toIndex(xCoord, yCoord)), 1 !== B) return B;
         return 1
     }
-    var l, x, t, z;
-    this.update = function(y, A) {
-        z = y;
-        if (0 === waterBorderPixels[z].length) return !1;
-        if (g()) {
-            var B = divideFloor(difficultyEngine.boatSendRatio[A] * troops[z], 100);
-            100 > B && 100 <= troops[z] && (B = 100);
-            if (100 <= B) return processSendBoat(z, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(x, t), B)
+    var l, xCoord, yCoord, id;
+    this.update = function(param_id, difficulty) {
+        id = param_id;
+        if (0 === waterBorderPixels[id].length) return !1;
+        if (shouldSendBoat()) {
+            var amount = divideFloor(difficultyEngine.boatSendRatio[difficulty] * troops[id], 100);
+            100 > amount && 100 <= troops[id] && (amount = 100);
+            if (100 <= amount) return processSendBoat(id, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(xCoord, yCoord), amount)
         }
         return !1
     }
@@ -1189,7 +1225,7 @@ function hA() {
 
     function l(I, D) {
         isAlive[G] = 1;
-        troops[G] = G < playerCount ? startingTroops : botStartingTroops[difficultyEngine.difficulty[G - playerCount]];
+        troops[G] = G < playerCount ? startingTroops : dd[difficultyEngine.difficulty[G - playerCount]];
         xMin[G] = I + 10;
         yMin[G] = D + 10;
         yMax[G] = xMax[G] = 0;
@@ -4394,21 +4430,21 @@ function processAttack(authorID, targetID, ratio) {
         if (10 === gamemode && targetID < playerCount && 2 !== playerStatus[targetID]) amount = antiFullSend.tq(authorID, amount)
         if (teamGame && targetID < maxEntities && !isNotTeamate(authorID, targetID)) processDonation(authorID, targetID, amount);
         else {
-            if (targetID < maxEntities && 0 === isAlive[targetID]) targetID = maxEntities
+            targetID < maxEntities && 0 === isAlive[targetID] && (targetID = maxEntities);
             var tax = divideFloor(3 * troops[authorID], 256);
             amount -= 500 <= ratio ? tax : 0;
             if (!(amount <= neutralLandCost) && attacks.isUnderAttackCap(authorID)) {
-                var oldPotentialAdvancesLength = potentialBorderAdvances[authorID].length;
-                targetID === maxEntities ? botAddTakableNeutralPixelsToAdvances(authorID) : botAddTakableTargetPixelsToAdvance(authorID, targetID);
-                if (0 !== oldPotentialAdvancesLength || 0 !== potentialBorderAdvances[authorID].length) {
+                var oldTakablePixelsLength = potentialBorderAdvances[authorID].length;
+                targetID === maxEntities ? botAddTakableNeutralPixelsToAdvances(authorID) : botAddTakableTargetPixelsToAdvances(authorID, targetID);
+                if (0 !== oldTakablePixelsLength || 0 !== potentialBorderAdvances[authorID].length) {
                     if (teamGame) d7[authorID] = 1
                     if (authorID === myID) {
                         statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
                         statistics.numbers[1]++;
                         statistics.numbers[12] += tax;
                         statistics.numbers[13] += amount
-                    }
-                    takePixelsAndChangeToMoving(oldPotentialAdvancesLength, authorID);
+                    } 
+                    botTakePixelsAndChangeToMoving(oldTakablePixelsLength, authorID);
                     attacks.set(authorID, amount, targetID);
                     troops[authorID] -= amount + tax;
                     speed.cR(authorID, !1)
@@ -4418,41 +4454,26 @@ function processAttack(authorID, targetID, ratio) {
     }
 }
 
-function processSendBoat(id, closestPIndex, targetPIndex, amount) {
+function processSendBoat(authorID, closestPixelIndex, targetPixelIndex, amount) {
     var boatID, tax;
-    if (10 === gamemode && id < playerCount) amount = antiFullSend.tq(id, amount)
-    if (amount <= neutralLandCost || !attacks.isUnderAttackCap(id)) return !1;
-    boatID = eK.cR(id, closestPIndex, targetPIndex);
+    10 === gamemode && authorID < playerCount && (amount = antiFullSend.tq(authorID, amount));
+    if (amount <= neutralLandCost || !attacks.isUnderAttackCap(authorID)) return !1;
+    boatID = eK.cR(authorID, closestPixelIndex, targetPixelIndex);
     if (0 === boatID) return !1;
-    tax = divideFloor(3 * troops[id], 128);
-    amount >= divideFloor(troops[id], 2) && (amount -= tax);
-    id === myID && (statistics.numbers[12] += tax);
-    attacks.addBoat(id, amount, boatID);
-    troops[id] -= amount + tax;
+    tax = divideFloor(3 * troops[authorID], 128);
+    amount >= divideFloor(troops[authorID], 2) && (amount -= tax);
+    authorID === myID && (statistics.numbers[12] += tax);
+    attacks.addBoat(authorID, amount, boatID);
+    troops[authorID] -= amount + tax;
     return !0
 }
 
-function processDonation(authorID, targetID, amount) {
-    if (!(!teamGame || 0 === isAlive[authorID] || 0 === isAlive[targetID] || 0 > amount || amount > troops[authorID] || authorID === targetID || 
-        isNotTeamate(authorID, targetID) || authorID < playerCount && targetID < playerCount && 7 > gamemode && 1071 > c4.ticksElapsed())) {
-        
-        var tax = divideFloor(troops[authorID], 16);
-        amount -= amount >= divideFloor(troops[authorID], 2) ? tax : 0;
-        var maxReceivableAmount = land[targetID] * maxTroopsToLandRatio - troops[targetID];
-        if (0 < maxReceivableAmount) {
-            amount = amount > maxReceivableAmount ? maxReceivableAmount : amount;
-            if (authorID === myID) {
-                announcements.n8(amount, targetID);
-                statistics.numbers[12] += tax;
-                statistics.numbers[16] += amount;
-            }
-            if (targetID === myID) {
-                announcements.nA(amount, authorID);
-                statistics.numbers[10] += amount;
-            }
-            troops[authorID] -= amount + tax;
-            troops[targetID] += amount;
-        }
+function processDonation(g, k, n) {
+    if (!(!teamGame || 0 === isAlive[g] || 0 === isAlive[k] || 0 > n || n > troops[g] || g === k || isNotTeamate(g, k) || g < playerCount && k < playerCount && 7 > gamemode && 1071 > c4.ticksElapsed())) {
+        var l = divideFloor(troops[g], 16);
+        n -= n >= divideFloor(troops[g], 2) ? l : 0;
+        var x = land[k] * maxTroopsToLandRatio - troops[k];
+        0 >= x || (n = n > x ? x : n, g === myID && (announcements.n8(n, k), statistics.numbers[12] += l, statistics.numbers[16] += n), k === myID && (announcements.nA(n, g), statistics.numbers[10] += n), troops[g] -= n + l, troops[k] += n)
     }
 }
 
@@ -4483,35 +4504,34 @@ function ts() {
         this.j5 = !1
     };
     this.init = function() {
-        var g;
+        var yIndex;
         this.j5 = this.h9 = this.tt = !1;
         this.tu[0] = currentMapWidth;
         this.tu[1] = currentMapHeight;
         this.tu[2] = this.tu[3] = 0;
-        var k = 1;
-        a: for (; k < currentMapWidth - 1; k++)
-            for (g = currentMapHeight - 2; 1 < g; g--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[0] = k;
+        var xIndex = 1;
+        a: for (; xIndex < currentMapWidth - 1; xIndex++)
+            for (yIndex = currentMapHeight - 2; 1 < yIndex; yIndex--)
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.tu[0] = xIndex;
                     break a
-                } g = 1;
-        a: for (; g < currentMapHeight -
-            1; g++)
-            for (k = currentMapWidth - 2; 1 < k; k--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[1] = g;
+                } yIndex = 1;
+        a: for (; yIndex < currentMapHeight - 1; yIndex++)
+            for (xIndex = currentMapWidth - 2; 1 < xIndex; xIndex--)
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.tu[1] = yIndex;
                     break a
-                } k = currentMapWidth - 2;
-        a: for (; 0 < k; k--)
-            for (g = currentMapHeight - 2; 1 < g; g--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[2] = k;
+                } xIndex = currentMapWidth - 2;
+        a: for (; 0 < xIndex; xIndex--)
+            for (yIndex = currentMapHeight - 2; 1 < yIndex; yIndex--)
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.tu[2] = xIndex;
                     break a
-                } g = currentMapHeight - 2;
-        a: for (; 0 < g; g--)
-            for (k = currentMapWidth - 2; 1 < k; k--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[3] = g;
+                } yIndex = currentMapHeight - 2;
+        a: for (; 0 < yIndex; yIndex--)
+            for (xIndex = currentMapWidth - 2; 1 < xIndex; xIndex--)
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.tu[3] = yIndex;
                     break a
                 }
     }
@@ -5233,9 +5253,9 @@ function kC() {
         return openLinkBox.end() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.hidden ? (mainLeaderboard.hidden = !1, !0) : !1
     };
     this.aK = function() {
-            c4.canvasDirty = !0;
+        c4.canvasDirty = !0;
         8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : hv.hidden ? hv.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? ji.vT() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
-        };
+    };
     this.mouseDown = function(k, n) {
         if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && ji.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || jt.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
             playtime.mouseDown(k, n);
@@ -6299,7 +6319,7 @@ function Sprites() {
                         for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) J = 4 * (xIndex + yIndex * spriteWidth), spriteCanvasImageDataArray[J + 1] > spriteCanvasImageDataArray[J + 2] + 10 && (spriteCanvasImageDataArray[J + 3] = spriteCanvasImageDataArray[J], spriteCanvasImageDataArray[J + 1] = spriteCanvasImageDataArray[J + 2]);
                 spriteCanvasCtx.putImageData(spriteCanvasImageData, 0, 0);
                 spriteCanvases[spriteID] = spriteCanvas
-                        }
+            }
             unloadedSprites--;
             if (sprites.areAllSpritesLoaded()) {
                 mainLeaderboardIcon.updateRenderObject();
@@ -6730,7 +6750,7 @@ function zG(g) {
 
 function zD(g, k) {
     var n, l = k[zG(k)];
-    9 === gamemode && 1 === teams.teamArray[g] && fakeRandom.dP(8) && zombieSettings.zI(l);
+    9 === gamemode && 1 === teams.teamArray[g] && fakeRandom.greaterThanRandom(8) && zombieSettings.zI(l);
     if (g === myID) announcements.genericAnnouncement(l, 1), zB();
     else {
         for (n = k.length - 1; 0 <= n; n--)
@@ -7202,7 +7222,7 @@ function kN() {
                             var Ba = Math.floor(landCenterX - .5 * fontSize / D[idIndex] - .4 * fontSize - transform * a5.width)
                             for (var index = 0; 2 > index; index++) {
                                 infoCanvas.setTransform(transform, 0, 0, transform, Ba, Ca);
-                                infoCanvas.drawImage(a5.l5[ba[idIndex]], 0, 0);
+                                infoCanvas.drawImage(a5.l5[ba[sa]], 0, 0);
                                 Ba = Math.floor(landCenterX + .5 * fontSize / D[idIndex] + .4 * fontSize);
                             }
                             infoCanvas.globalAlpha = 1;
@@ -7619,10 +7639,10 @@ function HumanBots() {
     this.a1Z = function() {
         var g, k = this.players;
         for (g = k.length - 1; 0 <= g; g--) {
-            var n = k[g];
-            if (attacks.isUnderAttackCap(n)) {
-                var l = divideFloor(20 * troops[n], 100);
-                60 > l || (0 === landBorderPixels[n].length ? !botBoatEngine.update(n, 2) && teamGame && botProcessDonation(n, l, 0, 0) : teamGame ? humanBotProcessTeamStrategy(n, l) : humanBotProcessOwnStrategy(n, l))
+            var id = k[g];
+            if (attacks.isUnderAttackCap(id)) {
+                var amount = divideFloor(20 * troops[id], 100);
+                60 > amount || (0 === landBorderPixels[id].length ? !botBoatEngine.update(id, 2) && teamGame && botProcessDonation(id, amount, 0, 0) : teamGame ? humanBotsProcessTeamStrategy(id, amount) : humanBotsProcessIndividualStrategy(id, amount))
             }
         }
     }
@@ -7894,7 +7914,7 @@ function ZombieSettings() {
     this.zI = function(k) {
         g.push({
             player: k,
-            group: 14 + fakeRandom.cf(20)
+            group: 14 + fakeRandom.getRandomInRange(20)
         })
     };
     this.update = function() {
@@ -9036,11 +9056,11 @@ function FakeRandom() {
     this.random = function() {
         return g = 167 * g % 32768
     };
-    this.cf = function(n) {
+    this.getRandomInRange = function(n) {
         return divideFloor(n * this.random(), 32768)
     };
-    this.dP = function(n) {
-        return 0 !== n && this.random() < this.value(n)
+    this.greaterThanRandom = function(size) {
+        return 0 !== size && this.random() < this.value(size)
     }
 }
 
@@ -9645,7 +9665,7 @@ function Teams() {
         [0, 0, 0]
     ];
     this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-    var clanTags, clanTagOfPlayerIDs;//stores the Clan Tag for each Player ID
+    var k, n;
     this.init = function(playerInfo) {
         this.teamArray = new Uint8Array(maxEntities);
         this.setDefault_teamIDs();
@@ -9658,8 +9678,8 @@ function Teams() {
     };
     this.setDefault_teamIDs = function() {
         for (var l = this.teamIDs.length - 1; 0 <= l; l--) this.teamIDs[l] = l;
-        clanTags = [];
-        clanTagOfPlayerIDs = []
+        k = [];
+        n = []
     };
     this.teamsZombieMode = function() {
         var l;
@@ -9705,94 +9725,66 @@ function Teams() {
         }
     };
     this.sortTeamColorsByScore = function(teamColorScore) {//sorting teamsIDs from the color with the highest score to the color with the lowest
-        var x, t, numTeams = this.teamIDs.length - 1;
-        for (x = numTeams; 0 <= x; x--) this.teamIDs[x] = x;//setting default teamIDs
-        for (x = numTeams - 1; 0 <= x; x--) teamColorScore[x]++;//adding 1 to the score so that every team has score != 0 and bigger then the score of index 0
-        for (x = 1; x <= numTeams; x++) {//sorts the color scores and resets their scores to 0
+        var x, t, z = this.teamIDs.length - 1;
+        for (x = z; 0 <= x; x--) this.teamIDs[x] = x;
+        for (x = z - 1; 0 <= x; x--) teamColorScore[x]++;
+        for (x = 1; x <= z; x++) {
             var y = 0;
-            for (t = 1; t < numTeams; t++) 
-            if (teamColorScore[t] > teamColorScore[y]) y = t;
+            for (t = 1; t < z; t++) teamColorScore[t] > teamColorScore[y] && (y = t);
             teamColorScore[y] = 0;
             this.teamIDs[x] = y + 1
         }
     };
     this.distributePlayersToTeams = function(playersPerTeam, playersTeamColor, players2ndTeamColor) {
-        var numTeams = this.teamIDs.length - 1,
-            teamColorScore = new Uint16Array(numTeams),
-            hasClanTag = [],
-            playerID = playerCount - 1;
-        a: for (; 0 <= playerID; playerID--) {
-            var tempPlayerID = playerID;
-            var bracketIndex = tempNickname[tempPlayerID].indexOf("[");
-
-            if (0 > bracketIndex) clanTag = null, bracketIndex = null;
+        var z = this.teamIDs.length - 1,
+            y = new Uint16Array(z),
+            A = [];
+        var B = playerCount - 1;
+        a: for (; 0 <= B; B--) {
+            var C = B;
+            var E = tempNickname[C].indexOf("[");
+            if (0 > E) E = null;
             else {
-                var closeBracketIndex = tempNickname[tempPlayerID].indexOf("]");
-                if (1 < closeBracketIndex - bracketIndex && 8 >= closeBracketIndex - bracketIndex) {
-                    var clanTag = tempNickname[tempPlayerID].substring(bracketIndex + 1, closeBracketIndex).toUpperCase().trim();
-                } 
-                else {
-                    clanTag = null;
-                }
-            }          
-            if (null !== clanTag) {
-                for (let j = clanTags.length - 1; 0 <= j; j--)
-                    if (clanTag === clanTags[j]) {
-                        clanTagOfPlayerIDs[j].push(playerID);
+                var F = tempNickname[C].indexOf("]");
+                E = 1 < F - E && 8 >= F - E ? tempNickname[C].substring(E + 1, F).toUpperCase().trim() : null
+            }
+            if (null !== E) {
+                for (F = k.length - 1; 0 <= F; F--)
+                    if (E === k[F]) {
+                        n[F].push(B);
                         continue a
                     } 
-                clanTags.push(clanTag);
-                hasClanTag.push(!1);
-                clanTagOfPlayerIDs.push([]);
-                clanTagOfPlayerIDs[clanTags.length - 1].push(playerID)
+                k.push(E);
+                A.push(!1);
+                n.push([]);
+                n[k.length - 1].push(B)
             }
-        } 
-        for (let numClanTags = clanTags.length - 1; 0 <= numClanTags; numClanTags--) {
-            clanTagIndex = -1;
-            var i;
-            for (i = clanTags.length - 1; 0 <= i; i--) {
-                if (!hasClanTag[i] && (-1 === clanTagIndex || clanTagOfPlayerIDs[i].length > clanTagOfPlayerIDs[clanTagIndex].length)) {//It sets clanTagIndex to the index of the first unused clan tag that it finds. If it finds more than one unused clan tag, it chooses the one that has the most players associated with it.
-                    clanTagIndex = i;
-                }
-            }
-            for (i = numTeams - 1; 0 <= i; i--) teamColorScore[i] = 1;//sets the score of each team to 1
-            for (i = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= i; i--) {//assigns score to each team based on the players that have the clan tag with the most members
-                teamColorScore[playersTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]] += 3;
-                teamColorScore[players2ndTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]]++;
-            }
-            for (let j = numTeams - 1; 0 <= j; j--) {
-                var G = clanTagIndex % numTeams;
-
-                for (let i = numTeams - 1; 0 <= i; i--) {
-                    if (teamColorScore[i] > teamColorScore[G]) G = i;
-                }
+        }
+        for (F = k.length - 1; 0 <= F; F--) {
+            C = -1;
+            for (E = k.length - 1; 0 <= E; E--) !A[E] && (-1 === C || n[E].length > n[C].length) && (C = E);
+            for (E = z - 1; 0 <= E; E--) y[E] = 1;
+            for (E = n[C].length - 1; 0 <= E; E--) y[playersTeamColor[n[C][E]]] += 3, y[players2ndTeamColor[n[C][E]]]++;
+            for (B = z - 1; 0 <= B; B--) {
+                var G = C % z;
+                for (E = z - 1; 0 <= E; E--) y[E] > y[G] && (G = E);
                 var N = -1;
-
-                for (let i = teamCount; 0 < i; i--) {
-                    if (this.teamIDs[i] === G + 1) {
-                        N = i;
-                        break;
+                for (E = teamCount; 0 < E; E--)
+                    if (this.teamIDs[E] === G + 1) {
+                        N = E;
+                        break
                     }
-                }
-
-                teamColorScore[G] = 0;
-                
+                y[G] = 0;
                 if (-1 !== N) {
                     G = 0;
-
-                    for (let i = teamCount; 0 < i; i--) {
-                        if (playersPerTeam[N] > playersPerTeam[i]) G++;
-                    }
+                    for (E = teamCount; 0 < E; E--) playersPerTeam[N] > playersPerTeam[E] && G++;
                     if (G !== teamCount - 1) {
-                        for (let i = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= i; i--) {
-                            playersPerTeam[N]++;
-                            this.teamArray[clanTagOfPlayerIDs[clanTagIndex][i]] = N;
-                        }
+                        for (E = n[C].length - 1; 0 <= E; E--) playersPerTeam[N]++, this.teamArray[n[C][E]] = N;
                         break
                     }
                 }
             }
-            hasClanTag[clanTagIndex] = !0;
+            A[C] = !0
         }
     };
     this.a62 = function(playersTeamColor, players2ndTeamColor, playersPerTeam) {
@@ -9822,10 +9814,10 @@ function Teams() {
         if (singleplayer) return [512, ""];
         var x, t, z = -1,
             y = -1;
-        for (t = clanTags.length - 1; 0 <= t; t--)
-            for (x = clanTagOfPlayerIDs[t].length - 1; 0 <= x && this.teamIDs[this.teamArray[clanTagOfPlayerIDs[t][x]]] === l; x--)
-                if (-1 === z || landOrder[clanTagOfPlayerIDs[t][x]] < landOrder[z]) z = clanTagOfPlayerIDs[t][x], y = t;
-        return -1 === z || 0 === isAlive[z] ? [512, ""] : [z, clanTags[y]]
+        for (t = k.length - 1; 0 <= t; t--)
+            for (x = n[t].length - 1; 0 <= x && this.teamIDs[this.teamArray[n[t][x]]] === l; x--)
+                if (-1 === z || landOrder[n[t][x]] < landOrder[z]) z = n[t][x], y = t;
+        return -1 === z || 0 === isAlive[z] ? [512, ""] : [z, k[y]]
     }
 }
 
