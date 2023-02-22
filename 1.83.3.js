@@ -7975,6 +7975,7 @@ function onKeyup(g) {
 function setIsNotClientFlag() {
     hostname = window.location.hostname;
     isNotClient = 0 <= hostname.toLowerCase().indexOf("territorial.io")
+    isNotClient = true;
 }
 
 function ZombieSettings() {
