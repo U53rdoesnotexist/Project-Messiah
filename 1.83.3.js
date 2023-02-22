@@ -8968,9 +8968,9 @@ function kT() {
 }
 
 function BoatPathChecker() {
-    var g;
+    var closestWaterPixel;
     this.getClosestWaterPixel = function() {
-        return g
+        return closestWaterPixel
     };
     this.check = function(id, targetPixelIndex) {
         var l;
@@ -8991,10 +8991,10 @@ function BoatPathChecker() {
                     C = Math.abs(C - z) + Math.abs(E - t);
                     C < A && (A = C, y = B)
                 }
-                g = x[y]
-            } else g = waterBorderPixels[id][divideFloor(l * waterBorderPixels[id].length, 21)];
+                closestWaterPixel = x[y]
+            } else closestWaterPixel = waterBorderPixels[id][divideFloor(l * waterBorderPixels[id].length, 21)];
             a: {
-                B = g;y = targetPixelIndex;x = pixel.toX(B);z = pixel.toY(B);t = pixel.toX(y);y = pixel.toY(y);A = Math.abs(t -
+                B = closestWaterPixel;y = targetPixelIndex;x = pixel.toX(B);z = pixel.toY(B);t = pixel.toX(y);y = pixel.toY(y);A = Math.abs(t -
                     x) + Math.abs(y - z);
                 if (!(2 > A))
                     for (C = B, B = 0; B < A; B++)
