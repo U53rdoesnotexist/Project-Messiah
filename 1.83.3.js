@@ -268,7 +268,7 @@ function markPossibleEntityExpansion() {
                 lastBorderLand[lastBorderLength++] = pIndex;
             }
         }
-        }
+    }
 }
 
 function markPossibleNeutralExpansion() {
@@ -282,7 +282,7 @@ function markPossibleNeutralExpansion() {
                 lastBorderLand[lastBorderLength++] = pIndex;
             }
         }
-        }
+    }
 }
 
 function tryTakingMarkedPixels() {
@@ -444,211 +444,261 @@ function MainLeaderboardIcon() {
     }
 }
 
-function cL(g, k, n, l) {
-    var x = divideFloor(3 * troops[g], 256);
-    l -= l >= divideFloor(troops[g], 2) ? x : 0;
-    cP(n, g);
-    attacks.set(g, l, k);
-    troops[g] -= l + x;
-    speed.cR(g, !1)
+function botProcessAttack(authorID, targetID, pixelStartingIndex, amount) {
+    var tax = divideFloor(3 * troops[authorID], 256);
+    amount -= amount >= divideFloor(troops[authorID], 2) ? tax : 0;
+    botTakePixelsAndChangeToMoving(pixelStartingIndex, authorID);
+    attacks.set(authorID, amount, targetID);
+    troops[authorID] -= amount + tax;
+    speed.cR(authorID, !1)
 }
 
-function cS(g, k) {
-    var n, l;
-    for (n = landBorderPixels[g].length - 1; 0 <= n; n--)
-        if (pixel.isBorder(landBorderPixels[g][n]))
-            for (l = 3; 0 <= l; l--)
-                if (pixel.entityControlled(landBorderPixels[g][n] + offset[l]) && pixel.getOwner(landBorderPixels[g][n] + offset[l]) === k) {
-                    potentialBorderAdvances[g].push(landBorderPixels[g][n]);
+function botAddTakableTargetPixelsToAdvances(authorID, targetID) {
+    var bIndex, side;
+    for (bIndex = landBorderPixels[authorID].length - 1; 0 <= bIndex; bIndex--)
+        if (pixel.isBorder(landBorderPixels[authorID][bIndex]))
+            for (side = 3; 0 <= side; side--)
+                if (pixel.entityControlled(landBorderPixels[authorID][bIndex] + offset[side]) && pixel.getOwner(landBorderPixels[authorID][bIndex] + offset[side]) === targetID) {
+                    potentialBorderAdvances[authorID].push(landBorderPixels[authorID][bIndex]);
                     break
                 }
 }
 
-function cP(g, k) {
-    for (var n = potentialBorderAdvances[k].length - 1; n >= g; n--) pixel.changeToMovingPixel(potentialBorderAdvances[k][n], k)
+function botTakePixelsAndChangeToMoving(pixelStartingIndex, id) {
+    for (var bIndex = potentialBorderAdvances[id].length - 1; bIndex >= pixelStartingIndex; bIndex--) pixel.changeToMovingPixel(potentialBorderAdvances[id][bIndex], id)
 }
 
-function cX(g) {
-    for (var k, n = landBorderPixels[g].length - 1; 0 <= n; n--)
-        if (pixel.isBorder(landBorderPixels[g][n]))
-            for (k = 3; 0 <= k; k--)
-                if (pixel.isNeutral(landBorderPixels[g][n] + offset[k])) {
-                    potentialBorderAdvances[g].push(landBorderPixels[g][n]);
+function botAddTakableNeutralPixelsToAdvances(id) {
+    for (var side, bIndex = landBorderPixels[id].length - 1; 0 <= bIndex; bIndex--)
+        if (pixel.isBorder(landBorderPixels[id][bIndex]))
+            for (side = 3; 0 <= side; side--)
+                if (pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side])) {
+                    potentialBorderAdvances[id].push(landBorderPixels[id][bIndex]);
                     break
                 }
 }
 
-function cY(g, k) {
-    var n, l;
-    var x = landBorderPixels[g].length;
-    var t = 256 <= x ? 12 : 32 <= x ? 6 : 1;
-    x = x - 1 - fakeRandom.cf(t);
-    cg = 0;
-    a: for (; 0 <= x; x -= t)
-        for (l = 3; 0 <= l; l--) {
-            var z = pixel.isNeutral(landBorderPixels[g][x] + offset[l]) ? maxEntities : pixel.getOwner(landBorderPixels[g][x] + offset[l]);
-            if (z === maxEntities || pixel.entityControlled(landBorderPixels[g][x] + offset[l]) && z !== g && (k || isNotTeamate(g, z))) {
-                for (n = cg - 1; 0 <= n; n--)
-                    if (ci[n] === z) continue a;
-                ci[cg] = z;
-                if (++cg >= cj) return !0
+function botChecksIfBordersStuffLose(id, considerTeamatePixels) {
+    var bsIndex, side;
+    var bIndex = landBorderPixels[id].length;
+    var bIndexOffset = 256 <= bIndex ? 12 : 32 <= bIndex ? 6 : 1;
+    bIndex = bIndex - 1 - fakeRandom.getRandomInRange(bIndexOffset);
+    botLastBorderingStuffCount = 0;
+    a: for (; 0 <= bIndex; bIndex -= bIndexOffset)
+        for (side = 3; 0 <= side; side--) {
+            var ownerID = pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side]) ? maxEntities : pixel.getOwner(landBorderPixels[id][bIndex] + offset[side]);
+            if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamatePixels || isNotTeamate(id, ownerID))) {
+                for (bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
+                    if (botLastBorderingStuffs[bsIndex] === ownerID) continue a;
+                botLastBorderingStuffs[botLastBorderingStuffCount] = ownerID;
+                if (++botLastBorderingStuffCount >= const_8_botMaxBorderingStuffCount) return !0
             }
         }
-    return 0 < cg
+    return 0 < botLastBorderingStuffCount
 }
 
-function ck(g, k) {
-    var n, l;
-    cg = 0;
-    for (n = landBorderPixels[g].length - 1; 0 <= n; n--)
-        for (l = 3; 0 <= l; l--) {
-            var x = pixel.isNeutral(landBorderPixels[g][n] + offset[l]) ? maxEntities : pixel.getOwner(landBorderPixels[g][n] + offset[l]);
-            if (x === maxEntities || pixel.entityControlled(landBorderPixels[g][n] + offset[l]) && x !== g && (k || isNotTeamate(g, x))) return ci[cg++] = x, !0
+function botChecksIfBordersStuffStrong(id, considerTeamatePixels) {
+    var bIndex, side;
+    botLastBorderingStuffCount = 0;
+    for (bIndex = landBorderPixels[id].length - 1; 0 <= bIndex; bIndex--) {
+        for (side = 3; 0 <= side; side--) {
+            var ownerID = pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side]) ? maxEntities : pixel.getOwner(landBorderPixels[id][bIndex] + offset[side]);
+            if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamatePixels || isNotTeamate(id, ownerID))) {
+                botLastBorderingStuffs[botLastBorderingStuffCount++] = ownerID;
+                return !0
+            }
         }
+    }
     return !1
 }
 
-function cl() {
-    var g;
-    for (g = cg - 1; 0 <= g; g--)
-        if (ci[g] === maxEntities) {
-            for (cg--; g < cg; g++) ci[g] = ci[g + 1];
+function botChecksAndRemoveNeutral() {
+    for (var bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
+        if (botLastBorderingStuffs[bsIndex] === maxEntities) {
+            for (botLastBorderingStuffCount--; bsIndex < botLastBorderingStuffCount; bsIndex++) botLastBorderingStuffs[bsIndex] = botLastBorderingStuffs[bsIndex + 1];
             return !0
         } return !1
 }
 
-function cn(g) {
-    var k, n;
-    for (k = cg - 1; 0 <= k; k--)
-        if (attacks.check(g, ci[k]))
-            for (cg--, n = k; n < cg; n++) ci[n] = ci[n + 1];
-    return 0 === cg
+function botChecksAndRemovesIfAttackingAllTargets(id) {
+    var bsIndex1, bsIndex2;
+    for (bsIndex1 = botLastBorderingStuffCount - 1; 0 <= bsIndex1; bsIndex1--)
+        if (attacks.check(id, botLastBorderingStuffs[bsIndex1]))
+            for (botLastBorderingStuffCount--, bsIndex2 = bsIndex1; bsIndex2 < botLastBorderingStuffCount; bsIndex2++) botLastBorderingStuffs[bsIndex2] = botLastBorderingStuffs[bsIndex2 + 1];
+    return 0 === botLastBorderingStuffCount
 }
 
-function cp() {
-    var g;
-    for (g = cg - 1; 0 <= g; g--)
-        if (ci[g] >= playerCount) return !0;
+function botBorderingOtherBot() {
+    var bsIndex;
+    for (bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
+        if (botLastBorderingStuffs[bsIndex] >= playerCount) return !0;
     return !1
 }
 
-function cr() {
-    var g, k;
-    for (g = cg - 1; 0 <= g; g--)
-        if (ci[g] < playerCount)
-            for (cg--, k = g; k < cg; k++) ci[k] = ci[k + 1];
-    return 0 < cg
+function botChecksNotAndRemovesIfBorderingAllHumans() {
+    var bsIndex1, bsIndex2;
+    for (bsIndex1 = botLastBorderingStuffCount - 1; 0 <= bsIndex1; bsIndex1--)
+        if (botLastBorderingStuffs[bsIndex1] < playerCount)
+            for (botLastBorderingStuffCount--, bsIndex2 = bsIndex1; bsIndex2 < botLastBorderingStuffCount; bsIndex2++) botLastBorderingStuffs[bsIndex2] = botLastBorderingStuffs[bsIndex2 + 1];
+    return 0 < botLastBorderingStuffCount
 }
 
-function cs(g) {
-    var k, n = ci[0],
-        l = troops[n] + attacks.getRemainingTroopsFromTarget(n, g);
-    for (k = cg - 1; 1 <= k; k--) {
-        var x = troops[ci[k]] + attacks.getRemainingTroopsFromTarget(ci[k], g);
-        x < l && (n = ci[k], l = x)
+function botGetTargetWithLeastTroops(id) {
+    var bsIndex, targetID = botLastBorderingStuffs[0],
+        minTroop = troops[targetID] + attacks.getRemainingTroopsFromTarget(targetID, id);
+    for (bsIndex = botLastBorderingStuffCount - 1; 1 <= bsIndex; bsIndex--) {
+        var tempTroop = troops[botLastBorderingStuffs[bsIndex]] + attacks.getRemainingTroopsFromTarget(botLastBorderingStuffs[bsIndex], id);
+        tempTroop < minTroop && (targetID = botLastBorderingStuffs[bsIndex], minTroop = tempTroop)
     }
-    return n
+    return targetID
 }
 
-function cv(g) {
-    var k = ci[0];
-    if (1 === cg) return k;
-    var n = divideFloor(xMax[g] + xMin[g], 2),
-        l = divideFloor(yMax[g] + yMin[g], 2),
-        x = square(n - divideFloor(xMax[k] + xMin[k], 2)) + square(l - divideFloor(yMax[k] + yMin[k], 2));
-    for (g = cg - 1; 1 <= g; g--) {
-        var t = square(n - divideFloor(xMax[ci[g]] + xMin[ci[g]], 2)) + square(l - divideFloor(yMax[ci[g]] + yMin[ci[g]], 2));
-        t < x && (x = t, k = ci[g])
+function botGetClosestTargetIndex(bsIndex) {
+    var closestIndex = botLastBorderingStuffs[0];
+    if (1 === botLastBorderingStuffCount) return closestIndex;
+    var centerX = divideFloor(xMax[bsIndex] + xMin[bsIndex], 2),
+        centerY = divideFloor(yMax[bsIndex] + yMin[bsIndex], 2),
+        minDist = square(centerX - divideFloor(xMax[closestIndex] + xMin[closestIndex], 2)) + square(centerY - divideFloor(yMax[closestIndex] + yMin[closestIndex], 2));
+    for (bsIndex = botLastBorderingStuffCount - 1; 1 <= bsIndex; bsIndex--) {
+        var tempDist = square(centerX - divideFloor(xMax[botLastBorderingStuffs[bsIndex]] + xMin[botLastBorderingStuffs[bsIndex]], 2)) + square(centerY - divideFloor(yMax[botLastBorderingStuffs[bsIndex]] + yMin[botLastBorderingStuffs[bsIndex]], 2));
+        tempDist < minDist && (minDist = tempDist, closestIndex = botLastBorderingStuffs[bsIndex])
     }
-    return k
+    return closestIndex
 }
 
-function d6() {
-    return ci[fakeRandom.cf(cg)]
+function botGetRandomTarget() {
+    return botLastBorderingStuffs[fakeRandom.getRandomInRange(botLastBorderingStuffCount)]
 }
-var cj, cg, ci, d7;
+var const_8_botMaxBorderingStuffCount, botLastBorderingStuffCount, botLastBorderingStuffs, d7;
 
-function d8() {
-    cj = 8;
-    cg = 0;
-    ci = new Uint16Array(cj)
+function botBorderingStuffInit() {
+    const_8_botMaxBorderingStuffCount = 8;
+    botLastBorderingStuffCount = 0;
+    botLastBorderingStuffs = new Uint16Array(const_8_botMaxBorderingStuffCount)
 }
 
 function d9() {
     d7 = teamGame ? new Uint8Array(maxEntities) : null
 }
 
-function dB(g, k) {
-    teamGame && (d7[g] = 0);
-    if (attacks.isUnderAttackCap(g) && !(60 > k))
-        if (0 === landBorderPixels[g].length) dE.update(g, dG.difficulty[g - playerCount]) || (dG.dH(g - playerCount, 200), dI(g, k, dG.difficulty[g - playerCount], interest.getMaxBeforeRedI(g)));
-        else if (!(0 < waterBorderPixels[g].length && fakeRandom.random() < fakeRandom.value(waterBorderPixels[g].length > landBorderPixels[g].length ? 7 : 3) && dE.update(g, dG.difficulty[g - playerCount]))) {
-        var n = interest.getMaxBeforeRedI(g);
-        troops[g] > n && k < troops[g] - n && (k = troops[g] - n);
-        teamGame ? dK(g, k, dG.difficulty[g - playerCount], n) : dL(g, k, dG.difficulty[g - playerCount])
+function botProcessStrategy(id, amount) {
+    teamGame && (d7[id] = 0);
+    if (attacks.isUnderAttackCap(id) && !(60 > amount))
+        if (0 === landBorderPixels[id].length) {
+            if (!botBoatEngine.update(id, difficultyEngine.difficulty[id - playerCount])) {
+                difficultyEngine.setTiming(id - playerCount, 200);
+                botProcessDonation(id, amount, difficultyEngine.difficulty[id - playerCount], interest.getMaxBeforeRedI(id));
+            }
+        } else if (!(0 < waterBorderPixels[id].length && fakeRandom.random() < fakeRandom.value(waterBorderPixels[id].length > landBorderPixels[id].length ? 7 : 3) && botBoatEngine.update(id, difficultyEngine.difficulty[id - playerCount]))) {
+            var maxTroopsBelowRedI = interest.getMaxBeforeRedI(id);
+            troops[id] > maxTroopsBelowRedI && amount < troops[id] - maxTroopsBelowRedI && (amount = troops[id] - maxTroopsBelowRedI);
+            teamGame ? botProcessTeamStrategy(id, amount, difficultyEngine.difficulty[id - playerCount], maxTroopsBelowRedI) : botProcessIndividualStrategy(id, amount, difficultyEngine.difficulty[id - playerCount]);
+        }
+}
+
+function botProcessTeamStrategy(id, amount, difficulty, maxTroopsBelowRedI) {
+    if (botChecksIfBordersStuffLose(id, !1) || botChecksIfBordersStuffStrong(id, !1)) {
+        d7[id] = 1;
+        if (botChecksAndRemovesIfAttackingAllTargets(id)) {
+            return;
+        } else {
+            if (botChecksAndRemoveNeutral()) {
+                botCheckAdvanceAndProcessNeutralAttack(id, amount);
+                botSetFrequentTiming(id, maxEntities, difficulty);
+            } else {
+                var targetID;
+                if (fakeRandom.greaterThanRandom(difficultyEngine.chancesOfAttackingLeastTroops[difficulty])) targetID = botGetTargetWithLeastTroops(id);
+                else {
+                    if (botBorderingOtherBot() && fakeRandom.greaterThanRandom(difficultyEngine.dS[difficulty])) {
+                        botChecksNotAndRemovesIfBorderingAllHumans();
+                    }
+                    targetID = botGetClosestTargetIndex(id);
+                }
+                botSetupAttackAmount(id, amount, targetID);
+                botSetFrequentTiming(id, targetID, difficulty);
+            }
+        }
+    } else {
+        if (0 < waterBorderPixels[id].length && fakeRandom.random() < fakeRandom.value(60)) botBoatEngine.update(id, difficulty);
+        else {
+            difficultyEngine.setTiming(id - playerCount, 200);
+            botProcessDonation(id, amount, difficulty, maxTroopsBelowRedI);
+        }
     }
 }
 
-function dK(g, k, n, l) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cn(g) || (cl() ? (dN(g, k), dO(g, maxEntities, n)) : (fakeRandom.dP(dG.dQ[n]) ? l = cs(g) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), l = cv(g)), dR(g, k, l), dO(g, l, n)))) : 0 < waterBorderPixels[g].length && fakeRandom.random() < fakeRandom.value(60) && dE.update(g, n) || (dG.dH(g - playerCount, 200), dI(g, k, n, l))
+function humanBotsProcessTeamStrategy(id, amount) {
+    if (botChecksIfBordersStuffLose(id, !1) || botChecksIfBordersStuffStrong(id, !1)) {
+        d7[id] = 1;
+        if (botChecksAndRemoveNeutral()) botCheckAdvanceAndProcessNeutralAttack(id, amount)
+        else botSetupAttackAmount(id, amount, botGetRandomTarget())
+    } else botProcessDonation(id, amount, 0, 0)
 }
 
-function dT(g, k) {
-    cY(g, !1) || ck(g, !1) ? (d7[g] = 1, cl() ? dN(g, k) : dR(g, k, d6())) : dI(g, k, 0, 0)
+function botSetFrequentTiming(id, targetID, difficulty) {
+    if (3 <= difficulty && 2142 < c4.ticksElapsed() && (targetID === maxEntities || troops[targetID] < divideFloor(troops[id], 20))) difficultyEngine.setTiming(id - playerCount, 25)
 }
 
-function dO(g, k, n) {
-    3 <= n && 2142 < c4.ticksElapsed() && (k === maxEntities || troops[k] < divideFloor(troops[g], 20)) && dG.dH(g - playerCount, 25)
-}
-
-function dI(g, k, n, l) {
-    if (0 !== teams.teamArray[g] && !(5 === n && troops[g] < l || 4 === n && troops[g] < divideFloor(l, 2)))
-        for (n = fakeRandom.cf(aliveCount), l = 0; l < aliveCount; l++) {
-            var x = aliveEntities[(l + n) % aliveCount];
-            if (teams.teamArray[x] === teams.teamArray[g] && 1 === d7[x]) {
-                da(g, x, k);
-                x < playerCount && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
+function botProcessDonation(authorID, amount, difficulty, maxTroopsBelowRedI) {
+    if (0 !== teams.teamArray[authorID] && !(5 === difficulty && troops[authorID] < maxTroopsBelowRedI || 4 === difficulty && troops[authorID] < divideFloor(maxTroopsBelowRedI, 2)))
+        for (var randomAlive = fakeRandom.getRandomInRange(aliveCount), aliveIndex = 0; aliveIndex < aliveCount; aliveIndex++) {
+            var targetID = aliveEntities[(aliveIndex + randomAlive) % aliveCount];
+            if (teams.teamArray[targetID] === teams.teamArray[authorID] && 1 === d7[targetID]) {
+                processDonation(authorID, targetID, amount);
+                targetID < playerCount && fakeRandom.random() < fakeRandom.value(10) && (d7[targetID] = 0);
                 break
             }
         }
 }
 
-function dL(g, k, n) {
-    !cY(g, !0) && !ck(g, !0) || cn(g) || (cl() ? dN(g, k) : fakeRandom.dP(dG.dQ[n]) ? dR(g, k, cs(g)) : (cp() && fakeRandom.dP(dG.dS[n]) && cr(), dR(g, k, cv(g))))
-}
-
-function db(g, k) {
-    if (cY(g, !0) || ck(g, !0)) cl() ? dN(g, k) : dR(g, k, d6())
-}
-
-function dR(g, k, n) {
-    if (divideFloor(troops[g], 8) > troops[n]) {
-        var l = divideFloor(11 * troops[n], 5);
-        k = k > l ? k : l
+function botProcessIndividualStrategy(id, amount, difficulty) {
+    if (!botChecksIfBordersStuffLose(id, true) && !botChecksIfBordersStuffStrong(id, true)) {
+        if (botChecksAndRemovesIfAttackingAllTargets(id)) return
+        else {
+            if (botChecksAndRemoveNeutral()) botCheckAdvanceAndProcessNeutralAttack(id, amount);
+            else {
+                if (fakeRandom.greaterThanRandom(difficultyEngine.chancesOfAttackingLeastTroops[difficulty])) botSetupAttackAmount(id, amount, botGetTargetWithLeastTroops(id));
+                else {
+                    if (botBorderingOtherBot() && fakeRandom.greaterThanRandom(difficultyEngine.dS[difficulty])) botChecksNotAndRemovesIfBorderingAllHumans();
+                    botSetupAttackAmount(id, amount, botGetClosestTargetIndex(id));
+                }
+            }
+        }
     }
-    l = potentialBorderAdvances[g].length;
-    cS(g, n);
-    cL(g, n, l, k)
 }
 
-function dN(g, k) {
-    var n = maxEntities,
-        l = potentialBorderAdvances[g].length;
-    cX(g);
-    return potentialBorderAdvances[g].length !== l ? (cL(g, n, l, k), !0) : !1
+
+function humanBotsProcessIndividualStrategy(g, k) {
+    if (botChecksIfBordersStuffLose(g, !0) || botChecksIfBordersStuffStrong(g, !0)) botChecksAndRemoveNeutral() ? botCheckAdvanceAndProcessNeutralAttack(g, k) : botSetupAttackAmount(g, k, botGetRandomTarget())
+}
+
+function botSetupAttackAmount(id, amount, targetID) {
+    if (divideFloor(troops[id], 8) > troops[targetID]) {
+        var minAmount = divideFloor(11 * troops[targetID], 5);
+        amount = amount > minAmount ? amount : minAmount
+    }
+    minAmount = potentialBorderAdvances[id].length;
+    botAddTakableTargetPixelsToAdvances(id, targetID);
+    botProcessAttack(id, targetID, minAmount, amount)
+}
+
+function botCheckAdvanceAndProcessNeutralAttack(authorID, amount) {
+    var oldAdvanceLength = potentialBorderAdvances[authorID].length;
+    botAddTakableNeutralPixelsToAdvances(authorID);
+    return potentialBorderAdvances[authorID].length !== oldAdvanceLength ? (botProcessAttack(authorID, maxEntities, oldAdvanceLength, amount), !0) : !1
 }
 var dd = [60, 74, 112, 200, 256, 512];
 
-function de() {
-    var g, k, n, l, x, t;
-    this.dl = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
+function DifficultyEngine() {
+    var botTiming, k, n, l, x, t;
+    this.difficultyLabel = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
     this.dm = [97, 95, 93, 90, 87, 84];
     this.dS = [98, 95, 90, 40, 20, 0];
-    this.dn = [85, 70, 65, 30, 7, 3];
-    this.dQ = [0, 0, 0, 0, 50, 90];
+    this.boatSendRatio = [85, 70, 65, 30, 7, 3];
+    this.chancesOfAttackingLeastTroops = [0, 0, 0, 0, 50, 90];
     this.init = function() {
         var z;
-        g = new Uint8Array(botCount);
+        botTiming = new Uint8Array(botCount);
         k = new Uint16Array(botCount);
         n = new Uint16Array(botCount);
         l = new Uint8Array(botCount);
@@ -669,8 +719,8 @@ function de() {
             var y = 8 === gamemode ? 1 : 0;
             for (z = botCount - 1; 0 <= z; z--) this.difficulty[z] = y
         }
-        for (z = botCount - 1; 0 <= z; z--) 2 >= this.difficulty[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.difficulty[z] ? (k[z] = 1E3, n[z] = 1E3) : 1 === this.difficulty[z] ? (k[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (k[z] = 1E3, n[z] = 870)) : 4 >= this.difficulty[z] ? (l[z] = 1 + fakeRandom.cf(20), t[z] = 250 + fakeRandom.cf(1501), x[z] = 500 + fakeRandom.cf(501), 3 === this.difficulty[z] ? (k[z] = 600 + fakeRandom.cf(101), n[z] = 300 + fakeRandom.cf(401)) : (k[z] = 300 + fakeRandom.cf(201), n[z] = 100 + fakeRandom.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
-            35 + fakeRandom.cf(16), k[z] = 400 + fakeRandom.cf(101), n[z] = 50 + fakeRandom.cf(101)), g[z] = 1 + divideFloor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
+        for (z = botCount - 1; 0 <= z; z--) 2 >= this.difficulty[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.difficulty[z] ? (k[z] = 1E3, n[z] = 1E3) : 1 === this.difficulty[z] ? (k[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (k[z] = 1E3, n[z] = 870)) : 4 >= this.difficulty[z] ? (l[z] = 1 + fakeRandom.getRandomInRange(20), t[z] = 250 + fakeRandom.getRandomInRange(1501), x[z] = 500 + fakeRandom.getRandomInRange(501), 3 === this.difficulty[z] ? (k[z] = 600 + fakeRandom.getRandomInRange(101), n[z] = 300 + fakeRandom.getRandomInRange(401)) : (k[z] = 300 + fakeRandom.getRandomInRange(201), n[z] = 100 + fakeRandom.getRandomInRange(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
+            35 + fakeRandom.getRandomInRange(16), k[z] = 400 + fakeRandom.getRandomInRange(101), n[z] = 50 + fakeRandom.getRandomInRange(101)), botTiming[z] = 1 + divideFloor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
     };
     this.dw = function() {
         var z, y;
@@ -682,16 +732,16 @@ function de() {
                 A += zombieSettings.e4[y]
             }
     };
-    this.dH = function(z, y) {
-        0 <= z && (g[z] = y)
+    this.setTiming = function(botIndex, timing) {
+        0 <= botIndex && (botTiming[botIndex] = timing)
     };
-    this.update = function(z) {
-        if (0 === --g[z]) {
-            x[z] !== t[z] && (x[z] += x[z] < t[z] ? 3 : -3);
-            k[z] !== n[z] && (k[z] += k[z] < n[z] ? l[z] : -l[z], k[z] = Math.abs(k[z] - n[z]) <= l[z] ? n[z] : k[z]);
-            g[z] = divideFloor(x[z], 10);
-            var y = z + playerCount;
-            dB(y, divideFloor(k[z] * troops[y], 1E3))
+    this.update = function(botIndex) {
+        if (0 === --botTiming[botIndex]) {
+            x[botIndex] !== t[botIndex] && (x[botIndex] += x[botIndex] < t[botIndex] ? 3 : -3);
+            k[botIndex] !== n[botIndex] && (k[botIndex] += k[botIndex] < n[botIndex] ? l[botIndex] : -l[botIndex], k[botIndex] = Math.abs(k[botIndex] - n[botIndex]) <= l[botIndex] ? n[botIndex] : k[botIndex]);
+            botTiming[botIndex] = divideFloor(x[botIndex], 10);
+            var id = botIndex + playerCount;
+            botProcessStrategy(id, divideFloor(k[botIndex] * troops[id], 1E3))
         }
     }
 }
@@ -800,14 +850,14 @@ function Speed() {
     }
 }
 
-function er() {
-    function g() {
+function BotBoatEngine() {
+    function shouldSendBoat() {
         l = 3;
         a: {
             for (var y = 40; 1 <= y; y--) {
-                x = xMin[z] + divideFloor(fakeRandom.random() * (xMax[z] - xMin[z] + 1), fakeRandom.value(100));
-                t = yMin[z] + divideFloor(fakeRandom.random() * (yMax[z] - yMin[z] + 1), fakeRandom.value(100));
-                var A = k(pixel.toIndex(x, t));
+                xCoord = xMin[id] + divideFloor(fakeRandom.random() * (xMax[id] - xMin[id] + 1), fakeRandom.value(100));
+                yCoord = yMin[id] + divideFloor(fakeRandom.random() * (yMax[id] - yMin[id] + 1), fakeRandom.value(100));
+                var A = k(pixel.toIndex(xCoord, yCoord));
                 if (1 !== A) break a
             }
             A = 1
@@ -818,9 +868,9 @@ function er() {
         return 0 === A ? !1 : 2 === A ? !0 : 2 === n(54, 4)
     }
 
-    function k(y) {
-        if (pixel.canOwn(y) && (pixel.isNeutral(y) || pixel.getOwner(y) !== z && isNotTeamate(z, pixel.getOwner(y)))) {
-            if (boatPathChecker.check(z, y)) return 2;
+    function k(targetPIndex) {
+        if (pixel.canOwn(targetPIndex) && (pixel.isNeutral(targetPIndex) || pixel.getOwner(targetPIndex) !== id && isNotTeamate(id, pixel.getOwner(targetPIndex)))) {
+            if (boatPathChecker.check(id, targetPIndex)) return 2;
             if (0 === l--) return 0
         }
         return 1
@@ -828,18 +878,18 @@ function er() {
 
     function n(y, A) {
         for (var B, C, E, F, G, N, I, D = y; D < y + 50 * A; D += A)
-            if (B = xMin[z] - D, B = 1 > B ? 1 : B, C = yMin[z] - D, C = 1 >
-                C ? 1 : C, E = xMax[z] + D, E = E >= currentMapWidth - 1 ? currentMapWidth - 2 : E, F = yMax[z] + D, F = F >= currentMapHeight - 1 ? currentMapHeight - 2 : F, I = divideFloor(2 * fakeRandom.random() * (E - B + F - C), fakeRandom.value(100)), G = E - B, N = F - C, I <= G ? (x = B + I, t = C) : I <= G + N ? (x = E, t = C + I - G) : I <= 2 * G + N ? (x = B + I - G - N, t = F) : (x = B, t = C + I - 2 * G - N), B = k(pixel.toIndex(x, t)), 1 !== B) return B;
+            if (B = xMin[id] - D, B = 1 > B ? 1 : B, C = yMin[id] - D, C = 1 >
+                C ? 1 : C, E = xMax[id] + D, E = E >= currentMapWidth - 1 ? currentMapWidth - 2 : E, F = yMax[id] + D, F = F >= currentMapHeight - 1 ? currentMapHeight - 2 : F, I = divideFloor(2 * fakeRandom.random() * (E - B + F - C), fakeRandom.value(100)), G = E - B, N = F - C, I <= G ? (xCoord = B + I, yCoord = C) : I <= G + N ? (xCoord = E, yCoord = C + I - G) : I <= 2 * G + N ? (xCoord = B + I - G - N, yCoord = F) : (xCoord = B, yCoord = C + I - 2 * G - N), B = k(pixel.toIndex(xCoord, yCoord)), 1 !== B) return B;
         return 1
     }
-    var l, x, t, z;
-    this.update = function(y, A) {
-        z = y;
-        if (0 === waterBorderPixels[z].length) return !1;
-        if (g()) {
-            var B = divideFloor(dG.dn[A] * troops[z], 100);
-            100 > B && 100 <= troops[z] && (B = 100);
-            if (100 <= B) return processSendBoat(z, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(x, t), B)
+    var l, xCoord, yCoord, id;
+    this.update = function(param_id, difficulty) {
+        id = param_id;
+        if (0 === waterBorderPixels[id].length) return !1;
+        if (shouldSendBoat()) {
+            var amount = divideFloor(difficultyEngine.boatSendRatio[difficulty] * troops[id], 100);
+            100 > amount && 100 <= troops[id] && (amount = 100);
+            if (100 <= amount) return processSendBoat(id, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(xCoord, yCoord), amount)
         }
         return !1
     }
@@ -857,7 +907,7 @@ function fC() {
             if (0 === isAlive[k[n] + playerCount]) {
                 var l = n;
                 for (g--; l < g; l++) k[l] = k[l + 1]
-            } else dG.update(k[n])
+            } else difficultyEngine.update(k[n])
     }
 }
 
@@ -1175,7 +1225,7 @@ function hA() {
 
     function l(I, D) {
         isAlive[G] = 1;
-        troops[G] = G < playerCount ? startingTroops : dd[dG.difficulty[G - playerCount]];
+        troops[G] = G < playerCount ? startingTroops : dd[difficultyEngine.difficulty[G - playerCount]];
         xMin[G] = I + 10;
         yMin[G] = D + 10;
         yMax[G] = xMax[G] = 0;
@@ -1522,7 +1572,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     pixel.init(playerInfo);
     hq.init();
     eT.init();
-    dG.init();
+    difficultyEngine.init();
     nickNames.jT();
     nickNames.jU();
     j1.init();
@@ -1575,12 +1625,12 @@ function jb() {
     setAndroidState(0);
     showAd()
 }
-var dG, speed, dE, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustom, customMap;
+var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustom, customMap;
 
 function construct() {
-    dG = new de;
+    difficultyEngine = new DifficultyEngine;
     speed = new Speed;
-    dE = new er;
+    botBoatEngine = new BotBoatEngine;
     eJ = new fC;
     processAction = new ProcessAction;
     eK = new fu;
@@ -1755,7 +1805,7 @@ function jx() {
             this.end();
             if (this.isHuman(targetID) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.lR(), 1;
             announcements.lS();
-            singleplayer ? da(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
+            singleplayer ? processDonation(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
             return 1
         }
         if (4 === type) {
@@ -4374,38 +4424,51 @@ function kd() {
     }
 }
 
-function processAttack(g, k, n) {
-    if (!(0 === isAlive[g] || 0 > n || 1E3 < n || 2 === playerStatus[g])) {
-        var l = divideFloor(n * troops[g], 1E3);
-        10 === gamemode && k < playerCount && 2 !== playerStatus[k] && (l = antiFullSend.tq(g, l));
-        if (teamGame && k < maxEntities && !isNotTeamate(g, k)) da(g, k, l);
+function processAttack(authorID, targetID, ratio) {
+    if (!(0 === isAlive[authorID] || 0 > ratio || 1E3 < ratio || 2 === playerStatus[authorID])) {
+        var amount = divideFloor(ratio * troops[authorID], 1E3);
+        if (10 === gamemode && targetID < playerCount && 2 !== playerStatus[targetID]) amount = antiFullSend.tq(authorID, amount)
+        if (teamGame && targetID < maxEntities && !isNotTeamate(authorID, targetID)) processDonation(authorID, targetID, amount);
         else {
-            k < maxEntities && 0 === isAlive[k] && (k = maxEntities);
-            var x = divideFloor(3 * troops[g], 256);
-            l -= 500 <= n ? x : 0;
-            if (!(l <= neutralLandCost) && attacks.isUnderAttackCap(g)) {
-                var t = potentialBorderAdvances[g].length;
-                k === maxEntities ? cX(g) : cS(g, k);
-                if (0 !== t || 0 !== potentialBorderAdvances[g].length) teamGame && (d7[g] = 1), g === myID && (statistics.numbers[0] += 500 <= n ? n - 12 : n, statistics.numbers[1]++, statistics.numbers[12] += x, statistics.numbers[13] += l), cP(t, g), attacks.set(g, l, k), troops[g] -= l + x, speed.cR(g, !1)
+            targetID < maxEntities && 0 === isAlive[targetID] && (targetID = maxEntities);
+            var tax = divideFloor(3 * troops[authorID], 256);
+            amount -= 500 <= ratio ? tax : 0;
+            if (!(amount <= neutralLandCost) && attacks.isUnderAttackCap(authorID)) {
+                var oldTakablePixelsLength = potentialBorderAdvances[authorID].length;
+                targetID === maxEntities ? botAddTakableNeutralPixelsToAdvances(authorID) : botAddTakableTargetPixelsToAdvances(authorID, targetID);
+                if (0 !== oldTakablePixelsLength || 0 !== potentialBorderAdvances[authorID].length) {
+                    if (teamGame) d7[authorID] = 1
+                    if (authorID === myID) {
+                        statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
+                        statistics.numbers[1]++;
+                        statistics.numbers[12] += tax;
+                        statistics.numbers[13] += amount
+                    } 
+                    botTakePixelsAndChangeToMoving(oldTakablePixelsLength, authorID);
+                    attacks.set(authorID, amount, targetID);
+                    troops[authorID] -= amount + tax;
+                    speed.cR(authorID, !1)
+                }
             }
         }
     }
 }
 
-function processSendBoat(g, k, n, l) {
-    10 === gamemode && g < playerCount && (l = antiFullSend.tq(g, l));
-    if (l <= neutralLandCost || !attacks.isUnderAttackCap(g)) return !1;
-    k = eK.cR(g, k, n);
-    if (0 === k) return !1;
-    n = divideFloor(3 * troops[g], 128);
-    l >= divideFloor(troops[g], 2) && (l -= n);
-    g === myID && (statistics.numbers[12] += n);
-    attacks.addBoat(g, l, k);
-    troops[g] -= l + n;
+function processSendBoat(authorID, closestPixelIndex, targetPixelIndex, amount) {
+    var boatID, tax;
+    10 === gamemode && authorID < playerCount && (amount = antiFullSend.tq(authorID, amount));
+    if (amount <= neutralLandCost || !attacks.isUnderAttackCap(authorID)) return !1;
+    boatID = eK.cR(authorID, closestPixelIndex, targetPixelIndex);
+    if (0 === boatID) return !1;
+    tax = divideFloor(3 * troops[authorID], 128);
+    amount >= divideFloor(troops[authorID], 2) && (amount -= tax);
+    authorID === myID && (statistics.numbers[12] += tax);
+    attacks.addBoat(authorID, amount, boatID);
+    troops[authorID] -= amount + tax;
     return !0
 }
 
-function da(g, k, n) {
+function processDonation(g, k, n) {
     if (!(!teamGame || 0 === isAlive[g] || 0 === isAlive[k] || 0 > n || n > troops[g] || g === k || isNotTeamate(g, k) || g < playerCount && k < playerCount && 7 > gamemode && 1071 > c4.ticksElapsed())) {
         var l = divideFloor(troops[g], 16);
         n -= n >= divideFloor(troops[g], 2) ? l : 0;
@@ -4441,35 +4504,34 @@ function ts() {
         this.j5 = !1
     };
     this.init = function() {
-        var g;
+        var yIndex;
         this.j5 = this.h9 = this.tt = !1;
         this.tu[0] = currentMapWidth;
         this.tu[1] = currentMapHeight;
         this.tu[2] = this.tu[3] = 0;
-        var k = 1;
-        a: for (; k < currentMapWidth - 1; k++)
-            for (g = currentMapHeight - 2; 1 < g; g--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[0] = k;
+        var xIndex = 1;
+        a: for (; xIndex < currentMapWidth - 1; xIndex++)
+            for (yIndex = currentMapHeight - 2; 1 < yIndex; yIndex--)
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.tu[0] = xIndex;
                     break a
-                } g = 1;
-        a: for (; g < currentMapHeight -
-            1; g++)
-            for (k = currentMapWidth - 2; 1 < k; k--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[1] = g;
+                } yIndex = 1;
+        a: for (; yIndex < currentMapHeight - 1; yIndex++)
+            for (xIndex = currentMapWidth - 2; 1 < xIndex; xIndex--)
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.tu[1] = yIndex;
                     break a
-                } k = currentMapWidth - 2;
-        a: for (; 0 < k; k--)
-            for (g = currentMapHeight - 2; 1 < g; g--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[2] = k;
+                } xIndex = currentMapWidth - 2;
+        a: for (; 0 < xIndex; xIndex--)
+            for (yIndex = currentMapHeight - 2; 1 < yIndex; yIndex--)
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.tu[2] = xIndex;
                     break a
-                } g = currentMapHeight - 2;
-        a: for (; 0 < g; g--)
-            for (k = currentMapWidth - 2; 1 < k; k--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[3] = g;
+                } yIndex = currentMapHeight - 2;
+        a: for (; 0 < yIndex; yIndex--)
+            for (xIndex = currentMapWidth - 2; 1 < xIndex; xIndex--)
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.tu[3] = yIndex;
                     break a
                 }
     }
@@ -5191,9 +5253,9 @@ function kC() {
         return openLinkBox.end() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.hidden ? (mainLeaderboard.hidden = !1, !0) : !1
     };
     this.aK = function() {
-            c4.canvasDirty = !0;
+        c4.canvasDirty = !0;
         8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : hv.hidden ? hv.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? ji.vT() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
-        };
+    };
     this.mouseDown = function(k, n) {
         if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && ji.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || jt.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
             playtime.mouseDown(k, n);
@@ -6014,7 +6076,7 @@ function SingleSettings() {
         }
     };
     this.xV = function(n) {
-        return 0 === n && 1 === this.botSettings[n].group ? "You" : dG.dl[this.botSettings[n].difficulty]
+        return 0 === n && 1 === this.botSettings[n].group ? "You" : difficultyEngine.difficultyLabel[this.botSettings[n].difficulty]
     };
     this.xW = function(n) {
         return 1 === this.botSettings[n].group ? "1 Player" : this.botSettings[n].group + " Players"
@@ -6257,7 +6319,7 @@ function Sprites() {
                         for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) J = 4 * (xIndex + yIndex * spriteWidth), spriteCanvasImageDataArray[J + 1] > spriteCanvasImageDataArray[J + 2] + 10 && (spriteCanvasImageDataArray[J + 3] = spriteCanvasImageDataArray[J], spriteCanvasImageDataArray[J + 1] = spriteCanvasImageDataArray[J + 2]);
                 spriteCanvasCtx.putImageData(spriteCanvasImageData, 0, 0);
                 spriteCanvases[spriteID] = spriteCanvas
-                        }
+            }
             unloadedSprites--;
             if (sprites.areAllSpritesLoaded()) {
                 mainLeaderboardIcon.updateRenderObject();
@@ -6688,7 +6750,7 @@ function zG(g) {
 
 function zD(g, k) {
     var n, l = k[zG(k)];
-    9 === gamemode && 1 === teams.teamArray[g] && fakeRandom.dP(8) && zombieSettings.zI(l);
+    9 === gamemode && 1 === teams.teamArray[g] && fakeRandom.greaterThanRandom(8) && zombieSettings.zI(l);
     if (g === myID) announcements.genericAnnouncement(l, 1), zB();
     else {
         for (n = k.length - 1; 0 <= n; n--)
@@ -7160,7 +7222,7 @@ function kN() {
                             var Ba = Math.floor(landCenterX - .5 * fontSize / D[idIndex] - .4 * fontSize - transform * a5.width)
                             for (var index = 0; 2 > index; index++) {
                                 infoCanvas.setTransform(transform, 0, 0, transform, Ba, Ca);
-                                infoCanvas.drawImage(a5.l5[ba[idIndex]], 0, 0);
+                                infoCanvas.drawImage(a5.l5[ba[sa]], 0, 0);
                                 Ba = Math.floor(landCenterX + .5 * fontSize / D[idIndex] + .4 * fontSize);
                             }
                             infoCanvas.globalAlpha = 1;
@@ -7577,11 +7639,10 @@ function HumanBots() {
     this.a1Z = function() {
         var g, k = this.players;
         for (g = k.length - 1; 0 <= g; g--) {
-            var n = k[g];
-            if (attacks.isUnderAttackCap(n)) {
-                var l = divideFloor(20 * troops[n], 100);
-                60 > l || (0 ===
-                    landBorderPixels[n].length ? !dE.update(n, 2) && teamGame && dI(n, l, 0, 0) : teamGame ? dT(n, l) : db(n, l))
+            var id = k[g];
+            if (attacks.isUnderAttackCap(id)) {
+                var amount = divideFloor(20 * troops[id], 100);
+                60 > amount || (0 === landBorderPixels[id].length ? !botBoatEngine.update(id, 2) && teamGame && botProcessDonation(id, amount, 0, 0) : teamGame ? humanBotsProcessTeamStrategy(id, amount) : humanBotsProcessIndividualStrategy(id, amount))
             }
         }
     }
@@ -7720,7 +7781,7 @@ function main() {
     versionHash = 2526;
     versionLabel = "1.83.3   3 February 2023";
     construct();
-    d8();
+    botBorderingStuffInit();
     isMainCalled = !0;
     androidVersion = (androidObject = "undefined" !== typeof Android ? Android : null) ? androidObject.getVersion() : 0;
     12 <= androidVersion && androidObject.prepareAd("6685097465");
@@ -7853,7 +7914,7 @@ function ZombieSettings() {
     this.zI = function(k) {
         g.push({
             player: k,
-            group: 14 + fakeRandom.cf(20)
+            group: 14 + fakeRandom.getRandomInRange(20)
         })
     };
     this.update = function() {
@@ -8995,11 +9056,11 @@ function FakeRandom() {
     this.random = function() {
         return g = 167 * g % 32768
     };
-    this.cf = function(n) {
+    this.getRandomInRange = function(n) {
         return divideFloor(n * this.random(), 32768)
     };
-    this.dP = function(n) {
-        return 0 !== n && this.random() < this.value(n)
+    this.greaterThanRandom = function(size) {
+        return 0 !== size && this.random() < this.value(size)
     }
 }
 
