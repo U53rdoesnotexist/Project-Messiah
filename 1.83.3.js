@@ -1547,7 +1547,7 @@ function EndGame() {
                 var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
                 (k = winner === myID) ? announcements.genericAnnouncement(winner, 2): announcements.genericAnnouncement(1 - myID, 3);
                 points1v1.calculateElo(winner)
-            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : (winner = teams.il(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.io(winner[1])), announcements.ip(k)) : (result = orderedLand[0], k = result === myID, announcements.iq(result));
+            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.io(winner[1])), announcements.ip(k)) : (result = orderedLand[0], k = result === myID, announcements.iq(result));
             singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(k, !1);
             announcements.iy(!0);
@@ -9948,18 +9948,27 @@ function Teams() {
             if (maxEntitiesPerTeam[currentTeam] <= 0) currentTeam++;
         }
     };    
-    this.distributeBotsMulti = function() {
+    this.distributeBotsMulti = function() {//added neutral bots
+        var neutralBots = false;
+
         for (var i = playerCount; i < maxEntities; i++){
-         this.teamArray[i] = 1 + i % teamCount
+            if (!neutralBots){
+                this.teamArray[i] = 1 + i % teamCount;
+            }
+            else
+            this.teamArray[i] = 0;
         }
     };
-    this.il = function(l) {
+    this.getClanTagWinningTeam = function(winner) {
         if (singleplayer) return [512, ""];
-        var x, t, z = -1,
-            y = -1;
-        for (t = clanTags.length - 1; 0 <= t; t--)
-            for (x = clanTagOfPlayerIDs[t].length - 1; 0 <= x && this.teamIDs[this.teamArray[clanTagOfPlayerIDs[t][x]]] === l; x--)
-                if (-1 === z || landOrder[clanTagOfPlayerIDs[t][x]] < landOrder[z]) z = clanTagOfPlayerIDs[t][x], y = t;
+        var i, j, z = -1, y = -1;
+
+        for (j = clanTags.length - 1; 0 <= j; j--)
+            for (i = clanTagOfPlayerIDs[j].length - 1; 0 <= i && this.teamIDs[this.teamArray[clanTagOfPlayerIDs[j][i]]] === winner; i--)
+                if (-1 === z || landOrder[clanTagOfPlayerIDs[j][i]] < landOrder[z]){
+                 z = clanTagOfPlayerIDs[j][i];
+                 y = j;
+                }
         return -1 === z || 0 === isAlive[z] ? [512, ""] : [z, clanTags[y]]
     }
 }
