@@ -18,7 +18,7 @@ function loadUsername() {
 
 
 function setClientID() {
-    clientID = Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1));
+    clientID = Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1));//comment
     if (isIOS) clientID = iosObject.id;
     else if (12 <= androidVersion) {
         var oldClientID = androidObject.loadNumber(20);
