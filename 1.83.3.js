@@ -9735,8 +9735,8 @@ function Teams() {
             playersPerTeam = new Uint16Array(this.teamIDs.length);
         this.setPlayerTeamColor(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore);
         this.sortTeamColorsByScore(teamColorScore);
-        singleplayer || this.distributePlayersToTeams(playersPerTeam, playersTeamColor, players2ndTeamColor);
-        this.a62(playersTeamColor, players2ndTeamColor, playersPerTeam);
+        singleplayer || this.distributeClanPlayersToTeams(playersPerTeam, playersTeamColor, players2ndTeamColor);
+        this.distributeOtherPlayersToTeams(playersTeamColor, players2ndTeamColor, playersPerTeam);
         singleplayer ? this.a63() : this.a64()
     };
     this.setPlayerTeamColor = function(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
@@ -9776,7 +9776,7 @@ function Teams() {
             this.teamIDs[x] = y + 1
         }
     };
-    this.distributePlayersToTeams = function(playersPerTeam, playersTeamColor, players2ndTeamColor) {
+    this.distributeClanPlayersToTeams = function(playersPerTeam, playersTeamColor, players2ndTeamColor) {
         var numTeams = this.teamIDs.length - 1,
             teamColorScore = new Uint16Array(numTeams),
             hasClanTag = [],
@@ -9791,9 +9791,8 @@ function Teams() {
                 if (1 < closeBracketIndex - bracketIndex && 8 >= closeBracketIndex - bracketIndex) {
                     var clanTag = tempNickname[tempPlayerID].substring(bracketIndex + 1, closeBracketIndex).toUpperCase().trim();
                 } 
-                else {
-                    clanTag = null;
-                }
+                else 
+                clanTag = null;
             }          
             if (null !== clanTag) {
                 for (let j = clanTags.length - 1; 0 <= j; j--)
@@ -9820,10 +9819,10 @@ function Teams() {
                 teamColorScore[playersTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]] += 3;
                 teamColorScore[players2ndTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]]++;
             }
-            for (let j = numTeams - 1; 0 <= j; j--) {
+            for (let j = numTeams - 1; 0 <= j; j--) {//calculates colorscore for each clan tag and assigns the players to that color
                 var G = clanTagIndex % numTeams;
 
-                for (let i = numTeams - 1; 0 <= i; i--) {
+                for (let i = numTeams - 1; 0 <= i; i--) {//if there is a tie, then the color with the lowest amount of players will be chosen
                     if (teamColorScore[i] > teamColorScore[G]) G = i;
                 }
                 var N = -1;
@@ -9834,13 +9833,12 @@ function Teams() {
                         break;
                     }
                 }
-
                 teamColorScore[G] = 0;
                 
                 if (-1 !== N) {
                     G = 0;
 
-                    for (let i = teamCount; 0 < i; i--) {
+                    for (let i = teamCount; 0 < i; i--) {//if the color with the most score is also the color with the most players, it will choose the second color with highest score
                         if (playersPerTeam[N] > playersPerTeam[i]) G++;
                     }
                     if (G !== teamCount - 1) {
@@ -9851,22 +9849,42 @@ function Teams() {
                         break
                     }
                 }
-            }
-            hasClanTag[clanTagIndex] = !0;
+            } hasClanTag[clanTagIndex] = !0;
         }
     };
-    this.a62 = function(playersTeamColor, players2ndTeamColor, playersPerTeam) {
-        var z;
+    this.distributeOtherPlayersToTeams = function(playersTeamColor, players2ndTeamColor, playersPerTeam) {
+        var i;
         var a = this.teamIDs.length - 1;
-        var A = divideFloor(playerCount, teamCount);
-        0 < playerCount % teamCount && A++;
-        var B = new Uint8Array(a + 1);
-        for (z = a; 1 <= z; z--) B[this.teamIDs[z]] = z;
-        for (a = 0; a < playerCount; a++) z = B[playersTeamColor[a] + 1], 0 === this.teamArray[a] && z <= teamCount && playersPerTeam[z] < A && (playersPerTeam[z]++, this.teamArray[a] = z);
-        for (a = 0; a < playerCount; a++) z = B[players2ndTeamColor[a] + 1], 0 === this.teamArray[a] && z <= teamCount && playersPerTeam[z] < A && (playersPerTeam[z]++, this.teamArray[a] = z);
-        for (z = teamCount; 1 <= z; z--)
-            for (a = playerCount - 1; 0 <= a && !(playersPerTeam[z] >= A); a--) 0 === this.teamArray[a] && (playersPerTeam[z]++, this.teamArray[a] = z)
-    };
+        var idealNumOfPlayers = divideFloor(playerCount, teamCount);
+        var teamIDMap = new Uint8Array(a + 1);
+
+        if (playerCount % teamCount > 0) idealNumOfPlayers++;
+        for (i = a; i >= 1; i--) teamIDMap[this.teamIDs[i]] = i;
+        for (a = 0; a < playerCount; a++) {
+            i = teamIDMap[playersTeamColor[a] + 1];
+            
+            if (this.teamArray[a] === 0 && i <= teamCount && playersPerTeam[i] < idealNumOfPlayers) {
+                playersPerTeam[i]++;
+                this.teamArray[a] = i;
+            }
+        }
+        for (a = 0; a < playerCount; a++) {
+            i = teamIDMap[players2ndTeamColor[a] + 1];
+
+            if (this.teamArray[a] === 0 && i <= teamCount && playersPerTeam[i] < idealNumOfPlayers) {
+                playersPerTeam[i]++;
+                this.teamArray[a] = i;
+            }
+        }
+        for (i = teamCount; i >= 1; i--) {
+            for (a = playerCount - 1; a >= 0 && playersPerTeam[i] < idealNumOfPlayers; a--) {
+                if (this.teamArray[a] === 0) {
+                    playersPerTeam[i]++;
+                    this.teamArray[a] = i;
+                }
+            }
+        }
+    };    
     this.a63 = function() {
         var l, x = new Uint16Array(teamCount);
         x[teamCount - 1] = maxEntities;
