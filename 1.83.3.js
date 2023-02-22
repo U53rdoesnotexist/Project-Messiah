@@ -6492,10 +6492,17 @@ function Pixel() {
             var teamID, teamColorVariation;
             for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
                 teamID = teams.teamIDs[teams.teamArray[idIndex]];
-                teamColorVariation = divideFloor((teamColorVariations[teamID][3] + 1) * fakeRandom.random(), fakeRandom.value(100));
-                innerR[idIndex] = l[teamID][0] + teamColorVariation * teamColorVariations[teamID][0];
-                innerG[idIndex] = l[teamID][1] + teamColorVariation * teamColorVariations[teamID][1];
-                innerB[idIndex] = l[teamID][2] + teamColorVariation * teamColorVariations[teamID][2];
+                if (teamID != 0){//Pixel colors for normal teams
+                    teamColorVariation = divideFloor((teamColorVariations[teamID][3] + 1) * fakeRandom.random(), fakeRandom.value(100));
+                    innerR[idIndex] = l[teamID][0] + teamColorVariation * teamColorVariations[teamID][0];
+                    innerG[idIndex] = l[teamID][1] + teamColorVariation * teamColorVariations[teamID][1];
+                    innerB[idIndex] = l[teamID][2] + teamColorVariation * teamColorVariations[teamID][2];
+                }
+                else{//added random colors for neutral bots
+                    innerR[idIndex] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
+                    innerG[idIndex] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
+                    innerB[idIndex] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
+                }
             }
         }
         else if (customJSON.isCustomJSON && customJSON.data.yP) {
@@ -9949,7 +9956,7 @@ function Teams() {
         }
     };    
     this.distributeBotsMulti = function() {//added neutral bots
-        var neutralBots = false;
+        var neutralBots = true;
 
         for (var i = playerCount; i < maxEntities; i++){
             if (!neutralBots){
