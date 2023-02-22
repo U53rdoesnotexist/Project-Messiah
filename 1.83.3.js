@@ -578,7 +578,7 @@ function botBorderingStuffInit() {
     botLastBorderingStuffs = new Uint16Array(botMaxBorderingStuffCap)
 }
 
-function d9() {
+function receiveDonationsArrayInit() {
     canReceiveBotDonations = teamGame ? new Uint8Array(maxEntities) : null
 }
 
@@ -707,9 +707,9 @@ function DifficultyEngine() {
         this.difficulty = new Uint8Array(botCount);
         x = new Uint16Array(botCount);
         t = new Uint16Array(botCount);
-        if (customMap.ds) {
-            if (customMap.dt.du)
-                for (z = botCount - 1; 0 <= z; z--) this.difficulty[z] = customMap.dt.du[z + 1]
+        if (customJSON.isCustomJSON) {
+            if (customJSON.data.difficulty)
+                for (z = botCount - 1; 0 <= z; z--) this.difficulty[z] = customJSON.data.difficulty[z + 1]
         } else if (9 === gamemode) this.dw();
         else if (singleplayer)
             if (teamGame)
@@ -1263,12 +1263,12 @@ function hA() {
         E = divideFloor(currentMapHeight - B * A, 2);
         if (inSpawn)
             for (I = 0; I < playerCount; I++) G = I, n(), isAlive[G] = 1;
-        if (customMap.ds && customMap.dt.hH)
+        if (customJSON.isCustomJSON && customJSON.data.spawnX)
             for (G = 0; G < maxEntities; G++) {
                 if (1 !== isAlive[G]) {
                     if (G < entityCount) {
-                        var D = customMap.dt.hH[G] + 1;
-                        I = customMap.dt.hS[G] + 1;
+                        var D = customJSON.data.spawnX[G] + 1;
+                        I = customJSON.data.spawnY[G] + 1;
                         3 < D && D < currentMapWidth - 5 && 3 < I && I < currentMapHeight - 5 &&
                             pixel.canOwn(pixel.toIndex(D, I)) && x(D + 3, I + 3) ? (D += 1, I += 1, n(), l(D - 2, I - 2), I = !0) : I = !1;
                         if (I) continue;
@@ -1550,7 +1550,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     gamemode = 8 === gamemode && 2 !== playerCount ? 7 : gamemode;
     teamCount = 9 === gamemode ? 2 : gamemode + 2;
     spawnTime = 2 >= playerCount ? 30 : 50 >= playerCount ? 40 : 50;
-    freeSpawn = customMap.ds && !customMap.dt.jL ? inSpawn = !1 : inSpawn = teamGame || 100 > playerCount;
+    freeSpawn = customJSON.isCustomJSON && !customJSON.data.freeSpawn ? inSpawn = !1 : inSpawn = teamGame || 100 > playerCount;
     spawn = inSpawn ? new Spawn : null;
     startingTroops = 512;
     entityCount = maxEntities;
@@ -1570,7 +1570,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     configFakeMap.jR();
     h8.init();
     interest.init();
-    d9();
+    receiveDonationsArrayInit();
     pixel.init(playerInfo);
     hq.init();
     eT.init();
@@ -1627,7 +1627,7 @@ function jb() {
     setAndroidState(0);
     showAd()
 }
-var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustom, customMap;
+var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
@@ -1694,8 +1694,8 @@ function construct() {
     humanBots = new HumanBots;
     antiFullSend = new AntiFullSend;
     eQ = new ko;
-    loadCustom = new LoadCustom;
-    customMap = new CustomMap
+    loadCustomMap = new LoadCustomMap;
+    customJSON = new CustomJSON
 }
 
 function jx() {
@@ -1821,20 +1821,13 @@ function jx() {
                 } else {
                     this.end();
                     announcements.lS();
-                    if (singleplayer) {
-                        processAttack(myID, targetID, troopBar.getRatio());
-                    } else {
-                        if (!freeSpawn || 300 < eB.lV()) {
-                            dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
-                        }
-                    }
+                    if (singleplayer) processAttack(myID, targetID, troopBar.getRatio());
+                    else if (!freeSpawn || 300 < eB.lV()) dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
                 }
             } else if (x[8]) {
                 this.end();
                 eH.lX(targetID, troopBar.getRatio());
-            } else {
-                this.end();
-            }
+            } else this.end();
             return 1;
         }
         
@@ -1842,11 +1835,8 @@ function jx() {
             if (x[1]) {
                 this.end();
                 announcements.lS();
-                if (singleplayer) {
-                    processAction.processSendBoat(myID, troopBar.getRatio(), pixel.toX(G), pixel.toY(G));
-                } else {
-                    dataEncoder.setLocation(troopBar.getRatio(), pixel.toX(G), pixel.toY(G));
-                }
+                if (singleplayer) processAction.processSendBoat(myID, troopBar.getRatio(), pixel.toX(G), pixel.toY(G));
+                else dataEncoder.setLocation(troopBar.getRatio(), pixel.toX(G), pixel.toY(G));
                 return 1;
             }
             return 0;
@@ -2191,9 +2181,9 @@ function Announcements() {
     };
     this.mP = function() {
         var H;
-        if (customMap.ds) {
-            var M = customMap.dt.mQ.length;
-            for (H = 0; H < M; H++) announce(400, customMap.dt.mQ[H], 6, 0, C(255, 255, 255), blackMoreOpaque, -1, !1)
+        if (customJSON.isCustomJSON) {
+            var M = customJSON.data.description.length;
+            for (H = 0; H < M; H++) announce(400, customJSON.data.description[H], 6, 0, C(255, 255, 255), blackMoreOpaque, -1, !1)
         }
     };
     this.setCanvasVariables = function() {
@@ -2800,11 +2790,11 @@ function onTouchcancel(g) {
 }
 
 function onDragover(g) {
-    loadCustom.pZ(g)
+    loadCustomMap.preventDragAndDropBehavior(g)
 }
 
 function onDrop(g) {
-    loadCustom.pa(g)
+    loadCustomMap.handleDrop(g)
 }
 
 function pX(g, k) {
@@ -5969,7 +5959,7 @@ function SingleSettings() {
     };
     this.getEntityCount = function() {
         var n;
-        if (customMap.ds) return customMap.dt.xN;
+        if (customJSON.isCustomJSON) return customJSON.data.entityCount;
         var l = 0;
         for (n = this.botSettings.length - 1; 0 <= n; n--) l += this.botSettings[n].group;
         return l
@@ -5981,7 +5971,7 @@ function SingleSettings() {
         wsManager.remote = 0;
         wsManager.manageFirstAction(0, 3) && dataEncoder.singlePlayed(0);
         aJ.ve();
-        if (customMap.ds) customMap.xQ();
+        if (customJSON.isCustomJSON) customJSON.xQ();
         else {
             var n = this.botSettings.length - 2;
             n = 0 > n ? 7 : n;
@@ -5997,13 +5987,13 @@ function SingleSettings() {
     };
     this.mouseDown = function(n, l) {
         if (mainLeaderboard.hidden || mainSettings.buttons[1].buttonClass.hidden || mainSettings.buttons[2].buttonClass.hidden) return !1;
-        if (js.hidden && !customMap.ds) return js.mouseDown(n, l);
+        if (js.hidden && !customJSON.isCustomJSON) return js.mouseDown(n, l);
         var x = this.pP(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.vj(), !0;
-        if (1 === x) return customMap.ds ? (customMap.pU(), c4.canvasDirty = !0) : js.show(), !0;
+        if (1 === x) return customJSON.isCustomJSON ? (customJSON.pU(), c4.canvasDirty = !0) : js.show(), !0;
         if (2 === x) return this.th(), this.xO(), !0;
-        if (customMap.ds) return !1;
+        if (customJSON.isCustomJSON) return !1;
         if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
             difficulty: 0,
             group: maxEntities
@@ -6064,9 +6054,9 @@ function SingleSettings() {
             x = k[2] / 6;
         g(k[0],
             k[1], l, x, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
-        g(k[0] + l + bufferLength, k[1], l, x, "rgba(" + (customMap.ds ? 128 : 0) + ",128,128,0.75)", .4, customMap.ds ? "Reset" : "Maps", -1, -1);
+        g(k[0] + l + bufferLength, k[1], l, x, "rgba(" + (customJSON.isCustomJSON ? 128 : 0) + ",128,128,0.75)", .4, customJSON.isCustomJSON ? "Reset" : "Maps", -1, -1);
         g(k[0] + k[2] - l, k[1], l, x, "rgba(0,128,0,0.75)", .4, "Start", -1, -1);
-        if (!customMap.ds) {
+        if (!customJSON.isCustomJSON) {
             var t = k[2] / 10;
             l = (k[2] - t - 2 * bufferLength) / 2;
             for (n = 0; n < this.botSettings.length; n++) {
@@ -6273,7 +6263,7 @@ function NameInput() {
         1 === jh.pP(t, z, 1, 1) ? n() || g() || (setAndroidState(10), l() ? (this.th(), saveUsername(x), singleSettings.init()) : showError.displayError(4214)) : 0 === jh.pP(t, z, 0, 1) && this.vh()
     };
     this.vh = function() {
-        n() || g() || (setAndroidState(10), void 0 !== x && characters.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vK((Math.abs(x.charCodeAt(1)) + 7) % wsManager.terriWsCount) : ji.vK(jt.xn - 1), l() ? sprites.areAllSpritesLoaded() ? (this.th(), saveUsername(x), customMap.pU(), ji.init()) : showError.displayError(3228) : showError.displayError(4214))
+        n() || g() || (setAndroidState(10), void 0 !== x && characters.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vK((Math.abs(x.charCodeAt(1)) + 7) % wsManager.terriWsCount) : ji.vK(jt.xn - 1), l() ? sprites.areAllSpritesLoaded() ? (this.th(), saveUsername(x), customJSON.pU(), ji.init()) : showError.displayError(3228) : showError.displayError(4214))
     };
     this.xr = function() {
         return !mainSettings.xZ() && !mainLeaderboard.hidden && !openLinkBox.hidden
@@ -6462,8 +6452,8 @@ function Pixel() {
                 innerB[idIndex] = l[teamID][2] + teamColorVariation * teamColorVariations[teamID][2];
             }
         }
-        else if (customMap.ds && customMap.dt.yP) {
-            var customColorValues = customMap.dt.yP;
+        else if (customJSON.isCustomJSON && customJSON.data.yP) {
+            var customColorValues = customJSON.data.yP;
             for (idIndex = entityCount - 1; 0 <= idIndex; idIndex--) {
                 innerR[idIndex] = 4 * customColorValues[idIndex][0];
                 innerG[idIndex] = 4 * customColorValues[idIndex][1];
@@ -6797,46 +6787,70 @@ function z6(g) {
         }
 }
 
-function LoadCustom() {
-    function g(x) {
-        (x = x.target.files) && 0 < x.length && loadCustom.zN(x[0])
+function LoadCustomMap() {
+    function handleFileInputChange(event) {
+        var files = event.target.files;
+        if (files && 0 < files.length) loadCustomMap.loadImage(files[0])
     }
 
-    function k(x) {
-        var t = new Image;
-        t.onload = n;
-        t.src = x.target.result
+    function handleImageLoad1(event) {
+        var image = new Image;
+        image.onload = handleImageLoad2;
+        image.src = event.target.result
     }
 
-    function n(x) {
-        var t = x.target;
-        x = t.width;
-        var z = t.height;
-        4096 < x || 4096 < z || 10 > x || 10 > z ? alert("Image w & h must be between 10 and 4096.") : (currentMapID = customMapID, currentMapSeed = 0, currentMapWidth = x, currentMapHeight = z, mapBaseCanvas.width = currentMapWidth, mapBaseCanvas.height = currentMapHeight, mapBaseCanvasCtx.drawImage(t, 0, 0), mapBaseCanvasImageDataArray = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight).data)
+    function handleImageLoad2(event) {
+        var image = event.target,
+            imgWidth = image.width,
+            imgHeight = image.height;
+        if (4096 < imgWidth || 4096 < imgHeight || 10 > imgWidth || 10 > imgHeight) alert("Image w & h must be between 10 and 4096.")
+        else {
+            currentMapID = customMapID;
+            currentMapSeed = 0;
+            currentMapWidth = imgWidth;
+            currentMapHeight = imgHeight;
+            mapBaseCanvas.width = currentMapWidth;
+            mapBaseCanvas.height = currentMapHeight;
+            mapBaseCanvasCtx.drawImage(image, 0, 0);
+            mapBaseCanvasImageDataArray = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight).data
+        }
     }
-    var l;
+    var fileInput;
     this.init = function() {
-        l = document.createElement("input");
-        l.type = "file";
-        l.onchange = g
+        fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.onchange = handleFileInputChange
     };
-    this.zK = function() {
-        l.click()
+    this.selectFile = function() {
+        fileInput.click()
     };
-    this.zL = function(x) {
-        g(x)
+    this.onFileChange = function(file) {
+        handleFileInputChange(file)
     };
-    this.zN = function(x) {
-        var t = x.name.split(".");
-        var z = t[t.length - 1].toLowerCase();
-        if ("json" === z) customMap.zR(x);
-        else if ("gif" === z || "jpg" === z || "jpeg" === z || "png" === z) customMap.mapName = t[0], z = new FileReader, z.onload = k, z.readAsDataURL(x)
+    this.loadImage = function(file) {
+        var fileExtension = file.name.split(".").pop().toLowerCase();
+        if ("json" === fileExtension) customJSON.loadJSON(file);
+        else if (["gif", "jpg", "jpeg", "png"].includes(fileExtension)) {
+            customJSON.mapName = file.name.split(".")[0];
+            fileExtension = new FileReader;
+            fileExtension.onload = handleImageLoad1;
+            fileExtension.readAsDataURL(file)
+        }
     };
-    this.pZ = function(x) {
-        if (0 === aJ.getState() || 2 === aJ.getState()) x.stopPropagation(), x.preventDefault(), x.dataTransfer.dropEffect = "copy"
+    this.preventDragAndDropBehavior = function(e) {
+        if (0 === aJ.getState() || 2 === aJ.getState()) {
+            e.stopPropagation();
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "copy";
+        }
     };
-    this.pa = function(x) {
-        if (0 === aJ.getState() || 2 === aJ.getState()) x.stopPropagation(), x.preventDefault(), (x = x.dataTransfer.files) && 0 < x.length && loadCustom.zN(x[0])
+    this.handleDrop = function(e) {
+        if (0 === aJ.getState() || 2 === aJ.getState()) {
+            e.stopPropagation();
+            e.preventDefault();
+            var files = e.dataTransfer.files;
+            if (files && 0 < files.length) loadCustomMap.loadImage(files[0])
+        }
     }
 }
 
@@ -6869,135 +6883,143 @@ function AntiFullSend() {
     }
 }
 
-function CustomMap() {
-    function g(z) {
-        customMap.ds = !0;
-        customMap.zf(JSON.parse(z.target.result));
-        customMap.lH()
+function CustomJSON() {
+    function handleCustomJSONLoad(z) {
+        customJSON.isCustomJSON = !0;
+        customJSON.zf(JSON.parse(z.target.result));
+        customJSON.lH()
     }
 
-    function k(z) {
-        var y;
-        if (22 >= z.length) return !1;
-        customMap.dt.mapID = 0;
-        customMap.dt.mapSeed = 0;
+    function loadJSONCustomMap(data) {
+        var mapBaseCanvasImageData;
+        if (22 >= data.length) return !1;
+        customJSON.data.mapID = 0;
+        customJSON.data.mapSeed = 0;
         loadMap(0, 0);
-        "data:image/png;base64," !== z.substring(0, 22) && (z = "data:image/png;base64," + z);
-        var A = new Image;
-        A.onload = function() {
-            currentMapWidth = A.width;
-            currentMapHeight = A.height;
-            4096 < currentMapWidth || 4096 < currentMapHeight || 10 > currentMapWidth || 10 > currentMapHeight ? (loadMap(0, 0), alert("Image w & h must be between 10 and 4096.")) : (currentMapID = customMapID, currentMapSeed = 0, mapBaseCanvas.width = currentMapWidth, mapBaseCanvas.height = currentMapHeight, mapBaseCanvasCtx.drawImage(A, 0, 0), y = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight), mapBaseCanvasImageDataArray = y.data)
+        "data:image/png;base64," !== data.substring(0, 22) && (data = "data:image/png;base64," + data);
+        var image = new Image;
+        image.onload = function() {
+            currentMapWidth = image.width;
+            currentMapHeight = image.height;
+            if (4096 < currentMapWidth || 4096 < currentMapHeight || 10 > currentMapWidth || 10 > currentMapHeight) {
+                loadMap(0, 0);
+                alert("Image w & h must be between 10 and 4096.");
+            } else {
+                currentMapID = customMapID;
+                currentMapSeed = 0;
+                mapBaseCanvas.width = currentMapWidth;
+                mapBaseCanvas.height = currentMapHeight;
+                mapBaseCanvasCtx.drawImage(image, 0, 0);
+                mapBaseCanvasImageData = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
+                mapBaseCanvasImageDataArray = mapBaseCanvasImageData.data
+            }
         };
-        A.src = z;
-        customMap.dt.zq = "";
+        image.src = data;
+        customJSON.data.mapBase64 = "";
         return !0
     }
 
-    function n(z, y, A, B) {
-        return "string" !== typeof z || z.length < y ? B : z.length > A ? z.substring(0, A) : z
+    function truncateString(string, minLength, maxLength, defaultName) {
+        return "string" !== typeof string || string.length < minLength ? defaultName : string.length > maxLength ? string.substring(0, maxLength) : string
     }
 
-    function l(z, y, A) {
-        z = "number" === typeof z ? Math.floor(z) : y;
-        return Math.min(Math.max(z, y), A)
+    function clamp(num, minRange, maxRange) {
+        num = "number" === typeof num ? Math.floor(num) : minRange;
+        return Math.min(Math.max(num, minRange), maxRange)
     }
 
-    function x(z, y) {
-        return "boolean" === typeof z ? z : y
+    function useIfBoolean(bool, param_false) {
+        return "boolean" === typeof bool ? bool : param_false
     }
 
-    function t(z, y, A, B) {
-        if (!Array.isArray(z) || 1 > z.length) return null;
-        var C = 8 === B ? new Uint8Array(y) : new Uint16Array(y);
-        var E = z.length;
-        for (B = 0; B < y; B++) C[B] = l(z[B % E], 0, A);
-        return C
+    function createClampedArray(oldArray, oldLength, maxValue, bitsPerElement) {
+        if (!Array.isArray(oldArray) || 1 > oldArray.length) return null;
+        var newArray = 8 === bitsPerElement ? new Uint8Array(oldLength) : new Uint16Array(oldLength);
+        var newLength = oldArray.length;
+        for (var index = 0; index < oldLength; index++) newArray[index] = clamp(oldArray[index % newLength], 0, maxValue);
+        return newArray
     }
-    this.ds = !1;
-    this.dt = null;
+    this.isCustomJSON = !1;
+    this.data = null;
     this.mapName = "";
     this.pU = function() {
-        this.ds = !1;
-        this.dt = null
+        this.isCustomJSON = !1;
+        this.data = null
     };
     this.xQ = function() {
-        this.dt.yP &&
-            this.dt.za && (this.dt.yP[0] = mainSettings.buttons[2].buttonClass.getRGB64());
-        gameInit(this.dt.seedSpawn, 0, this.zc(), this.dt.gamemode, !1)
+        this.data.yP && this.data.freeColor && (this.data.yP[0] = mainSettings.buttons[2].buttonClass.getRGB64());
+        gameInit(this.data.seedSpawn, 0, this.zc(), this.data.gamemode, !1)
     };
     this.zc = function() {
         return [{
-            name: this.dt.zd ? nameInput.getInput() : this.dt.ze[0],
+            name: this.data.freeNickname ? nameInput.getInput() : this.data.ze[0],
             color: [0, 0, 0],
             status: 0
         }]
     };
-    this.zR = function(z) {
+    this.loadJSON = function(z) {
         var y = new FileReader;
-        y.onload = g;
+        y.onload = handleCustomJSONLoad;
         y.readAsText(z)
     };
-    this.zf = function(z) {
-        this.dt = {};
-        this.dt.xN = l(z.numberPlayers, 1, 512);
-        this.dt.zi = l(z.modeID, 0, 1);
-        this.dt.mapID = l(z.mapID, 0, customMapID - 1);
-        this.dt.mapSeed = l(z.mapSeed, 0, 16383);
-        this.dt.seedSpawn = l(z.seedSpawn, 0, 16383);
-        this.dt.jL = x(z.selectableSpawn, !1);
-        this.dt.zd = x(z.selectableName, !1);
-        this.dt.za =
-            x(z.selectableColor, !1);
-        this.mapName = this.dt.mapName = n(z.mapName, 1, 25, "Custom Map");
-        var y = this.dt;
-        var A = z.description;
-        var B;
-        if (!Array.isArray(A) || 1 > A.length) A = [];
+    this.zf = function(result) {
+        this.data = {};
+        this.data.entityCount = clamp(result.numberPlayers, 1, 512);
+        this.data.customGamemodeID = clamp(result.modeID, 0, 1);
+        this.data.mapID = clamp(result.mapID, 0, customMapID - 1);
+        this.data.mapSeed = clamp(result.mapSeed, 0, 16383);
+        this.data.seedSpawn = clamp(result.seedSpawn, 0, 16383);
+        this.data.freeSpawn = useIfBoolean(result.selectableSpawn, !1);
+        this.data.freeNickname = useIfBoolean(result.selectableName, !1);
+        this.data.freeColor = useIfBoolean(result.selectableColor, !1);
+        this.mapName = this.data.mapName = truncateString(result.mapName, 1, 25, "Custom Map");
+        var data = this.data;
+        var mapDescription = result.description;
+        var index;
+        if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = [];
         else {
-            var C = A.length;
-            for (B = 0; B < C; B++) A[B] = n(A[B], 0, 100, "")
+            var descriptionLength = mapDescription.length;
+            for (index = 0; index < descriptionLength; index++) mapDescription[index] = truncateString(mapDescription[index], 0, 100, "")
         }
-        y.mQ = A;
-        this.dt.hH = t(z.playerX, this.dt.xN, 4096, 16);
-        this.dt.hS = t(z.playerY, this.dt.xN, 4096, 16);
-        this.dt.zn = t(z.playerTeam, this.dt.xN, 8, 8);
-        this.dt.du = t(z.playerStrength, this.dt.xN, 5, 8);
-        y = this.dt;
-        A = z.playerColor;
-        B = this.dt.xN;
-        if (!Array.isArray(A) || 1 > A.length) A = null;
+        data.description = mapDescription;
+        this.data.spawnX = createClampedArray(result.playerX, this.data.entityCount, 4096, 16);
+        this.data.spawnY = createClampedArray(result.playerY, this.data.entityCount, 4096, 16);
+        this.data.teamArray = createClampedArray(result.playerTeam, this.data.entityCount, 8, 8);
+        this.data.difficulty = createClampedArray(result.playerStrength, this.data.entityCount, 5, 8);
+        data = this.data;
+        mapDescription = result.playerColor;
+        index = this.data.entityCount;
+        if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = null;
         else {
-            var E = Array(B);
-            var F = A.length;
-            for (C = 0; C < B; C++) E[C] = t(A[C % F], 3, 63, 8);
-            A = E
+            var E = Array(index);
+            var F = mapDescription.length;
+            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) E[descriptionLength] = createClampedArray(mapDescription[descriptionLength % F], 3, 63, 8);
+            mapDescription = E
         }
-        y.yP = A;
-        y = this.dt;
-        A = z.playerName;
-        B = this.dt.xN;
-        if (!Array.isArray(A) || 1 > A.length) A = null;
+        data.yP = mapDescription;
+        data = this.data;
+        mapDescription = result.playerName;
+        index = this.data.entityCount;
+        if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = null;
         else {
-            E = Array(B);
-            F = A.length;
-            for (C = 0; C < B; C++) E[C] = n(A[C % F], 3, 26, "Bot");
-            A = E
+            E = Array(index);
+            F = mapDescription.length;
+            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) E[descriptionLength] = truncateString(mapDescription[descriptionLength % F], 3, 26, "Bot");
+            mapDescription = E
         }
-        y.ze = A;
-        this.dt.zq = "string" === typeof z.mapBase64 ? z.mapBase64 : "";
-        this.dt.zd = this.dt.zd || !this.dt.ze;
-        this.dt.gamemode = 0 === this.dt.zi ? 7 : 2 === this.dt.zi ? 9 : 6;
-        this.dt.hH = this.dt.hS ? this.dt.hH : null
+        data.ze = mapDescription;
+        this.data.mapBase64 = "string" === typeof result.mapBase64 ? result.mapBase64 : "";
+        this.data.freeNickname = this.data.freeNickname || !this.data.ze;
+        this.data.gamemode = 0 === this.data.customGamemodeID ? 7 : 2 === this.data.customGamemodeID ? 9 : 6;
+        this.data.spawnX = this.data.spawnY ? this.data.spawnX : null
     };
     this.lH = function() {
-        k(this.dt.zq) || loadMap(this.dt.mapID, this.dt.mapSeed)
+        loadJSONCustomMap(this.data.mapBase64) || loadMap(this.data.mapID, this.data.mapSeed)
     };
     this.zx = function() {
         var z, y = 0,
-            A = this.dt.xN;
-        for (z = 0; z < A; z++) this.dt.zn[z] >
-            y && (y = this.dt.zn[z]);
+            A = this.data.entityCount;
+        for (z = 0; z < A; z++) this.data.teamArray[z] > y && (y = this.data.teamArray[z]);
         return Math.max(0, y - 1)
     }
 }
@@ -7530,9 +7552,9 @@ function NickNames() {
             for (l = x.length - 1; 0 <= l; l--) g[n] = g[n].replace(x[l], t[l])
     };
     this.jT = function() {
-        if (customMap.ds && customMap.dt.ze) {
+        if (customJSON.isCustomJSON && customJSON.data.ze) {
             var n;
-            for (n = playerCount; n < maxEntities; n++) nickname[n] = customMap.dt.ze[n % entityCount]
+            for (n = playerCount; n < maxEntities; n++) nickname[n] = customJSON.data.ze[n % entityCount]
         } else if (9 === gamemode) {
             var l = fakeRandom.random(),
                 x = k.length,
@@ -7859,7 +7881,7 @@ function main() {
     mapInfo.init();
     configFakeMap.init();
     aJ.init();
-    loadCustom.init();
+    loadCustomMap.init();
     jt.init();
     wsManager.init();
     playtime.init();
@@ -8464,7 +8486,7 @@ function MapInfo() {
         return mapInfoArray[mapID]
     };
     this.getMapName = function() {
-        return currentMapID === customMapID ? customMap.mapName : this.getValuebyID(currentMapID).name
+        return currentMapID === customMapID ? customJSON.mapName : this.getValuebyID(currentMapID).name
     }
 }
 var mapCanvas, pixelRGBA, mapCanvasCtx, mapCanvasImgData;
@@ -9687,12 +9709,12 @@ function Teams() {
     this.init = function(playerInfo) {
         this.teamArray = new Uint8Array(maxEntities);
         this.setDefault_teamIDs();
-        teamGame && (customMap.ds && customMap.dt.zn ? this.teamsCustomGames() : 9 === gamemode ? this.teamsZombieMode() : this.update(playerInfo))
+        teamGame && (customJSON.isCustomJSON && customJSON.data.teamArray ? this.teamsCustomGames() : 9 === gamemode ? this.teamsZombieMode() : this.update(playerInfo))
     };
     this.teamsCustomGames = function() {
         var l, x = entityCount;
         this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-        for (l = 0; l < x; l++) this.teamArray[l] = customMap.dt.zn[l]
+        for (l = 0; l < x; l++) this.teamArray[l] = customJSON.data.teamArray[l]
     };
     this.setDefault_teamIDs = function() {
         for (var l = this.teamIDs.length - 1; 0 <= l; l--) this.teamIDs[l] = l;
