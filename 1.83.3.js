@@ -9784,7 +9784,7 @@ function Teams() {
         this.sortTeamColorsByScore(teamColorScore);
         singleplayer || this.distributeClanPlayersToTeams(playersPerTeam, playersTeamColor, players2ndTeamColor);
         this.distributeOtherPlayersToTeams(playersTeamColor, players2ndTeamColor, playersPerTeam);
-        singleplayer ? this.a63() : this.a64()
+        singleplayer ? this.distributeBotsSingle() : this.distributeBotsMulti()
     };
     this.setPlayerTeamColor = function(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
         var y, A, B = this.teamIDs.length - 1,
@@ -9932,16 +9932,26 @@ function Teams() {
             }
         }
     };    
-    this.a63 = function() {
-        var l, x = new Uint16Array(teamCount);
-        x[teamCount - 1] = maxEntities;
-        for (l = teamCount - 2; 0 <= l; l--) x[l] = singleSettings.botSettings[l].group;
-        x[0]--;
-        var t = 0 === x[0] ? 1 : 0;
-        for (l = playerCount; l < maxEntities; l++) this.teamArray[l] = t + 1, x[t]--, 0 >= x[t] && t++
-    };
-    this.a64 = function() {
-        for (var l = playerCount; l < maxEntities; l++) this.teamArray[l] = 1 + l % teamCount
+    this.distributeBotsSingle = function() {
+        var i, maxEntitiesPerTeam = new Uint16Array(teamCount);
+        maxEntitiesPerTeam[teamCount - 1] = maxEntities;
+
+        for (i = teamCount - 2; i >= 0; i--) {
+            maxEntitiesPerTeam[i] = singleSettings.botSettings[i].group;
+        }
+        maxEntitiesPerTeam[0]--;
+        var currentTeam = maxEntitiesPerTeam[0] === 0 ? 1 : 0;
+
+        for (i = playerCount; i < maxEntities; i++) {
+            this.teamArray[i] = currentTeam + 1;
+            maxEntitiesPerTeam[currentTeam]--;
+            if (maxEntitiesPerTeam[currentTeam] <= 0) currentTeam++;
+        }
+    };    
+    this.distributeBotsMulti = function() {
+        for (var i = playerCount; i < maxEntities; i++){
+         this.teamArray[i] = 1 + i % teamCount
+        }
     };
     this.il = function(l) {
         if (singleplayer) return [512, ""];
