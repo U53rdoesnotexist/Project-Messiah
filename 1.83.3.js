@@ -692,46 +692,89 @@ function botCheckAdvanceAndProcessNeutralAttack(id, amount) {
 var botStartingTroops = [60, 74, 112, 200, 256, 512];
 
 function DifficultyEngine() {
-    var botTiming, sendRatio, n, l, x, t;
+    var botTiming, sendRatio, randomSendRatio, sendRatioFluctuations, botTimingInterval, randomTimingInterval;
     this.difficultyLabel = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
     this.dm = [97, 95, 93, 90, 87, 84]; //Unused
     this.attackBotsProbi = [98, 95, 90, 40, 20, 0];
     this.boatSendRatio = [85, 70, 65, 30, 7, 3];
     this.attackLeastProbi = [0, 0, 0, 0, 50, 90];
     this.init = function() {
-        var z;
+        var botIndex;
         botTiming = new Uint8Array(botCount);
         sendRatio = new Uint16Array(botCount);
-        n = new Uint16Array(botCount);
-        l = new Uint8Array(botCount);
+        randomSendRatio = new Uint16Array(botCount);
+        sendRatioFluctuations = new Uint8Array(botCount);
         this.difficulty = new Uint8Array(botCount);
-        x = new Uint16Array(botCount);
-        t = new Uint16Array(botCount);
+        botTimingInterval = new Uint16Array(botCount);
+        randomTimingInterval = new Uint16Array(botCount);
         if (customJSON.isCustomJSON) {
-            if (customJSON.data.difficulty)
-                for (z = botCount - 1; 0 <= z; z--) this.difficulty[z] = customJSON.data.difficulty[z + 1]
-        } else if (9 === gamemode) this.dw();
-        else if (singleplayer)
-            if (teamGame)
-                for (z = botCount - 1; 0 <=
-                    z; z--) this.difficulty[z] = singleSettings.botSettings[teams.teamArray[z + playerCount] - 1].difficulty;
-            else
-                for (z = botCount - 1; 0 <= z; z--) this.difficulty[z] = singleSettings.botSettings[0].difficulty;
-        else {
+            if (customJSON.data.difficulty) {
+                for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
+                    this.difficulty[botIndex] = customJSON.data.difficulty[botIndex + 1];
+                }
+            }
+        } else if (9 === gamemode) {
+            this.setZombieDifficulty();
+        } else if (singleplayer) {
+            if (teamGame) {
+                for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
+                    this.difficulty[botIndex] = singleSettings.botSettings[teams.teamArray[botIndex + playerCount] - 1].difficulty;
+                }
+            } else {
+                for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
+                    this.difficulty[botIndex] = singleSettings.botSettings[0].difficulty;
+                }
+            }
+        } else {
             var y = 8 === gamemode ? 1 : 0;
-            for (z = botCount - 1; 0 <= z; z--) this.difficulty[z] = y
+            for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
+                this.difficulty[botIndex] = y;
+            }
+        }        
+        for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
+            if (2 >= this.difficulty[botIndex]) {
+                sendRatioFluctuations[botIndex] = 5;
+                botTimingInterval[botIndex] = randomTimingInterval[botIndex] = 1040;
+                if (0 === this.difficulty[botIndex]) {
+                    sendRatio[botIndex] = 1E3;
+                    randomSendRatio[botIndex] = 1E3;
+                } else if (1 === this.difficulty[botIndex]) {
+                    sendRatio[botIndex] = 1E3;
+                    randomSendRatio[botIndex] = 920;
+                    botTimingInterval[botIndex] = randomTimingInterval[botIndex] = 1100
+                } else {
+                    sendRatio[botIndex] = 1E3;
+                    randomSendRatio[botIndex] = 870;
+                }
+            } else if (4 >= this.difficulty[botIndex]) {
+                sendRatioFluctuations[botIndex] = 1 + fakeRandom.cf(20);
+                randomTimingInterval[botIndex] = 250 + fakeRandom.cf(1501);
+                botTimingInterval[botIndex] = 500 + fakeRandom.cf(501);
+                if (3 === this.difficulty[botIndex]) {
+                    sendRatio[botIndex] = 600 + fakeRandom.cf(101);
+                    randomSendRatio[botIndex] = 300 + fakeRandom.cf(401);
+                } else {
+                    sendRatio[botIndex] = 300 + fakeRandom.cf(201);
+                    randomSendRatio[botIndex] = 100 + fakeRandom.cf(201);
+                }
+            } else {
+                botTimingInterval[botIndex] = 1E3;
+                randomTimingInterval[botIndex] = 1E3;
+                sendRatioFluctuations[botIndex] = 35 + fakeRandom.cf(16);
+                sendRatio[botIndex] = 400 + fakeRandom.cf(101);
+                randomSendRatio[botIndex] = 50 + fakeRandom.cf(101);
+            }
+            botTiming[botIndex] = 1 + divideFloor(botTimingInterval[botIndex] * fakeRandom.random(), 10 * fakeRandom.value(100))
         }
-        for (z = botCount - 1; 0 <= z; z--) 2 >= this.difficulty[z] ? (l[z] = 5, x[z] = t[z] = 1040, 0 === this.difficulty[z] ? (sendRatio[z] = 1E3, n[z] = 1E3) : 1 === this.difficulty[z] ? (sendRatio[z] = 1E3, n[z] = 920, x[z] = t[z] = 1100) : (sendRatio[z] = 1E3, n[z] = 870)) : 4 >= this.difficulty[z] ? (l[z] = 1 + fakeRandom.cf(20), t[z] = 250 + fakeRandom.cf(1501), x[z] = 500 + fakeRandom.cf(501), 3 === this.difficulty[z] ? (sendRatio[z] = 600 + fakeRandom.cf(101), n[z] = 300 + fakeRandom.cf(401)) : (sendRatio[z] = 300 + fakeRandom.cf(201), n[z] = 100 + fakeRandom.cf(201))) : (x[z] = 1E3, t[z] = 1E3, l[z] =
-            35 + fakeRandom.cf(16), sendRatio[z] = 400 + fakeRandom.cf(101), n[z] = 50 + fakeRandom.cf(101)), botTiming[z] = 1 + divideFloor(x[z] * fakeRandom.random(), 10 * fakeRandom.value(100))
     };
-    this.dw = function() {
-        var z, y;
-        var A = zombieSettings.e3;
-        for (z = A - 1; 0 <= z; z--) this.difficulty[z] = 5;
-        for (y = 0; 6 > y; y++)
-            if (0 < zombieSettings.e4[y]) {
-                for (z = A + zombieSettings.e4[y] - 1; z >= A; z--) this.difficulty[z] = y;
-                A += zombieSettings.e4[y]
+    this.setZombieDifficulty = function() {
+        var bIndex, dIndex;
+        var helperBotCount = zombieSettings.helperBotCount;
+        for (bIndex = helperBotCount - 1; 0 <= bIndex; bIndex--) this.difficulty[bIndex] = 5;
+        for (dIndex = 0; 6 > dIndex; dIndex++)
+            if (0 < zombieSettings.difficultyArray[dIndex]) {
+                for (bIndex = helperBotCount + zombieSettings.difficultyArray[dIndex] - 1; bIndex >= helperBotCount; bIndex--) this.difficulty[bIndex] = dIndex;
+                helperBotCount += zombieSettings.difficultyArray[dIndex]
             }
     };
     this.setTiming = function(botIndex, timing) {
@@ -739,9 +782,12 @@ function DifficultyEngine() {
     };
     this.update = function(botIndex) {
         if (0 === --botTiming[botIndex]) {
-            x[botIndex] !== t[botIndex] && (x[botIndex] += x[botIndex] < t[botIndex] ? 3 : -3);
-            sendRatio[botIndex] !== n[botIndex] && (sendRatio[botIndex] += sendRatio[botIndex] < n[botIndex] ? l[botIndex] : -l[botIndex], sendRatio[botIndex] = Math.abs(sendRatio[botIndex] - n[botIndex]) <= l[botIndex] ? n[botIndex] : sendRatio[botIndex]);
-            botTiming[botIndex] = divideFloor(x[botIndex], 10);
+            if (botTimingInterval[botIndex] !== randomTimingInterval[botIndex]) botTimingInterval[botIndex] += botTimingInterval[botIndex] < randomTimingInterval[botIndex] ? 3 : -3
+            if (sendRatio[botIndex] !== randomSendRatio[botIndex]) {
+                sendRatio[botIndex] += sendRatio[botIndex] < randomSendRatio[botIndex] ? sendRatioFluctuations[botIndex] : -sendRatioFluctuations[botIndex];
+                sendRatio[botIndex] = Math.abs(sendRatio[botIndex] - randomSendRatio[botIndex]) <= sendRatioFluctuations[botIndex] ? randomSendRatio[botIndex] : sendRatio[botIndex]
+            };
+            botTiming[botIndex] = divideFloor(botTimingInterval[botIndex], 10);
             var id = botIndex + playerCount;
             botProcessStrategy(id, divideFloor(sendRatio[botIndex] * troops[id], 1E3))
         }
@@ -7558,7 +7604,7 @@ function NickNames() {
         } else if (9 === gamemode) {
             var l = fakeRandom.random(),
                 x = k.length,
-                t = playerCount + zombieSettings.e3;
+                t = playerCount + zombieSettings.helperBotCount;
             for (n = t - 1; n >= playerCount; n--) nickname[n] = "[Bot] " + k[(n + l) % x];
             for (n = t; n < maxEntities; n++) nickname[n] = "[Zombie] " + k[(n + l) % x]
         } else if (singleplayer)
@@ -7940,15 +7986,15 @@ function ZombieSettings() {
     this.a2S = function() {
         var k = [8, 51, 68, 88, 138, 178, 313];
         var n = [35, 330];
-        this.e3 = 0;
-        this.e4 = [0, 0, 0, 0, 0, 0];
-        playerCount <= k[0] ? (this.e3 = n[0] - playerCount, this.e4[1] = n[1] - divideFloor(n[1] * playerCount, k[0]), this.e4[0] = 512 - this.e4[1] - n[0]) : playerCount <= k[1] ? (this.e3 = n[0] - k[0] - divideFloor((n[0] - k[0]) * (playerCount - k[0]), k[1] - k[0]), this.e4[0] = 512 - this.e3 - playerCount) : playerCount <= k[2] ? (this.e4[0] = 512 - k[1] - divideFloor((512 - k[1]) * (playerCount - k[1]), k[2] - k[1]), this.e4[1] = 512 - playerCount - this.e4[0]) : playerCount <= k[3] ? (this.e4[1] = 512 - k[2] - divideFloor((512 - k[2]) * (playerCount - k[2]), k[3] - k[2]),
-            this.e4[2] = 512 - playerCount - this.e4[1]) : playerCount <= k[4] ? (this.e4[2] = 512 - k[3] - divideFloor((512 - k[3]) * (playerCount - k[3]), k[4] - k[3]), this.e4[3] = 512 - playerCount - this.e4[2]) : playerCount <= k[5] ? (this.e4[3] = 512 - k[4] - divideFloor((512 - k[4]) * (playerCount - k[4]), k[5] - k[4]), this.e4[4] = 512 - playerCount - this.e4[3]) : playerCount <= k[6] ? (this.e4[4] = 512 - k[5] - divideFloor((512 - k[5]) * (playerCount - k[5]), k[6] - k[5]), this.e4[5] = 512 - playerCount - this.e4[4]) : this.e4[5] = 512 - playerCount;
-        n = this.e3;
-        for (k = 0; 6 > k; k++) n += this.e4[k];
+        this.helperBotCount = 0;
+        this.difficultyArray = [0, 0, 0, 0, 0, 0];
+        playerCount <= k[0] ? (this.helperBotCount = n[0] - playerCount, this.difficultyArray[1] = n[1] - divideFloor(n[1] * playerCount, k[0]), this.difficultyArray[0] = 512 - this.difficultyArray[1] - n[0]) : playerCount <= k[1] ? (this.helperBotCount = n[0] - k[0] - divideFloor((n[0] - k[0]) * (playerCount - k[0]), k[1] - k[0]), this.difficultyArray[0] = 512 - this.helperBotCount - playerCount) : playerCount <= k[2] ? (this.difficultyArray[0] = 512 - k[1] - divideFloor((512 - k[1]) * (playerCount - k[1]), k[2] - k[1]), this.difficultyArray[1] = 512 - playerCount - this.difficultyArray[0]) : playerCount <= k[3] ? (this.difficultyArray[1] = 512 - k[2] - divideFloor((512 - k[2]) * (playerCount - k[2]), k[3] - k[2]),
+            this.difficultyArray[2] = 512 - playerCount - this.difficultyArray[1]) : playerCount <= k[4] ? (this.difficultyArray[2] = 512 - k[3] - divideFloor((512 - k[3]) * (playerCount - k[3]), k[4] - k[3]), this.difficultyArray[3] = 512 - playerCount - this.difficultyArray[2]) : playerCount <= k[5] ? (this.difficultyArray[3] = 512 - k[4] - divideFloor((512 - k[4]) * (playerCount - k[4]), k[5] - k[4]), this.difficultyArray[4] = 512 - playerCount - this.difficultyArray[3]) : playerCount <= k[6] ? (this.difficultyArray[4] = 512 - k[5] - divideFloor((512 - k[5]) * (playerCount - k[5]), k[6] - k[5]), this.difficultyArray[5] = 512 - playerCount - this.difficultyArray[4]) : this.difficultyArray[5] = 512 - playerCount;
+        n = this.helperBotCount;
+        for (k = 0; 6 > k; k++) n += this.difficultyArray[k];
         if (n > botCount) {
-            for (k = this.e3 = 0; 5 > k; k++) this.e4[k] = 0;
-            this.e4[5] = botCount
+            for (k = this.helperBotCount = 0; 5 > k; k++) this.difficultyArray[k] = 0;
+            this.difficultyArray[5] = botCount
         }
     };
     this.zI = function(k) {
@@ -9723,8 +9769,8 @@ function Teams() {
     };
     this.teamsZombieMode = function() {
         var l;
-        for (l = playerCount + zombieSettings.e3 - 1; 0 <= l; l--) this.teamArray[l] = 1;//Players
-        for (l = playerCount + zombieSettings.e3; l < maxEntities; l++) this.teamArray[l] = 2;//Zombies
+        for (l = playerCount + zombieSettings.helperBotCount - 1; 0 <= l; l--) this.teamArray[l] = 1;//Players
+        for (l = playerCount + zombieSettings.helperBotCount; l < maxEntities; l++) this.teamArray[l] = 2;//Zombies
         this.teamIDs[1] = 7;
         this.teamIDs[2] = 8
     };
