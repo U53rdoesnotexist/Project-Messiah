@@ -447,7 +447,7 @@ function MainLeaderboardIcon() {
 function cL(g, k, n, l) {
     var x = divideFloor(3 * troops[g], 256);
     l -= l >= divideFloor(troops[g], 2) ? x : 0;
-    cP(n, g);
+    takePixelsAndChangeToMoving(n, g);
     attacks.set(g, l, k);
     troops[g] -= l + x;
     speed.cR(g, !1)
@@ -464,7 +464,7 @@ function cS(g, k) {
                 }
 }
 
-function cP(g, k) {
+function takePixelsAndChangeToMoving(g, k) {
     for (var n = potentialBorderAdvances[k].length - 1; n >= g; n--) pixel.changeToMovingPixel(potentialBorderAdvances[k][n], k)
 }
 
@@ -606,7 +606,7 @@ function dI(g, k, n, l) {
         for (n = fakeRandom.cf(aliveCount), l = 0; l < aliveCount; l++) {
             var x = aliveEntities[(l + n) % aliveCount];
             if (teams.teamArray[x] === teams.teamArray[g] && 1 === d7[x]) {
-                da(g, x, k);
+                processDonation(g, x, k);
                 x < playerCount && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
                 break
             }
@@ -1755,7 +1755,7 @@ function jx() {
             this.end();
             if (this.isHuman(targetID) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.lR(), 1;
             announcements.lS();
-            singleplayer ? da(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
+            singleplayer ? processDonation(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
             return 1
         }
         if (4 === type) {
@@ -4374,43 +4374,71 @@ function kd() {
     }
 }
 
-function processAttack(g, k, n) {
-    if (!(0 === isAlive[g] || 0 > n || 1E3 < n || 2 === playerStatus[g])) {
-        var l = divideFloor(n * troops[g], 1E3);
-        10 === gamemode && k < playerCount && 2 !== playerStatus[k] && (l = antiFullSend.tq(g, l));
-        if (teamGame && k < maxEntities && !isNotTeamate(g, k)) da(g, k, l);
+function processAttack(authorID, targetID, ratio) {
+    if (!(0 === isAlive[authorID] || 0 > ratio || 1E3 < ratio || 2 === playerStatus[authorID])) {
+        var amount = divideFloor(ratio * troops[authorID], 1E3);
+        if (10 === gamemode && targetID < playerCount && 2 !== playerStatus[targetID]) amount = antiFullSend.tq(authorID, amount)
+        if (teamGame && targetID < maxEntities && !isNotTeamate(authorID, targetID)) processDonation(authorID, targetID, amount);
         else {
-            k < maxEntities && 0 === isAlive[k] && (k = maxEntities);
-            var x = divideFloor(3 * troops[g], 256);
-            l -= 500 <= n ? x : 0;
-            if (!(l <= neutralLandCost) && attacks.isUnderAttackCap(g)) {
-                var t = potentialBorderAdvances[g].length;
-                k === maxEntities ? cX(g) : cS(g, k);
-                if (0 !== t || 0 !== potentialBorderAdvances[g].length) teamGame && (d7[g] = 1), g === myID && (statistics.numbers[0] += 500 <= n ? n - 12 : n, statistics.numbers[1]++, statistics.numbers[12] += x, statistics.numbers[13] += l), cP(t, g), attacks.set(g, l, k), troops[g] -= l + x, speed.cR(g, !1)
+            if (targetID < maxEntities && 0 === isAlive[targetID]) targetID = maxEntities
+            var tax = divideFloor(3 * troops[authorID], 256);
+            amount -= 500 <= ratio ? tax : 0;
+            if (!(amount <= neutralLandCost) && attacks.isUnderAttackCap(authorID)) {
+                var oldPotentialAdvancesLength = potentialBorderAdvances[authorID].length;
+                targetID === maxEntities ? cX(authorID) : cS(authorID, targetID);
+                if (0 !== oldPotentialAdvancesLength || 0 !== potentialBorderAdvances[authorID].length) {
+                    if (teamGame) d7[authorID] = 1
+                    if (authorID === myID) {
+                        statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
+                        statistics.numbers[1]++;
+                        statistics.numbers[12] += tax;
+                        statistics.numbers[13] += amount
+                    }
+                    takePixelsAndChangeToMoving(oldPotentialAdvancesLength, authorID);
+                    attacks.set(authorID, amount, targetID);
+                    troops[authorID] -= amount + tax;
+                    speed.cR(authorID, !1)
+                }
             }
         }
     }
 }
 
-function processSendBoat(g, k, n, l) {
-    10 === gamemode && g < playerCount && (l = antiFullSend.tq(g, l));
-    if (l <= neutralLandCost || !attacks.isUnderAttackCap(g)) return !1;
-    k = eK.cR(g, k, n);
-    if (0 === k) return !1;
-    n = divideFloor(3 * troops[g], 128);
-    l >= divideFloor(troops[g], 2) && (l -= n);
-    g === myID && (statistics.numbers[12] += n);
-    attacks.addBoat(g, l, k);
-    troops[g] -= l + n;
+function processSendBoat(id, closestPIndex, targetPIndex, amount) {
+    var boatID, tax;
+    if (10 === gamemode && id < playerCount) amount = antiFullSend.tq(id, amount)
+    if (amount <= neutralLandCost || !attacks.isUnderAttackCap(id)) return !1;
+    boatID = eK.cR(id, closestPIndex, targetPIndex);
+    if (0 === boatID) return !1;
+    tax = divideFloor(3 * troops[id], 128);
+    amount >= divideFloor(troops[id], 2) && (amount -= tax);
+    id === myID && (statistics.numbers[12] += tax);
+    attacks.addBoat(id, amount, boatID);
+    troops[id] -= amount + tax;
     return !0
 }
 
-function da(g, k, n) {
-    if (!(!teamGame || 0 === isAlive[g] || 0 === isAlive[k] || 0 > n || n > troops[g] || g === k || isNotTeamate(g, k) || g < playerCount && k < playerCount && 7 > gamemode && 1071 > c4.ticksElapsed())) {
-        var l = divideFloor(troops[g], 16);
-        n -= n >= divideFloor(troops[g], 2) ? l : 0;
-        var x = land[k] * maxTroopsToLandRatio - troops[k];
-        0 >= x || (n = n > x ? x : n, g === myID && (announcements.n8(n, k), statistics.numbers[12] += l, statistics.numbers[16] += n), k === myID && (announcements.nA(n, g), statistics.numbers[10] += n), troops[g] -= n + l, troops[k] += n)
+function processDonation(authorID, targetID, amount) {
+    if (!(!teamGame || 0 === isAlive[authorID] || 0 === isAlive[targetID] || 0 > amount || amount > troops[authorID] || authorID === targetID || 
+        isNotTeamate(authorID, targetID) || authorID < playerCount && targetID < playerCount && 7 > gamemode && 1071 > c4.ticksElapsed())) {
+        
+        var tax = divideFloor(troops[authorID], 16);
+        amount -= amount >= divideFloor(troops[authorID], 2) ? tax : 0;
+        var maxReceivableAmount = land[targetID] * maxTroopsToLandRatio - troops[targetID];
+        if (0 < maxReceivableAmount) {
+            amount = amount > maxReceivableAmount ? maxReceivableAmount : amount;
+            if (authorID === myID) {
+                announcements.n8(amount, targetID);
+                statistics.numbers[12] += tax;
+                statistics.numbers[16] += amount;
+            }
+            if (targetID === myID) {
+                announcements.nA(amount, authorID);
+                statistics.numbers[10] += amount;
+            }
+            troops[authorID] -= amount + tax;
+            troops[targetID] += amount;
+        }
     }
 }
 
