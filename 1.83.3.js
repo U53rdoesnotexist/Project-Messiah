@@ -570,7 +570,7 @@ function botGetClosestTargetIndex(bsIndex) {
 function botGetRandomTarget() {
     return botLastBorderingStuffs[fakeRandom.cf(botLastBorderingStuffCount)]
 }
-var botMaxBorderingStuffCap, botLastBorderingStuffCount, botLastBorderingStuffs, d7;
+var botMaxBorderingStuffCap, botLastBorderingStuffCount, botLastBorderingStuffs, canReceiveBotDonations;
 
 function botBorderingStuffInit() {
     botMaxBorderingStuffCap = 8;
@@ -579,11 +579,11 @@ function botBorderingStuffInit() {
 }
 
 function d9() {
-    d7 = teamGame ? new Uint8Array(maxEntities) : null
+    canReceiveBotDonations = teamGame ? new Uint8Array(maxEntities) : null
 }
 
 function botProcessStrategy(id, amount) {
-    teamGame && (d7[id] = 0);
+    teamGame && (canReceiveBotDonations[id] = 0);
     if (attacks.isUnderAttackCap(id) && !(60 > amount)) {
         if (0 === landBorderPixels[id].length) {
             if (!botBoatEngine.update(id, difficultyEngine.difficulty[id - playerCount])) (
@@ -602,35 +602,73 @@ function botProcessStrategy(id, amount) {
 }
 
 function botProcessTeamStrategy(id, amount, difficulty, maxBelowRedI) {
-    botChecksLoseIfBordersStuff(id, !1) || botChecksStrongIfBordersStuff(id, !1) ? (d7[id] = 1, botChecksAndRemovesIfAttackingAllTargets(id) || (botChecksAndRemovesNeutral() ? (botCheckAdvanceAndProcessNeutralAttack(id, amount), botCheckSetFrequentTiming(id, maxEntities, difficulty)) : (fakeRandom.dP(difficultyEngine.attackLeastProbi[difficulty]) ? maxBelowRedI = botGetTargetWithLeastTroops(id) : (isBotBorderingOtherBots() && fakeRandom.dP(difficultyEngine.attackBotsProbi[difficulty]) && botChecksNotAndRemovesIfBorderingAllHumans(), maxBelowRedI = botGetClosestTargetIndex(id)), botCalculateAttackAmount(id, amount, maxBelowRedI), botCheckSetFrequentTiming(id, maxBelowRedI, difficulty)))) : 0 < waterBorderPixels[id].length && fakeRandom.random() < fakeRandom.value(60) && botBoatEngine.update(id, difficulty) || (difficultyEngine.setTiming(id - playerCount, 200), botProcessDonation(id, amount, difficulty, maxBelowRedI))
+    if (botChecksLoseIfBordersStuff(id, !1) || botChecksStrongIfBordersStuff(id, !1)) {
+        canReceiveBotDonations[id] = 1;
+        if (!botChecksAndRemovesIfAttackingAllTargets(id)) {
+            if (botChecksAndRemovesNeutral()) {
+                botCheckAdvanceAndProcessNeutralAttack(id, amount);
+                botCheckSetFrequentTiming(id, maxEntities, difficulty)
+            } else {
+                var targetID;
+                if (fakeRandom.dP(difficultyEngine.attackLeastProbi[difficulty])) targetID = botGetTargetWithLeastTroops(id)
+                else {
+                    if (isBotBorderingOtherBots() && fakeRandom.dP(difficultyEngine.attackBotsProbi[difficulty])) botChecksNotAndRemovesIfBorderingAllHumans();
+                    targetID = botGetClosestTargetIndex(id)
+                }
+                botCalculateAttackAmount(id, amount, targetID);
+                botCheckSetFrequentTiming(id, targetID, difficulty);
+            }
+        }
+    } else {
+        if (!(0 < waterBorderPixels[id].length && fakeRandom.random() < fakeRandom.value(60) && botBoatEngine.update(id, difficulty))) {
+            difficultyEngine.setTiming(id - playerCount, 200);
+            botProcessDonation(id, amount, difficulty, maxBelowRedI)
+        }
+    }
 }
 
 function humanBotProcessTeamStrategy(id, amount) {
-    botChecksLoseIfBordersStuff(id, !1) || botChecksStrongIfBordersStuff(id, !1) ? (d7[id] = 1, botChecksAndRemovesNeutral() ? botCheckAdvanceAndProcessNeutralAttack(id, amount) : botCalculateAttackAmount(id, amount, botGetRandomTarget())) : botProcessDonation(id, amount, 0, 0)
+    if (botChecksLoseIfBordersStuff(id, !1) || botChecksStrongIfBordersStuff(id, !1)) {
+        canReceiveBotDonations[id] = 1;
+        if (botChecksAndRemovesNeutral()) botCheckAdvanceAndProcessNeutralAttack(id, amount)
+        else botCalculateAttackAmount(id, amount, botGetRandomTarget())
+    } else botProcessDonation(id, amount, 0, 0)
 }
 
 function botCheckSetFrequentTiming(authorID, targetID, difficulty) {
-    3 <= difficulty && 2142 < c4.ticksElapsed() && (targetID === maxEntities || troops[targetID] < divideFloor(troops[authorID], 20)) && difficultyEngine.setTiming(authorID - playerCount, 25)
+    if(3 <= difficulty && 2142 < c4.ticksElapsed() && (targetID === maxEntities || troops[targetID] < divideFloor(troops[authorID], 20))) difficultyEngine.setTiming(authorID - playerCount, 25)
 }
 
-function botProcessDonation(authorID, targetID, difficulty, maxBelowRedI) {
+function botProcessDonation(authorID, amount, difficulty, maxBelowRedI) {
     if (0 !== teams.teamArray[authorID] && !(5 === difficulty && troops[authorID] < maxBelowRedI || 4 === difficulty && troops[authorID] < divideFloor(maxBelowRedI, 2)))
         for (difficulty = fakeRandom.cf(aliveCount), maxBelowRedI = 0; maxBelowRedI < aliveCount; maxBelowRedI++) {
-            var x = aliveEntities[(maxBelowRedI + difficulty) % aliveCount];
-            if (teams.teamArray[x] === teams.teamArray[authorID] && 1 === d7[x]) {
-                processDonation(authorID, x, targetID);
-                x < playerCount && fakeRandom.random() < fakeRandom.value(10) && (d7[x] = 0);
+            var targetID = aliveEntities[(maxBelowRedI + difficulty) % aliveCount];
+            if (teams.teamArray[targetID] === teams.teamArray[authorID] && 1 === canReceiveBotDonations[targetID]) {
+                processDonation(authorID, targetID, amount);
+                targetID < playerCount && fakeRandom.random() < fakeRandom.value(10) && (canReceiveBotDonations[targetID] = 0);
                 break
             }
         }
 }
 
 function botProcessOwnStrategy(id, amount, difficulty) {
-    !botChecksLoseIfBordersStuff(id, !0) && !botChecksStrongIfBordersStuff(id, !0) || botChecksAndRemovesIfAttackingAllTargets(id) || (botChecksAndRemovesNeutral() ? botCheckAdvanceAndProcessNeutralAttack(id, amount) : fakeRandom.dP(difficultyEngine.attackLeastProbi[difficulty]) ? botCalculateAttackAmount(id, amount, botGetTargetWithLeastTroops(id)) : (isBotBorderingOtherBots() && fakeRandom.dP(difficultyEngine.attackBotsProbi[difficulty]) && botChecksNotAndRemovesIfBorderingAllHumans(), botCalculateAttackAmount(id, amount, botGetClosestTargetIndex(id))))
+    if (botChecksLoseIfBordersStuff(id, !0) || botChecksStrongIfBordersStuff(id, !0)) {
+        if (!botChecksAndRemovesIfAttackingAllTargets(id)) {
+            if (botChecksAndRemovesNeutral()) botCheckAdvanceAndProcessNeutralAttack(id, amount)
+            else if (fakeRandom.dP(difficultyEngine.attackLeastProbi[difficulty])) botCalculateAttackAmount(id, amount, botGetTargetWithLeastTroops(id)) 
+            else {
+                if (isBotBorderingOtherBots() && fakeRandom.dP(difficultyEngine.attackBotsProbi[difficulty])) botChecksNotAndRemovesIfBorderingAllHumans();
+                botCalculateAttackAmount(id, amount, botGetClosestTargetIndex(id));
+            }
+        }
+    }
 }
 
 function humanBotProcessOwnStrategy(id, amount) {
-    if (botChecksLoseIfBordersStuff(id, !0) || botChecksStrongIfBordersStuff(id, !0)) botChecksAndRemovesNeutral() ? botCheckAdvanceAndProcessNeutralAttack(id, amount) : botCalculateAttackAmount(id, amount, botGetRandomTarget())
+    if (botChecksLoseIfBordersStuff(id, !0) || botChecksStrongIfBordersStuff(id, !0)) {
+        if (botChecksAndRemovesNeutral()) botCheckAdvanceAndProcessNeutralAttack(id, amount)
+        else botCalculateAttackAmount(id, amount, botGetRandomTarget())
+    }
 }
 
 function botCalculateAttackAmount(id, amount, targetID) {
@@ -4401,7 +4439,7 @@ function processAttack(authorID, targetID, ratio) {
                 var oldPotentialAdvancesLength = potentialBorderAdvances[authorID].length;
                 targetID === maxEntities ? botAddTakableNeutralPixelsToAdvances(authorID) : botAddTakableTargetPixelsToAdvance(authorID, targetID);
                 if (0 !== oldPotentialAdvancesLength || 0 !== potentialBorderAdvances[authorID].length) {
-                    if (teamGame) d7[authorID] = 1
+                    if (teamGame) canReceiveBotDonations[authorID] = 1
                     if (authorID === myID) {
                         statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
                         statistics.numbers[1]++;
