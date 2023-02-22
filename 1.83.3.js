@@ -9956,7 +9956,7 @@ function Teams() {
         }
     };    
     this.distributeBotsMulti = function() {//added neutral bots
-        var neutralBots = true;
+        var neutralBots = false;
 
         for (var i = playerCount; i < maxEntities; i++){
             if (!neutralBots){
