@@ -96,7 +96,7 @@ function savePassword(password) {
         androidObject.saveString(22, password);
         return true;
     } else if (5 <= androidVersion) return false;
-    else if (2 === userSettings.a0()) {
+    else if (2 === userSettings.getCookieStatus()) {
         userSettings.setSettings(9, password);
         userSettings.formatSettings();
         return true;
@@ -232,7 +232,7 @@ function returnRemaining() {
         var oldTroop = troops[lastAuthorID];
         troops[lastAuthorID] += lastRemaining;
         interest.limitTroops(lastAuthorID);
-        statistics.numbers[13] -= troops[lastAuthorID] - oldTroop
+        statisticNumbers.numbers[13] -= troops[lastAuthorID] - oldTroop
     }
     attacks.removeAttack(lastAuthorID, lastAttackIndex)
 }
@@ -822,7 +822,7 @@ function eE() {
     eQ.update();
     troopBar.update();
     peace.update();
-    statistics.update();
+    statisticNumbers.update();
     eT.update();
     wsManager.update()
 }
@@ -870,15 +870,15 @@ function Speed() {
     };
     this.update = function() {
         var attackerIndex;
-        old_AttackLoses = statistics.numbers[13];
+        old_AttackLoses = statisticNumbers.numbers[13];
         old_myTroops = troops[myID];
         for (attackerIndex = attackerCount - 1; 0 <= attackerIndex; attackerIndex--) {
             if (10 === intervalsLeft[attackers[attackerIndex]]) setSpeedInterval(attackers[attackerIndex])
             else if (0 === intervalsLeft[attackers[attackerIndex]]--) setSpeedInterval(attackers[attackerIndex]), attackProcessInit(attackers[attackerIndex]);
         }
         16E4 <= land[orderedLand[0]] && (checkHigherSpeed(16E4), 3E5 <= land[orderedLand[0]] && checkHigherSpeed(3E5));
-        land[myID] > statistics.numbers[7] && (statistics.numbers[7] = land[myID]);
-        statistics.numbers[14] += old_myTroops - troops[myID] + old_AttackLoses - statistics.numbers[13]
+        land[myID] > statisticNumbers.numbers[7] && (statisticNumbers.numbers[7] = land[myID]);
+        statisticNumbers.numbers[14] += old_myTroops - troops[myID] + old_AttackLoses - statisticNumbers.numbers[13]
     };
     this.removeEntry = function(id) {
         var attackerIndex;
@@ -992,9 +992,9 @@ function ProcessAction() {
         if (0 !== isAlive[authorID] && 2 !== playerStatus[authors] && boatPathChecker.check(authorID, pixel.toIndex(toX, yCoord))) {
             var boatSuccessful = processSendBoat(authorID, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(toX, yCoord), divideFloor(ratio * troops[authorID], 1E3));
             if (boatSuccessful && authorID === myID) {
-                statistics.numbers[0] += ratio;
-                statistics.numbers[1]++;
-                statistics.numbers[2]++;
+                statisticNumbers.numbers[0] += ratio;
+                statisticNumbers.numbers[1]++;
+                statisticNumbers.numbers[2]++;
             }
         }
     };
@@ -1007,7 +1007,7 @@ function ProcessAction() {
                 var prevTroops = troops[authorID];
                 troops[authorID] += returnedTroops;
                 interest.limitTroops(authorID);
-                statistics.numbers[13] -= troops[authorID] - prevTroops
+                statisticNumbers.numbers[13] -= troops[authorID] - prevTroops
             }
         }
     };
@@ -1330,8 +1330,8 @@ function hA() {
                 }
             } else
                 for (G = 0; G < maxEntities; G++) 1 !== isAlive[G] && (G < entityCount && g() ? (D = C + t * B + divideFloor(B, 2), I = E + z * B + divideFloor(B, 2), n(), l(D - 2, I - 2)) : n());
-        statistics.numbers[7] = land[myID];
-        statistics.numbers[8] = troops[myID]
+        statisticNumbers.numbers[7] = land[myID];
+        statisticNumbers.numbers[8] = troops[myID]
     };
     this.hi = function(I, D, K) {
         var J, L;
@@ -1388,7 +1388,7 @@ function hp() {
         fq.drawCanvasImage();
         gameResultBox.drawCanvasImage();
         hu.drawCanvasImage();
-        hv.drawCanvasImage();
+        statistics.drawCanvasImage();
         eX.drawCanvasImage()
     }
 }
@@ -1546,7 +1546,7 @@ function EndGame() {
                 var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
                 (k = winner === myID) ? announcements.genericAnnouncement(winner, 2): announcements.genericAnnouncement(1 - myID, 3);
                 points1v1.calculateElo(winner)
-            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.io(winner[1])), announcements.ip(k)) : (result = orderedLand[0], k = result === myID, announcements.iq(result));
+            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.resultTeam(winner[1])), announcements.ip(k)) : (result = orderedLand[0], k = result === myID, announcements.resultBR(result));
             singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(k, !1);
             announcements.iy(!0);
@@ -1566,7 +1566,7 @@ function Spawn() {
     this.update = function() {
         inSpawn = !1;
         for (var g = 0; g < playerCount; g++) 0 !== isAlive[g] && 0 === land[g] && j1.ho(g);
-        0 !== isAlive[myID] ? (statistics.numbers[7] = land[myID], statistics.numbers[8] = troops[myID], troopBar.toggleVisibility(), eB.j2(), eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5), eX.init()) : gameResultBox.show(!1, !1);
+        0 !== isAlive[myID] ? (statisticNumbers.numbers[7] = land[myID], statisticNumbers.numbers[8] = troops[myID], troopBar.toggleVisibility(), eB.j2(), eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5), eX.init()) : gameResultBox.show(!1, !1);
         announcements.j3(18);
         eA.j4();
         eA.eb();
@@ -1610,7 +1610,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     clientStatus = 1;
     absMaxTroopCap = 15E8;
     absMaxTroopsBeforeRedI = 1E9;
-    statistics.init();
+    statisticNumbers.init();
     setMapCanvas();
     configFakeMap.jR();
     h8.init();
@@ -1625,7 +1625,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     j1.init();
     updateAliveInfo();
     eN.init();
-    hv.init();
+    statistics.init();
     mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0);
     gameLeaderboard.init();
     gj.init();
@@ -1780,7 +1780,7 @@ function jx() {
         return L < z - A - N || L > z + 2 * A + N || H < y - A - N || H > y + 2 * A + N ? -1 : 3 * (H < y - N / 2 ? 0 : H < y + A + N / 2 ? 1 : 2) + (L < z - N / 2 ? 0 : L < z + A + N / 2 ? 1 : 2)
     }
     var x = [],
-        t, z, y, A, B, C, E, targetID, G, N, I, D, friends, J;
+        t, z, y, A, B, C, E, targetID, targetPixelIndex, N, I, D, friends, J;
     this.l0 = [];
     this.init = function() {
         friends = [];
@@ -1806,7 +1806,7 @@ function jx() {
         this.l2[6] = this.l0[1]
     };
     this.lB = function(L, H) {
-        if (this.hidden()) {
+        if (this.visible()) {
             var M = this.mouseDown(L, H);
             c4.canvasDirty = 0 < M;
             return 2 > M
@@ -1814,7 +1814,7 @@ function jx() {
         return !1
     };
     this.lD = function(xPos, yPos) {
-        this.hidden() || (B = xPos, C = yPos, E = (new Date).getTime())
+        this.visible() || (B = xPos, C = yPos, E = (new Date).getTime())
     };
     this.isHuman = function(id) {
         return id < playerCount && 2 !== playerStatus[id]
@@ -1846,7 +1846,7 @@ function jx() {
         if (2 === type) {
             if (x[7]) {
                 for (type = friends.length - 1; 0 <= type; type--) 0 === isAlive[friends[type]] && friends.splice(type, 1);
-                0 < friends.length && (eQ.lO(1, friends, !0) && (announcements.lP(friends, targetID), dataEncoder.requestAttack(friends, targetID)), friends = []);
+                0 < friends.length && (eQ.lO(1, friends, !0) && (announcements.requestToAttack(friends, targetID), dataEncoder.requestAttack(friends, targetID)), friends = []);
                 this.end();
                 return 1
             }
@@ -1854,8 +1854,8 @@ function jx() {
         }
         if (3 === type) {
             this.end();
-            if (this.isHuman(targetID) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.lR(), 1;
-            announcements.lS();
+            if (this.isHuman(targetID) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.antiBoosting(), 1;
+            announcements.lowBalance();
             singleplayer ? processDonation(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
             return 1
         }
@@ -1864,12 +1864,12 @@ function jx() {
                 if (inSpawn) {
                     this.end();
                     if (singleplayer) {
-                        spawn.set(0, pixel.toX(G), pixel.toY(G));
+                        spawn.set(0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                         spawn.update();
-                    } else dataEncoder.setLocation(1E3, pixel.toX(G), pixel.toY(G));
+                    } else dataEncoder.setLocation(1E3, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 } else {
                     this.end();
-                    announcements.lS();
+                    announcements.lowBalance();
                     if (singleplayer) processAttack(myID, targetID, troopBar.getRatio());
                     else if (!freeSpawn || 300 < eB.lV()) dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
                 }
@@ -1883,9 +1883,9 @@ function jx() {
         if (5 === type) {
             if (x[1]) {
                 this.end();
-                announcements.lS();
-                if (singleplayer) processAction.processSendBoat(myID, troopBar.getRatio(), pixel.toX(G), pixel.toY(G));
-                else dataEncoder.setLocation(troopBar.getRatio(), pixel.toX(G), pixel.toY(G));
+                announcements.lowBalance();
+                if (singleplayer) processAction.processSendBoat(myID, troopBar.getRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
+                else dataEncoder.setLocation(troopBar.getRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 return 1;
             }
             return 0;
@@ -1912,7 +1912,7 @@ function jx() {
         return 2
     };
     this.click = function(xPos, yPos) {
-        if (this.hidden() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return !1;
+        if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return !1;
         var M = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - B) > M || Math.abs(yPos - C) > M || (new Date).getTime() > E + 425) return !1;
         M = Math.floor((xPos + gridWidth) / scaleFactor);
@@ -1920,11 +1920,24 @@ function jx() {
         if (1 > M || 1 > Q || M >= currentMapWidth - 1 || Q >= currentMapHeight - 1) return !1;
         var R = Q * currentMapWidth * 4 + 4 * M;
         if (!pixel.canOwn(R)) return !1;
-        if (2 === clientStatus) return 1 <= a5.ld && (targetID = pixel.getOwner(R), this.isHuman(targetID)) ? (targetID === myID && this.end(), x[4] = !0, this.le(xPos, yPos)) : !1;
-        G = pixel.toIndex(M, Q);
+        if (2 === clientStatus) {
+            if (1 <= a5.ld && (targetID = pixel.getOwner(R), this.isHuman(targetID))) {
+                if (targetID === myID) this.end();
+                else {
+                    x[4] = !0;
+                    this.le(xPos, yPos);
+                }
+            }
+            else return !1;
+        }
+        targetPixelIndex = pixel.toIndex(M, Q);
         if (inSpawn) return x[0] = !0, this.le(xPos, yPos);
-        x[1] = boatPathChecker.check(myID, G);
-        if (pixel.isNeutral(R)) return targetID = maxEntities, lf(myID) ? x[0] = !0 : lg(myID, targetID) && (x[8] = !0), this.le(xPos, yPos);
+        x[1] = boatPathChecker.check(myID, targetPixelIndex);
+        if (pixel.isNeutral(R)) {
+            targetID = maxEntities;
+            bordersNeutral(myID) ? x[0] = !0 : target1BordersAttackingTarget2(myID, targetID) && (x[8] = !0);
+            return this.le(xPos, yPos);
+        }
         targetID = pixel.getOwner(R);
         if (targetID === myID) {
             this.end();
@@ -1958,7 +1971,7 @@ function jx() {
                 Q = R
             }
             M[7] = Q;
-            lk(myID, targetID) ? x[0] = !0 : lg(myID, targetID) && (x[8] = !0);
+            bordersTarget(myID, targetID) ? x[0] = !0 : target1BordersAttackingTarget2(myID, targetID) && (x[8] = !0);
             return this.le(xPos, yPos)
         }
         x[2] = teamGame;
@@ -1967,10 +1980,10 @@ function jx() {
     this.le = function(L, H) {
         z = L - Math.floor(A / 2);
         y = H - Math.floor(A / 2);
-        return this.hidden()
+        return this.visible()
     };
-    this.lm = function(L, H) {
-        if (!this.hidden()) return !1;
+    this.onPointermove = function(L, H) {
+        if (!this.visible()) return !1;
         if (t) {
             if (a5.lG(L, H)) return !1;
             a5.lI();
@@ -1987,14 +2000,14 @@ function jx() {
     this.ln = function() {
         this.end()
     };
-    this.hidden = function() {
+    this.visible = function() {
         var L;
         for (L = x.length - 1; 0 <= L; L--)
             if (x[L]) return !0;
         return t
     };
     this.drawCanvasImage = function() {
-        this.hidden() && this.lo()
+        this.visible() && this.lo()
     };
     this.lo = function() {
         if (t) a5.drawCanvasImage();
@@ -2084,10 +2097,10 @@ function jy() {
     };
     this.mouseDown = function(B, C) {
         var E = k(B, C);
-        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.canSurrender(myID) && (singleplayer ? processAction.surrender(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statistics.m4 ? (hv.m0(), c4.canvasDirty = !0, 2) : hv.hidden ||
+        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.canSurrender(myID) && (singleplayer ? processAction.surrender(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statisticNumbers.m4 ? (statistics.m0(), c4.canvasDirty = !0, 2) : statistics.visible ||
             singleplayer && !inSpawn ? 1 : (this.m0(), 2) : 0 === E ? (this.m0(), 2) : 0
     };
-    this.lm = function(B, C) {
+    this.onPointermove = function(B, C) {
         var E = k(B, C);
         if (E === y) return -1 !== y;
         y = E;
@@ -2115,7 +2128,7 @@ function jy() {
             B = .4 * l;
             fq.m9(m5 + 4 * l + (1.5 * l - B) / 2, troopBar.fK + .3 * l, B);
             n(1, fq.canSurrender(myID) ? whiteRGB2 : gray128RGB);
-            2 <= statistics.m4 && n(2, whiteRGB2);
+            2 <= statisticNumbers.m4 && n(2, whiteRGB2);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(x, m5, troopBar.fK)
     };
@@ -2139,7 +2152,7 @@ function Announcements() {
     var g, k, n, l, x, pluralLeaveLabels, monoLeaveLabels;
 
     function y() {
-        return troopBar.md(announcements.ma()) ? peace.hidden ? troopBar.fK - troopBar.height - 2 * N : troopBar.fK - N : peace.hidden ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * N : canvasHeight - N
+        return troopBar.md(announcements.ma()) ? peace.visible ? troopBar.fK - troopBar.height - 2 * N : troopBar.fK - N : peace.visible ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * N : canvasHeight - N
     }
 
     function announce(displayTime, message, messageID, playerID, P, U, W, X) {
@@ -2158,8 +2171,7 @@ function Announcements() {
             var S = messageCanvas.getContext("2d", {
                 alpha: !0
             });
-            S.font =
-                announcements.fontStyle;
+            S.font = announcements.fontStyle;
             S.textBaseline = middleAlign;
             S.textAlign = leftAlign;
             S.clearRect(0, 0, messageWidth, G);
@@ -2194,19 +2206,23 @@ function Announcements() {
             }
     }
 
-    function C(H, M, Q) {
-        return "rgb(" + H + "," + M + "," + Q + ")"
+    function getColorRGB(R, G, B) {
+        return "rgb(" + R + "," + G + "," + B + ")"
     }
 
     function E(H, M) {
-        var Q,
-            R = !1;
-        for (Q = pendingAnnouncements.length - 1; 0 <= Q; Q--) pendingAnnouncements[Q].id !== H || M !== maxEntities && pendingAnnouncements[Q].player !== M || (pendingAnnouncements.splice(Q, 1), R = !0);
+        var aIndex, R = !1;
+        for (aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
+            if (!(pendingAnnouncements[aIndex].id !== H || M !== maxEntities && pendingAnnouncements[aIndex].player !== M)) {
+                pendingAnnouncements.splice(aIndex, 1);
+                R = !0;
+            }
+        }
         return R
     }
-    var pendingAnnouncements, G, N, I, D, K, J, L;
+    var pendingAnnouncements, G, N, I, D, K, tickCounter, L;
     this.init = function() {
-        J = 0;
+        tickCounter = 0;
         K = isZoom ? 7 : 12;
         g = [0, 0, 0];
         k = [0, 0, 0];
@@ -2223,16 +2239,16 @@ function Announcements() {
         0 < configFakeMap.waterPixelsCount && (mapSpecialInfoLabel += "Water: " + attacksBar.splitText(configFakeMap.waterPixelsCount) +
             " (" + eB.nG(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
         0 < configFakeMap.mountainPixelsCount && (mapSpecialInfoLabel += 0 < configFakeMap.waterPixelsCount ? "   " : "", mapSpecialInfoLabel += "Mountains: " + attacksBar.splitText(configFakeMap.mountainPixelsCount) + " (" + eB.nG(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
-        announce(340, mapLandInfoLabel, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
-        0 < mapSpecialInfoLabel.length && announce(340, mapSpecialInfoLabel, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
-        10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, C(235, 255, 120), blackMoreOpaque, -1, !1);
+        announce(340, mapLandInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
+        0 < mapSpecialInfoLabel.length && announce(340, mapSpecialInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
+        10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, getColorRGB(235, 255, 120), blackMoreOpaque, -1, !1);
         this.mP()
     };
     this.mP = function() {
         var H;
         if (customJSON.isCustomJSON) {
             var M = customJSON.data.description.length;
-            for (H = 0; H < M; H++) announce(400, customJSON.data.description[H], 6, 0, C(255, 255, 255), blackMoreOpaque, -1, !1)
+            for (H = 0; H < M; H++) announce(400, customJSON.data.description[H], 6, 0, getColorRGB(255, 255, 255), blackMoreOpaque, -1, !1)
         }
     };
     this.setCanvasVariables = function() {
@@ -2268,7 +2284,7 @@ function Announcements() {
         H.fillText("Accept", Math.floor(D / 2), Math.floor(G / 2))
     };
     this.ma = function() {
-        if (peace.hidden) return peace.width;
+        if (peace.visible) return peace.width;
         var H = pendingAnnouncements.length;
         return 0 === H ? 0 : 1 === H ? pendingAnnouncements[0].mb : getMax(pendingAnnouncements[0].mb, pendingAnnouncements[1].mb)
     };
@@ -2303,29 +2319,61 @@ function Announcements() {
     this.j3 = function(H) {
         for (var M = pendingAnnouncements.length - 1; 0 <= M; M--) pendingAnnouncements[M].id === H && (pendingAnnouncements[M].time = 1)
     };
-    this.genericAnnouncement = function(H, M) {
-        0 === M ? (statistics.numbers[H < playerCount ? 4 : 3]++, c2.set(H, 0), announce(isZoom ? 100 : 160, "You conquered " + nickname[H] + ".", 0, H, "rgb(10,220,10)", blackMoreOpaque, -1, !1)) : 1 === M ? (E(50, maxEntities), c2.set(H, 1), announce(360, "You were conquered by " + nickname[H] + ".", 0, H, "rgb(255,40,40)", blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700, !0, 0)) : 2 === M ? (c2.set(H, 2), announce(0, "Congratulations! You won the game.", 0, H, "rgb(10,255,255)", blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700, !0, 0)) : 3 === M ? (c2.set(H, 2), announce(0, nickname[H] + " won the game.", 0, H, whiteRGB2, blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700,
-            !0, 0)) : 4 === M ? (playersIngame--, spectatorCount--, this.mj(1, H, H)) : 5 === M ? 2 !== playerStatus[H] && hu.isHuman(myID) && (B(1, 5), eA.ml(H) ? announce(180, nickname[H] + " has broken the non-aggression pact and invades you!", 1, H, C(255, 200, 180), blackMoreOpaque, -1, !0) : announce(180, nickname[H] + " is attacking you!", 1, H, "rgb(255,70,10)", blackMoreOpaque, -1, !0)) : 18 === M ? announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, !1) : 21 === M ? announce(220, "You surrendered!", M, 0, "rgb(255,40,40)", blackMoreOpaque, -1, !1) : 22 === M && this.mj(2, H, H)
+    this.genericAnnouncement = function(id, messageType) {
+        if (0 === messageType) {
+            statisticNumbers.numbers[id < playerCount ? 4 : 3]++;
+            c2.set(id, 0);
+            announce(isZoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", blackMoreOpaque, -1, false);
+        } else if (1 === messageType) {
+            E(50, maxEntities);
+            c2.set(id, 1);
+            announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", blackMoreOpaque, -1, true);
+            eV.hoverTo(id, 2700, true, 0);
+        } else if (2 === messageType) {
+            c2.set(id, 2);
+            announce(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", blackMoreOpaque, -1, true);
+            eV.hoverTo(id, 2700, true, 0);
+        } else if (3 === messageType) {
+            c2.set(id, 2);
+            announce(0, nickname[id] + " won the game.", 0, id, whiteRGB2, blackMoreOpaque, -1, true);
+            eV.hoverTo(id, 2700, true, 0);
+        } else if (4 === messageType) {
+            playersIngame--;
+            spectatorCount--;
+            this.mj(1, id, id);
+        } else if (5 === messageType) {
+            if (2 !== playerStatus[id] && hu.isHuman(myID)) {
+                B(1, 5);
+                if (eA.ml(id)) announce(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, getColorRGB(255, 200, 180), blackMoreOpaque, -1, true);
+                else announce(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", blackMoreOpaque, -1, true);
+            }
+        } else if (18 === messageType) announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, false);
+        else if (21 === messageType) announce(220, "You surrendered!", messageType, 0, "rgb(255,40,40)", blackMoreOpaque, -1, false);
+        else if (22 === messageType) this.mj(2, id, id);
     };
-    this.mm = function(H) {
-        announce(200, "Error [" + H + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, !1)
+    this.error = function(errorCode) {
+        announce(200, "Error [" + errorCode + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, !1)
     };
-    this.iq = function(H) {
-        c2.set(H, 2);
-        100 > playerCount ? announce(0, nickname[H] +
-            " won the game.", 3, H, whiteRGB2, blackMoreOpaque, -1, !0) : announce(0, nickname[H] + " has been immortalized!", 3, H, whiteRGB2, blackMoreOpaque, -1, !0);
-        eV.hoverTo(H, 2700, !0, 0)
+    this.resultBR = function(winnerID) {
+        c2.set(winnerID, 2);
+        if (100 > playerCount) announce(0, nickname[winnerID] + " won the game.", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0)
+        else announce(0, nickname[winnerID] + " has been immortalized!", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0);
+        eV.hoverTo(winnerID, 2700, !0, 0)
     };
-    this.newEmojiMessage = function(H, M, Q) {
-        H === myID ? announce(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, C(200, 255, 210), blackMoreOpaque, -1, !0) : this.ms(H, Q)
+    this.newEmojiMessage = function(authorID, targetID, emojiID) {
+        if (authorID === myID) announce(175, " Message to " + nickname[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, !0)
+        else this.receivedEmojiMessage(authorID, emojiID)
     };
-    this.ms = function(H, M) {
-        var Q, R = 0;
-        announce(175, nickname[H] + ": ", 1E3 + M, H, whiteRGB2, "rgba(5,60,25,0.9)", -1, !0);
-        for (Q = 0; Q < pendingAnnouncements.length; Q++)
-            if (1E3 <= pendingAnnouncements[Q].id && pendingAnnouncements[Q].player === H && (R++, 3 < R)) {
-                pendingAnnouncements.splice(Q, 1);
-                break
+    this.receivedEmojiMessage = function(authorID, emojiID) {
+        var aIndex, emojiCount = 0;
+        announce(175, nickname[authorID] + ": ", 1E3 + emojiID, authorID, whiteRGB2, "rgba(5,60,25,0.9)", -1, !0);
+        for (aIndex = 0; aIndex < pendingAnnouncements.length; aIndex++)
+            if (1E3 <= pendingAnnouncements[aIndex].id && pendingAnnouncements[aIndex].player === authorID) {
+                emojiCount++;
+                if (3 < emojiCount) {
+                    pendingAnnouncements.splice(aIndex, 1);
+                    break
+                }
             }
     };
     this.ip = function(H) {
@@ -2341,51 +2389,72 @@ function Announcements() {
     this.upcomingGame = function(message) {
         announce(200, message, 0, 0, "rgb(40,255,200)", "rgba(10,60,40,0.9)", -1, !1)
     };
-    this.result1v1 = function(H, M, Q, R) {
-        1 === wsManager.getConnectedLobby() && (announce(0, H[0].name + ": " + points1v1.formatElo(H[0].elo) + " -> " + M, 66, 0, whiteRGB2, R[0], -1, !1), announce(0, H[1].name + ": " + points1v1.formatElo(H[1].elo) + " -> " + Q, 66, 1, whiteRGB2, R[1], -1, !1))
+    this.result1v1 = function(players, player1Elo, player2Elo, resultColors) {
+        if (1 === wsManager.getConnectedLobby()) {
+            announce(0, players[0].name + ": " + points1v1.formatElo(players[0].elo) + " -> " + player1Elo, 66, 0, whiteRGB2, resultColors[0], -1, false);
+            announce(0, players[1].name + ": " + points1v1.formatElo(players[1].elo) + " -> " + player2Elo, 66, 1, whiteRGB2, resultColors[1], -1, false);
+        }
     };
-    this.io = function(H) {
-        1 === wsManager.getConnectedLobby() && announce(0, "[" + H + "] has won " + playerCount + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", blackMoreOpaque, -1, !1)
+    this.resultTeam = function(clanTag) {
+        if (1 === wsManager.getConnectedLobby()) announce(0, "[" + clanTag + "] has won " + playerCount + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", blackMoreOpaque, -1, !1)
     };
     this.nonAggression = function(friendID, ratifier) {
-        0 === ratifier ? E(50, friendID) ? (announce(128, "You signed a non-aggression pact with " + nickname[friendID] + ".", 52, friendID, C(180, 255, 180), blackMoreOpaque, -1, !0), eA.showIcon(friendID, 2, 255)) : announce(384, "You asked " + nickname[friendID] + " to sign a non-aggression pact.",
-            51, friendID, C(210, 210, 255), blackMoreOpaque, -1, !0) : E(51, friendID) ? (announce(128, nickname[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, !0), eA.showIcon(friendID, 2, 255)) : (announce(384, nickname[friendID] + " requests a non-aggression pact.", 50, friendID, whiteRGB2, "rgba(90,90,90,0.9)", -1, !0), eA.showIcon(friendID, 2, 96))
-    };
-    this.lP = function(H, M) {
-        var Q = "You ",
-            R;
-        a: {
-            for (R = H.length - 1; 0 <= R; R--)
-                if (2 * land[H[R]] > land[myID]) {
-                    R = !1;
-                    break a
-                } R = !0
+        if (ratifier === 0) {
+            if (E(50, friendID)) {
+                announce(128, "You signed a non-aggression pact with " + nickname[friendID] + ".", 52, friendID, getColorRGB(180, 255, 180), blackMoreOpaque, -1, !0);
+                eA.showIcon(friendID, 2, 255);
+            } else {
+                announce(384, "You asked " + nickname[friendID] + " to sign a non-aggression pact.", 51, friendID, getColorRGB(210, 210, 255), blackMoreOpaque, -1, !0);
+            }
+        } else {
+            if (E(51, friendID)) {
+                announce(128, nickname[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, !0);
+                eA.showIcon(friendID, 2, 255);
+            } else {
+                announce(384, nickname[friendID] + " requests a non-aggression pact.", 50, friendID, whiteRGB2, "rgba(90,90,90,0.9)", -1, !0);
+                eA.showIcon(friendID, 2, 96);
+            }
         }
-        R ? (Q += "ordered ", R = C(255, 235, 210)) : (Q += "asked ", R = C(210, 255, 210));
-        1 < H.length ? announce(230, Q + H.length + " players to attack " + nickname[M] + ".", 66, M, R, blackMoreOpaque, -1, !0) : announce(230, Q + nickname[H[0]] +
-            " to attack " + nickname[M] + ".", 66, H[0], R, blackMoreOpaque, M, !0)
     };
-    this.requestToAttack = function(requesterID, targetID) {
+    this.requestToAttack = function(friends, targetID) {
+        var message = "You ";
+        var fIndex;
+        for (fIndex = friends.length - 1; fIndex >= 0; fIndex--) {
+            if (2 * land[friends[fIndex]] > land[myID]) {
+                fIndex = false;
+                break;
+            }
+        }
+        if (fIndex) {
+            message += "ordered ";
+            fIndex = getColorRGB(255, 235, 210)
+        } else {
+            message += "asked ";
+            fIndex = getColorRGB(210, 255, 210)
+        }
+        if (friends.length > 1) announce(230, message + friends.length + " players to attack " + nickname[targetID] + ".", 66, targetID, fIndex, blackMoreOpaque, -1, false);
+        else announce(230, message + nickname[friends[0]] + " to attack " + nickname[targetID] + ".", 66, friends[0], fIndex, blackMoreOpaque, targetID, true);
+    };    
+    this.requestedToAttack = function(requesterID, targetID) {
         land[requesterID] > 2 * land[myID] ? announce(230, nickname[requesterID] + " orders you to attack " + nickname[targetID] + "!", 66, requesterID, whiteRGB2, "rgba(90,50,5,0.9)", targetID, !0) : announce(230, nickname[requesterID] + " asks you to attack " + nickname[targetID] + ".", 66, requesterID, whiteRGB2, "rgba(75,65,5,0.9)", targetID, !0)
     };
     this.n7 = function(H, M) {
         E(H, M)
     };
-    this.lS = function() {
-        100 <= troops[myID] || announce(80, "Your balance is too low!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
+    this.lowBalance = function() {
+        if (100 > troops[myID]) announce(80, "Your balance is too low!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
     };
-    this.lR = function() {
+    this.antiBoosting = function() {
         announce(80, "Boosting is disallowed in the first minute!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
     };
-    this.n8 = function(H, M) {
-        2 !== playerStatus[myID] && announce(200, "You exported " + attacksBar.splitText(H) +
-            " resource" + (1 === H ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", blackMoreOpaque, -1, !0)
+    this.giveDonation = function(amount, targetID) {
+        if (2 !== playerStatus[myID]) announce(200, "You exported " + attacksBar.splitText(amount) + " resource" + (1 === amount ? "" : "s") + " to " + nickname[targetID] + ".", 30, targetID, "rgb(190,255,190)", blackMoreOpaque, -1, !0)
     };
-    this.nA = function(H, M) {
+    this.receiveDonation = function(amount, targetID) {
         if (2 !== playerStatus[myID]) {
-            var Q = 2 === playerStatus[M] || M >= playerCount;
-            var R = 200 - 20 * pendingAnnouncements.length;
-            announce(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + attacksBar.splitText(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, blackRGB, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
+            var isBot = 2 === playerStatus[targetID] || targetID >= playerCount;
+            var announcementsCount = 200 - 20 * pendingAnnouncements.length;
+            announce(80 > announcementsCount ? 80 : announcementsCount, (isBot ? "A bot" : nickname[targetID]) + " supported you with " + attacksBar.splitText(amount) + " resource" + (1 === amount ? "" : "s") + ".", 31, targetID, blackRGB, isBot ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
             B(31, isZoom ? 4 : 6)
         }
     };
@@ -2394,11 +2463,17 @@ function Announcements() {
         for (M = 2; 0 <= M; M--) 0 < l[M] && (H || x[M] < Q - 220) && this.nL(M)
     };
     this.nL = function(H) {
-        var M = l[H];
+        var message = l[H];
         var Q = g[H];
         l[H] = 0;
-        1 === M ? (M = nickname[Q] + monoLeaveLabels[H], 0 === H && (M +=
-            nickname[k[H]] + "."), announce(n[H], M, 7, k[H], whiteRGB2, blackMoreOpaque, -1, !0)) : 2 <= M && (M = nickname[Q] + " and " + (M - 1) + " other player" + (2 === M ? "" : "s") + pluralLeaveLabels[H], announce(n[H], M, 7, Q, whiteRGB2, blackMoreOpaque, -1, !1))
+        if (1 === message) {
+            message = nickname[Q] + monoLeaveLabels[H];
+            if (0 === H) message += nickname[k[H]] + "."
+            announce(n[H], message, 7, k[H], whiteRGB2, blackMoreOpaque, -1, !0)
+        } else if (2 <= message) {
+            message = nickname[Q] + " and " + (message - 1) + " other player" + (2 === message ? "" : "s") + pluralLeaveLabels[H];
+            announce(n[H], message, 7, Q, whiteRGB2, blackMoreOpaque, -1, !1);
+        }
     };
     this.mj = function(H, M, Q) {
         var R = c4.ticksElapsed(),
@@ -2413,9 +2488,8 @@ function Announcements() {
         var H, M = pendingAnnouncements.length - K;
         M = 1 >= M ? 1 : M * M;
         for (H = pendingAnnouncements.length - 1; 0 <= H; H--) 0 < pendingAnnouncements[H].time && (pendingAnnouncements[H].time -= M, 0 >= pendingAnnouncements[H].time && pendingAnnouncements.splice(H, 1));
-        if (128 !== J && (J++, !(128 > J)))
-            for (H = 5, M = aliveCount - 1; 0 <= M; M--) 1 === playerStatus[aliveEntities[M]] && 0 < H-- && announce(240, nickname[aliveEntities[M]] +
-                " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
+        if (128 !== tickCounter && (tickCounter++, !(128 > tickCounter)))
+            for (H = 5, M = aliveCount - 1; 0 <= M; M--) 1 === playerStatus[aliveEntities[M]] && 0 < H-- && announce(240, nickname[aliveEntities[M]] + " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
         this.iy(!1)
     };
     this.drawCanvasImage = function() {
@@ -2424,50 +2498,57 @@ function Announcements() {
 }
 
 function CookiesPrompt() {
-    this.fontRatio = this.nQ = this.nP = this.i4 = this.height = this.width = 0;
+    this.fontRatio = this.buttonHeight = this.nP = this.buttonMargin = this.height = this.width = 0;
     this.bs = -1;
-    this.lr = ["Accept Cookies", "More Information", "Decline"];
+    this.buttonLabels = ["Accept Cookies", "More Information", "Decline"];
     this.colors = ["rgba(0,255,0,0.4)", "rgba(0,0,255,0.4)", "rgba(255,0,0,0.4)"];
-    this.hidden = !1;
+    this.visible = !1;
     this.init = function() {
         this.setCanvasVariables();
-        this.hidden = 5 > androidVersion && !isIOS && 0 === userSettings.a0()
+        this.visible = 5 > androidVersion && !isIOS && 0 === userSettings.getCookieStatus()
+        this.visible = false; //Fuck cookies man
     };
     this.setCanvasVariables = function() {
         this.width = Math.floor(2.8 * Math.floor((isZoom ? .09 : .062) * averageDim));
         this.height = Math.floor(1 * this.width);
-        this.i4 = Math.floor(.06 * this.width);
-        this.i5 = this.width - 2 * this.i4;
-        this.nP = this.i4;
-        this.nQ = (this.height - (this.lr.length + 1) * this.nP) / this.lr.length;
-        this.fontRatio = Math.floor(.3 * this.nQ)
+        this.buttonMargin = Math.floor(.06 * this.width);
+        this.i5 = this.width - 2 * this.buttonMargin;
+        this.nP = this.buttonMargin;
+        this.buttonHeight = (this.height - (this.buttonLabels.length + 1) * this.nP) / this.buttonLabels.length;
+        this.fontRatio = Math.floor(.3 * this.buttonHeight)
     };
-    this.mouseDown = function(g, k) {
-        if (!this.hidden) return !1;
-        var n = this.nS(g, k);
-        if (-1 === n) return !1;
-        0 === n ? (userSettings.nT(2), this.hidden = !1) : 1 === n ? openLinkBox.init(cookiePolicyLink, !0) : 2 === n && (userSettings.nT(1), this.hidden = !1);
+    this.mouseDown = function(xPos, yPos) {
+        if (!this.visible) return !1;
+        var butIndex = this.getButtonIndex(xPos, yPos);
+        if (-1 === butIndex) return !1;
+        else if (0 === butIndex) {
+            userSettings.setCookieStatus(2);
+            this.visible = !1;
+        } else if (1 === butIndex) openLinkBox.init(cookiePolicyLink, !0)
+        else if (2 === butIndex) {
+            userSettings.setCookieStatus(1);
+            this.visible = !1;
+        }
         return c4.canvasDirty = !0
     };
-    this.lm = function(g, k) {
-        if (!this.hidden) return !1;
+    this.onPointermove = function(xPos, yPos) {
+        if (!this.visible) return !1;
         var n = this.bs;
-        this.bs = this.nS(g, k);
-        n !== this.bs && (c4.canvasDirty = !0);
+        this.bs = this.getButtonIndex(xPos, yPos);
+        if (n !== this.bs) c4.canvasDirty = !0;
         return -1 !== this.bs
     };
-    this.nS = function(g, k) {
-        g -= bufferLength;
-        k -= Math.floor(prevClientHeight - this.height - bufferLength);
-        if (0 > g || 0 > k || g >= this.width || k >= this.height) return -1;
-        var n = Math.floor((k - .5 * this.nP) / ((this.height - this.nP) / this.lr.length));
-        return 0 >
-            n ? 0 : n >= this.lr.length ? this.lr.length - 1 : n
+    this.getButtonIndex = function(xPos, yPos) {
+        xPos -= bufferLength;
+        yPos -= Math.floor(prevClientHeight - this.height - bufferLength);
+        if (0 > xPos || 0 > yPos || xPos >= this.width || yPos >= this.height) return -1;
+        var n = Math.floor((yPos - .5 * this.nP) / ((this.height - this.nP) / this.buttonLabels.length));
+        return 0 > n ? 0 : n >= this.buttonLabels.length ? this.buttonLabels.length - 1 : n
     };
     this.drawCanvasImage = function() {
-        this.hidden && this.nW()
+        this.visible && this.drawPrompt()
     };
-    this.nW = function() {
+    this.drawPrompt = function() {
         var g = bufferLength,
             k = Math.floor(prevClientHeight - this.height - bufferLength);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
@@ -2478,8 +2559,8 @@ function CookiesPrompt() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.font = fontWeightBold + this.fontRatio + fontSizeArial;
         mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
-        for (var n = this.lr.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.i4, k + this.nP + n * (this.nP + this.nQ)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.i5, this.nQ), this.bs === n && (mainCanvasCtx.fillStyle =
-            whiteMore3Transparent, mainCanvasCtx.fillRect(0, 0, this.i5, this.nQ)), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(this.lr[n], this.i5 / 2, .54 * this.nQ), mainCanvasCtx.strokeRect(0, 0, this.i5, this.nQ);
+        for (var n = this.buttonLabels.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.buttonMargin, k + this.nP + n * (this.nP + this.buttonHeight)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.i5, this.buttonHeight), this.bs === n && (mainCanvasCtx.fillStyle =
+            whiteMore3Transparent, mainCanvasCtx.fillRect(0, 0, this.i5, this.buttonHeight)), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(this.buttonLabels[n], this.i5 / 2, .54 * this.buttonHeight), mainCanvasCtx.strokeRect(0, 0, this.i5, this.buttonHeight);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
@@ -2744,7 +2825,7 @@ var blackRGB = "rgb(0,0,0)",
     privacyPolicyLink = "https://territorial.io/privacy_policy",
     tutorialLink = "https://territorial.io/tutorial",
     leaderboardLinks = ["https://territorial.io/players", "https://territorial.io/clans"],
-    m5, ov, bufferLength, ow, isTouch, oy, oz, mainSettings, 
+    m5, ov, bufferLength, ow, isTouch, clientXPos, clientYPos, mainSettings, 
     wsUrlStrings = ["wss://", "/s50/", "/s51/", "/s52/"];
 
 function p1() {
@@ -2788,12 +2869,12 @@ function onTouchstart(g) {
     g.preventDefault();
     wsManager.setHumanLastAction(wsManager.remote);
     isTouch = !0;
-    0 < g.touches.length && (oy = Math.floor(pixelRatio * g.touches[0].clientX), oz = Math.floor(pixelRatio * g.touches[0].clientY), jo.pN(g) || pL(oy, oz))
+    0 < g.touches.length && (clientXPos = Math.floor(pixelRatio * g.touches[0].clientX), clientYPos = Math.floor(pixelRatio * g.touches[0].clientY), jo.pN(g) || pL(clientXPos, clientYPos))
 }
 
 function pL(g, k) {
     if (0 === clientStatus) aJ.mouseDown(g, k);
-    else if (!(hv.mouseDown(g, k) || hu.lB(g, k) || gameResultBox.mouseDown(g, k) || attacksBar.mouseDown(g, k))) {
+    else if (!(statistics.mouseDown(g, k) || hu.lB(g, k) || gameResultBox.mouseDown(g, k) || attacksBar.mouseDown(g, k))) {
         var n = fq.mouseDown(g, k);
         2 === n || gameLeaderboard.mouseDown(g, k) || (gj.mouseDown(g, k) ? c4.canvasDirty = !0 : troopBar.getClickedButton(g, k) ? (gj.gk = !1, troopBar.pQ(g, k) && (c4.canvasDirty = !0)) : announcements.mouseDown(g, k) || peace.mouseDown(g, k) || 0 === n && hu.lD(g, k))
     }
@@ -2802,26 +2883,26 @@ function pL(g, k) {
 function onMousemove(g) {
     isTouch = !1;
     g.preventDefault();
-    pR(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
+    onPointermove(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
 }
 
 function onTouchmove(g) {
     g.preventDefault();
-    0 < g.touches.length && (oy = Math.floor(pixelRatio * g.touches[0].clientX), oz = Math.floor(pixelRatio * g.touches[0].clientY), jo.pS(g) || pR(oy, oz))
+    0 < g.touches.length && (clientXPos = Math.floor(pixelRatio * g.touches[0].clientX), clientYPos = Math.floor(pixelRatio * g.touches[0].clientY), jo.pS(g) || onPointermove(clientXPos, clientYPos))
 }
 
-function pR(g, k) {
-    0 === clientStatus ? aJ.lm(g, k) : hv.lm(g, k) || (hu.hidden() ? hu.lm(g, k) : fq.lm(g, k) || (troopBar.pT ? troopBar.lm(g, k) && (c4.canvasDirty = !0) : (gameLeaderboard.lm(g, k), gj.gk && gj.lm(g, k) && (c4.canvasDirty = !0))))
+function onPointermove(xPos, yPos) {
+    0 === clientStatus ? aJ.onPointermove(xPos, yPos) : statistics.onPointermove(xPos, yPos) || (hu.visible() ? hu.onPointermove(xPos, yPos) : fq.onPointermove(xPos, yPos) || (troopBar.pT ? troopBar.onPointermove(xPos, yPos) && (c4.canvasDirty = !0) : (gameLeaderboard.onPointermove(xPos, yPos), gj.gk && gj.onPointermove(xPos, yPos) && (c4.canvasDirty = !0))))
 }
 
 function onMouseleave(g) {
     g.preventDefault();
-    0 === clientStatus ? (aJ.click(-1024, -1024), playtime.pU()) : (gameLeaderboard.pV(-1024, -1024), fq.lm(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
+    0 === clientStatus ? (aJ.click(-1024, -1024), playtime.pU()) : (gameLeaderboard.pV(-1024, -1024), fq.onPointermove(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
 }
 
 function onMouseup(g) {
     g.preventDefault();
-    isTouch || pX(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
+    isTouch || onPointerUp(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
 }
 
 function onClick(g) {
@@ -2830,12 +2911,12 @@ function onClick(g) {
 
 function onTouchend(g) {
     g.preventDefault();
-    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? gj.gk = !1 : pX(oy, oz)
+    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? gj.gk = !1 : onPointerUp(clientXPos, clientYPos)
 }
 
 function onTouchcancel(g) {
     g.preventDefault();
-    pX(oy, oz)
+    onPointerUp(clientXPos, clientYPos)
 }
 
 function onDragover(g) {
@@ -2846,8 +2927,8 @@ function onDrop(g) {
     loadCustomMap.handleDrop(g)
 }
 
-function pX(g, k) {
-    0 === clientStatus ? aJ.click(g, k) : (gameLeaderboard.pV(g, k), hv.pV(), troopBar.pW(), gj.gk = !1, hu.click(g, k) && (c4.canvasDirty = !0))
+function onPointerUp(xPos, yPos) {
+    0 === clientStatus ? aJ.click(xPos, yPos) : (gameLeaderboard.pV(xPos, yPos), statistics.pV(), troopBar.pW(), gj.gk = !1, hu.click(xPos, yPos) && (c4.canvasDirty = !0))
 }
 
 function onWheel(g) {
@@ -3185,7 +3266,7 @@ function Peace() {
         F = 140;
         y = 0;
         C = [];
-        peace.hidden = !1;
+        peace.visible = !1;
         A[0] = A[1] = 0
     }
 
@@ -3195,7 +3276,7 @@ function Peace() {
     var l, x, t, z, y, A, B, C, E, F, G, N, I;
     this.init = function() {
         N = I = 0;
-        E = this.hidden = !1;
+        E = this.visible = !1;
         F = 140;
         y = 0;
         A = [0, 0];
@@ -3257,7 +3338,7 @@ function Peace() {
     };
     this.update = function() {
         if (0 < I) I--, 0 === I && k();
-        else if (this.hidden) {
+        else if (this.visible) {
             F--;
             var D;
             if (D = 270 === F && 2 <= N) a: {
@@ -3273,7 +3354,7 @@ function Peace() {
             for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[orderedLand[D]]) && (F = 140), G[D] = land[orderedLand[D]];
             D = 0 >= --F ? !0 : !1;
             if (D) {
-                this.hidden = !0;
+                this.visible = !0;
                 F = 360;
                 var K = 0;
                 for (D = aliveCount - 1; 0 <= D; D--) hu.isHuman(aliveEntities[D]) && (K += land[aliveEntities[D]]);
@@ -3286,11 +3367,11 @@ function Peace() {
         }
     };
     this.iv = function() {
-        this.hidden && A[0] < B[0] && k()
+        this.visible && A[0] < B[0] && k()
     };
     this.processVotePeace = function(D, K) {
         var J;
-        if (this.hidden) {
+        if (this.visible) {
             for (J = C.length - 1; 0 <= J; J--)
                 if (C[J] === D) return;
             C.push(D);
@@ -3301,7 +3382,7 @@ function Peace() {
         }
     };
     this.drawCanvasImage = function() {
-        if (this.hidden) {
+        if (this.visible) {
             var D = n();
             mainCanvasCtx.drawImage(x, canvasWidth - this.width - m5, D)
         }
@@ -3393,11 +3474,11 @@ function TroopBar() {
     this.eb = function() {
         G && (G = !1, k())
     };
-    this.hidden = function() {
+    this.visible = function() {
         return !(!B || fq.lu && t < Math.floor(m5 + 5.5 * this.height))
     };
     this.md = function(I) {
-        return this.hidden() ? t + x > canvasWidth - I - m5 : !1
+        return this.visible() ? t + x > canvasWidth - I - m5 : !1
     };
     this.toggleVisibility = function() {
         B = !0
@@ -3410,34 +3491,34 @@ function TroopBar() {
         return 0 >= I ? 1 : 1E3 < I ? 1E3 : I
     };
     this.getClickedButton = function(xPos, yPos) {
-        return this.hidden() && xPos > t && xPos < t + x && yPos > this.fK
+        return this.visible() && xPos > t && xPos < t + x && yPos > this.fK
     };
     this.pQ = function(I, D) {
-        if (!this.hidden()) return !1;
+        if (!this.visible()) return !1;
         if (I > t && I < t + z && D > troopBar.fK) return n(N);
         if (I > t + x - z && I < t + x && D > troopBar.fK) return n(1 / N);
         this.pT = !0;
         return l(I)
     };
     this.r3 = function(I) {
-        0 !== clientStatus && this.hidden() && n(I) && (c4.canvasDirty = !0)
+        0 !== clientStatus && this.visible() && n(I) && (c4.canvasDirty = !0)
     };
     this.pb = function(I) {
-        if (0 === I || !this.hidden()) return !1;
+        if (0 === I || !this.visible()) return !1;
         0 < I ? (I = 400 / (400 + I), I = I < N ? N : I) : (I = (400 - I) / 400, I = I > 1 / N ? 1 / N : I);
         return n(I)
     };
-    this.lm = function(I, D) {
+    this.onPointermove = function(I, D) {
         return this.pT ? l(I, D) : !1
     };
     this.pW = function() {
         this.pT = !1
     };
     this.update = function() {
-        this.hidden() && Math.floor(troops[myID] * C) !== E && (G = !0)
+        this.visible() && Math.floor(troops[myID] * C) !== E && (G = !0)
     };
     this.drawCanvasImage = function() {
-        this.hidden() && mainCanvasCtx.drawImage(y,
+        this.visible() && mainCanvasCtx.drawImage(y,
             t, this.fK)
     }
 }
@@ -3481,7 +3562,7 @@ function k4() {
         eV.h0() && (this.gk = !0, t = y, z = A);
         return !1
     };
-    this.lm = function(y, A) {
+    this.onPointermove = function(y, A) {
         if (!eV.h0()) return !0;
         var B = gridWidth,
             C = gridHeight,
@@ -3489,7 +3570,7 @@ function k4() {
             F = z - A;
         gridWidth += E;
         gridHeight += F;
-        eA.lm(E, F);
+        eA.onPointermove(E, F);
         this.rI();
         t = y;
         z = A;
@@ -3794,7 +3875,7 @@ function Playtime() {
     this.setPosition = function() {
         k()
     };
-    this.lm = function(P, U) {
+    this.onPointermove = function(P, U) {
         U > prevClientHeight - .6 * y ? this.rg ? P !== K && (z += P - K, K = P, k(), n(P), this.rg = -1 !== G, c4.canvasDirty = !0) : n(P) && (c4.canvasDirty = !0) : this.pU()
     };
     this.pU = function() {
@@ -3804,7 +3885,7 @@ function Playtime() {
         -1 !== G && (z += Math.floor(U), k(), n(P), c4.canvasDirty = !0)
     };
     this.mouseDown = function(P, U) {
-        this.lm(P, U); - 1 !== G && (K = P, this.rg = !0)
+        this.onPointermove(P, U); - 1 !== G && (K = P, this.rg = !0)
     };
     this.pV = function() {
         -1 !== G && (this.rg = !1)
@@ -4130,7 +4211,7 @@ function GameLeaderboard() {
         }
         return !1
     };
-    this.lm = function(S, O) {
+    this.onPointermove = function(S, O) {
         var T = getRowIndex(O);
         if (ba) {
             var Y = boardTopIndex;
@@ -4480,10 +4561,10 @@ function processAttack(authorID, targetID, ratio) {
                 if (0 !== oldPotentialAdvancesLength || 0 !== potentialBorderAdvances[authorID].length) {
                     if (teamGame) canReceiveBotDonations[authorID] = 1
                     if (authorID === myID) {
-                        statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
-                        statistics.numbers[1]++;
-                        statistics.numbers[12] += tax;
-                        statistics.numbers[13] += amount
+                        statisticNumbers.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
+                        statisticNumbers.numbers[1]++;
+                        statisticNumbers.numbers[12] += tax;
+                        statisticNumbers.numbers[13] += amount
                     }
                     takePixelsAndChangeToMoving(oldPotentialAdvancesLength, authorID);
                     attacks.set(authorID, amount, targetID);
@@ -4503,7 +4584,7 @@ function processSendBoat(id, closestPIndex, targetPIndex, amount) {
     if (0 === boatID) return !1;
     tax = divideFloor(3 * troops[id], 128);
     amount >= divideFloor(troops[id], 2) && (amount -= tax);
-    id === myID && (statistics.numbers[12] += tax);
+    id === myID && (statisticNumbers.numbers[12] += tax);
     attacks.addBoat(id, amount, boatID);
     troops[id] -= amount + tax;
     return !0
@@ -4519,13 +4600,13 @@ function processDonation(authorID, targetID, amount) {
         if (0 < maxReceivableAmount) {
             amount = amount > maxReceivableAmount ? maxReceivableAmount : amount;
             if (authorID === myID) {
-                announcements.n8(amount, targetID);
-                statistics.numbers[12] += tax;
-                statistics.numbers[16] += amount;
+                announcements.giveDonation(amount, targetID);
+                statisticNumbers.numbers[12] += tax;
+                statisticNumbers.numbers[16] += amount;
             }
             if (targetID === myID) {
-                announcements.nA(amount, authorID);
-                statistics.numbers[10] += amount;
+                announcements.receiveDonation(amount, authorID);
+                statisticNumbers.numbers[10] += amount;
             }
             troops[authorID] -= amount + tax;
             troops[targetID] += amount;
@@ -4595,7 +4676,7 @@ function ts() {
 }
 
 function MainLeaderboard() {
-    this.hidden = !1;
+    this.visible = !1;
     this.buttons = null;
     this.tz = 0;
     this.height = this.width = null;
@@ -4614,19 +4695,19 @@ function MainLeaderboard() {
     this.paginationDirection = [0, 0];
     this.init = function() {
         this.buttons = [null, null];
-        this.hidden = !1;
+        this.visible = !1;
         this.tz = 0;
         this.setCanvasVariables()
     };
     this.toggleVisibility = function(l) {
         this.tz = l;
-        this.hidden = !0;
+        this.visible = !0;
         this.updateRenderObject();
         nameInput.hide();
         c4.canvasDirty = !0
     };
     this.update = function() {
-        this.hidden && this.updateRenderObject()
+        this.visible && this.updateRenderObject()
     };
     this.updateRenderObject = function() {
         c4.time - 12E4 >= n[this.tz] && (n[this.tz] = c4.time, this.paginationDirection = [0, 0], wsManager.sendWhenWSOpen(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
@@ -4701,10 +4782,10 @@ function MainLeaderboard() {
                 l[z].name.length - 4) + "..."
     };
     this.mouseDown = function(l, x) {
-        if (!this.hidden) return !1;
+        if (!this.visible) return !1;
         l -= (prevClientWidth - this.width) / 2;
         x -= (prevClientHeight - this.height) / 2;
-        if (0 > l || l > this.width || 0 > x || x > this.height) return this.hidden = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0;
+        if (0 > l || l > this.width || 0 > x || x > this.height) return this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0;
         if (x < .3 * this.height) var t = 1;
         else x < .85 * this.height ? (t = (0 === this.tz ? 14.1 : 3) * (x - .3 * this.height) / (.55 * this.height), t = Math.floor(1 + t * t)) : t = 0 === this.tz ? 200 : 10;
         this.paginationDirection[this.tz] = l < this.width / 2 ? -t : t;
@@ -4714,7 +4795,7 @@ function MainLeaderboard() {
         return !0
     };
     this.drawCanvasImage = function() {
-        if (this.hidden) {
+        if (this.visible) {
             var l = this.u0 *
                 this.width,
                 x = this.u4 * l,
@@ -4794,11 +4875,11 @@ function MainLeaderboard() {
 
 function OpenLinkBox() {
     var g, k, n, l, x, t, z, y, A, B, C, E, F;
-    this.hidden = !1;
+    this.visible = !1;
     this.init = function(G, N) {
         if (13 <= androidVersion) N ? E = G : E === G && androidObject.saveString(200, G);
         else if (N) {
-            (mainSettings.buttons[1].buttonClass.hidden || mainSettings.buttons[2].buttonClass.hidden) && mainSettings.hideIfNotHidden();
+            (mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) && mainSettings.hideIfNotHidden();
             nameInput.hide();
             E = G;
             A = Math.floor((isZoom ? canvasWidth > canvasHeight ? .6 : .45 : .4) * minDim);
@@ -4827,24 +4908,24 @@ function OpenLinkBox() {
             F.style.top = Math.floor((k + 2 * z + x) / pixelRatio) + "px";
             F.style.left = Math.floor((g + (C - B) / 2) / pixelRatio) + "px";
             document.body.appendChild(F);
-            this.hidden = !0;
+            this.visible = !0;
             c4.canvasDirty = !0
         }
     };
     this.end = function() {
-        if (!this.hidden) return !1;
+        if (!this.visible) return !1;
         document.body.removeChild(F);
-        this.hidden = !1;
+        this.visible = !1;
         return !0
     };
     this.mouseDown = function(G, N) {
-        if (!this.hidden) return !1;
-        if (G < g || N < k || G > g + C || N > k + l) c4.canvasDirty = !0, this.hidden = !1, document.body.removeChild(F),
+        if (!this.visible) return !1;
+        if (G < g || N < k || G > g + C || N > k + l) c4.canvasDirty = !0, this.visible = !1, document.body.removeChild(F),
             0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0);
         return !0
     };
     this.drawCanvasImage = function() {
-        this.hidden && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValuebyID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
+        this.visible && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValuebyID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
     }
 }
 
@@ -4891,18 +4972,18 @@ function ui() {
                 for (y = 2; 5 > y; y++) n[y] -= l[1] * t[1].height + g
         }
     };
-    this.hidden = function() {
+    this.visible = function() {
         return !(7 === aJ.getState() && isZoom)
     };
     this.mouseDown = function(y, A, B) {
-        if (!t || !this.hidden()) return !1;
+        if (!t || !this.visible()) return !1;
         var C;
         for (C = x.length - 1; 0 <= C; C--)
             if (x[C] && this.uj[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return openLinkBox.init(z[C], B), !0;
         return !1
     };
     this.drawCanvasImage = function() {
-        if (t && this.hidden()) {
+        if (t && this.visible()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var y;
             for (y = 0; 5 > y; y++) x[y] &&
@@ -5050,7 +5131,7 @@ function kA() {
         g(5);
         g(6)
     };
-    this.lm = function(x, t, z) {
+    this.onPointermove = function(x, t, z) {
         var y = -1;
         0 === aJ.getState() ? y = this.getClickedButton(x, t, 0, 2) : 3 === aJ.getState() ? y = this.getClickedButton(x, t, 3, 1) : 5 === aJ.getState() && (y = this.getClickedButton(x, t, 5, 2));
         k !== y && (k = y, z && (c4.canvasDirty = !0));
@@ -5069,14 +5150,14 @@ function Colors() {
         return 0 > k ? 0 : 255 < k ? 255 : Math.floor(k)
     }
     this.height = this.width = 0;
-    this.hidden = !1;
+    this.visible = !1;
     this.v2 = this.v1 = this.v0 = this.ns = this.f6 = this.uz = 0;
     this.colors = null;
     this.init = function() {
         canvasWidth < 2 * canvasHeight ? this.width = Math.floor((isZoom ? .94 : .4) * canvasWidth) : (this.height = Math.floor((isZoom ? .88 : .4) * canvasHeight), this.width = Math.floor(2 * this.height));
         this.height = this.width / 2;
         this.f6 = this.height / 16;
-        this.hidden = !0;
+        this.visible = !0;
         this.uz = 0;
         this.v0 = (this.height - 3 * this.f6) / 2;
         this.v1 = this.width - 3 * this.f6 - this.v0;
@@ -5102,7 +5183,7 @@ function Colors() {
         var l = (prevClientHeight - this.height) / 2;
         k -= (prevClientWidth - this.width) / 2;
         n -= l;
-        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.hidden = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0, !1;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0, !1;
         if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.height - this.f6) return !0;
         if (k < this.f6 + this.v0) return n < this.f6 + this.v0 && 0 !== this.ns && (this.ns = 0, c4.canvasDirty = !0), !0;
         if (k < 2 * this.f6 + this.v0) return !0;
@@ -5121,7 +5202,7 @@ function Colors() {
         for (var k = "", n, l = 0; 3 > l; l++) n = divideFloor(this.colors[0][l], 4), 10 > n && (k += "0"), k += n.toString();
         saveColors(k)
     };
-    this.lm = function(k) {
+    this.onPointermove = function(k) {
         0 !== this.uz && (k -= 2 * this.f6 + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.uz - 1] = g(256 * k / this.v1), c4.canvasDirty = !0)
     };
     this.v8 = function() {
@@ -5224,7 +5305,7 @@ function PreLobby() {
             Q = Math.floor(.5 * (prevClientHeight - bufferLength - progressBarHeight - progressBarTotalHeight)) + progressBarHeight + bufferLength;
         if (xPos > M && xPos < M + progressBarTotalWidth && yPos > Q && yPos < Q + progressBarTotalHeight) {
             this.onPreLobbyLeave();
-            jh.lm(xPos, yPos, !1);
+            jh.onPointermove(xPos, yPos, !1);
             return !0
         } else return !1
     };
@@ -5309,7 +5390,7 @@ function kC() {
         this.setState(8);
         lobby.hide(); 
         mainSettings.hideIfNotHidden();
-        mainLeaderboard.hidden = !1;
+        mainLeaderboard.visible = !1;
         openLinkBox.mouseDown(-1E3, -1E3)
     };
     this.hideIfNotHidden = function(k) {
@@ -5329,11 +5410,11 @@ function kC() {
         }
     };
     this.vg = function() {
-        return openLinkBox.end() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.hidden ? (mainLeaderboard.hidden = !1, !0) : !1
+        return openLinkBox.end() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.visible ? (mainLeaderboard.visible = !1, !0) : !1
     };
     this.aK = function() {
             c4.canvasDirty = !0;
-        8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : hv.hidden ? hv.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? preLobby.onPreLobbyLeave() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
+        8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : statistics.visible ? statistics.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? preLobby.onPreLobbyLeave() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
         };
     this.mouseDown = function(k, n) {
         if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && preLobby.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || jt.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
@@ -5345,14 +5426,14 @@ function kC() {
             mainLeaderboardIcon.mouseDown(k, n)
         }
     };
-    this.lm = function(k, n) {
-        jt.lm(k, n);
+    this.onPointermove = function(k, n) {
+        jt.onPointermove(k, n);
         if (!playtime.rg) {
-            if (cookiesPrompt.lm(k, n)) {
+            if (cookiesPrompt.onPointermove(k, n)) {
                 playtime.pU();
                 return
             }
-            if (2 === gameState && singleSettings.lm(k, n)) {
+            if (2 === gameState && singleSettings.onPointermove(k, n)) {
                 playtime.pU();
                 return
             }
@@ -5360,20 +5441,20 @@ function kC() {
                 playtime.pU();
                 return
             }
-            if (mainSettings.lm(k, n)) {
+            if (mainSettings.onPointermove(k, n)) {
                 playtime.pU();
                 return
             }
-            if (jh.lm(k, n, !0)) return
+            if (jh.onPointermove(k, n, !0)) return
         }
-        playtime.lm(k, n)
+        playtime.onPointermove(k, n)
     };
     this.click = function(k, n) {
         playtime.pV();
         mainSettings.v8() || vk.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
     };
     this.pb = function(k, n, l) {
-        mainSettings.buttons[1].buttonClass.hidden || 0 === gameState && playtime.pb(k, l)
+        mainSettings.buttons[1].buttonClass.visible || 0 === gameState && playtime.pb(k, l)
     };
     this.vl = function() {
         jh.setPosition();
@@ -5428,7 +5509,7 @@ function kC() {
 
 function Emojis() {
     this.height = this.width = 0;
-    this.hidden = !1;
+    this.visible = !1;
     this.nh = 10;
     this.bB = .12;
     this.vs = this.vr = this.uz = !1;
@@ -5436,14 +5517,14 @@ function Emojis() {
         this.width = canvasWidth < 1 * canvasHeight ? Math.floor((isZoom ? .94 : .6) * canvasWidth) : Math.floor((isZoom ? .94 : .6) * canvasHeight);
         this.width -= this.width % this.nh;
         this.height = 1 * this.width;
-        this.hidden = !0;
+        this.visible = !0;
         this.uz = !1
     };
     this.mouseDown = function(g, k, n) {
         var l = (prevClientHeight - this.height) / 2;
         g -= (prevClientWidth - this.width) / 2;
         k -= l;
-        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.height - 1) return 0 === n && (this.hidden = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0), !1;
+        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.height - 1) return 0 === n && (this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0), !1;
         l = Math.floor(this.width / this.nh);
         g = divideFloor(g, l) + this.nh * divideFloor(k, l);
         g = 0 > g ? 0 : g >= a5.nl ? a5.nl - 1 : g;
@@ -5451,7 +5532,7 @@ function Emojis() {
             n || 1 === n && !a5.a7[g] || 2 === n && a5.a7[g]) this.vr = !a5.a7[g], this.vs = this.uz = !0, a5.a7[g] = !a5.a7[g], a5.o3(), c4.canvasDirty = !0;
         return !0
     };
-    this.lm = function(g, k) {
+    this.onPointermove = function(g, k) {
         this.uz && this.mouseDown(g, k, this.vr ? 1 : 2)
     };
     this.v8 = function() {
@@ -5555,14 +5636,14 @@ function ShowError() {
         } else if (7 === y) {
             if (t !== wsManager.lobby) return
         } else {
-            8 === y && (t !== wsManager.remote || singleplayer || announcements.mm(k(z)));
+            8 === y && (t !== wsManager.remote || singleplayer || announcements.error(k(z)));
             return
         }
         g()
     };
     this.displayError = function(t) {
         n = t;
-        8 === aJ.getState() ? announcements.mm(k(t)) : g()
+        8 === aJ.getState() ? announcements.error(k(t)) : g()
     };
     this.setCanvasVariables = function() {
         jh.uo[2].nY = k(n)
@@ -5572,7 +5653,7 @@ function ShowError() {
     };
     this.vj = function(t, z) {
         nameInput.init();
-        jh.lm(t, z, !1);
+        jh.onPointermove(t, z, !1);
         c4.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
@@ -5623,8 +5704,8 @@ function NameInputBar() {
         if (0 === index) inputBars[index].input.style.bottom = Math.floor((prevClientHeight - jh.fK + jh.f6) / pixelRatio) + "px"
     };
     this.toggleVisibility = function(index, option) {
-        if (inputBars[index].hidden !== option) {
-            if (inputBars[index].hidden = option) document.body.appendChild(inputBars[index].input)
+        if (inputBars[index].visible !== option) {
+            if (inputBars[index].visible = option) document.body.appendChild(inputBars[index].input)
             else document.body.removeChild(inputBars[index].input)
         }
     };
@@ -5883,7 +5964,7 @@ function Lobby() {
         for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
     };
     this.mouseDown = function(xPos, yPos) {
-        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.vi(), jh.lm(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
+        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.vi(), jh.onPointermove(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
     };
     this.drawCanvasImage = function() {
         var P = 0,
@@ -5987,7 +6068,7 @@ function Lobby() {
 function kF() {
     this.init = function(g, k) {
         aJ.setState(5);
-        jh.lm(g, k, !1);
+        jh.onPointermove(g, k, !1);
         c4.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
@@ -5995,7 +6076,7 @@ function kF() {
     };
     this.mouseDown = function(g, k) {
         var n = jh.getClickedButton(g, k, 5, 2);
-        5 === n ? reloadClient() : 6 === n && (nameInput.init(), jh.lm(g, k, !1), c4.canvasDirty = !0)
+        5 === n ? reloadClient() : 6 === n && (nameInput.init(), jh.onPointermove(g, k, !1), c4.canvasDirty = !0)
     }
 }
 
@@ -6015,7 +6096,7 @@ function SingleSettings() {
         group: 512
     }];
     this.init = function() {
-        js.hidden = !1;
+        js.visible = !1;
         aJ.setState(2);
         this.setCanvasVariables();
         c4.canvasDirty = !0
@@ -6025,7 +6106,7 @@ function SingleSettings() {
         k[2] = Math.floor((isZoom ? .49 : .4) * averageDim);
         k[1] = Math.floor((canvasHeight - k[2] / 6 - this.botSettings.length * (bufferLength + k[2] / 10)) / 2);
         k[0] = Math.floor((canvasWidth - k[2]) / 2);
-        js.hidden && js.setCanvasVariables()
+        js.visible && js.setCanvasVariables()
     };
     this.setBotSettings = function(param_gamemode) {
         var teamIndex;
@@ -6044,7 +6125,7 @@ function SingleSettings() {
     };
     this.vj = function() {
         c4.canvasDirty = !0;
-        js.hidden ? js.hidden = !1 : (this.hide(), nameInput.init())
+        js.visible ? js.visible = !1 : (this.hide(), nameInput.init())
     };
     this.getEntityCount = function() {
         var n;
@@ -6053,8 +6134,8 @@ function SingleSettings() {
         for (n = this.botSettings.length - 1; 0 <= n; n--) l += this.botSettings[n].group;
         return l
     };
-    this.lm = function(n, l) {
-        return js.hidden && js.lm(n, l) ? !0 : -1 === this.getClickedButton(n, l) ? !1 : !0
+    this.onPointermove = function(n, l) {
+        return js.visible && js.onPointermove(n, l) ? !0 : -1 === this.getClickedButton(n, l) ? !1 : !0
     };
     this.xO = function() {
         wsManager.remote = 0;
@@ -6075,8 +6156,8 @@ function SingleSettings() {
         return !1
     };
     this.mouseDown = function(n, l) {
-        if (mainLeaderboard.hidden || mainSettings.buttons[1].buttonClass.hidden || mainSettings.buttons[2].buttonClass.hidden) return !1;
-        if (js.hidden && !customJSON.isCustomJSON) return js.mouseDown(n, l);
+        if (mainLeaderboard.visible || mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) return !1;
+        if (js.visible && !customJSON.isCustomJSON) return js.mouseDown(n, l);
         var x = this.getClickedButton(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.vj(), !0;
@@ -6169,7 +6250,7 @@ function SingleSettings() {
                 mainCanvasCtx.fillRect(n + t, z + y, l, x);
                 mainCanvasCtx.fillRect(n + y, z + t, x, l)
             }
-            js.hidden && js.drawCanvasImage()
+            js.visible && js.drawCanvasImage()
         }
     };
     this.getMyGroupLabel = function(teamID) {
@@ -6222,16 +6303,16 @@ function MainSettings() {
     };
     this.panelsHidden = function() {
         for (var index = 2; 1 <= index; index--)
-            if (this.buttons[index].buttonClass.hidden) return !0;
+            if (this.buttons[index].buttonClass.visible) return !0;
         return !1
     };
     this.hideIfNotHidden = function() {
-        return this.buttons[1].buttonClass.hidden ? (this.buttons[1].buttonClass.mouseDown(-5E3, -5E3, 0), !0) : this.buttons[2].buttonClass.hidden ? (this.buttons[2].buttonClass.mouseDown(-5E3, -5E3), !0) : !1
+        return this.buttons[1].buttonClass.visible ? (this.buttons[1].buttonClass.mouseDown(-5E3, -5E3, 0), !0) : this.buttons[2].buttonClass.visible ? (this.buttons[2].buttonClass.mouseDown(-5E3, -5E3), !0) : !1
     };
     this.mouseDown = function(g, k, n) {
         if (n) {
-            if (this.buttons[1].buttonClass.hidden) return this.buttons[1].buttonClass.mouseDown(g, k, 0), !0;
-            if (this.buttons[2].buttonClass.hidden) return this.buttons[2].buttonClass.mouseDown(g, k), !0
+            if (this.buttons[1].buttonClass.visible) return this.buttons[1].buttonClass.mouseDown(g, k, 0), !0;
+            if (this.buttons[2].buttonClass.visible) return this.buttons[2].buttonClass.mouseDown(g, k), !0
         }
         g = this.getClickedButton(g, k);
         if (n) {
@@ -6240,12 +6321,12 @@ function MainSettings() {
         }
         return !1
     };
-    this.lm = function(g, k) {
-        return this.buttons[1].buttonClass.hidden ? (this.buttons[1].buttonClass.lm(g, k), !0) : this.buttons[2].buttonClass.hidden ? (this.buttons[2].buttonClass.lm(g), !0) : !1
+    this.onPointermove = function(g, k) {
+        return this.buttons[1].buttonClass.visible ? (this.buttons[1].buttonClass.onPointermove(g, k), !0) : this.buttons[2].buttonClass.visible ? (this.buttons[2].buttonClass.onPointermove(g), !0) : !1
     };
     this.v8 = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.hidden) return this.buttons[g].buttonClass.v8(), !0;
+            if (this.buttons[g].buttonClass.visible) return this.buttons[g].buttonClass.v8(), !0;
         return !1
     };
     this.drawCanvasImage = function() {
@@ -6275,7 +6356,7 @@ function MainSettings() {
     };
     this.vn = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.hidden) {
+            if (this.buttons[g].buttonClass.visible) {
                 this.buttons[g].buttonClass.drawCanvasImage();
                 break
             }
@@ -6324,7 +6405,7 @@ function NameInput() {
         if (5 <= androidVersion) showError.displayError(3232)
         else {
             showError.displayError(3265);
-            cookiesPrompt.hidden = !0;
+            cookiesPrompt.visible = !0;
             cookiesPrompt.bs = -1
         }
         return !0
@@ -6401,7 +6482,7 @@ function NameInput() {
         }
     }
     this.isInMainMenu = function() {
-        return !mainSettings.panelsHidden() && !mainLeaderboard.hidden && !openLinkBox.hidden
+        return !mainSettings.panelsHidden() && !mainLeaderboard.visible && !openLinkBox.visible
     };
     this.drawCanvasImage = function() {
         if (this.isInMainMenu()) {
@@ -6741,31 +6822,31 @@ function Pixel() {
 
 function UserSettings() {
     function g() {
-        for (var C = 0, E = 1; 5 > E; E++) C += z[E] % 1024;
+        for (var C = 0, E = 1; 5 > E; E++) C += settingsArray[E] % 1024;
         return C
     }
 
     function k() {
-        for (var C = 1; C < y - B; C++) z[C] = parseInt(z[C])
+        for (var C = 1; C < y - B; C++) settingsArray[C] = parseInt(settingsArray[C])
     }
 
     function n() {
-        z[0] = "Player " + Math.floor(1E3 * Math.random());
-        z[1] = canvasWidth < canvasHeight ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
-        z[2] = 1;
-        z[3] = 1;
-        z[4] = canvasWidth < canvasHeight ? 0 : 1;
-        z[5] = 0;
-        z[6] = "000";
-        z[7] = "0";
-        z[8] = "0";
-        z[9] = "0";
+        settingsArray[0] = "Player " + Math.floor(1E3 * Math.random());
+        settingsArray[1] = canvasWidth < canvasHeight ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
+        settingsArray[2] = 1;
+        settingsArray[3] = 1;
+        settingsArray[4] = canvasWidth < canvasHeight ? 0 : 1;
+        settingsArray[5] = 0;
+        settingsArray[6] = "000";
+        settingsArray[7] = "0";
+        settingsArray[8] = "0";
+        settingsArray[9] = "0";
         userSettings.formatSettings()
     }
 
     function l() {
-        for (var C = y - B - 1; 0 <= C; C--) z[C] = strings.convertToNumericPassword(z[C]);
-        z[0] = strings.iW(z[0])
+        for (var C = y - B - 1; 0 <= C; C--) settingsArray[C] = strings.convertToNumericPassword(settingsArray[C]);
+        settingsArray[0] = strings.iW(settingsArray[0])
     }
 
     function x(C, E, F) {
@@ -6775,55 +6856,55 @@ function UserSettings() {
             ";SameSite=Strict;Secure;path=/";
         document.cookie = C
     }
-    var t, z, y, A, B;
+    var t, settingsArray, y, cookieStatus, B;
     this.init = function() {
         if (!(5 <= androidVersion || isIOS)) {
             B = 4;
-            A = 0;
+            cookieStatus = 0;
             t = [];
             y = 10;
             for (var C = 0; C < y; C++) t.push("u" + C);
-            z = Array(y);
+            settingsArray = Array(y);
             for (var E, F = document.cookie.split(";"), G = F.length - 1; 0 <= G; G--) {
                 F[G] = F[G].trim();
                 for (C = 2; 0 <= C; C--) F[G] = F[G].replace(" ", "");
-                3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? z[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
+                3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? settingsArray[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
             }
-            z[9] || (z[9] = "0");
+            settingsArray[9] || (settingsArray[9] = "0");
             a: {
                 for (C = y - 1; 0 <= C; C--)
-                    if (void 0 === z[C]) {
+                    if (void 0 === settingsArray[C]) {
                         C = !1;
                         break a
                     } C = !0
             }
-            C ? (A = 2, l(), k(), g() !== z[5] && n()) : n()
+            C ? (cookieStatus = 2, l(), k(), g() !== settingsArray[5] && n()) : n()
         }
     };
     this.formatSettings = function() {
-        if (2 === A) {
-            z[1] = 0 === z[1] ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : z[1];
-            z[5] = g();
-            for (var C = 1; C < y - B; C++) z[C] = z[C].toString();
-            z[0] = strings.iV(z[0]);
-            for (C = y - B - 1; 0 <= C; C--) z[C] = strings.convertToStringPassword(z[C]);
-            for (C = y - 1; 0 <= C; C--) x(t[C], z[C], 1);
+        if (2 === cookieStatus) {
+            settingsArray[1] = 0 === settingsArray[1] ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : settingsArray[1];
+            settingsArray[5] = g();
+            for (var C = 1; C < y - B; C++) settingsArray[C] = settingsArray[C].toString();
+            settingsArray[0] = strings.iV(settingsArray[0]);
+            for (C = y - B - 1; 0 <= C; C--) settingsArray[C] = strings.convertToStringPassword(settingsArray[C]);
+            for (C = y - 1; 0 <= C; C--) x(t[C], settingsArray[C], 1);
             l();
             k()
         }
     };
-    this.a0 = function() {
-        return A
+    this.getCookieStatus = function() {
+        return cookieStatus
     };
-    this.nT = function(C) {
-        A = C;
+    this.setCookieStatus = function(param_CookieStatus) {
+        cookieStatus = param_CookieStatus;
         this.formatSettings()
     };
-    this.setSettings = function(C, E) {
-        5 <= androidVersion || isIOS || (z[C] = E)
+    this.setSettings = function(sIndex, value) {
+        5 <= androidVersion || isIOS || (settingsArray[sIndex] = value)
     };
-    this.getSettings = function(C) {
-        return 5 <= androidVersion || isIOS ? 0 : z[C]
+    this.getSettings = function(sIndex) {
+        return 5 <= androidVersion || isIOS ? 0 : settingsArray[sIndex]
     }
 }
 
@@ -6846,7 +6927,7 @@ function kj() {
                     if (x < maxEntities && 0 === isAlive[x]) g(l);
                     else {
                         var t = n[l + 1];
-                        if (x >= maxEntities && lf(myID) || x < maxEntities && lk(myID, x)) singleplayer ? processAttack(myID, x, t) : dataEncoder.attack(t, x === maxEntities ? myID : x), g(l)
+                        if (x >= maxEntities && bordersNeutral(myID) || x < maxEntities && bordersTarget(myID, x)) singleplayer ? processAttack(myID, x, t) : dataEncoder.attack(t, x === maxEntities ? myID : x), g(l)
                     }
                 }
             }
@@ -6882,7 +6963,7 @@ function z5(g) {
 }
 
 function zB() {
-    statistics.numbers[17] += troops[myID] + attacks.getTotalTroopsSentAway(myID);
+    statisticNumbers.numbers[17] += troops[myID] + attacks.getTotalTroopsSentAway(myID);
     gameResultBox.show(!1, !1);
     eB.tI()
 }
@@ -7257,7 +7338,7 @@ function Attacks() {
     };
     this.set = function(authorID, amount, targetID) {
         var aIndex, sIndex = getStartingAttackIndex(authorID);
-        targetID === myID && statistics.numbers[authorID < playerCount ? 6 : 5]++;
+        targetID === myID && statisticNumbers.numbers[authorID < playerCount ? 6 : 5]++;
         for (aIndex = currentAttackCount[authorID] - 1; 0 <= aIndex; aIndex--)
             if (0 === boatIDs[sIndex + aIndex] && targetIDs[sIndex + aIndex] === targetID) {
                 remainingTroops[sIndex + aIndex] += amount;
@@ -7326,7 +7407,7 @@ function Interest() {
                 troops[aliveEntities[aliveIndex]] += 1 > altInterestRate ? 1 : altInterestRate;
                 interest.limitTroops(aliveEntities[aliveIndex])
             }
-            statistics.numbers[9] += troops[myID] - myOldTroops;
+            statisticNumbers.numbers[9] += troops[myID] - myOldTroops;
             if (0 >= --iTicksLeft) {
                 iTicksLeft = iTicksPerCycle;
                 myOldTroops = troops[myID];
@@ -7334,7 +7415,7 @@ function Interest() {
                     troops[aliveEntities[aliveIndex]] += land[aliveEntities[aliveIndex]];
                     interest.limitTroops(aliveEntities[aliveIndex]);
                 }
-                statistics.numbers[8] += troops[myID] - myOldTroops;
+                statisticNumbers.numbers[8] += troops[myID] - myOldTroops;
             }
         }
     };
@@ -7576,7 +7657,7 @@ function kN() {
         R += O;
         P += T
     };
-    this.lm = function(O,
+    this.onPointermove = function(O,
         T) {
         eA.rQ(O, T)
     };
@@ -7954,7 +8035,7 @@ function getTroopHash() {
     return k % 4096
 }
 var mainCanvas, mainCanvasCtx, versionLabel, versionHash, canvasWidth, canvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = !1,
-    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statistics, hv, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, vk, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
+    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statisticNumbers, statistics, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, vk, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
@@ -7981,7 +8062,7 @@ function main() {
         alliances: !1
     });
     timeHash = (new Date).getTime() % 1024;
-    isNotTopWindow = a2A();
+    isNotTopWindow = checkNotTopWindow();
     jq.init();
     userSettings.init();
     setClientID();
@@ -8002,8 +8083,8 @@ function main() {
     gy = new a2H;
     h8 = new ts;
     a5 = new ng;
+    statisticNumbers = new StatisticNumbers;
     statistics = new Statistics;
-    hv = new a2J;
     cookiesPrompt = new CookiesPrompt;
     c4 = new a2K;
     c4.jd();
@@ -8040,10 +8121,10 @@ function init() {
     isMainCalled || main()
 }
 
-function a2A() {
+function checkNotTopWindow() {
     try {
         return window.self !== window.top
-    } catch (g) {
+    } catch (e) {
         return !0
     }
 }
@@ -8057,7 +8138,7 @@ function showErrorWarning(error) {
 }
 
 function onKeydown(g) {
-    "ArrowLeft" === g.key ? gn.dynamic(3) : "ArrowUp" === g.key ? gn.dynamic(0) : "ArrowRight" === g.key ? gn.dynamic(1) : "ArrowDown" === g.key ? gn.dynamic(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : "c" === g.key && 0 !== clientStatus && hv.a2O()
+    "ArrowLeft" === g.key ? gn.dynamic(3) : "ArrowUp" === g.key ? gn.dynamic(0) : "ArrowRight" === g.key ? gn.dynamic(1) : "ArrowDown" === g.key ? gn.dynamic(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : "c" === g.key && 0 !== clientStatus && statistics.a2O()
 }
 
 function onVisibilitychange() {
@@ -8857,7 +8938,7 @@ function kk() {
         return {
             f7: canvasWidth - y - B,
             f8: bufferLength,
-            i4: y,
+            buttonMargin: y,
             nP: Math.floor(.35 * y),
             f9: canvasWidth - A - B,
             i5: A
@@ -8990,7 +9071,7 @@ function kk() {
             return k(y, A, C, 0) ? (t = !0, c4.canvasDirty = !0) : !1
         }
     };
-    this.lm = function(y, A) {
+    this.onPointermove = function(y, A) {
         var B;
         if (!(7 <= aJ.getState())) {
             var C = n();
@@ -9010,7 +9091,7 @@ function kk() {
             var A = n();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            l(A.f7, A.f8, A.i4, A.nP, z[0].red, z[0].green, z[0].blue, 0 === x, z[0].name, .6);
+            l(A.f7, A.f8, A.buttonMargin, A.nP, z[0].red, z[0].green, z[0].blue, 0 === x, z[0].name, .6);
             if (t) {
                 var B = z.length;
                 for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nP - 2 * y, A.i5, A.nP, z[y].red, z[y].green, z[y].blue, x === y, z[y].name,
@@ -9037,7 +9118,7 @@ function kT() {
     function k() {
         if (-1 !== l)
             if (0 !== clientStatus && eV.h0()) {
-                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gridWidth += t[A], gridHeight += z[A], eA.lm(t[A], z[A]), gj.rI());
+                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gridWidth += t[A], gridHeight += z[A], eA.onPointermove(t[A], z[A]), gj.rI());
                 y ? c4.canvasDirty = !0 : gn.go()
             } else gn.go()
     }
@@ -9279,7 +9360,7 @@ function kc() {
                 attacksBar.setCanvasVariables();
                 c2.setCanvasVariables();
                 hu.l1();
-                hv.setCanvasVariables();
+                statistics.setCanvasVariables();
                 eA.setCanvasVariables();
                 gameResultBox.setCanvasVariables();
                 eT.setCanvasVariables();
@@ -9389,7 +9470,7 @@ function kW() {
         B = pixel.toY(K);
         t = x = pixel.toIndex(z, y);
         E = attacks.findAttackIndexFromBoatID(n, F); - 1 === E ? (k(), eK.removeEntry(n, F), G = !1) : (l = attacks.getRemainingTroopsFromIndex(n, E), G = !0);
-        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statistics.numbers[15] += G), l <= neutralLandCost ? (n === myID && (statistics.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
+        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statisticNumbers.numbers[15] += G), l <= neutralLandCost ? (n === myID && (statisticNumbers.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
             if (G = pixel.toIndex(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.toX(x), y = pixel.toY(x),
                 eK.g0(C, x), G = pixel.canOwn(x) ? !1 : !0, G) pixel.isWater(x) && pixel.changeToBoatPixel(x, n);
             else a: {
@@ -9402,12 +9483,12 @@ function kW() {
                     }
                     if (!isNotTeamate(n, G)) {
                         N = land[G] * maxTroopsToLandRatio - troops[G];
-                        0 >= N || (N = l > N ? N : l, l -= N, n === myID && (announcements.n8(N, G), statistics.numbers[16] += N), G === myID && (announcements.nA(N, n), statistics.numbers[10] += N), troops[G] += N);
+                        0 >= N || (N = l > N ? N : l, l -= N, n === myID && (announcements.giveDonation(N, G), statisticNumbers.numbers[16] += N), G === myID && (announcements.receiveDonation(N, n), statisticNumbers.numbers[10] += N), troops[G] += N);
                         g(!0);
                         break a
                     }
                 }
-                n === myID && (statistics.numbers[13] += l);eK.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.cR(n, !0)
+                n === myID && (statisticNumbers.numbers[13] += l);eK.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.cR(n, !0)
             }
     };
     this.g4 = function(G, N) {
@@ -9547,7 +9628,7 @@ function TerriWS() {
     }
 }
 
-function Statistics() {
+function StatisticNumbers() {
     this.cV = 501;
     this.a5P = new Uint32Array(this.cV);
     this.s6 = new Uint32Array(this.cV);
@@ -9569,7 +9650,7 @@ function Statistics() {
         0 < this.dV-- || this.a5U()
     };
     this.a5U = function() {
-        0 !== isAlive[myID] && (this.a5P[this.m4] = land[myID], this.s6[this.m4] = troops[myID], this.tT[this.m4] = interest.getInterestRate(myID), this.a5V(this.m4), this.m4++, this.m4 === this.cV && this.a5W(), this.dV = this.a5Q - 1, hv.updateRenderObject())
+        0 !== isAlive[myID] && (this.a5P[this.m4] = land[myID], this.s6[this.m4] = troops[myID], this.tT[this.m4] = interest.getInterestRate(myID), this.a5V(this.m4), this.m4++, this.m4 === this.cV && this.a5W(), this.dV = this.a5Q - 1, statistics.updateRenderObject())
     };
     this.a5W = function() {
         this.a5S();
@@ -9592,15 +9673,15 @@ function Statistics() {
     }
 }
 
-function a2J() {
-    this.bs = this.qI = this.a5Y = this.a5X = this.xJ = this.nQ = this.nP = this.uT = this.uS = this.i5 = this.i4 = this.height = this.width = 0;
-    this.lr = ["Territory", "Balance", "Interest", "Numbers"];
-    this.hidden = !1;
+function Statistics() {
+    this.bs = this.qI = this.a5Y = this.a5X = this.xJ = this.buttonHeight = this.nP = this.uT = this.uS = this.i5 = this.buttonMargin = this.height = this.width = 0;
+    this.buttonLabels = ["Territory", "Balance", "Interest", "Numbers"];
+    this.visible = !1;
     this.a5Z = -1;
     this.a5a = !1;
     this.a5b = [0, 0];
     this.init = function() {
-        this.hidden = !1;
+        this.visible = !1;
         this.a5Z = -1;
         this.a5a = !1;
         this.setCanvasVariables()
@@ -9611,19 +9692,19 @@ function a2J() {
         this.qI = Math.floor(1 + .006 * this.width);
         this.width -= isZoom && canvasWidth < canvasHeight ? 2 * m5 + this.qI : 0;
         this.height = Math.floor(this.width / 1.618);
-        this.i4 =
+        this.buttonMargin =
             Math.floor(1 + .02 * this.width);
         this.nP = this.i5 = Math.floor(1 + .04 * this.width);
-        this.nQ = Math.floor(1 + .075 * this.width);
+        this.buttonHeight = Math.floor(1 + .075 * this.width);
         this.a5X = Math.floor(this.width * (isZoom ? .028 : .02));
         this.a5X = 6 > this.a5X ? 6 : this.a5X;
         this.a5Y = Math.floor(.028 * this.width);
         this.a5Y = 6 > this.a5Y ? 6 : this.a5Y;
-        this.xJ = this.height - 2 * this.nP - this.nQ;
-        this.hidden && this.a5c()
+        this.xJ = this.height - 2 * this.nP - this.buttonHeight;
+        this.visible && this.a5c()
     };
     this.mouseDown = function(g, k) {
-        if (!this.hidden) return !1;
+        if (!this.visible) return !1;
         var n = g,
             l = k;
         g -= divideFloor(prevClientWidth - this.width, 2);
@@ -9633,9 +9714,9 @@ function a2J() {
             this.end();
             return !0
         }
-        if (k < this.height - this.nQ) return this.a5a = !0, this.a5Z = (g - 2 * this.i4 - this.uS) / this.uT, !0;
-        n = Math.floor(g / (this.width / this.lr.length));
-        n = 0 > n ? 0 : n >= this.lr.length ? this.lr.length - 1 : n;
+        if (k < this.height - this.buttonHeight) return this.a5a = !0, this.a5Z = (g - 2 * this.buttonMargin - this.uS) / this.uT, !0;
+        n = Math.floor(g / (this.width / this.buttonLabels.length));
+        n = 0 > n ? 0 : n >= this.buttonLabels.length ? this.buttonLabels.length - 1 : n;
         n !== this.bs && (this.bs = n, this.a5c(), c4.canvasDirty = !0);
         return !0
     };
@@ -9644,13 +9725,13 @@ function a2J() {
             k = Math.floor((this.a5b[1] + gridHeight) / scaleFactor);
         1 > g || 1 > k || g >= currentMapWidth - 1 || k >= currentMapHeight - 1 || console.log(g + " " + k)
     };
-    this.lm = function(g, k) {
+    this.onPointermove = function(g, k) {
         this.a5b[0] = g;
         this.a5b[1] = k;
-        if (this.hidden && this.a5a) {
+        if (this.visible && this.a5a) {
             g -= divideFloor(prevClientWidth - this.width, 2);
             var n = this.a5Z;
-            this.a5Z = (g - 2 * this.i4 - this.uS) / this.uT;
+            this.a5Z = (g - 2 * this.buttonMargin - this.uS) / this.uT;
             if (0 <= this.a5Z && 1 >= this.a5Z ||
                 0 <= n && 1 >= n) c4.canvasDirty = !0;
             return !0
@@ -9661,26 +9742,26 @@ function a2J() {
         this.a5a && (this.a5a = !1)
     };
     this.m0 = function() {
-        this.hidden ? this.end() : this.show()
+        this.visible ? this.end() : this.show()
     };
     this.show = function() {
-        2 > statistics.m4 || (this.hidden = !0, this.a5c())
+        2 > statisticNumbers.m4 || (this.visible = !0, this.a5c())
     };
     this.end = function() {
-        this.hidden = !1;
+        this.visible = !1;
         this.a5Z = -1
     };
     this.a5c = function() {
-        2 > this.bs ? this.uS = c2.measureText(attacksBar.splitText(statistics.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = c2.measureText(eB.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
-        this.uT = this.width - 2 * this.i4 - this.uS - this.i5
+        2 > this.bs ? this.uS = c2.measureText(attacksBar.splitText(statisticNumbers.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = c2.measureText(eB.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
+        this.uT = this.width - 2 * this.buttonMargin - this.uS - this.i5
     };
     this.updateRenderObject = function() {
-        this.hidden && this.a5c()
+        this.visible && this.a5c()
     };
     this.drawCanvasImage = function() {
-        this.hidden && this.nW()
+        this.visible && this.drawPrompt()
     };
-    this.nW = function() {
+    this.drawPrompt = function() {
         var g = divideFloor(prevClientWidth - this.width, 2),
             k = divideFloor(prevClientHeight - this.height, 2);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
@@ -9690,7 +9771,7 @@ function a2J() {
         mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
         mainCanvasCtx.textAlign = rightAlign;
         mainCanvasCtx.font = fontWeightBold + this.a5X + fontSizeArial;
-        0 === this.bs ? this.a5e(statistics.a5P, g, k) : 1 === this.bs ? this.a5e(statistics.s6, g, k) : 2 === this.bs ? this.a5f(g, k) : 3 === this.bs && (this.a5g(g, k), this.a5h(g, k));
+        0 === this.bs ? this.a5e(statisticNumbers.a5P, g, k) : 1 === this.bs ? this.a5e(statisticNumbers.s6, g, k) : 2 === this.bs ? this.a5f(g, k) : 3 === this.bs && (this.a5g(g, k), this.a5h(g, k));
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.a5d = function() {
@@ -9700,111 +9781,111 @@ function a2J() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.font = fontWeightBold + this.a5Y +
             fontSizeArial;
-        var g = this.width / this.lr.length;
+        var g = this.width / this.buttonLabels.length;
         mainCanvasCtx.fillStyle = greenSemiTransparent;
-        mainCanvasCtx.fillRect(this.bs * g, this.height - this.nQ, g, this.nQ);
+        mainCanvasCtx.fillRect(this.bs * g, this.height - this.buttonHeight, g, this.buttonHeight);
         mainCanvasCtx.fillStyle = whiteRGB2;
-        for (var k = this.lr.length - 1; 0 <= k; k--) mainCanvasCtx.strokeRect(k * g, this.height - this.nQ, g, this.nQ), mainCanvasCtx.fillText(this.lr[k], (k + .5) * g, this.height - .46 * this.nQ)
+        for (var k = this.buttonLabels.length - 1; 0 <= k; k--) mainCanvasCtx.strokeRect(k * g, this.height - this.buttonHeight, g, this.buttonHeight), mainCanvasCtx.fillText(this.buttonLabels[k], (k + .5) * g, this.height - .46 * this.buttonHeight)
     };
     this.a5e = function(g, k, n) {
-        var l = statistics.max[this.bs];
-        mainCanvasCtx.setTransform(1, 0, 0, 1, k + 2 * this.i4 + this.uS, n + this.nP);
+        var l = statisticNumbers.max[this.bs];
+        mainCanvasCtx.setTransform(1, 0, 0, 1, k + 2 * this.buttonMargin + this.uS, n + this.nP);
         mainCanvasCtx.lineWidth = 2;
         k = this.xJ / Math.sqrt(l);
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.moveTo(this.uT, this.xJ - k * Math.sqrt(g[statistics.m4 - 1]));
-        for (n = statistics.m4 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.uT / (statistics.m4 -
+        mainCanvasCtx.moveTo(this.uT, this.xJ - k * Math.sqrt(g[statisticNumbers.m4 - 1]));
+        for (n = statisticNumbers.m4 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.uT / (statisticNumbers.m4 -
             1), this.xJ - k * Math.sqrt(g[n]));
         mainCanvasCtx.stroke();
         g = this.m9(g, k, .5);
-        .95 > g && mainCanvasCtx.fillText(attacksBar.splitText(l), -this.i4, 0);
-        .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(l / 4)), -this.i4, Math.floor(this.xJ / 2));
-        .05 < g && mainCanvasCtx.fillText("0", -this.i4, this.xJ)
+        .95 > g && mainCanvasCtx.fillText(attacksBar.splitText(l), -this.buttonMargin, 0);
+        .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(l / 4)), -this.buttonMargin, Math.floor(this.xJ / 2));
+        .05 < g && mainCanvasCtx.fillText("0", -this.buttonMargin, this.xJ)
     };
     this.a5f = function(g, k) {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g + 2 * this.i4 + this.uS, k + this.nP);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + 2 * this.buttonMargin + this.uS, k + this.nP);
         mainCanvasCtx.lineWidth = 2;
-        var n = this.xJ / statistics.max[this.bs];
+        var n = this.xJ / statisticNumbers.max[this.bs];
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.moveTo(this.uT, this.xJ - n * statistics.tT[statistics.m4 - 1]);
-        for (var l = statistics.m4 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.uT / (statistics.m4 - 1), this.xJ - n * statistics.tT[l]);
+        mainCanvasCtx.moveTo(this.uT, this.xJ - n * statisticNumbers.tT[statisticNumbers.m4 - 1]);
+        for (var l = statisticNumbers.m4 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.uT / (statisticNumbers.m4 - 1), this.xJ - n * statisticNumbers.tT[l]);
         mainCanvasCtx.stroke();
         n =
-            this.m9(statistics.tT, n, 1);
-        l = statistics.max[this.bs] / 100;
-        .95 > n && mainCanvasCtx.fillText(eB.nG(l, 2), -this.i4, 0);
-        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nG(l / 2, 2), -this.i4, Math.floor(this.xJ / 2));
-        .05 < n && mainCanvasCtx.fillText(eB.nG(0, 2), -this.i4, this.xJ)
+            this.m9(statisticNumbers.tT, n, 1);
+        l = statisticNumbers.max[this.bs] / 100;
+        .95 > n && mainCanvasCtx.fillText(eB.nG(l, 2), -this.buttonMargin, 0);
+        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nG(l / 2, 2), -this.buttonMargin, Math.floor(this.xJ / 2));
+        .05 < n && mainCanvasCtx.fillText(eB.nG(0, 2), -this.buttonMargin, this.xJ)
     };
     this.a5g = function(g, k) {
         var n;
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .34 * this.width, k + 2 * this.nP);
         mainCanvasCtx.textAlign = rightAlign;
-        var l = this.height - 4 * this.nP - this.nQ;
-        for (n = 7; 0 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n], 0, n * l / 7);
+        var l = this.height - 4 * this.nP - this.buttonHeight;
+        for (n = 7; 0 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n], 0, n * l / 7);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .39 * this.width, k + 2 * this.nP);
         mainCanvasCtx.textAlign = leftAlign;
-        n = statistics.numbers[1];
-        mainCanvasCtx.fillText(eB.nG(statistics.numbers[0] / (10 * (1 > n ? 1 :
+        n = statisticNumbers.numbers[1];
+        mainCanvasCtx.fillText(eB.nG(statisticNumbers.numbers[0] / (10 * (1 > n ? 1 :
             n)), 1), 0, 0);
-        for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statistics.numbers[n].toString(), 0, n * l / 7);
-        mainCanvasCtx.fillText(eB.nG(100 * (1 - land[myID] / statistics.numbers[7]), 0), 0, l)
+        for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.numbers[n].toString(), 0, n * l / 7);
+        mainCanvasCtx.fillText(eB.nG(100 * (1 - land[myID] / statisticNumbers.numbers[7]), 0), 0, l)
     };
     this.a5h = function(g, k) {
         var n;
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .74 * this.width, k + 2 * this.nP);
         mainCanvasCtx.textAlign = rightAlign;
-        var l = this.height - 4 * this.nP - this.nQ;
+        var l = this.height - 4 * this.nP - this.buttonHeight;
         mainCanvasCtx.fillStyle = greenRGB;
-        for (n = 2; 0 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n + 8], 0, n * l / 9);
+        for (n = 2; 0 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n + 8], 0, n * l / 9);
         mainCanvasCtx.fillStyle = limeGreenRGB;
-        mainCanvasCtx.fillText(statistics.a5R[11], 0, 3 * l / 9);
+        mainCanvasCtx.fillText(statisticNumbers.a5R[11], 0, 3 * l / 9);
         mainCanvasCtx.fillStyle = redBrightRGB;
-        for (n = 8; 4 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n + 8], 0, n * l / 9);
+        for (n = 8; 4 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n + 8], 0, n * l / 9);
         mainCanvasCtx.fillStyle = redLightRGB;
-        mainCanvasCtx.fillText(statistics.a5R[17], 0, 9 * l / 9);
+        mainCanvasCtx.fillText(statisticNumbers.a5R[17], 0, 9 * l / 9);
         mainCanvasCtx.fillStyle = greenRGB;
-        n = attacksBar.splitText(statistics.numbers[8] +
-            statistics.numbers[9] + statistics.numbers[10] + statistics.numbers[11]);
+        n = attacksBar.splitText(statisticNumbers.numbers[8] +
+            statisticNumbers.numbers[9] + statisticNumbers.numbers[10] + statisticNumbers.numbers[11]);
         var x = mainCanvasCtx.measureText(n).width;
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .79 * this.width + x, k + 2 * this.nP);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[8]), 0, 0);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[9]), 0, 1 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[10]), 0, 2 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[8]), 0, 0);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[9]), 0, 1 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[10]), 0, 2 * l / 9);
         mainCanvasCtx.fillStyle = limeGreenRGB;
         mainCanvasCtx.fillText(n, 0, 3 * l / 9);
         mainCanvasCtx.fillStyle = redBrightRGB;
-        n = statistics.numbers[13] - attacks.getTotalTroopsAttacking(myID);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[12]), 0, 4 * l / 9);
+        n = statisticNumbers.numbers[13] - attacks.getTotalTroopsAttacking(myID);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[12]), 0, 4 * l / 9);
         mainCanvasCtx.fillText(attacksBar.splitText(n), 0, 5 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[14]), 0, 6 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[15]), 0, 7 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[16]), 0, 8 * l / 9);
-        n = statistics.numbers[12] + n + statistics.numbers[14] +
-            statistics.numbers[15] + statistics.numbers[16] + statistics.numbers[17];
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[14]), 0, 6 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[15]), 0, 7 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[16]), 0, 8 * l / 9);
+        n = statisticNumbers.numbers[12] + n + statisticNumbers.numbers[14] +
+            statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
         mainCanvasCtx.fillStyle = redLightRGB;
         mainCanvasCtx.fillText(attacksBar.splitText(n), 0, l);
         mainCanvasCtx.fillStyle = whiteRGB2
     };
     this.m9 = function(g, k, n) {
         if (0 > this.a5Z || 1 < this.a5Z) return .25;
-        var l = this.a5Z * (statistics.m4 - 1),
+        var l = this.a5Z * (statisticNumbers.m4 - 1),
             x = Math.floor(l),
             t = g[x];
-        t += (l - x) * (g[x < statistics.m4 - 1 ? x + 1 : x] - t);
+        t += (l - x) * (g[x < statisticNumbers.m4 - 1 ? x + 1 : x] - t);
         mainCanvasCtx.strokeStyle = whiteMoreTransparent;
-        .04 < this.a5Z && this.a5n(0, this.xJ - k * Math.pow(t, n), l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n));
-        .04 < t / statistics.max[this.bs] && this.a5n(l * this.uT / (statistics.m4 - 1), this.xJ, l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n));
+        .04 < this.a5Z && this.a5n(0, this.xJ - k * Math.pow(t, n), l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n));
+        .04 < t / statisticNumbers.max[this.bs] && this.a5n(l * this.uT / (statisticNumbers.m4 - 1), this.xJ, l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n));
         mainCanvasCtx.fillStyle = redBrightMoreOpaque;
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.arc(l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
+        mainCanvasCtx.arc(l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
         mainCanvasCtx.fill();
         g = this.a5Z * c4.tV();
         g = 0 === isAlive[myID] ? Math.floor(g * gameResultBox.tb) : Math.floor(g * c4.ticksElapsed());
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillText(1 === n ? eB.nG(t / 100, 2) : attacksBar.splitText(Math.floor(t)), -this.i4, this.xJ - k * Math.pow(t, n));
+        mainCanvasCtx.fillText(1 === n ? eB.nG(t / 100, 2) : attacksBar.splitText(Math.floor(t)), -this.buttonMargin, this.xJ - k * Math.pow(t, n));
         mainCanvasCtx.textAlign = centerAlign;
-        mainCanvasCtx.fillText(eB.getITicksRemaining(g), l * this.uT / (statistics.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
+        mainCanvasCtx.fillText(eB.getITicksRemaining(g), l * this.uT / (statisticNumbers.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
         mainCanvasCtx.textAlign = rightAlign;
         return k * Math.pow(t, n) / this.xJ
     };
@@ -10192,40 +10273,45 @@ function isNotTeamate(player1, player2) {
     return 0 === teams.teamArray[player1] || teams.teamArray[player1] !== teams.teamArray[player2]
 }
 
-function lg(g, k) {
-    var n, l = attacks.getCurrentAttackCount(g);
-    for (n = 0; n < l; n++)
-        if (0 === attacks.getBoatIDFromIndex(g, n)) {
-            var x = attacks.getTargetFromIndex(g, n);
-            if (x === maxEntities) {
-                if (k === maxEntities) break;
-                if (lf(k)) return !0
-            } else if (k === maxEntities) {
-                if (lf(x)) return !0
-            } else if (lk(k, x)) return !0
+function target1BordersAttackingTarget2(authorID, targetID) {
+    var aIndex, currentAttackCount = attacks.getCurrentAttackCount(authorID);
+    for (aIndex = 0; aIndex < currentAttackCount; aIndex++)
+        if (0 === attacks.getBoatIDFromIndex(authorID, aIndex)) {
+            var targetID = attacks.getTargetFromIndex(authorID, aIndex);
+            if (targetID === maxEntities) {
+                if (targetID === maxEntities) break;
+                if (bordersNeutral(targetID)) return !0
+            } else if (targetID === maxEntities) {
+                if (bordersNeutral(targetID)) return !0
+            } else if (bordersTarget(targetID, targetID)) return !0
         } return !1
 }
 
-function lf(g) {
-    var k, n, l = landBorderPixels[g].length;
-    for (k = 3; 0 <= k; k--) {
-        var x = offset[k];
-        for (n = 0; n < l; n++)
-            if (pixel.isNeutral(landBorderPixels[g][n] + x)) return !0
+function bordersNeutral(id) {
+    var side, bIndex, borderLength = landBorderPixels[id].length;
+    for (side = 3; 0 <= side; side--) {
+        var mcDir = offset[side];
+        for (bIndex = 0; bIndex < borderLength; bIndex++)
+            if (pixel.isNeutral(landBorderPixels[id][bIndex] + mcDir)) return !0
     }
     return !1
 }
 
-function lk(g, k) {
-    var n;
-    var l = landBorderPixels[g].length;
-    var x = landBorderPixels[k].length;
-    x < l && (l = g, g = k, k = l, l = x);
-    for (n = 3; 0 <= n; n--) {
-        var t = offset[n];
-        for (x = 0; x < l; x++) {
-            var z = landBorderPixels[g][x] + t;
-            if (pixel.entityControlled(z) && pixel.getOwner(z) === k) return !0
+function bordersTarget(authorID, targetID) {
+    var side;
+    var borderLength1 = landBorderPixels[authorID].length;
+    var borderLength2 = landBorderPixels[targetID].length;
+    if (borderLength2 < borderLength1) {
+        borderLength1 = authorID;
+        authorID = targetID;
+        targetID = borderLength1;
+        borderLength1 = borderLength2
+    };
+    for (side = 3; 0 <= side; side--) {
+        var mcDir = offset[side];
+        for (var bIndex = 0; bIndex < borderLength1; bIndex++) {
+            var pIndex = landBorderPixels[authorID][bIndex] + mcDir;
+            if (pixel.entityControlled(pIndex) && pixel.getOwner(pIndex) === targetID) return !0
         }
     }
     return !1
@@ -10515,7 +10601,7 @@ function DataDecoder() {
                                             if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && eQ.a1W(1, [data], !0)) {
                                                 eA.showIcon(data, 3, 96);
                                                 eA.showIcon(requester, 4, 96);
-                                                announcements.requestToAttack(data, requester);
+                                                announcements.requestedToAttack(data, requester);
                                             }
                                         }
                                     }
@@ -10656,10 +10742,10 @@ function kf() {
     function g(k, n, l, x, t) {
         k >= customMapID || (currentMapID === k && (mainCanvasCtx.fillStyle = blueMoreOpaque, mainCanvasCtx.fillRect(n, l, x, t), mainCanvasCtx.fillStyle = whiteRGB2), mainCanvasCtx.strokeRect(n, l, x, t), mainCanvasCtx.fillText(mapInfo.getValuebyID(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
     }
-    this.hidden = !1;
+    this.visible = !1;
     this.xK = [0, 0, 0, 0];
     this.show = function() {
-        this.hidden = !0;
+        this.visible = !0;
         this.setCanvasVariables();
         c4.canvasDirty = !0
     };
@@ -10673,15 +10759,15 @@ function kf() {
             2);
         this.xK[1] = Math.floor((canvasHeight - this.xK[3]) / 2)
     };
-    this.lm = function(k, n) {
+    this.onPointermove = function(k, n) {
         return k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3] ? !1 : !0
     };
     this.mouseDown = function(k, n) {
         var l = divideFloor(customMapID + customMapID % 2, 2);
         c4.canvasDirty = !0;
-        if (k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3]) return this.hidden = !1, !0;
+        if (k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3]) return this.visible = !1, !0;
         var x = Math.floor(.13 * this.xK[3]);
-        if (n < this.xK[1] + x) return k > this.xK[0] + this.xK[2] - 1.2 * x && (this.hidden = !1), !0;
+        if (n < this.xK[1] + x) return k > this.xK[0] + this.xK[2] - 1.2 * x && (this.visible = !1), !0;
         x = Math.floor(l * (n - this.xK[1] - x) / (this.xK[3] - x));
         x = 0 > x ? 0 : x > l - 1 ? l - 1 : x;
         k > this.xK[0] + this.xK[2] /
