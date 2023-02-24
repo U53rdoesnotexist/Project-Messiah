@@ -1685,7 +1685,7 @@ var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, strin
     c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
     mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, 
-    wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON, intelliAttack, sounds;
+    wsManager, eH, moreSettings, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
@@ -1747,7 +1747,7 @@ function construct() {
     setGameOrigin = new SetGameOrigin;
     wsManager = new WsManager;
     eH = new kj;
-    jt = new kk;
+    moreSettings = new MoreSettings;
     specialGames = new SpecialGames;
     humanBots = new HumanBots;
     antiFullSend = new AntiFullSend;
@@ -5418,24 +5418,21 @@ function PreLobby() {
     };
     this.update = function() {
         if (6 === gameStateManager.getState()) {
-            if (isJoiningLobby) {
-                if (c4.time > initTime + 2E4) showError.displayError(3250);
-            } else {
-                if (c4.time > initTime + 2E4) {
-                    incrementRemoteIndex();
-                    barProgress += .07 * direction * (16 > barProgress ? 5 + barProgress : 84 < barProgress ? 105 - barProgress : 17);
-                    if (100 < barProgress) {
-                        barProgress = 100;
-                        direction = -1;
-                    } else if (0 > barProgress) {
-                        barProgress = 0;
-                        direction = 1;
-                    }
-                    bgColor = "rgba(0," + Math.floor(190 - 1.9 * barProgress) + "," + Math.floor(120 - 1.2 * barProgress) + "," + (.4 + .004 * barProgress) + ")";
-                    fgColor = "rgba(0," + Math.floor(1.9 * barProgress) + "," + Math.floor(1.2 * barProgress) + "," + (.8 - .004 * barProgress) + ")";
-                    c4.canvasDirty = !0;
-                }
+            if (c4.time > initTime + 2E4) {
+                if (isJoiningLobby) showError.displayError(3250)
+                else incrementRemoteIndex();
             }
+            barProgress += .07 * direction * (16 > barProgress ? 5 + barProgress : 84 < barProgress ? 105 - barProgress : 17);
+            if (100 < barProgress) {
+                barProgress = 100;
+                direction = -1;
+            } else if (0 > barProgress) {
+                barProgress = 0;
+                direction = 1;
+            }
+            bgColor = "rgba(0," + Math.floor(190 - 1.9 * barProgress) + "," + Math.floor(120 - 1.2 * barProgress) + "," + (.4 + .004 * barProgress) + ")";
+            fgColor = "rgba(0," + Math.floor(1.9 * barProgress) + "," + Math.floor(1.2 * barProgress) + "," + (.8 - .004 * barProgress) + ")";
+            c4.canvasDirty = !0;
         }
     };    
     this.drawCanvasImage = function() {
@@ -5519,7 +5516,7 @@ function GameStateManager() {
         8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : statistics.visible ? statistics.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? preLobby.onPreLobbyLeave() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
         };
     this.mouseDown = function(k, n) {
-        if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && preLobby.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || jt.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
+        if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && preLobby.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || moreSettings.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
             playtime.mouseDown(k, n);
             if (0 === gameState) nameInput.mouseDown(k, n);
             else if (3 === gameState) showError.mouseDown(k, n);
@@ -5529,7 +5526,7 @@ function GameStateManager() {
         }
     };
     this.onPointermove = function(k, n) {
-        jt.onPointermove(k, n);
+        moreSettings.onPointermove(k, n);
         if (!playtime.rg) {
             if (cookiesPrompt.onPointermove(k, n)) {
                 playtime.pU();
@@ -5586,7 +5583,7 @@ function GameStateManager() {
             vk.drawCanvasImage();
             mainLeaderboardIcon.drawCanvasImage();
             mainSettings.drawCanvasImage();
-            jt.drawCanvasImage();
+            moreSettings.drawCanvasImage();
             0 === gameState ? nameInput.drawCanvasImage() : 2 === gameState ? singleSettings.drawCanvasImage() : 3 === gameState ? showError.drawCanvasImage() : 5 === gameState ? gameUpdatedPrompt.drawCanvasImage() : 6 === gameState ? preLobby.drawCanvasImage() : 7 === gameState && lobby.drawCanvasImage();
             mainSettings.vn();
             cookiesPrompt.drawCanvasImage();
@@ -6404,7 +6401,7 @@ function MainSettings() {
         this.width += 4 - this.width % 4;
         this.buttons[0].fJ = bufferLength;
         this.buttons[0].fK = prevClientHeight - this.width - bufferLength;
-        for (var butIndex = 1; butIndex < this.b3; butIndex++) this.buttons[butIndex].fJ = this.buttons[butIndex - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 3.7 * bufferLength) + this.width, this.buttons[butIndex].fK = this.buttons[0].fK
+        for (var butIndex = 1; butIndex < this.b3; butIndex++) this.buttons[butIndex].fJ = this.buttons[butIndex - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 2 * bufferLength) + this.width, this.buttons[butIndex].fK = this.buttons[0].fK
     };
     this.getClickedButton = function(xPos, yPos) {
         if (!sprites.areAllSpritesLoaded()) return -1;
@@ -6602,7 +6599,7 @@ function NameInput() {
             if (void 0 !== textInput && strings.checkValidName(textInput) && 40 === textInput.charCodeAt(0) && 41 === textInput.charCodeAt(2)) {
                 preLobby.setRemote((Math.abs(textInput.charCodeAt(1)) + 7) % wsManager.terriWsCount)
             } else {
-                preLobby.setRemote(jt.selectedRemote - 1);
+                preLobby.setRemote(moreSettings.selectedRemote - 1);
                 if (setBarColor()) {
                     if (sprites.areAllSpritesLoaded()) {
                         this.hide();
@@ -7746,7 +7743,7 @@ function kN() {
         H = 1.8;
         maxFontSize = Math.floor(.5 * minDim);
         J = Math.floor(.2 * maxFontSize);
-        minFontSize = 8 === gamemode ? jt.a0g ? 6 : 4 : jt.a0g ? 10 : 7;
+        minFontSize = 8 === gamemode ? moreSettings.a0g ? 6 : 4 : moreSettings.a0g ? 10 : 7;
         C = B = 0;
         E = new Uint16Array(maxEntities);
         F = new Uint16Array(maxEntities);
@@ -7926,7 +7923,7 @@ function NickNames() {
     };
     this.jU = function() {
         var n;
-        if (jt.a1L && !singleplayer) {
+        if (moreSettings.a1L && !singleplayer) {
             tempNickname = Array(playerCount);
             var l = playerCount;
             var x = k.length;
@@ -8240,7 +8237,7 @@ function main() {
     configFakeMap.init();
     gameStateManager.init();
     loadCustomMap.init();
-    jt.init();
+    moreSettings.init();
     wsManager.init();
     playtime.init();
     nickNames.init();
@@ -9051,12 +9048,12 @@ function rectEqualOrInside(x1, y1, w1, h1, x2, y2, w2, h2) {
 }
 
 
-function kk() {
+function MoreSettings() {
     function g() {
-        vk.uj[2] = vk.uj[3] = vk.uj[4] = !jt.a4F;
-        var y = jt.a1L ? 1 : 0,
-            A = jt.a4F ? 1 : 0,
-            B = jt.a0g ? 1 : 0;
+        vk.uj[2] = vk.uj[3] = vk.uj[4] = !moreSettings.a4F;
+        var y = moreSettings.a1L ? 1 : 0,
+            A = moreSettings.a4F ? 1 : 0,
+            B = moreSettings.a0g ? 1 : 0;
         isIOS ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= androidVersion ? (androidObject.saveNumber(25, y), androidObject.saveNumber(26, A)) : (userSettings.setSettings(6, 4 * B + 2 * A + y), userSettings.formatSettings())
     }
 
@@ -9098,81 +9095,81 @@ function kk() {
     this.a0g = this.a4F = this.a1L = !1;
     var x = -1,
         t = !1,
-        z = [];
+        settingsArray = [];
     this.init =
         function() {
-            z = [];
-            z.push({
+            settingsArray = [];
+            settingsArray.push({
                 name: "More",
                 id: 0,
                 red: 140,
                 green: 120,
                 blue: 0
             });
-            z.push({
+            settingsArray.push({
                 name: "Lobby 1",
                 id: 1,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            z.push({
+            settingsArray.push({
                 name: "Hide Usernames",
                 id: 2,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            z.push({
+            settingsArray.push({
                 name: "Hide Links",
                 id: 3,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            !isIOS && 5 > androidVersion && z.push({
+            !isIOS && 5 > androidVersion && settingsArray.push({
                 name: "High Resolution",
                 id: 4,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            z.push({
+            settingsArray.push({
                 name: "Tutorial",
                 id: 5,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            z.push({
+            settingsArray.push({
                 name: "Player List",
                 id: 6,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            z.push({
+            settingsArray.push({
                 name: "Clan List",
                 id: 7,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            z.push({
+            settingsArray.push({
                 name: "Privacy Policy",
                 id: 8,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            !isIOS && 5 > androidVersion && z.push({
+            !isIOS && 5 > androidVersion && settingsArray.push({
                 name: "Cookie Policy",
                 id: 9,
                 red: 0,
                 green: 0,
                 blue: 0
             });
-            z.push({
+            settingsArray.push({
                 name: versionLabel,
                 id: 10,
                 red: 90,
@@ -9187,19 +9184,58 @@ function kk() {
                 this.a4F = 2 === (y & 2);
                 this.a0g = 4 === (y & 4)
             }
-            z[2].green = this.a1L ? 130 : 0;
-            z[3].green = this.a4F ? 130 : 0;
-            !isIOS && 5 > androidVersion && (z[4].green = this.a0g ? 130 : 0);
+            settingsArray[2].green = this.a1L ? 130 : 0;
+            settingsArray[3].green = this.a4F ? 130 : 0;
+            !isIOS && 5 > androidVersion && (settingsArray[4].green = this.a0g ? 130 : 0);
             this.a4F && (vk.uj[2] = vk.uj[3] = vk.uj[4] = !1)
         };
     this.mouseDown = function(y, A) {
-        var B;
+        var sIndex;
         if (!(7 <= gameStateManager.getState())) {
             var C = n();
             if (t) {
-                for (B = 1; B < z.length; B++)
-                    if (k(y, A, C, B)) return 1 === z[B].id ? (jt.selectedRemote = 1 === jt.selectedRemote ? 2 : 2 === jt.selectedRemote ? wsManager.serverCount : 1, z[1].name = "Lobby " + (jt.selectedRemote === wsManager.serverCount ? "1B" : jt.selectedRemote), c4.canvasDirty = !0) : 2 === z[B].id ? (jt.a1L = !jt.a1L, z[B].green = jt.a1L ? 130 : 0, g(), c4.canvasDirty = !0) : 3 === z[B].id ? (jt.a4F = !jt.a4F, z[B].green = jt.a4F ? 130 : 0, g(), c4.canvasDirty = !0) : 4 === z[B].id ? (jt.a0g = !jt.a0g, z[B].green = jt.a0g ? 130 : 0, g(), jq.xa(), c4.canvasDirty = !0) : 5 === z[B].id ? (openLinkBox.init(tutorialLink, !0), openLinkBox.init(tutorialLink, !1)) : 6 === z[B].id ? (openLinkBox.init(leaderboardLinks[0], !0), openLinkBox.init(leaderboardLinks[0], !1)) : 7 === z[B].id ? (openLinkBox.init(leaderboardLinks[1], !0), openLinkBox.init(leaderboardLinks[1], !1)) : 8 === z[B].id ? (openLinkBox.init(privacyPolicyLink, !0), openLinkBox.init(privacyPolicyLink, !1)) : 9 === z[B].id &&
-                        (openLinkBox.init(cookiePolicyLink, !0), openLinkBox.init(cookiePolicyLink, !1)), !0;
+                for (sIndex = 1; sIndex < settingsArray.length; sIndex++) {
+                    if (k(y, A, C, sIndex)) {
+                        if (1 === settingsArray[sIndex].id) {
+                            if (wsManager.terriWsCount === moreSettings.selectedRemote) moreSettings.selectedRemote = 1
+                            else moreSettings.selectedRemote++;
+                            settingsArray[1].name = "Lobby " + (moreSettings.selectedRemote >= wsManager.serverCount ? `${moreSettings.selectedRemote} (${(moreSettings.selectedRemote - 1)% 3 + 1}B)` : moreSettings.selectedRemote);
+                            c4.canvasDirty = !0;
+                        } else if (2 === settingsArray[sIndex].id) {
+                            moreSettings.a1L = !moreSettings.a1L;
+                            settingsArray[sIndex].green = moreSettings.a1L ? 130 : 0;
+                            g();
+                            c4.canvasDirty = !0;
+                        } else if (3 === settingsArray[sIndex].id) {
+                            moreSettings.a4F = !moreSettings.a4F;
+                            settingsArray[sIndex].green = moreSettings.a4F ? 130 : 0;
+                            g();
+                            c4.canvasDirty = !0;
+                        } else if (4 === settingsArray[sIndex].id) {
+                            moreSettings.a0g = !moreSettings.a0g;
+                            settingsArray[sIndex].green = moreSettings.a0g ? 130 : 0;
+                            g();
+                            jq.xa();
+                            c4.canvasDirty = !0;
+                        } else if (5 === settingsArray[sIndex].id) {
+                            openLinkBox.init(tutorialLink, !0);
+                            openLinkBox.init(tutorialLink, !1);
+                        } else if (6 === settingsArray[sIndex].id) {
+                            openLinkBox.init(leaderboardLinks[0], !0);
+                            openLinkBox.init(leaderboardLinks[0], !1);
+                        } else if (7 === settingsArray[sIndex].id) {
+                            openLinkBox.init(leaderboardLinks[1], !0);
+                            openLinkBox.init(leaderboardLinks[1], !1);
+                        } else if (8 === settingsArray[sIndex].id) {
+                            openLinkBox.init(privacyPolicyLink, !0);
+                            openLinkBox.init(privacyPolicyLink, !1);
+                        } else if (9 === settingsArray[sIndex].id) {
+                            openLinkBox.init(cookiePolicyLink, !0);
+                            openLinkBox.init(cookiePolicyLink, !1);
+                        }
+                        return !0;
+                    }
+                }
                 t = !1;
                 c4.canvasDirty = !0;
                 return !1
@@ -9212,7 +9248,7 @@ function kk() {
         if (!(7 <= gameStateManager.getState())) {
             var C = n();
             var E = x;
-            var F = t ? z.length - 1 : 1;
+            var F = t ? settingsArray.length - 1 : 1;
             x = -1;
             for (B = 0; B < F; B++)
                 if (k(y, A, C, B)) {
@@ -9227,10 +9263,10 @@ function kk() {
             var A = n();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            l(A.f7, A.f8, A.buttonMargin, A.nP, z[0].red, z[0].green, z[0].blue, 0 === x, z[0].name, .6);
+            l(A.f7, A.f8, A.buttonMargin, A.nP, settingsArray[0].red, settingsArray[0].green, settingsArray[0].blue, 0 === x, settingsArray[0].name, .6);
             if (t) {
-                var B = z.length;
-                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nP - 2 * y, A.i5, A.nP, z[y].red, z[y].green, z[y].blue, x === y, z[y].name,
+                var B = settingsArray.length;
+                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nP - 2 * y, A.i5, A.nP, settingsArray[y].red, settingsArray[y].green, settingsArray[y].blue, x === y, settingsArray[y].name,
                     y === B - 1 ? .32 : .45)
             }
         }
@@ -9544,7 +9580,7 @@ function kc() {
             } else maxClientWidth = !1;
             return maxClientWidth
         }
-        jt.a0g ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
+        moreSettings.a0g ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
         maxClientWidth = limitToMinimum(document.documentElement.clientWidth);
         maxClientHeight = limitToMinimum(document.documentElement.clientHeight);
         varClientWidth = Math.floor(.5 + pixelRatio * maxClientWidth);
