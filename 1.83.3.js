@@ -41,7 +41,7 @@ function loadPassword() {
         password = userSettings.getSettings(9)
     }
     var passwordMaxLimit = Math.floor(Math.pow(2, 48));
-    password = Math.floor(parseInt(characters.convertToNumericPassword(password)));
+    password = Math.floor(parseInt(strings.convertToNumericPassword(password)));
     if (0 < password && password < passwordMaxLimit) return password;
     password = Math.floor(1 + (passwordMaxLimit - 1) * Math.random());
     return savePassword(password) ? password : 0
@@ -87,7 +87,7 @@ function saveUsername(username) {
 }
 
 function savePassword(password) {
-    password = characters.convertToStringPassword(password.toString());
+    password = strings.convertToStringPassword(password.toString());
     if (isIOS) {
         iosObject.password = password;
         window.webkit.messageHandlers.iosCommandA.postMessage("password " + password);
@@ -96,7 +96,7 @@ function savePassword(password) {
         androidObject.saveString(22, password);
         return true;
     } else if (5 <= androidVersion) return false;
-    else if (2 === userSettings.a0()) {
+    else if (2 === userSettings.getCookieStatus()) {
         userSettings.setSettings(9, password);
         userSettings.formatSettings();
         return true;
@@ -232,7 +232,7 @@ function returnRemaining() {
         var oldTroop = troops[lastAuthorID];
         troops[lastAuthorID] += lastRemaining;
         interest.limitTroops(lastAuthorID);
-        statistics.numbers[13] -= troops[lastAuthorID] - oldTroop
+        statisticNumbers.numbers[13] -= troops[lastAuthorID] - oldTroop
     }
     attacks.removeAttack(lastAuthorID, lastAttackIndex)
 }
@@ -411,11 +411,11 @@ function MainLeaderboardIcon() {
         if (!sprites.areAllSpritesLoaded() || xPos < bufferLength || yPos < prevClientHeight - mainSettings.width - renderScale * sprites.getValuebyID(13).height - 2 * bufferLength || 
             yPos > prevClientHeight - mainSettings.width - 2 * bufferLength) return false;
         else if (xPos < bufferLength + renderScale * sprites.getValuebyID(13).width) {
-            mainLeaderboard.toggleVisibilityOn(0);
+            mainLeaderboard.toggleVisibility(0);
             return true;
         } else if (xPos < 2 * bufferLength + renderScale * sprites.getValuebyID(13).width) return false;
         else if (xPos < 2 * bufferLength + 2 * renderScale * sprites.getValuebyID(13).width) {
-            mainLeaderboard.toggleVisibilityOn(1);
+            mainLeaderboard.toggleVisibility(1);
             return true;
         } else return false;
     };
@@ -822,7 +822,7 @@ function eE() {
     eQ.update();
     troopBar.update();
     peace.update();
-    statistics.update();
+    statisticNumbers.update();
     eT.update();
     wsManager.update()
 }
@@ -832,7 +832,7 @@ function eU() {
     gameResultBox.update();
     c2.update();
     eX.update();
-    setGameOrigin.eZ()
+    setGameOrigin.checkAndSwitchServer()
 }
 
 function ea() {
@@ -870,15 +870,15 @@ function Speed() {
     };
     this.update = function() {
         var attackerIndex;
-        old_AttackLoses = statistics.numbers[13];
+        old_AttackLoses = statisticNumbers.numbers[13];
         old_myTroops = troops[myID];
         for (attackerIndex = attackerCount - 1; 0 <= attackerIndex; attackerIndex--) {
             if (10 === intervalsLeft[attackers[attackerIndex]]) setSpeedInterval(attackers[attackerIndex])
             else if (0 === intervalsLeft[attackers[attackerIndex]]--) setSpeedInterval(attackers[attackerIndex]), attackProcessInit(attackers[attackerIndex]);
         }
         16E4 <= land[orderedLand[0]] && (checkHigherSpeed(16E4), 3E5 <= land[orderedLand[0]] && checkHigherSpeed(3E5));
-        land[myID] > statistics.numbers[7] && (statistics.numbers[7] = land[myID]);
-        statistics.numbers[14] += old_myTroops - troops[myID] + old_AttackLoses - statistics.numbers[13]
+        land[myID] > statisticNumbers.numbers[7] && (statisticNumbers.numbers[7] = land[myID]);
+        statisticNumbers.numbers[14] += old_myTroops - troops[myID] + old_AttackLoses - statisticNumbers.numbers[13]
     };
     this.removeEntry = function(id) {
         var attackerIndex;
@@ -992,9 +992,9 @@ function ProcessAction() {
         if (0 !== isAlive[authorID] && 2 !== playerStatus[authors] && boatPathChecker.check(authorID, pixel.toIndex(toX, yCoord))) {
             var boatSuccessful = processSendBoat(authorID, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(toX, yCoord), divideFloor(ratio * troops[authorID], 1E3));
             if (boatSuccessful && authorID === myID) {
-                statistics.numbers[0] += ratio;
-                statistics.numbers[1]++;
-                statistics.numbers[2]++;
+                statisticNumbers.numbers[0] += ratio;
+                statisticNumbers.numbers[1]++;
+                statisticNumbers.numbers[2]++;
             }
         }
     };
@@ -1007,7 +1007,7 @@ function ProcessAction() {
                 var prevTroops = troops[authorID];
                 troops[authorID] += returnedTroops;
                 interest.limitTroops(authorID);
-                statistics.numbers[13] -= troops[authorID] - prevTroops
+                statisticNumbers.numbers[13] -= troops[authorID] - prevTroops
             }
         }
     };
@@ -1330,8 +1330,8 @@ function hA() {
                 }
             } else
                 for (G = 0; G < maxEntities; G++) 1 !== isAlive[G] && (G < entityCount && g() ? (D = C + t * B + divideFloor(B, 2), I = E + z * B + divideFloor(B, 2), n(), l(D - 2, I - 2)) : n());
-        statistics.numbers[7] = land[myID];
-        statistics.numbers[8] = troops[myID]
+        statisticNumbers.numbers[7] = land[myID];
+        statisticNumbers.numbers[8] = troops[myID]
     };
     this.hi = function(I, D, K) {
         var J, L;
@@ -1388,7 +1388,7 @@ function hp() {
         fq.drawCanvasImage();
         gameResultBox.drawCanvasImage();
         hu.drawCanvasImage();
-        hv.drawCanvasImage();
+        statistics.drawCanvasImage();
         eX.drawCanvasImage()
     }
 }
@@ -1428,7 +1428,8 @@ function Points1v1() {
         eloChange = Math.floor(10 * eloChange + .5);
         var winnerElo = this.formatElo(this.players[winner].elo + loserElo + 1),
             loserElo = this.formatElo(this.players[1 - winner].elo - loserElo);
-        0 === winner ? announcements.result1v1(this.players, winnerElo, loserElo, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"]) : announcements.result1v1(this.players, loserElo, winnerElo, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
+        if (0 === winner) announcements.result1v1(this.players, winnerElo, loserElo, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"])
+        else announcements.result1v1(this.players, loserElo, winnerElo, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
     };
     this.formatElo = function(elo) {
         elo = 0 > elo ? 0 : 16E3 < elo ? 16E3 : elo;
@@ -1436,23 +1437,21 @@ function Points1v1() {
     }
 }
 
-function Characters() {
+function Strings() {
     function g(x) {
         for (var t = k.length - 1; 0 <= t; t--)
             if (x >= k[t] && x < n[t]) return t;
         return -1
     }
     var k, n, l;
-    (function() {
-        k = [32, 65, 191, 913, 931];
-        n = [64, 127, 688, 930, 1155];
-        l = Array(k.length + 1);
-        for (var x = 0; x < l.length; x++) {
-            l[x] = 0;
-            for (var t = x - 1; 0 <= t; t--) l[x] += n[t] - k[t]
-        }
-    })();
-    this.iN = function(x) {
+    k = [32, 65, 191, 913, 931];
+    n = [64, 127, 688, 930, 1155];
+    l = Array(k.length + 1);
+    for (var x = 0; x < l.length; x++) {
+        l[x] = 0;
+        for (var t = x - 1; 0 <= t; t--) l[x] += n[t] - k[t]
+    }
+    this.checkValidName = function(x) {
         x = x.trim();
         if (0 === x.indexOf("Bot ") || 0 === x.indexOf("[Bot] ")) x = !1;
         else a: {
@@ -1547,7 +1546,7 @@ function EndGame() {
                 var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
                 (k = winner === myID) ? announcements.genericAnnouncement(winner, 2): announcements.genericAnnouncement(1 - myID, 3);
                 points1v1.calculateElo(winner)
-            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.io(winner[1])), announcements.ip(k)) : (result = orderedLand[0], k = result === myID, announcements.iq(result));
+            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.resultTeam(winner[1])), announcements.ip(k)) : (result = orderedLand[0], k = result === myID, announcements.resultBR(result));
             singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(k, !1);
             announcements.iy(!0);
@@ -1567,7 +1566,7 @@ function Spawn() {
     this.update = function() {
         inSpawn = !1;
         for (var g = 0; g < playerCount; g++) 0 !== isAlive[g] && 0 === land[g] && j1.ho(g);
-        0 !== isAlive[myID] ? (statistics.numbers[7] = land[myID], statistics.numbers[8] = troops[myID], troopBar.toggleVisibilityOn(), eB.j2(), eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5), eX.init()) : gameResultBox.show(!1, !1);
+        0 !== isAlive[myID] ? (statisticNumbers.numbers[7] = land[myID], statisticNumbers.numbers[8] = troops[myID], troopBar.toggleVisibility(), eB.j2(), eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5), eX.init()) : gameResultBox.show(!1, !1);
         announcements.j3(18);
         eA.j4();
         eA.eb();
@@ -1611,7 +1610,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     clientStatus = 1;
     absMaxTroopCap = 15E8;
     absMaxTroopsBeforeRedI = 1E9;
-    statistics.init();
+    statisticNumbers.init();
     setMapCanvas();
     configFakeMap.jR();
     h8.init();
@@ -1626,7 +1625,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     j1.init();
     updateAliveInfo();
     eN.init();
-    hv.init();
+    statistics.init();
     mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0);
     gameLeaderboard.init();
     gj.init();
@@ -1673,7 +1672,11 @@ function jb() {
     setAndroidState(0);
     showAd()
 }
-var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, characters, hu, fq, announcements, jf, attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, ji, aJ, showError, jk, jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON;
+var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, strings, hu, fq, announcements, jf, 
+    attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, preLobby, aJ, showError, nameInputBar, 
+    jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, 
+    configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, 
+    lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
@@ -1684,7 +1687,7 @@ function construct() {
     eK = new fu;
     eV = new gK;
     j1 = new hA;
-    characters = new Characters;
+    strings = new Strings;
     hu = new jx;
     fq = new jy;
     announcements = new Announcements;
@@ -1699,11 +1702,11 @@ function construct() {
     eB = new k8;
     gameResultBox = new GameResultBox;
     jh = new kA;
-    ji = new kB;
+    preLobby = new PreLobby;
     aJ = new kC;
     showError = new ShowError;
     showError.jT();
-    jk = new kE;
+    nameInputBar = new NameInputBar;
     jl = new kF;
     singleSettings = new SingleSettings;
     nameInput = new NameInput;
@@ -1777,7 +1780,7 @@ function jx() {
         return L < z - A - N || L > z + 2 * A + N || H < y - A - N || H > y + 2 * A + N ? -1 : 3 * (H < y - N / 2 ? 0 : H < y + A + N / 2 ? 1 : 2) + (L < z - N / 2 ? 0 : L < z + A + N / 2 ? 1 : 2)
     }
     var x = [],
-        t, z, y, A, B, C, E, targetID, G, N, I, D, friends, J;
+        t, z, y, A, B, C, E, targetID, targetPixelIndex, N, I, D, friends, J;
     this.l0 = [];
     this.init = function() {
         friends = [];
@@ -1803,7 +1806,7 @@ function jx() {
         this.l2[6] = this.l0[1]
     };
     this.lB = function(L, H) {
-        if (this.hidden()) {
+        if (this.visible()) {
             var M = this.mouseDown(L, H);
             c4.canvasDirty = 0 < M;
             return 2 > M
@@ -1811,7 +1814,7 @@ function jx() {
         return !1
     };
     this.lD = function(xPos, yPos) {
-        this.hidden() || (B = xPos, C = yPos, E = (new Date).getTime())
+        this.visible() || (B = xPos, C = yPos, E = (new Date).getTime())
     };
     this.isHuman = function(id) {
         return id < playerCount && 2 !== playerStatus[id]
@@ -1843,7 +1846,7 @@ function jx() {
         if (2 === type) {
             if (x[7]) {
                 for (type = friends.length - 1; 0 <= type; type--) 0 === isAlive[friends[type]] && friends.splice(type, 1);
-                0 < friends.length && (eQ.lO(1, friends, !0) && (announcements.lP(friends, targetID), dataEncoder.requestAttack(friends, targetID)), friends = []);
+                0 < friends.length && (eQ.lO(1, friends, !0) && (announcements.requestToAttack(friends, targetID), dataEncoder.requestAttack(friends, targetID)), friends = []);
                 this.end();
                 return 1
             }
@@ -1851,8 +1854,8 @@ function jx() {
         }
         if (3 === type) {
             this.end();
-            if (this.isHuman(targetID) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.lR(), 1;
-            announcements.lS();
+            if (this.isHuman(targetID) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.antiBoosting(), 1;
+            announcements.lowBalance();
             singleplayer ? processDonation(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
             return 1
         }
@@ -1861,12 +1864,12 @@ function jx() {
                 if (inSpawn) {
                     this.end();
                     if (singleplayer) {
-                        spawn.set(0, pixel.toX(G), pixel.toY(G));
+                        spawn.set(0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                         spawn.update();
-                    } else dataEncoder.setLocation(1E3, pixel.toX(G), pixel.toY(G));
+                    } else dataEncoder.setLocation(1E3, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 } else {
                     this.end();
-                    announcements.lS();
+                    announcements.lowBalance();
                     if (singleplayer) processAttack(myID, targetID, troopBar.getRatio());
                     else if (!freeSpawn || 300 < eB.lV()) dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
                 }
@@ -1880,9 +1883,9 @@ function jx() {
         if (5 === type) {
             if (x[1]) {
                 this.end();
-                announcements.lS();
-                if (singleplayer) processAction.processSendBoat(myID, troopBar.getRatio(), pixel.toX(G), pixel.toY(G));
-                else dataEncoder.setLocation(troopBar.getRatio(), pixel.toX(G), pixel.toY(G));
+                announcements.lowBalance();
+                if (singleplayer) processAction.processSendBoat(myID, troopBar.getRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
+                else dataEncoder.setLocation(troopBar.getRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 return 1;
             }
             return 0;
@@ -1909,7 +1912,7 @@ function jx() {
         return 2
     };
     this.click = function(xPos, yPos) {
-        if (this.hidden() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return !1;
+        if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return !1;
         var M = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - B) > M || Math.abs(yPos - C) > M || (new Date).getTime() > E + 425) return !1;
         M = Math.floor((xPos + gridWidth) / scaleFactor);
@@ -1917,11 +1920,24 @@ function jx() {
         if (1 > M || 1 > Q || M >= currentMapWidth - 1 || Q >= currentMapHeight - 1) return !1;
         var R = Q * currentMapWidth * 4 + 4 * M;
         if (!pixel.canOwn(R)) return !1;
-        if (2 === clientStatus) return 1 <= a5.ld && (targetID = pixel.getOwner(R), this.isHuman(targetID)) ? (targetID === myID && this.end(), x[4] = !0, this.le(xPos, yPos)) : !1;
-        G = pixel.toIndex(M, Q);
+        if (2 === clientStatus) {
+            if (1 <= a5.ld && (targetID = pixel.getOwner(R), this.isHuman(targetID))) {
+                if (targetID === myID) this.end();
+                else {
+                    x[4] = !0;
+                    this.le(xPos, yPos);
+                }
+            }
+            else return !1;
+        }
+        targetPixelIndex = pixel.toIndex(M, Q);
         if (inSpawn) return x[0] = !0, this.le(xPos, yPos);
-        x[1] = boatPathChecker.check(myID, G);
-        if (pixel.isNeutral(R)) return targetID = maxEntities, lf(myID) ? x[0] = !0 : lg(myID, targetID) && (x[8] = !0), this.le(xPos, yPos);
+        x[1] = boatPathChecker.check(myID, targetPixelIndex);
+        if (pixel.isNeutral(R)) {
+            targetID = maxEntities;
+            bordersNeutral(myID) ? x[0] = !0 : target1BordersAttackingTarget2(myID, targetID) && (x[8] = !0);
+            return this.le(xPos, yPos);
+        }
         targetID = pixel.getOwner(R);
         if (targetID === myID) {
             this.end();
@@ -1955,7 +1971,7 @@ function jx() {
                 Q = R
             }
             M[7] = Q;
-            lk(myID, targetID) ? x[0] = !0 : lg(myID, targetID) && (x[8] = !0);
+            bordersTarget(myID, targetID) ? x[0] = !0 : target1BordersAttackingTarget2(myID, targetID) && (x[8] = !0);
             return this.le(xPos, yPos)
         }
         x[2] = teamGame;
@@ -1964,10 +1980,10 @@ function jx() {
     this.le = function(L, H) {
         z = L - Math.floor(A / 2);
         y = H - Math.floor(A / 2);
-        return this.hidden()
+        return this.visible()
     };
-    this.lm = function(L, H) {
-        if (!this.hidden()) return !1;
+    this.onPointermove = function(L, H) {
+        if (!this.visible()) return !1;
         if (t) {
             if (a5.lG(L, H)) return !1;
             a5.lI();
@@ -1984,14 +2000,14 @@ function jx() {
     this.ln = function() {
         this.end()
     };
-    this.hidden = function() {
+    this.visible = function() {
         var L;
         for (L = x.length - 1; 0 <= L; L--)
             if (x[L]) return !0;
         return t
     };
     this.drawCanvasImage = function() {
-        this.hidden() && this.lo()
+        this.visible() && this.lo()
     };
     this.lo = function() {
         if (t) a5.drawCanvasImage();
@@ -2081,10 +2097,10 @@ function jy() {
     };
     this.mouseDown = function(B, C) {
         var E = k(B, C);
-        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.canSurrender(myID) && (singleplayer ? processAction.surrender(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statistics.m4 ? (hv.m0(), c4.canvasDirty = !0, 2) : hv.hidden ||
+        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.canSurrender(myID) && (singleplayer ? processAction.surrender(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statisticNumbers.m4 ? (statistics.m0(), c4.canvasDirty = !0, 2) : statistics.visible ||
             singleplayer && !inSpawn ? 1 : (this.m0(), 2) : 0 === E ? (this.m0(), 2) : 0
     };
-    this.lm = function(B, C) {
+    this.onPointermove = function(B, C) {
         var E = k(B, C);
         if (E === y) return -1 !== y;
         y = E;
@@ -2112,7 +2128,7 @@ function jy() {
             B = .4 * l;
             fq.m9(m5 + 4 * l + (1.5 * l - B) / 2, troopBar.fK + .3 * l, B);
             n(1, fq.canSurrender(myID) ? whiteRGB2 : gray128RGB);
-            2 <= statistics.m4 && n(2, whiteRGB2);
+            2 <= statisticNumbers.m4 && n(2, whiteRGB2);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(x, m5, troopBar.fK)
     };
@@ -2136,7 +2152,7 @@ function Announcements() {
     var g, k, n, l, x, pluralLeaveLabels, monoLeaveLabels;
 
     function y() {
-        return troopBar.md(announcements.ma()) ? peace.hidden ? troopBar.fK - troopBar.height - 2 * N : troopBar.fK - N : peace.hidden ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * N : canvasHeight - N
+        return troopBar.md(announcements.ma()) ? peace.visible ? troopBar.fK - troopBar.height - 2 * N : troopBar.fK - N : peace.visible ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * N : canvasHeight - N
     }
 
     function announce(displayTime, message, messageID, playerID, P, U, W, X) {
@@ -2155,8 +2171,7 @@ function Announcements() {
             var S = messageCanvas.getContext("2d", {
                 alpha: !0
             });
-            S.font =
-                announcements.fontStyle;
+            S.font = announcements.fontStyle;
             S.textBaseline = middleAlign;
             S.textAlign = leftAlign;
             S.clearRect(0, 0, messageWidth, G);
@@ -2191,19 +2206,23 @@ function Announcements() {
             }
     }
 
-    function C(H, M, Q) {
-        return "rgb(" + H + "," + M + "," + Q + ")"
+    function getColorRGB(R, G, B) {
+        return "rgb(" + R + "," + G + "," + B + ")"
     }
 
     function E(H, M) {
-        var Q,
-            R = !1;
-        for (Q = pendingAnnouncements.length - 1; 0 <= Q; Q--) pendingAnnouncements[Q].id !== H || M !== maxEntities && pendingAnnouncements[Q].player !== M || (pendingAnnouncements.splice(Q, 1), R = !0);
+        var aIndex, R = !1;
+        for (aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
+            if (!(pendingAnnouncements[aIndex].id !== H || M !== maxEntities && pendingAnnouncements[aIndex].player !== M)) {
+                pendingAnnouncements.splice(aIndex, 1);
+                R = !0;
+            }
+        }
         return R
     }
-    var pendingAnnouncements, G, N, I, D, K, J, L;
+    var pendingAnnouncements, G, N, I, D, K, tickCounter, L;
     this.init = function() {
-        J = 0;
+        tickCounter = 0;
         K = isZoom ? 7 : 12;
         g = [0, 0, 0];
         k = [0, 0, 0];
@@ -2220,16 +2239,16 @@ function Announcements() {
         0 < configFakeMap.waterPixelsCount && (mapSpecialInfoLabel += "Water: " + attacksBar.splitText(configFakeMap.waterPixelsCount) +
             " (" + eB.nG(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
         0 < configFakeMap.mountainPixelsCount && (mapSpecialInfoLabel += 0 < configFakeMap.waterPixelsCount ? "   " : "", mapSpecialInfoLabel += "Mountains: " + attacksBar.splitText(configFakeMap.mountainPixelsCount) + " (" + eB.nG(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
-        announce(340, mapLandInfoLabel, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
-        0 < mapSpecialInfoLabel.length && announce(340, mapSpecialInfoLabel, 6, 0, C(215, 245, 255), blackMoreOpaque, -1, !1);
-        10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, C(235, 255, 120), blackMoreOpaque, -1, !1);
+        announce(340, mapLandInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
+        0 < mapSpecialInfoLabel.length && announce(340, mapSpecialInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
+        10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, getColorRGB(235, 255, 120), blackMoreOpaque, -1, !1);
         this.mP()
     };
     this.mP = function() {
         var H;
         if (customJSON.isCustomJSON) {
             var M = customJSON.data.description.length;
-            for (H = 0; H < M; H++) announce(400, customJSON.data.description[H], 6, 0, C(255, 255, 255), blackMoreOpaque, -1, !1)
+            for (H = 0; H < M; H++) announce(400, customJSON.data.description[H], 6, 0, getColorRGB(255, 255, 255), blackMoreOpaque, -1, !1)
         }
     };
     this.setCanvasVariables = function() {
@@ -2265,7 +2284,7 @@ function Announcements() {
         H.fillText("Accept", Math.floor(D / 2), Math.floor(G / 2))
     };
     this.ma = function() {
-        if (peace.hidden) return peace.width;
+        if (peace.visible) return peace.width;
         var H = pendingAnnouncements.length;
         return 0 === H ? 0 : 1 === H ? pendingAnnouncements[0].mb : getMax(pendingAnnouncements[0].mb, pendingAnnouncements[1].mb)
     };
@@ -2300,29 +2319,61 @@ function Announcements() {
     this.j3 = function(H) {
         for (var M = pendingAnnouncements.length - 1; 0 <= M; M--) pendingAnnouncements[M].id === H && (pendingAnnouncements[M].time = 1)
     };
-    this.genericAnnouncement = function(H, M) {
-        0 === M ? (statistics.numbers[H < playerCount ? 4 : 3]++, c2.set(H, 0), announce(isZoom ? 100 : 160, "You conquered " + nickname[H] + ".", 0, H, "rgb(10,220,10)", blackMoreOpaque, -1, !1)) : 1 === M ? (E(50, maxEntities), c2.set(H, 1), announce(360, "You were conquered by " + nickname[H] + ".", 0, H, "rgb(255,40,40)", blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700, !0, 0)) : 2 === M ? (c2.set(H, 2), announce(0, "Congratulations! You won the game.", 0, H, "rgb(10,255,255)", blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700, !0, 0)) : 3 === M ? (c2.set(H, 2), announce(0, nickname[H] + " won the game.", 0, H, whiteRGB2, blackMoreOpaque, -1, !0), eV.hoverTo(H, 2700,
-            !0, 0)) : 4 === M ? (playersIngame--, spectatorCount--, this.mj(1, H, H)) : 5 === M ? 2 !== playerStatus[H] && hu.isHuman(myID) && (B(1, 5), eA.ml(H) ? announce(180, nickname[H] + " has broken the non-aggression pact and invades you!", 1, H, C(255, 200, 180), blackMoreOpaque, -1, !0) : announce(180, nickname[H] + " is attacking you!", 1, H, "rgb(255,70,10)", blackMoreOpaque, -1, !0)) : 18 === M ? announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, !1) : 21 === M ? announce(220, "You surrendered!", M, 0, "rgb(255,40,40)", blackMoreOpaque, -1, !1) : 22 === M && this.mj(2, H, H)
+    this.genericAnnouncement = function(id, messageType) {
+        if (0 === messageType) {
+            statisticNumbers.numbers[id < playerCount ? 4 : 3]++;
+            c2.set(id, 0);
+            announce(isZoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", blackMoreOpaque, -1, false);
+        } else if (1 === messageType) {
+            E(50, maxEntities);
+            c2.set(id, 1);
+            announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", blackMoreOpaque, -1, true);
+            eV.hoverTo(id, 2700, true, 0);
+        } else if (2 === messageType) {
+            c2.set(id, 2);
+            announce(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", blackMoreOpaque, -1, true);
+            eV.hoverTo(id, 2700, true, 0);
+        } else if (3 === messageType) {
+            c2.set(id, 2);
+            announce(0, nickname[id] + " won the game.", 0, id, whiteRGB2, blackMoreOpaque, -1, true);
+            eV.hoverTo(id, 2700, true, 0);
+        } else if (4 === messageType) {
+            playersIngame--;
+            spectatorCount--;
+            this.mj(1, id, id);
+        } else if (5 === messageType) {
+            if (2 !== playerStatus[id] && hu.isHuman(myID)) {
+                B(1, 5);
+                if (eA.ml(id)) announce(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, getColorRGB(255, 200, 180), blackMoreOpaque, -1, true);
+                else announce(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", blackMoreOpaque, -1, true);
+            }
+        } else if (18 === messageType) announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, false);
+        else if (21 === messageType) announce(220, "You surrendered!", messageType, 0, "rgb(255,40,40)", blackMoreOpaque, -1, false);
+        else if (22 === messageType) this.mj(2, id, id);
     };
-    this.mm = function(H) {
-        announce(200, "Error [" + H + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, !1)
+    this.error = function(errorCode) {
+        announce(200, "Error [" + errorCode + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, !1)
     };
-    this.iq = function(H) {
-        c2.set(H, 2);
-        100 > playerCount ? announce(0, nickname[H] +
-            " won the game.", 3, H, whiteRGB2, blackMoreOpaque, -1, !0) : announce(0, nickname[H] + " has been immortalized!", 3, H, whiteRGB2, blackMoreOpaque, -1, !0);
-        eV.hoverTo(H, 2700, !0, 0)
+    this.resultBR = function(winnerID) {
+        c2.set(winnerID, 2);
+        if (100 > playerCount) announce(0, nickname[winnerID] + " won the game.", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0)
+        else announce(0, nickname[winnerID] + " has been immortalized!", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0);
+        eV.hoverTo(winnerID, 2700, !0, 0)
     };
-    this.newEmojiMessage = function(H, M, Q) {
-        H === myID ? announce(175, " Message to " + nickname[M] + ": ", 1E3 + Q, M, C(200, 255, 210), blackMoreOpaque, -1, !0) : this.ms(H, Q)
+    this.newEmojiMessage = function(authorID, targetID, emojiID) {
+        if (authorID === myID) announce(175, " Message to " + nickname[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, !0)
+        else this.receivedEmojiMessage(authorID, emojiID)
     };
-    this.ms = function(H, M) {
-        var Q, R = 0;
-        announce(175, nickname[H] + ": ", 1E3 + M, H, whiteRGB2, "rgba(5,60,25,0.9)", -1, !0);
-        for (Q = 0; Q < pendingAnnouncements.length; Q++)
-            if (1E3 <= pendingAnnouncements[Q].id && pendingAnnouncements[Q].player === H && (R++, 3 < R)) {
-                pendingAnnouncements.splice(Q, 1);
-                break
+    this.receivedEmojiMessage = function(authorID, emojiID) {
+        var aIndex, emojiCount = 0;
+        announce(175, nickname[authorID] + ": ", 1E3 + emojiID, authorID, whiteRGB2, "rgba(5,60,25,0.9)", -1, !0);
+        for (aIndex = 0; aIndex < pendingAnnouncements.length; aIndex++)
+            if (1E3 <= pendingAnnouncements[aIndex].id && pendingAnnouncements[aIndex].player === authorID) {
+                emojiCount++;
+                if (3 < emojiCount) {
+                    pendingAnnouncements.splice(aIndex, 1);
+                    break
+                }
             }
     };
     this.ip = function(H) {
@@ -2338,51 +2389,72 @@ function Announcements() {
     this.upcomingGame = function(message) {
         announce(200, message, 0, 0, "rgb(40,255,200)", "rgba(10,60,40,0.9)", -1, !1)
     };
-    this.result1v1 = function(H, M, Q, R) {
-        1 === wsManager.getConnectedLobby() && (announce(0, H[0].name + ": " + points1v1.formatElo(H[0].elo) + " -> " + M, 66, 0, whiteRGB2, R[0], -1, !1), announce(0, H[1].name + ": " + points1v1.formatElo(H[1].elo) + " -> " + Q, 66, 1, whiteRGB2, R[1], -1, !1))
+    this.result1v1 = function(players, player1Elo, player2Elo, resultColors) {
+        if (1 === wsManager.getConnectedLobby()) {
+            announce(0, players[0].name + ": " + points1v1.formatElo(players[0].elo) + " -> " + player1Elo, 66, 0, whiteRGB2, resultColors[0], -1, false);
+            announce(0, players[1].name + ": " + points1v1.formatElo(players[1].elo) + " -> " + player2Elo, 66, 1, whiteRGB2, resultColors[1], -1, false);
+        }
     };
-    this.io = function(H) {
-        1 === wsManager.getConnectedLobby() && announce(0, "[" + H + "] has won " + playerCount + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", blackMoreOpaque, -1, !1)
+    this.resultTeam = function(clanTag) {
+        if (1 === wsManager.getConnectedLobby()) announce(0, "[" + clanTag + "] has won " + playerCount + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", blackMoreOpaque, -1, !1)
     };
     this.nonAggression = function(friendID, ratifier) {
-        0 === ratifier ? E(50, friendID) ? (announce(128, "You signed a non-aggression pact with " + nickname[friendID] + ".", 52, friendID, C(180, 255, 180), blackMoreOpaque, -1, !0), eA.showIcon(friendID, 2, 255)) : announce(384, "You asked " + nickname[friendID] + " to sign a non-aggression pact.",
-            51, friendID, C(210, 210, 255), blackMoreOpaque, -1, !0) : E(51, friendID) ? (announce(128, nickname[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, !0), eA.showIcon(friendID, 2, 255)) : (announce(384, nickname[friendID] + " requests a non-aggression pact.", 50, friendID, whiteRGB2, "rgba(90,90,90,0.9)", -1, !0), eA.showIcon(friendID, 2, 96))
-    };
-    this.lP = function(H, M) {
-        var Q = "You ",
-            R;
-        a: {
-            for (R = H.length - 1; 0 <= R; R--)
-                if (2 * land[H[R]] > land[myID]) {
-                    R = !1;
-                    break a
-                } R = !0
+        if (ratifier === 0) {
+            if (E(50, friendID)) {
+                announce(128, "You signed a non-aggression pact with " + nickname[friendID] + ".", 52, friendID, getColorRGB(180, 255, 180), blackMoreOpaque, -1, !0);
+                eA.showIcon(friendID, 2, 255);
+            } else {
+                announce(384, "You asked " + nickname[friendID] + " to sign a non-aggression pact.", 51, friendID, getColorRGB(210, 210, 255), blackMoreOpaque, -1, !0);
+            }
+        } else {
+            if (E(51, friendID)) {
+                announce(128, nickname[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, !0);
+                eA.showIcon(friendID, 2, 255);
+            } else {
+                announce(384, nickname[friendID] + " requests a non-aggression pact.", 50, friendID, whiteRGB2, "rgba(90,90,90,0.9)", -1, !0);
+                eA.showIcon(friendID, 2, 96);
+            }
         }
-        R ? (Q += "ordered ", R = C(255, 235, 210)) : (Q += "asked ", R = C(210, 255, 210));
-        1 < H.length ? announce(230, Q + H.length + " players to attack " + nickname[M] + ".", 66, M, R, blackMoreOpaque, -1, !0) : announce(230, Q + nickname[H[0]] +
-            " to attack " + nickname[M] + ".", 66, H[0], R, blackMoreOpaque, M, !0)
     };
-    this.requestToAttack = function(requesterID, targetID) {
+    this.requestToAttack = function(friends, targetID) {
+        var message = "You ";
+        var fIndex;
+        for (fIndex = friends.length - 1; fIndex >= 0; fIndex--) {
+            if (2 * land[friends[fIndex]] > land[myID]) {
+                fIndex = false;
+                break;
+            }
+        }
+        if (fIndex) {
+            message += "ordered ";
+            fIndex = getColorRGB(255, 235, 210)
+        } else {
+            message += "asked ";
+            fIndex = getColorRGB(210, 255, 210)
+        }
+        if (friends.length > 1) announce(230, message + friends.length + " players to attack " + nickname[targetID] + ".", 66, targetID, fIndex, blackMoreOpaque, -1, false);
+        else announce(230, message + nickname[friends[0]] + " to attack " + nickname[targetID] + ".", 66, friends[0], fIndex, blackMoreOpaque, targetID, true);
+    };    
+    this.requestedToAttack = function(requesterID, targetID) {
         land[requesterID] > 2 * land[myID] ? announce(230, nickname[requesterID] + " orders you to attack " + nickname[targetID] + "!", 66, requesterID, whiteRGB2, "rgba(90,50,5,0.9)", targetID, !0) : announce(230, nickname[requesterID] + " asks you to attack " + nickname[targetID] + ".", 66, requesterID, whiteRGB2, "rgba(75,65,5,0.9)", targetID, !0)
     };
     this.n7 = function(H, M) {
         E(H, M)
     };
-    this.lS = function() {
-        100 <= troops[myID] || announce(80, "Your balance is too low!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
+    this.lowBalance = function() {
+        if (100 > troops[myID]) announce(80, "Your balance is too low!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
     };
-    this.lR = function() {
+    this.antiBoosting = function() {
         announce(80, "Boosting is disallowed in the first minute!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
     };
-    this.n8 = function(H, M) {
-        2 !== playerStatus[myID] && announce(200, "You exported " + attacksBar.splitText(H) +
-            " resource" + (1 === H ? "" : "s") + " to " + nickname[M] + ".", 30, M, "rgb(190,255,190)", blackMoreOpaque, -1, !0)
+    this.giveDonation = function(amount, targetID) {
+        if (2 !== playerStatus[myID]) announce(200, "You exported " + attacksBar.splitText(amount) + " resource" + (1 === amount ? "" : "s") + " to " + nickname[targetID] + ".", 30, targetID, "rgb(190,255,190)", blackMoreOpaque, -1, !0)
     };
-    this.nA = function(H, M) {
+    this.receiveDonation = function(amount, targetID) {
         if (2 !== playerStatus[myID]) {
-            var Q = 2 === playerStatus[M] || M >= playerCount;
-            var R = 200 - 20 * pendingAnnouncements.length;
-            announce(80 > R ? 80 : R, (Q ? "A bot" : nickname[M]) + " supported you with " + attacksBar.splitText(H) + " resource" + (1 === H ? "" : "s") + ".", 31, M, blackRGB, Q ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
+            var isBot = 2 === playerStatus[targetID] || targetID >= playerCount;
+            var announcementsCount = 200 - 20 * pendingAnnouncements.length;
+            announce(80 > announcementsCount ? 80 : announcementsCount, (isBot ? "A bot" : nickname[targetID]) + " supported you with " + attacksBar.splitText(amount) + " resource" + (1 === amount ? "" : "s") + ".", 31, targetID, blackRGB, isBot ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
             B(31, isZoom ? 4 : 6)
         }
     };
@@ -2391,11 +2463,17 @@ function Announcements() {
         for (M = 2; 0 <= M; M--) 0 < l[M] && (H || x[M] < Q - 220) && this.nL(M)
     };
     this.nL = function(H) {
-        var M = l[H];
+        var message = l[H];
         var Q = g[H];
         l[H] = 0;
-        1 === M ? (M = nickname[Q] + monoLeaveLabels[H], 0 === H && (M +=
-            nickname[k[H]] + "."), announce(n[H], M, 7, k[H], whiteRGB2, blackMoreOpaque, -1, !0)) : 2 <= M && (M = nickname[Q] + " and " + (M - 1) + " other player" + (2 === M ? "" : "s") + pluralLeaveLabels[H], announce(n[H], M, 7, Q, whiteRGB2, blackMoreOpaque, -1, !1))
+        if (1 === message) {
+            message = nickname[Q] + monoLeaveLabels[H];
+            if (0 === H) message += nickname[k[H]] + "."
+            announce(n[H], message, 7, k[H], whiteRGB2, blackMoreOpaque, -1, !0)
+        } else if (2 <= message) {
+            message = nickname[Q] + " and " + (message - 1) + " other player" + (2 === message ? "" : "s") + pluralLeaveLabels[H];
+            announce(n[H], message, 7, Q, whiteRGB2, blackMoreOpaque, -1, !1);
+        }
     };
     this.mj = function(H, M, Q) {
         var R = c4.ticksElapsed(),
@@ -2410,9 +2488,8 @@ function Announcements() {
         var H, M = pendingAnnouncements.length - K;
         M = 1 >= M ? 1 : M * M;
         for (H = pendingAnnouncements.length - 1; 0 <= H; H--) 0 < pendingAnnouncements[H].time && (pendingAnnouncements[H].time -= M, 0 >= pendingAnnouncements[H].time && pendingAnnouncements.splice(H, 1));
-        if (128 !== J && (J++, !(128 > J)))
-            for (H = 5, M = aliveCount - 1; 0 <= M; M--) 1 === playerStatus[aliveEntities[M]] && 0 < H-- && announce(240, nickname[aliveEntities[M]] +
-                " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
+        if (128 !== tickCounter && (tickCounter++, !(128 > tickCounter)))
+            for (H = 5, M = aliveCount - 1; 0 <= M; M--) 1 === playerStatus[aliveEntities[M]] && 0 < H-- && announce(240, nickname[aliveEntities[M]] + " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
         this.iy(!1)
     };
     this.drawCanvasImage = function() {
@@ -2421,50 +2498,57 @@ function Announcements() {
 }
 
 function CookiesPrompt() {
-    this.fontRatio = this.nQ = this.nP = this.i4 = this.height = this.width = 0;
+    this.fontRatio = this.buttonHeight = this.nP = this.buttonMargin = this.height = this.width = 0;
     this.bs = -1;
-    this.lr = ["Accept Cookies", "More Information", "Decline"];
+    this.buttonLabels = ["Accept Cookies", "More Information", "Decline"];
     this.colors = ["rgba(0,255,0,0.4)", "rgba(0,0,255,0.4)", "rgba(255,0,0,0.4)"];
-    this.hidden = !1;
+    this.visible = !1;
     this.init = function() {
         this.setCanvasVariables();
-        this.hidden = 5 > androidVersion && !isIOS && 0 === userSettings.a0()
+        this.visible = 5 > androidVersion && !isIOS && 0 === userSettings.getCookieStatus()
+        this.visible = false; //Fuck cookies man
     };
     this.setCanvasVariables = function() {
         this.width = Math.floor(2.8 * Math.floor((isZoom ? .09 : .062) * averageDim));
         this.height = Math.floor(1 * this.width);
-        this.i4 = Math.floor(.06 * this.width);
-        this.i5 = this.width - 2 * this.i4;
-        this.nP = this.i4;
-        this.nQ = (this.height - (this.lr.length + 1) * this.nP) / this.lr.length;
-        this.fontRatio = Math.floor(.3 * this.nQ)
+        this.buttonMargin = Math.floor(.06 * this.width);
+        this.i5 = this.width - 2 * this.buttonMargin;
+        this.nP = this.buttonMargin;
+        this.buttonHeight = (this.height - (this.buttonLabels.length + 1) * this.nP) / this.buttonLabels.length;
+        this.fontRatio = Math.floor(.3 * this.buttonHeight)
     };
-    this.mouseDown = function(g, k) {
-        if (!this.hidden) return !1;
-        var n = this.nS(g, k);
-        if (-1 === n) return !1;
-        0 === n ? (userSettings.nT(2), this.hidden = !1) : 1 === n ? openLinkBox.init(cookiePolicyLink, !0) : 2 === n && (userSettings.nT(1), this.hidden = !1);
+    this.mouseDown = function(xPos, yPos) {
+        if (!this.visible) return !1;
+        var butIndex = this.getButtonIndex(xPos, yPos);
+        if (-1 === butIndex) return !1;
+        else if (0 === butIndex) {
+            userSettings.setCookieStatus(2);
+            this.visible = !1;
+        } else if (1 === butIndex) openLinkBox.init(cookiePolicyLink, !0)
+        else if (2 === butIndex) {
+            userSettings.setCookieStatus(1);
+            this.visible = !1;
+        }
         return c4.canvasDirty = !0
     };
-    this.lm = function(g, k) {
-        if (!this.hidden) return !1;
+    this.onPointermove = function(xPos, yPos) {
+        if (!this.visible) return !1;
         var n = this.bs;
-        this.bs = this.nS(g, k);
-        n !== this.bs && (c4.canvasDirty = !0);
+        this.bs = this.getButtonIndex(xPos, yPos);
+        if (n !== this.bs) c4.canvasDirty = !0;
         return -1 !== this.bs
     };
-    this.nS = function(g, k) {
-        g -= bufferLength;
-        k -= Math.floor(prevClientHeight - this.height - bufferLength);
-        if (0 > g || 0 > k || g >= this.width || k >= this.height) return -1;
-        var n = Math.floor((k - .5 * this.nP) / ((this.height - this.nP) / this.lr.length));
-        return 0 >
-            n ? 0 : n >= this.lr.length ? this.lr.length - 1 : n
+    this.getButtonIndex = function(xPos, yPos) {
+        xPos -= bufferLength;
+        yPos -= Math.floor(prevClientHeight - this.height - bufferLength);
+        if (0 > xPos || 0 > yPos || xPos >= this.width || yPos >= this.height) return -1;
+        var n = Math.floor((yPos - .5 * this.nP) / ((this.height - this.nP) / this.buttonLabels.length));
+        return 0 > n ? 0 : n >= this.buttonLabels.length ? this.buttonLabels.length - 1 : n
     };
     this.drawCanvasImage = function() {
-        this.hidden && this.nW()
+        this.visible && this.drawPrompt()
     };
-    this.nW = function() {
+    this.drawPrompt = function() {
         var g = bufferLength,
             k = Math.floor(prevClientHeight - this.height - bufferLength);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
@@ -2475,8 +2559,8 @@ function CookiesPrompt() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.font = fontWeightBold + this.fontRatio + fontSizeArial;
         mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
-        for (var n = this.lr.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.i4, k + this.nP + n * (this.nP + this.nQ)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.i5, this.nQ), this.bs === n && (mainCanvasCtx.fillStyle =
-            whiteMore3Transparent, mainCanvasCtx.fillRect(0, 0, this.i5, this.nQ)), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(this.lr[n], this.i5 / 2, .54 * this.nQ), mainCanvasCtx.strokeRect(0, 0, this.i5, this.nQ);
+        for (var n = this.buttonLabels.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.buttonMargin, k + this.nP + n * (this.nP + this.buttonHeight)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.i5, this.buttonHeight), this.bs === n && (mainCanvasCtx.fillStyle =
+            whiteMore3Transparent, mainCanvasCtx.fillRect(0, 0, this.i5, this.buttonHeight)), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(this.buttonLabels[n], this.i5 / 2, .54 * this.buttonHeight), mainCanvasCtx.strokeRect(0, 0, this.i5, this.buttonHeight);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
@@ -2741,7 +2825,7 @@ var blackRGB = "rgb(0,0,0)",
     privacyPolicyLink = "https://territorial.io/privacy_policy",
     tutorialLink = "https://territorial.io/tutorial",
     leaderboardLinks = ["https://territorial.io/players", "https://territorial.io/clans"],
-    m5, ov, bufferLength, ow, isTouch, oy, oz, mainSettings, 
+    m5, ov, bufferLength, ow, isTouch, clientXPos, clientYPos, mainSettings, 
     wsUrlStrings = ["wss://", "/s50/", "/s51/", "/s52/"];
 
 function p1() {
@@ -2785,40 +2869,40 @@ function onTouchstart(g) {
     g.preventDefault();
     wsManager.setHumanLastAction(wsManager.remote);
     isTouch = !0;
-    0 < g.touches.length && (oy = Math.floor(pixelRatio * g.touches[0].clientX), oz = Math.floor(pixelRatio * g.touches[0].clientY), jo.pN(g) || pL(oy, oz))
+    0 < g.touches.length && (clientXPos = Math.floor(pixelRatio * g.touches[0].clientX), clientYPos = Math.floor(pixelRatio * g.touches[0].clientY), jo.pN(g) || pL(clientXPos, clientYPos))
 }
 
 function pL(g, k) {
     if (0 === clientStatus) aJ.mouseDown(g, k);
-    else if (!(hv.mouseDown(g, k) || hu.lB(g, k) || gameResultBox.mouseDown(g, k) || attacksBar.mouseDown(g, k))) {
+    else if (!(statistics.mouseDown(g, k) || hu.lB(g, k) || gameResultBox.mouseDown(g, k) || attacksBar.mouseDown(g, k))) {
         var n = fq.mouseDown(g, k);
-        2 === n || gameLeaderboard.mouseDown(g, k) || (gj.mouseDown(g, k) ? c4.canvasDirty = !0 : troopBar.pP(g, k) ? (gj.gk = !1, troopBar.pQ(g, k) && (c4.canvasDirty = !0)) : announcements.mouseDown(g, k) || peace.mouseDown(g, k) || 0 === n && hu.lD(g, k))
+        2 === n || gameLeaderboard.mouseDown(g, k) || (gj.mouseDown(g, k) ? c4.canvasDirty = !0 : troopBar.getClickedButton(g, k) ? (gj.gk = !1, troopBar.pQ(g, k) && (c4.canvasDirty = !0)) : announcements.mouseDown(g, k) || peace.mouseDown(g, k) || 0 === n && hu.lD(g, k))
     }
 }
 
 function onMousemove(g) {
     isTouch = !1;
     g.preventDefault();
-    pR(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
+    onPointermove(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
 }
 
 function onTouchmove(g) {
     g.preventDefault();
-    0 < g.touches.length && (oy = Math.floor(pixelRatio * g.touches[0].clientX), oz = Math.floor(pixelRatio * g.touches[0].clientY), jo.pS(g) || pR(oy, oz))
+    0 < g.touches.length && (clientXPos = Math.floor(pixelRatio * g.touches[0].clientX), clientYPos = Math.floor(pixelRatio * g.touches[0].clientY), jo.pS(g) || onPointermove(clientXPos, clientYPos))
 }
 
-function pR(g, k) {
-    0 === clientStatus ? aJ.lm(g, k) : hv.lm(g, k) || (hu.hidden() ? hu.lm(g, k) : fq.lm(g, k) || (troopBar.pT ? troopBar.lm(g, k) && (c4.canvasDirty = !0) : (gameLeaderboard.lm(g, k), gj.gk && gj.lm(g, k) && (c4.canvasDirty = !0))))
+function onPointermove(xPos, yPos) {
+    0 === clientStatus ? aJ.onPointermove(xPos, yPos) : statistics.onPointermove(xPos, yPos) || (hu.visible() ? hu.onPointermove(xPos, yPos) : fq.onPointermove(xPos, yPos) || (troopBar.pT ? troopBar.onPointermove(xPos, yPos) && (c4.canvasDirty = !0) : (gameLeaderboard.onPointermove(xPos, yPos), gj.gk && gj.onPointermove(xPos, yPos) && (c4.canvasDirty = !0))))
 }
 
 function onMouseleave(g) {
     g.preventDefault();
-    0 === clientStatus ? (aJ.click(-1024, -1024), playtime.pU()) : (gameLeaderboard.pV(-1024, -1024), fq.lm(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
+    0 === clientStatus ? (aJ.click(-1024, -1024), playtime.pU()) : (gameLeaderboard.pV(-1024, -1024), fq.onPointermove(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
 }
 
 function onMouseup(g) {
     g.preventDefault();
-    isTouch || pX(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
+    isTouch || onPointerUp(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
 }
 
 function onClick(g) {
@@ -2827,12 +2911,12 @@ function onClick(g) {
 
 function onTouchend(g) {
     g.preventDefault();
-    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? gj.gk = !1 : pX(oy, oz)
+    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? gj.gk = !1 : onPointerUp(clientXPos, clientYPos)
 }
 
 function onTouchcancel(g) {
     g.preventDefault();
-    pX(oy, oz)
+    onPointerUp(clientXPos, clientYPos)
 }
 
 function onDragover(g) {
@@ -2843,8 +2927,8 @@ function onDrop(g) {
     loadCustomMap.handleDrop(g)
 }
 
-function pX(g, k) {
-    0 === clientStatus ? aJ.click(g, k) : (gameLeaderboard.pV(g, k), hv.pV(), troopBar.pW(), gj.gk = !1, hu.click(g, k) && (c4.canvasDirty = !0))
+function onPointerUp(xPos, yPos) {
+    0 === clientStatus ? aJ.click(xPos, yPos) : (gameLeaderboard.pV(xPos, yPos), statistics.pV(), troopBar.pW(), gj.gk = !1, hu.click(xPos, yPos) && (c4.canvasDirty = !0))
 }
 
 function onWheel(g) {
@@ -2854,7 +2938,7 @@ function onWheel(g) {
         n = Math.floor(pixelRatio * g.clientY),
         l = g.deltaY;
     1 === g.deltaMode && (l *= 20);
-    0 === clientStatus ? aJ.pb(k, n, l) : gameLeaderboard.pb(k, n, l) || (troopBar.pP(k, n) ? troopBar.pb(l) && (c4.canvasDirty = !0) : gj.pb(k, n, 2 * l) && (c4.canvasDirty = !0))
+    0 === clientStatus ? aJ.pb(k, n, l) : gameLeaderboard.pb(k, n, l) || (troopBar.getClickedButton(k, n) ? troopBar.pb(l) && (c4.canvasDirty = !0) : gj.pb(k, n, 2 * l) && (c4.canvasDirty = !0))
 }
 
 function pc(g, k, n) {
@@ -3182,7 +3266,7 @@ function Peace() {
         F = 140;
         y = 0;
         C = [];
-        peace.hidden = !1;
+        peace.visible = !1;
         A[0] = A[1] = 0
     }
 
@@ -3192,7 +3276,7 @@ function Peace() {
     var l, x, t, z, y, A, B, C, E, F, G, N, I;
     this.init = function() {
         N = I = 0;
-        E = this.hidden = !1;
+        E = this.visible = !1;
         F = 140;
         y = 0;
         A = [0, 0];
@@ -3254,7 +3338,7 @@ function Peace() {
     };
     this.update = function() {
         if (0 < I) I--, 0 === I && k();
-        else if (this.hidden) {
+        else if (this.visible) {
             F--;
             var D;
             if (D = 270 === F && 2 <= N) a: {
@@ -3270,7 +3354,7 @@ function Peace() {
             for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[orderedLand[D]]) && (F = 140), G[D] = land[orderedLand[D]];
             D = 0 >= --F ? !0 : !1;
             if (D) {
-                this.hidden = !0;
+                this.visible = !0;
                 F = 360;
                 var K = 0;
                 for (D = aliveCount - 1; 0 <= D; D--) hu.isHuman(aliveEntities[D]) && (K += land[aliveEntities[D]]);
@@ -3283,11 +3367,11 @@ function Peace() {
         }
     };
     this.iv = function() {
-        this.hidden && A[0] < B[0] && k()
+        this.visible && A[0] < B[0] && k()
     };
     this.processVotePeace = function(D, K) {
         var J;
-        if (this.hidden) {
+        if (this.visible) {
             for (J = C.length - 1; 0 <= J; J--)
                 if (C[J] === D) return;
             C.push(D);
@@ -3298,7 +3382,7 @@ function Peace() {
         }
     };
     this.drawCanvasImage = function() {
-        if (this.hidden) {
+        if (this.visible) {
             var D = n();
             mainCanvasCtx.drawImage(x, canvasWidth - this.width - m5, D)
         }
@@ -3390,13 +3474,13 @@ function TroopBar() {
     this.eb = function() {
         G && (G = !1, k())
     };
-    this.hidden = function() {
+    this.visible = function() {
         return !(!B || fq.lu && t < Math.floor(m5 + 5.5 * this.height))
     };
     this.md = function(I) {
-        return this.hidden() ? t + x > canvasWidth - I - m5 : !1
+        return this.visible() ? t + x > canvasWidth - I - m5 : !1
     };
-    this.toggleVisibilityOn = function() {
+    this.toggleVisibility = function() {
         B = !0
     };
     this.qh = function() {
@@ -3406,35 +3490,35 @@ function TroopBar() {
         var I = Math.floor(1E3 * C);
         return 0 >= I ? 1 : 1E3 < I ? 1E3 : I
     };
-    this.pP = function(I, D) {
-        return this.hidden() && I > t && I < t + x && D > this.fK
+    this.getClickedButton = function(xPos, yPos) {
+        return this.visible() && xPos > t && xPos < t + x && yPos > this.fK
     };
     this.pQ = function(I, D) {
-        if (!this.hidden()) return !1;
+        if (!this.visible()) return !1;
         if (I > t && I < t + z && D > troopBar.fK) return n(N);
         if (I > t + x - z && I < t + x && D > troopBar.fK) return n(1 / N);
         this.pT = !0;
         return l(I)
     };
     this.r3 = function(I) {
-        0 !== clientStatus && this.hidden() && n(I) && (c4.canvasDirty = !0)
+        0 !== clientStatus && this.visible() && n(I) && (c4.canvasDirty = !0)
     };
     this.pb = function(I) {
-        if (0 === I || !this.hidden()) return !1;
+        if (0 === I || !this.visible()) return !1;
         0 < I ? (I = 400 / (400 + I), I = I < N ? N : I) : (I = (400 - I) / 400, I = I > 1 / N ? 1 / N : I);
         return n(I)
     };
-    this.lm = function(I, D) {
+    this.onPointermove = function(I, D) {
         return this.pT ? l(I, D) : !1
     };
     this.pW = function() {
         this.pT = !1
     };
     this.update = function() {
-        this.hidden() && Math.floor(troops[myID] * C) !== E && (G = !0)
+        this.visible() && Math.floor(troops[myID] * C) !== E && (G = !0)
     };
     this.drawCanvasImage = function() {
-        this.hidden() && mainCanvasCtx.drawImage(y,
+        this.visible() && mainCanvasCtx.drawImage(y,
             t, this.fK)
     }
 }
@@ -3478,7 +3562,7 @@ function k4() {
         eV.h0() && (this.gk = !0, t = y, z = A);
         return !1
     };
-    this.lm = function(y, A) {
+    this.onPointermove = function(y, A) {
         if (!eV.h0()) return !0;
         var B = gridWidth,
             C = gridHeight,
@@ -3486,7 +3570,7 @@ function k4() {
             F = z - A;
         gridWidth += E;
         gridHeight += F;
-        eA.lm(E, F);
+        eA.onPointermove(E, F);
         this.rI();
         t = y;
         z = A;
@@ -3768,7 +3852,7 @@ function Playtime() {
             34452, 41048, 51372, 61916, 43236, 55172, 26776, 47E3, 57424, 93100, 64980, 37288, 44296, 34588, 40700, 29200, 24604, 18184, 42660, 31404, 38096, 18556, 17388, 19568, 17604, 22328, 40300, 39392, 33440, 17960, 7984, 11612, 67700, 14108, 22444, 19756, 9436, 16864, 14400, 17216, 14436, 8612, 15952, 29764, 18748, 16348, 23976, 22080, 20268, 20984, 9480, 30736, 15996, 9484, 9392, 9716, 21540, 57428, 24788, 18728, 8528, 5972, 20560, 18268, 28088, 15364, 15300, 29348, 30992, 20564, 34420, 16716, 14424, 12360, 15124, 51172, 13176
         ];
         this.setCanvasVariables();
-        wsManager.manageFirstAction(0, 0)
+        wsManager.sendWhenWSOpen(0, 0)
     };
     this.setCanvasVariables = function() {
         y = Math.floor(.15 *
@@ -3778,7 +3862,7 @@ function Playtime() {
         I = fontWeightBold + N + fontSizeArial;
         g()
     };
-    this.rk = function() {
+    this.completeFirstAction = function() {
         J || dataEncoder.requestLoadInfo()
     };
     this.addPlaytimes = function(P) {
@@ -3788,10 +3872,10 @@ function Playtime() {
         g();
         c4.canvasDirty = !0
     };
-    this.rq = function() {
+    this.setPosition = function() {
         k()
     };
-    this.lm = function(P, U) {
+    this.onPointermove = function(P, U) {
         U > prevClientHeight - .6 * y ? this.rg ? P !== K && (z += P - K, K = P, k(), n(P), this.rg = -1 !== G, c4.canvasDirty = !0) : n(P) && (c4.canvasDirty = !0) : this.pU()
     };
     this.pU = function() {
@@ -3801,7 +3885,7 @@ function Playtime() {
         -1 !== G && (z += Math.floor(U), k(), n(P), c4.canvasDirty = !0)
     };
     this.mouseDown = function(P, U) {
-        this.lm(P, U); - 1 !== G && (K = P, this.rg = !0)
+        this.onPointermove(P, U); - 1 !== G && (K = P, this.rg = !0)
     };
     this.pV = function() {
         -1 !== G && (this.rg = !1)
@@ -4127,7 +4211,7 @@ function GameLeaderboard() {
         }
         return !1
     };
-    this.lm = function(S, O) {
+    this.onPointermove = function(S, O) {
         var T = getRowIndex(O);
         if (ba) {
             var Y = boardTopIndex;
@@ -4477,10 +4561,10 @@ function processAttack(authorID, targetID, ratio) {
                 if (0 !== oldPotentialAdvancesLength || 0 !== potentialBorderAdvances[authorID].length) {
                     if (teamGame) canReceiveBotDonations[authorID] = 1
                     if (authorID === myID) {
-                        statistics.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
-                        statistics.numbers[1]++;
-                        statistics.numbers[12] += tax;
-                        statistics.numbers[13] += amount
+                        statisticNumbers.numbers[0] += 500 <= ratio ? ratio - 12 : ratio;
+                        statisticNumbers.numbers[1]++;
+                        statisticNumbers.numbers[12] += tax;
+                        statisticNumbers.numbers[13] += amount
                     }
                     takePixelsAndChangeToMoving(oldPotentialAdvancesLength, authorID);
                     attacks.set(authorID, amount, targetID);
@@ -4500,7 +4584,7 @@ function processSendBoat(id, closestPIndex, targetPIndex, amount) {
     if (0 === boatID) return !1;
     tax = divideFloor(3 * troops[id], 128);
     amount >= divideFloor(troops[id], 2) && (amount -= tax);
-    id === myID && (statistics.numbers[12] += tax);
+    id === myID && (statisticNumbers.numbers[12] += tax);
     attacks.addBoat(id, amount, boatID);
     troops[id] -= amount + tax;
     return !0
@@ -4516,13 +4600,13 @@ function processDonation(authorID, targetID, amount) {
         if (0 < maxReceivableAmount) {
             amount = amount > maxReceivableAmount ? maxReceivableAmount : amount;
             if (authorID === myID) {
-                announcements.n8(amount, targetID);
-                statistics.numbers[12] += tax;
-                statistics.numbers[16] += amount;
+                announcements.giveDonation(amount, targetID);
+                statisticNumbers.numbers[12] += tax;
+                statisticNumbers.numbers[16] += amount;
             }
             if (targetID === myID) {
-                announcements.nA(amount, authorID);
-                statistics.numbers[10] += amount;
+                announcements.receiveDonation(amount, authorID);
+                statisticNumbers.numbers[10] += amount;
             }
             troops[authorID] -= amount + tax;
             troops[targetID] += amount;
@@ -4592,7 +4676,7 @@ function ts() {
 }
 
 function MainLeaderboard() {
-    this.hidden = !1;
+    this.visible = !1;
     this.buttons = null;
     this.tz = 0;
     this.height = this.width = null;
@@ -4611,22 +4695,22 @@ function MainLeaderboard() {
     this.paginationDirection = [0, 0];
     this.init = function() {
         this.buttons = [null, null];
-        this.hidden = !1;
+        this.visible = !1;
         this.tz = 0;
         this.setCanvasVariables()
     };
-    this.toggleVisibilityOn = function(l) {
+    this.toggleVisibility = function(l) {
         this.tz = l;
-        this.hidden = !0;
+        this.visible = !0;
         this.updateRenderObject();
-        nameInput.th();
+        nameInput.hide();
         c4.canvasDirty = !0
     };
     this.update = function() {
-        this.hidden && this.updateRenderObject()
+        this.visible && this.updateRenderObject()
     };
     this.updateRenderObject = function() {
-        c4.time - 12E4 >= n[this.tz] && (n[this.tz] = c4.time, this.paginationDirection = [0, 0], wsManager.manageFirstAction(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
+        c4.time - 12E4 >= n[this.tz] && (n[this.tz] = c4.time, this.paginationDirection = [0, 0], wsManager.sendWhenWSOpen(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
     };
     this.setCanvasVariables = function() {
         var l;
@@ -4698,20 +4782,20 @@ function MainLeaderboard() {
                 l[z].name.length - 4) + "..."
     };
     this.mouseDown = function(l, x) {
-        if (!this.hidden) return !1;
+        if (!this.visible) return !1;
         l -= (prevClientWidth - this.width) / 2;
         x -= (prevClientHeight - this.height) / 2;
-        if (0 > l || l > this.width || 0 > x || x > this.height) return this.hidden = !1, 0 === aJ.getState() && jk.toggleVisibilityOn(0, !0), c4.canvasDirty = !0;
+        if (0 > l || l > this.width || 0 > x || x > this.height) return this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0;
         if (x < .3 * this.height) var t = 1;
         else x < .85 * this.height ? (t = (0 === this.tz ? 14.1 : 3) * (x - .3 * this.height) / (.55 * this.height), t = Math.floor(1 + t * t)) : t = 0 === this.tz ? 200 : 10;
         this.paginationDirection[this.tz] = l < this.width / 2 ? -t : t;
         if (n[this.tz] + 50 > c4.time) return !0;
         n[this.tz] = c4.time;
-        wsManager.manageFirstAction(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz);
+        wsManager.sendWhenWSOpen(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz);
         return !0
     };
     this.drawCanvasImage = function() {
-        if (this.hidden) {
+        if (this.visible) {
             var l = this.u0 *
                 this.width,
                 x = this.u4 * l,
@@ -4791,12 +4875,12 @@ function MainLeaderboard() {
 
 function OpenLinkBox() {
     var g, k, n, l, x, t, z, y, A, B, C, E, F;
-    this.hidden = !1;
+    this.visible = !1;
     this.init = function(G, N) {
         if (13 <= androidVersion) N ? E = G : E === G && androidObject.saveString(200, G);
         else if (N) {
-            (mainSettings.buttons[1].buttonClass.hidden || mainSettings.buttons[2].buttonClass.hidden) && mainSettings.hideIfNotHidden();
-            nameInput.th();
+            (mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) && mainSettings.hideIfNotHidden();
+            nameInput.hide();
             E = G;
             A = Math.floor((isZoom ? canvasWidth > canvasHeight ? .6 : .45 : .4) * minDim);
             n = A / sprites.getValuebyID(17).width;
@@ -4824,24 +4908,24 @@ function OpenLinkBox() {
             F.style.top = Math.floor((k + 2 * z + x) / pixelRatio) + "px";
             F.style.left = Math.floor((g + (C - B) / 2) / pixelRatio) + "px";
             document.body.appendChild(F);
-            this.hidden = !0;
+            this.visible = !0;
             c4.canvasDirty = !0
         }
     };
     this.end = function() {
-        if (!this.hidden) return !1;
+        if (!this.visible) return !1;
         document.body.removeChild(F);
-        this.hidden = !1;
+        this.visible = !1;
         return !0
     };
     this.mouseDown = function(G, N) {
-        if (!this.hidden) return !1;
-        if (G < g || N < k || G > g + C || N > k + l) c4.canvasDirty = !0, this.hidden = !1, document.body.removeChild(F),
-            0 === aJ.getState() && jk.toggleVisibilityOn(0, !0);
+        if (!this.visible) return !1;
+        if (G < g || N < k || G > g + C || N > k + l) c4.canvasDirty = !0, this.visible = !1, document.body.removeChild(F),
+            0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0);
         return !0
     };
     this.drawCanvasImage = function() {
-        this.hidden && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValuebyID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
+        this.visible && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValuebyID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
     }
 }
 
@@ -4888,18 +4972,18 @@ function ui() {
                 for (y = 2; 5 > y; y++) n[y] -= l[1] * t[1].height + g
         }
     };
-    this.hidden = function() {
+    this.visible = function() {
         return !(7 === aJ.getState() && isZoom)
     };
     this.mouseDown = function(y, A, B) {
-        if (!t || !this.hidden()) return !1;
+        if (!t || !this.visible()) return !1;
         var C;
         for (C = x.length - 1; 0 <= C; C--)
             if (x[C] && this.uj[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return openLinkBox.init(z[C], B), !0;
         return !1
     };
     this.drawCanvasImage = function() {
-        if (t && this.hidden()) {
+        if (t && this.visible()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var y;
             for (y = 0; 5 > y; y++) x[y] &&
@@ -5017,9 +5101,9 @@ function kA() {
             ur: "rgba(0,0,0,0.8)",
             fontRatio: this.uo[0].fontRatio
         };
-        this.rq()
+        this.setPosition()
     };
-    this.rq = function() {
+    this.setPosition = function() {
         this.fK = Math.floor(.54 * prevClientHeight);
         this.uo[0].fJ = Math.floor(.5 * prevClientWidth - .5 * this.width);
         this.uo[1].fJ = this.uo[0].fJ + this.uo[0].width + this.f6;
@@ -5047,13 +5131,13 @@ function kA() {
         g(5);
         g(6)
     };
-    this.lm = function(x, t, z) {
+    this.onPointermove = function(x, t, z) {
         var y = -1;
-        0 === aJ.getState() ? y = this.pP(x, t, 0, 2) : 3 === aJ.getState() ? y = this.pP(x, t, 3, 1) : 5 === aJ.getState() && (y = this.pP(x, t, 5, 2));
+        0 === aJ.getState() ? y = this.getClickedButton(x, t, 0, 2) : 3 === aJ.getState() ? y = this.getClickedButton(x, t, 3, 1) : 5 === aJ.getState() && (y = this.getClickedButton(x, t, 5, 2));
         k !== y && (k = y, z && (c4.canvasDirty = !0));
         return -1 !== y ? (playtime.pU(), !0) : !1
     };
-    this.pP = function(x, t, z, y) {
+    this.getClickedButton = function(x, t, z, y) {
         for (var A = z; A < z + y; A++)
             if (x >= this.uo[A].fJ && t >= this.uo[A].fK && x <= this.uo[A].fJ + this.uo[A].width &&
                 t <= this.uo[A].fK + this.uo[A].height) return A;
@@ -5066,14 +5150,14 @@ function Colors() {
         return 0 > k ? 0 : 255 < k ? 255 : Math.floor(k)
     }
     this.height = this.width = 0;
-    this.hidden = !1;
+    this.visible = !1;
     this.v2 = this.v1 = this.v0 = this.ns = this.f6 = this.uz = 0;
     this.colors = null;
     this.init = function() {
         canvasWidth < 2 * canvasHeight ? this.width = Math.floor((isZoom ? .94 : .4) * canvasWidth) : (this.height = Math.floor((isZoom ? .88 : .4) * canvasHeight), this.width = Math.floor(2 * this.height));
         this.height = this.width / 2;
         this.f6 = this.height / 16;
-        this.hidden = !0;
+        this.visible = !0;
         this.uz = 0;
         this.v0 = (this.height - 3 * this.f6) / 2;
         this.v1 = this.width - 3 * this.f6 - this.v0;
@@ -5099,7 +5183,7 @@ function Colors() {
         var l = (prevClientHeight - this.height) / 2;
         k -= (prevClientWidth - this.width) / 2;
         n -= l;
-        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.hidden = !1, 0 === aJ.getState() && jk.toggleVisibilityOn(0, !0), c4.canvasDirty = !0, !1;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0, !1;
         if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.height - this.f6) return !0;
         if (k < this.f6 + this.v0) return n < this.f6 + this.v0 && 0 !== this.ns && (this.ns = 0, c4.canvasDirty = !0), !0;
         if (k < 2 * this.f6 + this.v0) return !0;
@@ -5118,7 +5202,7 @@ function Colors() {
         for (var k = "", n, l = 0; 3 > l; l++) n = divideFloor(this.colors[0][l], 4), 10 > n && (k += "0"), k += n.toString();
         saveColors(k)
     };
-    this.lm = function(k) {
+    this.onPointermove = function(k) {
         0 !== this.uz && (k -= 2 * this.f6 + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.uz - 1] = g(256 * k / this.v1), c4.canvasDirty = !0)
     };
     this.v8 = function() {
@@ -5158,110 +5242,132 @@ function Colors() {
     }
 }
 
-function kB() {
-    function g() {
-        return 0 === D ? 0 : 1 + (D - 1 + K) % (wsManager.terriWsCount - 1)
+function PreLobby() {
+    function getCurrentRemoteIndex() {
+        return 0 === remoteIndex ? 0 : 1 + (remoteIndex - 1 + currentRemote) % (wsManager.terriWsCount - 1)
     }
 
-    function k() {
-        D++;
-        I = c4.time;
-        wsManager.manageFirstAction(g(), 4) && (J = !0, dataEncoder.joinLobby(g()))
+    function sendJoinRequest() {
+        remoteIndex++;
+        initTime = c4.time;
+        wsManager.sendWhenWSOpen(getCurrentRemoteIndex(), 4) && (isJoiningLobby = !0, dataEncoder.joinLobby(getCurrentRemoteIndex()))
     }
 
-    function n() {
-        0 === D ? showError.displayError(3249) : (D === wsManager.terriWsCount - 1 && (D = -1), k())
+    function incrementRemoteIndex() {
+        0 === remoteIndex ? showError.displayError(3249) : (remoteIndex === wsManager.terriWsCount - 1 && (remoteIndex = -1), sendJoinRequest())
     }
 
-    function l(L, H, M) {
-        var Q = Math.floor((prevClientWidth - y) / 2) + C,
-            R = Q + Math.floor(M * (y - 2 * C));
-        mainCanvasCtx.lineWidth = H;
+    function drawProgressBar(yPos, param_3_width, progressRatio) {
+        var startX = Math.floor((prevClientWidth - progressBarWidth) / 2) + progressBarCornerSize,
+            endX = startX + Math.floor(progressRatio * (progressBarWidth - 2 * progressBarCornerSize));
+        mainCanvasCtx.lineWidth = param_3_width;
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.moveTo(Q, L);
-        mainCanvasCtx.lineTo(R, L);
-        mainCanvasCtx.lineTo(Math.floor(Q - C + M * y), L + z);
-        mainCanvasCtx.lineTo(Q - C, L + z);
+        mainCanvasCtx.moveTo(startX, yPos);
+        mainCanvasCtx.lineTo(endX, yPos);
+        mainCanvasCtx.lineTo(Math.floor(startX - progressBarCornerSize + progressRatio * progressBarWidth), yPos + progressBarHeight);
+        mainCanvasCtx.lineTo(startX - progressBarCornerSize, yPos + progressBarHeight);
         mainCanvasCtx.closePath()
     }
-    var x, t, z, y, A, B, C, E, F, G, N, I, D, K = 0,
-        J;
+    var barProgress, direction, progressBarHeight, progressBarWidth, progressBarTotalWidth, progressBarTotalHeight, progressBarCornerSize, bgColor, fgColor, loadingTextFont, fontSize, initTime, remoteIndex, currentRemote = 0,
+        isJoiningLobby;
     this.init = function() {
         aJ.setState(6);
-        x = 0;
-        t = 1;
-        E = "rgba(0,220,120,0.4)";
-        F = "rgba(0,0,0,0.8)";
+        barProgress = 0;
+        direction = 1;
+        bgColor = "rgba(0,220,120,0.4)";
+        fgColor = "rgba(0,0,0,0.8)";
         this.setCanvasVariables();
         c4.canvasDirty = !0;
-        D = 0;
-        J = !1;
-        k()
+        remoteIndex = 0;
+        isJoiningLobby = !1;
+        sendJoinRequest()
     };
     this.setCanvasVariables = function() {
-        y = Math.floor((isZoom ? .5 : .25) * averageDim);
-        A = y + 12;
-        z = Math.floor(.125 * y);
-        C = 3 * z;
-        B = Math.floor(.225 * y);
-        N = Math.floor(.3 * z);
-        G = fontStyleNormal + N + fontSizeArial
+        progressBarWidth = Math.floor((isZoom ? .5 : .25) * averageDim);
+        progressBarTotalWidth = progressBarWidth + 12;
+        progressBarHeight = Math.floor(.125 * progressBarWidth);
+        progressBarCornerSize = 3 * progressBarHeight;
+        progressBarTotalHeight = Math.floor(.225 * progressBarWidth);
+        fontSize = Math.floor(.3 * progressBarHeight);
+        loadingTextFont = fontStyleNormal + fontSize + fontSizeArial
     };
-    this.vK = function(L) {
-        K = L
+    this.setRemote = function(newRemote) {
+        currentRemote = newRemote
     };
-    this.vO = function(L) {
-        L === g() && (J = !1, n())
+    this.onPreLobbyJoin = function(remoteID) {
+        remoteID === getCurrentRemoteIndex() && (isJoiningLobby = !1, incrementRemoteIndex())
     };
-    this.rk = function(L) {
-        6 !== aJ.getState() || J || (I = c4.time, J = !0, dataEncoder.joinLobby(L))
+    this.completeFirstAction = function(remoteID) {
+        6 !== aJ.getState() || isJoiningLobby || (initTime = c4.time, isJoiningLobby = !0, dataEncoder.joinLobby(remoteID))
     };
-    this.mouseDown = function(L, H) {
-        var M = Math.floor((prevClientWidth - A) / 2),
-            Q = Math.floor(.5 * (prevClientHeight - bufferLength - z - B)) + z + bufferLength;
-        return L > M && L < M + A && H > Q && H < Q + B ? (this.vT(), jh.lm(L, H, !1), !0) : !1
+    this.mouseDown = function(xPos, yPos) {
+        var M = Math.floor((prevClientWidth - progressBarTotalWidth) / 2),
+            Q = Math.floor(.5 * (prevClientHeight - bufferLength - progressBarHeight - progressBarTotalHeight)) + progressBarHeight + bufferLength;
+        if (xPos > M && xPos < M + progressBarTotalWidth && yPos > Q && yPos < Q + progressBarTotalHeight) {
+            this.onPreLobbyLeave();
+            jh.onPointermove(xPos, yPos, !1);
+            return !0
+        } else return !1
     };
-    this.vT = function() {
+    this.onPreLobbyLeave = function() {
         wsManager.closeAll(3260);
         nameInput.init();
         c4.canvasDirty = !0
     };
     this.update = function() {
-        6 === aJ.getState() &&
-            (J ? c4.time > I + 2E4 && showError.displayError(3250) : c4.time > I + 2E4 && n(), x += .07 * t * (16 > x ? 5 + x : 84 < x ? 105 - x : 17), 100 < x ? (x = 100, t = -1) : 0 > x && (x = 0, t = 1), E = "rgba(0," + Math.floor(190 - 1.9 * x) + "," + Math.floor(120 - 1.2 * x) + "," + (.4 + .004 * x) + ")", F = "rgba(0," + Math.floor(1.9 * x) + "," + Math.floor(1.2 * x) + "," + (.8 - .004 * x) + ")", c4.canvasDirty = !0)
-    };
+        if (6 === aJ.getState()) {
+            if (isJoiningLobby) {
+                if (c4.time > initTime + 2E4) showError.displayError(3250);
+            } else {
+                if (c4.time > initTime + 2E4) {
+                    incrementRemoteIndex();
+                    barProgress += .07 * direction * (16 > barProgress ? 5 + barProgress : 84 < barProgress ? 105 - barProgress : 17);
+                    if (100 < barProgress) {
+                        barProgress = 100;
+                        direction = -1;
+                    } else if (0 > barProgress) {
+                        barProgress = 0;
+                        direction = 1;
+                    }
+                    bgColor = "rgba(0," + Math.floor(190 - 1.9 * barProgress) + "," + Math.floor(120 - 1.2 * barProgress) + "," + (.4 + .004 * barProgress) + ")";
+                    fgColor = "rgba(0," + Math.floor(1.9 * barProgress) + "," + Math.floor(1.2 * barProgress) + "," + (.8 - .004 * barProgress) + ")";
+                    c4.canvasDirty = !0;
+                }
+            }
+        }
+    };    
     this.drawCanvasImage = function() {
-        var L = Math.floor((prevClientWidth - A) / 2),
-            H = Math.floor(.5 * (prevClientHeight - bufferLength - z - B)),
-            M = x / 100;
-        mainCanvasCtx.fillStyle = F;
-        l(H, 3, 1);
+        var canvasXOffset = Math.floor((prevClientWidth - progressBarTotalWidth) / 2),
+            progressBarYPos = Math.floor(.5 * (prevClientHeight - bufferLength - progressBarHeight - progressBarTotalHeight)),
+            progressFillAmount = barProgress / 100;
+        mainCanvasCtx.fillStyle = fgColor;
+        drawProgressBar(progressBarYPos, 3, 1);
         mainCanvasCtx.fill();
-        mainCanvasCtx.fillStyle = E;
-        l(H, 3, M);
+        mainCanvasCtx.fillStyle = bgColor;
+        drawProgressBar(progressBarYPos, 3, progressFillAmount);
         mainCanvasCtx.fill();
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        l(H, 3, 1);
+        drawProgressBar(progressBarYPos, 3, 1);
         mainCanvasCtx.stroke();
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.textBaseline = middleAlign;
-        mainCanvasCtx.font = G;
+        mainCanvasCtx.font = loadingTextFont;
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillText("Loading", Math.floor(.5 * prevClientWidth), Math.floor(H + .58 * z));
-        H = H + z + bufferLength;
-        M = A;
-        var Q = B;
+        mainCanvasCtx.fillText("Loading", Math.floor(.5 * prevClientWidth), Math.floor(progressBarYPos + .58 * progressBarHeight));
+        progressBarYPos = progressBarYPos + progressBarHeight + bufferLength;
+        progressFillAmount = progressBarTotalWidth;
+        var buttonHeight = progressBarTotalHeight;
         mainCanvasCtx.fillStyle = blackSemiTransparent;
-        mainCanvasCtx.fillRect(L, H, M, Q);
+        mainCanvasCtx.fillRect(canvasXOffset, progressBarYPos, progressFillAmount, buttonHeight);
         mainCanvasCtx.lineWidth = 3;
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(L, H, M, Q);
-        var R = Math.floor(.3 * Q);
+        mainCanvasCtx.strokeRect(canvasXOffset, progressBarYPos, progressFillAmount, buttonHeight);
+        var buttonTextSize = Math.floor(.3 * buttonHeight);
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.textBaseline = middleAlign;
-        mainCanvasCtx.font = fontStyleNormal + R + fontSizeArial;
+        mainCanvasCtx.font = fontStyleNormal + buttonTextSize + fontSizeArial;
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillText("Back", Math.floor(L + M / 2), Math.floor(H + Q / 2 + .1 * R))
+        mainCanvasCtx.fillText("Back", Math.floor(canvasXOffset + progressFillAmount / 2), Math.floor(progressBarYPos + buttonHeight / 2 + .1 * buttonTextSize))
     }
 }
 
@@ -5269,7 +5375,7 @@ function kC() {
     var gameState;
     this.init = function() {
         jh.init();
-        jk.init();
+        nameInputBar.init();
         gameState = 0;
         cookiesPrompt.init();
         nameInput.init()
@@ -5282,9 +5388,9 @@ function kC() {
     };
     this.ve = function() {
         this.setState(8);
-        lobby.th(); 
+        lobby.hide(); 
         mainSettings.hideIfNotHidden();
-        mainLeaderboard.hidden = !1;
+        mainLeaderboard.visible = !1;
         openLinkBox.mouseDown(-1E3, -1E3)
     };
     this.hideIfNotHidden = function(k) {
@@ -5292,7 +5398,7 @@ function kC() {
         if (!(400 > c4.time)) {
             if ("Enter" === k.key || "Escape" === k.key) {
                 if (this.vg()) {
-                    if (0 === gameState) jk.toggleVisibilityOn(0, !0)
+                    if (0 === gameState) nameInputBar.toggleVisibility(0, !0)
                     return !0;
                 }
                 if ("Enter" === k.key) {
@@ -5304,14 +5410,14 @@ function kC() {
         }
     };
     this.vg = function() {
-        return openLinkBox.end() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.hidden ? (mainLeaderboard.hidden = !1, !0) : !1
+        return openLinkBox.end() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.visible ? (mainLeaderboard.visible = !1, !0) : !1
     };
     this.aK = function() {
             c4.canvasDirty = !0;
-        8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : hv.hidden ? hv.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? ji.vT() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
+        8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : statistics.visible ? statistics.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? preLobby.onPreLobbyLeave() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
         };
     this.mouseDown = function(k, n) {
-        if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && ji.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || jt.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
+        if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && preLobby.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || jt.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
             playtime.mouseDown(k, n);
             if (0 === gameState) nameInput.mouseDown(k, n);
             else if (3 === gameState) showError.mouseDown(k, n);
@@ -5320,40 +5426,40 @@ function kC() {
             mainLeaderboardIcon.mouseDown(k, n)
         }
     };
-    this.lm = function(k, n) {
-        jt.lm(k, n);
+    this.onPointermove = function(k, n) {
+        jt.onPointermove(k, n);
         if (!playtime.rg) {
-            if (cookiesPrompt.lm(k, n)) {
+            if (cookiesPrompt.onPointermove(k, n)) {
                 playtime.pU();
                 return
             }
-            if (2 === gameState && singleSettings.lm(k, n)) {
+            if (2 === gameState && singleSettings.onPointermove(k, n)) {
                 playtime.pU();
                 return
             }
-            if (0 <= mainSettings.pP(k, n)) {
+            if (0 <= mainSettings.getClickedButton(k, n)) {
                 playtime.pU();
                 return
             }
-            if (mainSettings.lm(k, n)) {
+            if (mainSettings.onPointermove(k, n)) {
                 playtime.pU();
                 return
             }
-            if (jh.lm(k, n, !0)) return
+            if (jh.onPointermove(k, n, !0)) return
         }
-        playtime.lm(k, n)
+        playtime.onPointermove(k, n)
     };
     this.click = function(k, n) {
         playtime.pV();
         mainSettings.v8() || vk.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
     };
     this.pb = function(k, n, l) {
-        mainSettings.buttons[1].buttonClass.hidden || 0 === gameState && playtime.pb(k, l)
+        mainSettings.buttons[1].buttonClass.visible || 0 === gameState && playtime.pb(k, l)
     };
     this.vl = function() {
-        jh.rq();
-        mainSettings.rq();
-        0 === gameState ? (jk.rq(0), playtime.rq()) : 7 === gameState && lobby.setCanvasVariables();
+        jh.setPosition();
+        mainSettings.setPosition();
+        0 === gameState ? (nameInputBar.setPosition(0), playtime.setPosition()) : 7 === gameState && lobby.setCanvasVariables();
         c4.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
@@ -5379,7 +5485,7 @@ function kC() {
             mainLeaderboardIcon.drawCanvasImage();
             mainSettings.drawCanvasImage();
             jt.drawCanvasImage();
-            0 === gameState ? nameInput.drawCanvasImage() : 2 === gameState ? singleSettings.drawCanvasImage() : 3 === gameState ? showError.drawCanvasImage() : 5 === gameState ? jl.drawCanvasImage() : 6 === gameState ? ji.drawCanvasImage() : 7 === gameState && lobby.drawCanvasImage();
+            0 === gameState ? nameInput.drawCanvasImage() : 2 === gameState ? singleSettings.drawCanvasImage() : 3 === gameState ? showError.drawCanvasImage() : 5 === gameState ? jl.drawCanvasImage() : 6 === gameState ? preLobby.drawCanvasImage() : 7 === gameState && lobby.drawCanvasImage();
             mainSettings.vn();
             cookiesPrompt.drawCanvasImage();
             mainLeaderboard.drawCanvasImage();
@@ -5403,7 +5509,7 @@ function kC() {
 
 function Emojis() {
     this.height = this.width = 0;
-    this.hidden = !1;
+    this.visible = !1;
     this.nh = 10;
     this.bB = .12;
     this.vs = this.vr = this.uz = !1;
@@ -5411,14 +5517,14 @@ function Emojis() {
         this.width = canvasWidth < 1 * canvasHeight ? Math.floor((isZoom ? .94 : .6) * canvasWidth) : Math.floor((isZoom ? .94 : .6) * canvasHeight);
         this.width -= this.width % this.nh;
         this.height = 1 * this.width;
-        this.hidden = !0;
+        this.visible = !0;
         this.uz = !1
     };
     this.mouseDown = function(g, k, n) {
         var l = (prevClientHeight - this.height) / 2;
         g -= (prevClientWidth - this.width) / 2;
         k -= l;
-        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.height - 1) return 0 === n && (this.hidden = !1, 0 === aJ.getState() && jk.toggleVisibilityOn(0, !0), c4.canvasDirty = !0), !1;
+        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.height - 1) return 0 === n && (this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0), !1;
         l = Math.floor(this.width / this.nh);
         g = divideFloor(g, l) + this.nh * divideFloor(k, l);
         g = 0 > g ? 0 : g >= a5.nl ? a5.nl - 1 : g;
@@ -5426,7 +5532,7 @@ function Emojis() {
             n || 1 === n && !a5.a7[g] || 2 === n && a5.a7[g]) this.vr = !a5.a7[g], this.vs = this.uz = !0, a5.a7[g] = !a5.a7[g], a5.o3(), c4.canvasDirty = !0;
         return !0
     };
-    this.lm = function(g, k) {
+    this.onPointermove = function(g, k) {
         this.uz && this.mouseDown(g, k, this.vr ? 1 : 2)
     };
     this.v8 = function() {
@@ -5453,9 +5559,9 @@ function Emojis() {
 function ShowError() {
     function g() {
         var t = aJ.getState();
-        0 === t ? nameInput.th() : 6 === t ? wsManager.closeAll(n) : 7 === t ? (lobby.th(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.th());
+        0 === t ? nameInput.hide() : 6 === t ? wsManager.closeAll(n) : 7 === t ? (lobby.hide(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.hide());
         aJ.setState(3);
-        jh.rq();
+        jh.setPosition();
         jh.uo[2].nY = k(n);
         c4.canvasDirty = !0
     }
@@ -5524,31 +5630,30 @@ function ShowError() {
                 return
             }
             if (4214 !== z) {
-                ji.vO(t);
+                preLobby.onPreLobbyJoin(t);
                 return
             }
         } else if (7 === y) {
             if (t !== wsManager.lobby) return
         } else {
-            8 === y && (t !== wsManager.remote || singleplayer || announcements.mm(k(z)));
+            8 === y && (t !== wsManager.remote || singleplayer || announcements.error(k(z)));
             return
         }
         g()
     };
     this.displayError = function(t) {
-        n =
-            t;
-        8 === aJ.getState() ? announcements.mm(k(t)) : g()
+        n = t;
+        8 === aJ.getState() ? announcements.error(k(t)) : g()
     };
     this.setCanvasVariables = function() {
         jh.uo[2].nY = k(n)
     };
     this.mouseDown = function(t, z) {
-        3 === jh.pP(t, z, 3, 1) && this.vj(t, z)
+        3 === jh.getClickedButton(t, z, 3, 1) && this.vj(t, z)
     };
     this.vj = function(t, z) {
         nameInput.init();
-        jh.lm(t, z, !1);
+        jh.onPointermove(t, z, !1);
         c4.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
@@ -5556,80 +5661,99 @@ function ShowError() {
     }
 }
 
-function kE() {
-    function g() {
-        k.push({
+function NameInputBar() {
+    function addInputBar() {
+        inputBars.push({
             input: document.createElement("INPUT"),
             hidden: !1,
-            color: n
+            color: normalBGColor
         });
-        var x = k.length - 1;
-        k[x].input.setAttribute("type", "text");
-        k[x].input.value = "";
-        k[x].input.style.textAlign = 0 === x ? "center" : "left";
-        k[x].input.style.backgroundColor = n;
-        k[x].input.style.border = "3px solid " + whiteRGB2;
-        k[x].input.style.color = whiteRGB2;
-        k[x].input.style.position = "absolute";
-        k[x].input.readOnly = 3 === x;
-        k[x].input.addEventListener("input", function() {
-            0 === x && nameInput.w2()
+        var index = inputBars.length - 1;
+        inputBars[index].input.setAttribute("type", "text");
+        inputBars[index].input.value = "";
+        inputBars[index].input.style.textAlign = 0 === index ? "center" : "left";
+        inputBars[index].input.style.backgroundColor = normalBGColor;
+        inputBars[index].input.style.border = "3px solid " + whiteRGB2;
+        inputBars[index].input.style.color = whiteRGB2;
+        inputBars[index].input.style.position = "absolute";
+        inputBars[index].input.readOnly = 3 === index;
+        inputBars[index].input.addEventListener("input", function() {
+            0 === index && nameInput.onInput()
         })
     }
-    var k, n, l;
+    var inputBars, normalBGColor, invalidBGColor;
     this.init = function() {
-        n = "rgba(0,0,0,0.6)";
-        l = redMoreOpaque;
-        void 0 !== k && this.toggleVisibilityOn(0, !1);
-        k = [];
-        g();
+        normalBGColor = "rgba(0,0,0,0.6)";
+        invalidBGColor = redMoreOpaque;
+        void 0 !== inputBars && this.toggleVisibility(0, !1);
+        inputBars = [];
+        addInputBar();
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
         var x = Math.floor(.22 * jh.height / pixelRatio);
-        k[0].input.style.font = fontWeightBold + x + fontSizeArial;
-        k[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
-        k[0].input.style.width = Math.floor(jh.width / pixelRatio - 13) + "px"
+        inputBars[0].input.style.font = fontWeightBold + x + fontSizeArial;
+        inputBars[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
+        inputBars[0].input.style.width = Math.floor(jh.width / pixelRatio - 13) + "px"
     };
-    this.getValuebyID = function(x) {
-        return k[x]
+    this.getValuebyID = function(index) {
+        return inputBars[index]
     };
-    this.rq = function(x) {
-        k[x].input.style.left = Math.floor((prevClientWidth / pixelRatio - (jh.width / pixelRatio - 3) - 7) / 2) + "px";
-        0 === x && (k[x].input.style.bottom = Math.floor((prevClientHeight - jh.fK + jh.f6) / pixelRatio) + "px")
+    this.setPosition = function(index) {
+        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (jh.width / pixelRatio - 3) - 7) / 2) + "px";
+        if (0 === index) inputBars[index].input.style.bottom = Math.floor((prevClientHeight - jh.fK + jh.f6) / pixelRatio) + "px"
     };
-    this.toggleVisibilityOn = function(x, t) {
-        k[x].hidden !== t && ((k[x].hidden = t) ? document.body.appendChild(k[x].input) : document.body.removeChild(k[x].input))
+    this.toggleVisibility = function(index, option) {
+        if (inputBars[index].visible !== option) {
+            if (inputBars[index].visible = option) document.body.appendChild(inputBars[index].input)
+            else document.body.removeChild(inputBars[index].input)
+        }
     };
-    this.w3 = function(x, t) {
-        t && k[x].color === n || !t && k[x].color === l || (k[x].color = t ? n : l, k[x].input.style.backgroundColor = k[x].color)
+    this.dynamic = function(index, isValidName) {
+        if (!(isValidName && inputBars[index].color === normalBGColor || !isValidName && inputBars[index].color === invalidBGColor)) {
+            inputBars[index].color = isValidName ? normalBGColor : invalidBGColor;
+            inputBars[index].input.style.backgroundColor = inputBars[index].color
+        }
     }
 }
 
 function SetGameOrigin() {
     this.myID = this.gameHash = 0;
-    var g, k, n, changeOrigins;
-    this.init = function(x) {
+    var array, callCounter, switchTime, switchCounts;
+    this.init = function(param_Array) {
         if (7 === aJ.getState()) {
-            g = x;
-            k = 0;
-            n = c4.time + 4500;
-            changeOrigins = dataDecoder.decodeGameServerInfo(g) ? 2 : 0;
+            array = param_Array;
+            callCounter = 0;
+            switchTime = c4.time + 4500;
+            switchCounts = dataDecoder.decodeGameServerInfo(array) ? 2 : 0; //function returns value indicating if server switch is required
             aJ.setState(10);
             mainCanvasCtx.imageSmoothingEnabled = !0;
             aJ.hr();
-            x = sprites.getValueByName("loading");
-            var t = (isZoom ? .396 : .25) * averageDim / x.width;
-            mainCanvasCtx.setTransform(t, 0, 0, t, Math.floor((canvasWidth - t * x.width) / 2), Math.floor((canvasHeight - t * x.height) / 2));
-            mainCanvasCtx.drawImage(x, 0, 0);
+            var loadingSprite = sprites.getValueByName("loading");
+            var scaleFactor = (isZoom ? .396 : .25) * averageDim / loadingSprite.width;
+            mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor((canvasWidth - scaleFactor * loadingSprite.width) / 2), Math.floor((canvasHeight - scaleFactor * loadingSprite.height) / 2));
+            mainCanvasCtx.drawImage(loadingSprite, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     };
-    this.eZ = function() {
-        0 < changeOrigins && c4.time > n && (changeOrigins--, n += 4500, 0 === c4.wD && 0 === c4.wE && (0 === changeOrigins && wsManager.remote < wsManager.serverCount && (wsManager.remote += wsManager.gameServerCount), wsManager.manageFirstAction(wsManager.remote, 5)))
+    this.checkAndSwitchServer = function() {
+        if (0 < switchCounts && c4.time > switchTime) {
+            switchCounts--;
+            switchTime += 4500;
+            if (0 === c4.wD && 0 === c4.wE()) {
+                if (0 === switchCounts && wsManager.remote < wsManager.serverCount) wsManager.remote += wsManager.gameServerCount
+                wsManager.sendWhenWSOpen(wsManager.remote, 5)
+            }
+        }
     };
-    this.wH = function() {
-        10 === aJ.getState() && (k++, 2 <= k && (dataDecoder.gameInitDecoder(g), g = null))
+    this.processGameInitData = function() {
+        if (10 === aJ.getState()) {
+            callCounter++;
+            if (2 <= callCounter) {
+                dataDecoder.gameInitDecoder(array);
+                array = null
+            }
+        }
     }
 }
 
@@ -5780,12 +5904,12 @@ function Lobby() {
         c4.canvasDirty = !0
     };
     this.vi = function() {
-        this.th();
+        this.hide();
         wsManager.closeAll(3240);
         nameInput.init();
         c4.canvasDirty = !0
     };
-    this.th = function() {
+    this.hide = function() {
         lobbyGames = [];
         E = []
     };
@@ -5840,7 +5964,7 @@ function Lobby() {
         for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
     };
     this.mouseDown = function(xPos, yPos) {
-        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.vi(), jh.lm(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
+        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.vi(), jh.onPointermove(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
     };
     this.drawCanvasImage = function() {
         var P = 0,
@@ -5944,15 +6068,15 @@ function Lobby() {
 function kF() {
     this.init = function(g, k) {
         aJ.setState(5);
-        jh.lm(g, k, !1);
+        jh.onPointermove(g, k, !1);
         c4.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
         jh.uv()
     };
     this.mouseDown = function(g, k) {
-        var n = jh.pP(g, k, 5, 2);
-        5 === n ? reloadClient() : 6 === n && (nameInput.init(), jh.lm(g, k, !1), c4.canvasDirty = !0)
+        var n = jh.getClickedButton(g, k, 5, 2);
+        5 === n ? reloadClient() : 6 === n && (nameInput.init(), jh.onPointermove(g, k, !1), c4.canvasDirty = !0)
     }
 }
 
@@ -5972,17 +6096,17 @@ function SingleSettings() {
         group: 512
     }];
     this.init = function() {
-        js.hidden = !1;
+        js.visible = !1;
         aJ.setState(2);
         this.setCanvasVariables();
         c4.canvasDirty = !0
     };
-    this.th = function() {};
+    this.hide = function() {};
     this.setCanvasVariables = function() {
         k[2] = Math.floor((isZoom ? .49 : .4) * averageDim);
         k[1] = Math.floor((canvasHeight - k[2] / 6 - this.botSettings.length * (bufferLength + k[2] / 10)) / 2);
         k[0] = Math.floor((canvasWidth - k[2]) / 2);
-        js.hidden && js.setCanvasVariables()
+        js.visible && js.setCanvasVariables()
     };
     this.setBotSettings = function(param_gamemode) {
         var teamIndex;
@@ -6001,7 +6125,7 @@ function SingleSettings() {
     };
     this.vj = function() {
         c4.canvasDirty = !0;
-        js.hidden ? js.hidden = !1 : (this.th(), nameInput.init())
+        js.visible ? js.visible = !1 : (this.hide(), nameInput.init())
     };
     this.getEntityCount = function() {
         var n;
@@ -6010,12 +6134,12 @@ function SingleSettings() {
         for (n = this.botSettings.length - 1; 0 <= n; n--) l += this.botSettings[n].group;
         return l
     };
-    this.lm = function(n, l) {
-        return js.hidden && js.lm(n, l) ? !0 : -1 === this.pP(n, l) ? !1 : !0
+    this.onPointermove = function(n, l) {
+        return js.visible && js.onPointermove(n, l) ? !0 : -1 === this.getClickedButton(n, l) ? !1 : !0
     };
     this.xO = function() {
         wsManager.remote = 0;
-        wsManager.manageFirstAction(0, 3) && dataEncoder.singlePlayed(0);
+        wsManager.sendWhenWSOpen(0, 3) && dataEncoder.singlePlayed(0);
         aJ.ve();
         if (customJSON.isCustomJSON) customJSON.xQ();
         else {
@@ -6032,13 +6156,13 @@ function SingleSettings() {
         return !1
     };
     this.mouseDown = function(n, l) {
-        if (mainLeaderboard.hidden || mainSettings.buttons[1].buttonClass.hidden || mainSettings.buttons[2].buttonClass.hidden) return !1;
-        if (js.hidden && !customJSON.isCustomJSON) return js.mouseDown(n, l);
-        var x = this.pP(n, l);
+        if (mainLeaderboard.visible || mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) return !1;
+        if (js.visible && !customJSON.isCustomJSON) return js.mouseDown(n, l);
+        var x = this.getClickedButton(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.vj(), !0;
         if (1 === x) return customJSON.isCustomJSON ? (customJSON.pU(), c4.canvasDirty = !0) : js.show(), !0;
-        if (2 === x) return this.th(), this.xO(), !0;
+        if (2 === x) return this.hide(), this.xO(), !0;
         if (customJSON.isCustomJSON) return !1;
         if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
             difficulty: 0,
@@ -6076,7 +6200,7 @@ function SingleSettings() {
         }
         this.botSettings[0].group += unsortedEntities
     };
-    this.pP = function(n, l) {
+    this.getClickedButton = function(n, l) {
         var x, t = (k[2] - 2 * bufferLength) / 3,
             z = k[2] / 6;
         if (n < k[0] || l < k[1] ||
@@ -6108,8 +6232,8 @@ function SingleSettings() {
             for (n = 0; n < this.botSettings.length; n++) {
                 var z = k[1] + x + bufferLength + n * (t + bufferLength);
                 g(k[0], z, t, t, "rgba(0,128,0,0.75)", 0, null, -1);
-                g(k[0] + t + bufferLength, z, l, t, blackMoreOpaque, .4, this.xV(n), this.botSettings[n].difficulty, -1);
-                g(k[0] + k[2] - l, z, l, t, blackMoreOpaque, .4, this.xW(n), -1, this.botSettings[n].group)
+                g(k[0] + t + bufferLength, z, l, t, blackMoreOpaque, .4, this.getMyGroupLabel(n), this.botSettings[n].difficulty, -1);
+                g(k[0] + k[2] - l, z, l, t, blackMoreOpaque, .4, this.getOtherGroupLabel(n), -1, this.botSettings[n].group)
             }
             if (8 > this.botSettings.length) {
                 z = k[1] + x + bufferLength + this.botSettings.length * (t +
@@ -6126,14 +6250,14 @@ function SingleSettings() {
                 mainCanvasCtx.fillRect(n + t, z + y, l, x);
                 mainCanvasCtx.fillRect(n + y, z + t, x, l)
             }
-            js.hidden && js.drawCanvasImage()
+            js.visible && js.drawCanvasImage()
         }
     };
-    this.xV = function(n) {
-        return 0 === n && 1 === this.botSettings[n].group ? "You" : difficultyEngine.difficultyLabel[this.botSettings[n].difficulty]
+    this.getMyGroupLabel = function(teamID) {
+        return 0 === teamID && 1 === this.botSettings[teamID].group ? "You" : difficultyEngine.difficultyLabel[this.botSettings[teamID].difficulty]
     };
-    this.xW = function(n) {
-        return 1 === this.botSettings[n].group ? "1 Player" : this.botSettings[n].group + " Players"
+    this.getOtherGroupLabel = function(teamID) {
+        return 1 === this.botSettings[teamID].group ? "1 Player" : this.botSettings[teamID].group + " Players"
     }
 }
 
@@ -6145,71 +6269,71 @@ function MainSettings() {
         this.buttons.push({
             fJ: 0,
             fK: 0,
-            m1: isZoom,
+            active: isZoom,
             buttonClass: null
         });
         this.buttons.push({
             fJ: 0,
             fK: 0,
-            m1: !1,
+            active: !1,
             buttonClass: new Emojis
         });
         this.buttons.push({
             fJ: 0,
             fK: 0,
-            m1: !1,
+            active: !1,
             buttonClass: new Colors
         });
         this.buttons[2].buttonClass.v3();
         this.b3 = this.buttons.length;
         this.width = 0
     };
-    this.rq = function() {
+    this.setPosition = function() {
         this.width = Math.floor((isZoom ? .063 : .04) * averageDim);
         this.width += 4 - this.width % 4;
         this.buttons[0].fJ = bufferLength;
         this.buttons[0].fK = prevClientHeight - this.width - bufferLength;
         for (var g = 1; g < this.b3; g++) this.buttons[g].fJ = this.buttons[g - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 3.7 * bufferLength) + this.width, this.buttons[g].fK = this.buttons[0].fK
     };
-    this.pP = function(g, k) {
+    this.getClickedButton = function(xPos, yPos) {
         if (!sprites.areAllSpritesLoaded()) return -1;
         for (var n = this.b3 - 1; 0 <= n; n--)
-            if (g >= this.buttons[n].fJ && k >= this.buttons[n].fK && g < this.buttons[n].fJ + this.width && k < this.buttons[n].fK + this.width) return n;
+            if (xPos >= this.buttons[n].fJ && yPos >= this.buttons[n].fK && xPos < this.buttons[n].fJ + this.width && yPos < this.buttons[n].fK + this.width) return n;
         return -1
     };
-    this.xZ = function() {
-        for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.hidden) return !0;
+    this.panelsHidden = function() {
+        for (var index = 2; 1 <= index; index--)
+            if (this.buttons[index].buttonClass.visible) return !0;
         return !1
     };
     this.hideIfNotHidden = function() {
-        return this.buttons[1].buttonClass.hidden ? (this.buttons[1].buttonClass.mouseDown(-5E3, -5E3, 0), !0) : this.buttons[2].buttonClass.hidden ? (this.buttons[2].buttonClass.mouseDown(-5E3, -5E3), !0) : !1
+        return this.buttons[1].buttonClass.visible ? (this.buttons[1].buttonClass.mouseDown(-5E3, -5E3, 0), !0) : this.buttons[2].buttonClass.visible ? (this.buttons[2].buttonClass.mouseDown(-5E3, -5E3), !0) : !1
     };
     this.mouseDown = function(g, k, n) {
         if (n) {
-            if (this.buttons[1].buttonClass.hidden) return this.buttons[1].buttonClass.mouseDown(g, k, 0), !0;
-            if (this.buttons[2].buttonClass.hidden) return this.buttons[2].buttonClass.mouseDown(g, k), !0
+            if (this.buttons[1].buttonClass.visible) return this.buttons[1].buttonClass.mouseDown(g, k, 0), !0;
+            if (this.buttons[2].buttonClass.visible) return this.buttons[2].buttonClass.mouseDown(g, k), !0
         }
-        g = this.pP(g, k);
+        g = this.getClickedButton(g, k);
         if (n) {
-            if (0 === g) return this.buttons[g].m1 = !this.buttons[g].m1, isZoom = this.buttons[g].m1, jq.xa(), saveOptions(this.buttons[0].m1, !1), !0;
-            if (1 <= g && 3 > g) return this.buttons[g].buttonClass.init(), nameInput.th(), c4.canvasDirty = !0
+            if (0 === g) return this.buttons[g].active = !this.buttons[g].active, isZoom = this.buttons[g].active, jq.xa(), saveOptions(this.buttons[0].active, !1), !0;
+            if (1 <= g && 3 > g) return this.buttons[g].buttonClass.init(), nameInput.hide(), c4.canvasDirty = !0
         }
         return !1
     };
-    this.lm = function(g, k) {
-        return this.buttons[1].buttonClass.hidden ? (this.buttons[1].buttonClass.lm(g, k), !0) : this.buttons[2].buttonClass.hidden ? (this.buttons[2].buttonClass.lm(g), !0) : !1
+    this.onPointermove = function(g, k) {
+        return this.buttons[1].buttonClass.visible ? (this.buttons[1].buttonClass.onPointermove(g, k), !0) : this.buttons[2].buttonClass.visible ? (this.buttons[2].buttonClass.onPointermove(g), !0) : !1
     };
     this.v8 = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.hidden) return this.buttons[g].buttonClass.v8(), !0;
+            if (this.buttons[g].buttonClass.visible) return this.buttons[g].buttonClass.v8(), !0;
         return !1
     };
     this.drawCanvasImage = function() {
         if (sprites.areAllSpritesLoaded()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             for (var g = this.b3 - 1; 0 <= g; g--) mainCanvasCtx.fillStyle =
-                this.buttons[g].m1 ? greenDarkMoreOpaque : blackMoreOpaque, mainCanvasCtx.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width), 0 === g ? this.xb(g, sprites.getValuebyID(15)) : 1 === g ? this.xc() : 2 === g && this.xd(), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+                this.buttons[g].active ? greenDarkMoreOpaque : blackMoreOpaque, mainCanvasCtx.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width), 0 === g ? this.xb(g, sprites.getValuebyID(15)) : 1 === g ? this.xc() : 2 === g && this.xd(), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
             mainCanvasCtx.imageSmoothingEnabled = !1
         }
     };
@@ -6221,8 +6345,7 @@ function MainSettings() {
     };
     this.xc = function() {
         var g = .06 * this.width,
-            k = (this.width - 2 *
-                g) / a5.width;
+            k = (this.width - 2 * g) / a5.width;
         mainCanvasCtx.setTransform(k, 0, 0, k, this.buttons[1].fJ + g, this.buttons[1].fK + g);
         mainCanvasCtx.drawImage(a5.l5[4], 0, 0)
     };
@@ -6233,7 +6356,7 @@ function MainSettings() {
     };
     this.vn = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.hidden) {
+            if (this.buttons[g].buttonClass.visible) {
                 this.buttons[g].buttonClass.drawCanvasImage();
                 break
             }
@@ -6241,92 +6364,139 @@ function MainSettings() {
 }
 
 function NameInput() {
-    function g() {
-        if (0 !== x.indexOf("vote ")) return !1;
-        var t = x.split(" ");
-        if (2 !== t.length) return !1;
-        nameInput.candidateID = t[1];
-        k();
-        wsManager.manageFirstAction(0, 7) && dataEncoder.discordVote(0);
+    function processVote() {
+        if (0 !== textInput.indexOf("vote ")) return !1;
+        var splitText = textInput.split(" ");
+        if (2 !== splitText.length) return !1;
+        nameInput.candidateID = splitText[1];
+        displayUsername();
+        wsManager.sendWhenWSOpen(0, 7) && dataEncoder.discordVote(0);
         showError.displayError(3252);
         return !0
     }
 
-    function k() {
-        x = loadUsername();
-        jk.getValuebyID(0).input.value = x;
-        jk.w3(0, !0)
+    function displayUsername() {
+        textInput = loadUsername();
+        nameInputBar.getValuebyID(0).input.value = textInput;
+        nameInputBar.dynamic(0, !0)
     }
 
-    function n() {
-        if (0 !== x.indexOf("account ")) return !1;
-        var t = x.split(" ");
-        if (2 !== t.length) return k(), showError.displayError(3266), !0;
-        var z = Math.floor(Math.pow(2, 48));
-        t = parseInt(characters.convertToNumericPassword(t[1]));
-        if (0 >= t || t >= z) return k(), showError.displayError(3266), !0;
-        if (savePassword(t)) return k(), showError.displayError(3231), !0;
-        k();
-        5 <= androidVersion ? showError.displayError(3232) : (showError.displayError(3265), cookiesPrompt.hidden = !0,
-            cookiesPrompt.bs = -1);
+    function processAccount() {
+        if (0 !== textInput.indexOf("account ")) return !1;
+        var splitText = textInput.split(" ");
+        if (2 !== splitText.length) {
+            displayUsername();
+            showError.displayError(3266);
+            return !0;
+        }
+        var passwordMaxCap = Math.floor(Math.pow(2, 48));
+        splitText = parseInt(strings.convertToNumericPassword(splitText[1]));
+        if (0 >= splitText || splitText >= passwordMaxCap) {
+            displayUsername();
+            showError.displayError(3266);
+            return !0;
+        }
+        if (savePassword(splitText)) {
+            displayUsername();
+            showError.displayError(3231);
+            return !0;
+        }
+        displayUsername();
+        if (5 <= androidVersion) showError.displayError(3232)
+        else {
+            showError.displayError(3265);
+            cookiesPrompt.visible = !0;
+            cookiesPrompt.bs = -1
+        }
         return !0
     }
 
-    function l() {
-        if (void 0 !== x && characters.iN(x)) return jk.w3(0, !0), !0;
-        jk.w3(0, !1);
+    function setBarColor() {
+        if (void 0 !== textInput && strings.checkValidName(textInput)) {
+            nameInputBar.dynamic(0, !0);
+            return !0;
+        }
+        nameInputBar.dynamic(0, !1);
         return !1
     }
-    var x;
+    var textInput;
     this.candidateID = "";
     this.lastVoteTime = -7E3;
     this.init = function() {
         aJ.setState(0);
-        jh.rq();
-        jk.toggleVisibilityOn(0, !0);
-        jk.rq(0);
+        jh.setPosition();
+        nameInputBar.toggleVisibility(0, !0);
+        nameInputBar.setPosition(0);
         jf.init();
-        mainSettings.rq();
-        void 0 === x && (x = loadUsername(), jk.getValuebyID(0).input.value = x, l())
-    };
-    this.th = function() {
-        jk.toggleVisibilityOn(0, !1)
-    };
-    this.xh = function(t) {
-        return 0 === t ? jh.width : 1 === t ? Math.floor(.3 * jh.height) : 2 === t ? jk.getValuebyID(0).input.style.font : x
-    };
-    this.w2 = function() {
-        x = jk.getValuebyID(0).input.value.trim();
-        l();
-        if ("password" === x || "account" === x) {
-            var t = characters.convertToStringPassword(loadPassword().toString());
-            x = "account " + t;
-            jk.getValuebyID(0).input.value = x
+        mainSettings.setPosition();
+        if (void 0 === textInput) {
+            textInput = loadUsername();
+            nameInputBar.getValuebyID(0).input.value = textInput;
+            setBarColor()
         }
     };
-    this.mouseDown = function(t, z) {
+    this.hide = function() {
+        nameInputBar.toggleVisibility(0, !1)
+    };
+    this.xh = function(t) { //unused
+        return 0 === t ? jh.width : 1 === t ? Math.floor(.3 * jh.height) : 2 === t ? nameInputBar.getValuebyID(0).input.style.font : textInput
+    };
+    this.onInput = function() {
+        textInput = nameInputBar.getValuebyID(0).input.value.trim();
+        setBarColor();
+        if ("password" === textInput || "account" === textInput) {
+            var password = strings.convertToStringPassword(loadPassword().toString());
+            textInput = "account " + password;
+            nameInputBar.getValuebyID(0).input.value = textInput
+        }
+    };
+    this.mouseDown = function(xPos, yPos) {
         c4.xi();
-        1 === jh.pP(t, z, 1, 1) ? n() || g() || (setAndroidState(10), l() ? (this.th(), saveUsername(x), singleSettings.init()) : showError.displayError(4214)) : 0 === jh.pP(t, z, 0, 1) && this.vh()
+        if (1 === jh.getClickedButton(xPos, yPos, 1, 1)) {
+            if (!(processAccount() || processVote())) {
+                setAndroidState(10);
+                if (setBarColor()) {
+                    this.hide();
+                    saveUsername(textInput);
+                    singleSettings.init()
+                } else showError.displayError(4214)
+            }
+        } else if (0 === jh.getClickedButton(xPos, yPos, 0, 1)) this.vh()
     };
     this.vh = function() {
-        n() || g() || (setAndroidState(10), void 0 !== x && characters.iN(x) && 40 === x.charCodeAt(0) && 41 === x.charCodeAt(2) ? ji.vK((Math.abs(x.charCodeAt(1)) + 7) % wsManager.terriWsCount) : ji.vK(jt.xn - 1), l() ? sprites.areAllSpritesLoaded() ? (this.th(), saveUsername(x), customJSON.pU(), ji.init()) : showError.displayError(3228) : showError.displayError(4214))
-    };
-    this.xr = function() {
-        return !mainSettings.xZ() && !mainLeaderboard.hidden && !openLinkBox.hidden
+        if (!(processAccount() || processVote())) {
+            setAndroidState(10);
+            if (void 0 !== textInput && strings.checkValidName(textInput) && 40 === textInput.charCodeAt(0) && 41 === textInput.charCodeAt(2)) {
+                preLobby.setRemote((Math.abs(textInput.charCodeAt(1)) + 7) % wsManager.terriWsCount)
+            } else {
+                preLobby.setRemote(jt.selectedRemote - 1);
+                if (setBarColor()) {
+                    if (sprites.areAllSpritesLoaded()) {
+                        this.hide();
+                        saveUsername(textInput);
+                        customJSON.pU();
+                        preLobby.init()
+                    } else showError.displayError(3228) 
+                } else showError.displayError(4214)
+            }
+        }
+    }
+    this.isInMainMenu = function() {
+        return !mainSettings.panelsHidden() && !mainLeaderboard.visible && !openLinkBox.visible
     };
     this.drawCanvasImage = function() {
-        if (this.xr()) {
+        if (this.isInMainMenu()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            var t = sprites.getValueByName("territorial.io"),
-                z = 1.1 * jh.width / t.width;
-            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((prevClientWidth - z * t.width) / 2), jh.fK - z * t.height - .72 * jh.height);
-            mainCanvasCtx.drawImage(t, 0, 0);
+            var logo = sprites.getValueByName("territorial.io"),
+                z = 1.1 * jh.width / logo.width;
+            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((prevClientWidth - z * logo.width) / 2), jh.fK - z * logo.height - .72 * jh.height);
+            mainCanvasCtx.drawImage(logo, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             jh.us()
         }
     };
     this.getInput = function() {
-        return x
+        return textInput
     }
 }
 
@@ -6652,31 +6822,31 @@ function Pixel() {
 
 function UserSettings() {
     function g() {
-        for (var C = 0, E = 1; 5 > E; E++) C += z[E] % 1024;
+        for (var C = 0, E = 1; 5 > E; E++) C += settingsArray[E] % 1024;
         return C
     }
 
     function k() {
-        for (var C = 1; C < y - B; C++) z[C] = parseInt(z[C])
+        for (var C = 1; C < y - B; C++) settingsArray[C] = parseInt(settingsArray[C])
     }
 
     function n() {
-        z[0] = "Player " + Math.floor(1E3 * Math.random());
-        z[1] = canvasWidth < canvasHeight ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
-        z[2] = 1;
-        z[3] = 1;
-        z[4] = canvasWidth < canvasHeight ? 0 : 1;
-        z[5] = 0;
-        z[6] = "000";
-        z[7] = "0";
-        z[8] = "0";
-        z[9] = "0";
+        settingsArray[0] = "Player " + Math.floor(1E3 * Math.random());
+        settingsArray[1] = canvasWidth < canvasHeight ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
+        settingsArray[2] = 1;
+        settingsArray[3] = 1;
+        settingsArray[4] = canvasWidth < canvasHeight ? 0 : 1;
+        settingsArray[5] = 0;
+        settingsArray[6] = "000";
+        settingsArray[7] = "0";
+        settingsArray[8] = "0";
+        settingsArray[9] = "0";
         userSettings.formatSettings()
     }
 
     function l() {
-        for (var C = y - B - 1; 0 <= C; C--) z[C] = characters.convertToNumericPassword(z[C]);
-        z[0] = characters.iW(z[0])
+        for (var C = y - B - 1; 0 <= C; C--) settingsArray[C] = strings.convertToNumericPassword(settingsArray[C]);
+        settingsArray[0] = strings.iW(settingsArray[0])
     }
 
     function x(C, E, F) {
@@ -6686,55 +6856,55 @@ function UserSettings() {
             ";SameSite=Strict;Secure;path=/";
         document.cookie = C
     }
-    var t, z, y, A, B;
+    var t, settingsArray, y, cookieStatus, B;
     this.init = function() {
         if (!(5 <= androidVersion || isIOS)) {
             B = 4;
-            A = 0;
+            cookieStatus = 0;
             t = [];
             y = 10;
             for (var C = 0; C < y; C++) t.push("u" + C);
-            z = Array(y);
+            settingsArray = Array(y);
             for (var E, F = document.cookie.split(";"), G = F.length - 1; 0 <= G; G--) {
                 F[G] = F[G].trim();
                 for (C = 2; 0 <= C; C--) F[G] = F[G].replace(" ", "");
-                3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? z[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
+                3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? settingsArray[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
             }
-            z[9] || (z[9] = "0");
+            settingsArray[9] || (settingsArray[9] = "0");
             a: {
                 for (C = y - 1; 0 <= C; C--)
-                    if (void 0 === z[C]) {
+                    if (void 0 === settingsArray[C]) {
                         C = !1;
                         break a
                     } C = !0
             }
-            C ? (A = 2, l(), k(), g() !== z[5] && n()) : n()
+            C ? (cookieStatus = 2, l(), k(), g() !== settingsArray[5] && n()) : n()
         }
     };
     this.formatSettings = function() {
-        if (2 === A) {
-            z[1] = 0 === z[1] ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : z[1];
-            z[5] = g();
-            for (var C = 1; C < y - B; C++) z[C] = z[C].toString();
-            z[0] = characters.iV(z[0]);
-            for (C = y - B - 1; 0 <= C; C--) z[C] = characters.convertToStringPassword(z[C]);
-            for (C = y - 1; 0 <= C; C--) x(t[C], z[C], 1);
+        if (2 === cookieStatus) {
+            settingsArray[1] = 0 === settingsArray[1] ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : settingsArray[1];
+            settingsArray[5] = g();
+            for (var C = 1; C < y - B; C++) settingsArray[C] = settingsArray[C].toString();
+            settingsArray[0] = strings.iV(settingsArray[0]);
+            for (C = y - B - 1; 0 <= C; C--) settingsArray[C] = strings.convertToStringPassword(settingsArray[C]);
+            for (C = y - 1; 0 <= C; C--) x(t[C], settingsArray[C], 1);
             l();
             k()
         }
     };
-    this.a0 = function() {
-        return A
+    this.getCookieStatus = function() {
+        return cookieStatus
     };
-    this.nT = function(C) {
-        A = C;
+    this.setCookieStatus = function(param_CookieStatus) {
+        cookieStatus = param_CookieStatus;
         this.formatSettings()
     };
-    this.setSettings = function(C, E) {
-        5 <= androidVersion || isIOS || (z[C] = E)
+    this.setSettings = function(sIndex, value) {
+        5 <= androidVersion || isIOS || (settingsArray[sIndex] = value)
     };
-    this.getSettings = function(C) {
-        return 5 <= androidVersion || isIOS ? 0 : z[C]
+    this.getSettings = function(sIndex) {
+        return 5 <= androidVersion || isIOS ? 0 : settingsArray[sIndex]
     }
 }
 
@@ -6757,7 +6927,7 @@ function kj() {
                     if (x < maxEntities && 0 === isAlive[x]) g(l);
                     else {
                         var t = n[l + 1];
-                        if (x >= maxEntities && lf(myID) || x < maxEntities && lk(myID, x)) singleplayer ? processAttack(myID, x, t) : dataEncoder.attack(t, x === maxEntities ? myID : x), g(l)
+                        if (x >= maxEntities && bordersNeutral(myID) || x < maxEntities && bordersTarget(myID, x)) singleplayer ? processAttack(myID, x, t) : dataEncoder.attack(t, x === maxEntities ? myID : x), g(l)
                     }
                 }
             }
@@ -6793,7 +6963,7 @@ function z5(g) {
 }
 
 function zB() {
-    statistics.numbers[17] += troops[myID] + attacks.getTotalTroopsSentAway(myID);
+    statisticNumbers.numbers[17] += troops[myID] + attacks.getTotalTroopsSentAway(myID);
     gameResultBox.show(!1, !1);
     eB.tI()
 }
@@ -7168,7 +7338,7 @@ function Attacks() {
     };
     this.set = function(authorID, amount, targetID) {
         var aIndex, sIndex = getStartingAttackIndex(authorID);
-        targetID === myID && statistics.numbers[authorID < playerCount ? 6 : 5]++;
+        targetID === myID && statisticNumbers.numbers[authorID < playerCount ? 6 : 5]++;
         for (aIndex = currentAttackCount[authorID] - 1; 0 <= aIndex; aIndex--)
             if (0 === boatIDs[sIndex + aIndex] && targetIDs[sIndex + aIndex] === targetID) {
                 remainingTroops[sIndex + aIndex] += amount;
@@ -7237,7 +7407,7 @@ function Interest() {
                 troops[aliveEntities[aliveIndex]] += 1 > altInterestRate ? 1 : altInterestRate;
                 interest.limitTroops(aliveEntities[aliveIndex])
             }
-            statistics.numbers[9] += troops[myID] - myOldTroops;
+            statisticNumbers.numbers[9] += troops[myID] - myOldTroops;
             if (0 >= --iTicksLeft) {
                 iTicksLeft = iTicksPerCycle;
                 myOldTroops = troops[myID];
@@ -7245,7 +7415,7 @@ function Interest() {
                     troops[aliveEntities[aliveIndex]] += land[aliveEntities[aliveIndex]];
                     interest.limitTroops(aliveEntities[aliveIndex]);
                 }
-                statistics.numbers[8] += troops[myID] - myOldTroops;
+                statisticNumbers.numbers[8] += troops[myID] - myOldTroops;
             }
         }
     };
@@ -7487,7 +7657,7 @@ function kN() {
         R += O;
         P += T
     };
-    this.lm = function(O,
+    this.onPointermove = function(O,
         T) {
         eA.rQ(O, T)
     };
@@ -7758,7 +7928,7 @@ function WsManager() {
         this.originURLs[0] = "territorial.io";
         var x = fakeRandom.a1N(0);
         fakeRandom.jN(0);
-        for (serverIndex = 1; serverIndex < this.serverCount; serverIndex++) this.originURLs[serverIndex] = characters.generateOriginURLs() + ".com";
+        for (serverIndex = 1; serverIndex < this.serverCount; serverIndex++) this.originURLs[serverIndex] = strings.generateOriginURLs() + ".com";
         fakeRandom.jN(x);
         websockets = Array(this.terriWsCount);
         websocketsInfo = Array(this.terriWsCount);
@@ -7774,7 +7944,7 @@ function WsManager() {
     this.update = function() {
         for (var remoteIndex = this.terriWsCount - 1; 0 <= remoteIndex; remoteIndex--) this.isOpen(remoteIndex) && c4.time > websocketsInfo[remoteIndex].time + 15E3 && dataEncoder.antiDisconnect(remoteIndex, websocketsInfo[remoteIndex].humanLastAction)
     };
-    this.manageFirstAction = function(remote, firstAction) {
+    this.sendWhenWSOpen = function(remote, firstAction) {
         if (!websocketsInfo[remote].wsCreated) return this.createNewTerriWS(remote, firstAction), !1;
         if (websockets[remote].isConnectingOrOpen()) return websockets[remote].setFirstAction(firstAction), websockets[remote].isOpen();
         websockets[remote].end();
@@ -7792,10 +7962,10 @@ function WsManager() {
         isCreatedAndConnectingOrOpen(remote) && websockets[remote].setFirstAction(firstAction)
     };
     this.doFirstAction = function(remote, firstAction) {
-        if (0 === firstAction) playtime.rk()
+        if (0 === firstAction) playtime.completeFirstAction()
         else if (3 > firstAction) dataEncoder.loadLeaderboard(remote, firstAction - 1)
         else if (3 === firstAction) dataEncoder.singlePlayed(remote)
-        else if (4 === firstAction) ji.rk(remote)
+        else if (4 === firstAction) preLobby.completeFirstAction(remote)
         else if (5 === firstAction) {
             if (remote === this.remote) dataEncoder.authenticateGameConnection()
         }
@@ -7865,7 +8035,7 @@ function getTroopHash() {
     return k % 4096
 }
 var mainCanvas, mainCanvasCtx, versionLabel, versionHash, canvasWidth, canvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = !1,
-    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statistics, hv, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, vk, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
+    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statisticNumbers, statistics, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, vk, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
@@ -7892,7 +8062,7 @@ function main() {
         alliances: !1
     });
     timeHash = (new Date).getTime() % 1024;
-    isNotTopWindow = a2A();
+    isNotTopWindow = checkNotTopWindow();
     jq.init();
     userSettings.init();
     setClientID();
@@ -7913,8 +8083,8 @@ function main() {
     gy = new a2H;
     h8 = new ts;
     a5 = new ng;
+    statisticNumbers = new StatisticNumbers;
     statistics = new Statistics;
-    hv = new a2J;
     cookiesPrompt = new CookiesPrompt;
     c4 = new a2K;
     c4.jd();
@@ -7951,16 +8121,16 @@ function init() {
     isMainCalled || main()
 }
 
-function a2A() {
+function checkNotTopWindow() {
     try {
         return window.self !== window.top
-    } catch (g) {
+    } catch (e) {
         return !0
     }
 }
 
 function onError(error) {
-    hasHadError || (hasHadError = !0, error.message ? (errorLineNo = error.lineno, errorMessage = error.message, wsManager.manageFirstAction(0, 6) && dataEncoder.uploadError(0), error = "[A_ERROR " + errorLineNo + "][" + errorMessage + "]", showErrorWarning(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
+    hasHadError || (hasHadError = !0, error.message ? (errorLineNo = error.lineno, errorMessage = error.message, wsManager.sendWhenWSOpen(0, 6) && dataEncoder.uploadError(0), error = "[A_ERROR " + errorLineNo + "][" + errorMessage + "]", showErrorWarning(error)) : (error = "[B_ERROR " + error.type + "][" + (error.srcElement || error.target) + "]", console.log(error)))
 }
 
 function showErrorWarning(error) {
@@ -7968,7 +8138,7 @@ function showErrorWarning(error) {
 }
 
 function onKeydown(g) {
-    "ArrowLeft" === g.key ? gn.w3(3) : "ArrowUp" === g.key ? gn.w3(0) : "ArrowRight" === g.key ? gn.w3(1) : "ArrowDown" === g.key ? gn.w3(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : "c" === g.key && 0 !== clientStatus && hv.a2O()
+    "ArrowLeft" === g.key ? gn.dynamic(3) : "ArrowUp" === g.key ? gn.dynamic(0) : "ArrowRight" === g.key ? gn.dynamic(1) : "ArrowDown" === g.key ? gn.dynamic(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : "c" === g.key && 0 !== clientStatus && statistics.a2O()
 }
 
 function onVisibilitychange() {
@@ -8376,7 +8546,7 @@ function configRealMap(g) {
         currentMapID === getRealMapStartingIndex() + 2 ? k = "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" :
         currentMapID === getRealMapStartingIndex() + 3 ? k = "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C9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo" :
         currentMapID === getRealMapStartingIndex() + 4 && (k = "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okA8BoDWK57x8D8A7FeCC7AoCAKDAUZDeMBAGWK56x8D8A8IeBDogBoIA7WU55x8D8A8L9DAQA6A8We55x7D7BKCAzLC8DCaFi97D8B7LKbDCdD9AUKx7EoPK9CoeXUiA6APFE8B6K6B8DMkC8z7E8B9KoODqoB95WFUPK9AonYoO5XFUQPMyA55aFUPAeEO578K5UWO678A5UWO678A6oJO778A7ADO778CTC6Ab5gSC8AUEAltV8DyE7rV7D7AvqV7D7A67oTUCCemAbrS9AoY78f7UEA9A7C578f7KSC878f7ASDH8V6UFAKTDR8V6UZDR8V6UZDR8V6eYDR8V6eZC978f6eTAeDC978f6eTD578f6UTD678f6eRD778f66AeEA6D878gR78gQ78qQ78qQ78qQ78qR787Vl9CK79MI79qG79qE798UM58APpUC57AjpT8Z7A55pT6Z8A65rTg58A75qTfCAp5UH5pTfDAzyA75qTfDAyMAQ86TLWAQ86TBXAa8z9BXAk8z88MoE68z86MyE686SzZA5686SfaA6688R9M6A869B76M6A769V7pbA669p7fcA569z7VdAvAQ68mQSrP78rP78sP68rP78rP68sP68sPmvPmwPcxPS5yDApm86Vl866Nm68NZ8ABdLc58ABdpZ58ABdzY58ACd9L958ADd8L858UCd8L758eCd9L658eCezK58eDezI58oDeymAe66586AXFDyHAyBAUFFZ86AXIDKKAUKAoCEt88ANNCegEZ89AXNCKhEP9KBfyQD7EJIBonD89KBAqD7B7AS9oIE6DUSAc9yEFAeB9AdyC9B8AnzC6CAD9zBUEA7CeC95eJA6An99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99ACeAT99AT99AT98Ad97Ax96Ax97AT99AABAT99AJ99AJ99AH6AC997Ax9yF99yE996A55lAO57A55lAY56A55lAY56A5bUBaoCt7Aq7UCaUEt7Aq7KDBUBY8A5t6Aq7KKAyFYyEt6Aq7KKAoHYoCt8A5a9BUBA97EAyhAMiClEA6DKCWoBAKf7EA7C9AgYDo5yF6sA6C7AqaDo5eH6qA8C6AqaDy5UH6qA9CyEW6D6FKC6wA8CyEW6D7FAG6sA8CyEWynFAG6rA8CyCW6EKzA56qA7CyDWKv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");
-    k = characters.iX(k);
+    k = strings.iX(k);
     var n = mapInfo.getValuebyID(currentMapID).a2t,
         l = mapInfo.getValuebyID(currentMapID).a2u;
     currentMapWidth = 1E3 * k[0] + k[1];
@@ -8768,7 +8938,7 @@ function kk() {
         return {
             f7: canvasWidth - y - B,
             f8: bufferLength,
-            i4: y,
+            buttonMargin: y,
             nP: Math.floor(.35 * y),
             f9: canvasWidth - A - B,
             i5: A
@@ -8788,7 +8958,7 @@ function kk() {
         mainCanvasCtx.fillRect(y + B - 2, A, 2, C);
         mainCanvasCtx.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
     }
-    this.xn = 1;
+    this.selectedRemote = 1;
     this.a0g = this.a4F = this.a1L = !1;
     var x = -1,
         t = !1,
@@ -8892,8 +9062,7 @@ function kk() {
             var C = n();
             if (t) {
                 for (B = 1; B < z.length; B++)
-                    if (k(y,
-                            A, C, B)) return 1 === z[B].id ? (jt.xn = 1 === jt.xn ? 2 : 2 === jt.xn ? wsManager.serverCount : 1, z[1].name = "Lobby " + (jt.xn === wsManager.serverCount ? "1B" : jt.xn), c4.canvasDirty = !0) : 2 === z[B].id ? (jt.a1L = !jt.a1L, z[B].green = jt.a1L ? 130 : 0, g(), c4.canvasDirty = !0) : 3 === z[B].id ? (jt.a4F = !jt.a4F, z[B].green = jt.a4F ? 130 : 0, g(), c4.canvasDirty = !0) : 4 === z[B].id ? (jt.a0g = !jt.a0g, z[B].green = jt.a0g ? 130 : 0, g(), jq.xa(), c4.canvasDirty = !0) : 5 === z[B].id ? (openLinkBox.init(tutorialLink, !0), openLinkBox.init(tutorialLink, !1)) : 6 === z[B].id ? (openLinkBox.init(leaderboardLinks[0], !0), openLinkBox.init(leaderboardLinks[0], !1)) : 7 === z[B].id ? (openLinkBox.init(leaderboardLinks[1], !0), openLinkBox.init(leaderboardLinks[1], !1)) : 8 === z[B].id ? (openLinkBox.init(privacyPolicyLink, !0), openLinkBox.init(privacyPolicyLink, !1)) : 9 === z[B].id &&
+                    if (k(y, A, C, B)) return 1 === z[B].id ? (jt.selectedRemote = 1 === jt.selectedRemote ? 2 : 2 === jt.selectedRemote ? wsManager.serverCount : 1, z[1].name = "Lobby " + (jt.selectedRemote === wsManager.serverCount ? "1B" : jt.selectedRemote), c4.canvasDirty = !0) : 2 === z[B].id ? (jt.a1L = !jt.a1L, z[B].green = jt.a1L ? 130 : 0, g(), c4.canvasDirty = !0) : 3 === z[B].id ? (jt.a4F = !jt.a4F, z[B].green = jt.a4F ? 130 : 0, g(), c4.canvasDirty = !0) : 4 === z[B].id ? (jt.a0g = !jt.a0g, z[B].green = jt.a0g ? 130 : 0, g(), jq.xa(), c4.canvasDirty = !0) : 5 === z[B].id ? (openLinkBox.init(tutorialLink, !0), openLinkBox.init(tutorialLink, !1)) : 6 === z[B].id ? (openLinkBox.init(leaderboardLinks[0], !0), openLinkBox.init(leaderboardLinks[0], !1)) : 7 === z[B].id ? (openLinkBox.init(leaderboardLinks[1], !0), openLinkBox.init(leaderboardLinks[1], !1)) : 8 === z[B].id ? (openLinkBox.init(privacyPolicyLink, !0), openLinkBox.init(privacyPolicyLink, !1)) : 9 === z[B].id &&
                         (openLinkBox.init(cookiePolicyLink, !0), openLinkBox.init(cookiePolicyLink, !1)), !0;
                 t = !1;
                 c4.canvasDirty = !0;
@@ -8902,7 +9071,7 @@ function kk() {
             return k(y, A, C, 0) ? (t = !0, c4.canvasDirty = !0) : !1
         }
     };
-    this.lm = function(y, A) {
+    this.onPointermove = function(y, A) {
         var B;
         if (!(7 <= aJ.getState())) {
             var C = n();
@@ -8922,7 +9091,7 @@ function kk() {
             var A = n();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            l(A.f7, A.f8, A.i4, A.nP, z[0].red, z[0].green, z[0].blue, 0 === x, z[0].name, .6);
+            l(A.f7, A.f8, A.buttonMargin, A.nP, z[0].red, z[0].green, z[0].blue, 0 === x, z[0].name, .6);
             if (t) {
                 var B = z.length;
                 for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nP - 2 * y, A.i5, A.nP, z[y].red, z[y].green, z[y].blue, x === y, z[y].name,
@@ -8949,13 +9118,13 @@ function kT() {
     function k() {
         if (-1 !== l)
             if (0 !== clientStatus && eV.h0()) {
-                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gridWidth += t[A], gridHeight += z[A], eA.lm(t[A], z[A]), gj.rI());
+                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gridWidth += t[A], gridHeight += z[A], eA.onPointermove(t[A], z[A]), gj.rI());
                 y ? c4.canvasDirty = !0 : gn.go()
             } else gn.go()
     }
     var n = !1,
         l, x, t, z;
-    this.w3 = function(y) {
+    this.dynamic = function(y) {
         0 !== clientStatus && eV.h0() && (n || g(), x[y] = !0, -1 === l && (l = setInterval(k, 20), k()))
     };
     this.a2Q = function(y) {
@@ -9171,9 +9340,9 @@ function kc() {
             setCanvasDisplayVariables();
             mainLeaderboardIcon.init();
             jh.init();
-            jk.setCanvasVariables();
+            nameInputBar.setCanvasVariables();
             vk.init();
-            ji.setCanvasVariables();
+            preLobby.setCanvasVariables();
             playtime.setCanvasVariables();
             jf.setCanvasVariables();
             cookiesPrompt.setCanvasVariables();
@@ -9191,13 +9360,13 @@ function kc() {
                 attacksBar.setCanvasVariables();
                 c2.setCanvasVariables();
                 hu.l1();
-                hv.setCanvasVariables();
+                statistics.setCanvasVariables();
                 eA.setCanvasVariables();
                 gameResultBox.setCanvasVariables();
                 eT.setCanvasVariables();
                 gj.rI();        
             } else {
-                if (0 === aJ.getState()) jk.toggleVisibilityOn(0, !0)
+                if (0 === aJ.getState()) nameInputBar.toggleVisibility(0, !0)
                 else if (2 === aJ.getState()) singleSettings.setCanvasVariables()
                 else if (3 === aJ.getState()) showError.setCanvasVariables();
                 aJ.vg();
@@ -9301,7 +9470,7 @@ function kW() {
         B = pixel.toY(K);
         t = x = pixel.toIndex(z, y);
         E = attacks.findAttackIndexFromBoatID(n, F); - 1 === E ? (k(), eK.removeEntry(n, F), G = !1) : (l = attacks.getRemainingTroopsFromIndex(n, E), G = !0);
-        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statistics.numbers[15] += G), l <= neutralLandCost ? (n === myID && (statistics.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
+        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statisticNumbers.numbers[15] += G), l <= neutralLandCost ? (n === myID && (statisticNumbers.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
             if (G = pixel.toIndex(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.toX(x), y = pixel.toY(x),
                 eK.g0(C, x), G = pixel.canOwn(x) ? !1 : !0, G) pixel.isWater(x) && pixel.changeToBoatPixel(x, n);
             else a: {
@@ -9314,12 +9483,12 @@ function kW() {
                     }
                     if (!isNotTeamate(n, G)) {
                         N = land[G] * maxTroopsToLandRatio - troops[G];
-                        0 >= N || (N = l > N ? N : l, l -= N, n === myID && (announcements.n8(N, G), statistics.numbers[16] += N), G === myID && (announcements.nA(N, n), statistics.numbers[10] += N), troops[G] += N);
+                        0 >= N || (N = l > N ? N : l, l -= N, n === myID && (announcements.giveDonation(N, G), statisticNumbers.numbers[16] += N), G === myID && (announcements.receiveDonation(N, n), statisticNumbers.numbers[10] += N), troops[G] += N);
                         g(!0);
                         break a
                     }
                 }
-                n === myID && (statistics.numbers[13] += l);eK.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.cR(n, !0)
+                n === myID && (statisticNumbers.numbers[13] += l);eK.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.cR(n, !0)
             }
     };
     this.g4 = function(G, N) {
@@ -9459,7 +9628,7 @@ function TerriWS() {
     }
 }
 
-function Statistics() {
+function StatisticNumbers() {
     this.cV = 501;
     this.a5P = new Uint32Array(this.cV);
     this.s6 = new Uint32Array(this.cV);
@@ -9481,7 +9650,7 @@ function Statistics() {
         0 < this.dV-- || this.a5U()
     };
     this.a5U = function() {
-        0 !== isAlive[myID] && (this.a5P[this.m4] = land[myID], this.s6[this.m4] = troops[myID], this.tT[this.m4] = interest.getInterestRate(myID), this.a5V(this.m4), this.m4++, this.m4 === this.cV && this.a5W(), this.dV = this.a5Q - 1, hv.updateRenderObject())
+        0 !== isAlive[myID] && (this.a5P[this.m4] = land[myID], this.s6[this.m4] = troops[myID], this.tT[this.m4] = interest.getInterestRate(myID), this.a5V(this.m4), this.m4++, this.m4 === this.cV && this.a5W(), this.dV = this.a5Q - 1, statistics.updateRenderObject())
     };
     this.a5W = function() {
         this.a5S();
@@ -9504,15 +9673,15 @@ function Statistics() {
     }
 }
 
-function a2J() {
-    this.bs = this.qI = this.a5Y = this.a5X = this.xJ = this.nQ = this.nP = this.uT = this.uS = this.i5 = this.i4 = this.height = this.width = 0;
-    this.lr = ["Territory", "Balance", "Interest", "Numbers"];
-    this.hidden = !1;
+function Statistics() {
+    this.bs = this.qI = this.a5Y = this.a5X = this.xJ = this.buttonHeight = this.nP = this.uT = this.uS = this.i5 = this.buttonMargin = this.height = this.width = 0;
+    this.buttonLabels = ["Territory", "Balance", "Interest", "Numbers"];
+    this.visible = !1;
     this.a5Z = -1;
     this.a5a = !1;
     this.a5b = [0, 0];
     this.init = function() {
-        this.hidden = !1;
+        this.visible = !1;
         this.a5Z = -1;
         this.a5a = !1;
         this.setCanvasVariables()
@@ -9523,19 +9692,19 @@ function a2J() {
         this.qI = Math.floor(1 + .006 * this.width);
         this.width -= isZoom && canvasWidth < canvasHeight ? 2 * m5 + this.qI : 0;
         this.height = Math.floor(this.width / 1.618);
-        this.i4 =
+        this.buttonMargin =
             Math.floor(1 + .02 * this.width);
         this.nP = this.i5 = Math.floor(1 + .04 * this.width);
-        this.nQ = Math.floor(1 + .075 * this.width);
+        this.buttonHeight = Math.floor(1 + .075 * this.width);
         this.a5X = Math.floor(this.width * (isZoom ? .028 : .02));
         this.a5X = 6 > this.a5X ? 6 : this.a5X;
         this.a5Y = Math.floor(.028 * this.width);
         this.a5Y = 6 > this.a5Y ? 6 : this.a5Y;
-        this.xJ = this.height - 2 * this.nP - this.nQ;
-        this.hidden && this.a5c()
+        this.xJ = this.height - 2 * this.nP - this.buttonHeight;
+        this.visible && this.a5c()
     };
     this.mouseDown = function(g, k) {
-        if (!this.hidden) return !1;
+        if (!this.visible) return !1;
         var n = g,
             l = k;
         g -= divideFloor(prevClientWidth - this.width, 2);
@@ -9545,9 +9714,9 @@ function a2J() {
             this.end();
             return !0
         }
-        if (k < this.height - this.nQ) return this.a5a = !0, this.a5Z = (g - 2 * this.i4 - this.uS) / this.uT, !0;
-        n = Math.floor(g / (this.width / this.lr.length));
-        n = 0 > n ? 0 : n >= this.lr.length ? this.lr.length - 1 : n;
+        if (k < this.height - this.buttonHeight) return this.a5a = !0, this.a5Z = (g - 2 * this.buttonMargin - this.uS) / this.uT, !0;
+        n = Math.floor(g / (this.width / this.buttonLabels.length));
+        n = 0 > n ? 0 : n >= this.buttonLabels.length ? this.buttonLabels.length - 1 : n;
         n !== this.bs && (this.bs = n, this.a5c(), c4.canvasDirty = !0);
         return !0
     };
@@ -9556,13 +9725,13 @@ function a2J() {
             k = Math.floor((this.a5b[1] + gridHeight) / scaleFactor);
         1 > g || 1 > k || g >= currentMapWidth - 1 || k >= currentMapHeight - 1 || console.log(g + " " + k)
     };
-    this.lm = function(g, k) {
+    this.onPointermove = function(g, k) {
         this.a5b[0] = g;
         this.a5b[1] = k;
-        if (this.hidden && this.a5a) {
+        if (this.visible && this.a5a) {
             g -= divideFloor(prevClientWidth - this.width, 2);
             var n = this.a5Z;
-            this.a5Z = (g - 2 * this.i4 - this.uS) / this.uT;
+            this.a5Z = (g - 2 * this.buttonMargin - this.uS) / this.uT;
             if (0 <= this.a5Z && 1 >= this.a5Z ||
                 0 <= n && 1 >= n) c4.canvasDirty = !0;
             return !0
@@ -9573,26 +9742,26 @@ function a2J() {
         this.a5a && (this.a5a = !1)
     };
     this.m0 = function() {
-        this.hidden ? this.end() : this.show()
+        this.visible ? this.end() : this.show()
     };
     this.show = function() {
-        2 > statistics.m4 || (this.hidden = !0, this.a5c())
+        2 > statisticNumbers.m4 || (this.visible = !0, this.a5c())
     };
     this.end = function() {
-        this.hidden = !1;
+        this.visible = !1;
         this.a5Z = -1
     };
     this.a5c = function() {
-        2 > this.bs ? this.uS = c2.measureText(attacksBar.splitText(statistics.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = c2.measureText(eB.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
-        this.uT = this.width - 2 * this.i4 - this.uS - this.i5
+        2 > this.bs ? this.uS = c2.measureText(attacksBar.splitText(statisticNumbers.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = c2.measureText(eB.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
+        this.uT = this.width - 2 * this.buttonMargin - this.uS - this.i5
     };
     this.updateRenderObject = function() {
-        this.hidden && this.a5c()
+        this.visible && this.a5c()
     };
     this.drawCanvasImage = function() {
-        this.hidden && this.nW()
+        this.visible && this.drawPrompt()
     };
-    this.nW = function() {
+    this.drawPrompt = function() {
         var g = divideFloor(prevClientWidth - this.width, 2),
             k = divideFloor(prevClientHeight - this.height, 2);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
@@ -9602,7 +9771,7 @@ function a2J() {
         mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
         mainCanvasCtx.textAlign = rightAlign;
         mainCanvasCtx.font = fontWeightBold + this.a5X + fontSizeArial;
-        0 === this.bs ? this.a5e(statistics.a5P, g, k) : 1 === this.bs ? this.a5e(statistics.s6, g, k) : 2 === this.bs ? this.a5f(g, k) : 3 === this.bs && (this.a5g(g, k), this.a5h(g, k));
+        0 === this.bs ? this.a5e(statisticNumbers.a5P, g, k) : 1 === this.bs ? this.a5e(statisticNumbers.s6, g, k) : 2 === this.bs ? this.a5f(g, k) : 3 === this.bs && (this.a5g(g, k), this.a5h(g, k));
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.a5d = function() {
@@ -9612,111 +9781,111 @@ function a2J() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.font = fontWeightBold + this.a5Y +
             fontSizeArial;
-        var g = this.width / this.lr.length;
+        var g = this.width / this.buttonLabels.length;
         mainCanvasCtx.fillStyle = greenSemiTransparent;
-        mainCanvasCtx.fillRect(this.bs * g, this.height - this.nQ, g, this.nQ);
+        mainCanvasCtx.fillRect(this.bs * g, this.height - this.buttonHeight, g, this.buttonHeight);
         mainCanvasCtx.fillStyle = whiteRGB2;
-        for (var k = this.lr.length - 1; 0 <= k; k--) mainCanvasCtx.strokeRect(k * g, this.height - this.nQ, g, this.nQ), mainCanvasCtx.fillText(this.lr[k], (k + .5) * g, this.height - .46 * this.nQ)
+        for (var k = this.buttonLabels.length - 1; 0 <= k; k--) mainCanvasCtx.strokeRect(k * g, this.height - this.buttonHeight, g, this.buttonHeight), mainCanvasCtx.fillText(this.buttonLabels[k], (k + .5) * g, this.height - .46 * this.buttonHeight)
     };
     this.a5e = function(g, k, n) {
-        var l = statistics.max[this.bs];
-        mainCanvasCtx.setTransform(1, 0, 0, 1, k + 2 * this.i4 + this.uS, n + this.nP);
+        var l = statisticNumbers.max[this.bs];
+        mainCanvasCtx.setTransform(1, 0, 0, 1, k + 2 * this.buttonMargin + this.uS, n + this.nP);
         mainCanvasCtx.lineWidth = 2;
         k = this.xJ / Math.sqrt(l);
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.moveTo(this.uT, this.xJ - k * Math.sqrt(g[statistics.m4 - 1]));
-        for (n = statistics.m4 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.uT / (statistics.m4 -
+        mainCanvasCtx.moveTo(this.uT, this.xJ - k * Math.sqrt(g[statisticNumbers.m4 - 1]));
+        for (n = statisticNumbers.m4 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.uT / (statisticNumbers.m4 -
             1), this.xJ - k * Math.sqrt(g[n]));
         mainCanvasCtx.stroke();
         g = this.m9(g, k, .5);
-        .95 > g && mainCanvasCtx.fillText(attacksBar.splitText(l), -this.i4, 0);
-        .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(l / 4)), -this.i4, Math.floor(this.xJ / 2));
-        .05 < g && mainCanvasCtx.fillText("0", -this.i4, this.xJ)
+        .95 > g && mainCanvasCtx.fillText(attacksBar.splitText(l), -this.buttonMargin, 0);
+        .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(l / 4)), -this.buttonMargin, Math.floor(this.xJ / 2));
+        .05 < g && mainCanvasCtx.fillText("0", -this.buttonMargin, this.xJ)
     };
     this.a5f = function(g, k) {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g + 2 * this.i4 + this.uS, k + this.nP);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, g + 2 * this.buttonMargin + this.uS, k + this.nP);
         mainCanvasCtx.lineWidth = 2;
-        var n = this.xJ / statistics.max[this.bs];
+        var n = this.xJ / statisticNumbers.max[this.bs];
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.moveTo(this.uT, this.xJ - n * statistics.tT[statistics.m4 - 1]);
-        for (var l = statistics.m4 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.uT / (statistics.m4 - 1), this.xJ - n * statistics.tT[l]);
+        mainCanvasCtx.moveTo(this.uT, this.xJ - n * statisticNumbers.tT[statisticNumbers.m4 - 1]);
+        for (var l = statisticNumbers.m4 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.uT / (statisticNumbers.m4 - 1), this.xJ - n * statisticNumbers.tT[l]);
         mainCanvasCtx.stroke();
         n =
-            this.m9(statistics.tT, n, 1);
-        l = statistics.max[this.bs] / 100;
-        .95 > n && mainCanvasCtx.fillText(eB.nG(l, 2), -this.i4, 0);
-        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nG(l / 2, 2), -this.i4, Math.floor(this.xJ / 2));
-        .05 < n && mainCanvasCtx.fillText(eB.nG(0, 2), -this.i4, this.xJ)
+            this.m9(statisticNumbers.tT, n, 1);
+        l = statisticNumbers.max[this.bs] / 100;
+        .95 > n && mainCanvasCtx.fillText(eB.nG(l, 2), -this.buttonMargin, 0);
+        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nG(l / 2, 2), -this.buttonMargin, Math.floor(this.xJ / 2));
+        .05 < n && mainCanvasCtx.fillText(eB.nG(0, 2), -this.buttonMargin, this.xJ)
     };
     this.a5g = function(g, k) {
         var n;
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .34 * this.width, k + 2 * this.nP);
         mainCanvasCtx.textAlign = rightAlign;
-        var l = this.height - 4 * this.nP - this.nQ;
-        for (n = 7; 0 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n], 0, n * l / 7);
+        var l = this.height - 4 * this.nP - this.buttonHeight;
+        for (n = 7; 0 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n], 0, n * l / 7);
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .39 * this.width, k + 2 * this.nP);
         mainCanvasCtx.textAlign = leftAlign;
-        n = statistics.numbers[1];
-        mainCanvasCtx.fillText(eB.nG(statistics.numbers[0] / (10 * (1 > n ? 1 :
+        n = statisticNumbers.numbers[1];
+        mainCanvasCtx.fillText(eB.nG(statisticNumbers.numbers[0] / (10 * (1 > n ? 1 :
             n)), 1), 0, 0);
-        for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statistics.numbers[n].toString(), 0, n * l / 7);
-        mainCanvasCtx.fillText(eB.nG(100 * (1 - land[myID] / statistics.numbers[7]), 0), 0, l)
+        for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.numbers[n].toString(), 0, n * l / 7);
+        mainCanvasCtx.fillText(eB.nG(100 * (1 - land[myID] / statisticNumbers.numbers[7]), 0), 0, l)
     };
     this.a5h = function(g, k) {
         var n;
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .74 * this.width, k + 2 * this.nP);
         mainCanvasCtx.textAlign = rightAlign;
-        var l = this.height - 4 * this.nP - this.nQ;
+        var l = this.height - 4 * this.nP - this.buttonHeight;
         mainCanvasCtx.fillStyle = greenRGB;
-        for (n = 2; 0 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n + 8], 0, n * l / 9);
+        for (n = 2; 0 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n + 8], 0, n * l / 9);
         mainCanvasCtx.fillStyle = limeGreenRGB;
-        mainCanvasCtx.fillText(statistics.a5R[11], 0, 3 * l / 9);
+        mainCanvasCtx.fillText(statisticNumbers.a5R[11], 0, 3 * l / 9);
         mainCanvasCtx.fillStyle = redBrightRGB;
-        for (n = 8; 4 <= n; n--) mainCanvasCtx.fillText(statistics.a5R[n + 8], 0, n * l / 9);
+        for (n = 8; 4 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n + 8], 0, n * l / 9);
         mainCanvasCtx.fillStyle = redLightRGB;
-        mainCanvasCtx.fillText(statistics.a5R[17], 0, 9 * l / 9);
+        mainCanvasCtx.fillText(statisticNumbers.a5R[17], 0, 9 * l / 9);
         mainCanvasCtx.fillStyle = greenRGB;
-        n = attacksBar.splitText(statistics.numbers[8] +
-            statistics.numbers[9] + statistics.numbers[10] + statistics.numbers[11]);
+        n = attacksBar.splitText(statisticNumbers.numbers[8] +
+            statisticNumbers.numbers[9] + statisticNumbers.numbers[10] + statisticNumbers.numbers[11]);
         var x = mainCanvasCtx.measureText(n).width;
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .79 * this.width + x, k + 2 * this.nP);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[8]), 0, 0);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[9]), 0, 1 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[10]), 0, 2 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[8]), 0, 0);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[9]), 0, 1 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[10]), 0, 2 * l / 9);
         mainCanvasCtx.fillStyle = limeGreenRGB;
         mainCanvasCtx.fillText(n, 0, 3 * l / 9);
         mainCanvasCtx.fillStyle = redBrightRGB;
-        n = statistics.numbers[13] - attacks.getTotalTroopsAttacking(myID);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[12]), 0, 4 * l / 9);
+        n = statisticNumbers.numbers[13] - attacks.getTotalTroopsAttacking(myID);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[12]), 0, 4 * l / 9);
         mainCanvasCtx.fillText(attacksBar.splitText(n), 0, 5 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[14]), 0, 6 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[15]), 0, 7 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statistics.numbers[16]), 0, 8 * l / 9);
-        n = statistics.numbers[12] + n + statistics.numbers[14] +
-            statistics.numbers[15] + statistics.numbers[16] + statistics.numbers[17];
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[14]), 0, 6 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[15]), 0, 7 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[16]), 0, 8 * l / 9);
+        n = statisticNumbers.numbers[12] + n + statisticNumbers.numbers[14] +
+            statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
         mainCanvasCtx.fillStyle = redLightRGB;
         mainCanvasCtx.fillText(attacksBar.splitText(n), 0, l);
         mainCanvasCtx.fillStyle = whiteRGB2
     };
     this.m9 = function(g, k, n) {
         if (0 > this.a5Z || 1 < this.a5Z) return .25;
-        var l = this.a5Z * (statistics.m4 - 1),
+        var l = this.a5Z * (statisticNumbers.m4 - 1),
             x = Math.floor(l),
             t = g[x];
-        t += (l - x) * (g[x < statistics.m4 - 1 ? x + 1 : x] - t);
+        t += (l - x) * (g[x < statisticNumbers.m4 - 1 ? x + 1 : x] - t);
         mainCanvasCtx.strokeStyle = whiteMoreTransparent;
-        .04 < this.a5Z && this.a5n(0, this.xJ - k * Math.pow(t, n), l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n));
-        .04 < t / statistics.max[this.bs] && this.a5n(l * this.uT / (statistics.m4 - 1), this.xJ, l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n));
+        .04 < this.a5Z && this.a5n(0, this.xJ - k * Math.pow(t, n), l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n));
+        .04 < t / statisticNumbers.max[this.bs] && this.a5n(l * this.uT / (statisticNumbers.m4 - 1), this.xJ, l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n));
         mainCanvasCtx.fillStyle = redBrightMoreOpaque;
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.arc(l * this.uT / (statistics.m4 - 1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
+        mainCanvasCtx.arc(l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
         mainCanvasCtx.fill();
         g = this.a5Z * c4.tV();
         g = 0 === isAlive[myID] ? Math.floor(g * gameResultBox.tb) : Math.floor(g * c4.ticksElapsed());
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillText(1 === n ? eB.nG(t / 100, 2) : attacksBar.splitText(Math.floor(t)), -this.i4, this.xJ - k * Math.pow(t, n));
+        mainCanvasCtx.fillText(1 === n ? eB.nG(t / 100, 2) : attacksBar.splitText(Math.floor(t)), -this.buttonMargin, this.xJ - k * Math.pow(t, n));
         mainCanvasCtx.textAlign = centerAlign;
-        mainCanvasCtx.fillText(eB.getITicksRemaining(g), l * this.uT / (statistics.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
+        mainCanvasCtx.fillText(eB.getITicksRemaining(g), l * this.uT / (statisticNumbers.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
         mainCanvasCtx.textAlign = rightAlign;
         return k * Math.pow(t, n) / this.xJ
     };
@@ -9956,7 +10125,7 @@ function Teams() {
         }
     };    
     this.distributeBotsMulti = function() {//added neutral bots
-        var neutralBots = true;
+        var neutralBots = false;
 
         for (var i = playerCount; i < maxEntities; i++){
             if (!neutralBots){
@@ -10104,40 +10273,45 @@ function isNotTeamate(player1, player2) {
     return 0 === teams.teamArray[player1] || teams.teamArray[player1] !== teams.teamArray[player2]
 }
 
-function lg(g, k) {
-    var n, l = attacks.getCurrentAttackCount(g);
-    for (n = 0; n < l; n++)
-        if (0 === attacks.getBoatIDFromIndex(g, n)) {
-            var x = attacks.getTargetFromIndex(g, n);
-            if (x === maxEntities) {
-                if (k === maxEntities) break;
-                if (lf(k)) return !0
-            } else if (k === maxEntities) {
-                if (lf(x)) return !0
-            } else if (lk(k, x)) return !0
+function target1BordersAttackingTarget2(authorID, targetID) {
+    var aIndex, currentAttackCount = attacks.getCurrentAttackCount(authorID);
+    for (aIndex = 0; aIndex < currentAttackCount; aIndex++)
+        if (0 === attacks.getBoatIDFromIndex(authorID, aIndex)) {
+            var targetID = attacks.getTargetFromIndex(authorID, aIndex);
+            if (targetID === maxEntities) {
+                if (targetID === maxEntities) break;
+                if (bordersNeutral(targetID)) return !0
+            } else if (targetID === maxEntities) {
+                if (bordersNeutral(targetID)) return !0
+            } else if (bordersTarget(targetID, targetID)) return !0
         } return !1
 }
 
-function lf(g) {
-    var k, n, l = landBorderPixels[g].length;
-    for (k = 3; 0 <= k; k--) {
-        var x = offset[k];
-        for (n = 0; n < l; n++)
-            if (pixel.isNeutral(landBorderPixels[g][n] + x)) return !0
+function bordersNeutral(id) {
+    var side, bIndex, borderLength = landBorderPixels[id].length;
+    for (side = 3; 0 <= side; side--) {
+        var mcDir = offset[side];
+        for (bIndex = 0; bIndex < borderLength; bIndex++)
+            if (pixel.isNeutral(landBorderPixels[id][bIndex] + mcDir)) return !0
     }
     return !1
 }
 
-function lk(g, k) {
-    var n;
-    var l = landBorderPixels[g].length;
-    var x = landBorderPixels[k].length;
-    x < l && (l = g, g = k, k = l, l = x);
-    for (n = 3; 0 <= n; n--) {
-        var t = offset[n];
-        for (x = 0; x < l; x++) {
-            var z = landBorderPixels[g][x] + t;
-            if (pixel.entityControlled(z) && pixel.getOwner(z) === k) return !0
+function bordersTarget(authorID, targetID) {
+    var side;
+    var borderLength1 = landBorderPixels[authorID].length;
+    var borderLength2 = landBorderPixels[targetID].length;
+    if (borderLength2 < borderLength1) {
+        borderLength1 = authorID;
+        authorID = targetID;
+        targetID = borderLength1;
+        borderLength1 = borderLength2
+    };
+    for (side = 3; 0 <= side; side--) {
+        var mcDir = offset[side];
+        for (var bIndex = 0; bIndex < borderLength1; bIndex++) {
+            var pIndex = landBorderPixels[authorID][bIndex] + mcDir;
+            if (pixel.entityControlled(pIndex) && pixel.getOwner(pIndex) === targetID) return !0
         }
     }
     return !1
@@ -10185,10 +10359,10 @@ function a2K() {
     };
     this.a6U = function() {
         jf.update();
-        ji.update();
+        preLobby.update();
         jq.update();
         wsManager.update();
-        setGameOrigin.wH();
+        setGameOrigin.processGameInitData();
         mainLeaderboard.update();
         this.canvasDirty && (this.canvasDirty = !1, aJ.drawCanvasImage())
     };
@@ -10316,7 +10490,7 @@ function kY() {
 function DataDecoder() {
     function decodeNames(length, array) {
         for (var name = Array(length), nameIndex = 0; nameIndex < length; nameIndex++) name[nameIndex] = decoder(array, 10);
-        return characters.convertToString(name)
+        return strings.convertToString(name)
     }
 
     function decoder(array, bitsToDecode) {
@@ -10427,7 +10601,7 @@ function DataDecoder() {
                                             if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && eQ.a1W(1, [data], !0)) {
                                                 eA.showIcon(data, 3, 96);
                                                 eA.showIcon(requester, 4, 96);
-                                                announcements.requestToAttack(data, requester);
+                                                announcements.requestedToAttack(data, requester);
                                             }
                                         }
                                     }
@@ -10505,7 +10679,7 @@ function DataDecoder() {
         wsManager.remote = remote;
         setGameOrigin.gameHash = decoder(array, 10);
         setGameOrigin.myID = decoder(array, 2 === check1v1 ? 9 : 1);
-        wsManager.manageFirstAction(remote, 5) && dataEncoder.authenticateGameConnection();
+        wsManager.sendWhenWSOpen(remote, 5) && dataEncoder.authenticateGameConnection();
         return !0
     };
     this.a6c = function(x, t) {
@@ -10568,10 +10742,10 @@ function kf() {
     function g(k, n, l, x, t) {
         k >= customMapID || (currentMapID === k && (mainCanvasCtx.fillStyle = blueMoreOpaque, mainCanvasCtx.fillRect(n, l, x, t), mainCanvasCtx.fillStyle = whiteRGB2), mainCanvasCtx.strokeRect(n, l, x, t), mainCanvasCtx.fillText(mapInfo.getValuebyID(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
     }
-    this.hidden = !1;
+    this.visible = !1;
     this.xK = [0, 0, 0, 0];
     this.show = function() {
-        this.hidden = !0;
+        this.visible = !0;
         this.setCanvasVariables();
         c4.canvasDirty = !0
     };
@@ -10585,15 +10759,15 @@ function kf() {
             2);
         this.xK[1] = Math.floor((canvasHeight - this.xK[3]) / 2)
     };
-    this.lm = function(k, n) {
+    this.onPointermove = function(k, n) {
         return k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3] ? !1 : !0
     };
     this.mouseDown = function(k, n) {
         var l = divideFloor(customMapID + customMapID % 2, 2);
         c4.canvasDirty = !0;
-        if (k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3]) return this.hidden = !1, !0;
+        if (k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3]) return this.visible = !1, !0;
         var x = Math.floor(.13 * this.xK[3]);
-        if (n < this.xK[1] + x) return k > this.xK[0] + this.xK[2] - 1.2 * x && (this.hidden = !1), !0;
+        if (n < this.xK[1] + x) return k > this.xK[0] + this.xK[2] - 1.2 * x && (this.visible = !1), !0;
         x = Math.floor(l * (n - this.xK[1] - x) / (this.xK[3] - x));
         x = 0 > x ? 0 : x > l - 1 ? l - 1 : x;
         k > this.xK[0] + this.xK[2] /
@@ -10666,7 +10840,7 @@ function DataEncoder() {
         wsManager.send(0, array)
     };
     this.joinLobby = function(lobbyID) {
-        var nameCharcode = characters.convertToCharcode(nameInput.getInput()),
+        var nameCharcode = strings.convertToCharcode(nameInput.getInput()),
             nameLength = nameCharcode.length,
             array = new Uint8Array(getArraySize(105 + 10 * nameLength));
         arrayIndex = 0;
@@ -10701,7 +10875,7 @@ function DataEncoder() {
         encoder(array, 3, 7);
         encoder(array, 3, 1);
         encoder(array, 14, errorLineNo);
-        var charcodeMessage = characters.convertToCharcode(errorMessage),
+        var charcodeMessage = strings.convertToCharcode(errorMessage),
             messageLength = getMin(charcodeMessage.length, 77);
         encoder(array, 7, messageLength);
         for (mIndex = 0; mIndex < messageLength; mIndex++) encoder(array, 10, charcodeMessage[mIndex]);
