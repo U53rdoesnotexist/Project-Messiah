@@ -4689,7 +4689,7 @@ function ts() {
 
 function IntelliAttack() {
     this.checkIntelli = function() {
-        if (1 === clientStatus && !(2 === playerStatus[myID] || 0 === isAlive[myID] || inSpawn || attacks.isUnderAttackCap(myID) && 0 !== landBorderPixels[myID].length)) this.startIntelli()
+        if (1 === clientStatus && 2 !== playerStatus[myID] && 0 !== isAlive[myID] && !inSpawn && attacks.isUnderAttackCap(myID) && 0 !== landBorderPixels[myID].length) this.startIntelli()
     };
     this.startIntelli = function() {
         var targets = this.getBorderingEntities(myID, !teamGame).filter(targetID => targetID != maxEntities);
@@ -4697,7 +4697,7 @@ function IntelliAttack() {
         0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(targets[0]))
     };
     this.doIntelliAttack = function(target) {
-        announcements.low_balance();
+        announcements.lowBalance();
         singleplayer ? processAttack(myID, target.player, target.ratio) : dataEncoder.attack(target.ratio, target.player === maxEntities ? myID : target.player)
     };
     this.sortTargets = function(targetPenalties) {
@@ -6401,7 +6401,10 @@ function MainSettings() {
         this.width += 4 - this.width % 4;
         this.buttons[0].fJ = bufferLength;
         this.buttons[0].fK = prevClientHeight - this.width - bufferLength;
-        for (var butIndex = 1; butIndex < this.b3; butIndex++) this.buttons[butIndex].fJ = this.buttons[butIndex - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 2 * bufferLength) + this.width, this.buttons[butIndex].fK = this.buttons[0].fK
+        for (var butIndex = 1; butIndex < this.b3; butIndex++) {
+            this.buttons[butIndex].fJ = this.buttons[butIndex - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 1.36 * bufferLength) + this.width;
+            this.buttons[butIndex].fK = this.buttons[0].fK
+        }
     };
     this.getClickedButton = function(xPos, yPos) {
         if (!sprites.areAllSpritesLoaded()) return -1;
@@ -6431,6 +6434,7 @@ function MainSettings() {
                     jq.xa();
                 }
                 saveOptions(this.buttons[g].active, !1);
+                c4.canvasDirty = !0;
                 return !0;
             } else if (1 <= g && 3 > g) {
                 this.buttons[g].buttonClass.init();
