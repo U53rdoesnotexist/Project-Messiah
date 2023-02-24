@@ -21,4 +21,10 @@ function Audio() {
     this.zto1550 = function() {
         zto923(0) ? e ? a += 100 > a ? 1 : 0 : (e = !0, d.play()) : a = 0
     }
-  }
+}
+
+//SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tUwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAACQACqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJANrAAAAAAAAAkBOYyPRAAAAAAAAAAAAAAAAAAAA//tUxAAACSixLxQ2AAFeqa/3HqACAAwAAHDgYGBucQDdz7T7zSnXXvsE8/gWMksEwPqzszP1/sHBgeL3/pTb3odr/pTr/i9+83uvfxe/862vfYMz+yxY5IPgg7/wwr77//aWSIG2EgEttpyMmjFfBzN0SjE2Q3d3l9RrEYtzTUMQjabag/fCxIgWzRYPHhQDg9U2LX/T6fmGP4rC2n2N/57n9d1/lD/7X/uw6xn/Rv+o+Ijr/Dr8fj8ei0Ei0Ngg//tUxAUACrUzgbiVABkEFtmDhGABSBgUAOlwsX/kHyWH7iMmV/GAmIK2IsXhMJzhl5oN1PATFslEWK5h1hV+ikJckMbU078jJv//6qjIa4kc6hx3+Ouqdk///6kpFps1D9qGQxpQEsxpFHDiVGkXBSMEgEk5oMAiWkQCiUSyq2ZlqnP//+8z6rZlyJGCQUk5pIkS00iixLArEVkCu/3AvBuNTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+
+//SUQzBAAAAAAAM1REUkMAAAAGAAADMjAyMgBUU1NFAAAADwAAA0xhdmY1OC43Ni4xMDAAAAAAAAAAAAAAAP/7QMAAAAAAAAAAAAAAAAAAAAAAAEluZm8AAAAPAAAAAgAAAlcApqampqampqampqampqampqampqampqampqampqampqampqampqampqampqampqampv//////////////////////////////////////////////////////////////////AAAAAExhdmM1OC4xMwAAAAAAAAAAAAAAACQDTAAAAAAAAAJXJsUq4AAAAAAA//tQxAAACfxLY7QTAAF9JvE/EtACjSRAAAAAEAAxjHGMYwAAQAAAC7u7uzyYACMPJkyZNNAEAQBAEAfB8HwfBwEAQBAMA+D4Pg+BAQBAEAQB8+IAQDP+UdoD//y4OAg7///8uD8PEREw7M5mau/+grbAEjABaFYKjpZEk4kCoJA5NNQ0YjFc1JIcxuChTLAcB83EnmlKShw6sZ1kiYHTFqR11vWktJfV/13SfGMaq8d571lFf////+lRNRkoo3+PhR/5k6p1CFCGd0BACGf4UP/7UsQFgAu5H2/4uQIQ4gvcK4IwABgUBkAApMmt8UiNF+eB0dIPkpBxZ0dGHMA+wO2kTR/gNwMyKRSHOIMam5nyyeOGqJ08ZMv6VVv/7qDAxPL9Fv/bWympf//9Ua47l/5DX//1P/BoA+AAcGW3P+YVEKYaq7MdWhRJMBNVOrxj6K+//h1Z0RFjwlGHiOW///KnREPOgqoOlf///eDSw0WqTEFNRTMuMTAwqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+//geiger1.wav, select2.wav
