@@ -47,6 +47,15 @@ function loadPassword() {
     return savePassword(password) ? password : 0
 }
 
+function setSound() {
+    if (isIOS) return iosObject.sound;
+    if (12 <= androidVersion) {
+        var sound = androidObject.loadNumber(22);
+        return 1 === Math.abs(sound)
+    }
+    return 5 <= androidVersion ? 0 < androidObject.loadNumber(11) : 0 !== userSettings.getSettings(2)
+}
+
 function setZoom() {
     if (isIOS) isZoom = iosObject.zoom || canvasWidth < canvasHeight;
     else if (12 <= androidVersion) {
@@ -166,7 +175,7 @@ function setAndroidHTMLHeader() {
     14 > androidVersion || androidObject.saveString(23, '<!DOCTYPE html>\n<html lang="aG">\n' + document.getElementsByTagName("html")[0].innerHTML + "\n</html>")
 }
 self.aiCommand746 = function(option) {
-    0 === option ? init() : 1 !== option || 14 > androidVersion || aJ.aK()
+    0 === option ? init() : 1 !== option || 14 > androidVersion || gameStateManager.aK()
 };
 var lastAttackIndex, lastAuthorID, lastRemaining, lastRemainingPerPixel, lastTargetID, lastBorderLength, lastArrayMaxLength, lastBorderLand, lastLandGained, lastInnerPixels, offset, editingMatrix, lastBorderTaken;
 
@@ -389,10 +398,10 @@ function MainLeaderboardIcon() {
     this.updateRenderObject = function(bIndex) {
         if (sprites.areAllSpritesLoaded() && buttons[bIndex]) {
             var label = buttons[bIndex].label,
-                renderHeight = Math.floor(.15 * renderScale * sprites.getValuebyID(13).height),
+                renderHeight = Math.floor(.15 * renderScale * sprites.getValueByID(13).height),
                 fontStyle = fontWeightBold + renderHeight + fontSizeArial,
                 textLength = c2.measureText(label, fontStyle),
-                renderWidth = .8 * renderScale * sprites.getValuebyID(13).width;
+                renderWidth = .8 * renderScale * sprites.getValueByID(13).width;
             if (textLength > renderWidth) {
                 renderHeight = Math.floor(renderHeight * renderWidth / textLength);
                 fontStyle = fontWeightBold + renderHeight + fontSizeArial;
@@ -405,38 +414,38 @@ function MainLeaderboardIcon() {
         }
     };
     this.getRenderHeight = function() {
-        return Math.floor(renderScale * sprites.getValuebyID(13).height)
+        return Math.floor(renderScale * sprites.getValueByID(13).height)
     };
     this.mouseDown = function(xPos, yPos) {
-        if (!sprites.areAllSpritesLoaded() || xPos < bufferLength || yPos < prevClientHeight - mainSettings.width - renderScale * sprites.getValuebyID(13).height - 2 * bufferLength || 
+        if (!sprites.areAllSpritesLoaded() || xPos < bufferLength || yPos < prevClientHeight - mainSettings.width - renderScale * sprites.getValueByID(13).height - 2 * bufferLength || 
             yPos > prevClientHeight - mainSettings.width - 2 * bufferLength) return false;
-        else if (xPos < bufferLength + renderScale * sprites.getValuebyID(13).width) {
+        else if (xPos < bufferLength + renderScale * sprites.getValueByID(13).width) {
             mainLeaderboard.toggleVisibility(0);
             return true;
-        } else if (xPos < 2 * bufferLength + renderScale * sprites.getValuebyID(13).width) return false;
-        else if (xPos < 2 * bufferLength + 2 * renderScale * sprites.getValuebyID(13).width) {
+        } else if (xPos < 2 * bufferLength + renderScale * sprites.getValueByID(13).width) return false;
+        else if (xPos < 2 * bufferLength + 2 * renderScale * sprites.getValueByID(13).width) {
             mainLeaderboard.toggleVisibility(1);
             return true;
         } else return false;
     };
     this.toY = function() {
-        return Math.floor(prevClientHeight - mainSettings.width - renderScale * sprites.getValuebyID(13).height - 2 * bufferLength)
+        return Math.floor(prevClientHeight - mainSettings.width - renderScale * sprites.getValueByID(13).height - 2 * bufferLength)
     };
     this.drawCanvasImage = function() {
         if (sprites.areAllSpritesLoaded()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             mainCanvasCtx.setTransform(renderScale, 0, 0, renderScale, bufferLength, this.toY());
-            mainCanvasCtx.drawImage(sprites.getValuebyID(14), 0, 0);
-            mainCanvasCtx.setTransform(renderScale, 0, 0, renderScale, 2 * bufferLength + renderScale * sprites.getValuebyID(13).width, this.toY());
-            mainCanvasCtx.drawImage(sprites.getValuebyID(13), 0, 0);
+            mainCanvasCtx.drawImage(sprites.getValueByID(14), 0, 0);
+            mainCanvasCtx.setTransform(renderScale, 0, 0, renderScale, 2 * bufferLength + renderScale * sprites.getValueByID(13).width, this.toY());
+            mainCanvasCtx.drawImage(sprites.getValueByID(13), 0, 0);
             for (var bIndex = 1; 0 <= bIndex; bIndex--) {
                 if (buttons[bIndex]) {
-                    mainCanvasCtx.setTransform(1, 0, 0, 1, (1 + bIndex) * bufferLength + bIndex * renderScale * sprites.getValuebyID(13).width, this.toY());
+                    mainCanvasCtx.setTransform(1, 0, 0, 1, (1 + bIndex) * bufferLength + bIndex * renderScale * sprites.getValueByID(13).width, this.toY());
                     mainCanvasCtx.font = buttons[bIndex].font;
                     mainCanvasCtx.textBaseline = middleAlign;
                     mainCanvasCtx.textAlign = centerAlign;
                     mainCanvasCtx.fillStyle = whiteRGB2;
-                    mainCanvasCtx.fillText(buttons[bIndex].label, .5 * renderScale * sprites.getValuebyID(13).width, .86 * renderScale * sprites.getValuebyID(13).height);
+                    mainCanvasCtx.fillText(buttons[bIndex].label, .5 * renderScale * sprites.getValueByID(13).width, .86 * renderScale * sprites.getValueByID(13).height);
                 }
             }
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
@@ -692,7 +701,7 @@ function botCheckAdvanceAndProcessNeutralAttack(id, amount) {
 var botStartingTroops = [60, 74, 112, 200, 256, 512];
 
 function DifficultyEngine() {
-    var botTiming, sendRatio, randomSendRatio, sendRatioFluctuations, botTimingInterval, randomTimingInterval;
+    var sendRatio, randomSendRatio, sendRatioFluctuations, botTimingInterval, randomTimingInterval;
     this.difficultyLabel = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
     this.dm = [97, 95, 93, 90, 87, 84]; //Unused
     this.attackBotsProbi = [98, 95, 90, 40, 20, 0];
@@ -700,7 +709,7 @@ function DifficultyEngine() {
     this.attackLeastProbi = [0, 0, 0, 0, 50, 90];
     this.init = function() {
         var botIndex;
-        botTiming = new Uint8Array(botCount);
+        this.botTiming = new Uint8Array(botCount);
         sendRatio = new Uint16Array(botCount);
         randomSendRatio = new Uint16Array(botCount);
         sendRatioFluctuations = new Uint8Array(botCount);
@@ -764,7 +773,7 @@ function DifficultyEngine() {
                 sendRatio[botIndex] = 400 + fakeRandom.cf(101);
                 randomSendRatio[botIndex] = 50 + fakeRandom.cf(101);
             }
-            botTiming[botIndex] = 1 + divideFloor(botTimingInterval[botIndex] * fakeRandom.random(), 10 * fakeRandom.value(100))
+            this.botTiming[botIndex] = 1 + divideFloor(botTimingInterval[botIndex] * fakeRandom.random(), 10 * fakeRandom.value(100))
         }
     };
     this.setZombieDifficulty = function() {
@@ -778,16 +787,16 @@ function DifficultyEngine() {
             }
     };
     this.setTiming = function(botIndex, timing) {
-        0 <= botIndex && (botTiming[botIndex] = timing)
+        0 <= botIndex && (this.botTiming[botIndex] = timing)
     };
     this.update = function(botIndex) {
-        if (0 === --botTiming[botIndex]) {
+        if (0 === --this.botTiming[botIndex]) {
             if (botTimingInterval[botIndex] !== randomTimingInterval[botIndex]) botTimingInterval[botIndex] += botTimingInterval[botIndex] < randomTimingInterval[botIndex] ? 3 : -3
             if (sendRatio[botIndex] !== randomSendRatio[botIndex]) {
                 sendRatio[botIndex] += sendRatio[botIndex] < randomSendRatio[botIndex] ? sendRatioFluctuations[botIndex] : -sendRatioFluctuations[botIndex];
                 sendRatio[botIndex] = Math.abs(sendRatio[botIndex] - randomSendRatio[botIndex]) <= sendRatioFluctuations[botIndex] ? randomSendRatio[botIndex] : sendRatio[botIndex]
             };
-            botTiming[botIndex] = divideFloor(botTimingInterval[botIndex], 10);
+            this.botTiming[botIndex] = divideFloor(botTimingInterval[botIndex], 10);
             var id = botIndex + playerCount;
             botProcessStrategy(id, divideFloor(sendRatio[botIndex] * troops[id], 1E3))
         }
@@ -1672,11 +1681,11 @@ function jb() {
     setAndroidState(0);
     showAd()
 }
-var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, strings, hu, fq, announcements, jf, 
-    attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, preLobby, aJ, showError, nameInputBar, 
-    jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, 
-    configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby,
-    js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON, intelliAttack;
+var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, strings, hu, fq, announcements, jf, attacksBar, 
+    c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
+    singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
+    mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, 
+    wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
@@ -1703,11 +1712,11 @@ function construct() {
     gameResultBox = new GameResultBox;
     jh = new kA;
     preLobby = new PreLobby;
-    aJ = new kC;
+    gameStateManager = new GameStateManager;
     showError = new ShowError;
     showError.jT();
     nameInputBar = new NameInputBar;
-    jl = new kF;
+    gameUpdatedPrompt = new GameUpdatedPrompt;
     singleSettings = new SingleSettings;
     nameInput = new NameInput;
     sprites = new Sprites;
@@ -1745,7 +1754,8 @@ function construct() {
     eQ = new ko;
     loadCustomMap = new LoadCustomMap;
     customJSON = new CustomJSON;
-    intelliAttack = new IntelliAttack
+    intelliAttack = new IntelliAttack;
+    sounds = new Sounds;
 }
 
 function jx() {
@@ -1763,7 +1773,7 @@ function jx() {
             W.beginPath();
             W.arc(Math.floor(U / 2), Math.floor(U / 2), Math.floor(.47 * U), 0, 2 * Math.PI);
             W.fill();
-            6 === L[P] ? R.drawImage(sprites.getValuebyID(19), 0, 0) : 7 === L[P] ? R.drawImage(sprites.getValueByName("emojis"), -4 * M, 0) : R.drawImage(sprites.getValuebyID(3), -L[P] * M, 0)
+            6 === L[P] ? R.drawImage(sprites.getValueByID(19), 0, 0) : 7 === L[P] ? R.drawImage(sprites.getValueByName("emojis"), -4 * M, 0) : R.drawImage(sprites.getValueByID(3), -L[P] * M, 0)
         }
     }
 
@@ -1796,7 +1806,7 @@ function jx() {
         this.l2 = [];
         I = [];
         this.l3 = [];
-        var L = sprites.getValuebyID(3).height;
+        var L = sprites.getValueByID(3).height;
         A = Math.floor((isZoom ? .075 : .0468) * averageDim);
         D = A / L;
         N = Math.floor(A / 3);
@@ -2044,10 +2054,10 @@ function jy() {
         B.fillRect(0, 0, 1, l);
         B.fillRect(0, l - 1, l, 1);
         B.fillRect(l - 1, 0, 1, l);
-        var C = .9 * l / sprites.getValuebyID(0).width;
+        var C = .9 * l / sprites.getValueByID(0).width;
         B.imageSmoothingEnabled = !0;
-        B.setTransform(C, 0, 0, C, Math.floor((l - C * sprites.getValuebyID(0).width) / 2), Math.floor((l - C * sprites.getValuebyID(0).height) / 2));
-        B.drawImage(sprites.getValuebyID(0), 0, 0);
+        B.setTransform(C, 0, 0, C, Math.floor((l - C * sprites.getValueByID(0).width) / 2), Math.floor((l - C * sprites.getValueByID(0).height) / 2));
+        B.drawImage(sprites.getValueByID(0), 0, 0);
         B.setTransform(1, 0, 0, 1, 0, 0)
     }
 
@@ -2353,7 +2363,8 @@ function Announcements() {
         else if (22 === messageType) this.mj(2, id, id);
     };
     this.error = function(errorCode) {
-        announce(200, "Error [" + errorCode + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, !1)
+        announce(200, "Error [" + errorCode + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, !1);
+        sounds.play(3);
     };
     this.resultBR = function(winnerID) {
         c2.set(winnerID, 2);
@@ -2874,7 +2885,7 @@ function onTouchstart(g) {
 }
 
 function pL(g, k) {
-    if (0 === clientStatus) aJ.mouseDown(g, k);
+    if (0 === clientStatus) gameStateManager.mouseDown(g, k);
     else if (!(statistics.mouseDown(g, k) || hu.lB(g, k) || gameResultBox.mouseDown(g, k) || attacksBar.mouseDown(g, k))) {
         var n = fq.mouseDown(g, k);
         2 === n || gameLeaderboard.mouseDown(g, k) || (gj.mouseDown(g, k) ? c4.canvasDirty = !0 : troopBar.getClickedButton(g, k) ? (gj.gk = !1, troopBar.pQ(g, k) && (c4.canvasDirty = !0)) : announcements.mouseDown(g, k) || peace.mouseDown(g, k) || 0 === n && hu.lD(g, k))
@@ -2893,12 +2904,12 @@ function onTouchmove(g) {
 }
 
 function onPointermove(xPos, yPos) {
-    0 === clientStatus ? aJ.onPointermove(xPos, yPos) : statistics.onPointermove(xPos, yPos) || (hu.visible() ? hu.onPointermove(xPos, yPos) : fq.onPointermove(xPos, yPos) || (troopBar.pT ? troopBar.onPointermove(xPos, yPos) && (c4.canvasDirty = !0) : (gameLeaderboard.onPointermove(xPos, yPos), gj.gk && gj.onPointermove(xPos, yPos) && (c4.canvasDirty = !0))))
+    0 === clientStatus ? gameStateManager.onPointermove(xPos, yPos) : statistics.onPointermove(xPos, yPos) || (hu.visible() ? hu.onPointermove(xPos, yPos) : fq.onPointermove(xPos, yPos) || (troopBar.pT ? troopBar.onPointermove(xPos, yPos) && (c4.canvasDirty = !0) : (gameLeaderboard.onPointermove(xPos, yPos), gj.gk && gj.onPointermove(xPos, yPos) && (c4.canvasDirty = !0))))
 }
 
 function onMouseleave(g) {
     g.preventDefault();
-    0 === clientStatus ? (aJ.click(-1024, -1024), playtime.pU()) : (gameLeaderboard.pV(-1024, -1024), fq.onPointermove(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
+    0 === clientStatus ? (gameStateManager.click(-1024, -1024), playtime.pU()) : (gameLeaderboard.pV(-1024, -1024), fq.onPointermove(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
 }
 
 function onMouseup(g) {
@@ -2907,7 +2918,7 @@ function onMouseup(g) {
 }
 
 function onClick(g) {
-    2 === aJ.getState() && singleSettings.click(g.clientX, g.clientY)
+    2 === gameStateManager.getState() && singleSettings.click(g.clientX, g.clientY)
 }
 
 function onTouchend(g) {
@@ -2929,7 +2940,7 @@ function onDrop(g) {
 }
 
 function onPointerUp(xPos, yPos) {
-    0 === clientStatus ? aJ.click(xPos, yPos) : (gameLeaderboard.pV(xPos, yPos), statistics.pV(), troopBar.pW(), gj.gk = !1, hu.click(xPos, yPos) && (c4.canvasDirty = !0))
+    0 === clientStatus ? gameStateManager.click(xPos, yPos) : (gameLeaderboard.pV(xPos, yPos), statistics.pV(), troopBar.pW(), gj.gk = !1, hu.click(xPos, yPos) && (c4.canvasDirty = !0))
 }
 
 function onWheel(g) {
@@ -2939,7 +2950,7 @@ function onWheel(g) {
         n = Math.floor(pixelRatio * g.clientY),
         l = g.deltaY;
     1 === g.deltaMode && (l *= 20);
-    0 === clientStatus ? aJ.pb(k, n, l) : gameLeaderboard.pb(k, n, l) || (troopBar.getClickedButton(k, n) ? troopBar.pb(l) && (c4.canvasDirty = !0) : gj.pb(k, n, 2 * l) && (c4.canvasDirty = !0))
+    0 === clientStatus ? gameStateManager.pb(k, n, l) : gameLeaderboard.pb(k, n, l) || (troopBar.getClickedButton(k, n) ? troopBar.pb(l) && (c4.canvasDirty = !0) : gj.pb(k, n, 2 * l) && (c4.canvasDirty = !0))
 }
 
 function pc(g, k, n) {
@@ -3656,7 +3667,7 @@ function Playtime() {
     }
 
     function x() {
-        8 === aJ.getState() && (G = -1);
+        8 === gameStateManager.getState() && (G = -1);
         if (0 !== G) Q = (new Date).getTime(), clearInterval(M), M = -1;
         else {
             var P = t[1] / 864E3;
@@ -4058,10 +4069,10 @@ function GameLeaderboard() {
             fillPlayerLand(visibleLandCount - 1, myID);
         }
         if (0 === boardTopIndex) {
-            bIndex = .7 * I / sprites.getValuebyID(4).height;
-            leaderboard.setTransform(bIndex, 0, 0, bIndex, Math.floor(D + .58 * I + .5 * bIndex * sprites.getValuebyID(4).width), Math.floor(F + gameBoardLabelHeight + .4 * I));
+            bIndex = .7 * I / sprites.getValueByID(4).height;
+            leaderboard.setTransform(bIndex, 0, 0, bIndex, Math.floor(D + .58 * I + .5 * bIndex * sprites.getValueByID(4).width), Math.floor(F + gameBoardLabelHeight + .4 * I));
             leaderboard.imageSmoothingEnabled = !0;
-            leaderboard.drawImage(sprites.getValuebyID(4), -Math.floor(sprites.getValuebyID(4).width / 2), -Math.floor(sprites.getValuebyID(4).height / 2));
+            leaderboard.drawImage(sprites.getValueByID(4), -Math.floor(sprites.getValueByID(4).width / 2), -Math.floor(sprites.getValueByID(4).height / 2));
             leaderboard.setTransform(1, 0, 0, 1, 0, 0);
         }
     }
@@ -4443,7 +4454,7 @@ function GameResultBox() {
             C.strokeRect(E,
                 E, n - 2 * E, l - 2 * E);
             C.imageSmoothingEnabled = !0;
-            var F = sprites.getValuebyID(k),
+            var F = sprites.getValueByID(k),
                 G = F.height,
                 N = x * l / G;
             C.setTransform(N, 0, 0, N, Math.floor((n - N * F.width) / 2), Math.floor((l - N * G) / 2));
@@ -4678,19 +4689,16 @@ function ts() {
 
 function IntelliAttack() {
     this.checkIntelli = function() {
-        if (1 === client_status) {
-            2 === player_status[myID] || 0 === isAlive[myID] || inSpawn || attacks.below_attack_cap(myID) && 0 !== landBorderPixels[myID].length && this.startIntelli()
-        }
+        if (1 === clientStatus && !(2 === playerStatus[myID] || 0 === isAlive[myID] || inSpawn || attacks.isUnderAttackCap(myID) && 0 !== landBorderPixels[myID].length)) this.startIntelli()
     };
     this.startIntelli = function() {
-        var myID = myID;
-        var targets = this.getBorderingEntities(myID, !team_game).filter(target => target != max_entities);
+        var targets = this.getBorderingEntities(myID, !teamGame).filter(targetID => targetID != maxEntities);
         this.removeAttackingTarget(myID, targets);
-        0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(myID, targets[0]))
+        0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(targets[0]))
     };
-    this.doIntelliAttack = function(myID, target) {
+    this.doIntelliAttack = function(target) {
         announcements.low_balance();
-        singleplayer ? processAttack(myID, target.player, target.ratio) : multiOut.attack(target.ratio, target === max_entities ? myID : target.player)
+        singleplayer ? processAttack(myID, target.player, target.ratio) : dataEncoder.attack(target.ratio, target.player === maxEntities ? myID : target.player)
     };
     this.sortTargets = function(targetPenalties) {
         targetPenalties.sort(function(prev, next) {
@@ -4698,69 +4706,70 @@ function IntelliAttack() {
         })
     };
     this.calcValue = function(targets) {
-        var index, targetPenalties = [],
+        var tIndex, targetPenalties = [],
             targetsCount = targets.length;
-        for (index = 0; index < targetsCount; index++) {
-            var id = targets[index], predDensity, mutualBorder = [], returnFactor = 0, time_left;
-            if (id != max_entities) {
-                predDensity = (id < player_count && bots_timing[id-player_count] < 10) ? 0.5 : density(id);
-                for (let index2 = 0; index2 < landBorderPixels[id].length; index2++) {
-                    for (let side = 0; side < 4; side++) {
-                        let coord = landBorderPixels[id][index2] + offset[side];
-                        if (pixel.strong_is_owner(myID, coord) && !mutualBorder.includes(landBorderPixels[id][index2])) mutualBorder.push(landBorderPixels[id][index2])
-                        else if (pixel.is_neutral(coord) && bots_timing[id-player_count] < 10 && !returnFactor) returnFactor += 0.9*troops[id]/(troops[id] + attacks.total_troops_currently_attacking(id))
+        for (tIndex = 0; tIndex < targetsCount; tIndex++) {
+            var id = targets[tIndex], predDensity, mutualBorder = [], returnFactor = 0, timeLeft;
+            if (id != maxEntities) {
+                predDensity = (id < playerCount && difficultyEngine.botTiming[id-playerCount] < 10) ? 0.5 : troops[id]/land[id];
+                for (var bIndex = 0; bIndex < landBorderPixels[id].length; bIndex++) {
+                    for (let side = 0; side <+ 3; side++) {
+                        let pIndex = landBorderPixels[id][bIndex] + offset[side];
+                        if (pixel.strongIsOwner(myID, pIndex) && !mutualBorder.includes(landBorderPixels[id][bIndex])) mutualBorder.push(landBorderPixels[id][bIndex])
+                        else if (pixel.isNeutral(pIndex) && difficultyEngine.botTiming[id-playerCount] < 10 && !returnFactor) returnFactor += 0.9*troops[id]/(troops[id] + attacks.getTotalTroopsAttacking(id))
                     }
                 }
-                for (let index2 = 0; index2 < attacks.getCurrentAttackCount(id); index2++) {
-                    var return_probability;
-                    if (attacks.get_boat_id_from_attack_index(id, index) != 0) return_probability = 0
+                for (let aIndex = 0; aIndex < attacks.getCurrentAttackCount(id); aIndex++) {
+                    var returnProbi;
+                    if (attacks.getBoatIDFromIndex(id, aIndex) != 0) returnProbi = 0
                     else {
-                        var target2 = attacks.get_attack_target_from_attack_index(id, index2)
-                        if (target2 == 512) return_probability = 1
+                        var target2 = attacks.getTargetFromIndex(id, aIndex)
+                        if (target2 == maxEntities) returnProbi = 1
                         else {
                             var mutualBorder2 = [], borderRatio;
-                            for (let index3 = 0; index3 < landBorderPixels[target2].length; index3++) {
-                                for (let side = 0; side < 4; side++) {
-                                    let coord = landBorderPixels[target2][index3] + offset[side];
-                                    if (pixel.strong_is_owner(id, coord) && !mutualBorder2.includes(landBorderPixels[target2][index3])) mutualBorder2.push(landBorderPixels[target2][index3])
+                            for (var bIndex = 0; bIndex < landBorderPixels[target2].length; bIndex++) {
+                                for (let side = 0; side <= 3; side++) {
+                                    let pIndex = landBorderPixels[target2][bIndex] + offset[side];
+                                    if (pixel.strongIsOwner(id, pIndex) && !mutualBorder2.includes(landBorderPixels[target2][bIndex])) mutualBorder2.push(landBorderPixels[target2][bIndex])
                                 }
                             }
                             borderRatio = mutualBorder2.length/landBorderPixels[id].length;
-                            return_probability = borderRatio <= 0.1 ? 1 - 3 * Math.sqrt(borderRatio) : 0
+                            returnProbi = borderRatio <= 0.1 ? 1 - 3 * Math.sqrt(borderRatio) : 0
                         }
                     }
-                    returnFactor += return_probability * attacks.get_attack_troops_remaining_from_attack_index(id, index2) / (troops[id] + attacks.total_troops_currently_attacking(id))
+                    returnFactor += returnProbi * attacks.getRemainingTroopsFromIndex(id, aIndex) / (troops[id] + attacks.getTotalTroopsAttacking(id))
                 }
-                time_left = (100 - tick - (singleplayer ? 1 : 7 - (((cycle-1)*100 + tick - 1) % 7)));
+                var ticksElapsed = c4.ticksElapsed(),
+                    speed = land[myID] < 1E3 ? 1/4 : land[myID] < 1E4 ? 1/3 : land[myID] < 6E4 ? 1/2 : land[myID] < 16E4 ? 1 : land[myID] < 3E5 ? 2 : 3 ;
+                timeLeft = (100 - (ticksElapsed % 100) - (singleplayer ? 1 : 7 - (((divideFloor(ticksElapsed, 100))*100 + (ticksElapsed % 100) - 1) % 7)));
                 targetPenalties.push({
                     player: id,
                     peanlty: 3 * predDensity - this.landWeighting(id) ** 1.8 - (mutualBorder.length/landBorderPixels[id].length) ** 0.5 + returnFactor,
-                    ratio: Math.round(Math.min((6 + 2 * predDensity) * mutualBorder.length * speed(myID) * (time_left <= 20 ? 20 : time_left), 2*(troops[id] + land[id])) / troops[myID] * 1E3),
+                    ratio: Math.round(Math.min((6 + 2 * predDensity) * mutualBorder.length * speed * (timeLeft <= 20 ? 20 : timeLeft), 2*(troops[id] + land[id])) / troops[myID] * 1E3),
                 })
             }
         }
         return targetPenalties
     };
     this.landWeighting = function(id) {
-        var totalLand = 0, alive_bots = 0;;
-        alive_entities.forEach(e => e >= player_count && (totalLand += land[e], alive_bots++))
-        return totalLand == 0 ? 0 : land[id] * alive_bots / totalLand;
+        var totalLand = 0, aliveBots = 0;;
+        aliveEntities.forEach(e => e >= playerCount && (totalLand += land[e], aliveBots++))
+        return totalLand == 0 ? 0 : land[id] * aliveBots / totalLand;
     }
     this.removeAttackingTarget = function(myID, targets) {
-        var index;
-        for (index = targets.length - 1; 0 <= index; index--) attacks.check(myID, targets[index]) && targets.splice(index, 1)
+        for (var tIndex = targets.length - 1; 0 <= tIndex; tIndex--) if (attacks.check(myID, targets[tIndex])) targets.splice(tIndex, 1)
     };
-    this.getBorderingEntities = function(id, k) {
+    this.getBorderingEntities = function(id, considerTeamates) {
         var index, side, borderingEntities = [],
             borderingEntityCount = 0;
-        var borderPixel = landBorderPixels[id].length - 1;
-        a: for (; 0 <= borderPixel; borderPixel--)
+        var bIndex = landBorderPixels[id].length - 1;
+        a: for (; 0 <= bIndex; bIndex--)
             for (side = 3; 0 <= side; side--) {
-                var pixelOwner = pixel.is_neutral(landBorderPixels[id][borderPixel] + offset[side]) ? max_entities : pixel.owner(landBorderPixels[id][borderPixel] + offset[side]);
-                if (pixelOwner === max_entities || pixel.controlled_by_entity(landBorderPixels[id][borderPixel] + offset[side]) && pixelOwner !== id && (k || isTeamate(id, pixelOwner))) {
+                var ownerID = pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side]) ? maxEntities : pixel.getOwner(landBorderPixels[id][bIndex] + offset[side]);
+                if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamates || isNotTeamate(id, ownerID))) {
                     for (index = borderingEntityCount - 1; 0 <= index; index--)
-                        if (borderingEntities[index] === pixelOwner) continue a;
-                    borderingEntities.push(pixelOwner);
+                        if (borderingEntities[index] === ownerID) continue a;
+                    borderingEntities.push(ownerID);
                     borderingEntityCount++
                 }
             }
@@ -4878,7 +4887,7 @@ function MainLeaderboard() {
         if (!this.visible) return !1;
         l -= (prevClientWidth - this.width) / 2;
         x -= (prevClientHeight - this.height) / 2;
-        if (0 > l || l > this.width || 0 > x || x > this.height) return this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0;
+        if (0 > l || l > this.width || 0 > x || x > this.height) return this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0;
         if (x < .3 * this.height) var t = 1;
         else x < .85 * this.height ? (t = (0 === this.tz ? 14.1 : 3) * (x - .3 * this.height) / (.55 * this.height), t = Math.floor(1 + t * t)) : t = 0 === this.tz ? 200 : 10;
         this.paginationDirection[this.tz] = l < this.width / 2 ? -t : t;
@@ -4976,8 +4985,8 @@ function OpenLinkBox() {
             nameInput.hide();
             E = G;
             A = Math.floor((isZoom ? canvasWidth > canvasHeight ? .6 : .45 : .4) * minDim);
-            n = A / sprites.getValuebyID(17).width;
-            x = Math.floor(n * sprites.getValuebyID(17).height);
+            n = A / sprites.getValueByID(17).width;
+            x = Math.floor(n * sprites.getValueByID(17).height);
             t = Math.floor(.4 * x);
             z = Math.floor(.6 * x);
             y = Math.floor(2.5 * z);
@@ -5014,11 +5023,11 @@ function OpenLinkBox() {
     this.mouseDown = function(G, N) {
         if (!this.visible) return !1;
         if (G < g || N < k || G > g + C || N > k + l) c4.canvasDirty = !0, this.visible = !1, document.body.removeChild(F),
-            0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0);
+            0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0);
         return !0
     };
     this.drawCanvasImage = function() {
-        this.visible && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValuebyID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
+        this.visible && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValueByID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
     }
 }
 
@@ -5066,7 +5075,7 @@ function ui() {
         }
     };
     this.visible = function() {
-        return !(7 === aJ.getState() && isZoom)
+        return !(7 === gameStateManager.getState() && isZoom)
     };
     this.mouseDown = function(y, A, B) {
         if (!t || !this.visible()) return !1;
@@ -5226,7 +5235,7 @@ function kA() {
     };
     this.onPointermove = function(x, t, z) {
         var y = -1;
-        0 === aJ.getState() ? y = this.getClickedButton(x, t, 0, 2) : 3 === aJ.getState() ? y = this.getClickedButton(x, t, 3, 1) : 5 === aJ.getState() && (y = this.getClickedButton(x, t, 5, 2));
+        0 === gameStateManager.getState() ? y = this.getClickedButton(x, t, 0, 2) : 3 === gameStateManager.getState() ? y = this.getClickedButton(x, t, 3, 1) : 5 === gameStateManager.getState() && (y = this.getClickedButton(x, t, 5, 2));
         k !== y && (k = y, z && (c4.canvasDirty = !0));
         return -1 !== y ? (playtime.pU(), !0) : !1
     };
@@ -5276,7 +5285,7 @@ function Colors() {
         var l = (prevClientHeight - this.height) / 2;
         k -= (prevClientWidth - this.width) / 2;
         n -= l;
-        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0, !1;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0, !1;
         if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.height - this.f6) return !0;
         if (k < this.f6 + this.v0) return n < this.f6 + this.v0 && 0 !== this.ns && (this.ns = 0, c4.canvasDirty = !0), !0;
         if (k < 2 * this.f6 + this.v0) return !0;
@@ -5364,7 +5373,7 @@ function PreLobby() {
     var barProgress, direction, progressBarHeight, progressBarWidth, progressBarTotalWidth, progressBarTotalHeight, progressBarCornerSize, bgColor, fgColor, loadingTextFont, fontSize, initTime, remoteIndex, currentRemote = 0,
         isJoiningLobby;
     this.init = function() {
-        aJ.setState(6);
+        gameStateManager.setState(6);
         barProgress = 0;
         direction = 1;
         bgColor = "rgba(0,220,120,0.4)";
@@ -5391,7 +5400,7 @@ function PreLobby() {
         remoteID === getCurrentRemoteIndex() && (isJoiningLobby = !1, incrementRemoteIndex())
     };
     this.completeFirstAction = function(remoteID) {
-        6 !== aJ.getState() || isJoiningLobby || (initTime = c4.time, isJoiningLobby = !0, dataEncoder.joinLobby(remoteID))
+        6 !== gameStateManager.getState() || isJoiningLobby || (initTime = c4.time, isJoiningLobby = !0, dataEncoder.joinLobby(remoteID))
     };
     this.mouseDown = function(xPos, yPos) {
         var M = Math.floor((prevClientWidth - progressBarTotalWidth) / 2),
@@ -5408,7 +5417,7 @@ function PreLobby() {
         c4.canvasDirty = !0
     };
     this.update = function() {
-        if (6 === aJ.getState()) {
+        if (6 === gameStateManager.getState()) {
             if (isJoiningLobby) {
                 if (c4.time > initTime + 2E4) showError.displayError(3250);
             } else {
@@ -5464,7 +5473,7 @@ function PreLobby() {
     }
 }
 
-function kC() {
+function GameStateManager() {
     var gameState;
     this.init = function() {
         jh.init();
@@ -5514,7 +5523,7 @@ function kC() {
             playtime.mouseDown(k, n);
             if (0 === gameState) nameInput.mouseDown(k, n);
             else if (3 === gameState) showError.mouseDown(k, n);
-            else if (5 === gameState) jl.mouseDown(k, n);
+            else if (5 === gameState) gameUpdatedPrompt.mouseDown(k, n);
             else if (7 === gameState && lobby.mouseDown(k, n)) return;
             mainLeaderboardIcon.mouseDown(k, n)
         }
@@ -5578,7 +5587,7 @@ function kC() {
             mainLeaderboardIcon.drawCanvasImage();
             mainSettings.drawCanvasImage();
             jt.drawCanvasImage();
-            0 === gameState ? nameInput.drawCanvasImage() : 2 === gameState ? singleSettings.drawCanvasImage() : 3 === gameState ? showError.drawCanvasImage() : 5 === gameState ? jl.drawCanvasImage() : 6 === gameState ? preLobby.drawCanvasImage() : 7 === gameState && lobby.drawCanvasImage();
+            0 === gameState ? nameInput.drawCanvasImage() : 2 === gameState ? singleSettings.drawCanvasImage() : 3 === gameState ? showError.drawCanvasImage() : 5 === gameState ? gameUpdatedPrompt.drawCanvasImage() : 6 === gameState ? preLobby.drawCanvasImage() : 7 === gameState && lobby.drawCanvasImage();
             mainSettings.vn();
             cookiesPrompt.drawCanvasImage();
             mainLeaderboard.drawCanvasImage();
@@ -5617,7 +5626,7 @@ function Emojis() {
         var l = (prevClientHeight - this.height) / 2;
         g -= (prevClientWidth - this.width) / 2;
         k -= l;
-        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.height - 1) return 0 === n && (this.visible = !1, 0 === aJ.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0), !1;
+        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.height - 1) return 0 === n && (this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0), !1;
         l = Math.floor(this.width / this.nh);
         g = divideFloor(g, l) + this.nh * divideFloor(k, l);
         g = 0 > g ? 0 : g >= a5.nl ? a5.nl - 1 : g;
@@ -5650,12 +5659,13 @@ function Emojis() {
 }
 
 function ShowError() {
-    function g() {
-        var t = aJ.getState();
+    function showErrorBox() {
+        var t = gameStateManager.getState();
         0 === t ? nameInput.hide() : 6 === t ? wsManager.closeAll(n) : 7 === t ? (lobby.hide(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.hide());
-        aJ.setState(3);
+        gameStateManager.setState(3);
         jh.setPosition();
         jh.uo[2].nY = k(n);
+        sounds.play(3);
         c4.canvasDirty = !0
     }
 
@@ -5716,10 +5726,10 @@ function ShowError() {
     };
     this.init = function(t, z) {
         n = z;
-        var y = aJ.getState();
+        var y = gameStateManager.getState();
         if (6 === y) {
             if (4211 === z) {
-                jl.init(0, 0);
+                gameUpdatedPrompt.init(0, 0);
                 return
             }
             if (4214 !== z) {
@@ -5732,11 +5742,11 @@ function ShowError() {
             8 === y && (t !== wsManager.remote || singleplayer || announcements.error(k(z)));
             return
         }
-        g()
+        showErrorBox()
     };
     this.displayError = function(t) {
         n = t;
-        8 === aJ.getState() ? announcements.error(k(t)) : g()
+        8 === gameStateManager.getState() ? announcements.error(k(t)) : showErrorBox()
     };
     this.setCanvasVariables = function() {
         jh.uo[2].nY = k(n)
@@ -5789,7 +5799,7 @@ function NameInputBar() {
         inputBars[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
         inputBars[0].input.style.width = Math.floor(jh.width / pixelRatio - 13) + "px"
     };
-    this.getValuebyID = function(index) {
+    this.getValueByID = function(index) {
         return inputBars[index]
     };
     this.setPosition = function(index) {
@@ -5814,14 +5824,14 @@ function SetGameOrigin() {
     this.myID = this.gameHash = 0;
     var array, callCounter, switchTime, switchCounts;
     this.init = function(param_Array) {
-        if (7 === aJ.getState()) {
+        if (7 === gameStateManager.getState()) {
             array = param_Array;
             callCounter = 0;
             switchTime = c4.time + 4500;
             switchCounts = dataDecoder.decodeGameServerInfo(array) ? 2 : 0; //function returns value indicating if server switch is required
-            aJ.setState(10);
+            gameStateManager.setState(10);
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            aJ.hr();
+            gameStateManager.hr();
             var loadingSprite = sprites.getValueByName("loading");
             var scaleFactor = (isZoom ? .396 : .25) * averageDim / loadingSprite.width;
             mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor((canvasWidth - scaleFactor * loadingSprite.width) / 2), Math.floor((canvasHeight - scaleFactor * loadingSprite.height) / 2));
@@ -5840,7 +5850,7 @@ function SetGameOrigin() {
         }
     };
     this.processGameInitData = function() {
-        if (10 === aJ.getState()) {
+        if (10 === gameStateManager.getState()) {
             callCounter++;
             if (2 <= callCounter) {
                 dataDecoder.gameInitDecoder(array);
@@ -5872,7 +5882,7 @@ function Lobby() {
     }
 
     function n() {
-        if (7 === aJ.getState()) {
+        if (7 === gameStateManager.getState()) {
             for (var P = -1, lgIndex = lobbyGames.length - 1; 0 <= lgIndex; lgIndex--)
                 if (null === lobbyGames[lgIndex].canvas) {
                     P = lgIndex;
@@ -5953,7 +5963,7 @@ function Lobby() {
     this.init = function() {
         R = 0;
         gameSelected = -1;
-        aJ.setState(7);
+        gameStateManager.setState(7);
         lobbyGames = [];
         this.setCanvasVariables();
         var P;
@@ -5990,10 +6000,11 @@ function Lobby() {
             W.arc(24, 24, 23, 0, 2 * Math.PI);
             W.stroke()
         }
-        g(7, sprites.getValuebyID(4));
+        g(7, sprites.getValueByID(4));
         g(8, a5.l5[27]);
         g(9, a5.l5[46]);
         g(10, a5.l5[36]);
+        sounds.play(2);
         c4.canvasDirty = !0
     };
     this.vi = function() {
@@ -6040,6 +6051,7 @@ function Lobby() {
                 maxPlayers: param_lobbyGames[gameIndex].maxPlayers,
                 canvas: previewCanvas
             })
+            if (param_lobbyGames[gameIndex].isContest && param_lobbyGames[gameIndex].timeLeft == 30) sounds.play(4)
         }
         for (gameIndex = gamesCount - 1; 0 <= gameIndex; gameIndex--) lobbyGames.shift();
         if (-1 !== gameSelected)
@@ -6073,10 +6085,10 @@ function Lobby() {
         mainCanvasCtx.beginPath();
         mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
         mainCanvasCtx.stroke();
-        W = sprites.getValuebyID(0).height;
+        W = sprites.getValueByID(0).height;
         var X = .6 * H / W;
-        mainCanvasCtx.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * sprites.getValuebyID(0).width), Math.floor(Q - .5 * X * W));
-        mainCanvasCtx.drawImage(sprites.getValuebyID(0), 0, 0);
+        mainCanvasCtx.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * sprites.getValueByID(0).width), Math.floor(Q - .5 * X * W));
+        mainCanvasCtx.drawImage(sprites.getValueByID(0), 0, 0);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
         mainCanvasCtx.fillStyle = blackSemiTransparent;
         mainCanvasCtx.fillRect(canvasWidth - I - bufferLength, bufferLength, I, D);
@@ -6148,7 +6160,7 @@ function Lobby() {
                     mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
                     E.length > lobbyGames[V].gamemode && mainCanvasCtx.drawImage(E[lobbyGames[V].gamemode], 0, 0);
                     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-                    lobbyGames[V].isContest && (V = sprites.getValuebyID(4), pa = .5 * lgBoxLength / V.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (lgBoxLength - pa * V.width) / 2), Math.floor(ca + (lgBoxLength - pa * V.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(V, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
+                    lobbyGames[V].isContest && (V = sprites.getValueByID(4), pa = .5 * lgBoxLength / V.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (lgBoxLength - pa * V.width) / 2), Math.floor(ca + (lgBoxLength - pa * V.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(V, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
                     P++;
                     if (P >= lobbyGames.length) return;
                     na += lgBoxLength + bufferLength
@@ -6158,9 +6170,9 @@ function Lobby() {
     }
 }
 
-function kF() {
+function GameUpdatedPrompt() {
     this.init = function(g, k) {
-        aJ.setState(5);
+        gameStateManager.setState(5);
         jh.onPointermove(g, k, !1);
         c4.canvasDirty = !0
     };
@@ -6190,7 +6202,7 @@ function SingleSettings() {
     }];
     this.init = function() {
         js.visible = !1;
-        aJ.setState(2);
+        gameStateManager.setState(2);
         this.setCanvasVariables();
         c4.canvasDirty = !0
     };
@@ -6233,7 +6245,7 @@ function SingleSettings() {
     this.xO = function() {
         wsManager.remote = 0;
         wsManager.sendWhenWSOpen(0, 3) && dataEncoder.singlePlayed(0);
-        aJ.ve();
+        gameStateManager.ve();
         if (customJSON.isCustomJSON) customJSON.xQ();
         else {
             var n = this.botSettings.length - 2;
@@ -6377,6 +6389,12 @@ function MainSettings() {
             active: !1,
             buttonClass: new Colors
         });
+        this.buttons.push({
+            fJ: 0,
+            fK: 0,
+            active: setSound(),
+            buttonClass: null
+        });
         this.buttons[2].buttonClass.v3();
         this.b3 = this.buttons.length;
         this.width = 0
@@ -6386,7 +6404,7 @@ function MainSettings() {
         this.width += 4 - this.width % 4;
         this.buttons[0].fJ = bufferLength;
         this.buttons[0].fK = prevClientHeight - this.width - bufferLength;
-        for (var g = 1; g < this.b3; g++) this.buttons[g].fJ = this.buttons[g - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 3.7 * bufferLength) + this.width, this.buttons[g].fK = this.buttons[0].fK
+        for (var butIndex = 1; butIndex < this.b3; butIndex++) this.buttons[butIndex].fJ = this.buttons[butIndex - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 3.7 * bufferLength) + this.width, this.buttons[butIndex].fK = this.buttons[0].fK
     };
     this.getClickedButton = function(xPos, yPos) {
         if (!sprites.areAllSpritesLoaded()) return -1;
@@ -6409,8 +6427,20 @@ function MainSettings() {
         }
         g = this.getClickedButton(g, k);
         if (n) {
-            if (0 === g) return this.buttons[g].active = !this.buttons[g].active, isZoom = this.buttons[g].active, jq.xa(), saveOptions(this.buttons[0].active, !1), !0;
-            if (1 <= g && 3 > g) return this.buttons[g].buttonClass.init(), nameInput.hide(), c4.canvasDirty = !0
+            if (0 === g || 3 === g) {
+                this.buttons[g].active = !this.buttons[g].active;
+                if (!g) {
+                    isZoom = this.buttons[g].active;
+                    jq.xa();
+                }
+                saveOptions(this.buttons[g].active, !1);
+                return !0;
+            } else if (1 <= g && 3 > g) {
+                this.buttons[g].buttonClass.init();
+                nameInput.hide();
+                c4.canvasDirty = !0;
+                return !0;
+            }
         }
         return !1
     };
@@ -6425,8 +6455,18 @@ function MainSettings() {
     this.drawCanvasImage = function() {
         if (sprites.areAllSpritesLoaded()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            for (var g = this.b3 - 1; 0 <= g; g--) mainCanvasCtx.fillStyle =
-                this.buttons[g].active ? greenDarkMoreOpaque : blackMoreOpaque, mainCanvasCtx.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width), 0 === g ? this.xb(g, sprites.getValuebyID(15)) : 1 === g ? this.xc() : 2 === g && this.xd(), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+            for (var g = this.b3 - 1; 0 <= g; g--) {
+                mainCanvasCtx.fillStyle = this.buttons[g].active ? greenDarkMoreOpaque : blackMoreOpaque;
+                mainCanvasCtx.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+                if (0 === g) this.xb(g, sprites.getValueByID(15))
+                else if (1 === g) this.xc()
+                else if (2 === g) this.xd()
+                else if (3 === g) this.xb(g, sprites.getValueByID(20))
+                mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                mainCanvasCtx.lineWidth = ow;
+                mainCanvasCtx.strokeStyle = whiteRGB2;
+                mainCanvasCtx.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+            }
             mainCanvasCtx.imageSmoothingEnabled = !1
         }
     };
@@ -6470,7 +6510,7 @@ function NameInput() {
 
     function displayUsername() {
         textInput = loadUsername();
-        nameInputBar.getValuebyID(0).input.value = textInput;
+        nameInputBar.getValueByID(0).input.value = textInput;
         nameInputBar.dynamic(0, !0)
     }
 
@@ -6516,7 +6556,7 @@ function NameInput() {
     this.candidateID = "";
     this.lastVoteTime = -7E3;
     this.init = function() {
-        aJ.setState(0);
+        gameStateManager.setState(0);
         jh.setPosition();
         nameInputBar.toggleVisibility(0, !0);
         nameInputBar.setPosition(0);
@@ -6524,7 +6564,7 @@ function NameInput() {
         mainSettings.setPosition();
         if (void 0 === textInput) {
             textInput = loadUsername();
-            nameInputBar.getValuebyID(0).input.value = textInput;
+            nameInputBar.getValueByID(0).input.value = textInput;
             setBarColor()
         }
     };
@@ -6532,15 +6572,15 @@ function NameInput() {
         nameInputBar.toggleVisibility(0, !1)
     };
     this.xh = function(t) { //unused
-        return 0 === t ? jh.width : 1 === t ? Math.floor(.3 * jh.height) : 2 === t ? nameInputBar.getValuebyID(0).input.style.font : textInput
+        return 0 === t ? jh.width : 1 === t ? Math.floor(.3 * jh.height) : 2 === t ? nameInputBar.getValueByID(0).input.style.font : textInput
     };
     this.onInput = function() {
-        textInput = nameInputBar.getValuebyID(0).input.value.trim();
+        textInput = nameInputBar.getValueByID(0).input.value.trim();
         setBarColor();
         if ("password" === textInput || "account" === textInput) {
             var password = strings.convertToStringPassword(loadPassword().toString());
             textInput = "account " + password;
-            nameInputBar.getValuebyID(0).input.value = textInput
+            nameInputBar.getValueByID(0).input.value = textInput
         }
     };
     this.mouseDown = function(xPos, yPos) {
@@ -6655,7 +6695,7 @@ function Sprites() {
     var unloadedSprites, spriteCanvases, spriteNames, nullCanvas;
     this.init = function() {
         if (void 0 === spriteCanvases) {
-            unloadedSprites = 20;
+            unloadedSprites = 21;
             spriteCanvases = Array(unloadedSprites);
             spriteNames = Array(unloadedSprites);
             nullCanvas = document.createElement("canvas");
@@ -6682,9 +6722,10 @@ function Sprites() {
             loadSprite(17, "open link", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAAAPBAMAAADpFNeEAAAAGFBMVEUA/wBi/2N//4CX/5i//8DU/9Pq/+r///90hWfkAAAA6klEQVQoz5XSPQ+CMBAG4FME1i6GlUHjSuLA6uaqEyt+JF3VSt+/b99WhRQG7XCB0qdcrycia42rkomxgJ2edsP8AfYEKH8Gc+CYaLQ/g5Szm8mcpkGGZwgurwsDKqfrrgf6kaNKcMihCpwk5+YZOr+2DMCOQBuAtkoKgpTgvsQOd7cCOMSg82DJz/0fHKjewMQAW4KGxRyeAYqBTyNgCFy6gyq517MEYKAjUNsA2nAPc95DyMaHW4Pu0wNoCVIQPJjN96aHoIjBzINqD9X30vu8cKW6JTGQ2pc18x2x0pbdOgTSxCD1YAHzAmJBjxvc7JBGAAAAAElFTkSuQmCC");
             loadSprite(18, "loading", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZEAAABGBAMAAAD/Q7RHAAAAGFBMVEUAAAAnKSZKTElucG2Fh4SoqqfLzcr///+y5yZlAAAEnUlEQVRo3u3aS3PaMBAAYGNsuHoy0+TKTJv6SjNNfeWSciVNJlydF7qGl/n7JTGSd1e7wgaFaWfMKfFD1qeXV5KD8cb8kuC//rWSVtJKWkkraSWtpJW0klbSSlpJK2klraSV/KuSbw9qe8HsfnCyfHVuZu95Kmb3iUdJ+KAvKf7gM119vDoUb8Bv9gLsu2PD97+n4O/tr1/+OzHXXiqTRjHyJukqkLcndKqnDw94yTYfty7JoyD5jtIYeZJ0FEr2Fp670EcnkgScYiRrXkJLI/EjyUjOhtzduSwpBrJEJ4YloSJJPHqRRDRnK3DSPHIpS8w5TjLnJJlVGIkPydjKWdVsw+pZDokueE5SMJKunULuQcIky5a/S7KQJbtiQZLUTmHlQcIkW13YYyqKkRQOycKWKNcjD5dwyebMYJA7JLscspLCknAJgLHxUEnEJbtkmAuXZC5LysqEEq4V1OkoeySm/bxenf22ujd41NolWTskCyoxxfNydXajrL55qCSDXe4LeaNHdl8wkiLofP2NxwNeUhBJiKKJiBbUwRKFBtIxbrVlha3wCzMGGYzROMxLPhIDkhjn/aOtFa93x0o6uHJ1Cb3Bce1NoZYMJabN5w7JEkv6uLSibQT+w0PcFZGhQyFYmZ18CnVY0q0hKbAks6JrL1F9j4S6Gar50jVK0csLSTR97pC85x9IprW7+CESU0B9psCTHroGS8ZgwJAkSyRRqAF7k/TJyIFkWhCjesOSC5CAJNk+GEjqvwobSVIS9sRwVO3vzoXo2TEXGhZOSQ4knUazq/qSDMXe1QgAbp3rBpFzkl4dyQpIurBnqibhilsyJo2WeU6us7U8WLIZ2JLgkyUhkFSNKoN5x5K4liSvJNEnSaZE0gG5ic1dfThFaSTRQ9vpJbBOqsE3hp20kUS/r9JPl0itKzGjwbrqPXlzia5jdXIJ7I+qCsrhFKVRjyeLD6DHJ54lrlEYVIQC789mkliSDD1LUhIEgTdjJEzXm0nw7Bq840eeJY5opSesBrHv+LUoyQTJ5BgJM113RJCpMNnGknSfJKYSGEH6l3BR/dS+4c2WwBidlaDmxUX1oR+JMNNa8MtHK0vSgUZekhIJnWl5kpDZb7fKGLM2iebuBZqp5bIk3rBTepN1TxJT8gO00jJhO3x5FZSYDYuJLKGdgaxI6P9BwxuZgyt4cI8kYxrOR4770kphJTm7VmhZSZCk+H68ShRcbjxJ4MrdNWxFY2mlMJaanSSJyAClwCN/Pmx8SaJ9zc46wUkWLglISl5NPV4irXCH7B1F0xVuvMXnWOH2IBF2HWLcLUE81mjXgWzRTODI7VvSdfafBZmBjRruBKHXp667jKvt5GiJsDuXkXBfmXbXaHeuPHGOJVzfHAXHS/gdU0W2Naam9BvtmJIdwIn0jnsKPEj4XWy6KlVFio12sXE5aElX2GY8VkJ2xx9hRSV2kByLW8WypEcilHNuI+l4Cf7a45ldLzZ5GVrfN4yC/ZKQhu6/ECTxJQnCKoK/s6cdqDfl5AscuIMjS/S/7Bc4z3SlR5DU+5VfRRWvp/sqKiy/iqr/IdZfF1HJgRmsN+0AAAAASUVORK5CYII=");
             loadSprite(19, "target", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAMFBMVEXUAADUISLWQkLMTQDZZmXAdwC0lADgiIioqQCWvgCE0QAA/wDnra1i6ADw0tL////afMd+AAAC6klEQVRIx42WTWgTURCApzFNY2lLBKEX0dy8iA0UxB8CKgUv0gaKBS2B3HOJnkUDQrENQi6KEITcgydR0l0CUYReJBZCi3YpaC+9FANS6GXZ5+6+eT+z+1adS/ImX97Mzs4f2ET2916vPV9/61At6Ifeq2UIZWXDSYK+IxLIlY4Z+ga6jL8xQbsFoFQrDtF7QqoThaxSDIKsE4HqYJAyhXZNDJxq6VCvZIQgq0NDSJCGgnqFJCiroB2lHTvjS06dWxJSHl0cjBjztm5JxXUBdaXqro8E4j2UD+gg1BamFpkQ75GgVjkkn/8SU+LVUHmaQx/wmB5pEHNzyh4oa08ZkU+oroZQhR8mKMO8PNdPBpBlvoixA67PBBC6lI4yzJVOgb3Nv1+OQawm3h9gJo19jUPHHLrhQ4UEazIKkzZYHJoRvxwuLAzE95voOWzyO5dQ/zkw/QQPfe65DfhwGO2T8JBCB39zqAM8l1Ij3QBMkSC0YFsP94nIB/4fj3vegLb+175IkCX94io0w8/zXJkX0IwezjLUNciTKZrWoSJCF4hLvlCookHHChppPhaB5+7c36BpvOm/oH+Y0x13VSFTx5vGEEzQOPGInyO5KPOUR3yVvrsDIFWBBVOFoR5hlwYczTfgPUmVj1y9SJKiBdhSMM3c0ItZzMwfWFMifeeYomZHpKb89MVWOCWr++hXpNCzfkmViFO6oEvTPtROaAWM/RRtDOx3QO0pyYveCjZ6HreH1saDhiGaeKxj9GUrBzl70iNj54FiCA3BeFVNtXsfEq2Odh/xrjPYxyuG9nuU00YC6DPqrKTcvD6nAshSNclbk3coR1BGDqCmpFJ3Hg++bN2OTNgQ6uojTh9kfP7g5KwnDcWiNl67CQy/SEzzhKvKZORvGqdwxqHLw47JWCOyYfSexaEHsYUmvj9cM6xG1jJlrjqmJcsiFu875nWt91I+4/yLxMXP3lu753PzK+tO8nYY3LbvS2SDtP8A+ntynBIvYeAAAAAASUVORK5CYII=")
+            loadSprite(20, "sound", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAApBAMAAAC4kga8AAAAHlBMVEUAAAAjJSI5OjhTVVJpa2iHiYakp6PAwr/Y2tf///80ejApAAABF0lEQVQoz5XTMXOCQBAF4AUOtLRL7NIFO7oMXTpNmS52JAUTOrWzw4lFrkvU8Xj/NofDcQcu42SH6mPm9nG7EN2uty+WIyjWt7zfgXVf8r4A6wKtP+4dX1p/qRIno/URdk5G4+LVk2cno/FUUYpnm9F4jCzCiij81gXrAkdPnojGsKXo6Z0KVT89L840w8Os6nuKZIRsrBt3XbcUKCNkPfdRevJH6EBdJ3kgeQxQXvlJu/8P58+59P297qtzBlzOoe/SNzNFMq0mFOR5/tn6Yl2/WjYL4Dn3HzT33Iy09XtkoY7ZVGHnWE1iM0c9tdbDD5KK3Z/I2RMS0u6VPeayB8bjfWeft/w+11n5/6UY8HDAab65/c/+AYrN7UlrALeaAAAAAElFTkSuQmCC");
         }
     };
-    this.getValuebyID = function(spriteID) {
+    this.getValueByID = function(spriteID) {
         return spriteCanvases[spriteID]
     };
     this.getValueByName = function(spriteID) {
@@ -7154,14 +7195,14 @@ function LoadCustomMap() {
         }
     };
     this.preventDragAndDropBehavior = function(e) {
-        if (0 === aJ.getState() || 2 === aJ.getState()) {
+        if (0 === gameStateManager.getState() || 2 === gameStateManager.getState()) {
             e.stopPropagation();
             e.preventDefault();
             e.dataTransfer.dropEffect = "copy";
         }
     };
     this.handleDrop = function(e) {
-        if (0 === aJ.getState() || 2 === aJ.getState()) {
+        if (0 === gameStateManager.getState() || 2 === gameStateManager.getState()) {
             e.stopPropagation();
             e.preventDefault();
             var files = e.dataTransfer.files;
@@ -7509,7 +7550,8 @@ function Interest() {
                     interest.limitTroops(aliveEntities[aliveIndex]);
                 }
                 statisticNumbers.numbers[8] += troops[myID] - myOldTroops;
-            }
+                sounds.play(0)
+            } else sounds.play(1)
         }
     };
     this.getInterestRate = function(id) {
@@ -7631,7 +7673,7 @@ function kN() {
         var ma = .95 * Y / S;
         infoCanvas.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * pa + .8 * Z * Y), Math.floor(T - 1.76 * ma * S - .82 * la * Y));
         infoCanvas.globalAlpha = x(Y);
-        infoCanvas.drawImage(sprites.getValuebyID(4), 0, 0);
+        infoCanvas.drawImage(sprites.getValueByID(4), 0, 0);
         infoCanvas.globalAlpha = 1;
         infoCanvas.setTransform(1,
             0, 0, 1, 0, 0)
@@ -7729,8 +7771,8 @@ function kN() {
         for (O = maxEntities - 1; 0 <= O; O--) 12 > land[O] ? (E[O] = xMin[O] + 1, F[O] = yMin[O] + 1, G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2);
         if (inSpawn)
             for (O = 0; O < playerCount; O++) G[O] = 0;
-        pa = sprites.getValuebyID(4).width;
-        S = sprites.getValuebyID(4).height
+        pa = sprites.getValueByID(4).width;
+        S = sprites.getValueByID(4).height
     };
     this.setCanvasVariables = function() {
         g();
@@ -8196,7 +8238,7 @@ function main() {
     interest.generateDiscreteInterestArray();
     mapInfo.init();
     configFakeMap.init();
-    aJ.init();
+    gameStateManager.init();
     loadCustomMap.init();
     jt.init();
     wsManager.init();
@@ -8204,6 +8246,7 @@ function main() {
     nickNames.init();
     addMainCanvasEventListeners();
     sprites.init();
+    sounds.init();
     c4.canvasDirty = !0;
     setTimeout(function() {
         loadMap(1, 14071)
@@ -8231,7 +8274,7 @@ function showErrorWarning(error) {
 }
 
 function onKeydown(g) {
-    "ArrowLeft" === g.key ? gn.dynamic(3) : "ArrowUp" === g.key ? gn.dynamic(0) : "ArrowRight" === g.key ? gn.dynamic(1) : "ArrowDown" === g.key ? gn.dynamic(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : "c" === g.key && 0 !== clientStatus && statistics.a2O()
+    "ArrowLeft" === g.key ? gn.dynamic(3) : "ArrowUp" === g.key ? gn.dynamic(0) : "ArrowRight" === g.key ? gn.dynamic(1) : "ArrowDown" === g.key ? gn.dynamic(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : ' ' === g.key ? 1 === clientStatus && intelliAttack.checkIntelli() : "c" === g.key && 0 !== clientStatus && statistics.a2O()
 }
 
 function onVisibilitychange() {
@@ -8239,7 +8282,7 @@ function onVisibilitychange() {
 }
 
 function onKeyup(g) {
-    400 > c4.time || (8 !== aJ.getState() && aJ.hideIfNotHidden(g) ? c4.canvasDirty = !0 : "Escape" === g.key ? aJ.aK() : "ArrowLeft" === g.key ? gn.a2Q(3) : "ArrowUp" === g.key ? gn.a2Q(0) : "ArrowRight" === g.key ? gn.a2Q(1) : "ArrowDown" === g.key ? gn.a2Q(2) : "h" === g.key && 1 <= clientStatus && (isCanvasHidden = !isCanvasHidden, c4.canvasDirty = !0))
+    400 > c4.time || (8 !== gameStateManager.getState() && gameStateManager.hideIfNotHidden(g) ? c4.canvasDirty = !0 : "Escape" === g.key ? gameStateManager.aK() : "ArrowLeft" === g.key ? gn.a2Q(3) : "ArrowUp" === g.key ? gn.a2Q(0) : "ArrowRight" === g.key ? gn.a2Q(1) : "ArrowDown" === g.key ? gn.a2Q(2) : "h" === g.key && 1 <= clientStatus && (isCanvasHidden = !isCanvasHidden, c4.canvasDirty = !0))
 }
 
 function setIsNotClientFlag() {
@@ -8292,10 +8335,10 @@ function loadMap(mapID, k) {
         fakeRandom.jN(mapID);
         currentMapID = mapID;
         currentMapSeed = k;
-        isnotBAnorRealMap(mapID) && (mapInfo.getValuebyID(mapID).a1f = k);
+        isnotBAnorRealMap(mapID) && (mapInfo.getValueByID(mapID).a1f = k);
         if (isRealMap(currentMapID)) configRealMap(n);
         else {
-            var l = mapInfo.getValuebyID(currentMapID);
+            var l = mapInfo.getValueByID(currentMapID);
             currentMapWidth = l.width;
             currentMapHeight = l.height;
             fakeRandom.jN(l.a1f);
@@ -8310,7 +8353,7 @@ function loadMap(mapID, k) {
 
 function a2f(g) {
     var k = performance.now();
-    sm = Math.floor(29 - (k - g) / (33 * mapInfo.getValuebyID(currentMapID).per));
+    sm = Math.floor(29 - (k - g) / (33 * mapInfo.getValueByID(currentMapID).per));
     sm = 0 > sm ? 0 : 20 < sm ? 20 : sm
 }
 
@@ -8364,26 +8407,26 @@ function a2G() {
         jn.a2e()
     };
     this.init = function() {
-        if (!(7 === aJ.getState() && this.a2s)) {
+        if (!(7 === gameStateManager.getState() && this.a2s)) {
             this.a2r = !0;
             this.aA = 0;
             this.a2k = 1;
-            this.a2p = [mapInfo.getValuebyID(currentMapID).a2t[0], mapInfo.getValuebyID(currentMapID).a2u[0]];
-            this.shading = [mapInfo.getValuebyID(currentMapID).a2v[3], mapInfo.getValuebyID(currentMapID).a2v[4], mapInfo.getValuebyID(currentMapID).a2v[5], mapInfo.getValuebyID(currentMapID).a2v[6]];
-            this.a2l = mapInfo.getValuebyID(currentMapID).a2v[7];
-            this.a2m = mapInfo.getValuebyID(currentMapID).a2v[8];
-            this.a2n = mapInfo.getValuebyID(currentMapID).a2v[9];
-            this.a2o = mapInfo.getValuebyID(currentMapID).a2v[10];
+            this.a2p = [mapInfo.getValueByID(currentMapID).a2t[0], mapInfo.getValueByID(currentMapID).a2u[0]];
+            this.shading = [mapInfo.getValueByID(currentMapID).a2v[3], mapInfo.getValueByID(currentMapID).a2v[4], mapInfo.getValueByID(currentMapID).a2v[5], mapInfo.getValueByID(currentMapID).a2v[6]];
+            this.a2l = mapInfo.getValueByID(currentMapID).a2v[7];
+            this.a2m = mapInfo.getValueByID(currentMapID).a2v[8];
+            this.a2n = mapInfo.getValueByID(currentMapID).a2v[9];
+            this.a2o = mapInfo.getValueByID(currentMapID).a2v[10];
             this.a2r ? this.rd = setTimeout(g, 16) : this.update()
         }
     };
     this.update = function() {
-        if (8 === aJ.getState() && eV.gd()) this.rd = setTimeout(g, 16);
+        if (8 === gameStateManager.getState() && eV.gd()) this.rd = setTimeout(g, 16);
         else {
             if (0 === this.aA) {
                 var l = fakeRandom.a1N();
-                fakeRandom.jN(mapInfo.getValuebyID(currentMapID).a2v[2]);
-                jn.jT([currentMapWidth, currentMapHeight, mapInfo.getValuebyID(currentMapID).a2v[0], mapInfo.getValuebyID(currentMapID).a2v[1]]);
+                fakeRandom.jN(mapInfo.getValueByID(currentMapID).a2v[2]);
+                jn.jT([currentMapWidth, currentMapHeight, mapInfo.getValueByID(currentMapID).a2v[0], mapInfo.getValueByID(currentMapID).a2v[1]]);
                 fakeRandom.jN(l);
                 this.a2q = jn.a2x();
                 this.aA++;
@@ -8640,8 +8683,8 @@ function configRealMap(g) {
         currentMapID === getRealMapStartingIndex() + 3 ? k = "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C9AKsV957oMAolA6Ce7ABDABEqS57oPAenAKaG8AKfAKtV7568AUDI6GyCDUBE5V7568CAEG8GeBDyBEqQ568CAIG6GKBD6AKrV6568CKLGo59AKlAUqV656yBAKWBonAUVF8AKmAKpV656oCAUWB7DoFCA58AKmAKpV656oaCAgAoVF6AKnAKpV656ebCeeAoVFyBEABECP56KfCodAoSF6AU8MP56AhCocAyQFyEIMP559DoZC8AyPFUGIWO56AhC6C9AyPFAHIWO56AfC9C9A7BeJAUmA6IgO56AfC7DUGAeBA9A9AekBA8CO56AdDAfA6AUCA9A9AyiBA8CN56AeDKeBUHA9AyhBK8CN56AFAKYDKeC7AekBA8MN559AyBCygC9GyMICL56KEAUZDecFyBA9BU8WJ56AFAUUAUDDUdFoFA6BU8qG56KFAUUAUDDUdFUaIgG56KEAUTAoCDedE9C9IMI56KEAUSAyCDecE8DK8MF56oDAeREKbE7De8CF56UFAeSEKbEyhIWF56KHAeREUaEejIWF56KFAyQEUbEUjIgF56AFAyQEeaEeiIqE56KEA6B6EebEKiJB9956KDA7B6EebD9Dy9L9856UDA7B6EebD6D7JUHAf8756eCA8B6EUcDymJeIAV8657USEKdDemJyIAV8t7eTEAJAUSDejJ9A8AL8t7eTEAHAyRDUTL6A8AV8t7eSD9A8A6B6DUPMUGAV8t7eRD9A8A9ByfBpeS557USD7A8BKPDAOM9S657eSD7A7BeODALMyBAz8757eRD8A6ByNC9A7AoBMyBAp8857eRD9AyPBedA7AoBMoDAV8857eSEADB6BonAVXAeBS957eREUBB7BooALWTt7eRGKNEKBLoCAoMAV8F7oRGKMEUBLoDAeGAV8657oSGAMEeBLoKAV8757eTGAMEeBLz9857eTGKKEoBLp9957eTGKKEKFLgA57USGUJD7A9LWC57eRGoGDeOLWC57USGoFDeOLCF57UTGeEDeOK9U657eUGeBDyNK9U757eUGeBDeOK8U957UVGeBDUPK5VZ7UWGUBDAQKgQ57KXGKBDAQKgP57UXGABCKCAySKWR57UZF8AKRC7KKNAWF57KaF8AKRC7KAJAUBAgG57KaF8AKQC7KAJA5U957AbF7AKQC6KAJA6U857UaFyDB6CzAA9A6U957UaFoEByZKKHA7VF7UaFoHBUXKUEBCK57eaFeIBKYKKCBWK57oaFeIBKXKKDBWK576Co5eIA8AKBCVDAUKVZ77Co5eFA9C6KeBBMM578Co5UBBUaL5Vj78CozAKMC6LWR579CeyAKMCzNV7579CoyAKLCzFAKHV8578CyyAKKCfIAKEV958AZFABBAXK8Wt8KZE8AeJCBKWj8oYE7BACCBLWj8eZE7DVLWj8eYE8DLOWF86CUwDLQV7587CUwDBRV6588CKxC9L9V5589B9E9C9MCP59ARFAaMWQ59ARFUXMgQ59AQF6B6M7V659AQGKKM8V659AQGyCNWQ59KPT9V759APT9V759KOT9V859ANUMS59AJUqS59KHU5V8R7AiMA5U5WB7yE6WWB7yE6VWV7eG6UWV7eH6TWV7oG6TWV7yG6SWV7oI6SWL7oJ6QWL76A86QWL76A96PWL76BP96AUNWV78A9598AeLWV8KG599A7A6WV8KG6AA9AgVSUG588AKMA8AWWSUF589AKNA6AqVSUF588AUOA6AWWSeD588AePW9SeC588AoPXH7UEB6W877oDB7W777yBB8W777yBCCa77oCB9W677yBB9W777oBCCa77eCA6AKNW777UDAyCBWb77UFAeBBgc77KJBqb77UGB6W877KDB9W877KEB8W877UDB7W976eBA8AeRXH6UBA8AoPXR6KCA8AoQXR59AUKAoOXb59AeKAoNXb58A6A9A6BCg758AeBAoIA6A9XR6yIAUGA8Xb7UKAeBAgh77UKAKCAWjA6Ab6yLAgjAyG76UJAqkAoC768A7AqlAUC769A7AqmAKC769A7Aqp768A7A5X8AUB768A7A5X8AUB769A6A5X8AUCPAB6QA7AqnAKEO8AaPA8AqnAKEO7AkQA7AgnAUEO7AkRA6AgnAeDO7AaSA6AWoAoDO6AQTA7AMoAoDO6AQTA7AMoAyDOyB6TY877gw76KCAeBA7Y776KKAeGAMo769AoBA6AWn77AKAWo77KIAWo77UDA6YR8Cp78Ms777Y5776Y5777Yv78Yv77Yl78Yl79YR8Co78Mn78ql78qk78eBAMk78Wn78Cp778Yl77A8AMk77oFAUDAgi77KEA6AeDX577ADA8AKEX577KBA9AKFX578ABA5X5786X6785X6785X778Mp78Cp779Yb79Yb79Yl78Yl75Y7765Z7769Zb7C5Z69AL98Zj69AV97Zt69AV95Z5569AV95Z5569AV9yDAgx57ABTKFA5ZF69AV9KDA6Y957KBUCy57ACT8Zj68AV97Zt68AV97Z5567AV95Z7568Af9C6F68Af87aZ69Af87aZ7ACS5at7KCSg6557KCSW6657KBSW6675q6775g6875W6975W697zbHyb57ub87qcvkc57jc77ic77ic87hdHgdHedbddlXcKBB77Uc6AeCAeI7Sc8AUP7Pe77NfHKf57Ef97Cf97BgHCgHAgRAga98gk97g769rc69rc69hd69Xd69Xe69Dg689ha88h5686f9AUP68hHAKf68Dp679ik77iu77iyYAaxi6CoD6wi6CyE6ti8CyE6ri9CyE6ri9CyF6pjAaAupjAaAkohUBB9668heBB9667ju6r5766X5966r57658AKFj8657AeCj9657k5657ku57ku56k6655k765r6765r67CKB6gk7CAD6fk7CAD6fk6CKD6dk9CKC6dlAVAablKVAaaleVAQaloVAQZloVAQXl6CUB6Xl56vluvluvluvlkwluvluul6DUB6Ml7DAF6Jl7DAF6Jl7DAI6Fl8DAI6Fl9C9A96El9C9BAEAZ98l8C8BeCAj97l8C8BeBA6595l8C8CP9r79C7CZ9h79C6Cj9X8KYCt9X8UXC559N8eXCt9N8eXC559D8oXC9586meYC9586mUYC9586mKZDF85mKaC9586mAaC9586mAaC8587mKYC9588mAYC9589mAXC9589mKWC9589mKWC959D8KVC959N8AVC959N8AVC959N8AUDF9N79CKf59N78CKgx6Ae9N78CKgxyCEKBFX77CKgu6AKPAeGA6EAGE9l6CUguyBBoFAKND6A8E8l7CKhuoCBeFAKSC9BUul7CefueDBedCoNE6l6CeguUEA7DyWBovlyYDO6KxB9B6E6l6Coes6A8Ao5ePCUsl6Codsy67BeYEr77CUdse7KJC6Er78CUcsU7UIC8Er78CUasU7eFDerl8CKaqeEBU78AUjEh79CAZqUJA7L7EX8AUC5qBjEX8KTC5p9NyEAUlg9AKzB8C6p8A7ApeD7mKTC5p8A7AoFAVXD8mAUCscA6AVYD8mAUAyCB6rADAfYD9mATAyDB6r6MeomATAoDB6r6MonmAUAeDB6rzaD8mKUAUDB6m6AeuM6D8mKUAeEBr86AosM7D9mAUAoEB6mUGEBeD9mKTAoEB8mAJD6NKnmeRAyDB8mAJD7NAnmoQA6AKTj7AUVBAbAUINAmmoPCeCAN57AoUBKbAeIM8D8myOCAFANfAKWBUQAKDA6C7AoDAeEMymm6BySAyBhACBoZBADAUHC8BKFMKnmyTBoFANcAoNFKZN6EN8oUBeEAXcAeKF6B7AKGN6EN8yUBKFAhbAeJF7BoFAzkEX8oUBKFAraAUJF7BoIAfkEX8yTBoCA6goCA7GAGAKEO9Eh8ySChXAUGGoCAUDPAsmyQBABBrXAUDHKBPKsmyQA6AKSggcEr8yRCrXW8AoBD9kUBCUUCXVXADAKpj9AUVCUVgCfAUDED8KXCNTXUCAoomAXCXRXeCAoomAYCXQX8EX79CoWf6X7Ee5yCgKZChOX8EoeAeDAyNAXVCyYfWmE6C7BKBAULAhVCyZfCmE7C7A8AyBBKDe7AeLCyae8YKtCUCAeFCAEeyIA7Cyae5YogAULCeCAUECKDe6A9A7CobegtDKEBKXA6CUDe7BKGCUceWtDKFBAyAhJBKECedd6ZKdA6BAyAhJBUCCodc7AKHZecA6BAyAXLD7DC8UFAg58C8AyKFACfekDC8AHAM59C9AeLE9ArND6Dg77a7C8AeLFADfojDq77a7EX67Dyjb5a7EX67D7D7bW68ED66D9D6a9AKCa9D9k6EAja6AeCbekk7D9Dq66AoBbokk9D7Dg66cAklAlDW65cAlleiDW6M8yklohDW6M86D6loOAURDM6M88Dr76BUCB8DC6M89Dh77BKDB7DM59dKgl8BADB8DM57defl8A9AeUDM5q96DD79A8AUWDMyd9C9mUBAUDAUXDC5W97C9nAXDMzd8C7nUWDWyd9C5neXDqvd9C6nUXD7YrECKnAXzCelYrFCAnAoLAXkCUDAUhYrGB8D9AyKArlCKCAUiYhGB8EAFA9ArmCKBAeiYXHB7EAGjKYDqqe7B7EAGjUXDqqe9ByoA7jUXDgqfABAKLEAJjKYDWpfoKEAJjeWD9XrOA9EKJj6B9EChfeHEoJj7B9ECgfUFE6A9j8B9ECgfeDE7A9j9B8ECgfeBE9A9kARECgkoHkKRECgkyFAKFj6B8ECflKFj7B7EMek8A9j6B7EMelAIjyRECflKHj6B6D9XX7UGC9AhZBylXr7UGC9ANbBylXrDAK69A5j7BylXr7oEj7B6D5X5loEj6B7DqkloEj6B8Dgkt9AM7oTDWkseCBoEbKUDMlsKDByCbUUDgksACdAUDqjv7A5ZAVD6Xi76A5ZAWD6XY77AWzCemXHdConMUDKsmAM9AYEBUAzD7dCopL8A7KbdCyqMKBKldCyrWvcC6EqX7bC8EqW7bC9EoCAMSxo" :
         currentMapID === getRealMapStartingIndex() + 4 && (k = "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okA8BoDWK57x8D8A7FeCC7AoCAKDAUZDeMBAGWK56x8D8A8IeBDogBoIA7WU55x8D8A8L9DAQA6A8We55x7D7BKCAzLC8DCaFi97D8B7LKbDCdD9AUKx7EoPK9CoeXUiA6APFE8B6K6B8DMkC8z7E8B9KoODqoB95WFUPK9AonYoO5XFUQPMyA55aFUPAeEO578K5UWO678A5UWO678A6oJO778A7ADO778CTC6Ab5gSC8AUEAltV8DyE7rV7D7AvqV7D7A67oTUCCemAbrS9AoY78f7UEA9A7C578f7KSC878f7ASDH8V6UFAKTDR8V6UZDR8V6UZDR8V6eYDR8V6eZC978f6eTAeDC978f6eTD578f6UTD678f6eRD778f66AeEA6D878gR78gQ78qQ78qQ78qQ78qR787Vl9CK79MI79qG79qE798UM58APpUC57AjpT8Z7A55pT6Z8A65rTg58A75qTfCAp5UH5pTfDAzyA75qTfDAyMAQ86TLWAQ86TBXAa8z9BXAk8z88MoE68z86MyE686SzZA5686SfaA6688R9M6A869B76M6A769V7pbA669p7fcA569z7VdAvAQ68mQSrP78rP78sP68rP78rP68sP68sPmvPmwPcxPS5yDApm86Vl866Nm68NZ8ABdLc58ABdpZ58ABdzY58ACd9L958ADd8L858UCd8L758eCd9L658eCezK58eDezI58oDeymAe66586AXFDyHAyBAUFFZ86AXIDKKAUKAoCEt88ANNCegEZ89AXNCKhEP9KBfyQD7EJIBonD89KBAqD7B7AS9oIE6DUSAc9yEFAeB9AdyC9B8AnzC6CAD9zBUEA7CeC95eJA6An99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99AJ99ACeAT99AT99AT98Ad97Ax96Ax97AT99AABAT99AJ99AJ99AH6AC997Ax9yF99yE996A55lAO57A55lAY56A55lAY56A5bUBaoCt7Aq7UCaUEt7Aq7KDBUBY8A5t6Aq7KKAyFYyEt6Aq7KKAoHYoCt8A5a9BUBA97EAyhAMiClEA6DKCWoBAKf7EA7C9AgYDo5yF6sA6C7AqaDo5eH6qA8C6AqaDy5UH6qA9CyEW6D6FKC6wA8CyEW6D7FAG6sA8CyEWynFAG6rA8CyCW6EKzA56qA7CyDWKv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");
     k = strings.iX(k);
-    var n = mapInfo.getValuebyID(currentMapID).a2t,
-        l = mapInfo.getValuebyID(currentMapID).a2u;
+    var n = mapInfo.getValueByID(currentMapID).a2t,
+        l = mapInfo.getValueByID(currentMapID).a2u;
     currentMapWidth = 1E3 * k[0] + k[1];
     currentMapHeight = 1E3 * k[2] + k[3];
     mapBaseCanvas = document.createElement("canvas");
@@ -8799,11 +8842,11 @@ function MapInfo() {
     this.isBA = function() {
         return 1 === currentMapID
     };
-    this.getValuebyID = function(mapID) {
+    this.getValueByID = function(mapID) {
         return mapInfoArray[mapID]
     };
     this.getMapName = function() {
-        return currentMapID === customMapID ? customJSON.mapName : this.getValuebyID(currentMapID).name
+        return currentMapID === customMapID ? customJSON.mapName : this.getValueByID(currentMapID).name
     }
 }
 var mapCanvas, pixelRGBA, mapCanvasCtx, mapCanvasImgData;
@@ -9151,7 +9194,7 @@ function kk() {
         };
     this.mouseDown = function(y, A) {
         var B;
-        if (!(7 <= aJ.getState())) {
+        if (!(7 <= gameStateManager.getState())) {
             var C = n();
             if (t) {
                 for (B = 1; B < z.length; B++)
@@ -9166,7 +9209,7 @@ function kk() {
     };
     this.onPointermove = function(y, A) {
         var B;
-        if (!(7 <= aJ.getState())) {
+        if (!(7 <= gameStateManager.getState())) {
             var C = n();
             var E = x;
             var F = t ? z.length - 1 : 1;
@@ -9180,7 +9223,7 @@ function kk() {
     };
     this.drawCanvasImage = function() {
         var y;
-        if (!(7 <= aJ.getState())) {
+        if (!(7 <= gameStateManager.getState())) {
             var A = n();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
@@ -9459,11 +9502,11 @@ function kc() {
                 eT.setCanvasVariables();
                 gj.rI();        
             } else {
-                if (0 === aJ.getState()) nameInputBar.toggleVisibility(0, !0)
-                else if (2 === aJ.getState()) singleSettings.setCanvasVariables()
-                else if (3 === aJ.getState()) showError.setCanvasVariables();
-                aJ.vg();
-                aJ.vl();
+                if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, !0)
+                else if (2 === gameStateManager.getState()) singleSettings.setCanvasVariables()
+                else if (3 === gameStateManager.getState()) showError.setCanvasVariables();
+                gameStateManager.vg();
+                gameStateManager.vl();
             }
             c4.canvasDirty = !0
         }
@@ -9718,6 +9761,40 @@ function TerriWS() {
         ws.onclose = pass;
         ws.onerror = pass;
         dataReader.removeEventListener("loadend", onLoadend)
+    }
+}
+
+function Sounds() {
+    var soundtracks, unloadedSounds,
+        audioData = [
+        "data:audio/wav;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tUwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAACQACqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJANrAAAAAAAAAkBOYyPRAAAAAAAAAAAAAAAAAAAA//tUxAAACSixLxQ2AAFeqa/3HqACAAwAAHDgYGBucQDdz7T7zSnXXvsE8/gWMksEwPqzszP1/sHBgeL3/pTb3odr/pTr/i9+83uvfxe/862vfYMz+yxY5IPgg7/wwr77//aWSIG2EgEttpyMmjFfBzN0SjE2Q3d3l9RrEYtzTUMQjabag/fCxIgWzRYPHhQDg9U2LX/T6fmGP4rC2n2N/57n9d1/lD/7X/uw6xn/Rv+o+Ijr/Dr8fj8ei0Ei0Ngg//tUxAUACrUzgbiVABkEFtmDhGABSBgUAOlwsX/kHyWH7iMmV/GAmIK2IsXhMJzhl5oN1PATFslEWK5h1hV+ikJckMbU078jJv//6qjIa4kc6hx3+Ouqdk///6kpFps1D9qGQxpQEsxpFHDiVGkXBSMEgEk5oMAiWkQCiUSyq2ZlqnP//+8z6rZlyJGCQUk5pIkS00iixLArEVkCu/3AvBuNTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVV", 
+        "data:audio/wav;base64,SUQzBAAAAAAAM1REUkMAAAAGAAADMjAyMgBUU1NFAAAADwAAA0xhdmY1OC43Ni4xMDAAAAAAAAAAAAAAAP/7QMAAAAAAAAAAAAAAAAAAAAAAAEluZm8AAAAPAAAAAgAAAlcApqampqampqampqampqampqampqampqampqampqampqampqampqampqampqampqampv//////////////////////////////////////////////////////////////////AAAAAExhdmM1OC4xMwAAAAAAAAAAAAAAACQDTAAAAAAAAAJXJsUq4AAAAAAA//tQxAAACfxLY7QTAAF9JvE/EtACjSRAAAAAEAAxjHGMYwAAQAAAC7u7uzyYACMPJkyZNNAEAQBAEAfB8HwfBwEAQBAMA+D4Pg+BAQBAEAQB8+IAQDP+UdoD//y4OAg7///8uD8PEREw7M5mau/+grbAEjABaFYKjpZEk4kCoJA5NNQ0YjFc1JIcxuChTLAcB83EnmlKShw6sZ1kiYHTFqR11vWktJfV/13SfGMaq8d571lFf////+lRNRkoo3+PhR/5k6p1CFCGd0BACGf4UP/7UsQFgAu5H2/4uQIQ4gvcK4IwABgUBkAApMmt8UiNF+eB0dIPkpBxZ0dGHMA+wO2kTR/gNwMyKRSHOIMam5nyyeOGqJ08ZMv6VVv/7qDAxPL9Fv/bWympf//9Ua47l/5DX//1P/BoA+AAcGW3P+YVEKYaq7MdWhRJMBNVOrxj6K+//h1Z0RFjwlGHiOW///KnREPOgqoOlf///eDSw0WqTEFNRTMuMTAwqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq",
+        "data:audio/wav;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjMzLjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAACAAAAxgAXV1dXV1dXV1dXV1ddHR0dHR0dHR0dHR0i4uLi4uLi4uLi4uLi6KioqKioqKioqKiorq6urq6urq6urq6urrR0dHR0dHR0dHR0dHo6Ojo6Ojo6Ojo6Ojo////////////////AAAAAExhdmM1OC41OQAAAAAAAAAAAAAAACQDQAAAAAAAAAMYvzbpkQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAKsF0c6UIYABFaZ//oRlACKcWfEB9QYg4cB8+UB9QIHCjoP+oE1AgsPxOoEFOt///y8EH/fe9VIBYGcmFkR35E5s4C/+MYxBAMahHwAYooANRfxR4vh7C3/4o3R2CTdUf/6vq/r0//70b+ogtzsr/frIplkv9/MknlQSU0dRNEIJUpAJiERRQSZbLH/+MYxBkS0qa8yc1QAAl1/dIkgv5Ko+oqgMC0/69CInOOjI7+Kppv8YF///IRq/U5//m/4jD4ff///KODTP/6Kg4hjgzN2v+s/+MYxAgO2ybCOANEHJpdN7plO8mhunikovJKan/nRhG/kmr/9X5f9P+rq3/9yNbUT/+Gf+GK3///zOqn////8TX6fjD0hEOh/+MYxAcNAcqYACsURBtrCOKhV5xRdNMmnw+Pd6NxBjTXk4TCT/6K7shE/97fnjqN//5N/29R43/6KQgpSR//PNPHSoii53c4/+MYxA4N2YahcUcQAIHng8Go0G04+xQAMkXv7qavQozl/9Ytn7/lCL/sDEt/g7/rfrBb/8yhylJgN7spvWTQuRfWTmN/H0PZ/+MYxBERSmqQKY1QAOKBID1UmpWAZqKYVRQYKgWjFomTGPUaqXs+dT/NGRDjd/R55Z//+6+ZQlo9+05f/3/SW/RV1VS9m2Y+/+MYxAYMoMXAAcMYAJfGahRJMBLszNqAmoCAqUAgJAICFCUFVgq4GvxKdg0WDsSjQVGA0v/////+9UxBTUUzLjEwMFVVVVVV",
+        "data:audio/wav;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjMzLjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAACQAAA2AAVVVVVVVVVVVVVVVqampqampqampqaoCAgICAgICAgICAlZWVlZWVlZWVlZWqqqqqqqqqqqqqqsDAwMDAwMDAwMDA1dXV1dXV1dXV1dXq6urq6urq6urq6v//////////////AAAAAExhdmM1OC41OQAAAAAAAAAAAAAAACQCYAAAAAAAAANghx7hUwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAJQHElQU8AAblIafNM62IlACwEYRIDoEYVpbx6y5qvfpSnzd/fEMsAOjiI58CtNOmJIQJsBCB7TfHuZViRGWt/N1IL/+MYxBYL4MoMAY0QAJq6v1fWGOf/7Bb/0UZD//I//9HZkP//8R6VgvblttAVzR1HXRPB6F1kwta5xjiKOJpqMglcxKSs+s6U/+MYxCEU8Tb9ucxAAs7XJBzWuM5aBiaUvL1puzjQ6RSYm3HBt5FUSlWygcCaIhFxpIExwYQkUEcs726fru6cUUEknJAAK1+N/+MYxAgM+K7puHjSJusm6PlyrhS9xgFuNCImj/9tCFH2s2rDSrISayWrOkcsJQ0Qvh28RFTrmCUsgDAJpmAVrsskEtntfA/7/+MYxA8MwN7GYCsSBVEe1ZVd4vXHk6++4qxvRRv2t6sqpJoT5lvGhgwX3RsBiDK3/YKnLalDMte1xR/x18Z181e2hoKBPaVy/+MYxBcMIQLVoUkYAnfg/O1HaQP3c362NPqqmieYIQ8PvEDbvAyKBpAcsaWoAH3rDlmVSlZIVMLB5e0tLjNZbLfz05LyEpVZ/+MYxCEUgO5cAZlYAO9gOv/dJfiEUAqCIIJJM5P/jrN4ibbBsk8Js6mvlgqCoiCp3/lREKhMRCp3/6yzDpaZwiRJpFclwgar/+MYxAoNwM5AAc8AACrAnTJG8rpT9SCnevYFEwHKIEXppc2GtDmL69eJNDGZijNvxr7z7wjF+VfZ6vaErk8aRbjKHKJsXJVI/+MYxA4M2M4kAHpEhJLi49SmjDUKtVqtSAmyHi2qpheqoXIjolKmZeWqx3yiXYlBXuJVTEFNRTMuMTAwVVVVVVVVVVVVVVVV",
+        "data:audio/wav;base64,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"
+    ]; //Cycle Beep, ITick Boop, LobbyJoin, LobbyLeave, Contest
+    this.init = function() {
+        unloadedSounds = 4;
+        soundtracks = Array(unloadedSounds);
+        for (; unloadedSounds >= 0; unloadedSounds--) {
+            var sound = document.createElement("audio");
+            sound.src = audioData[unloadedSounds]
+            sound.setAttribute("preload", "auto");
+            sound.setAttribute("controls", "none");
+            sound.style.display = "none";
+            document.body.appendChild(sound)
+            soundtracks[unloadedSounds] = sound;
+        }
+        if (unloadedSounds == -1) unloadedSounds++;
+    };
+    this.areAllSoundsLoaded = function () {
+        return unloadedSounds === 0;
+    };
+    this.play = function(sIndex) {
+        if (this.areAllSoundsLoaded() && mainSettings.buttons[3].active) {
+            soundtracks[sIndex].play();
+            return true;
+        } else return false;
     }
 }
 
@@ -10457,7 +10534,7 @@ function a2K() {
         wsManager.update();
         setGameOrigin.processGameInitData();
         mainLeaderboard.update();
-        this.canvasDirty && (this.canvasDirty = !1, aJ.drawCanvasImage())
+        this.canvasDirty && (this.canvasDirty = !1, gameStateManager.drawCanvasImage())
     };
     this.a6W = function() {
         this.a6P.update()
@@ -10536,7 +10613,7 @@ function a6X() {
 
 function SpecialGames() {
     function g(k, n) {
-        8 !== aJ.getState() || 0 !== n && n !== gamemode || singleplayer || announcements.upcomingGame(k)
+        8 !== gameStateManager.getState() || 0 !== n && n !== gamemode || singleplayer || announcements.upcomingGame(k)
     }
     this.gW = 0;
     this.a6g = !0;
@@ -10603,7 +10680,7 @@ function DataDecoder() {
                 data = decoder(array, 2);
                 if (0 === data) {
                     if (0 === decoder(array, 1)) {
-                        if (0 === remote && 8 !== aJ.getState() && !(4 > messageLength)) {
+                        if (0 === remote && 8 !== gameStateManager.getState() && !(4 > messageLength)) {
                             mainLeaderboardIcon.setLabel(0, decodeNames(decoder(array, 5), array));
                             mainLeaderboardIcon.setLabel(1, "[" + decodeNames(decoder(array, 3), array) + "]");
                             var timeStampCount = decoder(array, 12),
@@ -10613,7 +10690,7 @@ function DataDecoder() {
                             playtime.addPlaytimes(playtimesArray);
                         }
                     } else {
-                        if (8 !== aJ.getState()) {
+                        if (8 !== gameStateManager.getState()) {
                             if (3 > messageLength) wsManager.closeByError(remote, 3208);
                             else {
                                 var boardType = decoder(array, 1),
@@ -10636,7 +10713,7 @@ function DataDecoder() {
                 }       
                 else if (1 === data) {
                     if (remote !== wsManager.lobby) wsManager.close(remote, 3239);
-                    else if (6 === aJ.getState() && lobby.init(), 7 !== aJ.getState()) wsManager.close(remote, 3251);
+                    else if (6 === gameStateManager.getState() && lobby.init(), 7 !== gameStateManager.getState()) wsManager.close(remote, 3251);
                     else {
                         var lobbyStats = [0, 0, 0, 0],
                             bitsNeeded = decoder(array, 6);
@@ -10660,7 +10737,7 @@ function DataDecoder() {
             }
             else {
                 if (1 === data) {
-                    if (data = aJ.getState(), 8 !== data) {
+                    if (data = gameStateManager.getState(), 8 !== data) {
                         if (10 === data)  wsManager.closeByError(remote, 3243);
                     } else {
                         if (remote !== wsManager.remote) wsManager.closeByError(remote, 3244);
@@ -10730,7 +10807,7 @@ function DataDecoder() {
                     status: var_playerStatus
                 })
             };
-            aJ.ve();
+            gameStateManager.ve();
             loadMap(var_mapID, var_mapSeed);
             1 === var_playerInfo.length && singleSettings.setBotSettings(var_gamemode);
             gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
@@ -10756,7 +10833,7 @@ function DataDecoder() {
                     status: var_playerStatus
                 })
             };
-            aJ.ve();
+            gameStateManager.ve();
             loadMap(var_mapID, var_mapSeed);
             gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
         }
@@ -10833,7 +10910,7 @@ function ka() {
 
 function kf() {
     function g(k, n, l, x, t) {
-        k >= customMapID || (currentMapID === k && (mainCanvasCtx.fillStyle = blueMoreOpaque, mainCanvasCtx.fillRect(n, l, x, t), mainCanvasCtx.fillStyle = whiteRGB2), mainCanvasCtx.strokeRect(n, l, x, t), mainCanvasCtx.fillText(mapInfo.getValuebyID(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
+        k >= customMapID || (currentMapID === k && (mainCanvasCtx.fillStyle = blueMoreOpaque, mainCanvasCtx.fillRect(n, l, x, t), mainCanvasCtx.fillStyle = whiteRGB2), mainCanvasCtx.strokeRect(n, l, x, t), mainCanvasCtx.fillText(mapInfo.getValueByID(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
     }
     this.visible = !1;
     this.xK = [0, 0, 0, 0];
