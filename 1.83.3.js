@@ -3439,8 +3439,7 @@ function TroopBar() {
 
     function n(I) {
         if (1 < I && 0 === C) return C = .01, k(), !0;
-        if (1 < I &&
-            1 === C || 0 === C) return !1;
+        if (1 < I && 1 === C || 0 === C) return !1;
         C *= I;
         C = 1 < C ? 1 : 0 > C ? 0 : C;
         k();
@@ -3458,7 +3457,7 @@ function TroopBar() {
     this.init = function() {
         B = !inSpawn;
         G = !1;
-        C = .5;
+        C = .282;
         E = 0;
         this.pT = !1;
         this.setCanvasVariables()
@@ -3530,8 +3529,7 @@ function TroopBar() {
         this.visible() && Math.floor(troops[myID] * C) !== E && (G = !0)
     };
     this.drawCanvasImage = function() {
-        this.visible() && mainCanvasCtx.drawImage(y,
-            t, this.fK)
+        this.visible() && mainCanvasCtx.drawImage(y, t, this.fK)
     }
 }
 var scaleFactor, gridWidth, gridHeight;
@@ -6995,7 +6993,7 @@ function UserSettings() {
     this.init = function() {
         if (!(5 <= androidVersion || isIOS)) {
             B = 4;
-            cookieStatus = 0;
+            cookieStatus = 2;
             t = [];
             y = 10;
             for (var C = 0; C < y; C++) t.push("u" + C);
@@ -8275,7 +8273,31 @@ function showErrorWarning(error) {
 }
 
 function onKeydown(g) {
-    "ArrowLeft" === g.key ? gn.dynamic(3) : "ArrowUp" === g.key ? gn.dynamic(0) : "ArrowRight" === g.key ? gn.dynamic(1) : "ArrowDown" === g.key ? gn.dynamic(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : ' ' === g.key ? 1 === clientStatus && intelliAttack.checkIntelli() : "c" === g.key && 0 !== clientStatus && statistics.a2O()
+    if ("ArrowLeft" === g.key) {
+        gn.dynamic(3);
+    } else if ("ArrowUp" === g.key) {
+        gn.dynamic(0);
+    } else if ("ArrowRight" === g.key) {
+        gn.dynamic(1);
+    } else if ("ArrowDown" === g.key) {
+        gn.dynamic(2);
+    } else if ("a" === g.key) {
+        troopBar.r3(.96875);
+    } else if ("d" === g.key) {
+        troopBar.r3(32 / 31);
+    } else if ("s" === g.key) {
+        troopBar.r3(.875);
+    } else if ("w" === g.key) {
+        troopBar.r3(8 / 7);
+    } else if ("1" === g.key) {
+        troopBar.r3(5 / 6);
+    } else if ("2" === g.key) {
+        troopBar.r3(1.2);
+    } else if (' ' === g.key) {
+        1 === clientStatus && intelliAttack.checkIntelli();
+    } else if ("c" === g.key && 0 !== clientStatus) {
+        statistics.a2O();
+    }
 }
 
 function onVisibilitychange() {
