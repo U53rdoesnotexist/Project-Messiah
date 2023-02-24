@@ -692,7 +692,7 @@ function botCheckAdvanceAndProcessNeutralAttack(id, amount) {
 var botStartingTroops = [60, 74, 112, 200, 256, 512];
 
 function DifficultyEngine() {
-    var botTiming, sendRatio, randomSendRatio, sendRatioFluctuations, botTimingInterval, randomTimingInterval;
+    var sendRatio, randomSendRatio, sendRatioFluctuations, botTimingInterval, randomTimingInterval;
     this.difficultyLabel = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
     this.dm = [97, 95, 93, 90, 87, 84]; //Unused
     this.attackBotsProbi = [98, 95, 90, 40, 20, 0];
@@ -700,7 +700,7 @@ function DifficultyEngine() {
     this.attackLeastProbi = [0, 0, 0, 0, 50, 90];
     this.init = function() {
         var botIndex;
-        botTiming = new Uint8Array(botCount);
+        this.botTiming = new Uint8Array(botCount);
         sendRatio = new Uint16Array(botCount);
         randomSendRatio = new Uint16Array(botCount);
         sendRatioFluctuations = new Uint8Array(botCount);
@@ -764,7 +764,7 @@ function DifficultyEngine() {
                 sendRatio[botIndex] = 400 + fakeRandom.cf(101);
                 randomSendRatio[botIndex] = 50 + fakeRandom.cf(101);
             }
-            botTiming[botIndex] = 1 + divideFloor(botTimingInterval[botIndex] * fakeRandom.random(), 10 * fakeRandom.value(100))
+            this.botTiming[botIndex] = 1 + divideFloor(botTimingInterval[botIndex] * fakeRandom.random(), 10 * fakeRandom.value(100))
         }
     };
     this.setZombieDifficulty = function() {
@@ -778,16 +778,16 @@ function DifficultyEngine() {
             }
     };
     this.setTiming = function(botIndex, timing) {
-        0 <= botIndex && (botTiming[botIndex] = timing)
+        0 <= botIndex && (this.botTiming[botIndex] = timing)
     };
     this.update = function(botIndex) {
-        if (0 === --botTiming[botIndex]) {
+        if (0 === --this.botTiming[botIndex]) {
             if (botTimingInterval[botIndex] !== randomTimingInterval[botIndex]) botTimingInterval[botIndex] += botTimingInterval[botIndex] < randomTimingInterval[botIndex] ? 3 : -3
             if (sendRatio[botIndex] !== randomSendRatio[botIndex]) {
                 sendRatio[botIndex] += sendRatio[botIndex] < randomSendRatio[botIndex] ? sendRatioFluctuations[botIndex] : -sendRatioFluctuations[botIndex];
                 sendRatio[botIndex] = Math.abs(sendRatio[botIndex] - randomSendRatio[botIndex]) <= sendRatioFluctuations[botIndex] ? randomSendRatio[botIndex] : sendRatio[botIndex]
             };
-            botTiming[botIndex] = divideFloor(botTimingInterval[botIndex], 10);
+            this.botTiming[botIndex] = divideFloor(botTimingInterval[botIndex], 10);
             var id = botIndex + playerCount;
             botProcessStrategy(id, divideFloor(sendRatio[botIndex] * troops[id], 1E3))
         }
@@ -1675,8 +1675,8 @@ function jb() {
 var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, strings, hu, fq, announcements, jf, 
     attacksBar, c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, preLobby, aJ, showError, nameInputBar, 
     jl, singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, 
-    configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, 
-    lobby, js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON;
+    configFakeMap, mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby,
+    js, peace, setGameOrigin, wsManager, eH, jt, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON, intelliAttack;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
@@ -1744,7 +1744,8 @@ function construct() {
     antiFullSend = new AntiFullSend;
     eQ = new ko;
     loadCustomMap = new LoadCustomMap;
-    customJSON = new CustomJSON
+    customJSON = new CustomJSON;
+    intelliAttack = new IntelliAttack
 }
 
 function jx() {
@@ -4672,6 +4673,96 @@ function ts() {
                     this.tu[3] = g;
                     break a
                 }
+    }
+}
+
+function IntelliAttack() {
+    this.checkIntelli = function() {
+        if (1 === clientStatus && !(2 === playerStatus[myID] || 0 === isAlive[myID] || inSpawn || attacks.isUnderAttackCap(myID) && 0 !== landBorderPixels[myID].length)) this.startIntelli()
+    };
+    this.startIntelli = function() {
+        var targets = this.getBorderingEntities(myID, !teamGame).filter(targetID => targetID != maxEntities);
+        this.removeAttackingTarget(myID, targets);
+        0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(targets[0]))
+    };
+    this.doIntelliAttack = function(target) {
+        announcements.low_balance();
+        singleplayer ? processAttack(myID, target.player, target.ratio) : dataEncoder.attack(target.ratio, target.player === maxEntities ? myID : target.player)
+    };
+    this.sortTargets = function(targetPenalties) {
+        targetPenalties.sort(function(prev, next) {
+            return prev.peanlty - next.peanlty
+        })
+    };
+    this.calcValue = function(targets) {
+        var tIndex, targetPenalties = [],
+            targetsCount = targets.length;
+        for (tIndex = 0; tIndex < targetsCount; tIndex++) {
+            var id = targets[tIndex], predDensity, mutualBorder = [], returnFactor = 0, timeLeft;
+            if (id != maxEntities) {
+                predDensity = (id < playerCount && difficultyEngine.botTiming[id-playerCount] < 10) ? 0.5 : troops[id]/land[id];
+                for (var bIndex = 0; bIndex < landBorderPixels[id].length; bIndex++) {
+                    for (let side = 0; side <+ 3; side++) {
+                        let pIndex = landBorderPixels[id][bIndex] + offset[side];
+                        if (pixel.strongIsOwner(myID, pIndex) && !mutualBorder.includes(landBorderPixels[id][bIndex])) mutualBorder.push(landBorderPixels[id][bIndex])
+                        else if (pixel.isNeutral(pIndex) && difficultyEngine.botTiming[id-playerCount] < 10 && !returnFactor) returnFactor += 0.9*troops[id]/(troops[id] + attacks.getTotalTroopsAttacking(id))
+                    }
+                }
+                for (let aIndex = 0; aIndex < attacks.getCurrentAttackCount(id); aIndex++) {
+                    var returnProbi;
+                    if (attacks.getBoatIDFromIndex(id, aIndex) != 0) returnProbi = 0
+                    else {
+                        var target2 = attacks.getTargetFromIndex(id, aIndex)
+                        if (target2 == maxEntities) returnProbi = 1
+                        else {
+                            var mutualBorder2 = [], borderRatio;
+                            for (var bIndex = 0; bIndex < landBorderPixels[target2].length; bIndex++) {
+                                for (let side = 0; side <= 3; side++) {
+                                    let pIndex = landBorderPixels[target2][bIndex] + offset[side];
+                                    if (pixel.strongIsOwner(id, pIndex) && !mutualBorder2.includes(landBorderPixels[target2][bIndex])) mutualBorder2.push(landBorderPixels[target2][bIndex])
+                                }
+                            }
+                            borderRatio = mutualBorder2.length/landBorderPixels[id].length;
+                            returnProbi = borderRatio <= 0.1 ? 1 - 3 * Math.sqrt(borderRatio) : 0
+                        }
+                    }
+                    returnFactor += returnProbi * attacks.getRemainingTroopsFromIndex(id, aIndex) / (troops[id] + attacks.getTotalTroopsAttacking(id))
+                }
+                var ticksElapsed = c4.ticksElapsed(),
+                    speed = land[myID] < 1E3 ? 1/4 : land[myID] < 1E4 ? 1/3 : land[myID] < 6E4 ? 1/2 : land[myID] < 16E4 ? 1 : land[myID] < 3E5 ? 2 : 3 ;
+                timeLeft = (100 - (ticksElapsed % 100) - (singleplayer ? 1 : 7 - (((divideFloor(ticksElapsed, 100))*100 + (ticksElapsed % 100) - 1) % 7)));
+                targetPenalties.push({
+                    player: id,
+                    peanlty: 3 * predDensity - this.landWeighting(id) ** 1.8 - (mutualBorder.length/landBorderPixels[id].length) ** 0.5 + returnFactor,
+                    ratio: Math.round(Math.min((6 + 2 * predDensity) * mutualBorder.length * speed * (timeLeft <= 20 ? 20 : timeLeft), 2*(troops[id] + land[id])) / troops[myID] * 1E3),
+                })
+            }
+        }
+        return targetPenalties
+    };
+    this.landWeighting = function(id) {
+        var totalLand = 0, aliveBots = 0;;
+        aliveEntities.forEach(e => e >= playerCount && (totalLand += land[e], aliveBots++))
+        return totalLand == 0 ? 0 : land[id] * aliveBots / totalLand;
+    }
+    this.removeAttackingTarget = function(myID, targets) {
+        for (var tIndex = targets.length - 1; 0 <= tIndex; tIndex--) if (attacks.check(myID, targets[tIndex])) targets.splice(tIndex, 1)
+    };
+    this.getBorderingEntities = function(id, considerTeamates) {
+        var index, side, borderingEntities = [],
+            borderingEntityCount = 0;
+        var bIndex = landBorderPixels[id].length - 1;
+        a: for (; 0 <= bIndex; bIndex--)
+            for (side = 3; 0 <= side; side--) {
+                var ownerID = pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side]) ? maxEntities : pixel.getOwner(landBorderPixels[id][bIndex] + offset[side]);
+                if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamates || isNotTeamate(id, ownerID))) {
+                    for (index = borderingEntityCount - 1; 0 <= index; index--)
+                        if (borderingEntities[index] === ownerID) continue a;
+                    borderingEntities.push(ownerID);
+                    borderingEntityCount++
+                }
+            }
+        return borderingEntities
     }
 }
 
@@ -8138,7 +8229,7 @@ function showErrorWarning(error) {
 }
 
 function onKeydown(g) {
-    "ArrowLeft" === g.key ? gn.dynamic(3) : "ArrowUp" === g.key ? gn.dynamic(0) : "ArrowRight" === g.key ? gn.dynamic(1) : "ArrowDown" === g.key ? gn.dynamic(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : "c" === g.key && 0 !== clientStatus && statistics.a2O()
+    "ArrowLeft" === g.key ? gn.dynamic(3) : "ArrowUp" === g.key ? gn.dynamic(0) : "ArrowRight" === g.key ? gn.dynamic(1) : "ArrowDown" === g.key ? gn.dynamic(2) : "a" === g.key ? troopBar.r3(.96875) : "d" === g.key ? troopBar.r3(32 / 31) : "s" === g.key ? troopBar.r3(.875) : "w" === g.key ? troopBar.r3(8 / 7) : "1" === g.key ? troopBar.r3(5 / 6) : "2" === g.key ? troopBar.r3(1.2) : ' ' === g.key ? 1 === clientStatus && intelliAttack.checkIntelli() : "c" === g.key && 0 !== clientStatus && statistics.a2O()
 }
 
 function onVisibilitychange() {
