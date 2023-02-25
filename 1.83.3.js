@@ -2315,7 +2315,7 @@ function Announcements() {
                 }
                 if (xPos >= prevClientWidth - pendingAnnouncements[mIndex].width - N) {
                     if (pendingAnnouncements[mIndex].mX) {
-                        eV.gg(pendingAnnouncements[mIndex].player, 800, !1, 0);
+                        eV.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
                         if (0 <= pendingAnnouncements[mIndex].mW) {
                             Q = pendingAnnouncements[mIndex].mW;
                             pendingAnnouncements[mIndex].mW = pendingAnnouncements[mIndex].player;
@@ -3457,7 +3457,7 @@ function TroopBar() {
     this.init = function() {
         B = !inSpawn;
         G = !1;
-        C = .282;
+        C = .5;
         E = 0;
         this.pT = !1;
         this.setCanvasVariables()
@@ -9223,7 +9223,7 @@ function MoreSettings() {
                 for (sIndex = 1; sIndex < settingsArray.length; sIndex++) {
                     if (k(y, A, C, sIndex)) {
                         if (1 === settingsArray[sIndex].id) {
-                            if (wsManager.terriWsCount === moreSettings.selectedRemote) moreSettings.selectedRemote = 1
+                            if (wsManager.terriWsCount === moreSettings.selectedRemote + 1 ) moreSettings.selectedRemote = 1
                             else moreSettings.selectedRemote++;
                             settingsArray[1].name = "Lobby " + (moreSettings.selectedRemote >= wsManager.serverCount ? `${moreSettings.selectedRemote} (${(moreSettings.selectedRemote - 1)% 3 + 1}B)` : moreSettings.selectedRemote);
                             c4.canvasDirty = !0;
