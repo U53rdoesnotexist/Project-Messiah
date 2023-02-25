@@ -845,18 +845,18 @@ function eU() {
 }
 
 function ea() {
-    gameLeaderboard.eb(!1);
-    attacksBar.eb();
-    eB.eb(!1);
-    eO.eb();
-    troopBar.eb();
-    peace.eb();
-    eA.eb();
+    gameLeaderboard.drawCanvas(!1);
+    attacksBar.drawCanvas();
+    eB.drawCanvas(!1);
+    eO.drawCanvas();
+    troopBar.drawCanvas();
+    peace.drawCanvas();
+    eA.drawCanvas();
     eT.updateRenderObject()
 }
 
 function ec() {
-    eA.eb() && (c4.canvasDirty = !0);
+    eA.drawCanvas() && (c4.canvasDirty = !0);
     wsManager.update()
 }
 
@@ -885,7 +885,7 @@ function Speed() {
             if (10 === intervalsLeft[attackers[attackerIndex]]) setSpeedInterval(attackers[attackerIndex])
             else if (0 === intervalsLeft[attackers[attackerIndex]]--) setSpeedInterval(attackers[attackerIndex]), attackProcessInit(attackers[attackerIndex]);
         }
-        16E4 <= land[orderedLand[0]] && (checkHigherSpeed(16E4), 3E5 <= land[orderedLand[0]] && checkHigherSpeed(3E5));
+        16E4 <= land[landOrder[0]] && (checkHigherSpeed(16E4), 3E5 <= land[landOrder[0]] && checkHigherSpeed(3E5));
         land[myID] > statisticNumbers.numbers[7] && (statisticNumbers.numbers[7] = land[myID]);
         statisticNumbers.numbers[14] += old_myTroops - troops[myID] + old_AttackLoses - statisticNumbers.numbers[13]
     };
@@ -1402,28 +1402,28 @@ function hp() {
     }
 }
 
-function hw(g, k, n) {
-    g.clearRect(0, 0, k, n);
-    g.fillStyle = blackMoreOpaque;
-    g.fillRect(0, 0, k, n)
+function clearAndFillBlackRect(canvas, width, size) {
+    canvas.clearRect(0, 0, width, size);
+    canvas.fillStyle = blackMoreOpaque;
+    canvas.fillRect(0, 0, width, size)
 }
 
-function hz(g, k, n, l) {
-    g.fillStyle = whiteRGB2;
-    g.fillRect(0, 0, k, l);
-    g.fillRect(0, 0, l, n);
-    g.fillRect(k - l, 0, l, n);
-    g.fillRect(0, n - l, k, l)
+function fourRectFiller(canvas, width, height, size) {
+    canvas.fillStyle = whiteRGB2;
+    canvas.fillRect(0, 0, width, size);
+    canvas.fillRect(0, 0, size, height);
+    canvas.fillRect(width - size, 0, size, height);
+    canvas.fillRect(0, height - size, width, size)
 }
 
-function i1(g, k, n, l, x, t, z) {
-    g.fillStyle = whiteRGB2;
-    t = Math.floor(l * t);
-    t += (t - x) % 2;
-    var y = Math.floor((t - x) / 2);
-    l = Math.floor((l - t) / 2);
-    g.fillRect(k + l, n + l + y, t, x);
-    z && g.fillRect(k + l + y, n + l, x, t)
+function drawDiagRect(canvas, startX, startY, padding, width, height, drawHorizOrVert) {
+    canvas.fillStyle = whiteRGB2;
+    height = Math.floor(padding * height);
+    height += (height - width) % 2;
+    var y = Math.floor((height - width) / 2);
+    padding = Math.floor((padding - height) / 2);
+    canvas.fillRect(startX + padding, startY + padding + y, height, width);
+    if (drawHorizOrVert) canvas.fillRect(startX + padding + y, startY + padding, width, height)
 }
 
 function Points1v1() {
@@ -1549,18 +1549,18 @@ function Strings() {
 function EndGame() {
     this.endGame = function(winner) {
         if (2 === clientStatus) var k = !0;
-        else peace.iv(), clientStatus = 2, spectatorCount = playersIngame, k = !1;
+        else peace.notPeaceGameEnd(), clientStatus = 2, spectatorCount = playersIngame, k = !1;
         if (!k) {
             if (8 === gamemode) {
                 var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
                 (k = winner === myID) ? announcements.genericAnnouncement(winner, 2): announcements.genericAnnouncement(1 - myID, 3);
                 points1v1.calculateElo(winner)
-            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? orderedLand[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.resultTeam(winner[1])), announcements.ip(k)) : (result = orderedLand[0], k = result === myID, announcements.resultBR(result));
+            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? landOrder[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.resultTeam(winner[1])), announcements.ip(k)) : (result = landOrder[0], k = result === myID, announcements.resultBR(result));
             singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(k, !1);
             announcements.iy(!0);
-            gameLeaderboard.eb(!0);
-            eB.eb(!0);
+            gameLeaderboard.drawCanvas(!0);
+            eB.drawCanvas(!0);
             c4.canvasDirty = !0;
             h8.iz();
             setAndroidState(0)
@@ -1578,7 +1578,7 @@ function Spawn() {
         0 !== isAlive[myID] ? (statisticNumbers.numbers[7] = land[myID], statisticNumbers.numbers[8] = troops[myID], troopBar.toggleVisibility(), eB.j2(), eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5), eX.init()) : gameResultBox.show(!1, !1);
         announcements.j3(18);
         eA.j4();
-        eA.eb();
+        eA.drawCanvas();
         spawn = null;
         h8.j5 = !0;
         h8.j6();
@@ -1670,7 +1670,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
 function ja() {
     eV.ge();
     0 === isAlive[myID] && gameResultBox.show(!1, !0);
-    eA.eb()
+    eA.drawCanvas()
 }
 
 function jb() {
@@ -3046,7 +3046,7 @@ function AttacksBar() {
         baseBarCanvasWidth = Math.floor(mapBaseCanvasCtx.measureText("02 000 000 0000").width);
         for (var aIndex = myAttacks.length - 1; 0 <= aIndex; aIndex--) addAttacksBar(myAttacks[aIndex]), drawAttacksBar(aIndex)
     };
-    this.eb = function() {
+    this.drawCanvas = function() {
         for (var C = myAttacks.length - 1; 0 <= C; C--) myAttacks[C].updated && (myAttacks[C].updated = !1, drawAttacksBar(C))
     };
     this.splitText = function(text) {
@@ -3252,151 +3252,170 @@ function k2() {
 }
 
 function Peace() {
-    function g() {
-        var D = peace.width;
-        E = !1;
-        hw(t, D, l);
-        var K = Math.floor(D / 2);
-        1 === y ? (t.fillStyle = greenBrightMoreOpaque, t.fillRect(K, 0, K, l)) : -1 === y && (t.fillStyle = redMoreOpaque, t.fillRect(0, 0, K, l));
-        hz(t, D, l, 2);
-        K = Math.floor(.25 * l);
-        K = 2 > K ? 2 : K;
-        t.fillStyle = whiteBrightMoreOpaque;
-        var J = Math.floor((l - 4) * A[1] / B[1]);
-        0 < J && t.fillRect(2, l - 2 - J, K, J);
-        J = Math.floor((l - 4) * A[0] / B[0]);
-        0 < J && t.fillRect(D - 2 - K, l - 2 - J, K, J);
-        K = Math.floor(l / 8);
-        K = 2 > K ? 2 : K;
-        i1(t, Math.floor(.4 * l), 0, l, K, .5, !1);
-        i1(t, Math.floor(D - 1.4 * l), 0, l, K, .5, !0);
-        t.drawImage(z, Math.floor((D - z.width) / 2), 3)
+    function drawPeaceBar() {
+        var peaceBarWidth = peace.width;
+        hasVoted = !1;
+        clearAndFillBlackRect(peaceCanvasCtx, peaceBarWidth, peaceBarHeight);
+        var midPoint = Math.floor(peaceBarWidth / 2);
+        if (1 === myChoice) {
+            peaceCanvasCtx.fillStyle = greenBrightMoreOpaque;
+            peaceCanvasCtx.fillRect(midPoint, 0, midPoint, peaceBarHeight);
+        } else if (-1 === myChoice) {
+            peaceCanvasCtx.fillStyle = redMoreOpaque;
+            peaceCanvasCtx.fillRect(0, 0, midPoint, peaceBarHeight);
+        }
+        fourRectFiller(peaceCanvasCtx, peaceBarWidth, peaceBarHeight, 2);
+        midPoint = Math.floor(.25 * peaceBarHeight);
+        midPoint = 2 > midPoint ? 2 : midPoint;
+        peaceCanvasCtx.fillStyle = whiteBrightMoreOpaque;
+        var peaceProgressBarHeight = Math.floor((peaceBarHeight - 4) * peaceProgress[1] / peaceRequirement[1]);
+        if (0 < peaceProgressBarHeight) peaceCanvasCtx.fillRect(2, peaceBarHeight - 2 - peaceProgressBarHeight, midPoint, peaceProgressBarHeight);
+        peaceProgressBarHeight = Math.floor((peaceBarHeight - 4) * peaceProgress[0] / peaceRequirement[0]);
+        if (0 < peaceProgressBarHeight) peaceCanvasCtx.fillRect(peaceBarWidth - 2 - midPoint, peaceBarHeight - 2 - peaceProgressBarHeight, midPoint, peaceProgressBarHeight);
+        midPoint = Math.floor(peaceBarHeight / 8);
+        midPoint = 2 > midPoint ? 2 : midPoint;
+        drawDiagRect(peaceCanvasCtx, Math.floor(.4 * peaceBarHeight), 0, peaceBarHeight, midPoint, .5, !1);
+        drawDiagRect(peaceCanvasCtx, Math.floor(peaceBarWidth - 1.4 * peaceBarHeight), 0, peaceBarHeight, midPoint, .5, !0);
+        peaceCanvasCtx.drawImage(peaceIconCanvas, Math.floor((peaceBarWidth - peaceIconCanvas.width) / 2), 3)
     }
 
-    function k() {
-        E = !0;
-        F = 140;
-        y = 0;
-        C = [];
+    function resetCurrentPeace() {
+        hasVoted = !0;
+        countDown = 140;
+        myChoice = 0;
+        voterList = [];
         peace.visible = !1;
-        A[0] = A[1] = 0
+        peaceProgress[0] = peaceProgress[1] = 0
     }
 
-    function n() {
-        return troopBar.md(announcements.ma()) ? troopBar.fK - l - m5 : canvasHeight - l - (isZoom ? 2 : 1) * m5
+    function getPeaceBarYPos() {
+        return troopBar.md(announcements.ma()) ? troopBar.fK - peaceBarHeight - m5 : canvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * m5
     }
-    var l, x, t, z, y, A, B, C, E, F, G, N, I;
+    var peaceBarHeight, peaceCanvas, peaceCanvasCtx, peaceIconCanvas, myChoice, peaceProgress, peaceRequirement, voterList, hasVoted, countDown, oldTop10Land, peaceCount, timeBeforeHidden;
     this.init = function() {
-        N = I = 0;
-        E = this.visible = !1;
-        F = 140;
-        y = 0;
-        A = [0, 0];
-        B = [1, 1];
-        C = [];
-        G = new Uint32Array(10);
+        peaceCount = timeBeforeHidden = 0;
+        hasVoted = this.visible = !1;
+        countDown = 140;
+        myChoice = 0;
+        peaceProgress = [0, 0];
+        peaceRequirement = [1, 1];
+        voterList = [];
+        oldTop10Land = new Uint32Array(10);
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        l = troopBar.height;
-        this.width = 4 * l;
-        this.qd();
-        x = document.createElement("canvas");
-        x.width = this.width;
-        x.height = l;
-        t = x.getContext("2d", {
+        peaceBarHeight = troopBar.height;
+        this.width = 4 * peaceBarHeight;
+        this.drawPeaceIcon();
+        peaceCanvas = document.createElement("canvas");
+        peaceCanvas.width = this.width;
+        peaceCanvas.height = peaceBarHeight;
+        peaceCanvasCtx = peaceCanvas.getContext("2d", {
             alpha: !0
         });
-        g()
+        drawPeaceBar()
     };
-    this.eb = function() {
-        E && g()
+    this.drawCanvas = function() {
+        hasVoted && drawPeaceBar()
     };
-    this.qd = function() {
-        var D = l - 6;
-        D = 6 > D ? 6 : D;
-        if (void 0 === z || z.width !== D) {
-            z = document.createElement("canvas");
-            z.width = D;
-            z.height = D;
-            var K = z.getContext("2d", {
+    this.drawPeaceIcon = function() {
+        var peaceIconSize = peaceBarHeight - 6;
+        peaceIconSize = 6 > peaceIconSize ? 6 : peaceIconSize;
+        if (void 0 === peaceIconCanvas || peaceIconCanvas.width !== peaceIconSize) {
+            peaceIconCanvas = document.createElement("canvas");
+            peaceIconCanvas.width = peaceIconSize;
+            peaceIconCanvas.height = peaceIconSize;
+            var peaceIconCanvasCtx = peaceIconCanvas.getContext("2d", {
                 alpha: !0
             });
-            K.clearRect(0, 0, D, D);
-            var J = Math.floor(D / 8);
-            J = 1 > J ? 1 : J;
-            K.lineWidth = J;
-            K.strokeStyle = whiteRGB2;
-            var L = Math.floor(D / 2);
-            D = Math.floor((D - J) / 2);
-            K.beginPath();
-            K.arc(L, L, D, 0, 2 * Math.PI);
-            K.moveTo(L, L - D);
-            K.lineTo(L, L + D);
-            K.moveTo(L + Math.cos(.78 * Math.PI) * D, L + Math.cos(.28 * Math.PI) * D);
-            K.lineTo(L, L);
-            K.lineTo(L + Math.cos(.22 * Math.PI) * D, L + Math.cos(1.72 * Math.PI) * D);
-            K.stroke()
+            peaceIconCanvasCtx.clearRect(0, 0, peaceIconSize, peaceIconSize);
+            var strokeWidth = Math.floor(peaceIconSize / 8);
+            strokeWidth = 1 > strokeWidth ? 1 : strokeWidth;
+            peaceIconCanvasCtx.lineWidth = strokeWidth;
+            peaceIconCanvasCtx.strokeStyle = whiteRGB2;
+            var centerX = Math.floor(peaceIconSize / 2);
+            peaceIconSize = Math.floor((peaceIconSize - strokeWidth) / 2);
+            peaceIconCanvasCtx.beginPath();
+            peaceIconCanvasCtx.arc(centerX, centerX, peaceIconSize, 0, 2 * Math.PI);
+            peaceIconCanvasCtx.moveTo(centerX, centerX - peaceIconSize);
+            peaceIconCanvasCtx.lineTo(centerX, centerX + peaceIconSize);
+            peaceIconCanvasCtx.moveTo(centerX + Math.cos(.78 * Math.PI) * peaceIconSize, centerX + Math.cos(.28 * Math.PI) * peaceIconSize);
+            peaceIconCanvasCtx.lineTo(centerX, centerX);
+            peaceIconCanvasCtx.lineTo(centerX + Math.cos(.22 * Math.PI) * peaceIconSize, centerX + Math.cos(1.72 * Math.PI) * peaceIconSize);
+            peaceIconCanvasCtx.stroke()
         }
     };
-    this.mouseDown = function(D, K) {
-        if (D < canvasWidth - this.width - m5) return !1;
-        var J = n();
-        if (K < J || K > J + l) return !1;
-        J = D > canvasWidth - m5 - this.width /
-            2;
-        singleplayer ? this.processVotePeace(0, J) : hu.isHuman(myID) && 0 !== isAlive[myID] && dataEncoder.votePeace(J);
+    this.mouseDown = function(xPos, yPos) {
+        if (xPos < canvasWidth - this.width - m5) return !1;
+        var peaceBarYPos = getPeaceBarYPos();
+        if (yPos < peaceBarYPos || yPos > peaceBarYPos + peaceBarHeight) return !1;
+        var vote = xPos > canvasWidth - m5 - this.width / 2;
+        if (singleplayer) this.processVotePeace(0, vote)
+        else if (hu.isHuman(myID) && 0 !== isAlive[myID]) dataEncoder.votePeace(vote);
         return !0
     };
     this.update = function() {
-        if (0 < I) I--, 0 === I && k();
+        if (0 < timeBeforeHidden) {
+            timeBeforeHidden--;
+            if (0 === timeBeforeHidden) resetCurrentPeace()
+        }
         else if (this.visible) {
-            F--;
-            var D;
-            if (D = 270 === F && 2 <= N) a: {
-                for (D = aliveCount - 1; 0 <= D; D--)
-                    if (hu.isHuman(aliveEntities[D])) {
-                        D = !1;
+            countDown--;
+            if (270 === countDown && 2 <= peaceCount) a: {
+                var aliveIndex;
+                for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--)
+                    if (hu.isHuman(aliveEntities[aliveIndex])) {
+                        aliveIndex = !1;
                         break a
-                    } D = !0
+                    } aliveIndex = !0
             }
-            D && (E = !0, A[0] += B[0]);
-            180 === F && 3 * A[0] < B[0] ? k() : A[0] >= B[0] ? endGame.endGame(-1) : A[1] >= B[1] ? I = 4 : 0 >= F && k()
+            if (aliveIndex) {
+                hasVoted = !0;
+                peaceProgress[0] += peaceRequirement[0];
+            }
+            if (180 === countDown && 3 * peaceProgress[0] < peaceRequirement[0]) resetCurrentPeace()
+            else if (peaceProgress[0] >= peaceRequirement[0]) endGame.endGame(-1)
+            else if (peaceProgress[1] >= peaceRequirement[1]) timeBeforeHidden = 4
+            else if (0 >= countDown) resetCurrentPeace()
         } else {
-            for (D = 9; 0 <= D; D--) 12 < Math.abs(G[D] - land[orderedLand[D]]) && (F = 140), G[D] = land[orderedLand[D]];
-            D = 0 >= --F ? !0 : !1;
-            if (D) {
+            for (var orderIndex = 9; 0 <= orderIndex; orderIndex--) {
+                if (12 < Math.abs(oldTop10Land[orderIndex] - land[landOrder[orderIndex]])) countDown = 140;
+                oldTop10Land[orderIndex] = land[landOrder[orderIndex]];
+            }
+            if (0 >= --countDown) {
                 this.visible = !0;
-                F = 360;
-                var K = 0;
-                for (D = aliveCount - 1; 0 <= D; D--) hu.isHuman(aliveEntities[D]) && (K += land[aliveEntities[D]]);
-                B[0] = getMax(divideFloor(3 * K, 5), 1);
-                teamGame && 9 !== gamemode && (B[0] =
-                    getMin(getMax(divideFloor(K * (100 - divideFloor(100 * eT.qm(), currentLandPixelsCount)), 100), 1), B[0]));
-                B[1] = getMax(K - B[0], 1);
-                N++
+                countDown = 360;
+                var totalLand = 0;
+                for (var aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
+                    if (hu.isHuman(aliveEntities[aliveIndex])) totalLand += land[aliveEntities[aliveIndex]];
+                }
+                peaceRequirement[0] = getMax(divideFloor(3 * totalLand, 5), 1);
+                if (teamGame && 9 !== gamemode) {
+                    peaceRequirement[0] = getMin(getMax(divideFloor(totalLand * (100 - divideFloor(100 * eT.getLargestTeamLand(), currentLandPixelsCount)), 100), 1), peaceRequirement[0]);
+                }
+                peaceRequirement[1] = getMax(totalLand - peaceRequirement[0], 1);
+                peaceCount++
             }
         }
     };
-    this.iv = function() {
-        this.visible && A[0] < B[0] && k()
+    this.notPeaceGameEnd = function() {
+        this.visible && peaceProgress[0] < peaceRequirement[0] && resetCurrentPeace()
     };
-    this.processVotePeace = function(D, K) {
-        var J;
+    this.processVotePeace = function(id, choice) {
         if (this.visible) {
-            for (J = C.length - 1; 0 <= J; J--)
-                if (C[J] === D) return;
-            C.push(D);
-            E = !0;
-            J = singleplayer ? B[0] : land[D];
-            K ? A[0] += J : A[1] += J;
-            D === myID && (y = K ? 1 : -1)
+            for (var vIndex = voterList.length - 1; 0 <= vIndex; vIndex--)
+                if (voterList[vIndex] === id) return;
+            voterList.push(id);
+            hasVoted = !0;
+            var votingPower = singleplayer ? peaceRequirement[0] : land[id];
+            choice ? peaceProgress[0] += votingPower : peaceProgress[1] += votingPower;
+            if (id === myID) myChoice = choice ? 1 : -1
         }
     };
     this.drawCanvasImage = function() {
         if (this.visible) {
-            var D = n();
-            mainCanvasCtx.drawImage(x, canvasWidth - this.width - m5, D)
+            var D = getPeaceBarYPos();
+            mainCanvasCtx.drawImage(peaceCanvas, canvasWidth - this.width - m5, D)
         }
     }
 }
@@ -3482,7 +3501,7 @@ function TroopBar() {
         t = isZoom && canvasWidth < .8 * canvasHeight ? this.height + 3 * m5 : Math.floor((prevClientWidth - x) / 2);
         this.fK = prevClientHeight - this.height - (isZoom ? 2 : 1) * m5
     };
-    this.eb = function() {
+    this.drawCanvas = function() {
         G && (G = !1, k())
     };
     this.visible = function() {
@@ -3553,7 +3572,7 @@ function k4() {
         this.qs();
         y = Math.floor(1 + n / 20);
         for (var A = 1; 0 <= A; A--) k[A].clearRect(0, 0, n, n), k[A].fillStyle = blackOpaque, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].fill(), k[A].lineWidth = y, k[A].fillStyle = whiteRGB, k[A].strokeStyle =
-            whiteRGB, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), i1(k[A], 0, 0, n, y, .3, 0 === A)
+            whiteRGB, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), drawDiagRect(k[A], 0, 0, n, y, .3, 0 === A)
     };
     this.toX = function() {
         return -gridWidth / scaleFactor
@@ -3990,7 +4009,7 @@ function k6() {
     this.qs = function() {
         this.qD() ? this.fJ = prevClientWidth - k - m5 : this.fJ = Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - eB.width - k) / 2 - .5 * m5)
     };
-    this.eb = function() {
+    this.drawCanvas = function() {
         y && (y = !1, this.sB())
     };
     this.sB = function() {
@@ -4024,7 +4043,7 @@ function k6() {
         0 === isAlive[myID] || inSpawn || 2 === playerStatus[myID] || mainCanvasCtx.drawImage(t, this.fJ, n)
     }
 }
-var gameBoardWidth, gameBoardHeight, gameBoardLabelFont, gameBoardFont, gameBoardLabelHeight, orderedLand, landOrder;
+var gameBoardWidth, gameBoardHeight, gameBoardLabelFont, gameBoardFont, gameBoardLabelHeight, landOrder, landIDOrder;
 
 function GameLeaderboard() {
     function drawGameLeaderboard() {
@@ -4034,8 +4053,8 @@ function GameLeaderboard() {
         leaderboard.fillRect(0, 0, gameBoardWidth, topBarHeight);
         leaderboard.fillStyle = blackMore2Opaque;
         leaderboard.fillRect(0, topBarHeight, gameBoardWidth, gameBoardHeight - topBarHeight);
-        if (landOrder[myID] >= boardTopIndex) highlightRow(landOrder[myID] - boardTopIndex, greenBrightMoreTransparent)
-        if (0 !== landOrder[myID] && 0 === boardTopIndex) highlightRow(0, yellowMoreTransparent)
+        if (landIDOrder[myID] >= boardTopIndex) highlightRow(landIDOrder[myID] - boardTopIndex, greenBrightMoreTransparent)
+        if (0 !== landIDOrder[myID] && 0 === boardTopIndex) highlightRow(0, yellowMoreTransparent)
         if (- 1 !== highlightedLandIndex) highlightRow(highlightedLandIndex, whiteMore2Transparent)
         leaderboard.fillStyle = whiteRGB;
         leaderboard.fillRect(0, topBarHeight, gameBoardWidth, 1);
@@ -4047,22 +4066,22 @@ function GameLeaderboard() {
         leaderboard.textBaseline = middleAlign;
         leaderboard.textAlign = centerAlign;
         leaderboard.fillText(leaderboardLabel, Math.floor(gameBoardWidth / 2), Math.floor(F + gameBoardLabelHeight / 2));
-        var checkAtBottom = landOrder[myID] < boardTopIndex + visibleLandCount - 1 ? 1 : 2;
+        var checkAtBottom = landIDOrder[myID] < boardTopIndex + visibleLandCount - 1 ? 1 : 2;
         leaderboard.font = gameBoardFont;
         leaderboard.textAlign = leftAlign;
         for (bIndex = visibleLandCount - checkAtBottom; 0 <= bIndex; bIndex--) {
-            setLeaderboardFillColor(orderedLand[bIndex + boardTopIndex]);
-            fillPlayerLabels(bIndex, bIndex + boardTopIndex, orderedLand[bIndex + boardTopIndex]);
+            setLeaderboardFillColor(landOrder[bIndex + boardTopIndex]);
+            fillPlayerLabels(bIndex, bIndex + boardTopIndex, landOrder[bIndex + boardTopIndex]);
         }
         leaderboard.textAlign = rightAlign;
         for (bIndex = visibleLandCount - checkAtBottom; 0 <= bIndex; bIndex--) {
-            setLeaderboardFillColor(orderedLand[bIndex + boardTopIndex]);
-            fillPlayerLand(bIndex, orderedLand[bIndex + boardTopIndex]);
+            setLeaderboardFillColor(landOrder[bIndex + boardTopIndex]);
+            fillPlayerLand(bIndex, landOrder[bIndex + boardTopIndex]);
         }
         if (2 === checkAtBottom) {
             setLeaderboardFillColor(myID);
             leaderboard.textAlign = leftAlign;
-            fillPlayerLabels(visibleLandCount - 1, landOrder[myID], myID);
+            fillPlayerLabels(visibleLandCount - 1, landIDOrder[myID], myID);
             leaderboard.textAlign = rightAlign;
             fillPlayerLand(visibleLandCount - 1, myID);
         }
@@ -4124,9 +4143,9 @@ function GameLeaderboard() {
         P = new Uint16Array(visibleLandCount + 1);
         U = new Uint32Array(visibleLandCount + 1);
         const_maxEntities = maxEntities;
-        orderedLand = new Uint16Array(const_maxEntities);
         landOrder = new Uint16Array(const_maxEntities);
-        for (idIndex = const_maxEntities - 1; 0 <= idIndex; idIndex--) orderedLand[idIndex] = idIndex, landOrder[idIndex] = idIndex;
+        landIDOrder = new Uint16Array(const_maxEntities);
+        for (idIndex = const_maxEntities - 1; 0 <= idIndex; idIndex--) landOrder[idIndex] = idIndex, landIDOrder[idIndex] = idIndex;
         this.setCanvasVariables(!0);
         shorternedNames = [];
         extendedIDs = new Uint16Array(maxEntities);
@@ -4183,28 +4202,28 @@ function GameLeaderboard() {
     this.sC = function() {
         return gameBoardWidth
     };
-    this.eb = function(S) {
+    this.drawCanvas = function(S) {
         W && (S || 14 >= sm && 0 === c4.ticksElapsed() % 6 || 14 < sm) && (W = !1, drawGameLeaderboard())
     };
     this.update = function() {
         for (var S = const_maxEntities - 1; 0 <= S; S--)
-            if (0 === isAlive[orderedLand[S]]) {
+            if (0 === isAlive[landOrder[S]]) {
                 var O =
                     S,
-                    T = orderedLand[O];
-                for (const_maxEntities--; O < const_maxEntities; O++) orderedLand[O] = orderedLand[O + 1], landOrder[orderedLand[O]] = O;
-                orderedLand[const_maxEntities] = T;
-                landOrder[orderedLand[const_maxEntities]] = const_maxEntities
+                    T = landOrder[O];
+                for (const_maxEntities--; O < const_maxEntities; O++) landOrder[O] = landOrder[O + 1], landIDOrder[landOrder[O]] = O;
+                landOrder[const_maxEntities] = T;
+                landIDOrder[landOrder[const_maxEntities]] = const_maxEntities
             } T = const_maxEntities - 1;
-        for (O = 0; O < T; O++) land[orderedLand[O]] < land[orderedLand[O + 1]] && (S = orderedLand[O], orderedLand[O] = orderedLand[O + 1], orderedLand[O + 1] = S, landOrder[orderedLand[O]] = O, landOrder[orderedLand[O + 1]] = O + 1);
+        for (O = 0; O < T; O++) land[landOrder[O]] < land[landOrder[O + 1]] && (S = landOrder[O], landOrder[O] = landOrder[O + 1], landOrder[O + 1] = S, landIDOrder[landOrder[O]] = O, landIDOrder[landOrder[O + 1]] = O + 1);
         a: {
             S = W;W = !0;
-            for (O = T = landOrder[myID] >= visibleLandCount - 1 ? visibleLandCount - 2 : visibleLandCount - 1; 0 <= O; O--)
-                if (P[O] !== orderedLand[O] || U[O] !== land[orderedLand[O]]) break a;
-            if (T !== visibleLandCount - 2 || P[visibleLandCount] === landOrder[myID] && U[visibleLandCount] === land[myID]) W = S
+            for (O = T = landIDOrder[myID] >= visibleLandCount - 1 ? visibleLandCount - 2 : visibleLandCount - 1; 0 <= O; O--)
+                if (P[O] !== landOrder[O] || U[O] !== land[landOrder[O]]) break a;
+            if (T !== visibleLandCount - 2 || P[visibleLandCount] === landIDOrder[myID] && U[visibleLandCount] === land[myID]) W = S
         }
-        for (S = visibleLandCount - 1; 0 <= S; S--) P[S] = orderedLand[S], U[S] = land[orderedLand[S]];
-        P[visibleLandCount] = landOrder[myID];
+        for (S = visibleLandCount - 1; 0 <= S; S--) P[S] = landOrder[S], U[S] = land[landOrder[S]];
+        P[visibleLandCount] = landIDOrder[myID];
         U[visibleLandCount] = land[myID]
     };
     this.mouseDown = function(S, O) {
@@ -4240,8 +4259,8 @@ function GameLeaderboard() {
         var T = getRowIndex(O);
         isTouch && -1 !== highlightedLandIndex && (highlightedLandIndex = -1, drawGameLeaderboard(), c4.canvasDirty = !0);
         if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, visibleLandCount), T = T !== visibleLandCount && isInBoardCanvas(S, O) ? T : -1, -1 !== T)) {
-            var Y = orderedLand[T + boardTopIndex];
-            T === visibleLandCount - 1 && landOrder[myID] >= boardTopIndex + visibleLandCount - 1 && (Y = myID);
+            var Y = landOrder[T + boardTopIndex];
+            T === visibleLandCount - 1 && landIDOrder[myID] >= boardTopIndex + visibleLandCount - 1 && (Y = myID);
             0 !== isAlive[Y] && eV.hoverTo(Y, 800, !1, 0)
         }
         return !0
@@ -4366,7 +4385,7 @@ function k8() {
         A = m5 + (eO.qD() && 0 !== isAlive[myID] && !inSpawn ? eO.height +
             m5 : 0)
     };
-    this.eb = function(P) {
+    this.drawCanvas = function(P) {
         0 < I && (P || 12 > sm && 100 <= I || 12 <= sm) && (I = 0, g())
     };
     this.lV = function() {
@@ -4385,9 +4404,9 @@ function k8() {
         aliveCount - K[0] !== K[1] && (K[1] = aliveCount - K[0], I++);
         this.eC();
         if (teamGame) {
-            var P = eT.qm();
-            P >= R && l() ? (endGame.endGame(-1), n(eT.qm())) : n(P)
-        } else P = land[orderedLand[0]], P >= R && l() && endGame.endGame(-1), n(P);
+            var P = eT.getLargestTeamLand();
+            P >= R && l() ? (endGame.endGame(-1), n(eT.getLargestTeamLand())) : n(P)
+        } else P = land[landOrder[0]], P >= R && l() && endGame.endGame(-1), n(P);
         P = interest.getInterestRate(myID);
         P !== K[5] && (K[5] = P, I++);
         x();
@@ -7611,7 +7630,7 @@ function kN() {
                 needsDrawImage = !0;
 
                 if (0 < ca[idIndex]) {
-                    if (0 === landOrder[idIndex])
+                    if (0 === landIDOrder[idIndex])
                         if (a5.oB(ba[idIndex])) {
                             var transform = .9 * fontSize / a5.width,
                                 Ca = Math.floor(landCenterY - .5 * transform * a5.width - .05 * fontSize);
@@ -7636,7 +7655,7 @@ function kN() {
                         }
                     else l(landCenterX, landCenterY, fontSize, ba[idIndex], 0)
 
-                } else if (0 === landOrder[idIndex]) n(landCenterX, landCenterY, fontSize, 0, 0);
+                } else if (0 === landIDOrder[idIndex]) n(landCenterX, landCenterY, fontSize, 0, 0);
 
                 if (isAlivePlayer && (0 < ca[idIndex + maxEntities] || 0 < ca[idIndex + 2 * maxEntities] || 0 < ca[idIndex + 3 * maxEntities] || 0 < ca[idIndex + 4 * maxEntities])) {
                     fontColor = landCenterX;
@@ -7800,7 +7819,7 @@ function kN() {
         R = (R + T) * O - T;
         P = (P + Y) * O - Y
     };
-    this.eb = function() {
+    this.drawCanvas = function() {
         return 0 >= --na ? (na = 4 >= sm ? 10 : 12 > sm ? 5 : 2, k(), !0) : !1
     };
     this.gG = function(O) {
@@ -9469,7 +9488,7 @@ function a2M() {
             alpha: !0
         }), y.lineWidth = 2, y.strokeStyle = whiteRGB2, drawPiechart())
     };
-    this.qm = function() {
+    this.getLargestTeamLand = function() {
         return A[this.mw()]
     };
     this.ik = function() {
@@ -10373,7 +10392,7 @@ function Teams() {
 
         for (j = clanTags.length - 1; 0 <= j; j--)
             for (i = clanTagOfPlayerIDs[j].length - 1; 0 <= i && this.teamIDs[this.teamArray[clanTagOfPlayerIDs[j][i]]] === winner; i--)
-                if (-1 === z || landOrder[clanTagOfPlayerIDs[j][i]] < landOrder[z]){
+                if (-1 === z || landIDOrder[clanTagOfPlayerIDs[j][i]] < landIDOrder[z]){
                  z = clanTagOfPlayerIDs[j][i];
                  y = j;
                 }
@@ -10648,7 +10667,7 @@ function a6X() {
         dataDecoder.a6c(k, g);
         g = (g + 1) % 8;
         eB.tW(this.wD);
-        this.wD === spawnTime ? (spawn.update(), this.wE = this.bs = this.wD = 0, this.time = c4.time) : (this.wD++, eA.j4(), eA.eb(), h8.tv())
+        this.wD === spawnTime ? (spawn.update(), this.wE = this.bs = this.wD = 0, this.time = c4.time) : (this.wD++, eA.j4(), eA.drawCanvas(), h8.tv())
     };
     this.update = function() {
         jq.update();
