@@ -1059,75 +1059,92 @@ function ProcessAction() {
 }
 
 function BoatSpeed() {
-    function g(B) {
-        for (l--; B < l; B++) x[B] = x[B + 1], t[B] = t[B + 1], z[B] = z[B + 1], y[B] = y[B + 1], A[B] = A[B + 1]
+    function shiftBoatArrays(boatIndex) {
+        for (currentBoatIndex--; boatIndex < currentBoatIndex; boatIndex++) {
+            authorIDs[boatIndex] = authorIDs[boatIndex + 1];
+            ticksUntilUpdate[boatIndex] = ticksUntilUpdate[boatIndex + 1];
+            boatIDs[boatIndex] = boatIDs[boatIndex + 1];
+            currentPixelIndicies[boatIndex] = currentPixelIndicies[boatIndex + 1];
+            targetPixelIndicies[boatIndex] = targetPixelIndicies[boatIndex + 1];
         }
-    var k, n, l, x, t, z, y, A;
+    }
+    var currentBoatID, maxBoatID, currentBoatIndex, authorIDs, ticksUntilUpdate, boatIDs, currentPixelIndicies, targetPixelIndicies;
     this.init = function() {
-        k = 1;
-        l = 0;
-        n = 2 * maxEntities;
-        x = new Uint16Array(n);
-        t = new Uint8Array(n);
-        z = new Uint16Array(n);
-        y = new Uint32Array(n);
-        A = new Uint32Array(n)
+        currentBoatID = 1;
+        currentBoatIndex = 0;
+        maxBoatID = 2 * maxEntities;
+        authorIDs = new Uint16Array(maxBoatID);
+        ticksUntilUpdate = new Uint8Array(maxBoatID);
+        boatIDs = new Uint16Array(maxBoatID);
+        currentPixelIndicies = new Uint32Array(maxBoatID);
+        targetPixelIndicies = new Uint32Array(maxBoatID)
     };
-    this.g0 = function(B, C) {
-        y[B] = C
+    this.setCurrentPixelIndex = function(boatIndex, pixelIndex) {
+        currentPixelIndicies[boatIndex] = pixelIndex
     };
     this.update = function() {
-        for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, boatPathHandler.update(B, z[B], x[B], y[B], A[B]))
+        for (var boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
+            if (0 === ticksUntilUpdate[boatIndex]--) {
+                ticksUntilUpdate[boatIndex] = 2;
+                boatPathHandler.update(boatIndex, boatIDs[boatIndex], authorIDs[boatIndex], currentPixelIndicies[boatIndex], targetPixelIndicies[boatIndex]);
+            }
+        }
     };
-    this.removeEntry = function(B, C) {
-        var E;
-        for (E = l - 1; 0 <= E; E--)
-            if (B === x[E] && C === z[E]) {
-                g(E);
+    this.removeEntry = function(authorID, boatID) {
+        for (var boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
+            if (authorID === authorIDs[boatIndex] && boatID === boatIDs[boatIndex]) {
+                shiftBoatArrays(boatIndex);
                 break
             }
+        }
     };
-    this.g3 = function(B) {
-        var C;
-        for (C =
-            l - 1; 0 <= C; C--) B === x[C] && (boatPathHandler.g4(B, y[C]), g(C))
+    this.checkBoatDeath = function(authorID) {
+        for (var boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
+            if (authorID === authorIDs[boatIndex]) {
+                boatPathHandler.removeBoat(authorID, currentPixelIndicies[boatIndex]);
+                shiftBoatArrays(boatIndex);
+            }
+        }
     };
-    this.addEntry = function(B, C, E) {
-        if (l >= n) return 0;
-        x[l] = B;
-        t[l] = 0;
-        z[l] = k;
-        y[l] = C;
-        A[l] = E;
-        B = k;
-        k++;
-        l++;
-        k = k > 2 * n ? 1 : k;
-        return B
+    this.addEntry = function(authorID, currentPixelIndex, targetPixelIndex) {
+        if (currentBoatIndex >= maxBoatID) return 0;
+        authorIDs[currentBoatIndex] = authorID;
+        ticksUntilUpdate[currentBoatIndex] = 0;
+        boatIDs[currentBoatIndex] = currentBoatID;
+        currentPixelIndicies[currentBoatIndex] = currentPixelIndex;
+        targetPixelIndicies[currentBoatIndex] = targetPixelIndex;
+        var tempBoatID = currentBoatID;
+        currentBoatID++;
+        currentBoatIndex++;
+        currentBoatID = currentBoatID > 2 * maxBoatID ? 1 : currentBoatID;
+        return tempBoatID;
     };
     this.drawCanvasImage = function() {
-        if (!(40 > scaleFactor || 0 === l)) {
+        if (!(40 > scaleFactor || 0 === currentBoatIndex)) {
             var B, C = gridWidth / scaleFactor,
                 E = gridHeight / scaleFactor,
                 F = (prevClientWidth + gridWidth) / scaleFactor,
                 G = (prevClientHeight + gridHeight) / scaleFactor;
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            for (B = l - 1; 0 <= B; B--) {
-                var N = pixel.toX(y[B]);
-                var I = pixel.toY(y[B]);
-                var D = x[B];
+            for (B = currentBoatIndex - 1; 0 <= B; B--) {
+                var N = pixel.toX(currentPixelIndicies[B]);
+                var I = pixel.toY(currentPixelIndicies[B]);
+                var D = authorIDs[B];
                 if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== isAlive[D]) {
                     var K = Math.floor(.94 * scaleFactor * eA.gG(D));
-                    if (!(6 > K)) {
+                    if (6 <= K) {
                         N = Math.floor(prevClientWidth * (N + .5 - C) / (F - C));
                         I = Math.floor(prevClientHeight * (I + .48 - E) / (G - E));
-                        mainCanvasCtx.font = fontWeightBold +
-                            K + fontSizeArial;
+                        mainCanvasCtx.font = fontWeightBold + K + fontSizeArial;
                         mainCanvasCtx.fillStyle = blackRGB;
                         mainCanvasCtx.fillText(nickname[D], N, I);
                         var J = Math.floor(.57 * K);
-                        6 > J || (D = attacks.getRemainingTroopsFromIndex(D, attacks.findAttackIndexFromBoatID(D, z[B])), mainCanvasCtx.font = fontWeightBold + J + fontSizeArial, mainCanvasCtx.fillText(attacksBar.splitText(D), N, I + Math.floor(.82 * K)))
+                        if (6 <= J) {
+                            D = attacks.getRemainingTroopsFromIndex(D, attacks.findAttackIndexFromBoatID(D, boatIDs[B]));
+                            mainCanvasCtx.font = fontWeightBold + J + fontSizeArial;
+                            mainCanvasCtx.fillText(attacksBar.splitText(D), N, I + Math.floor(.82 * K));
+                        }
                     }
                 }
             }
@@ -1282,7 +1299,7 @@ function hA() {
 
     function l(I, D) {
         isAlive[G] = 1;
-        troops[G] = G < playerCount ? startingTroops : botStartingTroops[difficultyEngine.difficulty[G - playerCount]];
+        troops[G] = G < playerCount ? humanStartingTroops : botStartingTroops[difficultyEngine.difficulty[G - playerCount]];
         xMin[G] = I + 10;
         yMin[G] = D + 10;
         yMax[G] = xMax[G] = 0;
@@ -1589,7 +1606,7 @@ var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
     entityCount = 512,
     maxTroopsToLandRatio = 150,
     singleplayer, j8, clientStatus = 0,
-    currentLandPixelsCount, absMaxTroopCap, absMaxTroopsBeforeRedI, startingTroops = 512,
+    currentLandPixelsCount, absMaxTroopCap, absMaxTroopsBeforeRedI, humanStartingTroops = 512,
     neutralLandCost = 2,
     myID, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
@@ -1606,7 +1623,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     spawnTime = 2 >= playerCount ? 30 : 50 >= playerCount ? 40 : 50;
     freeSpawn = customJSON.isCustomJSON && !customJSON.data.freeSpawn ? inSpawn = !1 : inSpawn = teamGame || 100 > playerCount;
     spawn = inSpawn ? new Spawn : null;
-    startingTroops = 512;
+    humanStartingTroops = 512;
     entityCount = maxEntities;
     singleplayer && (entityCount = singleSettings.getEntityCount());
     botCount = entityCount - playerCount;
@@ -4072,7 +4089,7 @@ function k6() {
     this.height = this.startingX = 0;
     var g, k, n, l, x, t, z, y, A, B, C, E, F;
     this.init = function() {
-        x = startingTroops;
+        x = humanStartingTroops;
         C = "rgba(0,100,0,0.8)";
         E = "rgba(150,0,0,0.8)";
         B = !0;
@@ -7223,7 +7240,7 @@ function fm(g) {
     z6(g);
     z7(g);
     speed.removeEntry(g);
-    boatSpeed.g3(g);
+    boatSpeed.checkBoatDeath(g);
     attacks.resetCurrentAttackCount(g)
 }
 
@@ -9808,7 +9825,7 @@ function BoatPathHandler() {
         E = attacks.findAttackIndexFromBoatID(n, F); - 1 === E ? (k(), boatSpeed.removeEntry(n, F), G = !1) : (l = attacks.getRemainingTroopsFromIndex(n, E), G = !0);
         if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statisticNumbers.numbers[15] += G), l <= neutralLandCost ? (n === myID && (statisticNumbers.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
             if (G = pixel.toIndex(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.toX(x), y = pixel.toY(x),
-                boatSpeed.g0(C, x), G = pixel.canOwn(x) ? !1 : !0, G) pixel.isWater(x) && pixel.changeToBoatPixel(x, n);
+                boatSpeed.setCurrentPixelIndex(C, x), G = pixel.canOwn(x) ? !1 : !0, G) pixel.isWater(x) && pixel.changeToBoatPixel(x, n);
             else a: {
                 if (pixel.isNeutral(x)) G = maxEntities;
                 else {
@@ -9827,7 +9844,7 @@ function BoatPathHandler() {
                 n === myID && (statisticNumbers.numbers[13] += l);boatSpeed.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.addEntry(n, !0)
             }
     };
-    this.g4 = function(G, N) {
+    this.removeBoat = function(G, N) {
         n = G;
         x = pixel.toIndex(pixel.toX(N), pixel.toY(N));
         k()
