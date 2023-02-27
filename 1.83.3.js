@@ -459,7 +459,7 @@ function botProcessAttack(authorID, targetID, sIndex, amount) {
     takePixelsAndChangeToMoving(sIndex, authorID);
     attacks.set(authorID, amount, targetID);
     troops[authorID] -= amount + tax;
-    speed.cR(authorID, !1)
+    speed.addEntry(authorID, !1)
 }
 
 function botAddTakableTargetPixelsToAdvance(authorID, targetID) {
@@ -818,7 +818,7 @@ function eE() {
     humanBots.update();
     eJ.update();
     speed.update();
-    eK.update();
+    boatSpeed.update();
     eL();
     gameLeaderboard.update();
     zombieSettings.update();
@@ -898,7 +898,7 @@ function Speed() {
                 break
             }
     };
-    this.cR = function(id, shortAttack) {
+    this.addEntry = function(id, shortAttack) {
         var attackerIndex;
         for (attackerIndex = attackerCount - 1; 0 <= attackerIndex; attackerIndex--)
             if (id === attackers[attackerIndex]) return;
@@ -1058,7 +1058,7 @@ function ProcessAction() {
     }
 }
 
-function fu() {
+function BoatSpeed() {
     function g(B) {
         for (l--; B < l; B++) x[B] = x[B + 1], t[B] = t[B + 1], z[B] = z[B + 1], y[B] = y[B + 1], A[B] = A[B + 1]
         }
@@ -1077,7 +1077,7 @@ function fu() {
         y[B] = C
     };
     this.update = function() {
-        for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, g1.update(B, z[B], x[B], y[B], A[B]))
+        for (var B = l - 1; 0 <= B; B--) 0 === t[B]-- && (t[B] = 2, boatPathHandler.update(B, z[B], x[B], y[B], A[B]))
     };
     this.removeEntry = function(B, C) {
         var E;
@@ -1090,9 +1090,9 @@ function fu() {
     this.g3 = function(B) {
         var C;
         for (C =
-            l - 1; 0 <= C; C--) B === x[C] && (g1.g4(B, y[C]), g(C))
+            l - 1; 0 <= C; C--) B === x[C] && (boatPathHandler.g4(B, y[C]), g(C))
     };
-    this.cR = function(B, C, E) {
+    this.addEntry = function(B, C, E) {
         if (l >= n) return 0;
         x[l] = B;
         t[l] = 0;
@@ -1381,7 +1381,7 @@ function hp() {
     hq.drawCanvasImage();
     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
     eA.drawCanvasImage();
-    eK.drawCanvasImage();
+    boatSpeed.drawCanvasImage();
     if (!isCanvasHidden) {
         mainCanvasCtx.imageSmoothingEnabled = !1;
         announcements.drawCanvasImage();
@@ -1649,7 +1649,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     hu.init();
     gameResultBox.init();
     processAction.init();
-    eK.init();
+    boatSpeed.init();
     speed.init();
     eJ.init();
     attackMatrixInit();
@@ -1681,10 +1681,10 @@ function jb() {
     setAndroidState(0);
     showAd()
 }
-var difficultyEngine, speed, botBoatEngine, eJ, processAction, eK, eV, j1, strings, hu, fq, announcements, jf, attacksBar, 
-    c2, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, jh, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
+var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, j1, strings, hu, fq, announcements, jf, attacksBar, 
+    gameMessages, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
-    mapInfo, jn, gn, boatPathChecker, fakeRandom, g1, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, 
+    mapInfo, jn, gn, boatPathChecker, fakeRandom, boatPathHandler, hq, jo, dataDecoder, eX, dataEncoder, jq, eN, lobby, js, peace, setGameOrigin, 
     wsManager, eH, moreSettings, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
@@ -1693,7 +1693,7 @@ function construct() {
     botBoatEngine = new BotBoatEngine;
     eJ = new fC;
     processAction = new ProcessAction;
-    eK = new fu;
+    boatSpeed = new BoatSpeed;
     eV = new gK;
     j1 = new hA;
     strings = new Strings;
@@ -1733,7 +1733,7 @@ function construct() {
     gn = new kT;
     boatPathChecker = new BoatPathChecker;
     fakeRandom = new FakeRandom;
-    g1 = new kW;
+    boatPathHandler = new BoatPathHandler;
     hq = new kX;
     jo = new kY;
     dataDecoder = new DataDecoder;
@@ -4694,7 +4694,7 @@ function processAttack(authorID, targetID, ratio) {
                     takePixelsAndChangeToMoving(oldPotentialAdvancesLength, authorID);
                     attacks.set(authorID, amount, targetID);
                     troops[authorID] -= amount + tax;
-                    speed.cR(authorID, !1)
+                    speed.addEntry(authorID, !1)
                 }
             }
         }
@@ -4705,7 +4705,7 @@ function processSendBoat(id, closestPIndex, targetPIndex, amount) {
     var boatID, tax;
     if (10 === gamemode && id < playerCount) amount = antiFullSend.tq(id, amount)
     if (amount <= neutralLandCost || !attacks.isUnderAttackCap(id)) return !1;
-    boatID = eK.cR(id, closestPIndex, targetPIndex);
+    boatID = boatSpeed.addEntry(id, closestPIndex, targetPIndex);
     if (0 === boatID) return !1;
     tax = divideFloor(3 * troops[id], 128);
     amount >= divideFloor(troops[id], 2) && (amount -= tax);
@@ -7223,7 +7223,7 @@ function fm(g) {
     z6(g);
     z7(g);
     speed.removeEntry(g);
-    eK.g3(g);
+    boatSpeed.g3(g);
     attacks.resetCurrentAttackCount(g)
 }
 
@@ -9785,9 +9785,9 @@ function kc() {
     }
 }
 
-function kW() {
+function BoatPathHandler() {
     function g(G) {
-        eK.removeEntry(n, F);
+        boatSpeed.removeEntry(n, F);
         attacks.removeAttack(n, E);
         G && (troops[n] += l)
     }
@@ -9805,10 +9805,10 @@ function kW() {
         A = pixel.toX(K);
         B = pixel.toY(K);
         t = x = pixel.toIndex(z, y);
-        E = attacks.findAttackIndexFromBoatID(n, F); - 1 === E ? (k(), eK.removeEntry(n, F), G = !1) : (l = attacks.getRemainingTroopsFromIndex(n, E), G = !0);
+        E = attacks.findAttackIndexFromBoatID(n, F); - 1 === E ? (k(), boatSpeed.removeEntry(n, F), G = !1) : (l = attacks.getRemainingTroopsFromIndex(n, E), G = !0);
         if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statisticNumbers.numbers[15] += G), l <= neutralLandCost ? (n === myID && (statisticNumbers.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
             if (G = pixel.toIndex(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.toX(x), y = pixel.toY(x),
-                eK.g0(C, x), G = pixel.canOwn(x) ? !1 : !0, G) pixel.isWater(x) && pixel.changeToBoatPixel(x, n);
+                boatSpeed.g0(C, x), G = pixel.canOwn(x) ? !1 : !0, G) pixel.isWater(x) && pixel.changeToBoatPixel(x, n);
             else a: {
                 if (pixel.isNeutral(x)) G = maxEntities;
                 else {
@@ -9824,7 +9824,7 @@ function kW() {
                         break a
                     }
                 }
-                n === myID && (statisticNumbers.numbers[13] += l);eK.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.cR(n, !0)
+                n === myID && (statisticNumbers.numbers[13] += l);boatSpeed.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.addEntry(n, !0)
             }
     };
     this.g4 = function(G, N) {
