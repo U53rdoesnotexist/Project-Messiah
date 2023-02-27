@@ -1249,44 +1249,43 @@ function gK() {
     }
 }
 
-function hA() {
-    function g() {
-        var I;
+function FindSpawn() {
+    function generateBotSpawn() {
+        var hasValidSpawn;
         a: {
-            for (I = 0; 8 > I; I++)
-                if (t = divideFloor(y * fakeRandom.random(), fakeRandom.value(100)), z = divideFloor(A * fakeRandom.random(), fakeRandom.value(100)), k()) {
-                    I = !0;
+            for (hasValidSpawn = 0; 8 > hasValidSpawn; hasValidSpawn++)
+                if (t = divideFloor(y * fakeRandom.random(), fakeRandom.value(100)), z = divideFloor(A * fakeRandom.random(), fakeRandom.value(100)), canSpawnHere()) {
+                    hasValidSpawn = !0;
                     break a
-                } I = !1
+                } hasValidSpawn = !1
         }
-        if (!I) a: {
-            var D, K, J, L;I = divideFloor(y * fakeRandom.random(), fakeRandom.value(100));
+        if (!hasValidSpawn) a: {
+            var D, K, J, L;hasValidSpawn = divideFloor(y * fakeRandom.random(), fakeRandom.value(100));
             var H = divideFloor(A * fakeRandom.random(), fakeRandom.value(100));
             for (D = 40; 1 <= D; D--)
                 for (K = A - D; 0 <= K; K -= 40)
                     for (z = (K + H) % A, J = 40; 1 <= J; J--)
                         for (L = y - J; 0 <= L; L -= 40)
-                            if (t = (L + I) % y, k()) {
-                                I = !0;
+                            if (t = (L + hasValidSpawn) % y, canSpawnHere()) {
+                                hasValidSpawn = !0;
                                 break a
-                            } I = !1
+                            } hasValidSpawn = !1
         }
-        return I
+        return hasValidSpawn
     }
 
-    function k() {
+    function canSpawnHere() {
         var I, D;
         var K = divideFloor(B - F, 2);
         var J = E + z * B + K,
             L = C + t * B + K;
         for (I = J + F - 1; I >= J; I--)
             for (D = L + F - 1; D >= L; D--)
-                if (K = pixel.toIndex(D, I), !pixel.canOwn(K) ||
-                    pixel.isBorder(K)) return !1;
+                if (K = pixel.toIndex(D, I), !pixel.canOwn(K) || pixel.isBorder(K)) return !1;
         return !0
     }
 
-    function n() {
+    function initInfoArrays() {
         isAlive[G] = 0;
         troops[G] = 0;
         land[G] = tempLand[G] = 0;
@@ -1297,16 +1296,16 @@ function hA() {
         xMin[G] = yMin[G] = xMax[G] = yMax[G] = 0
     }
 
-    function l(I, D) {
+    function setupSpawn(xPosOffset, yPosOffset) {
         isAlive[G] = 1;
         troops[G] = G < playerCount ? humanStartingTroops : botStartingTroops[difficultyEngine.difficulty[G - playerCount]];
-        xMin[G] = I + 10;
-        yMin[G] = D + 10;
+        xMin[G] = xPosOffset + 10;
+        yMin[G] = yPosOffset + 10;
         yMax[G] = xMax[G] = 0;
         var K, J;
-        for (K = I; K < I + 4; K++)
-            for (J = D; J < D + 4; J++)
-                if (K > I && K < I + 3 || J > D && J < D + 3) {
+        for (K = xPosOffset; K < xPosOffset + 4; K++)
+            for (J = yPosOffset; J < yPosOffset + 4; J++)
+                if (K > xPosOffset && K < xPosOffset + 3 || J > yPosOffset && J < yPosOffset + 3) {
                     var L = pixel.toIndex(K, J);
                     pixel.canOwn(L) && (xMin[G] = K < xMin[G] ? K : xMin[G], xMax[G] = K > xMax[G] ? K : xMax[G], yMin[G] = J < yMin[G] ? J : yMin[G], yMax[G] = J > yMax[G] ? J : yMax[G], N[land[G]] = L, land[G]++, pixel.changeToInnerPixel(L, G))
                 } tempLand[G] = land[G];
@@ -1314,12 +1313,12 @@ function hA() {
             G), landBorderPixels[G].push(N[L])) : pixel.bordersWater(N[L]) ? (pixel.changeToBorderPixel(N[L], G), waterBorderPixels[G].push(N[L])) : pixel.bordersMountain(N[L]) && (pixel.changeToBorderPixel(N[L], G), mountainBorderPixels[G].push(N[L]))
     }
 
-    function x(I, D) {
-        var K, J;
-        for (J = D; J > D - 6; J--)
-            for (K = I; K > I - 6; K--) {
-                var L = pixel.toIndex(K, J);
-                if (pixel.isBorder(L)) return !1
+    function checkSpawnOverlap(xPosOffset, yPosOffset) {
+        var xIndex, yIndex;
+        for (yIndex = yPosOffset; yIndex > yPosOffset - 6; yIndex--)
+            for (xIndex = xPosOffset; xIndex > xPosOffset - 6; xIndex--) {
+                var pIndex = pixel.toIndex(xIndex, yIndex);
+                if (pixel.isBorder(pIndex)) return !1
             }
         return !0
     }
@@ -1334,7 +1333,7 @@ function hA() {
         C = divideFloor(currentMapWidth - B * y, 2);
         E = divideFloor(currentMapHeight - B * A, 2);
         if (inSpawn)
-            for (I = 0; I < playerCount; I++) G = I, n(), isAlive[G] = 1;
+            for (I = 0; I < playerCount; I++) G = I, initInfoArrays(), isAlive[G] = 1;
         if (customJSON.isCustomJSON && customJSON.data.spawnX)
             for (G = 0; G < maxEntities; G++) {
                 if (1 !== isAlive[G]) {
@@ -1342,48 +1341,47 @@ function hA() {
                         var D = customJSON.data.spawnX[G] + 1;
                         I = customJSON.data.spawnY[G] + 1;
                         3 < D && D < currentMapWidth - 5 && 3 < I && I < currentMapHeight - 5 &&
-                            pixel.canOwn(pixel.toIndex(D, I)) && x(D + 3, I + 3) ? (D += 1, I += 1, n(), l(D - 2, I - 2), I = !0) : I = !1;
+                            pixel.canOwn(pixel.toIndex(D, I)) && checkSpawnOverlap(D + 3, I + 3) ? (D += 1, I += 1, initInfoArrays(), setupSpawn(D - 2, I - 2), I = !0) : I = !1;
                         if (I) continue;
-                        if (g()) {
+                        if (generateBotSpawn()) {
                             D = C + t * B + divideFloor(B, 2);
                             I = E + z * B + divideFloor(B, 2);
-                            n();
-                            l(D - 2, I - 2);
+                            initInfoArrays();
+                            setupSpawn(D - 2, I - 2);
                             continue
                         }
                     }
-                    n()
+                    initInfoArrays()
                 }
             } else
-                for (G = 0; G < maxEntities; G++) 1 !== isAlive[G] && (G < entityCount && g() ? (D = C + t * B + divideFloor(B, 2), I = E + z * B + divideFloor(B, 2), n(), l(D - 2, I - 2)) : n());
+                for (G = 0; G < maxEntities; G++) 1 !== isAlive[G] && (G < entityCount && generateBotSpawn() ? (D = C + t * B + divideFloor(B, 2), I = E + z * B + divideFloor(B, 2), initInfoArrays(), setupSpawn(D - 2, I - 2)) : initInfoArrays());
         statisticNumbers.numbers[7] = land[myID];
         statisticNumbers.numbers[8] = troops[myID]
     };
-    this.hi = function(I, D, K) {
+    this.generateHumanSpawn = function(I, D, K) {
         var J, L;
         G = I;
         for (J = 0; 20 > J; J++)
             for (I = D + J; I >= D - J; I--)
                 for (L = K + J; L >= K - J; L--)
-                    if ((I === D + J || I === D - J || L === K + J || L === K - J) && 3 < I && I < currentMapWidth - 5 && 3 < L && L < currentMapHeight - 5 && pixel.canOwn(pixel.toIndex(I, L)) && x(I + 3, L + 3)) {
+                    if ((I === D + J || I === D - J || L === K + J || L === K - J) && 3 < I && I < currentMapWidth - 5 && 3 < L && L < currentMapHeight - 5 && pixel.canOwn(pixel.toIndex(I, L)) && checkSpawnOverlap(I + 3, L + 3)) {
                         if (0 < land[G]) {
-                            for (K = xMax[G]; K >=
-                                xMin[G]; K--)
+                            for (K = xMax[G]; K >= xMin[G]; K--)
                                 for (D = yMax[G]; D >= yMin[G]; D--) J = 4 * (D * currentMapWidth + K), pixel.strongIsOwner(G, J) && (pixel.revertToNeutralPixel(J), land[G]--);
-                            n()
+                            initInfoArrays()
                         }
-                        l(I - 1, L - 1);
+                        setupSpawn(I - 1, L - 1);
                         return !0
                     } return !1
     };
-    this.ho = function(I) {
+    this.randomSpawn = function(I) {
         G = I;
-        if (g()) {
+        if (generateBotSpawn()) {
             I = C + t * B + divideFloor(B, 2);
             var D = E + z * B + divideFloor(B, 2);
-            n();
-            l(I - 2, D - 2)
-        } else n()
+            initInfoArrays();
+            setupSpawn(I - 2, D - 2)
+        } else initInfoArrays()
     }
 }
 
@@ -1586,13 +1584,22 @@ function EndGame() {
 }
 
 function Spawn() {
-    this.set = function(g, k, n) {
-        0 !== isAlive[g] && j1.hi(g, k, n) && (c4.canvasDirty = !0)
+    this.set = function(authorID, xPos, yPos) {
+        if (0 !== isAlive[authorID] && findSpawn.generateHumanSpawn(authorID, xPos, yPos)) c4.canvasDirty = !0
     };
     this.update = function() {
         inSpawn = !1;
-        for (var g = 0; g < playerCount; g++) 0 !== isAlive[g] && 0 === land[g] && j1.ho(g);
-        0 !== isAlive[myID] ? (statisticNumbers.numbers[7] = land[myID], statisticNumbers.numbers[8] = troops[myID], troopBar.toggleVisibility(), eB.j2(), eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5), eX.init()) : gameResultBox.show(!1, !1);
+        for (var idIndex = 0; idIndex < playerCount; idIndex++) {
+            if (0 !== isAlive[idIndex] && 0 === land[idIndex]) findSpawn.randomSpawn(idIndex);
+        }
+        if (0 !== isAlive[myID]) {
+            statisticNumbers.numbers[7] = land[myID];
+            statisticNumbers.numbers[8] = troops[myID];
+            troopBar.toggleVisibility();
+            eB.j2();
+            eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5);
+            eX.init();
+        } else gameResultBox.show(!1, !1);
         announcements.j3(18);
         eA.j4();
         eA.drawCanvas();
@@ -1648,7 +1655,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     difficultyEngine.init();
     nickNames.jT();
     nickNames.jU();
-    j1.init();
+    findSpawn.init();
     updateAliveInfo();
     playerAura.init();
     statistics.init();
@@ -1698,7 +1705,7 @@ function jb() {
     setAndroidState(0);
     showAd()
 }
-var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, j1, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
+var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
     gameMessages, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
     mapInfo, jn, gn, boatPathChecker, fakeRandom, boatPathHandler, hq, jo, dataDecoder, eX, dataEncoder, jq, playerAura, lobby, js, peace, setGameOrigin, 
@@ -1712,7 +1719,7 @@ function construct() {
     processAction = new ProcessAction;
     boatSpeed = new BoatSpeed;
     eV = new gK;
-    j1 = new hA;
+    findSpawn = new FindSpawn;
     strings = new Strings;
     playerActions = new PlayerActions;
     gameButtons = new GameButtons;
