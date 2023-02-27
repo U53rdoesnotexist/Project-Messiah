@@ -806,7 +806,7 @@ function DifficultyEngine() {
 function e8() {
     announcements.update();
     eA.update();
-    eB.eC();
+    gameStatistics.eC();
     wsManager.update()
 }
 
@@ -814,7 +814,7 @@ function eE() {
     interest.update();
     antiFullSend.update();
     processAction.update();
-    eH.update();
+    delayedAttack.update();
     humanBots.update();
     eJ.update();
     speed.update();
@@ -823,12 +823,12 @@ function eE() {
     gameLeaderboard.update();
     zombieSettings.update();
     eA.update();
-    eB.update();
+    gameStatistics.update();
     playerAura.update();
     eO.update();
     attacksBar.update();
     announcements.update();
-    eQ.update();
+    diplomacyHandler.update();
     troopBar.update();
     peace.update();
     statisticNumbers.update();
@@ -847,7 +847,7 @@ function eU() {
 function ea() {
     gameLeaderboard.drawCanvas(!1);
     attacksBar.drawCanvas();
-    eB.drawCanvas(!1);
+    gameStatistics.drawCanvas(!1);
     eO.drawCanvas();
     troopBar.drawCanvas();
     peace.drawCanvas();
@@ -1403,7 +1403,7 @@ function hp() {
         gameLeaderboard.drawCanvasImage();
         troopBar.drawCanvasImage();
         peace.drawCanvasImage();
-        eB.drawCanvasImage();
+        gameStatistics.drawCanvasImage();
         gj.drawCanvasImage();
         gameMessages.drawCanvasImage();
         eT.drawCanvasImage();
@@ -1575,7 +1575,7 @@ function EndGame() {
             gameResultBox.show(k, !1);
             announcements.iy(!0);
             gameLeaderboard.drawCanvas(!0);
-            eB.drawCanvas(!0);
+            gameStatistics.drawCanvas(!0);
             c4.canvasDirty = !0;
             h8.iz();
             setAndroidState(0)
@@ -1596,7 +1596,7 @@ function Spawn() {
             statisticNumbers.numbers[7] = land[myID];
             statisticNumbers.numbers[8] = troops[myID];
             troopBar.toggleVisibility();
-            eB.j2();
+            gameStatistics.j2();
             eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5);
             eX.init();
         } else gameResultBox.show(!1, !1);
@@ -1665,7 +1665,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     troopBar.init();
     peace.init();
     eO.init();
-    eB.init();
+    gameStatistics.init();
     gameButtons.init();
     gameMessages.init();
     announcements.init();
@@ -1681,8 +1681,8 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     eA.init();
     antiFullSend.init();
     humanBots.init();
-    eQ.init();
-    eH.init();
+    diplomacyHandler.init();
+    delayedAttack.init();
     8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(playerInfo)) : points1v1 = null;
     singleplayer ? c4.jY() : c4.jZ();
     ja();
@@ -1706,10 +1706,10 @@ function jb() {
     showAd()
 }
 var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
-    gameMessages, troopBar, gj, playtime, eO, gameLeaderboard, eB, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
+    gameMessages, troopBar, gj, playtime, eO, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
-    mapInfo, jn, gn, boatPathChecker, fakeRandom, boatPathHandler, hq, jo, dataDecoder, eX, dataEncoder, jq, playerAura, lobby, js, peace, setGameOrigin, 
-    wsManager, eH, moreSettings, specialGames, humanBots, antiFullSend, eQ, loadCustomMap, customJSON, intelliAttack, sounds;
+    mapInfo, jn, gn, boatPathChecker, fakeRandom, boatPathHandler, hq, jo, dataDecoder, eX, dataEncoder, jq, playerAura, lobby, mapMenu, peace, setGameOrigin, 
+    wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
@@ -1732,7 +1732,7 @@ function construct() {
     playtime = new Playtime;
     eO = new k6;
     gameLeaderboard = new GameLeaderboard;
-    eB = new k8;
+    gameStatistics = new GameStatistics;
     gameResultBox = new GameResultBox;
     mainButtons = new MainButtons;
     preLobby = new PreLobby;
@@ -1766,16 +1766,16 @@ function construct() {
     jq = new kc;
     playerAura = new PlayerAura;
     lobby = new Lobby;
-    js = new kf;
+    mapMenu = new MapMenu;
     peace = new Peace;
     setGameOrigin = new SetGameOrigin;
     wsManager = new WsManager;
-    eH = new kj;
+    delayedAttack = new DelayedAttack;
     moreSettings = new MoreSettings;
     specialGames = new SpecialGames;
     humanBots = new HumanBots;
     antiFullSend = new AntiFullSend;
-    eQ = new ko;
+    diplomacyHandler = new DiplomacyHandler;
     loadCustomMap = new LoadCustomMap;
     customJSON = new CustomJSON;
     intelliAttack = new IntelliAttack;
@@ -1881,7 +1881,7 @@ function PlayerActions() {
         if (2 === type) {
             if (x[7]) {
                 for (type = friends.length - 1; 0 <= type; type--) 0 === isAlive[friends[type]] && friends.splice(type, 1);
-                0 < friends.length && (eQ.lO(1, friends, !0) && (announcements.requestToAttack(friends, targetID), dataEncoder.requestAttack(friends, targetID)), friends = []);
+                0 < friends.length && (diplomacyHandler.lO(1, friends, !0) && (announcements.requestToAttack(friends, targetID), dataEncoder.requestAttack(friends, targetID)), friends = []);
                 this.end();
                 return 1
             }
@@ -1906,11 +1906,11 @@ function PlayerActions() {
                     this.end();
                     announcements.lowBalance();
                     if (singleplayer) processAttack(myID, targetID, troopBar.getFlooredRatio());
-                    else if (!freeSpawn || 300 < eB.lV()) dataEncoder.attack(troopBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
+                    else if (!freeSpawn || 300 < gameStatistics.lV()) dataEncoder.attack(troopBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
                 }
             } else if (x[8]) {
                 this.end();
-                eH.lX(targetID, troopBar.getFlooredRatio());
+                delayedAttack.lX(targetID, troopBar.getFlooredRatio());
             } else this.end();
             return 1;
         }
@@ -1934,7 +1934,7 @@ function PlayerActions() {
         
         if (8 === type) {
             if (x[5]) {
-                if (eQ.lO(0, [targetID], !0)) {
+                if (diplomacyHandler.lO(0, [targetID], !0)) {
                     announcements.nonAggression(targetID, 0);
                     dataEncoder.nonAggression(targetID);
                 }
@@ -1982,11 +1982,11 @@ function PlayerActions() {
         }
         M = x;
         Q = targetID;
-        Q = playerActions.isHuman(Q) && !canRequestToAttackTarget(Q) && eQ.lO(1, [Q], !1);
+        Q = playerActions.isHuman(Q) && !canRequestToAttackTarget(Q) && diplomacyHandler.lO(1, [Q], !1);
         M[6] = Q;
         x[4] = 1 <= a5.ld && this.isHuman(targetID);
         if (isNotTeamate(targetID, myID)) {
-            x[5] = this.isHuman(targetID) && !eA.li(targetID) && eQ.lO(0, [targetID], !1);
+            x[5] = this.isHuman(targetID) && !eA.li(targetID) && diplomacyHandler.lO(0, [targetID], !1);
             M = x;
             Q = targetID;
             if (0 === friends.length) Q = !1;
@@ -2269,11 +2269,11 @@ function Announcements() {
         pendingAnnouncements = [];
         this.setCanvasVariables();
         inSpawn && this.genericAnnouncement(0, 18);
-        var mapLandInfoLabel = "Map: " + mapInfo.getMapName() + "   Pixels: " + attacksBar.splitText(configFakeMap.totalNonBorderPixelsCount) + "   Land: " + attacksBar.splitText(configFakeMap.landPixelsCount) + " (" + eB.nG(100 * configFakeMap.landPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")",
+        var mapLandInfoLabel = "Map: " + mapInfo.getMapName() + "   Pixels: " + attacksBar.splitText(configFakeMap.totalNonBorderPixelsCount) + "   Land: " + attacksBar.splitText(configFakeMap.landPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.landPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")",
             mapSpecialInfoLabel = "";
         0 < configFakeMap.waterPixelsCount && (mapSpecialInfoLabel += "Water: " + attacksBar.splitText(configFakeMap.waterPixelsCount) +
-            " (" + eB.nG(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
-        0 < configFakeMap.mountainPixelsCount && (mapSpecialInfoLabel += 0 < configFakeMap.waterPixelsCount ? "   " : "", mapSpecialInfoLabel += "Mountains: " + attacksBar.splitText(configFakeMap.mountainPixelsCount) + " (" + eB.nG(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
+            " (" + gameStatistics.nG(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
+        0 < configFakeMap.mountainPixelsCount && (mapSpecialInfoLabel += 0 < configFakeMap.waterPixelsCount ? "   " : "", mapSpecialInfoLabel += "Mountains: " + attacksBar.splitText(configFakeMap.mountainPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
         announce(340, mapLandInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
         0 < mapSpecialInfoLabel.length && announce(340, mapSpecialInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
         10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, getColorRGB(235, 255, 120), blackMoreOpaque, -1, !1);
@@ -3127,7 +3127,7 @@ function AttacksBar() {
     }
 
     function x(C) {
-        return Math.floor(2 * m5 + (eO.qD() ? eB.height + m5 : 0) + eO.height + 1.3 * C * barCanvasHeight)
+        return Math.floor(2 * m5 + (eO.qD() ? gameStatistics.height + m5 : 0) + eO.height + 1.3 * C * barCanvasHeight)
     }
     var myAttacks, baseBarCanvasWidth, fontStyle, barCanvasHeight, B;
     this.init = function() {
@@ -4128,7 +4128,7 @@ function k6() {
         return isZoom && canvasWidth < 1.2 * canvasHeight
     };
     this.qs = function() {
-        this.qD() ? this.startingX = prevClientWidth - k - m5 : this.startingX = Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - eB.width - k) / 2 - .5 * m5)
+        this.qD() ? this.startingX = prevClientWidth - k - m5 : this.startingX = Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - gameStatistics.width - k) / 2 - .5 * m5)
     };
     this.drawCanvas = function() {
         y && (y = !1, this.sB())
@@ -4394,19 +4394,19 @@ function GameLeaderboard() {
     }
 }
 
-function k8() {
+function GameStatistics() {
     function g() {
-        z.clearRect(0, 0, eB.width, eB.height);
+        z.clearRect(0, 0, gameStatistics.width, gameStatistics.height);
         z.fillStyle = blackMoreOpaque;
-        z.fillRect(0, 0, eB.width, eB.height);
+        z.fillRect(0, 0, gameStatistics.width, gameStatistics.height);
         z.fillStyle = greenBrightMoreOpaque;
-        z.fillRect(0, eB.height - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * eB.width), B);
+        z.fillRect(0, gameStatistics.height - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * gameStatistics.width), B);
         z.fillStyle = whiteRGB2;
-        z.fillRect(0, 0, eB.width, 1);
-        z.fillRect(0, 0, 1, eB.height);
-        z.fillRect(eB.width - 1, 0, 1, eB.height);
-        z.fillRect(0, eB.height - 1, eB.width, 1);
-        z.fillRect(0, eB.height - B - 1, eB.width, 1);
+        z.fillRect(0, 0, gameStatistics.width, 1);
+        z.fillRect(0, 0, 1, gameStatistics.height);
+        z.fillRect(gameStatistics.width - 1, 0, 1, gameStatistics.height);
+        z.fillRect(0, gameStatistics.height - 1, gameStatistics.width, 1);
+        z.fillRect(0, gameStatistics.height - B - 1, gameStatistics.width, 1);
         for (var P = 0, U = 0; U < D.length; U++)
             if (J[U]) {
                 z.textAlign = leftAlign;
@@ -4414,12 +4414,12 @@ function k8() {
                 z.fillText(D[U], E, W);
                 z.textAlign = rightAlign;
                 5 === U && 0 !== isAlive[myID] &&
-                    troops[myID] >= interest.getMaxBeforeRedI(myID) ? (z.fillStyle = orangeRGB, z.fillText(k(U), eB.width - E, W), z.fillStyle = whiteRGB2) : z.fillText(k(U), eB.width - E, W)
+                    troops[myID] >= interest.getMaxBeforeRedI(myID) ? (z.fillStyle = orangeRGB, z.fillText(k(U), gameStatistics.width - E, W), z.fillStyle = whiteRGB2) : z.fillText(k(U), gameStatistics.width - E, W)
             } else P++
     }
 
     function k(P) {
-        return 3 > P ? K[P].toString() : 3 === P ? eB.nG(K[P] / 100, 2) : 4 === P ? eB.nG(K[P] / 100, 2) : 5 === P ? eB.nG(K[P] / 100, 2) : 7 > P ? attacksBar.splitText(K[P]) : eB.getITicksRemaining(K[7])
+        return 3 > P ? K[P].toString() : 3 === P ? gameStatistics.nG(K[P] / 100, 2) : 4 === P ? gameStatistics.nG(K[P] / 100, 2) : 5 === P ? gameStatistics.nG(K[P] / 100, 2) : 7 > P ? attacksBar.splitText(K[P]) : gameStatistics.getITicksRemaining(K[7])
     }
 
     function n(P) {
@@ -6376,7 +6376,7 @@ function SingleSettings() {
         group: 512
     }];
     this.init = function() {
-        js.visible = !1;
+        mapMenu.visible = !1;
         gameStateManager.setState(2);
         this.setCanvasVariables();
         c4.canvasDirty = !0
@@ -6386,7 +6386,7 @@ function SingleSettings() {
         k[2] = Math.floor((isZoom ? .49 : .4) * averageDim);
         k[1] = Math.floor((canvasHeight - k[2] / 6 - this.botSettings.length * (bufferLength + k[2] / 10)) / 2);
         k[0] = Math.floor((canvasWidth - k[2]) / 2);
-        js.visible && js.setCanvasVariables()
+        mapMenu.visible && mapMenu.setCanvasVariables()
     };
     this.setBotSettings = function(param_gamemode) {
         var teamIndex;
@@ -6405,7 +6405,7 @@ function SingleSettings() {
     };
     this.vj = function() {
         c4.canvasDirty = !0;
-        js.visible ? js.visible = !1 : (this.hide(), nameInput.init())
+        mapMenu.visible ? mapMenu.visible = !1 : (this.hide(), nameInput.init())
     };
     this.getEntityCount = function() {
         var n;
@@ -6415,7 +6415,7 @@ function SingleSettings() {
         return l
     };
     this.onPointermove = function(n, l) {
-        return js.visible && js.onPointermove(n, l) ? !0 : -1 === this.getClickedButton(n, l) ? !1 : !0
+        return mapMenu.visible && mapMenu.onPointermove(n, l) ? !0 : -1 === this.getClickedButton(n, l) ? !1 : !0
     };
     this.xO = function() {
         wsManager.remote = 0;
@@ -6437,11 +6437,11 @@ function SingleSettings() {
     };
     this.mouseDown = function(n, l) {
         if (mainLeaderboard.visible || mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) return !1;
-        if (js.visible && !customJSON.isCustomJSON) return js.mouseDown(n, l);
+        if (mapMenu.visible && !customJSON.isCustomJSON) return mapMenu.mouseDown(n, l);
         var x = this.getClickedButton(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.vj(), !0;
-        if (1 === x) return customJSON.isCustomJSON ? (customJSON.pU(), c4.canvasDirty = !0) : js.show(), !0;
+        if (1 === x) return customJSON.isCustomJSON ? (customJSON.pU(), c4.canvasDirty = !0) : mapMenu.show(), !0;
         if (2 === x) return this.hide(), this.xO(), !0;
         if (customJSON.isCustomJSON) return !1;
         if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
@@ -6529,7 +6529,7 @@ function SingleSettings() {
                 mainCanvasCtx.fillRect(n + t, z + y, l, x);
                 mainCanvasCtx.fillRect(n + y, z + t, x, l)
             }
-            js.visible && js.drawCanvasImage()
+            mapMenu.visible && mapMenu.drawCanvasImage()
         }
     };
     this.getMyGroupLabel = function(teamID) {
@@ -7220,7 +7220,7 @@ function UserSettings() {
     }
 }
 
-function kj() {
+function DelayedAttack() {
     function g(l) {
         for (k -= 2; l < k; l += 2) n[l] = n[l + 2], n[l + 1] = n[l + 3]
     }
@@ -7277,7 +7277,7 @@ function z5(g) {
 function zB() {
     statisticNumbers.numbers[17] += troops[myID] + attacks.getTotalTroopsSentAway(myID);
     gameResultBox.show(!1, !1);
-    eB.tI()
+    gameStatistics.tI()
 }
 
 function zC(g, k) {
@@ -8115,7 +8115,7 @@ function NickNames() {
     }
 }
 
-function ko() {
+function DiplomacyHandler() {
     this.a1R = [];
     this.a1S = [];
     this.init = function() {
@@ -8195,7 +8195,7 @@ function HumanBots() {
         spectatorCount++;
         playerStatus[g] = 2;
         pixel.shading[g] = (pixel.shading[g] + 2) % 4;
-        g === myID && (gameResultBox.show(!1, !1), eB.tI());
+        g === myID && (gameResultBox.show(!1, !1), gameStatistics.tI());
         eA.ml(g)
     };
     this.onLeave = function(g) {
@@ -9728,7 +9728,7 @@ function kc() {
             if (1 <= clientStatus) {
                 gameLeaderboard.setCanvasVariables(!1);
                 eO.setCanvasVariables();
-                eB.setCanvasVariables();
+                gameStatistics.setCanvasVariables();
                 gj.setCanvasVariables();
                 troopBar.setCanvasVariables();
                 announcements.setCanvasVariables();
@@ -10215,7 +10215,7 @@ function Statistics() {
         this.a5Z = -1
     };
     this.a5c = function() {
-        2 > this.bs ? this.uS = gameMessages.measureText(attacksBar.splitText(statisticNumbers.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = gameMessages.measureText(eB.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
+        2 > this.bs ? this.uS = gameMessages.measureText(attacksBar.splitText(statisticNumbers.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = gameMessages.measureText(gameStatistics.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
         this.uT = this.width - 2 * this.buttonMargin - this.uS - this.i5
     };
     this.updateRenderObject = function() {
@@ -10276,9 +10276,9 @@ function Statistics() {
         n =
             this.m9(statisticNumbers.tT, n, 1);
         l = statisticNumbers.max[this.bs] / 100;
-        .95 > n && mainCanvasCtx.fillText(eB.nG(l, 2), -this.buttonMargin, 0);
-        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(eB.nG(l / 2, 2), -this.buttonMargin, Math.floor(this.xJ / 2));
-        .05 < n && mainCanvasCtx.fillText(eB.nG(0, 2), -this.buttonMargin, this.xJ)
+        .95 > n && mainCanvasCtx.fillText(gameStatistics.nG(l, 2), -this.buttonMargin, 0);
+        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(gameStatistics.nG(l / 2, 2), -this.buttonMargin, Math.floor(this.xJ / 2));
+        .05 < n && mainCanvasCtx.fillText(gameStatistics.nG(0, 2), -this.buttonMargin, this.xJ)
     };
     this.a5g = function(g, k) {
         var n;
@@ -10289,10 +10289,10 @@ function Statistics() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, g + .39 * this.width, k + 2 * this.nP);
         mainCanvasCtx.textAlign = leftAlign;
         n = statisticNumbers.numbers[1];
-        mainCanvasCtx.fillText(eB.nG(statisticNumbers.numbers[0] / (10 * (1 > n ? 1 :
+        mainCanvasCtx.fillText(gameStatistics.nG(statisticNumbers.numbers[0] / (10 * (1 > n ? 1 :
             n)), 1), 0, 0);
         for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.numbers[n].toString(), 0, n * l / 7);
-        mainCanvasCtx.fillText(eB.nG(100 * (1 - land[myID] / statisticNumbers.numbers[7]), 0), 0, l)
+        mainCanvasCtx.fillText(gameStatistics.nG(100 * (1 - land[myID] / statisticNumbers.numbers[7]), 0), 0, l)
     };
     this.a5h = function(g, k) {
         var n;
@@ -10346,9 +10346,9 @@ function Statistics() {
         g = this.a5Z * c4.tV();
         g = 0 === isAlive[myID] ? Math.floor(g * gameResultBox.tb) : Math.floor(g * c4.ticksElapsed());
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillText(1 === n ? eB.nG(t / 100, 2) : attacksBar.splitText(Math.floor(t)), -this.buttonMargin, this.xJ - k * Math.pow(t, n));
+        mainCanvasCtx.fillText(1 === n ? gameStatistics.nG(t / 100, 2) : attacksBar.splitText(Math.floor(t)), -this.buttonMargin, this.xJ - k * Math.pow(t, n));
         mainCanvasCtx.textAlign = centerAlign;
-        mainCanvasCtx.fillText(eB.getITicksRemaining(g), l * this.uT / (statisticNumbers.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
+        mainCanvasCtx.fillText(gameStatistics.getITicksRemaining(g), l * this.uT / (statisticNumbers.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
         mainCanvasCtx.textAlign = rightAlign;
         return k * Math.pow(t, n) / this.xJ
     };
@@ -10878,13 +10878,13 @@ function a6X() {
     this.tW = function(k) {
         dataDecoder.a6c(k, g);
         g = (g + 1) % 8;
-        eB.tW(this.wD);
+        gameStatistics.tW(this.wD);
         this.wD === spawnTime ? (spawn.update(), this.wE = this.bs = this.wD = 0, this.time = c4.time) : (this.wD++, eA.j4(), eA.drawCanvas(), h8.tv())
     };
     this.update = function() {
         jq.update();
         inSpawn ? (c4.canvasDirty =
-            eB.tW(-1) || c4.canvasDirty, ec()) : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === clientStatus ? e8() : this.a6d(), this.bs++) : (c4.canvasDirty = !0, ea(), this.bs = 0);
+            gameStatistics.tW(-1) || c4.canvasDirty, ec()) : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === clientStatus ? e8() : this.a6d(), this.bs++) : (c4.canvasDirty = !0, ea(), this.bs = 0);
         eU();
         c4.canvasDirty && (c4.canvasDirty = !1, hp())
     };
@@ -11054,14 +11054,14 @@ function DataDecoder() {
                                         if (2 !== messageLength) wsManager.closeByError(wsManager.remote, 3235);
                                         else {
                                             data = decoder(array, 9);
-                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && eQ.a1W(0, [data], !0)) announcements.nonAggression(data, 1);
+                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && diplomacyHandler.a1W(0, [data], !0)) announcements.nonAggression(data, 1);
                                         }
                                     } else {
                                         if (3 !== messageLength) wsManager.closeByError(wsManager.remote, 3236);
                                         else {
                                             data = decoder(array, 9);
                                             var requester = decoder(array, 9);
-                                            if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && eQ.a1W(1, [data], !0)) {
+                                            if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && diplomacyHandler.a1W(1, [data], !0)) {
                                                 eA.showIcon(data, 3, 96);
                                                 eA.showIcon(requester, 4, 96);
                                                 announcements.requestedToAttack(data, requester);
@@ -11201,7 +11201,7 @@ function ka() {
     }
 }
 
-function kf() {
+function MapMenu() {
     function g(k, n, l, x, t) {
         k >= customMapID || (currentMapID === k && (mainCanvasCtx.fillStyle = blueMoreOpaque, mainCanvasCtx.fillRect(n, l, x, t), mainCanvasCtx.fillStyle = whiteRGB2), mainCanvasCtx.strokeRect(n, l, x, t), mainCanvasCtx.fillText(mapInfo.getValueByID(k).name, Math.floor(n + .5 * x), Math.floor(l + .55 * t)))
     }
@@ -11218,8 +11218,7 @@ function kf() {
         this.xK[2] = isZoom ? Math.floor(.75 * minDim) : Math.floor(.5 * minDim);
         this.xK[3] = Math.floor(1.2 * this.xK[2]);
         this.xK[3] > k && (this.xK[3] = k, this.xK[2] = Math.floor(k / 1.2));
-        this.xK[0] = Math.floor((canvasWidth - this.xK[2]) /
-            2);
+        this.xK[0] = Math.floor((canvasWidth - this.xK[2]) / 2);
         this.xK[1] = Math.floor((canvasHeight - this.xK[3]) / 2)
     };
     this.onPointermove = function(k, n) {
@@ -11233,8 +11232,7 @@ function kf() {
         if (n < this.xK[1] + x) return k > this.xK[0] + this.xK[2] - 1.2 * x && (this.visible = !1), !0;
         x = Math.floor(l * (n - this.xK[1] - x) / (this.xK[3] - x));
         x = 0 > x ? 0 : x > l - 1 ? l - 1 : x;
-        k > this.xK[0] + this.xK[2] /
-            2 && (x += l);
+        k > this.xK[0] + this.xK[2] / 2 && (x += l);
         if (x >= customMapID) return !0;
         loadMap(x, Math.floor(16384 * Math.random()));
         return !0
