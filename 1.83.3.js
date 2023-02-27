@@ -1101,7 +1101,7 @@ function BoatSpeed() {
     this.checkBoatDeath = function(authorID) {
         for (var boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
             if (authorID === authorIDs[boatIndex]) {
-                boatPathHandler.removeBoat(authorID, currentPixelIndicies[boatIndex]);
+                boatPathHandler.moveBoatLocation(authorID, currentPixelIndicies[boatIndex]);
                 shiftBoatArrays(boatIndex);
             }
         }
@@ -9803,51 +9803,103 @@ function kc() {
 }
 
 function BoatPathHandler() {
-    function g(G) {
-        boatSpeed.removeEntry(n, F);
-        attacks.removeAttack(n, E);
-        G && (troops[n] += l)
+    function cancelBoat(G) {
+        boatSpeed.removeEntry(authorID, boatID);
+        attacks.removeAttack(authorID, aIndex);
+        G && (troops[authorID] += remaining)
     }
 
-    function k() {
-        pixel.strongIsBoat(x, n) && pixel.revertToWaterPixel(x)
+    function revertToWater() {
+        pixel.strongIsBoat(oldPIndex, authorID) && pixel.revertToWaterPixel(oldPIndex)
     }
-    var n, l, x, t, z, y, A, B, C, E, F;
-    this.update = function(G, N, I, D, K) {
-        C = G;
-        F = N;
-        n = I;
-        z = pixel.toX(D);
-        y = pixel.toY(D);
-        A = pixel.toX(K);
-        B = pixel.toY(K);
-        t = x = pixel.toIndex(z, y);
-        E = attacks.findAttackIndexFromBoatID(n, F); - 1 === E ? (k(), boatSpeed.removeEntry(n, F), G = !1) : (l = attacks.getRemainingTroopsFromIndex(n, E), G = !0);
-        if (G && (k(), G = divideFloor(l, 128), G = 1 > G ? 1 : G, l -= G, n === myID && (statisticNumbers.numbers[15] += G), l <= neutralLandCost ? (n === myID && (statisticNumbers.numbers[15] += l), g(!1), G = !1) : (attacks.setRemainingTroopsFromIndex(n, E, l), G = !0), G))
-            if (G = pixel.toIndex(z, y), x = Math.abs(A - z) >= Math.abs(B - y) ? G + offset[A > z ? 1 : 3] : G + offset[B > y ? 2 : 0], z = pixel.toX(x), y = pixel.toY(x),
-                boatSpeed.setCurrentPixelIndex(C, x), G = pixel.canOwn(x) ? !1 : !0, G) pixel.isWater(x) && pixel.changeToBoatPixel(x, n);
-            else a: {
-                if (pixel.isNeutral(x)) G = maxEntities;
-                else {
-                    G = pixel.getOwner(x);
-                    if (G === n) {
-                        g(!0);
-                        break a
-                    }
-                    if (!isNotTeamate(n, G)) {
-                        N = land[G] * maxTroopsToLandRatio - troops[G];
-                        0 >= N || (N = l > N ? N : l, l -= N, n === myID && (announcements.giveDonation(N, G), statisticNumbers.numbers[16] += N), G === myID && (announcements.receiveDonation(N, n), statisticNumbers.numbers[10] += N), troops[G] += N);
-                        g(!0);
-                        break a
-                    }
-                }
-                n === myID && (statisticNumbers.numbers[13] += l);boatSpeed.removeEntry(n, F);attacks.removeAttack(n, E);potentialBorderAdvances[n].push(t);attacks.set(n, l, G);speed.addEntry(n, !0)
+    var authorID, remaining, oldPIndex, landingPIndex, oldXCoord, oldYCoord, targetXCoord, targetYCoord, boatIndex, aIndex, boatID;
+    this.update = function(param_boatIndex, param_boatID, param_authorID, param_oldPIndex, targetPIndex) {
+        boatIndex = param_boatIndex;
+        boatID = param_boatID;
+        authorID = param_authorID;
+        oldXCoord = pixel.toX(param_oldPIndex);
+        oldYCoord = pixel.toY(param_oldPIndex);
+        targetXCoord = pixel.toX(targetPIndex);
+        targetYCoord = pixel.toY(targetPIndex);
+        landingPIndex = oldPIndex = pixel.toIndex(oldXCoord, oldYCoord);
+        aIndex = attacks.findAttackIndexFromBoatID(authorID, boatID);
+        var boatExists;
+        if (-1 === aIndex) {
+            revertToWater();
+            boatSpeed.removeEntry(authorID, boatID);
+            boatExists = !1
+        } else {
+            remaining = attacks.getRemainingTroopsFromIndex(authorID, aIndex);
+            boatExists = !0;
+        }
+        if (boatExists) {
+            revertToWater();
+            var troopsLost = divideFloor(remaining, 128);
+            troopsLost = 1 > troopsLost ? 1 : troopsLost;
+            remaining -= troopsLost;
+            if (authorID === myID) {
+                statisticNumbers.numbers[15] += troopsLost;
             }
+            var boatDead;
+            if (remaining <= neutralLandCost) {
+                if (authorID === myID) {
+                    statisticNumbers.numbers[15] += remaining;
+                }
+                cancelBoat(!1);
+                boatDead = !1;
+            } else {
+                attacks.setRemainingTroopsFromIndex(authorID, aIndex, remaining);
+                boatDead = !0;
+            }
+            if (boatDead) {
+                oldPIndex = Math.abs(targetXCoord - oldXCoord) >= Math.abs(targetYCoord - oldYCoord) ? oldPIndex + offset[targetXCoord > oldXCoord ? 1 : 3] : oldPIndex + offset[targetYCoord > oldYCoord ? 2 : 0];
+                oldXCoord = pixel.toX(oldPIndex);
+                oldYCoord = pixel.toY(oldPIndex);
+                boatSpeed.setCurrentPixelIndex(boatIndex, oldPIndex);
+                if (pixel.canOwn(oldPIndex) ? !1 : !0) {
+                    if (pixel.isWater(oldPIndex)) pixel.changeToBoatPixel(oldPIndex, authorID);
+                } else a: {
+                    var landingTargetID;
+                    if (pixel.isNeutral(oldPIndex)) landingTargetID = maxEntities;
+                    else {
+                        landingTargetID = pixel.getOwner(oldPIndex);
+                        if (landingTargetID === authorID) {
+                            cancelBoat(!0);
+                            break a
+                        }
+                        if (!isNotTeamate(authorID, landingTargetID)) {
+                            param_boatID = land[landingTargetID] * maxTroopsToLandRatio - troops[landingTargetID];
+                            if (0 < param_boatID) {
+                                param_boatID = remaining > param_boatID ? param_boatID : remaining;
+                                remaining -= param_boatID;
+                                if (authorID === myID) {
+                                    announcements.giveDonation(param_boatID, landingTargetID);
+                                    statisticNumbers.numbers[16] += param_boatID;
+                                }
+                                if (landingTargetID === myID) {
+                                    announcements.receiveDonation(param_boatID, authorID);
+                                    statisticNumbers.numbers[10] += param_boatID;
+                                }
+                                troops[landingTargetID] += param_boatID;
+                            }
+                            cancelBoat(!0);
+                            break a
+                        }
+                    }
+                    if (authorID === myID) statisticNumbers.numbers[13] += remaining;
+                    boatSpeed.removeEntry(authorID, boatID);
+                    attacks.removeAttack(authorID, aIndex);
+                    potentialBorderAdvances[authorID].push(landingPIndex);
+                    attacks.set(authorID, remaining, landingTargetID);
+                    speed.addEntry(authorID, !0);
+                }
+            }
+        }
     };
-    this.removeBoat = function(G, N) {
-        n = G;
-        x = pixel.toIndex(pixel.toX(N), pixel.toY(N));
-        k()
+    this.moveBoatLocation = function(G, N) {
+        authorID = G;
+        oldPIndex = pixel.toIndex(pixel.toX(N), pixel.toY(N));
+        revertToWater()
     }
 }
 
