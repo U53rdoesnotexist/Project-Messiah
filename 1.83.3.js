@@ -400,7 +400,7 @@ function MainLeaderboardIcon() {
             var label = buttons[bIndex].label,
                 renderHeight = Math.floor(.15 * renderScale * sprites.getValueByID(13).height),
                 fontStyle = fontWeightBold + renderHeight + fontSizeArial,
-                textLength = c2.measureText(label, fontStyle),
+                textLength = gameMessages.measureText(label, fontStyle),
                 renderWidth = .8 * renderScale * sprites.getValueByID(13).width;
             if (textLength > renderWidth) {
                 renderHeight = Math.floor(renderHeight * renderWidth / textLength);
@@ -839,7 +839,7 @@ function eE() {
 function eU() {
     eV.update();
     gameResultBox.update();
-    c2.update();
+    gameMessages.update();
     eX.update();
     setGameOrigin.checkAndSwitchServer()
 }
@@ -1061,7 +1061,7 @@ function ProcessAction() {
 function fu() {
     function g(B) {
         for (l--; B < l; B++) x[B] = x[B + 1], t[B] = t[B + 1], z[B] = z[B + 1], y[B] = y[B + 1], A[B] = A[B + 1]
-    }
+        }
     var k, n, l, x, t, z, y, A;
     this.init = function() {
         k = 1;
@@ -1187,10 +1187,10 @@ function gK() {
             gn.go()
         }
     };
-    this.gp = function(J) {
+    this.zoomToFitMap = function(zoomSpeed) {
         gj.gk = !1;
         K = !0;
-        g(J);
+        g(zoomSpeed);
         n(0, 0, currentMapWidth - 1, currentMapHeight - 1);
         k(.875);
         D = !0;
@@ -1390,7 +1390,7 @@ function hp() {
         peace.drawCanvasImage();
         eB.drawCanvasImage();
         gj.drawCanvasImage();
-        c2.drawCanvasImage();
+        gameMessages.drawCanvasImage();
         eT.drawCanvasImage();
         eO.drawCanvasImage();
         attacksBar.drawCanvasImage();
@@ -1555,7 +1555,7 @@ function EndGame() {
                 var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
                 (k = winner === myID) ? announcements.genericAnnouncement(winner, 2): announcements.genericAnnouncement(1 - myID, 3);
                 points1v1.calculateElo(winner)
-            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? landOrder[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.resultTeam(winner[1])), announcements.ip(k)) : (result = landOrder[0], k = result === myID, announcements.resultBR(result));
+            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? landOrder[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.resultClan(winner[1])), announcements.resultTeam(k)) : (result = landOrder[0], k = result === myID, announcements.resultBR(result));
             singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(k, !1);
             announcements.iy(!0);
@@ -1643,7 +1643,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     eO.init();
     eB.init();
     fq.init();
-    c2.init();
+    gameMessages.init();
     announcements.init();
     attacksBar.init();
     hu.init();
@@ -1702,7 +1702,7 @@ function construct() {
     announcements = new Announcements;
     jf = new k0;
     attacksBar = new AttacksBar;
-    c2 = new k2;
+    gameMessages = new GameMessages;
     troopBar = new TroopBar;
     gj = new k4;
     playtime = new Playtime;
@@ -1710,7 +1710,7 @@ function construct() {
     gameLeaderboard = new GameLeaderboard;
     eB = new k8;
     gameResultBox = new GameResultBox;
-    jh = new kA;
+    mainButtons = new MainButtons;
     preLobby = new PreLobby;
     gameStateManager = new GameStateManager;
     showError = new ShowError;
@@ -1867,7 +1867,7 @@ function jx() {
             this.end();
             if (this.isHuman(targetID) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.antiBoosting(), 1;
             announcements.lowBalance();
-            singleplayer ? processDonation(myID, targetID, divideFloor(troopBar.getRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
+            singleplayer ? processDonation(myID, targetID, divideFloor(troopBar.getFlooredRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
             return 1
         }
         if (4 === type) {
@@ -1881,12 +1881,12 @@ function jx() {
                 } else {
                     this.end();
                     announcements.lowBalance();
-                    if (singleplayer) processAttack(myID, targetID, troopBar.getRatio());
-                    else if (!freeSpawn || 300 < eB.lV()) dataEncoder.attack(troopBar.getRatio(), targetID === maxEntities ? myID : targetID);
+                    if (singleplayer) processAttack(myID, targetID, troopBar.getFlooredRatio());
+                    else if (!freeSpawn || 300 < eB.lV()) dataEncoder.attack(troopBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
                 }
             } else if (x[8]) {
                 this.end();
-                eH.lX(targetID, troopBar.getRatio());
+                eH.lX(targetID, troopBar.getFlooredRatio());
             } else this.end();
             return 1;
         }
@@ -1895,8 +1895,8 @@ function jx() {
             if (x[1]) {
                 this.end();
                 announcements.lowBalance();
-                if (singleplayer) processAction.processSendBoat(myID, troopBar.getRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
-                else dataEncoder.setLocation(troopBar.getRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
+                if (singleplayer) processAction.processSendBoat(myID, troopBar.getFlooredRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
+                else dataEncoder.setLocation(troopBar.getFlooredRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 return 1;
             }
             return 0;
@@ -2063,17 +2063,17 @@ function jy() {
 
     function k(B, C) {
         if (!fq.lu) return B <= l +
-            m5 && C >= troopBar.fK ? 0 : -1;
+            m5 && C >= troopBar.startingY ? 0 : -1;
         if (B <= 4 * l + m5) {
-            if (C >= troopBar.fK) return 0;
-            if (C >= troopBar.fK - l - A * m5) return 2;
-            if (C >= troopBar.fK - 2 * (l + A * m5)) return 3
-        } else if (B <= 7 * l + m5 && C >= troopBar.fK - l - A * m5) return 1;
+            if (C >= troopBar.startingY) return 0;
+            if (C >= troopBar.startingY - l - A * m5) return 2;
+            if (C >= troopBar.startingY - 2 * (l + A * m5)) return 3
+        } else if (B <= 7 * l + m5 && C >= troopBar.startingY - l - A * m5) return 1;
         return -1
     }
 
     function n(B, C) {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.fK - B * A * m5 - B * l);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.startingY - B * A * m5 - B * l);
         mainCanvasCtx.fillStyle = blackSemiTransparent2;
         mainCanvasCtx.fillRect(0, 0, 4 * l, l);
         y === B + 1 && C === whiteRGB2 && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * l, l));
@@ -2122,7 +2122,7 @@ function jy() {
     this.drawCanvasImage = function() {
         if (this.lu) {
             var B = Math.floor(5.5 * l);
-            mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.fK);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.startingY);
             mainCanvasCtx.fillStyle = blackSemiTransparent2;
             mainCanvasCtx.fillRect(0, 0, B, l);
             0 === y ? (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * l, l)) : 1 === y && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
@@ -2137,11 +2137,11 @@ function jy() {
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.fillText(z[0], 2 * l, .54 * l);
             B = .4 * l;
-            fq.m9(m5 + 4 * l + (1.5 * l - B) / 2, troopBar.fK + .3 * l, B);
+            fq.m9(m5 + 4 * l + (1.5 * l - B) / 2, troopBar.startingY + .3 * l, B);
             n(1, fq.canSurrender(myID) ? whiteRGB2 : gray128RGB);
             2 <= statisticNumbers.m4 && n(2, whiteRGB2);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
-        } else mainCanvasCtx.drawImage(x, m5, troopBar.fK)
+        } else mainCanvasCtx.drawImage(x, m5, troopBar.startingY)
     };
     this.canSurrender = function(B) {
         return 0 !== isAlive[B] && 2 !== clientStatus && hu.isHuman(B)
@@ -2163,34 +2163,34 @@ function Announcements() {
     var g, k, n, l, x, pluralLeaveLabels, monoLeaveLabels;
 
     function y() {
-        return troopBar.md(announcements.ma()) ? peace.visible ? troopBar.fK - troopBar.height - 2 * N : troopBar.fK - N : peace.visible ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * N : canvasHeight - N
+        return troopBar.md(announcements.ma()) ? peace.visible ? troopBar.startingY - troopBar.height - 2 * N : troopBar.startingY - N : peace.visible ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * N : canvasHeight - N
     }
 
     function announce(displayTime, message, messageID, playerID, P, U, W, X) {
         var isEmoji = 1E3 <= messageID;
-        var messageWidth = Math.floor(c2.measureText(message, announcements.fontStyle) + 1.5 * I + (isEmoji ? G : 1.5 * I));
+        var messageWidth = Math.floor(gameMessages.measureText(message, announcements.fontStyle) + 1.5 * I + (isEmoji ? announcementHeight : 1.5 * I));
         if (messageWidth + N > canvasWidth && !isEmoji && 50 !== messageID && 20 < message.length) {
             var ba = Math.floor(.5 * message.length);
             announce(displayTime, message.substring(0, ba), messageID, playerID, P, U, W, X);
             announce(displayTime, message.substring(ba), messageID, playerID, P, U, W, X)
         } else {
             var ca = messageID - 1E3;
-            ba = messageWidth + (50 === messageID ? D : 0);
+            ba = messageWidth + (50 === messageID ? acceptButtonWidth : 0);
             var messageCanvas = document.createElement("canvas");
             messageCanvas.width = messageWidth;
-            messageCanvas.height = G;
+            messageCanvas.height = announcementHeight;
             var S = messageCanvas.getContext("2d", {
                 alpha: !0
             });
             S.font = announcements.fontStyle;
             S.textBaseline = middleAlign;
             S.textAlign = leftAlign;
-            S.clearRect(0, 0, messageWidth, G);
+            S.clearRect(0, 0, messageWidth, announcementHeight);
             S.fillStyle = U;
-            S.fillRect(0, 0, messageWidth, G);
+            S.fillRect(0, 0, messageWidth, announcementHeight);
             S.fillStyle = P;
-            S.fillText(message, Math.floor(1.5 * I), Math.floor(G / 2));
-            isEmoji && (isEmoji = G / a5.width, S.imageSmoothingEnabled = !0, S.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - G, 0), S.drawImage(a5.l5[ca], 0, 0));
+            S.fillText(message, Math.floor(1.5 * I), Math.floor(announcementHeight / 2));
+            isEmoji && (isEmoji = announcementHeight / a5.width, S.imageSmoothingEnabled = !0, S.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - announcementHeight, 0), S.drawImage(a5.l5[ca], 0, 0));
             pendingAnnouncements.unshift({
                 time: displayTime,
                 label: message,
@@ -2231,7 +2231,7 @@ function Announcements() {
         }
         return R
     }
-    var pendingAnnouncements, G, N, I, D, K, tickCounter, L;
+    var pendingAnnouncements, announcementHeight, N, I, acceptButtonWidth, K, tickCounter, acceptButCanvas;
     this.init = function() {
         tickCounter = 0;
         K = isZoom ? 7 : 12;
@@ -2263,36 +2263,36 @@ function Announcements() {
         }
     };
     this.setCanvasVariables = function() {
-        var H;
-        G = Math.floor((isZoom ? .031 : .0249) * averageDim);
-        G = 10 > G ? 10 : G;
-        this.fontRatio = Math.floor(2 * G / 3);
+        announcementHeight = Math.floor((isZoom ? .031 : .0249) * averageDim);
+        announcementHeight = 10 > announcementHeight ? 10 : announcementHeight;
+        this.fontRatio = Math.floor(2 * announcementHeight / 3);
         this.fontStyle = fontWeightBold + this.fontRatio + fontSizeArial;
         N = m5;
-        I = Math.floor(G / 5);
+        I = Math.floor(announcementHeight / 5);
         if (0 < pendingAnnouncements.length) {
-            var M = pendingAnnouncements;
-            pendingAnnouncements = [];
-            for (H = M.length - 1; 0 <= H; H--) announce(M[H].time, M[H].label, M[H].id, M[H].player, M[H].mU, M[H].mV, M[H].mW, M[H].mX)
+            for (var aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
+                var cAnnouncement = pendingAnnouncements.pop()
+                announce(cAnnouncement.time, cAnnouncement.label, cAnnouncement.id, cAnnouncement.player, cAnnouncement.mU, cAnnouncement.mV, cAnnouncement.mW, cAnnouncement.mX);
+            }
         }
-        this.requestNonAggression()
+        this.setAcceptButtonCanvasVariables()
     };
-    this.requestNonAggression = function() {
-        L = document.createElement("canvas");
-        D = c2.measureText("Accept", this.fontStyle) + 5 * I;
-        L.height = G;
-        L.width = D;
-        var H = L.getContext("2d", {
+    this.setAcceptButtonCanvasVariables = function() {
+        acceptButCanvas = document.createElement("canvas");
+        acceptButtonWidth = gameMessages.measureText("Accept", this.fontStyle) + 5 * I;
+        acceptButCanvas.height = announcementHeight;
+        acceptButCanvas.width = acceptButtonWidth;
+        var acceptButCanvasCtx = acceptButCanvas.getContext("2d", {
             alpha: !0
         });
-        H.font = this.fontStyle;
-        H.textBaseline = middleAlign;
-        H.textAlign = centerAlign;
-        H.clearRect(0, 0, D, G);
-        H.fillStyle = greenDarkMoreOpaque;
-        H.fillRect(0, 0, D, G);
-        H.fillStyle = whiteRGB2;
-        H.fillText("Accept", Math.floor(D / 2), Math.floor(G / 2))
+        acceptButCanvasCtx.font = this.fontStyle;
+        acceptButCanvasCtx.textBaseline = middleAlign;
+        acceptButCanvasCtx.textAlign = centerAlign;
+        acceptButCanvasCtx.clearRect(0, 0, acceptButtonWidth, announcementHeight);
+        acceptButCanvasCtx.fillStyle = greenDarkMoreOpaque;
+        acceptButCanvasCtx.fillRect(0, 0, acceptButtonWidth, announcementHeight);
+        acceptButCanvasCtx.fillStyle = whiteRGB2;
+        acceptButCanvasCtx.fillText("Accept", Math.floor(acceptButtonWidth / 2), Math.floor(announcementHeight / 2))
     };
     this.ma = function() {
         if (peace.visible) return peace.width;
@@ -2301,10 +2301,10 @@ function Announcements() {
     };
     this.mouseDown = function(xPos, yPos) {
         for (var Q = y(), R, mIndex = pendingAnnouncements.length - 1; 0 <= mIndex; mIndex--)
-            if (R = Q - (mIndex + 1) * G, yPos >= R && yPos < R + G) {
+            if (R = Q - (mIndex + 1) * announcementHeight, yPos >= R && yPos < R + announcementHeight) {
                 if (50 === pendingAnnouncements[mIndex].id) {
-                    if (xPos >= prevClientWidth - D - N - pendingAnnouncements[mIndex].width) {
-                        if (xPos >= prevClientWidth - D - N) {
+                    if (xPos >= prevClientWidth - acceptButtonWidth - N - pendingAnnouncements[mIndex].width) {
+                        if (xPos >= prevClientWidth - acceptButtonWidth - N) {
                             mIndex = pendingAnnouncements[mIndex].player;
                             this.nonAggression(mIndex, 0);
                             dataEncoder.nonAggression(mIndex);
@@ -2333,19 +2333,19 @@ function Announcements() {
     this.genericAnnouncement = function(id, messageType) {
         if (0 === messageType) {
             statisticNumbers.numbers[id < playerCount ? 4 : 3]++;
-            c2.set(id, 0);
+            gameMessages.set(id, 0);
             announce(isZoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", blackMoreOpaque, -1, false);
         } else if (1 === messageType) {
             E(50, maxEntities);
-            c2.set(id, 1);
+            gameMessages.set(id, 1);
             announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", blackMoreOpaque, -1, true);
             eV.hoverTo(id, 2700, true, 0);
         } else if (2 === messageType) {
-            c2.set(id, 2);
+            gameMessages.set(id, 2);
             announce(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", blackMoreOpaque, -1, true);
             eV.hoverTo(id, 2700, true, 0);
         } else if (3 === messageType) {
-            c2.set(id, 2);
+            gameMessages.set(id, 2);
             announce(0, nickname[id] + " won the game.", 0, id, whiteRGB2, blackMoreOpaque, -1, true);
             eV.hoverTo(id, 2700, true, 0);
         } else if (4 === messageType) {
@@ -2367,7 +2367,7 @@ function Announcements() {
         sounds.play(3);
     };
     this.resultBR = function(winnerID) {
-        c2.set(winnerID, 2);
+        gameMessages.set(winnerID, 2);
         if (100 > playerCount) announce(0, nickname[winnerID] + " won the game.", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0)
         else announce(0, nickname[winnerID] + " has been immortalized!", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0);
         eV.hoverTo(winnerID, 2700, !0, 0)
@@ -2388,12 +2388,27 @@ function Announcements() {
                 }
             }
     };
-    this.ip = function(H) {
-        var M = teams.teamIDs[eT.mw()];
-        H ? (9 === gamemode ? (H = "The Resistance defeated the virus.", c2.mx("The Resistance",
-            2, 1, 12)) : H = "Congratulations! Team " + teams.colorLabels[M] + " has won the game!", announce(0, H, 40, 0, "rgb(10,220,10)", blackMoreOpaque, -1, !1)) : (9 === gamemode ? (H = "Mankind lost the war against the virus.", c2.mx("The Virus", 2, 0, 16)) : H = "Our alliance has been defeated!", announce(0, H, 41, 0, "rgb(200,80,80)", blackMoreOpaque, -1, !1));
-        9 !== gamemode && c2.mx("Team " + teams.colorLabels[M], 2, 1, 12);
-        eV.gp(2700)
+    this.resultTeam = function(result) {
+        var largestTeamID = teams.teamIDs[eT.mw()];
+        if (result) {
+            if (9 === gamemode) {
+                result = "The Resistance defeated the virus.";
+                gameMessages.mx("The Resistance", 2, 1, 12)
+            } else {
+                result = "Congratulations! Team " + teams.colorLabels[largestTeamID] + " has won the game!";
+                announce(0, result, 40, 0, "rgb(10,220,10)", blackMoreOpaque, -1, !1)
+            }
+        }else {
+            if (9 === gamemode) {
+                result = "Mankind lost the war against the virus.";
+                gameMessages.mx("The Virus", 2, 0, 16)
+            } else {
+                result = "Our alliance has been defeated!";
+                announce(0, result, 41, 0, "rgb(200,80,80)", blackMoreOpaque, -1, !1);
+            }
+        }
+        if (9 !== gamemode) gameMessages.mx("Team " + teams.colorLabels[largestTeamID], 2, 1, 12);
+        eV.zoomToFitMap(2700)
     };
     this.new1v1 = function(players) {
         announce(300, players[0].name + " [" + points1v1.formatElo(players[0].elo) + "] vs " + players[1].name + " [" + points1v1.formatElo(players[1].elo) + "]", 65, 0, blackRGB, "rgba(100,255,255,0.75)", -1, !1)
@@ -2407,7 +2422,7 @@ function Announcements() {
             announce(0, players[1].name + ": " + points1v1.formatElo(players[1].elo) + " -> " + player2Elo, 66, 1, whiteRGB2, resultColors[1], -1, false);
         }
     };
-    this.resultTeam = function(clanTag) {
+    this.resultClan = function(clanTag) {
         if (1 === wsManager.getConnectedLobby()) announce(0, "[" + clanTag + "] has won " + playerCount + (isContest ? " x 2" : "") + " points!", 45, 0, "rgb(225,240,255)", blackMoreOpaque, -1, !1)
     };
     this.nonAggression = function(friendID, ratifier) {
@@ -2493,19 +2508,31 @@ function Announcements() {
         l[H]++;
         g[H] = M;
         k[H] = Q;
-        1 === P && (x[H] = R);
-        1 === P && (32 > playersIngame || 2 === clientStatus) ? this.nL(H) : 1 < P && (x[H] < R - 140 || 2 === clientStatus) && this.nL(H)
+        if (1 === P) x[H] = R
+        if (1 === P && (32 > playersIngame || 2 === clientStatus)) this.nL(H)
+        else if (1 < P && (x[H] < R - 140 || 2 === clientStatus)) this.nL(H)
     };
     this.update = function() {
         var H, M = pendingAnnouncements.length - K;
         M = 1 >= M ? 1 : M * M;
         for (H = pendingAnnouncements.length - 1; 0 <= H; H--) 0 < pendingAnnouncements[H].time && (pendingAnnouncements[H].time -= M, 0 >= pendingAnnouncements[H].time && pendingAnnouncements.splice(H, 1));
         if (128 !== tickCounter && (tickCounter++, !(128 > tickCounter)))
-            for (H = 5, M = aliveCount - 1; 0 <= M; M--) 1 === playerStatus[aliveEntities[M]] && 0 < H-- && announce(240, nickname[aliveEntities[M]] + " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
+            for (H = 5, M = aliveCount - 1; 0 <= M; M--) {
+                if (1 === playerStatus[aliveEntities[M]] && 0 < H--) {
+                    announce(240, nickname[aliveEntities[M]] + " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
+                }
+            }
         this.iy(!1)
     };
     this.drawCanvasImage = function() {
-        for (var H = y(), M, Q = pendingAnnouncements.length - 1; 0 <= Q; Q--) M = H - (Q + 1) * G, 50 === pendingAnnouncements[Q].id ? (mainCanvasCtx.drawImage(pendingAnnouncements[Q].canvas, prevClientWidth - pendingAnnouncements[Q].width - D - N, M), mainCanvasCtx.drawImage(L, prevClientWidth - D - N, M)) : mainCanvasCtx.drawImage(pendingAnnouncements[Q].canvas, prevClientWidth - pendingAnnouncements[Q].width - N, M)
+        var H = y(), M, aIndex;
+        for (aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
+            M = H - (aIndex + 1) * announcementHeight;
+            if (50 === pendingAnnouncements[aIndex].id) {
+                mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - acceptButtonWidth - N, M);
+                mainCanvasCtx.drawImage(acceptButCanvas, prevClientWidth - acceptButtonWidth - N, M)
+            } else mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - N, M)
+        }
     }
 }
 
@@ -2606,7 +2633,7 @@ function k0() {
         y = l;
         l = 60 * A + B;
         if (y === l) return !1;
-        x = c2.measureText(k, z);
+        x = gameMessages.measureText(k, z);
         x +=
             Math.floor(.4 * t);
         return !0
@@ -2872,49 +2899,84 @@ function setCanvasDisplayVariables() {
     ov = 1 > ov ? 1 : ov
 }
 
-function onMousedown(g) {
-    g.preventDefault();
-    isTouch || (wsManager.setHumanLastAction(wsManager.remote), pL(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY)))
-}
-
-function onTouchstart(g) {
-    g.preventDefault();
-    wsManager.setHumanLastAction(wsManager.remote);
-    isTouch = !0;
-    0 < g.touches.length && (clientXPos = Math.floor(pixelRatio * g.touches[0].clientX), clientYPos = Math.floor(pixelRatio * g.touches[0].clientY), jo.pN(g) || pL(clientXPos, clientYPos))
-}
-
-function pL(g, k) {
-    if (0 === clientStatus) gameStateManager.mouseDown(g, k);
-    else if (!(statistics.mouseDown(g, k) || hu.lB(g, k) || gameResultBox.mouseDown(g, k) || attacksBar.mouseDown(g, k))) {
-        var n = fq.mouseDown(g, k);
-        2 === n || gameLeaderboard.mouseDown(g, k) || (gj.mouseDown(g, k) ? c4.canvasDirty = !0 : troopBar.getClickedButton(g, k) ? (gj.gk = !1, troopBar.pQ(g, k) && (c4.canvasDirty = !0)) : announcements.mouseDown(g, k) || peace.mouseDown(g, k) || 0 === n && hu.lD(g, k))
+function onMousedown(e) {
+    e.preventDefault();
+    if (!isTouch) {
+        wsManager.setHumanLastAction(wsManager.remote);
+        handleMouseDown(Math.floor(pixelRatio * e.clientX), Math.floor(pixelRatio * e.clientY))
     }
 }
 
-function onMousemove(g) {
-    isTouch = !1;
-    g.preventDefault();
-    onPointermove(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
+function onTouchstart(e) {
+    e.preventDefault();
+    wsManager.setHumanLastAction(wsManager.remote);
+    isTouch = !0;
+    if (0 < e.touches.length) {
+        clientXPos = Math.floor(pixelRatio * e.touches[0].clientX);
+        clientYPos = Math.floor(pixelRatio * e.touches[0].clientY);
+        if (!jo.pN(e)) handleMouseDown(clientXPos, clientYPos)
+    }
 }
 
-function onTouchmove(g) {
-    g.preventDefault();
-    0 < g.touches.length && (clientXPos = Math.floor(pixelRatio * g.touches[0].clientX), clientYPos = Math.floor(pixelRatio * g.touches[0].clientY), jo.pS(g) || onPointermove(clientXPos, clientYPos))
+function handleMouseDown(xPos, yPos) {
+    if (0 === clientStatus) gameStateManager.mouseDown(xPos, yPos);
+    else if (!(statistics.mouseDown(xPos, yPos) || hu.lB(xPos, yPos) || gameResultBox.mouseDown(xPos, yPos) || attacksBar.mouseDown(xPos, yPos))) {
+        var n = fq.mouseDown(xPos, yPos);
+        if (2 !== n && !gameLeaderboard.mouseDown(xPos, yPos)) {
+            if (gj.mouseDown(xPos, yPos)) c4.canvasDirty = !0
+            else if (troopBar.getClickedButton(xPos, yPos)) {
+                gj.gk = !1;
+                if (troopBar.pQ(xPos, yPos)) c4.canvasDirty = !0
+            } else if (!(announcements.mouseDown(xPos, yPos) || peace.mouseDown(xPos, yPos)) && 0 === n) hu.lD(xPos, yPos)
+        }
+    }
+}
+
+function onMousemove(e) {
+    isTouch = !1;
+    e.preventDefault();
+    onPointermove(Math.floor(pixelRatio * e.clientX), Math.floor(pixelRatio * e.clientY))
+}
+
+function onTouchmove(e) {
+    e.preventDefault();
+    if (0 < e.touches.length) {
+        clientXPos = Math.floor(pixelRatio * e.touches[0].clientX);
+        clientYPos = Math.floor(pixelRatio * e.touches[0].clientY);
+        if (!jo.pS(e)) onPointermove(clientXPos, clientYPos)
+    };
 }
 
 function onPointermove(xPos, yPos) {
-    0 === clientStatus ? gameStateManager.onPointermove(xPos, yPos) : statistics.onPointermove(xPos, yPos) || (hu.visible() ? hu.onPointermove(xPos, yPos) : fq.onPointermove(xPos, yPos) || (troopBar.pT ? troopBar.onPointermove(xPos, yPos) && (c4.canvasDirty = !0) : (gameLeaderboard.onPointermove(xPos, yPos), gj.gk && gj.onPointermove(xPos, yPos) && (c4.canvasDirty = !0))))
+    if (0 === clientStatus) gameStateManager.onPointermove(xPos, yPos)
+    else if (!statistics.onPointermove(xPos, yPos)) {
+        if (!(hu.visible() ? hu.onPointermove(xPos, yPos) : fq.onPointermove(xPos, yPos))) {
+            if (troopBar.isDragging) {
+                if (troopBar.onPointermove(xPos, yPos)) c4.canvasDirty = !0
+            } else {
+                gameLeaderboard.onPointermove(xPos, yPos);
+                if (gj.gk && gj.onPointermove(xPos, yPos)) c4.canvasDirty = !0
+            }
+        }
+    }
 }
 
-function onMouseleave(g) {
-    g.preventDefault();
-    0 === clientStatus ? (gameStateManager.click(-1024, -1024), playtime.pU()) : (gameLeaderboard.pV(-1024, -1024), fq.onPointermove(-1024, -1024), troopBar.pW(), gj.gk && (gj.gk = !1))
+function onMouseleave(e) {
+    e.preventDefault();
+    if (0 === clientStatus) {
+        gameStateManager.click(-1024, -1024);
+        playtime.pU();
+    } else {
+        gameLeaderboard.pV(-1024, -1024);
+        fq.onPointermove(-1024, -1024);
+        troopBar.stopDragging();
+        if (gj.gk) gj.gk = !1
+    }
 }
 
-function onMouseup(g) {
-    g.preventDefault();
-    isTouch || onPointerUp(Math.floor(pixelRatio * g.clientX), Math.floor(pixelRatio * g.clientY))
+function onMouseup(e) {
+    e.preventDefault();
+    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX), Math.floor(pixelRatio * e.clientY))
 }
 
 function onClick(g) {
@@ -2940,25 +3002,37 @@ function onDrop(g) {
 }
 
 function onPointerUp(xPos, yPos) {
-    0 === clientStatus ? gameStateManager.click(xPos, yPos) : (gameLeaderboard.pV(xPos, yPos), statistics.pV(), troopBar.pW(), gj.gk = !1, hu.click(xPos, yPos) && (c4.canvasDirty = !0))
+    if (0 === clientStatus) gameStateManager.click(xPos, yPos)
+    else {
+        gameLeaderboard.pV(xPos, yPos);
+        statistics.pV();
+        troopBar.stopDragging();
+        gj.gk = !1;
+        if (hu.click(xPos, yPos)) c4.canvasDirty = !0
+    }
 }
 
-function onWheel(g) {
-    g.preventDefault();
+function onWheel(e) {
+    e.preventDefault();
     wsManager.setHumanLastAction(wsManager.remote);
-    var k = Math.floor(pixelRatio * g.clientX),
-        n = Math.floor(pixelRatio * g.clientY),
-        l = g.deltaY;
-    1 === g.deltaMode && (l *= 20);
-    0 === clientStatus ? gameStateManager.pb(k, n, l) : gameLeaderboard.pb(k, n, l) || (troopBar.getClickedButton(k, n) ? troopBar.pb(l) && (c4.canvasDirty = !0) : gj.pb(k, n, 2 * l) && (c4.canvasDirty = !0))
+    var xPos = Math.floor(pixelRatio * e.clientX),
+        yPos = Math.floor(pixelRatio * e.clientY),
+        deltaY = e.deltaY;
+    if (1 === e.deltaMode) deltaY *= 20;
+    if (0 === clientStatus) gameStateManager.onWheel(xPos, yPos, deltaY)
+    else if (!gameLeaderboard.onWheel(xPos, yPos, deltaY)) {
+        if (troopBar.getClickedButton(xPos, yPos)) {
+            if (troopBar.onWheel(deltaY)) c4.canvasDirty = !0
+        } else if (gj.onWheel(xPos, yPos, 2 * deltaY)) c4.canvasDirty = !0
+    }
 }
 
-function pc(g, k, n) {
-    g.fillStyle = whiteRGB2;
-    g.fillRect(0, 0, k, 1);
-    g.fillRect(0, n - 1, k, 1);
-    g.fillRect(0, 0, 1, n);
-    g.fillRect(k - 1, 0, 1, n)
+function drawWhiteRectBorder(canvas, rectWidth, rectHeight) {
+    canvas.fillStyle = whiteRGB2;
+    canvas.fillRect(0, 0, rectWidth, 1);
+    canvas.fillRect(0, rectHeight - 1, rectWidth, 1);
+    canvas.fillRect(0, 0, 1, rectHeight);
+    canvas.fillRect(rectWidth - 1, 0, 1, rectHeight)
 }
 
 function AttacksBar() {
@@ -2967,7 +3041,7 @@ function AttacksBar() {
         myAttacks[aIndex].canvasCtx.clearRect(0, 0, varBarCanvasWidth, barCanvasHeight);
         myAttacks[aIndex].canvasCtx.fillStyle = 0 !== myAttacks[aIndex].id ? "rgba(33,33,120,0.83)" : myAttacks[aIndex].targetID === maxEntities ? "rgba(88,88,88,0.83)" : myAttacks[aIndex].targetID < playerCount ? "rgba(100,70,33,0.83)" : "rgba(33,100,80,0.83)";
         myAttacks[aIndex].canvasCtx.fillRect(0, 0, varBarCanvasWidth, barCanvasHeight);
-        pc(myAttacks[aIndex].canvasCtx, varBarCanvasWidth, barCanvasHeight);
+        drawWhiteRectBorder(myAttacks[aIndex].canvasCtx, varBarCanvasWidth, barCanvasHeight);
         varBarCanvasWidth > baseBarCanvasWidth + 2 * barCanvasHeight && (myAttacks[aIndex].canvasCtx.fillRect(varBarCanvasWidth - baseBarCanvasWidth - barCanvasHeight, 0, 1, barCanvasHeight), myAttacks[aIndex].canvasCtx.fillText(nickname[myAttacks[aIndex].targetID], Math.floor((varBarCanvasWidth - baseBarCanvasWidth) / 2), Math.floor(.57 * barCanvasHeight)));
         var yPos = 0 !== myAttacks[aIndex].id ? 0 : barCanvasHeight;
         myAttacks[aIndex].canvasCtx.fillText(attacksBar.splitText(myAttacks[aIndex].remaining), Math.floor(varBarCanvasWidth - baseBarCanvasWidth / 2 - yPos), Math.floor(.57 * barCanvasHeight));
@@ -3025,7 +3099,7 @@ function AttacksBar() {
     }
 
     function l(C) {
-        return eO.qD() ? prevClientWidth - myAttacks[C].canvas.width - m5 : eO.fJ
+        return eO.qD() ? prevClientWidth - myAttacks[C].canvas.width - m5 : eO.startingX
     }
 
     function x(C) {
@@ -3077,8 +3151,8 @@ function AttacksBar() {
                     return true;
                 }
                 if (myAttacks[F].id === 0 && xPos >= I + K - barCanvasHeight - G && xPos <= I + K + G) {
-                    if (singleplayer) processAttack(myID, myAttacks[F].targetID, troopBar.getRatio());
-                    else dataEncoder.attack(troopBar.getRatio(), myAttacks[F].targetID === maxEntities ? myID : myAttacks[F].targetID);
+                    if (singleplayer) processAttack(myID, myAttacks[F].targetID, troopBar.getFlooredRatio());
+                    else dataEncoder.attack(troopBar.getFlooredRatio(), myAttacks[F].targetID === maxEntities ? myID : myAttacks[F].targetID);
                     return true;
                 }
             }
@@ -3138,7 +3212,7 @@ function AttacksBar() {
     }
 }
 
-function k2() {
+function GameMessages() {
     function g() {
         mainCanvasCtx.drawImage(I, m5 + (teamGame ? m5 + eT.qR() : 0), gameBoardHeight + 2 * m5)
     }
@@ -3162,7 +3236,7 @@ function k2() {
         D.textBaseline = middleAlign;
         D.fillStyle = 1 === l[0].qP ? blackRGB : whiteRGB2;
         D.font = A[0];
-        D.fillText(E[l[0].qO], Math.floor(l[0].width / 2), Math.floor(.72 * C[0] * y));
+        D.fillText(messageLabels[l[0].qO], Math.floor(l[0].width / 2), Math.floor(.72 * C[0] * y));
         D.font = A[1];
         D.fillText(l[0].label,
             Math.floor(l[0].width / 2), Math.floor((C[0] + .48 * C[1]) * y))
@@ -3180,7 +3254,7 @@ function k2() {
         D.lineTo(0, N);
         D.closePath()
     }
-    var l, x, t, z, y, A, B, C, E, F, G, N, I, D, K, J;
+    var l, x, t, z, y, A, B, C, messageLabels, F, G, N, I, D, K, J;
     this.init = function() {
         K = 0;
         x = 4;
@@ -3189,7 +3263,7 @@ function k2() {
         A = Array(2);
         B = Array(2);
         C = Array(2);
-        E = ["YOU CONQUERED", "YOU WERE CONQUERED BY", "THE GAME WAS WON BY", "MAP:"];
+        messageLabels = ["YOU CONQUERED", "YOU WERE CONQUERED BY", "THE GAME WAS WON BY", "MAP:"];
         C[0] = .3;
         C[1] = .7;
         F = Array(4);
@@ -3204,7 +3278,7 @@ function k2() {
         B[1] = Math.floor(.85 * C[1] * y);
         A[0] = fontWeightBold + B[0] + fontSizeArial;
         A[1] = fontWeightBold + B[1] + fontSizeArial;
-        for (L = F.length - 1; 0 <= L; L--) F[L] = this.measureText(E[L] + "000", A[0]);
+        for (L = F.length - 1; 0 <= L; L--) F[L] = this.measureText(messageLabels[L] + "000", A[0]);
         G = Math.floor(1 + .05 * y);
         N = Math.floor(.2 * y);
         if (0 < l.length) {
@@ -3217,7 +3291,7 @@ function k2() {
     };
     this.update = function() {
         if (0 !== x)
-            if (4 === x) c4.time > J && (x = 0, 1 === clientStatus && c2.mx(mapInfo.getMapName(), 3, 1, 9));
+            if (4 === x) c4.time > J && (x = 0, 1 === clientStatus && gameMessages.mx(mapInfo.getMapName(), 3, 1, 9));
             else {
                 if (1 === x) 0 === t && (k(), t = 1E-4), t += .002 *
                     (c4.time - K), 1 <= t && (z = 0, x = 2, t = 1), c4.canvasDirty = !0;
@@ -3289,7 +3363,7 @@ function Peace() {
     }
 
     function getPeaceBarYPos() {
-        return troopBar.md(announcements.ma()) ? troopBar.fK - peaceBarHeight - m5 : canvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * m5
+        return troopBar.md(announcements.ma()) ? troopBar.startingY - peaceBarHeight - m5 : canvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * m5
     }
     var peaceBarHeight, peaceCanvas, peaceCanvasCtx, peaceIconCanvas, myChoice, peaceProgress, peaceRequirement, voterList, hasVoted, countDown, oldTop10Land, peaceCount, timeBeforeHidden;
     this.init = function() {
@@ -3421,134 +3495,157 @@ function Peace() {
 }
 
 function TroopBar() {
-    function g() {
-        if (C < 1 / 3) {
-            var I = Math.floor(540 * C);
-            return "rgba(" + I + ",180,0,0.75)"
+    function getBarColor() {
+        if (ratio < 1 / 3) {
+            var colorValue = Math.floor(540 * ratio);
+            return "rgba(" + colorValue + ",180,0,0.75)"
         }
-        if (C < 2 / 3) return I = Math.floor(540 * (C - 1 / 3)), "rgba(180," + (180 - I) + ",0,0.75)";
-        I = Math.floor(540 * (C - 2 / 3));
-        return "rgba(180,0," + I + ",0.75)"
+        if (ratio < 2 / 3) {
+            colorValue = Math.floor(540 * (ratio - 1 / 3));
+            return  "rgba(180," + (180 - colorValue) + ",0,0.75)";
+        }
+        colorValue = Math.floor(540 * (ratio - 2 / 3));
+        return "rgba(180,0," + colorValue + ",0.75)"
     }
 
-    function k() {
-        A.clearRect(0, 0, x, troopBar.height);
-        var I = Math.floor(C * (x - 2 * z));
-        A.fillStyle = blackMoreOpaque;
-        A.fillRect(0, 0, z, troopBar.height);
-        A.fillRect(z + I, 0, x - z - I, troopBar.height);
-        A.fillStyle = g();
-        A.fillRect(z, 0, I, troopBar.height);
-        A.fillStyle = whiteRGB2;
-        A.fillRect(0, 0, x, 1);
-        A.fillRect(0, troopBar.height - 1, x, 1);
-        A.fillRect(0, 0, 1, troopBar.height);
-        A.fillRect(z, 0, 1, troopBar.height);
-        A.fillRect(z + I, 0, 1, troopBar.height);
-        A.fillRect(x - z, 0, 1, troopBar.height);
-        A.fillRect(x - 1, 0, 1, troopBar.height);
+    function redrawTroopBar() {
+        troopBarCanvasCtx.clearRect(0, 0, troopBarWidth, troopBar.height);
+        var I = Math.floor(ratio * (troopBarWidth - 2 * buttonWidth));
+        troopBarCanvasCtx.fillStyle = blackMoreOpaque;
+        troopBarCanvasCtx.fillRect(0, 0, buttonWidth, troopBar.height);
+        troopBarCanvasCtx.fillRect(buttonWidth + I, 0, troopBarWidth - buttonWidth - I, troopBar.height);
+        troopBarCanvasCtx.fillStyle = getBarColor();
+        troopBarCanvasCtx.fillRect(buttonWidth, 0, I, troopBar.height);
+        troopBarCanvasCtx.fillStyle = whiteRGB2;
+        troopBarCanvasCtx.fillRect(0, 0, troopBarWidth, 1);
+        troopBarCanvasCtx.fillRect(0, troopBar.height - 1, troopBarWidth, 1);
+        troopBarCanvasCtx.fillRect(0, 0, 1, troopBar.height);
+        troopBarCanvasCtx.fillRect(buttonWidth, 0, 1, troopBar.height);
+        troopBarCanvasCtx.fillRect(buttonWidth + I, 0, 1, troopBar.height);
+        troopBarCanvasCtx.fillRect(troopBarWidth - buttonWidth, 0, 1, troopBar.height);
+        troopBarCanvasCtx.fillRect(troopBarWidth - 1, 0, 1, troopBar.height);
         I = 1 + Math.floor(.0625 * troopBar.height);
         var D = 1 + Math.floor(.3 * troopBar.height);
-        A.fillRect(Math.floor(.25 * troopBar.height) + D, Math.floor((troopBar.height - I) / 2), troopBar.height - 2 * D, I);
-        A.fillRect(Math.floor(x - 1.25 * troopBar.height) + D, Math.floor((troopBar.height - I) / 2), troopBar.height - 2 * D - D % 2, I);
-        A.fillRect(Math.floor(x - 1.25 * troopBar.height) + Math.floor((troopBar.height - I) / 2), D, I, troopBar.height - 2 * D - D % 2);
-        E = Math.floor(troops[myID] * C);
-        A.fillText(attacksBar.splitText(E), Math.floor(x / 2), Math.floor(.55 * troopBar.height))
+        troopBarCanvasCtx.fillRect(Math.floor(.25 * troopBar.height) + D, Math.floor((troopBar.height - I) / 2), troopBar.height - 2 * D, I);
+        troopBarCanvasCtx.fillRect(Math.floor(troopBarWidth - 1.25 * troopBar.height) + D, Math.floor((troopBar.height - I) / 2), troopBar.height - 2 * D - D % 2, I);
+        troopBarCanvasCtx.fillRect(Math.floor(troopBarWidth - 1.25 * troopBar.height) + Math.floor((troopBar.height - I) / 2), D, I, troopBar.height - 2 * D - D % 2);
+        sendAmount = Math.floor(troops[myID] * ratio);
+        troopBarCanvasCtx.fillText(attacksBar.splitText(sendAmount), Math.floor(troopBarWidth / 2), Math.floor(.55 * troopBar.height))
     }
 
-    function n(I) {
-        if (1 < I && 0 === C) return C = .01, k(), !0;
-        if (1 < I && 1 === C || 0 === C) return !1;
-        C *= I;
-        C = 1 < C ? 1 : 0 > C ? 0 : C;
-        k();
+    function multiplyRatio(multiplier) {
+        if (1 < multiplier && 0 === ratio) {
+            ratio = .01;
+            redrawTroopBar();
+            return !0;
+        }
+        if (1 < multiplier && 1 === ratio || 0 === ratio) return !1;
+        ratio *= multiplier;
+        ratio = 1 < ratio ? 1 : 0 > ratio ? 0 : ratio;
+        redrawTroopBar();
         return !0
     }
 
-    function l(I) {
-        var D = C;
-        C = (I - t - z) / (x - 2 * z);
-        C = 0 > C ? 0 : C;
-        C = 1 < C ? 1 : C;
-        return D !== C ? (k(), !0) : !1
+    function slideRatio(xPos) {
+        var oldRatio = ratio;
+        ratio = (xPos - startingX - buttonWidth) / (troopBarWidth - 2 * buttonWidth);
+        ratio = 0 > ratio ? 0 : ratio;
+        ratio = 1 < ratio ? 1 : ratio;
+        if (oldRatio !== ratio) {
+            redrawTroopBar();
+            return !0;
+        } else return !1;
     }
-    var x, t, z, y, A, B, C, E, F, G, N = 11 / 12;
+    var troopBarWidth, startingX, buttonWidth, troopBarCanvas, troopBarCanvasCtx, visibility, ratio, sendAmount, F, needsUpdate, buttonMultiplier = 11 / 12;
     this.init = function() {
-        B = !inSpawn;
-        G = !1;
-        C = .5;
-        E = 0;
-        this.pT = !1;
+        visibility = !inSpawn;
+        needsUpdate = !1;
+        ratio = .5;
+        sendAmount = 0;
+        this.isDragging = !1;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        isZoom && canvasWidth < .8 * canvasHeight ? (this.height = Math.floor(.0536 * averageDim), x = canvasWidth - 4 * m5 - this.height) : (x = Math.floor((isZoom ? .65 : .389) * averageDim), x += 12 - x % 12, this.height = Math.floor(x / 12));
-        z = Math.floor(3 * this.height / 2);
+        if (isZoom && canvasWidth < .8 * canvasHeight) {
+            this.height = Math.floor(.0536 * averageDim);
+            troopBarWidth = canvasWidth - 4 * m5 - this.height;
+        } else {
+            troopBarWidth = Math.floor((isZoom ? .65 : .389) * averageDim);
+            troopBarWidth += 12 - troopBarWidth % 12;
+            this.height = Math.floor(troopBarWidth / 12)
+        };
+        buttonWidth = Math.floor(3 * this.height / 2);
         F = fontWeightBold + Math.floor(.5 * this.height) + fontSizeArial;
-        y = document.createElement("canvas");
-        y.width = x;
-        y.height = this.height;
-        A = y.getContext("2d", {
+        troopBarCanvas = document.createElement("canvas");
+        troopBarCanvas.width = troopBarWidth;
+        troopBarCanvas.height = this.height;
+        troopBarCanvasCtx = troopBarCanvas.getContext("2d", {
             alpha: !0
         });
-        A.font = F;
-        A.textBaseline = middleAlign;
-        A.textAlign = centerAlign;
+        troopBarCanvasCtx.font = F;
+        troopBarCanvasCtx.textBaseline = middleAlign;
+        troopBarCanvasCtx.textAlign = centerAlign;
         this.qs();
-        k()
+        redrawTroopBar()
     };
     this.qs = function() {
-        t = isZoom && canvasWidth < .8 * canvasHeight ? this.height + 3 * m5 : Math.floor((prevClientWidth - x) / 2);
-        this.fK = prevClientHeight - this.height - (isZoom ? 2 : 1) * m5
+        startingX = isZoom && canvasWidth < .8 * canvasHeight ? this.height + 3 * m5 : Math.floor((prevClientWidth - troopBarWidth) / 2);
+        this.startingY = prevClientHeight - this.height - (isZoom ? 2 : 1) * m5;
     };
     this.drawCanvas = function() {
-        G && (G = !1, k())
+        needsUpdate && (needsUpdate = !1, redrawTroopBar())
     };
     this.visible = function() {
-        return !(!B || fq.lu && t < Math.floor(m5 + 5.5 * this.height))
+        return !(!visibility || fq.lu && startingX < Math.floor(m5 + 5.5 * this.height))
     };
     this.md = function(I) {
-        return this.visible() ? t + x > canvasWidth - I - m5 : !1
+        return this.visible() ? startingX + troopBarWidth > canvasWidth - I - m5 : !1
     };
     this.toggleVisibility = function() {
-        B = !0
+        visibility = !0
     };
-    this.qh = function() {
-        B = !1
+    this.toggleVisibilityOff = function() {
+        visibility = !1
     };
-    this.getRatio = function() {
-        var I = Math.floor(1E3 * C);
-        return 0 >= I ? 1 : 1E3 < I ? 1E3 : I
+    this.getFlooredRatio = function() {
+        var flooredRatio = Math.floor(1E3 * ratio);
+        return 0 >= flooredRatio ? 1 : 1E3 < flooredRatio ? 1E3 : flooredRatio
     };
     this.getClickedButton = function(xPos, yPos) {
-        return this.visible() && xPos > t && xPos < t + x && yPos > this.fK
+        return this.visible() && xPos > startingX && xPos < startingX + troopBarWidth && yPos > this.startingY
     };
-    this.pQ = function(I, D) {
+    this.pQ = function(xPos, yPos) {
         if (!this.visible()) return !1;
-        if (I > t && I < t + z && D > troopBar.fK) return n(N);
-        if (I > t + x - z && I < t + x && D > troopBar.fK) return n(1 / N);
-        this.pT = !0;
-        return l(I)
+        if (xPos > startingX && xPos < startingX + buttonWidth && yPos > troopBar.startingY) return multiplyRatio(buttonMultiplier);
+        if (xPos > startingX + troopBarWidth - buttonWidth && xPos < startingX + troopBarWidth && yPos > troopBar.startingY) return multiplyRatio(1 / buttonMultiplier);
+        this.isDragging = !0;
+        return slideRatio(xPos)
     };
-    this.r3 = function(I) {
-        0 !== clientStatus && this.visible() && n(I) && (c4.canvasDirty = !0)
+    this.checkAndMultiplyRatio = function(multiplier) {
+        if (0 !== clientStatus && this.visible() && multiplyRatio(multiplier)) c4.canvasDirty = !0
     };
-    this.pb = function(I) {
-        if (0 === I || !this.visible()) return !1;
-        0 < I ? (I = 400 / (400 + I), I = I < N ? N : I) : (I = (400 - I) / 400, I = I > 1 / N ? 1 / N : I);
-        return n(I)
+    this.onWheel = function(deltaY) {
+        if (0 === deltaY || !this.visible()) return !1;
+        if (0 < deltaY) {
+            deltaY = 400 / (400 + deltaY);
+            deltaY = deltaY < buttonMultiplier ? buttonMultiplier : deltaY;
+        } else {
+            deltaY = (400 - deltaY) / 400;
+            deltaY = deltaY > 1 / buttonMultiplier ? 1 / buttonMultiplier : deltaY;
+        }
+        return multiplyRatio(deltaY)
     };
-    this.onPointermove = function(I, D) {
-        return this.pT ? l(I, D) : !1
+    this.onPointermove = function(xPos, yPos) {
+        return this.isDragging ? slideRatio(xPos) : !1
     };
-    this.pW = function() {
-        this.pT = !1
+    this.stopDragging = function() {
+        this.isDragging = !1
     };
     this.update = function() {
-        this.visible() && Math.floor(troops[myID] * C) !== E && (G = !0)
+        if (this.visible() && Math.floor(troops[myID] * ratio) !== sendAmount) needsUpdate = !0
     };
     this.drawCanvasImage = function() {
-        this.visible() && mainCanvasCtx.drawImage(y, t, this.fK)
+        if (this.visible()) mainCanvasCtx.drawImage(troopBarCanvas, startingX, this.startingY)
     }
 }
 var scaleFactor, gridWidth, gridHeight;
@@ -3587,7 +3684,7 @@ function k4() {
         gridHeight = scaleFactor * y - A
     };
     this.mouseDown = function(y, A) {
-        if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.pb(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200) : this.pb(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
+        if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200) : this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
         eV.h0() && (this.gk = !0, t = y, z = A);
         return !1
     };
@@ -3605,7 +3702,7 @@ function k4() {
         z = A;
         return B !== gridWidth || C !== gridHeight
     };
-    this.pb = function(y, A, B) {
+    this.onWheel = function(y, A, B) {
         if (!eV.h0()) return !0;
         if (0 < B) B = 450 / (450 + B), B = .5 > B ? .5 : B;
         else if (0 > B) B = (450 - B) / 450, B = 2 < B ? 2 : B;
@@ -3910,7 +4007,7 @@ function Playtime() {
     this.pU = function() {
         -1 !== G && (this.rg = !1, G = -1, c4.canvasDirty = !0)
     };
-    this.pb = function(P, U) {
+    this.onWheel = function(P, U) {
         -1 !== G && (z += Math.floor(U), k(), n(P), c4.canvasDirty = !0)
     };
     this.mouseDown = function(P, U) {
@@ -3972,7 +4069,7 @@ function Playtime() {
 }
 
 function k6() {
-    this.height = this.fJ = 0;
+    this.height = this.startingX = 0;
     var g, k, n, l, x, t, z, y, A, B, C, E, F;
     this.init = function() {
         x = startingTroops;
@@ -4007,7 +4104,7 @@ function k6() {
         return isZoom && canvasWidth < 1.2 * canvasHeight
     };
     this.qs = function() {
-        this.qD() ? this.fJ = prevClientWidth - k - m5 : this.fJ = Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - eB.width - k) / 2 - .5 * m5)
+        this.qD() ? this.startingX = prevClientWidth - k - m5 : this.startingX = Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - eB.width - k) / 2 - .5 * m5)
     };
     this.drawCanvas = function() {
         y && (y = !1, this.sB())
@@ -4040,7 +4137,7 @@ function k6() {
         0 !== isAlive[myID] && 2 !== playerStatus[myID] && A !== troops[myID] && (x = getMax(troops[myID], x), B = troops[myID] > A && 10 <= troops[myID], A = troops[myID], y = !0)
     };
     this.drawCanvasImage = function() {
-        0 === isAlive[myID] || inSpawn || 2 === playerStatus[myID] || mainCanvasCtx.drawImage(t, this.fJ, n)
+        0 === isAlive[myID] || inSpawn || 2 === playerStatus[myID] || mainCanvasCtx.drawImage(t, this.startingX, n)
     }
 }
 var gameBoardWidth, gameBoardHeight, gameBoardLabelFont, gameBoardFont, gameBoardLabelHeight, landOrder, landIDOrder;
@@ -4253,20 +4350,19 @@ function GameLeaderboard() {
         T = T === visibleLandCount || !isInBoardCanvas(S, O) || isTouch ? -1 : T;
         return highlightedLandIndex !== T ? (highlightedLandIndex = T, drawGameLeaderboard(), c4.canvasDirty = !0) : !1
     };
-    this.pV = function(S, O) {
+    this.pV = function(xPos, yPos) {
         if (!ba) return !1;
         ba = !1;
-        var T = getRowIndex(O);
+        var T = getRowIndex(yPos);
         isTouch && -1 !== highlightedLandIndex && (highlightedLandIndex = -1, drawGameLeaderboard(), c4.canvasDirty = !0);
-        if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, visibleLandCount), T = T !== visibleLandCount && isInBoardCanvas(S, O) ? T : -1, -1 !== T)) {
+        if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, visibleLandCount), T = T !== visibleLandCount && isInBoardCanvas(xPos, yPos) ? T : -1, -1 !== T)) {
             var Y = landOrder[T + boardTopIndex];
             T === visibleLandCount - 1 && landIDOrder[myID] >= boardTopIndex + visibleLandCount - 1 && (Y = myID);
             0 !== isAlive[Y] && eV.hoverTo(Y, 800, !1, 0)
         }
         return !0
     };
-    this.pb = function(S, O,
-        T) {
+    this.onWheel = function(S, O, T) {
         return ba ? !1 : isInBoardCanvas(S, O) ? (S = getRowIndex(O), S = rangeClamp(-1, S, visibleLandCount), S = S === visibleLandCount || isTouch ? -1 : S, 0 < T ? boardTopIndex < maxEntities - visibleLandCount && (boardTopIndex++, highlightedLandIndex = S, drawGameLeaderboard(), c4.canvasDirty = !0) : 0 < boardTopIndex && (boardTopIndex--, highlightedLandIndex = S, drawGameLeaderboard(), c4.canvasDirty = !0), !0) : !1
     };
     this.drawCanvasImage = function() {
@@ -4490,7 +4586,7 @@ function GameResultBox() {
         }
     };
     this.show = function(C, E) {
-        g || (k = C ? 1 : 2, g = !0, this.setCanvasVariables(), hu.ln(), troopBar.qh(), B = c4.time, -1 === this.tb &&
+        g || (k = C ? 1 : 2, g = !0, this.setCanvasVariables(), hu.ln(), troopBar.toggleVisibilityOff(), B = c4.time, -1 === this.tb &&
             (this.tb = c4.ticksElapsed()), y = E ? 1 : 0)
     };
     this.update = function() {
@@ -4897,7 +4993,7 @@ function MainLeaderboard() {
     };
     this.uM = function(l, x, t) {
         for (var z = l.length - 1; 0 <= z; z--)
-            for (; 3 < l[z].name.length && c2.measureText(l[z].name, x) > t;) l[z].name = l[z].name.substring(0,
+            for (; 3 < l[z].name.length && gameMessages.measureText(l[z].name, x) > t;) l[z].name = l[z].name.substring(0,
                 l[z].name.length - 4) + "..."
     };
     this.mouseDown = function(l, x) {
@@ -5009,7 +5105,7 @@ function OpenLinkBox() {
             y = Math.floor(2.5 * z);
             l = x + t + 3 * z;
             var I = fontWeightBold + Math.floor(t / pixelRatio) + fontSizeArial;
-            B = Math.floor(pixelRatio * c2.measureText(E, I));
+            B = Math.floor(pixelRatio * gameMessages.measureText(E, I));
             C = (B > A ? B : A) + 2 * y;
             g = Math.floor((prevClientWidth - C) / 2);
             k = Math.floor((prevClientHeight - l) / 2);
@@ -5048,19 +5144,19 @@ function OpenLinkBox() {
     }
 }
 
-function ui() {
-    var g = 0,
-        k = [0, 0, 0, 0, 0],
-        n = [0, 0, 0, 0, 0],
-        l = [1, 1, 1, 1, 1],
-        x = [!0, !0, !0, !0, !0];
+function LinkButtons() {
+    var padding = 0,
+        buttonXPos = [0, 0, 0, 0, 0],
+        buttonYPos = [0, 0, 0, 0, 0],
+        buttonScales = [1, 1, 1, 1, 1],
+        isVisible = [!0, !0, !0, !0, !0];
     this.uj = [!0, !0, !0, !0, !0];
-    var t = null,
-        z;
-    this.uk = function(y, A) {
-        t = y;
-        x = A;
-        z = [googleplayLink, appstoreLink, youtubeLink, discordLink, igLink];
+    var spriteList = null,
+        links;
+    this.setupLinkVariables = function(param_spriteList, param_isVisible) {
+        spriteList = param_spriteList;
+        isVisible = param_isVisible;
+        links = [googleplayLink, appstoreLink, youtubeLink, discordLink, igLink];
         this.init()
     };
     this.init = function() {
@@ -5068,198 +5164,217 @@ function ui() {
             var y = Math.floor((isZoom ? .261 : .195) * averageDim);
             var A = Math.floor(.9 * y),
                 B = Math.floor(.17 * A);
-            g = isZoom ? 2 * m5 : m5;
-            l[0] = y / t[0].width;
-            l[1] = A / t[1].width;
-            l[2] = B / t[2].height;
-            l[3] = B / t[3].height;
-            l[4] = B / t[4].height;
-            l[3] *= 1.07;
-            k[0] = g;
-            k[1] = g;
-            k[2] = g;
-            k[3] = g;
-            k[4] = Math.floor(2 * g + l[3] * t[3].width);
-            n[0] = g;
-            n[1] = n[0] + g + l[0] * t[0].height;
-            n[2] = n[1] + g + l[1] * t[1].height;
-            n[3] = n[2] + g + l[2] * t[2].height;
-            n[4] = n[3];
-            if (!x[0])
-                for (y = 0; 5 > y; y++) n[y] -= l[0] * t[0].height + g;
-            if (!x[1])
-                for (y = 2; 5 > y; y++) n[y] -= l[1] * t[1].height + g
+            padding = isZoom ? 2 * m5 : m5;
+            buttonScales[0] = y / spriteList[0].width;
+            buttonScales[1] = A / spriteList[1].width;
+            buttonScales[2] = B / spriteList[2].height;
+            buttonScales[3] = B / spriteList[3].height;
+            buttonScales[4] = B / spriteList[4].height;
+            buttonScales[3] *= 1.07;
+            buttonXPos[0] = padding;
+            buttonXPos[1] = padding;
+            buttonXPos[2] = padding;
+            buttonXPos[3] = padding;
+            buttonXPos[4] = Math.floor(2 * padding + buttonScales[3] * spriteList[3].width);
+            buttonYPos[0] = padding;
+            buttonYPos[1] = buttonYPos[0] + padding + buttonScales[0] * spriteList[0].height;
+            buttonYPos[2] = buttonYPos[1] + padding + buttonScales[1] * spriteList[1].height;
+            buttonYPos[3] = buttonYPos[2] + padding + buttonScales[2] * spriteList[2].height;
+            buttonYPos[4] = buttonYPos[3];
+            if (!isVisible[0]) {
+                for (var bIndex = 0; 5 > bIndex; bIndex++) buttonYPos[bIndex] -= buttonScales[0] * spriteList[0].height + padding;
+            }
+            if (!isVisible[1]) {
+                for (var bIndex = 2; 5 > bIndex; bIndex++) buttonYPos[bIndex] -= buttonScales[1] * spriteList[1].height + padding
+            }
         }
     };
     this.visible = function() {
-        return !(7 === gameStateManager.getState() && isZoom)
+        return 7 !== gameStateManager.getState() || !isZoom
     };
-    this.mouseDown = function(y, A, B) {
-        if (!t || !this.visible()) return !1;
-        var C;
-        for (C = x.length - 1; 0 <= C; C--)
-            if (x[C] && this.uj[C] && y > k[C] && A > n[C] && y < k[C] + l[C] * t[C].width && A < n[C] + l[C] * t[C].height) return openLinkBox.init(z[C], B), !0;
+    this.mouseDown = function(xPos, yPos, B) {
+        if (!spriteList || !this.visible()) return !1;
+        var bIndex;
+        for (bIndex = isVisible.length - 1; 0 <= bIndex; bIndex--)
+            if (isVisible[bIndex] && this.uj[bIndex] && xPos > buttonXPos[bIndex] && yPos > buttonYPos[bIndex] && 
+                xPos < buttonXPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].width && yPos < buttonYPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].height) {
+                
+                openLinkBox.init(links[bIndex], B);
+                return !0;
+            }
         return !1
     };
     this.drawCanvasImage = function() {
-        if (t && this.visible()) {
+        if (spriteList && this.visible()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            var y;
-            for (y = 0; 5 > y; y++) x[y] &&
-                this.uj[y] && (mainCanvasCtx.setTransform(l[y], 0, 0, l[y], k[y], n[y]), mainCanvasCtx.drawImage(t[y], 0, 0));
+            var bIndex;
+            for (bIndex = 0; 5 > bIndex; bIndex++) {
+                if (isVisible[bIndex] && this.uj[bIndex]) {
+                    mainCanvasCtx.setTransform(buttonScales[bIndex], 0, 0, buttonScales[bIndex], buttonXPos[bIndex], buttonYPos[bIndex]);
+                    mainCanvasCtx.drawImage(spriteList[bIndex], 0, 0);
+                }
+            }
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     }
 }
 
-function kA() {
-    function g(x) {
-        var t = jh.uo[x],
-            z = t.fJ,
-            y = t.fK,
-            A = t.width,
-            B = t.height;
-        mainCanvasCtx.fillStyle = t.ur;
-        mainCanvasCtx.fillRect(z, y, A, B);
-        x === k && (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(z, y, A, B));
+function MainButtons() {
+    function drawButton(bIndex) {
+        var button = mainButtons.mainButton[bIndex],
+            startingX = button.startingX,
+            startingY = button.startingY,
+            width = button.width,
+            height = button.height;
+        mainCanvasCtx.fillStyle = button.bgColor;
+        mainCanvasCtx.fillRect(startingX, startingY, width, height);
+        if (bIndex === hoverButtonIndex) {
+            mainCanvasCtx.fillStyle = fgColor;
+            mainCanvasCtx.fillRect(startingX, startingY, width, height)
+        }
         mainCanvasCtx.lineWidth = 3;
-        mainCanvasCtx.strokeStyle = n;
-        mainCanvasCtx.strokeRect(z, y, A, B);
-        x = t.fJ;
-        z = t.fK;
-        y = t.width;
-        A = t.height;
+        mainCanvasCtx.strokeStyle = strokeColor;
+        mainCanvasCtx.strokeRect(startingX, startingY, width, height);
+        bIndex = button.startingX;
+        startingX = button.startingY;
+        startingY = button.width;
+        width = button.height;
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.textBaseline = middleAlign;
-        mainCanvasCtx.font = t.font;
-        mainCanvasCtx.fillStyle = n;
-        mainCanvasCtx.fillText(t.nY, Math.floor(x + y / 2), Math.floor(z + A / 2 + .1 * t.fontRatio))
+        mainCanvasCtx.font = button.font;
+        mainCanvasCtx.fillStyle = strokeColor;
+        mainCanvasCtx.fillText(button.displayLabel, Math.floor(bIndex + startingY / 2), Math.floor(startingX + width / 2 + .1 * button.fontRatio))
     }
-    var k, n, l;
-    this.f6 = this.fK = this.height = this.width = 0;
+    var hoverButtonIndex, strokeColor, fgColor;
+    this.margins = this.startingY = this.height = this.width = 0;
     this.init = function() {
-        k = -1;
-        n = whiteRGB2;
-        l = "rgba(255,255,255,0.16)";
-        this.uo = Array(7);
-        this.height = Math.floor((isZoom ?
-            .123 : .093) * averageDim);
+        hoverButtonIndex = -1;
+        strokeColor = whiteRGB2;
+        fgColor = "rgba(255,255,255,0.16)";
+        this.mainButton = Array(7);
+        this.height = Math.floor((isZoom ? .123 : .093) * averageDim);
         this.width = Math.floor((isZoom ? 3.96 : 4.2) * this.height);
-        this.f6 = Math.floor(.025 * this.width);
-        var x = Math.floor(.26 * this.height),
-            t = fontWeightBold + x + fontSizeArial;
-        this.uo[0] = {
-            fJ: 0,
-            fK: 0,
-            width: Math.floor(.6 * this.width - this.f6 / 2),
+        this.margins = Math.floor(.025 * this.width);
+        var fontSize = Math.floor(.26 * this.height),
+            fontStyle = fontWeightBold + fontSize + fontSizeArial;
+        this.mainButton[0] = {
+            startingX: 0,
+            startingY: 0,
+            width: Math.floor(.6 * this.width - this.margins / 2),
             height: this.height,
-            nY: "Multiplayer",
-            font: t,
-            ur: "rgba(22,88,22,0.8)",
-            fontRatio: x
+            displayLabel: "Multiplayer",
+            font: fontStyle,
+            bgColor: "rgba(22,88,22,0.8)",
+            fontRatio: fontSize
         };
-        x = Math.floor(.18 * this.height);
-        t = fontWeightBold + x + fontSizeArial;
-        this.uo[1] = {
-            fJ: 0,
-            fK: 0,
-            width: this.width - this.uo[0].width - this.f6,
+        fontSize = Math.floor(.18 * this.height);
+        fontStyle = fontWeightBold + fontSize + fontSizeArial;
+        this.mainButton[1] = {
+            startingX: 0,
+            startingY: 0,
+            width: this.width - this.mainButton[0].width - this.margins,
             height: this.height,
-            nY: "Singleplayer",
-            font: t,
-            ur: "rgba(22,88,88,0.8)",
-            fontRatio: x
+            displayLabel: "Singleplayer",
+            font: fontStyle,
+            bgColor: "rgba(22,88,88,0.8)",
+            fontRatio: fontSize
         };
-        this.uo[2] = {
-            fJ: 0,
-            fK: 0,
+        this.mainButton[2] = {
+            startingX: 0,
+            startingY: 0,
             width: this.width,
             height: Math.floor(.3 * this.height),
-            nY: "",
-            font: this.uo[1].font,
-            ur: "rgba(100,0,0,0.8)",
-            fontRatio: this.uo[1].fontRatio
+            displayLabel: "",
+            font: this.mainButton[1].font,
+            bgColor: "rgba(100,0,0,0.8)",
+            fontRatio: this.mainButton[1].fontRatio
         };
-        this.uo[3] = {
-            fJ: 0,
-            fK: 0,
+        this.mainButton[3] = {
+            startingX: 0,
+            startingY: 0,
             width: this.width,
             height: this.height,
-            nY: "Back",
-            font: this.uo[0].font,
-            ur: "rgba(0,0,0,0.8)",
-            fontRatio: this.uo[0].fontRatio
+            displayLabel: "Back",
+            font: this.mainButton[0].font,
+            bgColor: "rgba(0,0,0,0.8)",
+            fontRatio: this.mainButton[0].fontRatio
         };
-        this.uo[4] = {
-            fJ: 0,
-            fK: 0,
+        this.mainButton[4] = {
+            startingX: 0,
+            startingY: 0,
             width: this.width,
             height: Math.floor(.3 * this.height),
-            nY: "The game was updated!",
-            font: this.uo[1].font,
-            ur: "rgba(100,0,0,0.8)",
-            fontRatio: this.uo[1].fontRatio
+            displayLabel: "The game was updated!",
+            font: this.mainButton[1].font,
+            bgColor: "rgba(100,0,0,0.8)",
+            fontRatio: this.mainButton[1].fontRatio
         };
-        this.uo[5] = {
-            fJ: 0,
-            fK: 0,
-            width: this.uo[0].width,
+        this.mainButton[5] = {
+            startingX: 0,
+            startingY: 0,
+            width: this.mainButton[0].width,
             height: Math.floor(.8 * this.height),
-            nY: "Reload",
-            font: this.uo[0].font,
-            ur: "rgba(0,100,0,0.8)",
-            fontRatio: this.uo[0].fontRatio
+            displayLabel: "Reload",
+            font: this.mainButton[0].font,
+            bgColor: "rgba(0,100,0,0.8)",
+            fontRatio: this.mainButton[0].fontRatio
         };
-        this.uo[6] = {
-            fJ: 0,
-            fK: 0,
-            width: this.uo[1].width,
-            height: this.uo[5].height,
-            nY: "Back",
-            font: this.uo[0].font,
-            ur: "rgba(0,0,0,0.8)",
-            fontRatio: this.uo[0].fontRatio
+        this.mainButton[6] = {
+            startingX: 0,
+            startingY: 0,
+            width: this.mainButton[1].width,
+            height: this.mainButton[5].height,
+            displayLabel: "Back",
+            font: this.mainButton[0].font,
+            bgColor: "rgba(0,0,0,0.8)",
+            fontRatio: this.mainButton[0].fontRatio
         };
         this.setPosition()
     };
     this.setPosition = function() {
-        this.fK = Math.floor(.54 * prevClientHeight);
-        this.uo[0].fJ = Math.floor(.5 * prevClientWidth - .5 * this.width);
-        this.uo[1].fJ = this.uo[0].fJ + this.uo[0].width + this.f6;
-        this.uo[2].fJ = this.uo[3].fJ = this.uo[0].fJ;
-        this.uo[4].fJ = this.uo[5].fJ = this.uo[0].fJ;
-        this.uo[6].fJ = this.uo[1].fJ;
-        this.uo[0].fK = Math.floor(.54 * prevClientHeight);
-        this.uo[1].fK = this.uo[0].fK;
-        this.uo[2].fK = Math.floor((prevClientHeight - this.uo[2].height - this.uo[3].height - this.f6) / 2);
-        this.uo[3].fK = this.uo[2].fK + this.uo[2].height + this.f6;
-        this.uo[4].fK = Math.floor((prevClientHeight -
-            this.uo[4].height - this.uo[5].height - this.f6) / 2);
-        this.uo[5].fK = this.uo[6].fK = this.uo[4].fK + this.uo[4].height + this.f6
+        this.startingY = Math.floor(.54 * prevClientHeight);
+        this.mainButton[0].startingX = Math.floor(.5 * prevClientWidth - .5 * this.width);
+        this.mainButton[1].startingX = this.mainButton[0].startingX + this.mainButton[0].width + this.margins;
+        this.mainButton[2].startingX = this.mainButton[3].startingX = this.mainButton[0].startingX;
+        this.mainButton[4].startingX = this.mainButton[5].startingX = this.mainButton[0].startingX;
+        this.mainButton[6].startingX = this.mainButton[1].startingX;
+        this.mainButton[0].startingY = Math.floor(.54 * prevClientHeight);
+        this.mainButton[1].startingY = this.mainButton[0].startingY;
+        this.mainButton[2].startingY = Math.floor((prevClientHeight - this.mainButton[2].height - this.mainButton[3].height - this.margins) / 2);
+        this.mainButton[3].startingY = this.mainButton[2].startingY + this.mainButton[2].height + this.margins;
+        this.mainButton[4].startingY = Math.floor((prevClientHeight - this.mainButton[4].height - this.mainButton[5].height - this.margins) / 2);
+        this.mainButton[5].startingY = this.mainButton[6].startingY = this.mainButton[4].startingY + this.mainButton[4].height + this.margins
     };
-    this.us = function() {
-        g(0);
-        g(1)
+    this.drawNormalButtons = function() {
+        drawButton(0);
+        drawButton(1)
     };
-    this.uu = function() {
-        g(2);
-        g(3)
+    this.drawErrorButtons = function() {
+        drawButton(2);
+        drawButton(3)
     };
-    this.uv = function() {
-        g(4);
-        g(5);
-        g(6)
+    this.drawUpdatedButtons = function() {
+        drawButton(4);
+        drawButton(5);
+        drawButton(6)
     };
-    this.onPointermove = function(x, t, z) {
-        var y = -1;
-        0 === gameStateManager.getState() ? y = this.getClickedButton(x, t, 0, 2) : 3 === gameStateManager.getState() ? y = this.getClickedButton(x, t, 3, 1) : 5 === gameStateManager.getState() && (y = this.getClickedButton(x, t, 5, 2));
-        k !== y && (k = y, z && (c4.canvasDirty = !0));
-        return -1 !== y ? (playtime.pU(), !0) : !1
+    this.onPointermove = function(xPos, yPos, updateCanvas) {
+        var bIndex = -1;
+        if (0 === gameStateManager.getState()) bIndex = this.getClickedButton(xPos, yPos, 0, 2)
+        else if (3 === gameStateManager.getState()) bIndex = this.getClickedButton(xPos, yPos, 3, 1)
+        else if (5 === gameStateManager.getState()) bIndex = this.getClickedButton(xPos, yPos, 5, 2)
+        if (hoverButtonIndex !== bIndex) {
+            hoverButtonIndex = bIndex;
+            if (updateCanvas) c4.canvasDirty = !0
+        }
+        if (-1 !== bIndex) {
+            playtime.pU();
+            return !0;
+        } else return !1
     };
-    this.getClickedButton = function(x, t, z, y) {
-        for (var A = z; A < z + y; A++)
-            if (x >= this.uo[A].fJ && t >= this.uo[A].fK && x <= this.uo[A].fJ + this.uo[A].width &&
-                t <= this.uo[A].fK + this.uo[A].height) return A;
+    this.getClickedButton = function(xPos, yPos, startingBIndex, buttonCount) {
+        for (var bIndex = startingBIndex; bIndex < startingBIndex + buttonCount; bIndex++)
+            if (xPos >= this.mainButton[bIndex].startingX && yPos >= this.mainButton[bIndex].startingY && xPos <= this.mainButton[bIndex].startingX + this.mainButton[bIndex].width && yPos <= this.mainButton[bIndex].startingY + this.mainButton[bIndex].height) return bIndex;
         return -1
     }
 }
@@ -5270,17 +5385,17 @@ function Colors() {
     }
     this.height = this.width = 0;
     this.visible = !1;
-    this.v2 = this.v1 = this.v0 = this.ns = this.f6 = this.uz = 0;
+    this.v2 = this.v1 = this.v0 = this.ns = this.margins = this.uz = 0;
     this.colors = null;
     this.init = function() {
         canvasWidth < 2 * canvasHeight ? this.width = Math.floor((isZoom ? .94 : .4) * canvasWidth) : (this.height = Math.floor((isZoom ? .88 : .4) * canvasHeight), this.width = Math.floor(2 * this.height));
         this.height = this.width / 2;
-        this.f6 = this.height / 16;
+        this.margins = this.height / 16;
         this.visible = !0;
         this.uz = 0;
-        this.v0 = (this.height - 3 * this.f6) / 2;
-        this.v1 = this.width - 3 * this.f6 - this.v0;
-        this.v2 = (this.height - 4 * this.f6) / 3
+        this.v0 = (this.height - 3 * this.margins) / 2;
+        this.v1 = this.width - 3 * this.margins - this.v0;
+        this.v2 = (this.height - 4 * this.margins) / 3
     };
     this.v3 = function() {
         this.colors = [
@@ -5303,14 +5418,14 @@ function Colors() {
         k -= (prevClientWidth - this.width) / 2;
         n -= l;
         if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0, !1;
-        if (k < this.f6 || n < this.f6 || k >= this.width - this.f6 || n >= this.height - this.f6) return !0;
-        if (k < this.f6 + this.v0) return n < this.f6 + this.v0 && 0 !== this.ns && (this.ns = 0, c4.canvasDirty = !0), !0;
-        if (k < 2 * this.f6 + this.v0) return !0;
-        k -= 2 * this.f6 + this.v0;
-        if (n < this.f6 + this.v2) return this.uz = 1, this.colors[this.ns][0] = g(256 * k / this.v1), c4.canvasDirty = !0;
-        if (n < 2 * this.f6 + this.v2) return !0;
-        if (n < 2 * this.f6 + 2 * this.v2) return this.uz = 2, this.colors[this.ns][1] = g(256 * k / this.v1), c4.canvasDirty = !0;
-        n >= 3 * this.f6 + 2 * this.v2 && (this.uz = 3, this.colors[this.ns][2] = g(256 * k / this.v1), c4.canvasDirty = !0);
+        if (k < this.margins || n < this.margins || k >= this.width - this.margins || n >= this.height - this.margins) return !0;
+        if (k < this.margins + this.v0) return n < this.margins + this.v0 && 0 !== this.ns && (this.ns = 0, c4.canvasDirty = !0), !0;
+        if (k < 2 * this.margins + this.v0) return !0;
+        k -= 2 * this.margins + this.v0;
+        if (n < this.margins + this.v2) return this.uz = 1, this.colors[this.ns][0] = g(256 * k / this.v1), c4.canvasDirty = !0;
+        if (n < 2 * this.margins + this.v2) return !0;
+        if (n < 2 * this.margins + 2 * this.v2) return this.uz = 2, this.colors[this.ns][1] = g(256 * k / this.v1), c4.canvasDirty = !0;
+        n >= 3 * this.margins + 2 * this.v2 && (this.uz = 3, this.colors[this.ns][2] = g(256 * k / this.v1), c4.canvasDirty = !0);
         return !0
     };
     this.v5 = function() {
@@ -5322,7 +5437,7 @@ function Colors() {
         saveColors(k)
     };
     this.onPointermove = function(k) {
-        0 !== this.uz && (k -= 2 * this.f6 + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.uz - 1] = g(256 * k / this.v1), c4.canvasDirty = !0)
+        0 !== this.uz && (k -= 2 * this.margins + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.uz - 1] = g(256 * k / this.v1), c4.canvasDirty = !0)
     };
     this.v8 = function() {
         0 < this.uz && (this.uz = 0, this.v5(), this.v7(), c4.canvasDirty = !0)
@@ -5347,17 +5462,17 @@ function Colors() {
     };
     this.v9 = function(k) {
         mainCanvasCtx.fillStyle = "rgb(" + this.colors[k][0] + "," + this.colors[k][1] + "," + this.colors[k][2] + ")";
-        mainCanvasCtx.fillRect(this.f6, this.f6, this.v0, 2 * this.v0 + this.f6);
+        mainCanvasCtx.fillRect(this.margins, this.margins, this.v0, 2 * this.v0 + this.margins);
         mainCanvasCtx.lineWidth = 2 + ow;
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(this.f6, this.f6, this.v0, 2 * this.v0 + this.f6)
+        mainCanvasCtx.strokeRect(this.margins, this.margins, this.v0, 2 * this.v0 + this.margins)
     };
     this.vA = function(k) {
         mainCanvasCtx.fillStyle = "rgb(" + (0 === k ? 200 : 2 === k ? 50 :
             0) + "," + (1 === k ? 200 : 2 === k ? 50 : 0) + "," + (2 === k ? 255 : 0) + ")";
-        mainCanvasCtx.fillRect(2 * this.f6 + this.v0, this.f6 + k * (this.f6 + this.v2), Math.floor(this.colors[this.ns][k] * this.v1 / 255), this.v2);
+        mainCanvasCtx.fillRect(2 * this.margins + this.v0, this.margins + k * (this.margins + this.v2), Math.floor(this.colors[this.ns][k] * this.v1 / 255), this.v2);
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(2 * this.f6 + this.v0, this.f6 + k * (this.f6 + this.v2), this.v1, this.v2)
+        mainCanvasCtx.strokeRect(2 * this.margins + this.v0, this.margins + k * (this.margins + this.v2), this.v1, this.v2)
     }
 }
 
@@ -5424,7 +5539,7 @@ function PreLobby() {
             Q = Math.floor(.5 * (prevClientHeight - bufferLength - progressBarHeight - progressBarTotalHeight)) + progressBarHeight + bufferLength;
         if (xPos > M && xPos < M + progressBarTotalWidth && yPos > Q && yPos < Q + progressBarTotalHeight) {
             this.onPreLobbyLeave();
-            jh.onPointermove(xPos, yPos, !1);
+            mainButtons.onPointermove(xPos, yPos, !1);
             return !0
         } else return !1
     };
@@ -5490,7 +5605,7 @@ function PreLobby() {
 function GameStateManager() {
     var gameState;
     this.init = function() {
-        jh.init();
+        mainButtons.init();
         nameInputBar.init();
         gameState = 0;
         cookiesPrompt.init();
@@ -5533,7 +5648,7 @@ function GameStateManager() {
         8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : statistics.visible ? statistics.m0() : fq.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? preLobby.onPreLobbyLeave() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
         };
     this.mouseDown = function(k, n) {
-        if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && preLobby.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || moreSettings.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || vk.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
+        if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && preLobby.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || moreSettings.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || linkButtons.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
             playtime.mouseDown(k, n);
             if (0 === gameState) nameInput.mouseDown(k, n);
             else if (3 === gameState) showError.mouseDown(k, n);
@@ -5542,38 +5657,38 @@ function GameStateManager() {
             mainLeaderboardIcon.mouseDown(k, n)
         }
     };
-    this.onPointermove = function(k, n) {
-        moreSettings.onPointermove(k, n);
+    this.onPointermove = function(xPos, yPos) {
+        moreSettings.onPointermove(xPos, yPos);
         if (!playtime.rg) {
-            if (cookiesPrompt.onPointermove(k, n)) {
+            if (cookiesPrompt.onPointermove(xPos, yPos)) {
                 playtime.pU();
                 return
             }
-            if (2 === gameState && singleSettings.onPointermove(k, n)) {
+            if (2 === gameState && singleSettings.onPointermove(xPos, yPos)) {
                 playtime.pU();
                 return
             }
-            if (0 <= mainSettings.getClickedButton(k, n)) {
+            if (0 <= mainSettings.getClickedButton(xPos, yPos)) {
                 playtime.pU();
                 return
             }
-            if (mainSettings.onPointermove(k, n)) {
+            if (mainSettings.onPointermove(xPos, yPos)) {
                 playtime.pU();
                 return
             }
-            if (jh.onPointermove(k, n, !0)) return
+            if (mainButtons.onPointermove(xPos, yPos, !0)) return
         }
-        playtime.onPointermove(k, n)
+        playtime.onPointermove(xPos, yPos)
     };
     this.click = function(k, n) {
         playtime.pV();
-        mainSettings.v8() || vk.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
+        mainSettings.v8() || linkButtons.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
     };
-    this.pb = function(k, n, l) {
-        mainSettings.buttons[1].buttonClass.visible || 0 === gameState && playtime.pb(k, l)
+    this.onWheel = function(k, n, l) {
+        mainSettings.buttons[1].buttonClass.visible || 0 === gameState && playtime.onWheel(k, l)
     };
     this.vl = function() {
-        jh.setPosition();
+        mainButtons.setPosition();
         mainSettings.setPosition();
         0 === gameState ? (nameInputBar.setPosition(0), playtime.setPosition()) : 7 === gameState && lobby.setCanvasVariables();
         c4.canvasDirty = !0
@@ -5597,7 +5712,7 @@ function GameStateManager() {
             mainCanvasCtx.drawImage(n, x, k);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             mainCanvasCtx.globalAlpha = 1;
-            vk.drawCanvasImage();
+            linkButtons.drawCanvasImage();
             mainLeaderboardIcon.drawCanvasImage();
             mainSettings.drawCanvasImage();
             moreSettings.drawCanvasImage();
@@ -5677,8 +5792,8 @@ function ShowError() {
         var t = gameStateManager.getState();
         0 === t ? nameInput.hide() : 6 === t ? wsManager.closeAll(n) : 7 === t ? (lobby.hide(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.hide());
         gameStateManager.setState(3);
-        jh.setPosition();
-        jh.uo[2].nY = k(n);
+        mainButtons.setPosition();
+        mainButtons.mainButton[2].displayLabel = k(n);
         sounds.play(3);
         c4.canvasDirty = !0
     }
@@ -5763,18 +5878,18 @@ function ShowError() {
         8 === gameStateManager.getState() ? announcements.error(k(t)) : showErrorBox()
     };
     this.setCanvasVariables = function() {
-        jh.uo[2].nY = k(n)
+        mainButtons.mainButton[2].displayLabel = k(n)
     };
     this.mouseDown = function(t, z) {
-        3 === jh.getClickedButton(t, z, 3, 1) && this.vj(t, z)
+        3 === mainButtons.getClickedButton(t, z, 3, 1) && this.vj(t, z)
     };
     this.vj = function(t, z) {
         nameInput.init();
-        jh.onPointermove(t, z, !1);
+        mainButtons.onPointermove(t, z, !1);
         c4.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
-        jh.uu()
+        mainButtons.drawErrorButtons()
     }
 }
 
@@ -5808,17 +5923,17 @@ function NameInputBar() {
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        var x = Math.floor(.22 * jh.height / pixelRatio);
+        var x = Math.floor(.22 * mainButtons.height / pixelRatio);
         inputBars[0].input.style.font = fontWeightBold + x + fontSizeArial;
         inputBars[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
-        inputBars[0].input.style.width = Math.floor(jh.width / pixelRatio - 13) + "px"
+        inputBars[0].input.style.width = Math.floor(mainButtons.width / pixelRatio - 13) + "px"
     };
     this.getValueByID = function(index) {
         return inputBars[index]
     };
     this.setPosition = function(index) {
-        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (jh.width / pixelRatio - 3) - 7) / 2) + "px";
-        if (0 === index) inputBars[index].input.style.bottom = Math.floor((prevClientHeight - jh.fK + jh.f6) / pixelRatio) + "px"
+        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (mainButtons.width / pixelRatio - 3) - 7) / 2) + "px";
+        if (0 === index) inputBars[index].input.style.bottom = Math.floor((prevClientHeight - mainButtons.startingY + mainButtons.margins) / pixelRatio) + "px"
     };
     this.toggleVisibility = function(index, option) {
         if (inputBars[index].visible !== option) {
@@ -6083,7 +6198,7 @@ function Lobby() {
         for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
     };
     this.mouseDown = function(xPos, yPos) {
-        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.vi(), jh.onPointermove(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
+        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.vi(), mainButtons.onPointermove(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
     };
     this.drawCanvasImage = function() {
         var P = 0,
@@ -6187,15 +6302,20 @@ function Lobby() {
 function GameUpdatedPrompt() {
     this.init = function(g, k) {
         gameStateManager.setState(5);
-        jh.onPointermove(g, k, !1);
+        mainButtons.onPointermove(g, k, !1);
         c4.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
-        jh.uv()
+        mainButtons.drawUpdatedButtons()
     };
-    this.mouseDown = function(g, k) {
-        var n = jh.getClickedButton(g, k, 5, 2);
-        5 === n ? reloadClient() : 6 === n && (nameInput.init(), jh.onPointermove(g, k, !1), c4.canvasDirty = !0)
+    this.mouseDown = function(xPos, yPos) {
+        var n = mainButtons.getClickedButton(xPos, yPos, 5, 2);
+        if (5 === n) reloadClient()
+        else if (6 === n) {
+            nameInput.init();
+            mainButtons.onPointermove(xPos, yPos, !1);
+            c4.canvasDirty = !0;
+        }
     }
 }
 
@@ -6341,8 +6461,7 @@ function SingleSettings() {
         mainCanvasCtx.textBaseline = middleAlign;
         var l = (k[2] - 2 * bufferLength) / 3,
             x = k[2] / 6;
-        g(k[0],
-            k[1], l, x, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
+        g(k[0], k[1], l, x, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
         g(k[0] + l + bufferLength, k[1], l, x, "rgba(" + (customJSON.isCustomJSON ? 128 : 0) + ",128,128,0.75)", .4, customJSON.isCustomJSON ? "Reset" : "Maps", -1, -1);
         g(k[0] + k[2] - l, k[1], l, x, "rgba(0,128,0,0.75)", .4, "Start", -1, -1);
         if (!customJSON.isCustomJSON) {
@@ -6386,26 +6505,26 @@ function MainSettings() {
     this.init = function() {
         this.buttons = [];
         this.buttons.push({
-            fJ: 0,
-            fK: 0,
+            startingX: 0,
+            startingY: 0,
             active: isZoom,
             buttonClass: null
         });
         this.buttons.push({
-            fJ: 0,
-            fK: 0,
+            startingX: 0,
+            startingY: 0,
             active: !1,
             buttonClass: new Emojis
         });
         this.buttons.push({
-            fJ: 0,
-            fK: 0,
+            startingX: 0,
+            startingY: 0,
             active: !1,
             buttonClass: new Colors
         });
         this.buttons.push({
-            fJ: 0,
-            fK: 0,
+            startingX: 0,
+            startingY: 0,
             active: setSound(),
             buttonClass: null
         });
@@ -6416,17 +6535,17 @@ function MainSettings() {
     this.setPosition = function() {
         this.width = Math.floor((isZoom ? .063 : .04) * averageDim);
         this.width += 4 - this.width % 4;
-        this.buttons[0].fJ = bufferLength;
-        this.buttons[0].fK = prevClientHeight - this.width - bufferLength;
+        this.buttons[0].startingX = bufferLength;
+        this.buttons[0].startingY = prevClientHeight - this.width - bufferLength;
         for (var butIndex = 1; butIndex < this.b3; butIndex++) {
-            this.buttons[butIndex].fJ = this.buttons[butIndex - 1].fJ + Math.floor(isZoom ? 1.5 * bufferLength : 1.36 * bufferLength) + this.width;
-            this.buttons[butIndex].fK = this.buttons[0].fK
+            this.buttons[butIndex].startingX = this.buttons[butIndex - 1].startingX + Math.floor(isZoom ? 1.5 * bufferLength : 1.36 * bufferLength) + this.width;
+            this.buttons[butIndex].startingY = this.buttons[0].startingY
         }
     };
     this.getClickedButton = function(xPos, yPos) {
         if (!sprites.areAllSpritesLoaded()) return -1;
         for (var n = this.b3 - 1; 0 <= n; n--)
-            if (xPos >= this.buttons[n].fJ && yPos >= this.buttons[n].fK && xPos < this.buttons[n].fJ + this.width && yPos < this.buttons[n].fK + this.width) return n;
+            if (xPos >= this.buttons[n].startingX && yPos >= this.buttons[n].startingY && xPos < this.buttons[n].startingX + this.width && yPos < this.buttons[n].startingY + this.width) return n;
         return -1
     };
     this.panelsHidden = function() {
@@ -6475,7 +6594,7 @@ function MainSettings() {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             for (var g = this.b3 - 1; 0 <= g; g--) {
                 mainCanvasCtx.fillStyle = this.buttons[g].active ? greenDarkMoreOpaque : blackMoreOpaque;
-                mainCanvasCtx.fillRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+                mainCanvasCtx.fillRect(this.buttons[g].startingX, this.buttons[g].startingY, this.width, this.width);
                 if (0 === g) this.xb(g, sprites.getValueByID(15))
                 else if (1 === g) this.xc()
                 else if (2 === g) this.xd()
@@ -6483,7 +6602,7 @@ function MainSettings() {
                 mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                 mainCanvasCtx.lineWidth = ow;
                 mainCanvasCtx.strokeStyle = whiteRGB2;
-                mainCanvasCtx.strokeRect(this.buttons[g].fJ, this.buttons[g].fK, this.width, this.width);
+                mainCanvasCtx.strokeRect(this.buttons[g].startingX, this.buttons[g].startingY, this.width, this.width);
             }
             mainCanvasCtx.imageSmoothingEnabled = !1
         }
@@ -6491,17 +6610,17 @@ function MainSettings() {
     this.xb = function(g, k) {
         var n = .08 * this.width,
             l = (this.width - 2 * n) / k.width;
-        mainCanvasCtx.setTransform(l, 0, 0, l, this.buttons[g].fJ + n, this.buttons[g].fK + (this.width - l * k.height) / 2);
+        mainCanvasCtx.setTransform(l, 0, 0, l, this.buttons[g].startingX + n, this.buttons[g].startingY + (this.width - l * k.height) / 2);
         mainCanvasCtx.drawImage(k, 0, 0)
     };
     this.xc = function() {
         var g = .06 * this.width,
             k = (this.width - 2 * g) / a5.width;
-        mainCanvasCtx.setTransform(k, 0, 0, k, this.buttons[1].fJ + g, this.buttons[1].fK + g);
+        mainCanvasCtx.setTransform(k, 0, 0, k, this.buttons[1].startingX + g, this.buttons[1].startingY + g);
         mainCanvasCtx.drawImage(a5.l5[4], 0, 0)
     };
     this.xd = function() {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, this.buttons[2].fJ, this.buttons[2].fK);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, this.buttons[2].startingX, this.buttons[2].startingY);
         for (var g = this.width / 4, k = 3; 0 <= k; k--)
             for (var n = 3; 0 <= n; n--) mainCanvasCtx.fillStyle = "rgb(" + Math.floor(367 * (k + 1) * (n + 1) % 256) + "," + Math.floor(687 * (k + 1) * (n + 1) % 256) + "," + Math.floor(651 * (k + 1) * (n + 1) % 256) + ")", mainCanvasCtx.fillRect(k * g, n * g, g, g)
     };
@@ -6575,7 +6694,7 @@ function NameInput() {
     this.lastVoteTime = -7E3;
     this.init = function() {
         gameStateManager.setState(0);
-        jh.setPosition();
+        mainButtons.setPosition();
         nameInputBar.toggleVisibility(0, !0);
         nameInputBar.setPosition(0);
         jf.init();
@@ -6590,7 +6709,7 @@ function NameInput() {
         nameInputBar.toggleVisibility(0, !1)
     };
     this.xh = function(t) { //unused
-        return 0 === t ? jh.width : 1 === t ? Math.floor(.3 * jh.height) : 2 === t ? nameInputBar.getValueByID(0).input.style.font : textInput
+        return 0 === t ? mainButtons.width : 1 === t ? Math.floor(.3 * mainButtons.height) : 2 === t ? nameInputBar.getValueByID(0).input.style.font : textInput
     };
     this.onInput = function() {
         textInput = nameInputBar.getValueByID(0).input.value.trim();
@@ -6603,7 +6722,7 @@ function NameInput() {
     };
     this.mouseDown = function(xPos, yPos) {
         c4.xi();
-        if (1 === jh.getClickedButton(xPos, yPos, 1, 1)) {
+        if (1 === mainButtons.getClickedButton(xPos, yPos, 1, 1)) {
             if (!(processAccount() || processVote())) {
                 setAndroidState(10);
                 if (setBarColor()) {
@@ -6612,7 +6731,7 @@ function NameInput() {
                     singleSettings.init()
                 } else showError.displayError(4214)
             }
-        } else if (0 === jh.getClickedButton(xPos, yPos, 0, 1)) this.vh()
+        } else if (0 === mainButtons.getClickedButton(xPos, yPos, 0, 1)) this.vh()
     };
     this.vh = function() {
         if (!(processAccount() || processVote())) {
@@ -6639,11 +6758,11 @@ function NameInput() {
         if (this.isInMainMenu()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var logo = sprites.getValueByName("territorial.io"),
-                z = 1.1 * jh.width / logo.width;
-            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((prevClientWidth - z * logo.width) / 2), jh.fK - z * logo.height - .72 * jh.height);
+                z = 1.1 * mainButtons.width / logo.width;
+            mainCanvasCtx.setTransform(z, 0, 0, z, Math.floor((prevClientWidth - z * logo.width) / 2), mainButtons.startingY - z * logo.height - .72 * mainButtons.height);
             mainCanvasCtx.drawImage(logo, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-            jh.us()
+            mainButtons.drawNormalButtons()
         }
     };
     this.getInput = function() {
@@ -6700,7 +6819,7 @@ function Sprites() {
                 mainLeaderboardIcon.updateRenderObject();
                 hu.l1();
                 a5.init();
-                vk.uk([spriteCanvases[8], spriteCanvases[16], spriteCanvases[7], spriteCanvases[9], spriteCanvases[10]], [!isIOS, 0 === androidVersion, !0, !0, !0]);
+                linkButtons.setupLinkVariables([spriteCanvases[8], spriteCanvases[16], spriteCanvases[7], spriteCanvases[9], spriteCanvases[10]], [!isIOS, 0 === androidVersion, !0, !0, !0]);
                 c4.canvasDirty = !0;
                 spriteCanvases[7] = nullCanvas;
                 spriteCanvases[8] = nullCanvas;
@@ -8188,7 +8307,7 @@ function getTroopHash() {
     return k % 4096
 }
 var mainCanvas, mainCanvasCtx, versionLabel, versionHash, canvasWidth, canvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = !1,
-    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statisticNumbers, statistics, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, vk, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
+    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statisticNumbers, statistics, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
@@ -8249,7 +8368,7 @@ function main() {
     mainLeaderboard = new MainLeaderboard;
     mainLeaderboard.init();
     endGame = new EndGame;
-    vk = new ui;
+    linkButtons = new LinkButtons;
     openLinkBox = new OpenLinkBox;
     p1();
     fakeRandom.init();
@@ -8301,17 +8420,17 @@ function onKeydown(g) {
     } else if ("ArrowDown" === g.key) {
         gn.dynamic(2);
     } else if ("a" === g.key) {
-        troopBar.r3(.96875);
+        troopBar.checkAndMultiplyRatio(.96875);
     } else if ("d" === g.key) {
-        troopBar.r3(32 / 31);
+        troopBar.checkAndMultiplyRatio(32 / 31);
     } else if ("s" === g.key) {
-        troopBar.r3(.875);
+        troopBar.checkAndMultiplyRatio(.875);
     } else if ("w" === g.key) {
-        troopBar.r3(8 / 7);
+        troopBar.checkAndMultiplyRatio(8 / 7);
     } else if ("1" === g.key) {
-        troopBar.r3(5 / 6);
+        troopBar.checkAndMultiplyRatio(5 / 6);
     } else if ("2" === g.key) {
-        troopBar.r3(1.2);
+        troopBar.checkAndMultiplyRatio(1.2);
     } else if (' ' === g.key) {
         1 === clientStatus && intelliAttack.checkIntelli();
     } else if ("c" === g.key && 0 !== clientStatus) {
@@ -9095,7 +9214,7 @@ function rectEqualOrInside(x1, y1, w1, h1, x2, y2, w2, h2) {
 
 function MoreSettings() {
     function g() {
-        vk.uj[2] = vk.uj[3] = vk.uj[4] = !moreSettings.a4F;
+        linkButtons.uj[2] = linkButtons.uj[3] = linkButtons.uj[4] = !moreSettings.a4F;
         var y = moreSettings.a1L ? 1 : 0,
             A = moreSettings.a4F ? 1 : 0,
             B = moreSettings.a0g ? 1 : 0;
@@ -9232,7 +9351,7 @@ function MoreSettings() {
             settingsArray[2].green = this.a1L ? 130 : 0;
             settingsArray[3].green = this.a4F ? 130 : 0;
             !isIOS && 5 > androidVersion && (settingsArray[4].green = this.a0g ? 130 : 0);
-            this.a4F && (vk.uj[2] = vk.uj[3] = vk.uj[4] = !1)
+            this.a4F && (linkButtons.uj[2] = linkButtons.uj[3] = linkButtons.uj[4] = !1)
         };
     this.mouseDown = function(y, A) {
         var sIndex;
@@ -9556,9 +9675,9 @@ function kc() {
             x = !1;
             setCanvasDisplayVariables();
             mainLeaderboardIcon.init();
-            jh.init();
+            mainButtons.init();
             nameInputBar.setCanvasVariables();
-            vk.init();
+            linkButtons.init();
             preLobby.setCanvasVariables();
             playtime.setCanvasVariables();
             jf.setCanvasVariables();
@@ -9575,7 +9694,7 @@ function kc() {
                 fq.setCanvasVariables();
                 peace.setCanvasVariables();
                 attacksBar.setCanvasVariables();
-                c2.setCanvasVariables();
+                gameMessages.setCanvasVariables();
                 hu.l1();
                 statistics.setCanvasVariables();
                 eA.setCanvasVariables();
@@ -10003,7 +10122,7 @@ function Statistics() {
         this.a5Z = -1
     };
     this.a5c = function() {
-        2 > this.bs ? this.uS = c2.measureText(attacksBar.splitText(statisticNumbers.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = c2.measureText(eB.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
+        2 > this.bs ? this.uS = gameMessages.measureText(attacksBar.splitText(statisticNumbers.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = gameMessages.measureText(eB.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
         this.uT = this.width - 2 * this.buttonMargin - this.uS - this.i5
     };
     this.updateRenderObject = function() {

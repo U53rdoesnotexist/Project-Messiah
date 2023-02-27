@@ -1109,7 +1109,7 @@ function BoatSpeed() {
     this.addEntry = function(id, closestPIndex, targetPIndex) {
         if (currentBoatIndex >= totalBoatCount) return 0;
         authorIDs[currentBoatIndex] = id;
-        timeUntilUpdate[currentBoatIndex] = 2;
+        timeUntilUpdate[currentBoatIndex] = 1;
         boatIDs[currentBoatIndex] = latestBoatID;
         currentPIndicies[currentBoatIndex] = closestPIndex;
         targetPixels[currentBoatIndex] = targetPIndex;
