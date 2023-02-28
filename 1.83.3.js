@@ -491,7 +491,7 @@ function botChecksLoseIfBordersStuff(id, considerTeamates) {
     var bsIndex, side;
     var bIndex = landBorderPixels[id].length;
     var bIndexOffset = 256 <= bIndex ? 12 : 32 <= bIndex ? 6 : 1;
-    bIndex = bIndex - 1 - fakeRandom.cf(bIndexOffset);
+    bIndex = bIndex - 1 - fakeRandom.calcFractionalValue(bIndexOffset);
     botLastBorderingStuffCount = 0;
     a: for (; 0 <= bIndex; bIndex -= bIndexOffset)
         for (side = 3; 0 <= side; side--) {
@@ -577,7 +577,7 @@ function botGetClosestTargetIndex(bsIndex) {
 }
 
 function botGetRandomTarget() {
-    return botLastBorderingStuffs[fakeRandom.cf(botLastBorderingStuffCount)]
+    return botLastBorderingStuffs[fakeRandom.calcFractionalValue(botLastBorderingStuffCount)]
 }
 var botMaxBorderingStuffCap, botLastBorderingStuffCount, botLastBorderingStuffs, canReceiveBotDonations;
 
@@ -619,9 +619,9 @@ function botProcessTeamStrategy(id, amount, difficulty, maxBelowRedI) {
                 botCheckSetFrequentTiming(id, maxEntities, difficulty)
             } else {
                 var targetID;
-                if (fakeRandom.dP(difficultyEngine.attackLeastProbi[difficulty])) targetID = botGetTargetWithLeastTroops(id)
+                if (fakeRandom.doesValueMeetProbiThreshold(difficultyEngine.attackLeastProbi[difficulty])) targetID = botGetTargetWithLeastTroops(id)
                 else {
-                    if (isBotBorderingOtherBots() && fakeRandom.dP(difficultyEngine.attackBotsProbi[difficulty])) botChecksNotAndRemovesIfBorderingAllHumans();
+                    if (isBotBorderingOtherBots() && fakeRandom.doesValueMeetProbiThreshold(difficultyEngine.attackBotsProbi[difficulty])) botChecksNotAndRemovesIfBorderingAllHumans();
                     targetID = botGetClosestTargetIndex(id)
                 }
                 botCalculateAttackAmount(id, amount, targetID);
@@ -649,10 +649,10 @@ function botCheckSetFrequentTiming(authorID, targetID, difficulty) {
 }
 
 function botProcessDonation(authorID, amount, difficulty, maxBelowRedI) {
-    if (0 !== teams.teamArray[authorID] && !(5 === difficulty && troops[authorID] < maxBelowRedI || 4 === difficulty && troops[authorID] < divideFloor(maxBelowRedI, 2)))
-        for (difficulty = fakeRandom.cf(aliveCount), maxBelowRedI = 0; maxBelowRedI < aliveCount; maxBelowRedI++) {
+    if (0 !== teamColors.teamArray[authorID] && !(5 === difficulty && troops[authorID] < maxBelowRedI || 4 === difficulty && troops[authorID] < divideFloor(maxBelowRedI, 2)))
+        for (difficulty = fakeRandom.calcFractionalValue(aliveCount), maxBelowRedI = 0; maxBelowRedI < aliveCount; maxBelowRedI++) {
             var targetID = aliveEntities[(maxBelowRedI + difficulty) % aliveCount];
-            if (teams.teamArray[targetID] === teams.teamArray[authorID] && 1 === canReceiveBotDonations[targetID]) {
+            if (teamColors.teamArray[targetID] === teamColors.teamArray[authorID] && 1 === canReceiveBotDonations[targetID]) {
                 processDonation(authorID, targetID, amount);
                 targetID < playerCount && fakeRandom.random() < fakeRandom.value(10) && (canReceiveBotDonations[targetID] = 0);
                 break
@@ -664,9 +664,9 @@ function botProcessOwnStrategy(id, amount, difficulty) {
     if (botChecksLoseIfBordersStuff(id, !0) || botChecksStrongIfBordersStuff(id, !0)) {
         if (!botChecksAndRemovesIfAttackingAllTargets(id)) {
             if (botChecksAndRemovesNeutral()) botCheckAdvanceAndProcessNeutralAttack(id, amount)
-            else if (fakeRandom.dP(difficultyEngine.attackLeastProbi[difficulty])) botCalculateAttackAmount(id, amount, botGetTargetWithLeastTroops(id)) 
+            else if (fakeRandom.doesValueMeetProbiThreshold(difficultyEngine.attackLeastProbi[difficulty])) botCalculateAttackAmount(id, amount, botGetTargetWithLeastTroops(id)) 
             else {
-                if (isBotBorderingOtherBots() && fakeRandom.dP(difficultyEngine.attackBotsProbi[difficulty])) botChecksNotAndRemovesIfBorderingAllHumans();
+                if (isBotBorderingOtherBots() && fakeRandom.doesValueMeetProbiThreshold(difficultyEngine.attackBotsProbi[difficulty])) botChecksNotAndRemovesIfBorderingAllHumans();
                 botCalculateAttackAmount(id, amount, botGetClosestTargetIndex(id));
             }
         }
@@ -727,7 +727,7 @@ function DifficultyEngine() {
         } else if (singleplayer) {
             if (teamGame) {
                 for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
-                    this.difficulty[botIndex] = singleSettings.botSettings[teams.teamArray[botIndex + playerCount] - 1].difficulty;
+                    this.difficulty[botIndex] = singleSettings.botSettings[teamColors.teamArray[botIndex + playerCount] - 1].difficulty;
                 }
             } else {
                 for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
@@ -756,22 +756,22 @@ function DifficultyEngine() {
                     randomSendRatio[botIndex] = 870;
                 }
             } else if (4 >= this.difficulty[botIndex]) {
-                sendRatioFluctuations[botIndex] = 1 + fakeRandom.cf(20);
-                randomTimingInterval[botIndex] = 250 + fakeRandom.cf(1501);
-                botTimingInterval[botIndex] = 500 + fakeRandom.cf(501);
+                sendRatioFluctuations[botIndex] = 1 + fakeRandom.calcFractionalValue(20);
+                randomTimingInterval[botIndex] = 250 + fakeRandom.calcFractionalValue(1501);
+                botTimingInterval[botIndex] = 500 + fakeRandom.calcFractionalValue(501);
                 if (3 === this.difficulty[botIndex]) {
-                    sendRatio[botIndex] = 600 + fakeRandom.cf(101);
-                    randomSendRatio[botIndex] = 300 + fakeRandom.cf(401);
+                    sendRatio[botIndex] = 600 + fakeRandom.calcFractionalValue(101);
+                    randomSendRatio[botIndex] = 300 + fakeRandom.calcFractionalValue(401);
                 } else {
-                    sendRatio[botIndex] = 300 + fakeRandom.cf(201);
-                    randomSendRatio[botIndex] = 100 + fakeRandom.cf(201);
+                    sendRatio[botIndex] = 300 + fakeRandom.calcFractionalValue(201);
+                    randomSendRatio[botIndex] = 100 + fakeRandom.calcFractionalValue(201);
                 }
             } else {
                 botTimingInterval[botIndex] = 1E3;
                 randomTimingInterval[botIndex] = 1E3;
-                sendRatioFluctuations[botIndex] = 35 + fakeRandom.cf(16);
-                sendRatio[botIndex] = 400 + fakeRandom.cf(101);
-                randomSendRatio[botIndex] = 50 + fakeRandom.cf(101);
+                sendRatioFluctuations[botIndex] = 35 + fakeRandom.calcFractionalValue(16);
+                sendRatio[botIndex] = 400 + fakeRandom.calcFractionalValue(101);
+                randomSendRatio[botIndex] = 50 + fakeRandom.calcFractionalValue(101);
             }
             this.botTiming[botIndex] = 1 + divideFloor(botTimingInterval[botIndex] * fakeRandom.random(), 10 * fakeRandom.value(100))
         }
@@ -832,7 +832,7 @@ function eE() {
     troopBar.update();
     peace.update();
     statisticNumbers.update();
-    eT.update();
+    teams.update();
     wsManager.update()
 }
 
@@ -852,7 +852,7 @@ function ea() {
     troopBar.drawCanvas();
     peace.drawCanvas();
     eA.drawCanvas();
-    eT.updateRenderObject()
+    teams.updateRenderObject()
 }
 
 function ec() {
@@ -1406,7 +1406,7 @@ function hp() {
         gameStatistics.drawCanvasImage();
         gj.drawCanvasImage();
         gameMessages.drawCanvasImage();
-        eT.drawCanvasImage();
+        teams.drawCanvasImage();
         eO.drawCanvasImage();
         attacksBar.drawCanvasImage();
         gameButtons.drawCanvasImage();
@@ -1563,16 +1563,40 @@ function Strings() {
 
 function EndGame() {
     this.endGame = function(winner) {
-        if (2 === clientStatus) var k = !0;
-        else peace.notPeaceGameEnd(), clientStatus = 2, spectatorCount = playersIngame, k = !1;
-        if (!k) {
+        var shouldUploadResult;
+        if (2 === clientStatus) shouldUploadResult = !0;
+        else {
+            peace.notPeaceGameEnd();
+            clientStatus = 2;
+            spectatorCount = playersIngame;
+            shouldUploadResult = !1;
+        }
+        if (!shouldUploadResult) {
+            var result, didWeWin
             if (8 === gamemode) {
-                var result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
-                (k = winner === myID) ? announcements.genericAnnouncement(winner, 2): announcements.genericAnnouncement(1 - myID, 3);
+                result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
+                if (didWeWin = winner === myID) announcements.genericAnnouncement(winner, 2)
+                else announcements.genericAnnouncement(1 - myID, 3);
                 points1v1.calculateElo(winner)
-            } else teamGame ? (winner = eT.ik(), k = teams.teamArray[myID] === winner, 9 === gamemode ? result = k ? landOrder[0] : 512 : (winner = teams.getClanTagWinningTeam(teams.teamIDs[winner]), result = winner[0], 512 !== result && announcements.resultClan(winner[1])), announcements.resultTeam(k)) : (result = landOrder[0], k = result === myID, announcements.resultBR(result));
-            singleplayer || dataEncoder.uploadResult(getTroopHash(), result);
-            gameResultBox.show(k, !1);
+            } else {
+                if (teamGame) {
+                    winner = teams.updateAndGetLargestTeamIndex();
+                    didWeWin = teamColors.teamArray[myID] === winner;
+                    if (9 === gamemode) result = didWeWin ? landOrder[0] : 512
+                    else {
+                        winner = teamColors.getClanTagWinningTeam(teamColors.teamIDs[winner]);
+                        result = winner[0];
+                        if (512 !== result) announcements.resultClan(winner[1]);
+                    }
+                    announcements.resultTeam(didWeWin)
+                } else {
+                    result = landOrder[0];
+                    didWeWin = result === myID;
+                    announcements.resultBR(result);
+                }
+            }
+            if (!singleplayer) dataEncoder.uploadResult(getTroopHash(), result);
+            gameResultBox.show(didWeWin, !1);
             announcements.iy(!0);
             gameLeaderboard.drawCanvas(!0);
             gameStatistics.drawCanvas(!0);
@@ -1636,10 +1660,10 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     botCount = entityCount - playerCount;
     spectatorCount = 0;
     myID = param_myID;
-    fakeRandom.jN(param_Seed);
+    fakeRandom.changeRandomNumber(param_Seed);
     setupPlayerInfoArrays(playerInfo);
     zombieSettings.init();
-    teams.init(playerInfo);
+    teamColors.init(playerInfo);
     clientStatus = 1;
     absMaxTroopCap = 15E8;
     absMaxTroopsBeforeRedI = 1E9;
@@ -1651,7 +1675,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     receiveDonationsArrayInit();
     pixel.init(playerInfo);
     hq.init();
-    eT.init();
+    teams.init();
     difficultyEngine.init();
     nickNames.jT();
     nickNames.jU();
@@ -2413,13 +2437,13 @@ function Announcements() {
             }
     };
     this.resultTeam = function(result) {
-        var largestTeamID = teams.teamIDs[eT.mw()];
+        var largestTeamID = teamColors.teamIDs[teams.getLargestTeamIndex()];
         if (result) {
             if (9 === gamemode) {
                 result = "The Resistance defeated the virus.";
                 gameMessages.mx("The Resistance", 2, 1, 12)
             } else {
-                result = "Congratulations! Team " + teams.colorLabels[largestTeamID] + " has won the game!";
+                result = "Congratulations! Team " + teamColors.colorLabels[largestTeamID] + " has won the game!";
                 announce(0, result, 40, 0, "rgb(10,220,10)", blackMoreOpaque, -1, !1)
             }
         }else {
@@ -2431,7 +2455,7 @@ function Announcements() {
                 announce(0, result, 41, 0, "rgb(200,80,80)", blackMoreOpaque, -1, !1);
             }
         }
-        if (9 !== gamemode) gameMessages.mx("Team " + teams.colorLabels[largestTeamID], 2, 1, 12);
+        if (9 !== gamemode) gameMessages.mx("Team " + teamColors.colorLabels[largestTeamID], 2, 1, 12);
         eV.zoomToFitMap(2700)
     };
     this.new1v1 = function(players) {
@@ -3238,7 +3262,7 @@ function AttacksBar() {
 
 function GameMessages() {
     function g() {
-        mainCanvasCtx.drawImage(I, m5 + (teamGame ? m5 + eT.qR() : 0), gameBoardHeight + 2 * m5)
+        mainCanvasCtx.drawImage(I, m5 + (teamGame ? m5 + teams.getPieChartWidth() : 0), gameBoardHeight + 2 * m5)
     }
 
     function k() {
@@ -3489,7 +3513,7 @@ function Peace() {
                 }
                 peaceRequirement[0] = getMax(divideFloor(3 * totalLand, 5), 1);
                 if (teamGame && 9 !== gamemode) {
-                    peaceRequirement[0] = getMin(getMax(divideFloor(totalLand * (100 - divideFloor(100 * eT.getLargestTeamLand(), currentLandPixelsCount)), 100), 1), peaceRequirement[0]);
+                    peaceRequirement[0] = getMin(getMax(divideFloor(totalLand * (100 - divideFloor(100 * teams.getLargestTeamLand(), currentLandPixelsCount)), 100), 1), peaceRequirement[0]);
                 }
                 peaceRequirement[1] = getMax(totalLand - peaceRequirement[0], 1);
                 peaceCount++
@@ -4216,7 +4240,7 @@ function GameLeaderboard() {
     }
 
     function setLeaderboardFillColor(id) {
-        teamGame && (leaderboard.fillStyle = teams.leaderboardColors[teams.teamIDs[teams.teamArray[id]]])
+        teamGame && (leaderboard.fillStyle = teamColors.leaderboardColors[teamColors.teamIDs[teamColors.teamArray[id]]])
     }
 
     function highlightRow(localRowIndex, highlightColor) {
@@ -4524,8 +4548,8 @@ function GameStatistics() {
         aliveCount - K[0] !== K[1] && (K[1] = aliveCount - K[0], I++);
         this.eC();
         if (teamGame) {
-            var P = eT.getLargestTeamLand();
-            P >= R && l() ? (endGame.endGame(-1), n(eT.getLargestTeamLand())) : n(P)
+            var P = teams.getLargestTeamLand();
+            P >= R && l() ? (endGame.endGame(-1), n(teams.getLargestTeamLand())) : n(P)
         } else P = land[landOrder[0]], P >= R && l() && endGame.endGame(-1), n(P);
         P = interest.getInterestRate(myID);
         P !== K[5] && (K[5] = P, I++);
@@ -4636,7 +4660,7 @@ function PlayerAura() {
             maxX = prevClientHeight * ((yMin[id] + yMax[id] + 1) / 2 - maxX) / (maxY - maxX) - .5 * depth;
             if (minX <= prevClientWidth && maxX <= prevClientHeight && minX >= -depth && maxX >= -depth) {
                 mainCanvasCtx.setTransform(scaleFactor * scale, 0, 0, scaleFactor * scale, minX, maxX);
-                mainCanvasCtx.drawImage(auraImages[teamGame ? teams.teamArray[id] : id < playerCount ? 1 : 0], 0, 0);
+                mainCanvasCtx.drawImage(auraImages[teamGame ? teamColors.teamArray[id] : id < playerCount ? 1 : 0], 0, 0);
             }
         }
     }
@@ -4650,10 +4674,10 @@ function PlayerAura() {
             diameter = 63;
             visible = !0;
             if (teamGame) {
-                for (teamIndex = 0; teamIndex <= teamCount; teamIndex++) auraImages.push(this.setAuraCanvas(teams.auraColors[teams.teamIDs[teamIndex]], diameter));
+                for (teamIndex = 0; teamIndex <= teamCount; teamIndex++) auraImages.push(this.setAuraCanvas(teamColors.auraColors[teamColors.teamIDs[teamIndex]], diameter));
             } else {
-                auraImages.push(this.setAuraCanvas(teams.auraColors[0], diameter));
-                auraImages.push(this.setAuraCanvas(teams.auraColors[4], diameter));
+                auraImages.push(this.setAuraCanvas(teamColors.auraColors[0], diameter));
+                auraImages.push(this.setAuraCanvas(teamColors.auraColors[4], diameter));
             }
         }
     };
@@ -6157,7 +6181,7 @@ function Lobby() {
                 var ba = X,
                     ca = na,
                     pa = W;
-                pa.fillStyle = teams.piechartColors[tIndex + 1];
+                pa.fillStyle = teamColors.piechartColors[tIndex + 1];
                 pa.beginPath();
                 pa.arc(24, 24, 23, ba, ca);
                 pa.lineTo(24, 24);
@@ -6973,7 +6997,7 @@ function Pixel() {
         if (teamGame) {
             var teamID, teamColorVariation;
             for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
-                teamID = teams.teamIDs[teams.teamArray[idIndex]];
+                teamID = teamColors.teamIDs[teamColors.teamArray[idIndex]];
                 if (teamID != 0){//Pixel colors for normal teams
                     teamColorVariation = divideFloor((teamColorVariations[teamID][3] + 1) * fakeRandom.random(), fakeRandom.value(100));
                     innerR[idIndex] = l[teamID][0] + teamColorVariation * teamColorVariations[teamID][0];
@@ -7293,7 +7317,7 @@ function zG(g) {
 
 function zD(g, k) {
     var n, l = k[zG(k)];
-    9 === gamemode && 1 === teams.teamArray[g] && fakeRandom.dP(8) && zombieSettings.zI(l);
+    9 === gamemode && 1 === teamColors.teamArray[g] && fakeRandom.doesValueMeetProbiThreshold(8) && zombieSettings.zI(l);
     if (g === myID) announcements.genericAnnouncement(l, 1), zB();
     else {
         for (n = k.length - 1; 0 <= n; n--)
@@ -7784,7 +7808,7 @@ function kN() {
                 infoCanvas.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
                 infoCanvasCtx = infoCanvas;
 
-                var fontColor = fontSize >= J && fontSize < maxFontSize ? teams.impostorfontColors[pixel.shading[idIndex]] + x(fontSize).toFixed(3) + ")" : teams.fontColors[pixel.shading[idIndex]];
+                var fontColor = fontSize >= J && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + x(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]];
                 infoCanvas.fillStyle = fontColor;
                 infoCanvas.fillText(8 === gamemode ? attacksBar.splitText(troops[idIndex]) : nickname[idIndex], landCenterX, landCenterY);
                 needsDrawImage = !0;
@@ -8108,7 +8132,7 @@ function NickNames() {
             tempNickname = Array(playerCount);
             var l = playerCount;
             var x = k.length;
-            var t = fakeRandom.a1N();
+            var t = fakeRandom.getMedian();
             for (n = 0; n < l; n++) tempNickname[n] = nickname[n], nickname[n] = k[(n + t) % x];
             nickname[myID] = tempNickname[myID]
         }
@@ -8239,10 +8263,10 @@ function WsManager() {
         var serverIndex;
         this.originURLs = Array(this.serverCount);
         this.originURLs[0] = "territorial.io";
-        var x = fakeRandom.a1N(0);
-        fakeRandom.jN(0);
+        var x = fakeRandom.getMedian(0);
+        fakeRandom.changeRandomNumber(0);
         for (serverIndex = 1; serverIndex < this.serverCount; serverIndex++) this.originURLs[serverIndex] = strings.generateOriginURLs() + ".com";
-        fakeRandom.jN(x);
+        fakeRandom.changeRandomNumber(x);
         websockets = Array(this.terriWsCount);
         websocketsInfo = Array(this.terriWsCount);
         for (serverIndex = this.terriWsCount - 1; 0 <= serverIndex; serverIndex--) websocketsInfo[serverIndex] = {
@@ -8348,7 +8372,7 @@ function getTroopHash() {
     return k % 4096
 }
 var mainCanvas, mainCanvasCtx, versionLabel, versionHash, canvasWidth, canvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = !1,
-    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statisticNumbers, statistics, cookiesPrompt, c4, teams, eT, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
+    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statisticNumbers, statistics, cookiesPrompt, c4, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
@@ -8402,8 +8426,8 @@ function main() {
     c4 = new a2K;
     c4.jd();
     c4.init();
+    teamColors = new TeamColors;
     teams = new Teams;
-    eT = new a2M;
     mainLeaderboardIcon = new MainLeaderboardIcon;
     mainLeaderboardIcon.init();
     mainLeaderboard = new MainLeaderboard;
@@ -8516,7 +8540,7 @@ function ZombieSettings() {
     this.zI = function(k) {
         g.push({
             player: k,
-            group: 14 + fakeRandom.cf(20)
+            group: 14 + fakeRandom.calcFractionalValue(20)
         })
     };
     this.update = function() {
@@ -8534,7 +8558,7 @@ function loadMap(mapID, k) {
         var n = performance.now();
         vf = !1;
         x9.xA();
-        fakeRandom.jN(mapID);
+        fakeRandom.changeRandomNumber(mapID);
         currentMapID = mapID;
         currentMapSeed = k;
         isnotBAnorRealMap(mapID) && (mapInfo.getValueByID(mapID).a1f = k);
@@ -8543,7 +8567,7 @@ function loadMap(mapID, k) {
             var l = mapInfo.getValueByID(currentMapID);
             currentMapWidth = l.width;
             currentMapHeight = l.height;
-            fakeRandom.jN(l.a1f);
+            fakeRandom.changeRandomNumber(l.a1f);
             jn.jT([currentMapWidth, currentMapHeight, l.gO, l.gL]);
             a2c();
             configFakeMap.renderBaseMap();
@@ -8626,10 +8650,10 @@ function a2G() {
         if (8 === gameStateManager.getState() && eV.gd()) this.rd = setTimeout(g, 16);
         else {
             if (0 === this.aA) {
-                var l = fakeRandom.a1N();
-                fakeRandom.jN(mapInfo.getValueByID(currentMapID).a2v[2]);
+                var l = fakeRandom.getMedian();
+                fakeRandom.changeRandomNumber(mapInfo.getValueByID(currentMapID).a2v[2]);
                 jn.jT([currentMapWidth, currentMapHeight, mapInfo.getValueByID(currentMapID).a2v[0], mapInfo.getValueByID(currentMapID).a2v[1]]);
-                fakeRandom.jN(l);
+                fakeRandom.changeRandomNumber(l);
                 this.a2q = jn.a2x();
                 this.aA++;
                 if (this.a2r) {
@@ -9567,140 +9591,155 @@ function BoatPathChecker() {
     }
 }
 
-function a2M() {
+function Teams() {
     function drawPiechart() {
         var B, C = 0,
             E = 0,
-            F = Math.floor(x / 2),
-            G = Math.floor(t / 2),
+            F = Math.floor(pieChartWidth / 2),
+            G = Math.floor(pieChartRadius / 2),
             N = 1.5 * Math.PI;
-        for (B = teamCount; 0 <= B; B--) E += A[B], 0 === A[B] && C++;
-        n = !1;
-        y.clearRect(0, 0, x, x);
-        y.fillStyle = blackMoreOpaque;
-        y.fillRect(0, 0, x, x);
-        y.fillStyle = whiteRGB;
-        y.fillRect(0, 0, x, 2);
-        y.fillRect(0, 0, 2, x);
-        y.fillRect(x - 2, 0, 2, x);
-        y.fillRect(0, x - 2, x, 2);
+        for (B = teamCount; 0 <= B; B--) {
+            E += teamLand[B];
+            if (0 === teamLand[B]) C++;
+        }
+        canvasDirty = !1;
+        pieChartCanvasCtx.clearRect(0, 0, pieChartWidth, pieChartWidth);
+        pieChartCanvasCtx.fillStyle = blackMoreOpaque;
+        pieChartCanvasCtx.fillRect(0, 0, pieChartWidth, pieChartWidth);
+        pieChartCanvasCtx.fillStyle = whiteRGB;
+        pieChartCanvasCtx.fillRect(0, 0, pieChartWidth, 2);
+        pieChartCanvasCtx.fillRect(0, 0, 2, pieChartWidth);
+        pieChartCanvasCtx.fillRect(pieChartWidth - 2, 0, 2, pieChartWidth);
+        pieChartCanvasCtx.fillRect(0, pieChartWidth - 2, pieChartWidth, 2);
         if (0 < E)
             if (C === teamCount)
                 for (B = teamCount; 0 <= B; B--) {
-                    if (0 < A[B]) {
+                    if (0 < teamLand[B]) {
                         E = F;
                         N = G;
-                        y.fillStyle = teams.piechartColors[teams.teamIDs[B]];
-                        y.beginPath();
-                        y.arc(E, E, N, 0, 2 * Math.PI);
-                        y.fill();
+                        pieChartCanvasCtx.fillStyle = teamColors.piechartColors[teamColors.teamIDs[B]];
+                        pieChartCanvasCtx.beginPath();
+                        pieChartCanvasCtx.arc(E, E, N, 0, 2 * Math.PI);
+                        pieChartCanvasCtx.fill();
                         break
                     }
                 } else {
                     for (B = 0; B <= teamCount; B++)
-                        if (0 < A[B]) {
-                            C = N + 2 * Math.PI * A[B] / E;
+                        if (0 < teamLand[B]) {
+                            C = N + 2 * Math.PI * teamLand[B] / E;
                             var I = F,
                                 D = G,
                                 K = N,
                                 J = C;
-                            y.fillStyle = teams.piechartColors[teams.teamIDs[B]];
-                            y.beginPath();
-                            y.arc(I, I, D, K, J);
-                            y.lineTo(I, I);
-                            y.fill();
-                            0 !== B && k(F, G, N);
+                            pieChartCanvasCtx.fillStyle = teamColors.piechartColors[teamColors.teamIDs[B]];
+                            pieChartCanvasCtx.beginPath();
+                            pieChartCanvasCtx.arc(I, I, D, K, J);
+                            pieChartCanvasCtx.lineTo(I, I);
+                            pieChartCanvasCtx.fill();
+                            0 !== B && drawPieChartSector(F, G, N);
                             N = C
-                        } k(F, G, 1.5 * Math.PI)
+                        } drawPieChartSector(F, G, 1.5 * Math.PI)
                 }
-        y.beginPath();
-        y.arc(F, F, G, 0, 2 * Math.PI);
-        y.stroke()
+        pieChartCanvasCtx.beginPath();
+        pieChartCanvasCtx.arc(F, F, G, 0, 2 * Math.PI);
+        pieChartCanvasCtx.stroke()
     }
 
-    function k(B, C, E) {
-        y.beginPath();
-        y.moveTo(B, B);
-        y.lineTo(B + Math.cos(E) * C, B + Math.cos(E + 1.5 * Math.PI) * C);
-        y.stroke()
+    function drawPieChartSector(B, C, E) {
+        pieChartCanvasCtx.beginPath();
+        pieChartCanvasCtx.moveTo(B, B);
+        pieChartCanvasCtx.lineTo(B + Math.cos(E) * C, B + Math.cos(E + 1.5 * Math.PI) * C);
+        pieChartCanvasCtx.stroke()
     }
-    var n = !1,
-        l = 0,
-        x = 0,
-        t = 0,
-        z = null,
-        y = null,
-        A = null;
+    var canvasDirty = !1,
+        updateInterval = 0,
+        pieChartWidth = 0,
+        pieChartRadius = 0,
+        pieChartCanvas = null,
+        pieChartCanvasCtx = null,
+        teamLand = null;
     this.init = function() {
         if (teamGame) {
-            l = 16;
-            A = new Uint32Array(teamCount + 1);
-            for (var B = teamCount; 0 < B; B--) A[B] = 1;
+            updateInterval = 16;
+            teamLand = new Uint32Array(teamCount + 1);
+            for (var B = teamCount; 0 < B; B--) teamLand[B] = 1;
             this.setCanvasVariables()
-        } else A = y = z = null
+        } else teamLand = pieChartCanvasCtx = pieChartCanvas = null
     };
-    this.qR = function() {
-        return x
+    this.getPieChartWidth = function() {
+        return pieChartWidth
     };
     this.setCanvasVariables = function() {
-        teamGame && (x = Math.floor(.18 *
-            minDim), x += x % 2, t = Math.floor(7 * x / 8), z = z ? z : document.createElement("canvas"), z.width = x, z.height = x, y = z.getContext("2d", {
-            alpha: !0
-        }), y.lineWidth = 2, y.strokeStyle = whiteRGB2, drawPiechart())
+        if (teamGame) {
+            pieChartWidth = Math.floor(.18 * minDim);
+            pieChartWidth += pieChartWidth % 2;
+            pieChartRadius = Math.floor(7 * pieChartWidth / 8);
+            pieChartCanvas = pieChartCanvas ? pieChartCanvas : document.createElement("canvas");
+            pieChartCanvas.width = pieChartWidth;
+            pieChartCanvas.height = pieChartWidth;
+            pieChartCanvasCtx = pieChartCanvas.getContext("2d", {
+                alpha: !0
+            });
+            pieChartCanvasCtx.lineWidth = 2;
+            pieChartCanvasCtx.strokeStyle = whiteRGB2;
+            drawPiechart();
+        }
     };
     this.getLargestTeamLand = function() {
-        return A[this.mw()]
+        return teamLand[this.getLargestTeamIndex()]
     };
-    this.ik = function() {
-        l = 31;
+    this.updateAndGetLargestTeamIndex = function() {
+        updateInterval = 31;
         this.update();
-        return this.mw()
+        return this.getLargestTeamIndex()
     };
-    this.mw = function() {
-        for (var B = 0, C = teamCount; 0 < C; C--) A[C] > A[B] && (B = C);
-        return B
+    this.getLargestTeamIndex = function() {
+        for (var largestTeamIndex = 0, teamIndex = teamCount; 0 < teamIndex; teamIndex--) {
+            if (teamLand[teamIndex] > teamLand[largestTeamIndex]) (largestTeamIndex = teamIndex);
+        }
+        return largestTeamIndex
     };
     this.update = function() {
-        if (teamGame && 32 <= ++l) {
-            l = 0;
-            var B;
-            for (B = teamCount; 0 <= B; B--) A[B] = 0;
-            for (B = aliveCount - 1; 0 <= B; B--) A[teams.teamArray[aliveEntities[B]]] += land[aliveEntities[B]];
-            n = !0
+        if (teamGame && 32 <= ++updateInterval) {
+            updateInterval = 0;
+            var teamIndex;
+            for (teamIndex = teamCount; 0 <= teamIndex; teamIndex--) teamLand[teamIndex] = 0;
+            for (teamIndex = aliveCount - 1; 0 <= teamIndex; teamIndex--) teamLand[teamColors.teamArray[aliveEntities[teamIndex]]] += land[aliveEntities[teamIndex]];
+            canvasDirty = !0
         }
     };
     this.updateRenderObject = function() {
-        teamGame && n && drawPiechart()
+        teamGame && canvasDirty && drawPiechart()
     };
     this.drawCanvasImage = function() {
-        teamGame && mainCanvasCtx.drawImage(z, m5, gameBoardHeight + 2 * m5)
+        teamGame && mainCanvasCtx.drawImage(pieChartCanvas, m5, gameBoardHeight + 2 * m5)
     }
 }
 
 function FakeRandom() {
-    var g, k;
+    var randomValue, probiTable;
     this.init = function() {
-        k = Array(101);
-        for (var n = k.length - 1; 0 <= n; n--) k[n] = divideFloor(32768 * n, 100);
-        this.jN(0)
+        probiTable = Array(101);
+        for (var index = probiTable.length - 1; 0 <= index; index--) probiTable[index] = divideFloor(32768 * index, 100);
+        this.changeRandomNumber(0)
     };
-    this.value = function(n) {
-        return k[n]
+    this.value = function(index) {
+        return probiTable[index]
     };
-    this.a1N = function() {
-        return divideFloor(g - 1, 2)
+    this.getMedian = function() {
+        return divideFloor(randomValue - 1, 2)
     };
-    this.jN = function(n) {
-        g = 2 * n % 32768 + 1
+    this.changeRandomNumber = function(seed) {
+        randomValue = 2 * seed % 32768 + 1
     };
     this.random = function() {
-        return g = 167 * g % 32768
+        return randomValue = 167 * randomValue % 32768
     };
-    this.cf = function(n) {
-        return divideFloor(n * this.random(), 32768)
+    this.calcFractionalValue = function(seed) {
+        return divideFloor(seed * this.random(), 32768)
     };
-    this.dP = function(n) {
-        return 0 !== n && this.random() < this.value(n)
+    this.doesValueMeetProbiThreshold = function(value) {
+        return 0 !== value && this.random() < this.value(value)
     }
 }
 
@@ -9740,7 +9779,7 @@ function kc() {
                 statistics.setCanvasVariables();
                 eA.setCanvasVariables();
                 gameResultBox.setCanvasVariables();
-                eT.setCanvasVariables();
+                teams.setCanvasVariables();
                 gj.rI();        
             } else {
                 if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, !0)
@@ -10360,7 +10399,7 @@ function Statistics() {
     }
 }
 
-function Teams() {
+function TeamColors() {
     this.piechartColors = "rgba(130,130,130,0.88) rgba(130,12,12,0.88) rgba(12,130,12,0.88) rgba(12,12,130,0.88) rgba(130,130,12,0.88) rgba(130,12,130,0.88) rgba(12,130,130,0.88) rgba(130,130,130,0.88) rgba(0,0,0,0.88)".split(" ");
     this.leaderboardColors = [whiteRGB2, "rgb(255,120,120)", "rgb(0,230,0)", "rgb(150,150,255)", "rgb(240,240,25)", "rgb(240,25,240)", "rgb(25,240,240)", whiteRGB2, "rgb(170,170,170)"];
     this.a5o = [whiteRGB2, "rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(255,0,255)", "rgb(0,255,255)", whiteRGB2, blackRGB];
@@ -10733,7 +10772,7 @@ function updateTargetXYMinMax() {
 }
 
 function isNotTeamate(player1, player2) {
-    return 0 === teams.teamArray[player1] || teams.teamArray[player1] !== teams.teamArray[player2]
+    return 0 === teamColors.teamArray[player1] || teamColors.teamArray[player1] !== teamColors.teamArray[player2]
 }
 
 function target1BordersAttackingTarget2(authorID, targetID) {
