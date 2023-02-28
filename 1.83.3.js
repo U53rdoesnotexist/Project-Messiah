@@ -131,10 +131,10 @@ function saveOptions(zoom, sound) {
 
 function saveEmojis() {
     var emojiString = "";
-    for (var eIndex = 0; eIndex < a5.a6; eIndex += 2) {
-        if (a5.a7[eIndex] || a5.a7[eIndex + 1]) {
-            if (a5.a7[eIndex] && !a5.a7[eIndex + 1]) emojiString += "1";
-            else if (!a5.a7[eIndex] && a5.a7[eIndex + 1]) emojiString += "2";
+    for (var eIndex = 0; eIndex < emojis.totalDistinctEmojisCount; eIndex += 2) {
+        if (emojis.emojiSelection[eIndex] || emojis.emojiSelection[eIndex + 1]) {
+            if (emojis.emojiSelection[eIndex] && !emojis.emojiSelection[eIndex + 1]) emojiString += "1";
+            else if (!emojis.emojiSelection[eIndex] && emojis.emojiSelection[eIndex + 1]) emojiString += "2";
             else emojiString += "3";
         } else emojiString += "0";
     }
@@ -1120,11 +1120,11 @@ function BoatSpeed() {
         return tempBoatID;
     };
     this.drawCanvasImage = function() {
-        if (!(40 > scaleFactor || 0 === currentBoatIndex)) {
-            var B, C = gridWidth / scaleFactor,
-                E = gridHeight / scaleFactor,
-                F = (prevClientWidth + gridWidth) / scaleFactor,
-                G = (prevClientHeight + gridHeight) / scaleFactor;
+        if (!(40 > mainScaleFactor || 0 === currentBoatIndex)) {
+            var B, C = gridWidth / mainScaleFactor,
+                E = gridHeight / mainScaleFactor,
+                F = (prevClientWidth + gridWidth) / mainScaleFactor,
+                G = (prevClientHeight + gridHeight) / mainScaleFactor;
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
             for (B = currentBoatIndex - 1; 0 <= B; B--) {
@@ -1132,7 +1132,7 @@ function BoatSpeed() {
                 var I = pixel.toY(currentPixelIndicies[B]);
                 var D = authorIDs[B];
                 if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== isAlive[D]) {
-                    var K = Math.floor(.94 * scaleFactor * eA.gG(D));
+                    var K = Math.floor(.94 * mainScaleFactor * eA.gG(D));
                     if (6 <= K) {
                         N = Math.floor(prevClientWidth * (N + .5 - C) / (F - C));
                         I = Math.floor(prevClientHeight * (I + .48 - E) / (G - E));
@@ -1159,9 +1159,9 @@ function gK() {
         t = z = x = 0;
         y = I / J;
         l = 1 / (J / I / 4);
-        A = (prevClientWidth / 2 + gridWidth) / scaleFactor;
-        B = (prevClientHeight / 2 + gridHeight) / scaleFactor;
-        C = scaleFactor
+        A = (prevClientWidth / 2 + gridWidth) / mainScaleFactor;
+        B = (prevClientHeight / 2 + gridHeight) / mainScaleFactor;
+        C = mainScaleFactor
     }
 
     function k(J) {
@@ -1215,7 +1215,7 @@ function gK() {
     };
     this.gf = function(J, L, H, M) {
         n(J, L, H, M);
-        scaleFactor = G;
+        mainScaleFactor = G;
         gj.gw(E, prevClientWidth / 2);
         gj.gx(F, prevClientHeight / 2);
         gy.gz()
@@ -1232,12 +1232,12 @@ function gK() {
             var J = c4.time - N;
             1E3 < J ? x = 1 : (x += z * J / I, x = 1 < x ? 1 : x);
             N = c4.time;
-            var L = scaleFactor;
+            var L = mainScaleFactor;
             J = gridWidth;
             var H = gridHeight;
-            scaleFactor = C * Math.pow(G /
+            mainScaleFactor = C * Math.pow(G /
                 C, x);
-            L = scaleFactor / L;
+            L = mainScaleFactor / L;
             var M = 1 - (C * Math.pow(G / C, 1 - x) - C) / (G - C);
             gj.gw(A + M * (E - A), prevClientWidth / 2);
             gj.gx(B + M * (F - B), prevClientHeight / 2);
@@ -1387,8 +1387,8 @@ function FindSpawn() {
 
 function hp() {
     hq.hr();
-    mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0);
-    mainCanvasCtx.imageSmoothingEnabled = 3 > scaleFactor;
+    mainCanvasCtx.setTransform(mainScaleFactor, 0, 0, mainScaleFactor, 0, 0);
+    mainCanvasCtx.imageSmoothingEnabled = 3 > mainScaleFactor;
     mainCanvasCtx.drawImage(mapBaseCanvas, gj.toX(), gj.toY());
     playerAura.drawCanvasImage();
     mainCanvasCtx.drawImage(mapCanvas, gj.toX(), gj.toY());
@@ -1677,8 +1677,8 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     hq.init();
     teams.init();
     difficultyEngine.init();
-    nickNames.jT();
-    nickNames.jU();
+    nickNames.generate();
+    nickNames.updateNicknames();
     findSpawn.init();
     updateAliveInfo();
     playerAura.init();
@@ -1721,7 +1721,7 @@ function ja() {
     eA.drawCanvas()
 }
 
-function jb() {
+function leaveGame() {
     wsManager.close(wsManager.remote, 3246);
     clientStatus = 0;
     c4.jd();
@@ -1732,7 +1732,7 @@ function jb() {
 var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
     gameMessages, troopBar, gj, playtime, eO, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
-    mapInfo, jn, gn, boatPathChecker, fakeRandom, boatPathHandler, hq, jo, dataDecoder, eX, dataEncoder, jq, playerAura, lobby, mapMenu, peace, setGameOrigin, 
+    mapInfo, generateHeightmap, gn, boatPathChecker, fakeRandom, boatPathHandler, hq, jo, dataDecoder, eX, dataEncoder, jq, playerAura, lobby, mapMenu, peace, setGameOrigin, 
     wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
@@ -1762,7 +1762,7 @@ function construct() {
     preLobby = new PreLobby;
     gameStateManager = new GameStateManager;
     showError = new ShowError;
-    showError.jT();
+    showError.generate();
     nameInputBar = new NameInputBar;
     gameUpdatedPrompt = new GameUpdatedPrompt;
     singleSettings = new SingleSettings;
@@ -1777,7 +1777,7 @@ function construct() {
     zombieSettings = new ZombieSettings;
     configFakeMap = new ConfigFakeMap;
     mapInfo = new MapInfo;
-    jn = new kS;
+    generateHeightmap = new GenerateHeightmap;
     gn = new kT;
     boatPathChecker = new BoatPathChecker;
     fakeRandom = new FakeRandom;
@@ -1883,8 +1883,8 @@ function PlayerActions() {
         if (2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return this.end(), 1;
         if (t) {
             this.end();
-            if (a5.lG(xPos, yPos)) a5.lH(xPos, yPos, targetID) && (t = !0);
-            else return a5.lI(), 2;
+            if (emojis.lG(xPos, yPos)) emojis.lH(xPos, yPos, targetID) && (t = !0);
+            else return emojis.lI(), 2;
             return 1
         }
         var type = getButtonType(xPos, yPos);
@@ -1952,7 +1952,7 @@ function PlayerActions() {
         
         if (7 === type && x[4]) {
             this.end();
-            t = a5.show(xPos, yPos);
+            t = emojis.show(xPos, yPos);
             return 1;
         }
         
@@ -1974,13 +1974,13 @@ function PlayerActions() {
         if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return !1;
         var M = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - B) > M || Math.abs(yPos - C) > M || (new Date).getTime() > E + 425) return !1;
-        M = Math.floor((xPos + gridWidth) / scaleFactor);
-        var Q = Math.floor((yPos + gridHeight) / scaleFactor);
+        M = Math.floor((xPos + gridWidth) / mainScaleFactor);
+        var Q = Math.floor((yPos + gridHeight) / mainScaleFactor);
         if (1 > M || 1 > Q || M >= currentMapWidth - 1 || Q >= currentMapHeight - 1) return !1;
         var R = Q * currentMapWidth * 4 + 4 * M;
         if (!pixel.canOwn(R)) return !1;
         if (2 === clientStatus) {
-            if (1 <= a5.ld && (targetID = pixel.getOwner(R), this.isHuman(targetID))) {
+            if (1 <= emojis.ld && (targetID = pixel.getOwner(R), this.isHuman(targetID))) {
                 if (targetID === myID) this.end();
                 else {
                     x[4] = !0;
@@ -2000,7 +2000,7 @@ function PlayerActions() {
         targetID = pixel.getOwner(R);
         if (targetID === myID) {
             this.end();
-            if (0 === a5.ld) return !1;
+            if (0 === emojis.ld) return !1;
             x[4] = !0;
             return this.le(xPos, yPos)
         }
@@ -2008,7 +2008,7 @@ function PlayerActions() {
         Q = targetID;
         Q = playerActions.isHuman(Q) && !canRequestToAttackTarget(Q) && diplomacyHandler.lO(1, [Q], !1);
         M[6] = Q;
-        x[4] = 1 <= a5.ld && this.isHuman(targetID);
+        x[4] = 1 <= emojis.ld && this.isHuman(targetID);
         if (isNotTeamate(targetID, myID)) {
             x[5] = this.isHuman(targetID) && !eA.li(targetID) && diplomacyHandler.lO(0, [targetID], !1);
             M = x;
@@ -2044,8 +2044,8 @@ function PlayerActions() {
     this.onPointermove = function(L, H) {
         if (!this.visible()) return !1;
         if (t) {
-            if (a5.lG(L, H)) return !1;
-            a5.lI();
+            if (emojis.lG(L, H)) return !1;
+            emojis.lI();
             t = !1;
             return c4.canvasDirty = !0
         }
@@ -2069,7 +2069,7 @@ function PlayerActions() {
         this.visible() && this.lo()
     };
     this.lo = function() {
-        if (t) a5.drawCanvasImage();
+        if (t) emojis.drawCanvasImage();
         else {
             var L = (A + N) / D;
             mainCanvasCtx.imageSmoothingEnabled = !0;
@@ -2111,17 +2111,17 @@ function GameButtons() {
 
     function k(B, C) {
         if (!gameButtons.lu) return B <= l +
-            m5 && C >= troopBar.startingY ? 0 : -1;
-        if (B <= 4 * l + m5) {
+            canvasPadding && C >= troopBar.startingY ? 0 : -1;
+        if (B <= 4 * l + canvasPadding) {
             if (C >= troopBar.startingY) return 0;
-            if (C >= troopBar.startingY - l - A * m5) return 2;
-            if (C >= troopBar.startingY - 2 * (l + A * m5)) return 3
-        } else if (B <= 7 * l + m5 && C >= troopBar.startingY - l - A * m5) return 1;
+            if (C >= troopBar.startingY - l - A * canvasPadding) return 2;
+            if (C >= troopBar.startingY - 2 * (l + A * canvasPadding)) return 3
+        } else if (B <= 7 * l + canvasPadding && C >= troopBar.startingY - l - A * canvasPadding) return 1;
         return -1
     }
 
     function n(B, C) {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.startingY - B * A * m5 - B * l);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, troopBar.startingY - B * A * canvasPadding - B * l);
         mainCanvasCtx.fillStyle = blackSemiTransparent2;
         mainCanvasCtx.fillRect(0, 0, 4 * l, l);
         y === B + 1 && C === whiteRGB2 && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * l, l));
@@ -2156,7 +2156,7 @@ function GameButtons() {
     };
     this.mouseDown = function(B, C) {
         var E = k(B, C);
-        return this.lu ? 0 === E ? (jb(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.canSurrender(myID) && (singleplayer ? processAction.surrender(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statisticNumbers.m4 ? (statistics.m0(), c4.canvasDirty = !0, 2) : statistics.visible ||
+        return this.lu ? 0 === E ? (leaveGame(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.canSurrender(myID) && (singleplayer ? processAction.surrender(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statisticNumbers.m4 ? (statistics.m0(), c4.canvasDirty = !0, 2) : statistics.visible ||
             singleplayer && !inSpawn ? 1 : (this.m0(), 2) : 0 === E ? (this.m0(), 2) : 0
     };
     this.onPointermove = function(B, C) {
@@ -2170,7 +2170,7 @@ function GameButtons() {
     this.drawCanvasImage = function() {
         if (this.lu) {
             var B = Math.floor(5.5 * l);
-            mainCanvasCtx.setTransform(1, 0, 0, 1, m5, troopBar.startingY);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, troopBar.startingY);
             mainCanvasCtx.fillStyle = blackSemiTransparent2;
             mainCanvasCtx.fillRect(0, 0, B, l);
             0 === y ? (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * l, l)) : 1 === y && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
@@ -2185,11 +2185,11 @@ function GameButtons() {
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.fillText(z[0], 2 * l, .54 * l);
             B = .4 * l;
-            gameButtons.m9(m5 + 4 * l + (1.5 * l - B) / 2, troopBar.startingY + .3 * l, B);
+            gameButtons.m9(canvasPadding + 4 * l + (1.5 * l - B) / 2, troopBar.startingY + .3 * l, B);
             n(1, gameButtons.canSurrender(myID) ? whiteRGB2 : gray128RGB);
             2 <= statisticNumbers.m4 && n(2, whiteRGB2);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
-        } else mainCanvasCtx.drawImage(x, m5, troopBar.startingY)
+        } else mainCanvasCtx.drawImage(x, canvasPadding, troopBar.startingY)
     };
     this.canSurrender = function(B) {
         return 0 !== isAlive[B] && 2 !== clientStatus && playerActions.isHuman(B)
@@ -2238,7 +2238,7 @@ function Announcements() {
             S.fillRect(0, 0, messageWidth, announcementHeight);
             S.fillStyle = P;
             S.fillText(message, Math.floor(1.5 * I), Math.floor(announcementHeight / 2));
-            isEmoji && (isEmoji = announcementHeight / a5.width, S.imageSmoothingEnabled = !0, S.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - announcementHeight, 0), S.drawImage(a5.l5[ca], 0, 0));
+            isEmoji && (isEmoji = announcementHeight / emojis.width, S.imageSmoothingEnabled = !0, S.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - announcementHeight, 0), S.drawImage(emojis.emojiCanvasList[ca], 0, 0));
             pendingAnnouncements.unshift({
                 time: displayTime,
                 label: message,
@@ -2315,7 +2315,7 @@ function Announcements() {
         announcementHeight = 10 > announcementHeight ? 10 : announcementHeight;
         this.fontRatio = Math.floor(2 * announcementHeight / 3);
         this.fontStyle = fontWeightBold + this.fontRatio + fontSizeArial;
-        N = m5;
+        N = canvasPadding;
         I = Math.floor(announcementHeight / 5);
         if (0 < pendingAnnouncements.length) {
             for (var aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
@@ -2425,12 +2425,12 @@ function Announcements() {
         else this.receivedEmojiMessage(authorID, emojiID)
     };
     this.receivedEmojiMessage = function(authorID, emojiID) {
-        var aIndex, emojiCount = 0;
+        var aIndex, emoteCount = 0;
         announce(175, nickname[authorID] + ": ", 1E3 + emojiID, authorID, whiteRGB2, "rgba(5,60,25,0.9)", -1, !0);
         for (aIndex = 0; aIndex < pendingAnnouncements.length; aIndex++)
             if (1E3 <= pendingAnnouncements[aIndex].id && pendingAnnouncements[aIndex].player === authorID) {
-                emojiCount++;
-                if (3 < emojiCount) {
+                emoteCount++;
+                if (3 < emoteCount) {
                     pendingAnnouncements.splice(aIndex, 1);
                     break
                 }
@@ -2703,61 +2703,63 @@ function NextContestBar() {
     }
 }
 
-function ng() {
-    this.nh = 10;
-    this.nj = this.ni = 50;
-    this.nk = 8;
-    this.nl = this.ni + this.nj;
-    this.a6 = this.ni + this.nj + this.nk;
+function Emojis() {
+    this.numEmojisPerRow  = 10;
+    this.flagCount = this.emoteCount = 50;
+    this.directionCount = 8;
+    this.totalEmojisCount = this.emoteCount + this.flagCount;
+    this.totalDistinctEmojisCount = this.emoteCount + this.flagCount + this.directionCount;
     this.width = 72;
     this.nn = this.nm = 0;
-    this.l5 = Array(this.a6);
+    this.emojiCanvasList = Array(this.totalDistinctEmojisCount);
     this.no = 8;
-    this.np = Array(this.ni + this.nj);
-    this.nq = Array(this.ni + this.nj);
+    this.np = Array(this.emoteCount + this.flagCount);
+    this.nq = Array(this.emoteCount + this.flagCount);
     this.fA = this.f9 = 0;
     this.zoom = 1;
     this.nr = .2;
     this.ld = 0;
-    this.ns = this.a7 = null;
+    this.ns = this.emojiSelection = null;
     this.nt = 0;
     this.init = function() {
         var g;
-        this.a7 = Array(this.a6);
-        this.ns = Array(this.a6);
+        this.emojiSelection = Array(this.totalDistinctEmojisCount);
+        this.ns = Array(this.totalDistinctEmojisCount);
         var k = sprites.getValueByName("emojis");
         this.nv();
-        for (g = this.ld = 0; g < this.ni; g++) this.nw(g, g, k);
+        for (g = this.ld = 0; g < this.emoteCount; g++) this.nw(g, g, k);
         k = sprites.getValueByName("flags");
-        for (g = 0; g < this.nj; g++) this.nw(g,
-            this.ni + g, k);
+        for (g = 0; g < this.flagCount; g++) this.nw(g,
+            this.emoteCount + g, k);
         this.ny();
-        this.l5[26] = this.nz(25, 2);
+        this.emojiCanvasList[26] = this.nz(25, 2);
         this.o0()
     };
     this.nw = function(g, k, n) {
-        this.a7[k] = !1;
+        this.emojiSelection[k] = !1;
         this.ns[k] = 0;
-        var l = document.createElement("canvas");
-        l.width = this.width;
-        l.height = this.width;
-        var x = l.getContext("2d", {
+        var emojiCanvas = document.createElement("canvas");
+        emojiCanvas.width = this.width;
+        emojiCanvas.height = this.width;
+        var emojiCanvasCtx = emojiCanvas.getContext("2d", {
             alpha: !0
         });
-        x.clearRect(0, 0, this.width, this.width);
-        23 === k ? x.drawImage(playerActions.l3[2], 0, 0) : 36 === k ? x.drawImage(playerActions.l3[0], 0, 0) : 49 === k ? x.drawImage(playerActions.l3[1], 0, 0) : x.drawImage(n, this.width * g % (g === k ? this.nh * this.width : 4E3), g === k ? divideFloor(g, this.nh) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
-        this.l5[k] = l
+        emojiCanvasCtx.clearRect(0, 0, this.width, this.width);
+        if (23 === k) emojiCanvasCtx.drawImage(playerActions.l3[2], 0, 0)
+        else if (36 === k) emojiCanvasCtx.drawImage(playerActions.l3[0], 0, 0)
+        else if (49 === k) emojiCanvasCtx.drawImage(playerActions.l3[1], 0, 0)
+        else emojiCanvasCtx.drawImage(n, this.width * g % (g === k ? this.numEmojisPerRow  * this.width : 4E3), g === k ? divideFloor(g, this.numEmojisPerRow ) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
+        this.emojiCanvasList[k] = emojiCanvas;
     };
     this.ny = function() {
-        this.l5[this.a6 -
-            5] = this.l5[26];
-        this.l5[this.a6 - 4] = this.nz(this.a6 - 5, 2);
-        this.l5[this.a6 - 1] = this.nz(this.a6 - 5, 1);
-        this.l5[this.a6 - 8] = this.nz(this.a6 - 4, 1);
-        this.l5[this.a6 - 3] = this.l5[39];
-        this.l5[this.a6 - 2] = this.nz(this.a6 - 3, 1);
-        this.l5[this.a6 - 7] = this.nz(this.a6 - 2, 1);
-        this.l5[this.a6 - 6] = this.nz(this.a6 - 7, 1)
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 5] = this.emojiCanvasList[26];
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 4] = this.nz(this.totalDistinctEmojisCount - 5, 2);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 1] = this.nz(this.totalDistinctEmojisCount - 5, 1);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 8] = this.nz(this.totalDistinctEmojisCount - 4, 1);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 3] = this.emojiCanvasList[39];
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 2] = this.nz(this.totalDistinctEmojisCount - 3, 1);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 7] = this.nz(this.totalDistinctEmojisCount - 2, 1);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 6] = this.nz(this.totalDistinctEmojisCount - 7, 1)
     };
     this.nz = function(g, k) {
         var n = document.createElement("canvas");
@@ -2768,35 +2770,34 @@ function ng() {
         });
         l.clearRect(0, 0, this.width, this.width);
         l.rotate(k * Math.PI / 2);
-        l.drawImage(this.l5[g], 1 === k ?
+        l.drawImage(this.emojiCanvasList[g], 1 === k ?
             0 : -this.width, -this.width);
         return n
     };
     this.o0 = function() {
         var g = loadEmojis().split("");
-        if (2 * g.length !== this.a6) this.ld = 0;
+        if (2 * g.length !== this.totalDistinctEmojisCount) this.ld = 0;
         else {
-            for (var k = 0; k < this.a6; k += 2) {
+            for (var k = 0; k < this.totalDistinctEmojisCount; k += 2) {
                 var n = parseInt(g[Math.floor(k / 2)]);
-                this.a7[k] = 1 === n % 2;
-                this.a7[k + 1] = 1 < n
+                this.emojiSelection[k] = 1 === n % 2;
+                this.emojiSelection[k + 1] = 1 < n
             }
             this.o3()
         }
     };
     this.o3 = function() {
-        for (var g = this.ld = 0; g < this.a6; g++) this.a7[g] && (this.ns[this.ld++] = g)
+        for (var g = this.ld = 0; g < this.totalDistinctEmojisCount; g++) this.emojiSelection[g] && (this.ns[this.ld++] = g)
     };
     this.lI = function() {
-        8 === this.ld && this.ns[0] === this.nl && this.o3()
+        8 === this.ld && this.ns[0] === this.totalEmojisCount && this.o3()
     };
     this.o4 = function() {
-        this.ld = this.nk;
-        for (var g = 0; g < this.nk; g++) this.ns[g] = this.nl + g
+        this.ld = this.directionCount;
+        for (var g = 0; g < this.directionCount; g++) this.ns[g] = this.totalEmojisCount + g
     };
     this.nv = function() {
-        this.nm = Math.floor((isZoom ? .075 :
-            .0468) * averageDim);
+        this.nm = Math.floor((isZoom ? .075 : .0468) * averageDim);
         this.zoom = this.nm / this.width;
         this.nn = (1 + this.nr) * this.nm
     };
@@ -2837,18 +2838,18 @@ function ng() {
         return 16 > g || 40 <= g && 47 > g
     };
     this.oB = function(g) {
-        return g >= this.ni && g < this.ni + this.nj
+        return g >= this.emoteCount && g < this.emoteCount + this.flagCount
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
-        for (var g = this.nr * this.nm / 2, k = this.ld - 1; 0 <= k; k--) mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.np[k] + g, this.nq[k] + g), mainCanvasCtx.drawImage(this.l5[this.ns[k]], 0, 0);
+        for (var g = this.nr * this.nm / 2, k = this.ld - 1; 0 <= k; k--) mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.np[k] + g, this.nq[k] + g), mainCanvasCtx.drawImage(this.emojiCanvasList[this.ns[k]], 0, 0);
         mainCanvasCtx.imageSmoothingEnabled = !1;
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.oC = function(g, k, n) {
         mainCanvasCtx.imageSmoothingEnabled = !0;
         mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, g, k);
-        mainCanvasCtx.drawImage(this.l5[n], 0, 0);
+        mainCanvasCtx.drawImage(this.emojiCanvasList[n], 0, 0);
         mainCanvasCtx.imageSmoothingEnabled = !1;
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
@@ -2912,12 +2913,12 @@ var blackRGB = "rgb(0,0,0)",
     privacyPolicyLink = "https://territorial.io/privacy_policy",
     tutorialLink = "https://territorial.io/tutorial",
     leaderboardLinks = ["https://territorial.io/players", "https://territorial.io/clans"],
-    m5, ov, bufferLength, ow, isTouch, clientXPos, clientYPos, mainSettings, 
+    canvasPadding, gameLeaderboardMargin, bufferLength, mainSettingsMarginWidth, isTouch, clientXPos, clientYPos, mainSettings, 
     wsUrlStrings = ["wss://", "/s50/", "/s51/", "/s52/"];
 
-function p1() {
+function setupMainCanvas() {
     setCanvasDisplayVariables();
-    ow = 3;
+    mainSettingsMarginWidth = 3;
     mainSettings = new MainSettings;
     mainSettings.init()
 }
@@ -2941,10 +2942,10 @@ function addMainCanvasEventListeners() {
 function setCanvasDisplayVariables() {
     bufferLength = Math.floor((isZoom ? .02 : .01152) * averageDim);
     bufferLength = 2 > bufferLength ? 2 : bufferLength;
-    m5 = Math.floor((isZoom ? .0114 : .01296) * averageDim);
-    m5 = 2 > m5 ? 2 : m5;
-    ov = Math.floor(.005 * minDim);
-    ov = 1 > ov ? 1 : ov
+    canvasPadding = Math.floor((isZoom ? .0114 : .01296) * averageDim);
+    canvasPadding = 2 > canvasPadding ? 2 : canvasPadding;
+    gameLeaderboardMargin = Math.floor(.005 * minDim);
+    gameLeaderboardMargin = 1 > gameLeaderboardMargin ? 1 : gameLeaderboardMargin
 }
 
 function onMousedown(e) {
@@ -3147,11 +3148,11 @@ function AttacksBar() {
     }
 
     function l(C) {
-        return eO.qD() ? prevClientWidth - myAttacks[C].canvas.width - m5 : eO.startingX
+        return eO.qD() ? prevClientWidth - myAttacks[C].canvas.width - canvasPadding : eO.startingX
     }
 
     function x(C) {
-        return Math.floor(2 * m5 + (eO.qD() ? gameStatistics.height + m5 : 0) + eO.height + 1.3 * C * barCanvasHeight)
+        return Math.floor(2 * canvasPadding + (eO.qD() ? gameStatistics.height + canvasPadding : 0) + eO.height + 1.3 * C * barCanvasHeight)
     }
     var myAttacks, baseBarCanvasWidth, fontStyle, barCanvasHeight, B;
     this.init = function() {
@@ -3262,7 +3263,7 @@ function AttacksBar() {
 
 function GameMessages() {
     function g() {
-        mainCanvasCtx.drawImage(I, m5 + (teamGame ? m5 + teams.getPieChartWidth() : 0), gameBoardHeight + 2 * m5)
+        mainCanvasCtx.drawImage(I, canvasPadding + (teamGame ? canvasPadding + teams.getPieChartWidth() : 0), gameBoardHeight + 2 * canvasPadding)
     }
 
     function k() {
@@ -3411,7 +3412,7 @@ function Peace() {
     }
 
     function getPeaceBarYPos() {
-        return troopBar.md(announcements.ma()) ? troopBar.startingY - peaceBarHeight - m5 : canvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * m5
+        return troopBar.md(announcements.ma()) ? troopBar.startingY - peaceBarHeight - canvasPadding : canvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * canvasPadding
     }
     var peaceBarHeight, peaceCanvas, peaceCanvasCtx, peaceIconCanvas, myChoice, peaceProgress, peaceRequirement, voterList, hasVoted, countDown, oldTop10Land, peaceCount, timeBeforeHidden;
     this.init = function() {
@@ -3468,10 +3469,10 @@ function Peace() {
         }
     };
     this.mouseDown = function(xPos, yPos) {
-        if (xPos < canvasWidth - this.width - m5) return !1;
+        if (xPos < canvasWidth - this.width - canvasPadding) return !1;
         var peaceBarYPos = getPeaceBarYPos();
         if (yPos < peaceBarYPos || yPos > peaceBarYPos + peaceBarHeight) return !1;
-        var vote = xPos > canvasWidth - m5 - this.width / 2;
+        var vote = xPos > canvasWidth - canvasPadding - this.width / 2;
         if (singleplayer) this.processVotePeace(0, vote)
         else if (playerActions.isHuman(myID) && 0 !== isAlive[myID]) dataEncoder.votePeace(vote);
         return !0
@@ -3537,7 +3538,7 @@ function Peace() {
     this.drawCanvasImage = function() {
         if (this.visible) {
             var D = getPeaceBarYPos();
-            mainCanvasCtx.drawImage(peaceCanvas, canvasWidth - this.width - m5, D)
+            mainCanvasCtx.drawImage(peaceCanvas, canvasWidth - this.width - canvasPadding, D)
         }
     }
 }
@@ -3616,7 +3617,7 @@ function TroopBar() {
     this.setCanvasVariables = function() {
         if (isZoom && canvasWidth < .8 * canvasHeight) {
             this.height = Math.floor(.0536 * averageDim);
-            troopBarWidth = canvasWidth - 4 * m5 - this.height;
+            troopBarWidth = canvasWidth - 4 * canvasPadding - this.height;
         } else {
             troopBarWidth = Math.floor((isZoom ? .65 : .389) * averageDim);
             troopBarWidth += 12 - troopBarWidth % 12;
@@ -3637,17 +3638,17 @@ function TroopBar() {
         redrawTroopBar()
     };
     this.qs = function() {
-        startingX = isZoom && canvasWidth < .8 * canvasHeight ? this.height + 3 * m5 : Math.floor((prevClientWidth - troopBarWidth) / 2);
-        this.startingY = prevClientHeight - this.height - (isZoom ? 2 : 1) * m5;
+        startingX = isZoom && canvasWidth < .8 * canvasHeight ? this.height + 3 * canvasPadding : Math.floor((prevClientWidth - troopBarWidth) / 2);
+        this.startingY = prevClientHeight - this.height - (isZoom ? 2 : 1) * canvasPadding;
     };
     this.drawCanvas = function() {
         needsUpdate && (needsUpdate = !1, redrawTroopBar())
     };
     this.visible = function() {
-        return !(!visibility || gameButtons.lu && startingX < Math.floor(m5 + 5.5 * this.height))
+        return !(!visibility || gameButtons.lu && startingX < Math.floor(canvasPadding + 5.5 * this.height))
     };
     this.md = function(I) {
-        return this.visible() ? startingX + troopBarWidth > canvasWidth - I - m5 : !1
+        return this.visible() ? startingX + troopBarWidth > canvasWidth - I - canvasPadding : !1
     };
     this.toggleVisibility = function() {
         visibility = !0
@@ -3696,7 +3697,7 @@ function TroopBar() {
         if (this.visible()) mainCanvasCtx.drawImage(troopBarCanvas, startingX, this.startingY)
     }
 }
-var scaleFactor, gridWidth, gridHeight;
+var mainScaleFactor, gridWidth, gridHeight;
 
 function k4() {
     var g, k, n, l, x, t, z;
@@ -3705,7 +3706,7 @@ function k4() {
         k = Array(2);
         this.gk = !1;
         z = t = gridHeight = gridWidth = 0;
-        scaleFactor = 1;
+        mainScaleFactor = 1;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
@@ -3720,16 +3721,16 @@ function k4() {
             whiteRGB, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), drawDiagRect(k[A], 0, 0, n, y, .3, 0 === A)
     };
     this.toX = function() {
-        return -gridWidth / scaleFactor
+        return -gridWidth / mainScaleFactor
     };
     this.toY = function() {
-        return -gridHeight / scaleFactor
+        return -gridHeight / mainScaleFactor
     };
     this.gw = function(y, A) {
-        gridWidth = scaleFactor * y - A
+        gridWidth = mainScaleFactor * y - A
     };
     this.gx = function(y, A) {
-        gridHeight = scaleFactor * y - A
+        gridHeight = mainScaleFactor * y - A
     };
     this.mouseDown = function(y, A) {
         if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200) : this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
@@ -3759,10 +3760,10 @@ function k4() {
         return !0
     };
     this.rJ = function(y, A, B) {
-        B = 1024 < B * scaleFactor ? 1024 / scaleFactor : B;
-        B = .125 > B * scaleFactor ? .125 / scaleFactor : B;
+        B = 1024 < B * mainScaleFactor ? 1024 / mainScaleFactor : B;
+        B = .125 > B * mainScaleFactor ? .125 / mainScaleFactor : B;
         eA.zoom(B, y, A);
-        scaleFactor *= B;
+        mainScaleFactor *= B;
         gridWidth = (gridWidth + y) * B - y;
         gridHeight = (gridHeight + A) * B - A;
         gj.rI()
@@ -3773,17 +3774,17 @@ function k4() {
             B = canvasHeight / 16,
             C = 0;
         gridWidth < -canvasWidth + y && (A = -canvasWidth + y - gridWidth);
-        gridWidth > scaleFactor * currentMapWidth - y && (A = scaleFactor * currentMapWidth - y -
+        gridWidth > mainScaleFactor * currentMapWidth - y && (A = mainScaleFactor * currentMapWidth - y -
             gridWidth);
         gridHeight < -canvasHeight + B && (C = -canvasHeight + B - gridHeight);
-        gridHeight > scaleFactor * currentMapHeight - B && (C = scaleFactor * currentMapHeight - B - gridHeight);
+        gridHeight > mainScaleFactor * currentMapHeight - B && (C = mainScaleFactor * currentMapHeight - B - gridHeight);
         gridWidth += A;
         gridHeight += C;
         gy.gz();
         eA.rQ(A, C)
     };
     this.qs = function() {
-        l = prevClientWidth - n - m5;
+        l = prevClientWidth - n - canvasPadding;
         x = Math.floor(prevClientHeight / 2 - 1.25 * n)
     };
     this.drawCanvasImage = function() {
@@ -4135,7 +4136,7 @@ function k6() {
         g = fontWeightBold + Math.floor(.8 * this.height) + fontSizeArial;
         F = Math.floor(.5 * this.height);
         mapBaseCanvasCtx.font = g;
-        n = m5;
+        n = canvasPadding;
         l = Math.floor(1 + .13 * this.height);
         t = document.createElement("canvas");
         t.width = k;
@@ -4152,7 +4153,7 @@ function k6() {
         return isZoom && canvasWidth < 1.2 * canvasHeight
     };
     this.qs = function() {
-        this.qD() ? this.startingX = prevClientWidth - k - m5 : this.startingX = Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - gameStatistics.width - k) / 2 - .5 * m5)
+        this.qD() ? this.startingX = prevClientWidth - k - canvasPadding : this.startingX = Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - gameStatistics.width - k) / 2 - .5 * canvasPadding)
     };
     this.drawCanvas = function() {
         y && (y = !1, this.sB())
@@ -4203,10 +4204,10 @@ function GameLeaderboard() {
         if (- 1 !== highlightedLandIndex) highlightRow(highlightedLandIndex, whiteMore2Transparent)
         leaderboard.fillStyle = whiteRGB;
         leaderboard.fillRect(0, topBarHeight, gameBoardWidth, 1);
-        leaderboard.fillRect(0, 0, gameBoardWidth, ov);
-        leaderboard.fillRect(0, 0, ov, gameBoardHeight);
-        leaderboard.fillRect(gameBoardWidth - ov, 0, ov, gameBoardHeight);
-        leaderboard.fillRect(0, gameBoardHeight - ov, gameBoardWidth, ov);
+        leaderboard.fillRect(0, 0, gameBoardWidth, gameLeaderboardMargin);
+        leaderboard.fillRect(0, 0, gameLeaderboardMargin, gameBoardHeight);
+        leaderboard.fillRect(gameBoardWidth - gameLeaderboardMargin, 0, gameLeaderboardMargin, gameBoardHeight);
+        leaderboard.fillRect(0, gameBoardHeight - gameLeaderboardMargin, gameBoardWidth, gameLeaderboardMargin);
         leaderboard.font = gameBoardLabelFont;
         leaderboard.textBaseline = middleAlign;
         leaderboard.textAlign = centerAlign;
@@ -4263,7 +4264,7 @@ function GameLeaderboard() {
     }
 
     function getRowIndex(yPos) {
-        yPos -= m5 + topBarHeight;
+        yPos -= canvasPadding + topBarHeight;
         if (0 > yPos) return Math.floor(yPos / I) - 1;
         if (yPos < (visibleLandCount - 1) * I) return Math.floor(yPos / I);
         if (yPos < gameBoardHeight - topBarHeight) return visibleLandCount - 1;
@@ -4272,7 +4273,7 @@ function GameLeaderboard() {
     }
 
     function isInBoardCanvas(xPos, yPos) {
-        return xPos >= m5 && xPos < m5 + gameBoardWidth && yPos >= m5 && yPos < m5 + gameBoardHeight
+        return xPos >= canvasPadding && xPos < canvasPadding + gameBoardWidth && yPos >= canvasPadding && yPos < canvasPadding + gameBoardHeight
     }
     var visibleLandCount, leaderboardCanvas, leaderboard, C, const_maxEntities, F, G, topBarHeight, I, D, K, landXPos, shorternedNames, extendedIDs, nicknameWidths, leaderboardLabel, orderLabels, P, U, W, highlightedLandIndex, boardTopIndex, na, ba, ca, pa;
     this.init = function() {
@@ -4414,7 +4415,7 @@ function GameLeaderboard() {
         return ba ? !1 : isInBoardCanvas(S, O) ? (S = getRowIndex(O), S = rangeClamp(-1, S, visibleLandCount), S = S === visibleLandCount || isTouch ? -1 : S, 0 < T ? boardTopIndex < maxEntities - visibleLandCount && (boardTopIndex++, highlightedLandIndex = S, drawGameLeaderboard(), c4.canvasDirty = !0) : 0 < boardTopIndex && (boardTopIndex--, highlightedLandIndex = S, drawGameLeaderboard(), c4.canvasDirty = !0), !0) : !1
     };
     this.drawCanvasImage = function() {
-        mainCanvasCtx.drawImage(leaderboardCanvas, m5, m5)
+        mainCanvasCtx.drawImage(leaderboardCanvas, canvasPadding, canvasPadding)
     }
 }
 
@@ -4520,14 +4521,14 @@ function GameStatistics() {
         g()
     };
     this.qs = function() {
-        y = prevClientWidth - this.width - m5
+        y = prevClientWidth - this.width - canvasPadding
     };
     this.tI = function() {
-        A = m5
+        A = canvasPadding
     };
     this.j2 = function() {
-        A = m5 + (eO.qD() && 0 !== isAlive[myID] && !inSpawn ? eO.height +
-            m5 : 0)
+        A = canvasPadding + (eO.qD() && 0 !== isAlive[myID] && !inSpawn ? eO.height +
+            canvasPadding : 0)
     };
     this.drawCanvas = function(P) {
         0 < I && (P || 12 > sm && 100 <= I || 12 <= sm) && (I = 0, g())
@@ -4596,8 +4597,8 @@ function GameResultBox() {
     this.setCanvasVariables = function() {
         if (g) {
             n = isZoom ? Math.floor(.69 * averageDim) : Math.floor(.5 * averageDim);
-            n = getMin(n, getMax(canvasWidth - 2 * m5, 10));
-            n = getMin(n, Math.floor(3.57 * getMax(canvasHeight - 2 * m5, 3)));
+            n = getMin(n, getMax(canvasWidth - 2 * canvasPadding, 10));
+            n = getMin(n, Math.floor(3.57 * getMax(canvasHeight - 2 * canvasPadding, 3)));
             l = Math.floor(.28 * n);
             A = document.createElement("canvas");
             A.width = n;
@@ -4643,13 +4644,13 @@ function GameResultBox() {
     this.mouseDown = function(C, E) {
         if (!g || 0 >= y) return !1;
         C -= Math.floor((prevClientWidth - n) / 2);
-        E -= prevClientHeight - l - 2 * m5;
+        E -= prevClientHeight - l - 2 * canvasPadding;
         if (0 > C || 0 > E || C > n || E > l) return !1;
         C > n - l / 3 && E < l / 3 && (g = !1, c4.canvasDirty = !0);
         return !0
     };
     this.drawCanvasImage = function() {
-        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((prevClientWidth - n) / 2), prevClientHeight - l - 2 * m5), mainCanvasCtx.globalAlpha = 1)
+        !g || 0 >= y || (mainCanvasCtx.globalAlpha = y, mainCanvasCtx.drawImage(A, Math.floor((prevClientWidth - n) / 2), prevClientHeight - l - 2 * canvasPadding), mainCanvasCtx.globalAlpha = 1)
     }
 }
 
@@ -4659,7 +4660,7 @@ function PlayerAura() {
             minX = prevClientWidth * ((xMin[id] + xMax[id] + 1) / 2 - minX) / (minY - minX) - .5 * depth;
             maxX = prevClientHeight * ((yMin[id] + yMax[id] + 1) / 2 - maxX) / (maxY - maxX) - .5 * depth;
             if (minX <= prevClientWidth && maxX <= prevClientHeight && minX >= -depth && maxX >= -depth) {
-                mainCanvasCtx.setTransform(scaleFactor * scale, 0, 0, scaleFactor * scale, minX, maxX);
+                mainCanvasCtx.setTransform(mainScaleFactor * scale, 0, 0, mainScaleFactor * scale, minX, maxX);
                 mainCanvasCtx.drawImage(auraImages[teamGame ? teamColors.teamArray[id] : id < playerCount ? 1 : 0], 0, 0);
             }
         }
@@ -4718,20 +4719,20 @@ function PlayerAura() {
             var idIndex;
             mainCanvasCtx.imageSmoothingEnabled = !0;
             mainCanvasCtx.globalAlpha = 1 - (160 < ticksElapsed ? (ticksElapsed - 160) / 190 : 0);
-            var minX = gridWidth / scaleFactor,
-                maxX = gridHeight / scaleFactor,
+            var minX = gridWidth / mainScaleFactor,
+                maxX = gridHeight / mainScaleFactor,
                 minY = (prevClientWidth + gridWidth) /
-                scaleFactor,
-                maxY = (prevClientHeight + gridHeight) / scaleFactor;
+                mainScaleFactor,
+                maxY = (prevClientHeight + gridHeight) / mainScaleFactor;
             var scale = .25;
-            var depth = diameter * scaleFactor * scale;
+            var depth = diameter * mainScaleFactor * scale;
             for (idIndex = maxEntities - 1; idIndex >= playerCount; idIndex--) drawAura(idIndex, depth, minX, maxX, minY, maxY, scale);
             scale = .5;
-            depth = diameter * scaleFactor * scale;
+            depth = diameter * mainScaleFactor * scale;
             for (idIndex = playerCount - 1; 0 <= idIndex; idIndex--) drawAura(idIndex, depth, minX, maxX, minY, maxY, scale);
             mainCanvasCtx.globalAlpha = 1;
-            mainCanvasCtx.imageSmoothingEnabled = 3 > scaleFactor;
-            mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, 0, 0)
+            mainCanvasCtx.imageSmoothingEnabled = 3 > mainScaleFactor;
+            mainCanvasCtx.setTransform(mainScaleFactor, 0, 0, mainScaleFactor, 0, 0)
         }
     }
 }
@@ -5205,7 +5206,18 @@ function OpenLinkBox() {
         return !0
     };
     this.drawCanvasImage = function() {
-        this.visible && (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(1, 0, 0, 1, g, k), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(0, 0, C, l), mainCanvasCtx.lineWidth = ow, mainCanvasCtx.strokeStyle = whiteRGB2, mainCanvasCtx.strokeRect(0, 0, C, l), mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z), mainCanvasCtx.drawImage(sprites.getValueByID(17), 0, 0), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0))
+        if (this.visible) {
+            mainCanvasCtx.imageSmoothingEnabled = !0;
+            mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+            mainCanvasCtx.fillStyle = blackMoreOpaque;
+            mainCanvasCtx.fillRect(0, 0, C, l);
+            mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
+            mainCanvasCtx.strokeStyle = whiteRGB2;
+            mainCanvasCtx.strokeRect(0, 0, C, l);
+            mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z);
+            mainCanvasCtx.drawImage(sprites.getValueByID(17), 0, 0);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+        }
     }
 }
 
@@ -5215,7 +5227,7 @@ function LinkButtons() {
         buttonYPos = [0, 0, 0, 0, 0],
         buttonScales = [1, 1, 1, 1, 1],
         isVisible = [!0, !0, !0, !0, !0];
-    this.uj = [!0, !0, !0, !0, !0];
+    this.shouldHideLinks = [!0, !0, !0, !0, !0];
     var spriteList = null,
         links;
     this.setupLinkVariables = function(param_spriteList, param_isVisible) {
@@ -5229,7 +5241,7 @@ function LinkButtons() {
             var y = Math.floor((isZoom ? .261 : .195) * averageDim);
             var A = Math.floor(.9 * y),
                 B = Math.floor(.17 * A);
-            padding = isZoom ? 2 * m5 : m5;
+            padding = isZoom ? 2 * canvasPadding : canvasPadding;
             buttonScales[0] = y / spriteList[0].width;
             buttonScales[1] = A / spriteList[1].width;
             buttonScales[2] = B / spriteList[2].height;
@@ -5261,7 +5273,7 @@ function LinkButtons() {
         if (!spriteList || !this.visible()) return !1;
         var bIndex;
         for (bIndex = isVisible.length - 1; 0 <= bIndex; bIndex--)
-            if (isVisible[bIndex] && this.uj[bIndex] && xPos > buttonXPos[bIndex] && yPos > buttonYPos[bIndex] && 
+            if (isVisible[bIndex] && this.shouldHideLinks[bIndex] && xPos > buttonXPos[bIndex] && yPos > buttonYPos[bIndex] && 
                 xPos < buttonXPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].width && yPos < buttonYPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].height) {
                 
                 openLinkBox.init(links[bIndex], B);
@@ -5274,7 +5286,7 @@ function LinkButtons() {
             mainCanvasCtx.imageSmoothingEnabled = !0;
             var bIndex;
             for (bIndex = 0; 5 > bIndex; bIndex++) {
-                if (isVisible[bIndex] && this.uj[bIndex]) {
+                if (isVisible[bIndex] && this.shouldHideLinks[bIndex]) {
                     mainCanvasCtx.setTransform(buttonScales[bIndex], 0, 0, buttonScales[bIndex], buttonXPos[bIndex], buttonYPos[bIndex]);
                     mainCanvasCtx.drawImage(spriteList[bIndex], 0, 0);
                 }
@@ -5444,20 +5456,20 @@ function MainButtons() {
     }
 }
 
-function Colors() {
+function ColorsPanel() {
     function g(k) {
         return 0 > k ? 0 : 255 < k ? 255 : Math.floor(k)
     }
     this.height = this.width = 0;
     this.visible = !1;
-    this.v2 = this.v1 = this.v0 = this.ns = this.margins = this.uz = 0;
+    this.v2 = this.v1 = this.v0 = this.ns = this.margins = this.isSaveRequired = 0;
     this.colors = null;
     this.init = function() {
         canvasWidth < 2 * canvasHeight ? this.width = Math.floor((isZoom ? .94 : .4) * canvasWidth) : (this.height = Math.floor((isZoom ? .88 : .4) * canvasHeight), this.width = Math.floor(2 * this.height));
         this.height = this.width / 2;
         this.margins = this.height / 16;
         this.visible = !0;
-        this.uz = 0;
+        this.isSaveRequired = 0;
         this.v0 = (this.height - 3 * this.margins) / 2;
         this.v1 = this.width - 3 * this.margins - this.v0;
         this.v2 = (this.height - 4 * this.margins) / 3
@@ -5478,7 +5490,7 @@ function Colors() {
         return [divideFloor(this.colors[0][0], 4), divideFloor(this.colors[0][1], 4), divideFloor(this.colors[0][2], 4)]
     };
     this.mouseDown = function(k, n) {
-        this.uz = 0;
+        this.isSaveRequired = 0;
         var l = (prevClientHeight - this.height) / 2;
         k -= (prevClientWidth - this.width) / 2;
         n -= l;
@@ -5487,10 +5499,10 @@ function Colors() {
         if (k < this.margins + this.v0) return n < this.margins + this.v0 && 0 !== this.ns && (this.ns = 0, c4.canvasDirty = !0), !0;
         if (k < 2 * this.margins + this.v0) return !0;
         k -= 2 * this.margins + this.v0;
-        if (n < this.margins + this.v2) return this.uz = 1, this.colors[this.ns][0] = g(256 * k / this.v1), c4.canvasDirty = !0;
+        if (n < this.margins + this.v2) return this.isSaveRequired = 1, this.colors[this.ns][0] = g(256 * k / this.v1), c4.canvasDirty = !0;
         if (n < 2 * this.margins + this.v2) return !0;
-        if (n < 2 * this.margins + 2 * this.v2) return this.uz = 2, this.colors[this.ns][1] = g(256 * k / this.v1), c4.canvasDirty = !0;
-        n >= 3 * this.margins + 2 * this.v2 && (this.uz = 3, this.colors[this.ns][2] = g(256 * k / this.v1), c4.canvasDirty = !0);
+        if (n < 2 * this.margins + 2 * this.v2) return this.isSaveRequired = 2, this.colors[this.ns][1] = g(256 * k / this.v1), c4.canvasDirty = !0;
+        n >= 3 * this.margins + 2 * this.v2 && (this.isSaveRequired = 3, this.colors[this.ns][2] = g(256 * k / this.v1), c4.canvasDirty = !0);
         return !0
     };
     this.v5 = function() {
@@ -5502,24 +5514,23 @@ function Colors() {
         saveColors(k)
     };
     this.onPointermove = function(k) {
-        0 !== this.uz && (k -= 2 * this.margins + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.uz - 1] = g(256 * k / this.v1), c4.canvasDirty = !0)
+        0 !== this.isSaveRequired && (k -= 2 * this.margins + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.isSaveRequired - 1] = g(256 * k / this.v1), c4.canvasDirty = !0)
     };
-    this.v8 = function() {
-        0 < this.uz && (this.uz = 0, this.v5(), this.v7(), c4.canvasDirty = !0)
+    this.handleSave = function() {
+        0 < this.isSaveRequired && (this.isSaveRequired = 0, this.v5(), this.v7(), c4.canvasDirty = !0)
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, (prevClientWidth - this.width) / 2, (prevClientHeight - this.height) / 2);
         mainCanvasCtx.fillStyle = blackMoreOpaque;
         mainCanvasCtx.fillRect(0, 0, this.width, this.height);
-        mainCanvasCtx.lineWidth = ow;
+        mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(-1,
-            -1, this.width + 2, this.height + 2);
+        mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.height + 2);
         mainCanvasCtx.font = fontWeightBold + Math.floor(.8 * this.v0) + fontSizeArial;
         mainCanvasCtx.textBaseline = middleAlign;
         mainCanvasCtx.textAlign = centerAlign;
         this.v9(0);
-        mainCanvasCtx.lineWidth = ow;
+        mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
         this.vA(0);
         this.vA(1);
         this.vA(2);
@@ -5528,7 +5539,7 @@ function Colors() {
     this.v9 = function(k) {
         mainCanvasCtx.fillStyle = "rgb(" + this.colors[k][0] + "," + this.colors[k][1] + "," + this.colors[k][2] + ")";
         mainCanvasCtx.fillRect(this.margins, this.margins, this.v0, 2 * this.v0 + this.margins);
-        mainCanvasCtx.lineWidth = 2 + ow;
+        mainCanvasCtx.lineWidth = 2 + mainSettingsMarginWidth;
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.strokeRect(this.margins, this.margins, this.v0, 2 * this.v0 + this.margins)
     };
@@ -5690,7 +5701,7 @@ function GameStateManager() {
         openLinkBox.mouseDown(-1E3, -1E3)
     };
     this.hideIfNotHidden = function(k) {
-        if (!vf) return !1;
+        if (!mapLoaded) return !1;
         if (!(400 > c4.time)) {
             if ("Enter" === k.key || "Escape" === k.key) {
                 if (this.vg()) {
@@ -5698,7 +5709,10 @@ function GameStateManager() {
                     return !0;
                 }
                 if ("Enter" === k.key) {
-                    if (0 === gameState) return nameInput.vh(), !0; //Joins lobby
+                    if (0 === gameState) {
+                        nameInput.vh();
+                        return !0; //Joins lobby
+                    } 
                     if (7 === gameState) return !0
                 }
             }
@@ -5706,20 +5720,37 @@ function GameStateManager() {
         }
     };
     this.vg = function() {
-        return openLinkBox.end() || mainSettings.hideIfNotHidden() ? !0 : mainLeaderboard.visible ? (mainLeaderboard.visible = !1, !0) : !1
+        if (openLinkBox.end() || mainSettings.hideIfNotHidden()) return !0
+        else if (mainLeaderboard.visible) {
+            mainLeaderboard.visible = !1;
+            return !0;
+        } else return !1
     };
     this.aK = function() {
-            c4.canvasDirty = !0;
-        8 === gameState ? isCanvasHidden ? isCanvasHidden = !isCanvasHidden : statistics.visible ? statistics.m0() : gameButtons.m0() : 7 === gameState ? lobby.vi() : 6 === gameState ? preLobby.onPreLobbyLeave() : 3 === gameState ? showError.vj(0, 0) : 2 === gameState ? singleSettings.vj() : 0 === gameState && (this.vg() || setAndroidState(11))
-        };
-    this.mouseDown = function(k, n) {
-        if (!cookiesPrompt.mouseDown(k, n) && vf && !(openLinkBox.mouseDown(k, n) || 6 === gameState && preLobby.mouseDown(k, n) || 2 === gameState && singleSettings.mouseDown(k, n) || moreSettings.mouseDown(k, n) || mainLeaderboard.mouseDown(k, n) || linkButtons.mouseDown(k, n, !0) || mainSettings.mouseDown(k, n, !0))) {
-            playtime.mouseDown(k, n);
-            if (0 === gameState) nameInput.mouseDown(k, n);
-            else if (3 === gameState) showError.mouseDown(k, n);
-            else if (5 === gameState) gameUpdatedPrompt.mouseDown(k, n);
-            else if (7 === gameState && lobby.mouseDown(k, n)) return;
-            mainLeaderboardIcon.mouseDown(k, n)
+        c4.canvasDirty = !0;
+        if (8 === gameState) {
+            if (isCanvasHidden) isCanvasHidden = !isCanvasHidden
+            else if (statistics.visible) statistics.m0()
+            else gameButtons.m0()
+        } else if (7 === gameState) lobby.vi()
+        else if (6 === gameState) preLobby.onPreLobbyLeave()
+        else if (3 === gameState) showError.showMainScreen(0, 0)
+        else if (2 === gameState) singleSettings.showMainScreen()
+        else if (0 === gameState) {
+            if (!this.vg()) setAndroidState(11)
+        }
+    };
+    this.mouseDown = function(xPos, yPos) {
+        if (!cookiesPrompt.mouseDown(xPos, yPos) && mapLoaded && !(openLinkBox.mouseDown(xPos, yPos) || 6 === gameState && preLobby.mouseDown(xPos, yPos) || 
+            2 === gameState && singleSettings.mouseDown(xPos, yPos) || moreSettings.mouseDown(xPos, yPos) || mainLeaderboard.mouseDown(xPos, yPos) || 
+            linkButtons.mouseDown(xPos, yPos, !0) || mainSettings.mouseDown(xPos, yPos, !0))) {
+
+            playtime.mouseDown(xPos, yPos);
+            if (0 === gameState) nameInput.mouseDown(xPos, yPos);
+            else if (3 === gameState) showError.mouseDown(xPos, yPos);
+            else if (5 === gameState) gameUpdatedPrompt.mouseDown(xPos, yPos);
+            else if (7 === gameState && lobby.mouseDown(xPos, yPos)) return;
+            mainLeaderboardIcon.mouseDown(xPos, yPos)
         }
     };
     this.onPointermove = function(xPos, yPos) {
@@ -5747,7 +5778,7 @@ function GameStateManager() {
     };
     this.click = function(k, n) {
         playtime.pV();
-        mainSettings.v8() || linkButtons.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
+        mainSettings.handleSave() || linkButtons.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
     };
     this.onWheel = function(k, n, l) {
         mainSettings.buttons[1].buttonClass.visible || 0 === gameState && playtime.onWheel(k, l)
@@ -5789,7 +5820,7 @@ function GameStateManager() {
         }
     };
     this.hr = function() {
-        if (vf) {
+        if (mapLoaded) {
             var k = canvasWidth / currentMapWidth,
                 n = canvasHeight / currentMapHeight;
             k = k > n ? k : n;
@@ -5803,50 +5834,75 @@ function GameStateManager() {
     }
 }
 
-function Emojis() {
+function EmojisPanel() {
     this.height = this.width = 0;
     this.visible = !1;
-    this.nh = 10;
-    this.bB = .12;
-    this.vs = this.vr = this.uz = !1;
+    this.numEmojisPerRow  = 10;
+    this.emojiMarginRatio = .12;
+    this.isDragging = this.isToggled = this.isSaveRequired = !1;
     this.init = function() {
         this.width = canvasWidth < 1 * canvasHeight ? Math.floor((isZoom ? .94 : .6) * canvasWidth) : Math.floor((isZoom ? .94 : .6) * canvasHeight);
-        this.width -= this.width % this.nh;
+        this.width -= this.width % this.numEmojisPerRow ;
         this.height = 1 * this.width;
         this.visible = !0;
-        this.uz = !1
+        this.isSaveRequired = !1
     };
-    this.mouseDown = function(g, k, n) {
-        var l = (prevClientHeight - this.height) / 2;
-        g -= (prevClientWidth - this.width) / 2;
-        k -= l;
-        if (0 > g || 0 > k || g >= this.width - 1 || k >= this.height - 1) return 0 === n && (this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0), !1;
-        l = Math.floor(this.width / this.nh);
-        g = divideFloor(g, l) + this.nh * divideFloor(k, l);
-        g = 0 > g ? 0 : g >= a5.nl ? a5.nl - 1 : g;
-        if (0 ===
-            n || 1 === n && !a5.a7[g] || 2 === n && a5.a7[g]) this.vr = !a5.a7[g], this.vs = this.uz = !0, a5.a7[g] = !a5.a7[g], a5.o3(), c4.canvasDirty = !0;
+    this.mouseDown = function(xPos, yPos, buttonIndex) {
+        var emojiRowHeight = (prevClientHeight - this.height) / 2;
+        xPos -= (prevClientWidth - this.width) / 2;
+        yPos -= emojiRowHeight;
+        if (0 > xPos || 0 > yPos || xPos >= this.width - 1 || yPos >= this.height - 1) {
+            if (0 === buttonIndex) {
+                this.visible = !1;
+                if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, !0);
+                c4.canvasDirty = !0;
+            }
+            return !1;
+        }
+        var emojisPerRow = Math.floor(this.width / this.numEmojisPerRow );
+        xPos = divideFloor(xPos, emojisPerRow) + this.numEmojisPerRow  * divideFloor(yPos, emojisPerRow);
+        xPos = 0 > xPos ? 0 : xPos >= emojis.totalEmojisCount ? emojis.totalEmojisCount - 1 : xPos;
+        if (0 === buttonIndex || 1 === buttonIndex && !emojis.emojiSelection[xPos] || 2 === buttonIndex && emojis.emojiSelection[xPos]) {
+            this.isToggled = !emojis.emojiSelection[xPos];
+            this.isDragging = this.isSaveRequired = !0;
+            emojis.emojiSelection[xPos] = !emojis.emojiSelection[xPos];
+            emojis.o3();
+            c4.canvasDirty = !0;
+        }
         return !0
     };
-    this.onPointermove = function(g, k) {
-        this.uz && this.mouseDown(g, k, this.vr ? 1 : 2)
+    this.onPointermove = function(xPos, yPos) {
+        if (this.isSaveRequired) this.mouseDown(xPos, yPos, this.isToggled ? 1 : 2)
     };
-    this.v8 = function() {
-        this.vs && (saveEmojis(), this.vs = !1);
-        this.uz = this.vs = !1
+    this.handleSave = function() {
+        if (this.isDragging) {
+            saveEmojis();
+            this.isDragging = !1;
+        }
+        this.isSaveRequired = this.isDragging = !1
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
-        var g = (prevClientWidth - this.width) / 2,
-            k = (prevClientHeight - this.height) / 2;
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        var emojiPanelX = (prevClientWidth - this.width) / 2,
+            emojiPanelY = (prevClientHeight - this.height) / 2;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, emojiPanelX, emojiPanelY);
         mainCanvasCtx.fillStyle = blackMoreOpaque;
         mainCanvasCtx.fillRect(0, 0, this.width, this.height);
-        mainCanvasCtx.lineWidth = ow;
+        mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.height + 2);
-        for (var n = Math.floor(this.width /
-                this.nh), l = (n - 2 * this.bB * n) / a5.width, x = a5.nl - 1; 0 <= x; x--) mainCanvasCtx.setTransform(1, 0, 0, 1, Math.floor(g + x % this.nh * n), Math.floor(k + divideFloor(x, this.nh) * n)), a5.a7[x] && (mainCanvasCtx.fillStyle = greenBrightSemiTransparent, mainCanvasCtx.fillRect(0, 0, n, n)), mainCanvasCtx.setTransform(l, 0, 0, l, Math.floor(g + x % this.nh * n + this.bB * n), Math.floor(k + divideFloor(x, this.nh) * n + this.bB * n)), mainCanvasCtx.drawImage(a5.l5[x], 0, 0);
+        var sideLength = Math.floor(this.width / this.numEmojisPerRow), 
+            scaleFactor = (sideLength - 2 * this.emojiMarginRatio * sideLength) / emojis.width,
+            emojiIndex;
+        for (emojiIndex = emojis.totalEmojisCount - 1; 0 <= emojiIndex; emojiIndex--) {
+            mainCanvasCtx.setTransform(1, 0, 0, 1, Math.floor(emojiPanelX + emojiIndex % this.numEmojisPerRow * sideLength), Math.floor(emojiPanelY + divideFloor(emojiIndex, this.numEmojisPerRow ) * sideLength));
+            if (emojis.emojiSelection[emojiIndex]) {
+                mainCanvasCtx.fillStyle = greenBrightSemiTransparent;
+                mainCanvasCtx.fillRect(0, 0, sideLength, sideLength);
+            }
+            mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor(emojiPanelX + emojiIndex % this.numEmojisPerRow * sideLength + this.emojiMarginRatio * sideLength), Math.floor(emojiPanelY + divideFloor(emojiIndex, this.numEmojisPerRow ) * sideLength + this.emojiMarginRatio * sideLength));
+            mainCanvasCtx.drawImage(emojis.emojiCanvasList[emojiIndex], 0, 0);
+        }
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
         mainCanvasCtx.imageSmoothingEnabled = !1
     }
@@ -5854,103 +5910,114 @@ function Emojis() {
 
 function ShowError() {
     function showErrorBox() {
-        var t = gameStateManager.getState();
-        0 === t ? nameInput.hide() : 6 === t ? wsManager.closeAll(n) : 7 === t ? (lobby.hide(), wsManager.close(wsManager.lobby, 3240)) : 8 === t && (jb(), nameInput.hide());
+        var gameState = gameStateManager.getState();
+        if (0 === gameState) nameInput.hide()
+        else if (6 === gameState) wsManager.closeAll(errorCode)
+        else if (7 === gameState) {
+            lobby.hide();
+            wsManager.close(wsManager.lobby, 3240);
+        } else if (8 === gameState) {
+            leaveGame();
+            nameInput.hide();
+        }
         gameStateManager.setState(3);
         mainButtons.setPosition();
-        mainButtons.mainButton[2].displayLabel = k(n);
+        mainButtons.mainButton[2].displayLabel = getErrorLabel(errorCode);
         sounds.play(3);
         c4.canvasDirty = !0
     }
 
-    function k(t) {
-        var z;
-        for (z = l.length - 1; 0 <= z; z--)
-            if (t === l[z].code) return l[z].label;
-        return x + t
+    function getErrorLabel(param_errorCode) {
+        var errorIndex;
+        for (errorIndex = errorLabels.length - 1; 0 <= errorIndex; errorIndex--)
+            if (param_errorCode === errorLabels[errorIndex].code) return errorLabels[errorIndex].label;
+        return genericErrorLabel + param_errorCode
     }
-    var n, l, x;
-    this.jT = function() {
-        l = [];
-        l.push({
+    var errorCode, errorLabels, genericErrorLabel;
+    this.generate = function() {
+        errorLabels = [];
+        errorLabels.push({
             label: "No Server Response",
             code: 1006
         });
-        l.push({
+        errorLabels.push({
             label: "Account successfully saved!",
             code: 3231
         });
-        l.push({
+        errorLabels.push({
             label: "Account Error",
             code: 3232
         });
-        l.push({
+        errorLabels.push({
             label: "No Servers Found",
             code: 3249
         });
-        l.push({
+        errorLabels.push({
             label: "Thanks for the vote.",
             code: 3252
         });
-        l.push({
+        errorLabels.push({
             label: "Please accept Cookies",
             code: 3265
         });
-        l.push({
+        errorLabels.push({
             label: "Invalid Password Format",
             code: 3266
         });
-        l.push({
+        errorLabels.push({
             label: "Lobby Timeout",
             code: 4207
         });
-        l.push({
+        errorLabels.push({
             label: "Invalid Username",
             code: 4214
         });
-        l.push({
+        errorLabels.push({
             label: "User already exists.",
             code: 4224
         });
-        l.push({
+        errorLabels.push({
             label: "No Client Response Error",
             code: 4229
         });
-        x = "Error "
+        genericErrorLabel = "Error "
     };
-    this.init = function(t, z) {
-        n = z;
-        var y = gameStateManager.getState();
-        if (6 === y) {
-            if (4211 === z) {
+    this.init = function(remoteID, param_errorCode) {
+        errorCode = param_errorCode;
+        var gameState = gameStateManager.getState();
+        if (6 === gameState) {
+            if (4211 === param_errorCode) {
                 gameUpdatedPrompt.init(0, 0);
                 return
             }
-            if (4214 !== z) {
-                preLobby.onPreLobbyJoin(t);
+            if (4214 !== param_errorCode) {
+                preLobby.onPreLobbyJoin(remoteID);
                 return
             }
-        } else if (7 === y) {
-            if (t !== wsManager.lobby) return
+        } else if (7 === gameState) {
+            if (remoteID !== wsManager.lobby) return
         } else {
-            8 === y && (t !== wsManager.remote || singleplayer || announcements.error(k(z)));
+            if (8 === gameState) {
+                if (remoteID === wsManager.remote && !singleplayer) announcements.error(getErrorLabel(param_errorCode));
+            }
             return
         }
         showErrorBox()
     };
-    this.displayError = function(t) {
-        n = t;
-        8 === gameStateManager.getState() ? announcements.error(k(t)) : showErrorBox()
+    this.displayError = function(param_errorCode) {
+        errorCode = param_errorCode;
+        if (8 === gameStateManager.getState()) announcements.error(getErrorLabel(param_errorCode))
+        else showErrorBox()
     };
     this.setCanvasVariables = function() {
-        mainButtons.mainButton[2].displayLabel = k(n)
+        mainButtons.mainButton[2].displayLabel = getErrorLabel(errorCode)
     };
-    this.mouseDown = function(t, z) {
-        3 === mainButtons.getClickedButton(t, z, 3, 1) && this.vj(t, z)
+    this.mouseDown = function(xPos, yPos) {
+        3 === mainButtons.getClickedButton(xPos, yPos, 3, 1) && this.showMainScreen(xPos, yPos)
     };
-    this.vj = function(t, z) {
+    this.showMainScreen = function(xPos, yPos) {
         nameInput.init();
-        mainButtons.onPointermove(t, z, !1);
+        mainButtons.onPointermove(xPos, yPos, !1);
         c4.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
@@ -6195,9 +6262,9 @@ function Lobby() {
             W.stroke()
         }
         g(7, sprites.getValueByID(4));
-        g(8, a5.l5[27]);
-        g(9, a5.l5[46]);
-        g(10, a5.l5[36]);
+        g(8, emojis.emojiCanvasList[27]);
+        g(9, emojis.emojiCanvasList[46]);
+        g(10, emojis.emojiCanvasList[36]);
         sounds.play(2);
         c4.canvasDirty = !0
     };
@@ -6427,9 +6494,13 @@ function SingleSettings() {
             this.assignBotGroups()
         }
     };
-    this.vj = function() {
+    this.showMainScreen = function() {
         c4.canvasDirty = !0;
-        mapMenu.visible ? mapMenu.visible = !1 : (this.hide(), nameInput.init())
+        if (mapMenu.visible) mapMenu.visible = !1
+        else {
+            this.hide();
+            nameInput.init();
+        }
     };
     this.getEntityCount = function() {
         var n;
@@ -6464,7 +6535,7 @@ function SingleSettings() {
         if (mapMenu.visible && !customJSON.isCustomJSON) return mapMenu.mouseDown(n, l);
         var x = this.getClickedButton(n, l);
         if (-1 === x) return !1;
-        if (0 === x) return this.vj(), !0;
+        if (0 === x) return this.showMainScreen(), !0;
         if (1 === x) return customJSON.isCustomJSON ? (customJSON.pU(), c4.canvasDirty = !0) : mapMenu.show(), !0;
         if (2 === x) return this.hide(), this.xO(), !0;
         if (customJSON.isCustomJSON) return !1;
@@ -6579,13 +6650,13 @@ function MainSettings() {
             startingX: 0,
             startingY: 0,
             active: !1,
-            buttonClass: new Emojis
+            buttonClass: new EmojisPanel
         });
         this.buttons.push({
             startingX: 0,
             startingY: 0,
             active: !1,
-            buttonClass: new Colors
+            buttonClass: new ColorsPanel
         });
         this.buttons.push({
             startingX: 0,
@@ -6649,9 +6720,9 @@ function MainSettings() {
     this.onPointermove = function(g, k) {
         return this.buttons[1].buttonClass.visible ? (this.buttons[1].buttonClass.onPointermove(g, k), !0) : this.buttons[2].buttonClass.visible ? (this.buttons[2].buttonClass.onPointermove(g), !0) : !1
     };
-    this.v8 = function() {
+    this.handleSave = function() {
         for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.visible) return this.buttons[g].buttonClass.v8(), !0;
+            if (this.buttons[g].buttonClass.visible) return this.buttons[g].buttonClass.handleSave(), !0;
         return !1
     };
     this.drawCanvasImage = function() {
@@ -6665,7 +6736,7 @@ function MainSettings() {
                 else if (2 === g) this.xd()
                 else if (3 === g) this.xb(g, sprites.getValueByID(20))
                 mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-                mainCanvasCtx.lineWidth = ow;
+                mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
                 mainCanvasCtx.strokeStyle = whiteRGB2;
                 mainCanvasCtx.strokeRect(this.buttons[g].startingX, this.buttons[g].startingY, this.width, this.width);
             }
@@ -6680,9 +6751,9 @@ function MainSettings() {
     };
     this.xc = function() {
         var g = .06 * this.width,
-            k = (this.width - 2 * g) / a5.width;
+            k = (this.width - 2 * g) / emojis.width;
         mainCanvasCtx.setTransform(k, 0, 0, k, this.buttons[1].startingX + g, this.buttons[1].startingY + g);
-        mainCanvasCtx.drawImage(a5.l5[4], 0, 0)
+        mainCanvasCtx.drawImage(emojis.emojiCanvasList[4], 0, 0)
     };
     this.xd = function() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, this.buttons[2].startingX, this.buttons[2].startingY);
@@ -6883,7 +6954,7 @@ function Sprites() {
             if (sprites.areAllSpritesLoaded()) {
                 mainLeaderboardIcon.updateRenderObject();
                 playerActions.l1();
-                a5.init();
+                emojis.init();
                 linkButtons.setupLinkVariables([spriteCanvases[8], spriteCanvases[16], spriteCanvases[7], spriteCanvases[9], spriteCanvases[10]], [!isIOS, 0 === androidVersion, !0, !0, !0]);
                 c4.canvasDirty = !0;
                 spriteCanvases[7] = nullCanvas;
@@ -7788,19 +7859,19 @@ function kN() {
         infoCanvas.imageSmoothingEnabled = !0
     }
 
-    function k() {
+    function renderEntityLabels() {
         needsDrawImage = !1;
         U = 1;
         R = P = 0;
         infoCanvas.clearRect(0, 0, prevClientWidth, prevClientHeight);
-        var camLeft = gridWidth / scaleFactor, camTop = gridHeight / scaleFactor, 
-            camRight = (prevClientWidth + gridWidth) / scaleFactor, camBottom = (prevClientHeight + gridHeight) / scaleFactor,
+        var camLeft = gridWidth / mainScaleFactor, camTop = gridHeight / mainScaleFactor, 
+            camRight = (prevClientWidth + gridWidth) / mainScaleFactor, camBottom = (prevClientHeight + gridHeight) / mainScaleFactor,
             landCenterX, landCenterY, idIndex, fontSize, infoCanvasCtx, 
             isAlivePlayer = 0 !== isAlive[myID] && playerActions.isHuman(myID), aliveIndex;
 
         for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
             idIndex = aliveEntities[aliveIndex];
-            fontSize = Math.floor(Q * scaleFactor * I[idIndex] * G[idIndex]);
+            fontSize = Math.floor(Q * mainScaleFactor * I[idIndex] * G[idIndex]);
 
             if (!(fontSize < minFontSize || fontSize >= maxFontSize) && E[idIndex] + G[idIndex] > camLeft && E[idIndex] < camRight && F[idIndex] + N[idIndex] > camTop && F[idIndex] < camBottom) {
                 landCenterX = Math.floor(prevClientWidth * (E[idIndex] + G[idIndex] / 2 - camLeft) / (camRight - camLeft));
@@ -7815,21 +7886,21 @@ function kN() {
 
                 if (0 < ca[idIndex]) {
                     if (0 === landIDOrder[idIndex])
-                        if (a5.oB(ba[idIndex])) {
-                            var transform = .9 * fontSize / a5.width,
-                                Ca = Math.floor(landCenterY - .5 * transform * a5.width - .05 * fontSize);
+                        if (emojis.oB(ba[idIndex])) {
+                            var transform = .9 * fontSize / emojis.width,
+                                Ca = Math.floor(landCenterY - .5 * transform * emojis.width - .05 * fontSize);
                             infoCanvas.globalAlpha = x(fontSize);
-                            var Ba = Math.floor(landCenterX - .5 * fontSize / D[idIndex] - .4 * fontSize - transform * a5.width)
+                            var Ba = Math.floor(landCenterX - .5 * fontSize / D[idIndex] - .4 * fontSize - transform * emojis.width)
                             for (var index = 0; 2 > index; index++) {
                                 infoCanvas.setTransform(transform, 0, 0, transform, Ba, Ca);
-                                infoCanvas.drawImage(a5.l5[ba[idIndex]], 0, 0);
+                                infoCanvas.drawImage(emojis.emojiCanvasList[ba[idIndex]], 0, 0);
                                 Ba = Math.floor(landCenterX + .5 * fontSize / D[idIndex] + .4 * fontSize);
                             }
                             infoCanvas.globalAlpha = 1;
                             infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
                             n(landCenterX, landCenterY, fontSize, 0, 0)
 
-                        } else if (a5.oA(ba[idIndex])) {
+                        } else if (emojis.oA(ba[idIndex])) {
                             l(landCenterX, landCenterY, fontSize, ba[idIndex], 0);
                             n(landCenterX, landCenterY, fontSize, 0, 1)
                         }
@@ -7852,10 +7923,10 @@ function kN() {
                             transform = index;
                             Ca = idIndex;
                             Ba = ca[idIndex + index * maxEntities];
-                            var xa = .8 * fontSize / a5.width;
-                            infoCanvas.setTransform(xa, 0, 0, xa, Math.floor(fontColor - .5 * xa * a5.width - .534 * level * fontSize), Math.floor(landCenterY + 1.4 * xa * a5.width));
+                            var xa = .8 * fontSize / emojis.width;
+                            infoCanvas.setTransform(xa, 0, 0, xa, Math.floor(fontColor - .5 * xa * emojis.width - .534 * level * fontSize), Math.floor(landCenterY + 1.4 * xa * emojis.width));
                             infoCanvas.globalAlpha = x(fontSize);
-                            infoCanvas.drawImage(1 === transform ? a5.l5[ba[Ca + maxEntities]] : 2 === transform && 255 > Ba ? playerActions.l3[2] : playerActions.l2[transform + 3], 0, 0);
+                            infoCanvas.drawImage(1 === transform ? emojis.emojiCanvasList[ba[Ca + maxEntities]] : 2 === transform && 255 > Ba ? playerActions.l3[2] : playerActions.l2[transform + 3], 0, 0);
                             infoCanvas.globalAlpha = 1;
                             infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
                             level -= 2
@@ -7877,15 +7948,14 @@ function kN() {
         infoCanvas.globalAlpha = x(Y);
         infoCanvas.drawImage(sprites.getValueByID(4), 0, 0);
         infoCanvas.globalAlpha = 1;
-        infoCanvas.setTransform(1,
-            0, 0, 1, 0, 0)
+        infoCanvas.setTransform(1, 0, 0, 1, 0, 0)
     }
 
     function l(O, T, Y, Z, la) {
-        var ma = 1.2 * Y / a5.width;
-        infoCanvas.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * a5.width - .8 * la * Y), Math.floor(T - 1.5 * ma * a5.width));
+        var ma = 1.2 * Y / emojis.width;
+        infoCanvas.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * emojis.width - .8 * la * Y), Math.floor(T - 1.5 * ma * emojis.width));
         infoCanvas.globalAlpha = x(Y);
-        infoCanvas.drawImage(a5.l5[Z], 0, 0);
+        infoCanvas.drawImage(emojis.emojiCanvasList[Z], 0, 0);
         infoCanvas.globalAlpha = 1;
         infoCanvas.setTransform(1, 0, 0, 1, 0, 0)
     }
@@ -7948,7 +8018,7 @@ function kN() {
         H = 1.8;
         maxFontSize = Math.floor(.5 * minDim);
         J = Math.floor(.2 * maxFontSize);
-        minFontSize = 8 === gamemode ? moreSettings.a0g ? 6 : 4 : moreSettings.a0g ? 10 : 7;
+        minFontSize = 8 === gamemode ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
         C = B = 0;
         E = new Uint16Array(maxEntities);
         F = new Uint16Array(maxEntities);
@@ -7978,14 +8048,14 @@ function kN() {
     };
     this.setCanvasVariables = function() {
         g();
-        k()
+        renderEntityLabels()
     };
     this.j4 = function() {
         for (var O = na = 0; O < playerCount; O++) 3 !== xMax[O] - xMin[O] || 3 !== yMax[O] - yMin[O] ?
             (E[O] = xMin[O] + (xMax[O] !== xMin[O] ? 1 : 0), F[O] = yMin[O], G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2)
     };
     this.showIcon = function(O, T, Y) {
-        0 === isAlive[O] || 4 !== T && 2 === playerStatus[O] || (O += T * maxEntities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = a5.oB(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
+        0 === isAlive[O] || 4 !== T && 2 === playerStatus[O] || (O += T * maxEntities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = emojis.oB(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
     };
     this.drawCanvasImage = function() {
         needsDrawImage && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
@@ -8004,7 +8074,7 @@ function kN() {
         P = (P + Y) * O - Y
     };
     this.drawCanvas = function() {
-        return 0 >= --na ? (na = 4 >= sm ? 10 : 12 > sm ? 5 : 2, k(), !0) : !1
+        return 0 >= --na ? (na = 4 >= sm ? 10 : 12 > sm ? 5 : 2, renderEntityLabels(), !0) : !1
     };
     this.gG = function(O) {
         return I[O]
@@ -8100,40 +8170,40 @@ function kN() {
 }
 
 function NickNames() {
-    var g, k;
+    var countryNames, humanNames;
     this.init = function() {
-        var n, l;
-        g = "Abbasid Caliphate;Aceh s;Achaemenid Z;Afsharid z;Aghlabid Emirate;Ahom z;Akkadian Z;Aksumite Z;Akwamu;Alaouite z;Almohad Caliphate;Almoravid z;Angevin Z;Aq Qoyunlu;Armenian Z;Assyria;Ashanti Z;Austrian Z;Austria-Hungary;Ayyubid z;Aztec Z;Aulikara Z;Babylonian Z;Balhae;Banten s;S Banjar;Bamana Z;Bengal s;Benin Z;Kadamba z;Bornu Z;E Brazil;Britannic Z;British Z;British Raj;Bruneian Z;Bukhara Z;Burgundian State;Buyid z;Byzantine Z;Caliphate of C\u00f3rdoba;Cao Wei;Carthaginian Z;Cebu Rajahnate;Chagatai Khanate;Chalukya z;Chauhan z;Chav\u00edn Z;Chenla;Chera z;Chola z;Comanche Z;Congo Free State;Crimean Khanate;Dacian Z;Delhi s;Demak s;Durrani Z;Dutch Z;Egyptian Z;Elamite Z;Exarchate of Africa;Abyssinia;Fatimid Caliphate;First French Z;Frankish Z;Funan;Gallic Z;Gaza Z;Republic of Genoa;German Z;Ghana Z;Ghaznavid z;Ghurid z;Goguryeo;Goryeo;Gorkha Z;G\u00f6kt\u00fcrk Khaganate;Golden Horde;S Gowa;Seljuq Z;Gupta Z;Hafsid Y;Han z;Hanseatic League;E Harsha;Hephthalite Z;Hittite Z;Holy Roman Z;Hotak z;Hoysala Z;Hunnic Z;Husainid z;Idrisid z;Ilkhanate;K Israel;K Judah;Inca Z;Italian Z;E Japan;Jin z;Johor Z;Jolof Z;Joseon;Kaabu Z;Kachari Y;Kalmar Union;Kanem Z;Kanva z;Kara-Khanid Khanate;Kazakh Khanate;Khazar Khaganate;Khmer Z;Khilji z;Khwarazmian z;Kievan Rus';Konbaung z;Kong Z;Korean Z;Kushan Z;K Kush;Lakota;Latin Z;Later L\u00ea z;Liao z;Lodi s;Khmer Z;Macedonian Z;Majapahit Z;Mali Z;Malacca Z;Mamluk s;Manchukuo;Maratha Z;Marinid z;Massina Z;Mataram s;Mauretania;Mauryan Z;Median Z;Mlechchha z;Ming z;Mitanni Z;Mongol Z;Mughal Z;Nanda Z;Nguy\u1ec5n z;North Sea Z;E Nicaea;Numidia;Omani Z;Ottoman Z;Oyo Z;Pagan Z;Pahlavi z;Pala Z;Palmyrene Z;Parthian Z;Pontic Z;Portuguese Z;K Prussia;Ptolemaic Z;Qajar z;Qara Qoyunlu;Qin z;Qing z;Ramnad Sethupathis;Rashidun Caliphate;Rashtrakuta z;Roman Z;Rouran Khaganate;Rozwi Z;Rustamid z;Russian Z;Tsardom of Russia;Saadi z;Safavid z;Saffarid z;Sassanid z;Satavahana z;Samanid Z;Soviet Union;Saudeleur z;Duchy of Savoy;Seleucid Z;Serbian Z;Shu Han;Shang z;Siam Z;Sikh Z;Singhasari;Sokoto Caliphate;Song z;Songhai Z;Spanish Z;Srivijaya Z;Sui z;K Mysore;Shunga Z;S Sulu;Sumer;Sur Z;Swedish Z;Tahirid z;Tang z;T\u00e2y S\u01a1n z;S Ternate;E Thessalonica;German Reich;Tibetan Z;Tondo z;S Tidore;Timurid Z;K Tlemcen;E Trebizond;Toltec Z;Toungoo z;Toucouleur Z;Tu'i Tonga Z;Turgesh Khaganate;Umayyad Caliphate;Uyunid Emirate;Uyghur Khaganate;Uzbek Khanate;Vandal Y;Vijayanagara Z;Republic of Venice;Wari Z;Wassoulou Z;Wattasids;Western Roman Z;Eastern Wu;Western Xia z;Xin z;Yuan z;Zand z;Zhou z;Zulu Z;Yugoslavia;Kosovo;Sikkim;Kanem\u2013Bornu Z;Wadai Z;Ethiopian Z;Rozvi Z;Sasanian Z;E Vietnam;Shilluk Y;K Aksum;Gwiriko Y;Toro Y;Malindi Y;K Loango;K Mapungubwe;Ryukyu Y;K Cyprus;K Jerusalem;Garhwal Y;K Nepal;K Cambodia;Champa Y;Hanthawaddy Y;Phayao Y;K Sardinia;K Sicily;K Gwynedd;K Scotland;K Desmond;K Poland;K Hungary;K Croatia;K Bohemia;Albanian Y;K Georgia;K Portugal;Khanate of Sibir;K Romania;Cossack Hetmanate;Duchy of Bouillon;K Ireland;Lordship of Ireland;K Italy;Republic of Pisa;Idrisid z;Almoravid z;Almohad Caliphate;Marinid z;Wattasid z;Saadian z;Republic of Sal\u00e9;Rif Republic;K Kush;Makuria;Alodia;Ayyubid z;Mamluk s;Egypt Eyalet;K Fazughli;S Sennar;S Darfur;Mahdist State;S Egypt;K Egypt;Emirate of Cyrenaica;K Libya;Republic of Egypt;Republic of the Sudan;United Arab Republic;Libyan Arab Republic;Zirid z;Hafsid z;K Kuku;Regency of Algiers;Gurunsi;Liptako;Tenkodogo;Wogodogo;Yatenga;Bilanga;Bilayanga;Bongandini;Con;Macakoali;Piela;Nungu;K Sine;K Saloum;K Baol;K Cayor;K Waalo;Bundu;Bonoman;Gyaaman;Denkyira;Mankessim Y;K Dahomey;Oyo Z;K Nri;Aro Confederacy;Kwararafa;Biafra;Buganda;Bunyoro;Ankole;Busoga;Tanganyika;Kuba Y;K Luba;K Lunda;Yeke Y;K Ndongo;Kasanje Y;K Matamba;Mbunda Y;Chokwe Y;Kazembe Y;K Butua;Ndebele Y;Mthethwa Z;Bophuthatswana;Ciskei;Transkei;Venda;Rhodesia;Kart z;Nogai Horde;Khanate of Bukhara;Khanate of Khiva;Khamag Mongol;Northern Fujiwara;Kamakura Shogunate;Ashikaga Shogunate;Jaxa;Republic of Ezo;Jiangxi Soviet;Hunan Soviet;Guangzhou Commune;Gojoseon;Alaiye;Beylik of Bafra;Kara Koyunlu;Kars Republic;K Iraq;Arab Federation;Kar-Kiya z;Baduspanids;Marashiyan z;Afrasiyab z;Mihrabanid z;Safavid Iran;Sheikhdom of Kuwait;Bani Khalid Emirate;Emirate of Diriyah;Emirate of Najd;Muscat and Oman;Emirate of Riyadh;S Najd;K Hejaz;Fadhli s;Emirate of Beihan;Emirate of Dhala;S Lahej;Republic of Kuwait;K Cochin;Jaffna Y;Laur Y;Pandya z;Jaunpur s;Jaintia Y;Hyderabad State;Travancore;Udaipur State;Manikya z;Lan Xang;K Vientiane;K Champasak;Lao Issara;K Laos;Pyu States;Ava;Mon Ys;Pegu;K Mrauk U;Taungoo z;Shan States;Arakan;Raktamaritika;Singhanavati;Dvaravati;Ngoenyang;Hariphunchai;Tambralinga;Lavo Y;Langkasuka;Sukhothai Y;S Singora;Ayutthaya Y;Thonburi Y;Lan Na;Pattani Y;Jambi s;Palembang s;S Deli;S Langkat;S Serdang;S Cirebon;K Pajang;K Bali;Bima s;K Larantuka;K Banggai;Luwu;S Bone;Caucasian Albania;Kabardia;Circassia;K Abkhazia;Elisu s;Avar Khanate;Caucasian Imamate;K Imereti;K Kartli;K Kakheti;Crown of Aragon;Emirate of Granada;K Majorca;Crown of Castile;K Haiti;Cocoll\u00e1n;Zapotec Civilization;Mosquito Y;Somoza Regime;Iroquois Confederacy;Cherokee Nation;Vermont Republic;State of Muskogee;K Alo;K Sigave;K Fiji;K Nauru;K Chile;Muisca Confederation;El Stronato;K Chimor;Jungle Republic;Liga Federal;Supreme Junta;Weimar Republic;K Bavaria;Bremen;Frankfurt;Hamburg;K Hanover;Holstein;Lippe;Nassau;Oldenburg;Pomerania;Reuss;Saxe-Altenburg;Saxony;Schleswig;Waldeck;W\u00fcrttemberg;Helvetic Republic;Republic of Florence;Duchy of Urbino;Republic of Cospaia;Duchy of Lucca;Duchy of Mantua;Duchy of Milan;Papal States".split(";");
-        k =
-            "Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
-        var x = "K ; Y;E ; Z; z; s;S ".split(";"),
-            t = "Kingdom of ; Kingdom;Empire of ; Empire; Dynasty; Sultanate;Sultanate of ".split(";");
-        for (n = g.length - 1; 0 <= n; n--)
-            for (l = x.length - 1; 0 <= l; l--) g[n] = g[n].replace(x[l], t[l])
+        var cnIndex, rIndex;
+        countryNames = "Abbasid Caliphate;Aceh s;Achaemenid Z;Afsharid z;Aghlabid Emirate;Ahom z;Akkadian Z;Aksumite Z;Akwamu;Alaouite z;Almohad Caliphate;Almoravid z;Angevin Z;Aq Qoyunlu;Armenian Z;Assyria;Ashanti Z;Austrian Z;Austria-Hungary;Ayyubid z;Aztec Z;Aulikara Z;Babylonian Z;Balhae;Banten s;S Banjar;Bamana Z;Bengal s;Benin Z;Kadamba z;Bornu Z;E Brazil;Britannic Z;British Z;British Raj;Bruneian Z;Bukhara Z;Burgundian State;Buyid z;Byzantine Z;Caliphate of C\u00f3rdoba;Cao Wei;Carthaginian Z;Cebu Rajahnate;Chagatai Khanate;Chalukya z;Chauhan z;Chav\u00edn Z;Chenla;Chera z;Chola z;Comanche Z;Congo Free State;Crimean Khanate;Dacian Z;Delhi s;Demak s;Durrani Z;Dutch Z;Egyptian Z;Elamite Z;Exarchate of Africa;Abyssinia;Fatimid Caliphate;First French Z;Frankish Z;Funan;Gallic Z;Gaza Z;Republic of Genoa;German Z;Ghana Z;Ghaznavid z;Ghurid z;Goguryeo;Goryeo;Gorkha Z;G\u00f6kt\u00fcrk Khaganate;Golden Horde;S Gowa;Seljuq Z;Gupta Z;Hafsid Y;Han z;Hanseatic League;E Harsha;Hephthalite Z;Hittite Z;Holy Roman Z;Hotak z;Hoysala Z;Hunnic Z;Husainid z;Idrisid z;Ilkhanate;K Israel;K Judah;Inca Z;Italian Z;E Japan;Jin z;Johor Z;Jolof Z;Joseon;Kaabu Z;Kachari Y;Kalmar Union;Kanem Z;Kanva z;Kara-Khanid Khanate;Kazakh Khanate;Khazar Khaganate;Khmer Z;Khilji z;Khwarazmian z;Kievan Rus';Konbaung z;Kong Z;Korean Z;Kushan Z;K Kush;Lakota;Latin Z;Later L\u00ea z;Liao z;Lodi s;Khmer Z;Macedonian Z;Majapahit Z;Mali Z;Malacca Z;Mamluk s;Manchukuo;Maratha Z;Marinid z;Massina Z;Mataram s;Mauretania;Mauryan Z;Median Z;Mlechchha z;Ming z;Mitanni Z;Mongol Z;Mughal Z;Nanda Z;Nguy\u1ec5n z;North Sea Z;E Nicaea;Numidia;Omani Z;Ottoman Z;Oyo Z;Pagan Z;Pahlavi z;Pala Z;Palmyrene Z;Parthian Z;Pontic Z;Portuguese Z;K Prussia;Ptolemaic Z;Qajar z;Qara Qoyunlu;Qin z;Qing z;Ramnad Sethupathis;Rashidun Caliphate;Rashtrakuta z;Roman Z;Rouran Khaganate;Rozwi Z;Rustamid z;Russian Z;Tsardom of Russia;Saadi z;Safavid z;Saffarid z;Sassanid z;Satavahana z;Samanid Z;Soviet Union;Saudeleur z;Duchy of Savoy;Seleucid Z;Serbian Z;Shu Han;Shang z;Siam Z;Sikh Z;Singhasari;Sokoto Caliphate;Song z;Songhai Z;Spanish Z;Srivijaya Z;Sui z;K Mysore;Shunga Z;S Sulu;Sumer;Sur Z;Swedish Z;Tahirid z;Tang z;T\u00e2y S\u01a1n z;S Ternate;E Thessalonica;German Reich;Tibetan Z;Tondo z;S Tidore;Timurid Z;K Tlemcen;E Trebizond;Toltec Z;Toungoo z;Toucouleur Z;Tu'i Tonga Z;Turgesh Khaganate;Umayyad Caliphate;Uyunid Emirate;Uyghur Khaganate;Uzbek Khanate;Vandal Y;Vijayanagara Z;Republic of Venice;Wari Z;Wassoulou Z;Wattasids;Western Roman Z;Eastern Wu;Western Xia z;Xin z;Yuan z;Zand z;Zhou z;Zulu Z;Yugoslavia;Kosovo;Sikkim;Kanem\u2013Bornu Z;Wadai Z;Ethiopian Z;Rozvi Z;Sasanian Z;E Vietnam;Shilluk Y;K Aksum;Gwiriko Y;Toro Y;Malindi Y;K Loango;K Mapungubwe;Ryukyu Y;K Cyprus;K Jerusalem;Garhwal Y;K Nepal;K Cambodia;Champa Y;Hanthawaddy Y;Phayao Y;K Sardinia;K Sicily;K Gwynedd;K Scotland;K Desmond;K Poland;K Hungary;K Croatia;K Bohemia;Albanian Y;K Georgia;K Portugal;Khanate of Sibir;K Romania;Cossack Hetmanate;Duchy of Bouillon;K Ireland;Lordship of Ireland;K Italy;Republic of Pisa;Idrisid z;Almoravid z;Almohad Caliphate;Marinid z;Wattasid z;Saadian z;Republic of Sal\u00e9;Rif Republic;K Kush;Makuria;Alodia;Ayyubid z;Mamluk s;Egypt Eyalet;K Fazughli;S Sennar;S Darfur;Mahdist State;S Egypt;K Egypt;Emirate of Cyrenaica;K Libya;Republic of Egypt;Republic of the Sudan;United Arab Republic;Libyan Arab Republic;Zirid z;Hafsid z;K Kuku;Regency of Algiers;Gurunsi;Liptako;Tenkodogo;Wogodogo;Yatenga;Bilanga;Bilayanga;Bongandini;Con;Macakoali;Piela;Nungu;K Sine;K Saloum;K Baol;K Cayor;K Waalo;Bundu;Bonoman;Gyaaman;Denkyira;Mankessim Y;K Dahomey;Oyo Z;K Nri;Aro Confederacy;Kwararafa;Biafra;Buganda;Bunyoro;Ankole;Busoga;Tanganyika;Kuba Y;K Luba;K Lunda;Yeke Y;K Ndongo;Kasanje Y;K Matamba;Mbunda Y;Chokwe Y;Kazembe Y;K Butua;Ndebele Y;Mthethwa Z;Bophuthatswana;Ciskei;Transkei;Venda;Rhodesia;Kart z;Nogai Horde;Khanate of Bukhara;Khanate of Khiva;Khamag Mongol;Northern Fujiwara;Kamakura Shogunate;Ashikaga Shogunate;Jaxa;Republic of Ezo;Jiangxi Soviet;Hunan Soviet;Guangzhou Commune;Gojoseon;Alaiye;Beylik of Bafra;Kara Koyunlu;Kars Republic;K Iraq;Arab Federation;Kar-Kiya z;Baduspanids;Marashiyan z;Afrasiyab z;Mihrabanid z;Safavid Iran;Sheikhdom of Kuwait;Bani Khalid Emirate;Emirate of Diriyah;Emirate of Najd;Muscat and Oman;Emirate of Riyadh;S Najd;K Hejaz;Fadhli s;Emirate of Beihan;Emirate of Dhala;S Lahej;Republic of Kuwait;K Cochin;Jaffna Y;Laur Y;Pandya z;Jaunpur s;Jaintia Y;Hyderabad State;Travancore;Udaipur State;Manikya z;Lan Xang;K Vientiane;K Champasak;Lao Issara;K Laos;Pyu States;Ava;Mon Ys;Pegu;K Mrauk U;Taungoo z;Shan States;Arakan;Raktamaritika;Singhanavati;Dvaravati;Ngoenyang;Hariphunchai;Tambralinga;Lavo Y;Langkasuka;Sukhothai Y;S Singora;Ayutthaya Y;Thonburi Y;Lan Na;Pattani Y;Jambi s;Palembang s;S Deli;S Langkat;S Serdang;S Cirebon;K Pajang;K Bali;Bima s;K Larantuka;K Banggai;Luwu;S Bone;Caucasian Albania;Kabardia;Circassia;K Abkhazia;Elisu s;Avar Khanate;Caucasian Imamate;K Imereti;K Kartli;K Kakheti;Crown of Aragon;Emirate of Granada;K Majorca;Crown of Castile;K Haiti;Cocoll\u00e1n;Zapotec Civilization;Mosquito Y;Somoza Regime;Iroquois Confederacy;Cherokee Nation;Vermont Republic;State of Muskogee;K Alo;K Sigave;K Fiji;K Nauru;K Chile;Muisca Confederation;El Stronato;K Chimor;Jungle Republic;Liga Federal;Supreme Junta;Weimar Republic;K Bavaria;Bremen;Frankfurt;Hamburg;K Hanover;Holstein;Lippe;Nassau;Oldenburg;Pomerania;Reuss;Saxe-Altenburg;Saxony;Schleswig;Waldeck;W\u00fcrttemberg;Helvetic Republic;Republic of Florence;Duchy of Urbino;Republic of Cospaia;Duchy of Lucca;Duchy of Mantua;Duchy of Milan;Papal States".split(";");
+        humanNames = "Antin Mark Artem Viktor Pasha Maxim Rodion Yuri Lev Luka Ivan Igor Nikita Leonid Daniil Alexei Boris Sasha Yulia Luda Yana Kira Alisa Polina Mischa Mila Inessa Alyona Alina Anya Anna Maria Sofia Walda Uta Tyra Tanka Svea Saskia Runa Rigmor Ostara Nanna Lykke Kunna Irma Iduna Helga Gudrun Gisela Gerda Gelsa Freya Frauke Ferun Elke Eila Dagmar Ariald Dagwin Eckwin Edmund Eike Erkmar Erwin Falko Frowin Gerbod Gunnar Halvor Irvin Knut Leif Lando Odin Oswin Ragin Rainer Rango Sarolf Thor Ulf Wolf Sarah Emma Laura Chloe Marie L\u00e9a Emily Keyla Manon Julie Julia Alice Kim Lisa Kora Clara Sara Lucie Anais Grace Eva Zoe Lee Katie Jade Ines Lily Amy Megan Lucy Elisa Kate Mary Elise Nina C\u00e9lia Ma\u00ebva Kayla Elysa Lena Amber Kelly Jenny Lola Mia Abby Ella Diana Fanny Ellie Ana Cindy Elena Rose Erin Molly Park Jane Lina Bella Lou Alex Irene Elsa Leah Holly Maya Linda Carla Anne Paige Annie Jenna Karen Lydia Haley Hanna Wendy Luna Naomi Sonia Fiona Helen Ambre Jess Angel Leila Lara Tina Ann Laur\u00e9 Chen Daisy Paula Iris Ruby Minji Marta Sam Erika Nora Nadia Eve Erica Ava Wang Choi Yujin Jin Yang Hina Beth Lucia Faith Jiwon Ad\u00e8le Alexa Min Flora Nancy Lili Lexi Cloe Hana Lin Kenza Lise Li Mina Angie Lotte Sandy Vicky May Jamie Joy Jeong Tara Sally Merve Diane Maddy Lilly Alix Zhang Gabby Abbie Liz Ellen Rita Olga Dana Elif Maud Sunny Joyce Liu Jieun Rosie Becky Jung Ilona Kylie Ruth Kat Han Nikki Kang Tania Dasha Cathy Aline Jo Ally Lilou Sujin Tanya Amina Yu Aya Katy Becca Rosa Paola Anita Sumin Betty Subin Tessa Heidi Tori Lila Imane Yoon Allie Farah Ciara Gina Yejin Song Susan Niamh April Izzy Aude Liza Salma Ivy Elina Liya Sue Gwen Maia Mimi Mandy Nana Sanne Hope Ariel Eliza Daria Yuna Evie Aimee Avery Agn\u00e8s Stacy Jisu Madi Riley Carly Lia Irina".split(" ");
+        var replaceKey = "K ; Y;E ; Z; z; s;S ".split(";"),
+            replacement = "Kingdom of ; Kingdom;Empire of ; Empire; Dynasty; Sultanate;Sultanate of ".split(";");
+        for (cnIndex = countryNames.length - 1; 0 <= cnIndex; cnIndex--)
+            for (rIndex = replaceKey.length - 1; 0 <= rIndex; rIndex--) countryNames[cnIndex] = countryNames[cnIndex].replace(replaceKey[rIndex], replacement[rIndex])
     };
-    this.jT = function() {
+    this.generate = function() {
         if (customJSON.isCustomJSON && customJSON.data.ze) {
-            var n;
-            for (n = playerCount; n < maxEntities; n++) nickname[n] = customJSON.data.ze[n % entityCount]
+            var entityIndex;
+            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = customJSON.data.ze[entityIndex % entityCount]
         } else if (9 === gamemode) {
-            var l = fakeRandom.random(),
-                x = k.length,
-                t = playerCount + zombieSettings.helperBotCount;
-            for (n = t - 1; n >= playerCount; n--) nickname[n] = "[Bot] " + k[(n + l) % x];
-            for (n = t; n < maxEntities; n++) nickname[n] = "[Zombie] " + k[(n + l) % x]
+            var randomValue = fakeRandom.random(),
+                humanNamesLength = humanNames.length,
+                humanAlliesCount = playerCount + zombieSettings.helperBotCount;
+            for (entityIndex = humanAlliesCount - 1; entityIndex >= playerCount; entityIndex--) nickname[entityIndex] = "[Bot] " + humanNames[(entityIndex + randomValue) % humanNamesLength];
+            for (entityIndex = humanAlliesCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = "[Zombie] " + humanNames[(entityIndex + randomValue) % humanNamesLength]
         } else if (singleplayer)
-            for (l = fakeRandom.random(), n = playerCount; n < maxEntities; n++) nickname[n] = g[(n + l) % maxEntities];
+            for (randomValue = fakeRandom.random(), entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = countryNames[(entityIndex + randomValue) % maxEntities];
         else
-            for (l = k.length, x = fakeRandom.random(), n = playerCount; n < maxEntities; n++) nickname[n] = "[Bot] " + k[(n + x) % l]
+            for (randomValue = fakeRandom.random(), entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = "[Bot] " + humanNames[(entityIndex + randomValue) % humanNamesLength]
     };
-    this.jU = function() {
-        var n;
-        if (moreSettings.a1L && !singleplayer) {
+    this.updateNicknames = function() {
+        var entityIndex;
+        if (moreSettings.highResolution && !singleplayer) {
             tempNickname = Array(playerCount);
-            var l = playerCount;
-            var x = k.length;
-            var t = fakeRandom.getMedian();
-            for (n = 0; n < l; n++) tempNickname[n] = nickname[n], nickname[n] = k[(n + t) % x];
+            var medianValue = fakeRandom.getMedian();
+            for (entityIndex = 0; entityIndex < playerCount; entityIndex++) {
+                tempNickname[entityIndex] = nickname[entityIndex];
+                nickname[entityIndex] = humanNames[(entityIndex + medianValue) % humanNames.length];
+            }
             nickname[myID] = tempNickname[myID]
         }
     }
@@ -8372,7 +8442,7 @@ function getTroopHash() {
     return k % 4096
 }
 var mainCanvas, mainCanvasCtx, versionLabel, versionHash, canvasWidth, canvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = !1,
-    isNotTopWindow, isNotClient, clientID, gy, sm, h8, a5, statisticNumbers, statistics, cookiesPrompt, c4, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
+    isNotTopWindow, isNotClient, clientID, gy, sm, h8, emojis, statisticNumbers, statistics, cookiesPrompt, c4, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
@@ -8419,7 +8489,7 @@ function main() {
     x9 = new a2G;
     gy = new a2H;
     h8 = new ts;
-    a5 = new ng;
+    emojis = new Emojis;
     statisticNumbers = new StatisticNumbers;
     statistics = new Statistics;
     cookiesPrompt = new CookiesPrompt;
@@ -8435,7 +8505,7 @@ function main() {
     endGame = new EndGame;
     linkButtons = new LinkButtons;
     openLinkBox = new OpenLinkBox;
-    p1();
+    setupMainCanvas();
     fakeRandom.init();
     interest.generateDiscreteInterestArray();
     mapInfo.init();
@@ -8550,13 +8620,13 @@ function ZombieSettings() {
         }
     }
 }
-var currentMapWidth, currentMapHeight, mapBaseCanvas, mapBaseCanvasCtx, realMapBaseCanvasCtxImageData, mapBaseCanvasImageDataArray, currentMapID, currentMapSeed, vf, customMapID = 15, x9;
+var currentMapWidth, currentMapHeight, mapBaseCanvas, mapBaseCanvasCtx, realMapBaseCanvasCtxImageData, mapBaseCanvasImageDataArray, currentMapID, currentMapSeed, mapLoaded, customMapID = 15, x9;
 
 function loadMap(mapID, k) {
     mapID %= customMapID;
     if (mapID !== currentMapID || isnotBAnorRealMap(currentMapID) && k !== currentMapSeed) {
         var n = performance.now();
-        vf = !1;
+        mapLoaded = !1;
         x9.xA();
         fakeRandom.changeRandomNumber(mapID);
         currentMapID = mapID;
@@ -8568,10 +8638,10 @@ function loadMap(mapID, k) {
             currentMapWidth = l.width;
             currentMapHeight = l.height;
             fakeRandom.changeRandomNumber(l.a1f);
-            jn.jT([currentMapWidth, currentMapHeight, l.gO, l.gL]);
+            generateHeightmap.generate([currentMapWidth, currentMapHeight, l.gO, l.gL]);
             a2c();
             configFakeMap.renderBaseMap();
-            jn.a2e();
+            generateHeightmap.resetGridValues();
             a2f(n)
         }
     }
@@ -8630,7 +8700,7 @@ function a2G() {
         -1 !== this.rd && clearTimeout(this.rd);
         this.rd = -1;
         this.a2q = null;
-        jn.a2e()
+        generateHeightmap.resetGridValues()
     };
     this.init = function() {
         if (!(7 === gameStateManager.getState() && this.a2s)) {
@@ -8652,9 +8722,9 @@ function a2G() {
             if (0 === this.aA) {
                 var l = fakeRandom.getMedian();
                 fakeRandom.changeRandomNumber(mapInfo.getValueByID(currentMapID).a2v[2]);
-                jn.jT([currentMapWidth, currentMapHeight, mapInfo.getValueByID(currentMapID).a2v[0], mapInfo.getValueByID(currentMapID).a2v[1]]);
+                generateHeightmap.generate([currentMapWidth, currentMapHeight, mapInfo.getValueByID(currentMapID).a2v[0], mapInfo.getValueByID(currentMapID).a2v[1]]);
                 fakeRandom.changeRandomNumber(l);
-                this.a2q = jn.a2x();
+                this.a2q = generateHeightmap.getGridValues();
                 this.aA++;
                 if (this.a2r) {
                     this.rd = setTimeout(g, 16);
@@ -8718,7 +8788,7 @@ function a36(g, k, n, l, x) {
     var E = Array(C),
         F = Array(C),
         G = Array(C),
-        N = jn.a2x();
+        N = generateHeightmap.getGridValues();
     if (void 0 === x)
         for (x = Array(C), t = C - 1; 0 <= t; t--) x[t] = 0;
     for (t = 1; t < C; t++) E[t] = n[t] - n[t - 1], F[t] = l[t] - l[t - 1], G[t] = x[t] - x[t - 1];
@@ -8825,7 +8895,7 @@ function ConfigFakeMap() {
             redValues = mapValues[currentMapID].red,
             greenValues = mapValues[currentMapID].green,
             blueValues = mapValues[currentMapID].blue,
-            pixelIndex, y, A = jn.a2x(),
+            pixelIndex, y, A = generateHeightmap.getGridValues(),
             B = widthValues.length - 2,
             C = Array(B + 1),
             E = Array(B + 1),
@@ -8875,7 +8945,7 @@ function ConfigFakeMap() {
                     );
                     mapBaseCanvasCtx.restore();
                 }                
-        vf = !0;
+        mapLoaded = !0;
         c4.canvasDirty = !0
     };
     this.jR = function() {
@@ -8929,7 +8999,7 @@ function configRealMap(g) {
             for (; 0 < k[y]--;) mapBaseCanvasImageDataArray[z] = n[0], mapBaseCanvasImageDataArray[z + 1] = n[1], mapBaseCanvasImageDataArray[z + 2] = n[2], mapBaseCanvasImageDataArray[z + 3] = 255, z += 4;
             t = !0
         } mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0);
-    vf = !0;
+    mapLoaded = !0;
     a2f(g);
     x9.init();
     c4.canvasDirty = !0
@@ -9088,91 +9158,103 @@ function setMapCanvas() {
     pixelRGBA = mapCanvasImgData.data
 }
 
-function kS() {
-    function g(J, L, H) {
-        C[0] = J;
-        for (J = 1; J < H; J++) C[J] = C[J - 1] + L, 1E4 <= C[J] ? (C[J] = 9999, L = -L) : 0 > C[J] ? (C[J] = 0, L = -L) : (L += 16384 <= fakeRandom.random() ? B : -B, L = L < -A ? -A : L > A ? A : L)
-    }
-
-    function k(J, L, H, M) {
-        if (H)
-            for (H = 0; H < M; H++) x[L * t + J + H] = C[H];
-        else
-            for (H = 0; H < M; H++) x[L * t + J + H * t] = C[H]
-    }
-
-    function n(J, L) {
-        var H = J - C[L - 1];
-        if (0 !== H) {
-            var M = 1 + divideFloor(Math.abs(H), L - 1);
-            M = 0 > H ? -M : M;
-            C[L - 1] = J;
-            var Q = L - 1 - divideFloor(Math.abs(H), Math.abs(M));
-            Q = 1 > Q ? 1 : Q > L - 2 ? L - 2 : Q;
-            for (var R = L - 2; R >= Q; R--) C[R] += H - (L - 1 - R) * M;
-            if (0 > H)
-                for (H = L - 2; 1 <= H; H--) 0 > C[H] && (C[H] = -C[H] - 1);
-            else
-                for (H =
-                    L - 2; 1 <= H; H--) 1E4 <= C[H] && (C[H] = 2E4 - C[H] - 1)
+function GenerateHeightmap() {
+    function updateValues(J, L, H) {
+        valuesArray[0] = J;
+        for (J = 1; J < H; J++) {
+            valuesArray[J] = valuesArray[J - 1] + L;
+            if (1E4 <= valuesArray[J]) {
+                valuesArray[J] = 9999;
+                L = -L;
+            } else if (0 > valuesArray[J]) {
+                valuesArray[J] = 0;
+                L = -L;
+            } else {
+                L += 16384 <= fakeRandom.random() ? deltaChange : -deltaChange;
+                L = L < -maxDelta ? -maxDelta : L > maxDelta ? maxDelta : L
+            }
         }
     }
 
-    function l(J) {
-        for (var L = 0; L < J.length - 1; L++) J[L] = J[L + 1] - J[L];
-        J[J.length - 1] = J[J.length - 3]
+    function copyValuesToGrid(J, L, H, M) {
+        if (H) {
+            for (H = 0; H < M; H++) gridValues[L * numRows + J + H] = valuesArray[H];
+        } else {
+            for (H = 0; H < M; H++) gridValues[L * numRows + J + H * numRows] = valuesArray[H]
+        }
     }
-    var x, t, z, y, A, B, C, E, F, G, N, I, D, K;
-    this.jT = function(J) {
-        t = J[0];
-        z = J[1];
-        A = J[2];
-        B = J[3];
-        x = new Int16Array(t * z);
-        y = t > z ? t : z;
-        C = new Int16Array(y);
+
+    function updateValuesFromArray(J, L) {
+        var H = J - valuesArray[L - 1];
+        if (0 !== H) {
+            var M = 1 + divideFloor(Math.abs(H), L - 1);
+            M = 0 > H ? -M : M;
+            valuesArray[L - 1] = J;
+            var Q = L - 1 - divideFloor(Math.abs(H), Math.abs(M));
+            Q = 1 > Q ? 1 : Q > L - 2 ? L - 2 : Q;
+            for (var R = L - 2; R >= Q; R--) valuesArray[R] += H - (L - 1 - R) * M;
+            if (0 > H) {
+                for (H = L - 2; 1 <= H; H--) 0 > valuesArray[H] && (valuesArray[H] = -valuesArray[H] - 1);
+            } else {
+                for (H = L - 2; 1 <= H; H--) 1E4 <= valuesArray[H] && (valuesArray[H] = 2E4 - valuesArray[H] - 1)
+            }
+        }
+    }
+
+    function calcDiff(J) {
+        for (var L = 0; L < J.length - 1; L++) J[L] = J[L + 1] - J[L];
+        J[J.length - 1] = J[J.length - 3];
+    }
+    var gridValues, numRows, numCols, maxDim, maxDelta, deltaChange, valuesArray, E, F, G, rowsVisited, colsVisited, tempRow, tempCol;
+    this.generate = function(J) {
+        numRows = J[0];
+        numCols = J[1];
+        maxDelta = J[2];
+        deltaChange = J[3];
+        gridValues = new Int16Array(numRows * numCols);
+        maxDim = numRows > numCols ? numRows : numCols;
+        valuesArray = new Int16Array(maxDim);
         E = [];
         F = [];
         G = [];
-        N = Array(t);
-        I = Array(z);
-        for (J = t - 1; 0 <= J; J--) N[J] = !1;
-        for (J = z - 1; 0 <= J; J--) I[J] = !1;
-        D = new Int16Array(t);
-        K = new Int16Array(z);
-        J = y;
+        rowsVisited = Array(numRows);
+        colsVisited = Array(numCols);
+        for (J = numRows - 1; 0 <= J; J--) rowsVisited[J] = !1;
+        for (J = numCols - 1; 0 <= J; J--) colsVisited[J] = !1;
+        tempRow = new Int16Array(numRows);
+        tempCol = new Int16Array(numCols);
+        J = maxDim;
         var L = fakeRandom.random() % 1E4,
-            H = fakeRandom.random() % (2 * A + 1) - A;
-        g(L, H, J);
-        J = K;
-        L = C;
-        H = z;
+            H = fakeRandom.random() % (2 * maxDelta + 1) - maxDelta;
+        updateValues(L, H, J);
+        J = tempCol;
+        L = valuesArray;
+        H = numCols;
         for (var M = 0; M < H; M++) J[M] = L[M];
-        k(0, 0,
-            !0, t);
-        J = x[0];
-        L = y;
-        H = fakeRandom.random() % (2 * A + 1) - A;
-        g(J, H, L);
-        J = D;
-        L = C;
-        H = t;
+        copyValuesToGrid(0, 0, !0, numRows);
+        J = gridValues[0];
+        L = maxDim;
+        H = fakeRandom.random() % (2 * maxDelta + 1) - maxDelta;
+        updateValues(J, H, L);
+        J = tempRow;
+        L = valuesArray;
+        H = numRows;
         for (M = 0; M < H; M++) J[M] = L[M];
-        k(0, 0, !1, z);
-        l(D);
-        l(K);
-        g(x[t - 1], D[t - 1], z);
-        k(t - 1, 0, !1, z);
-        g(x[t * (z - 1)], K[z - 1], t);
-        n(x[t * z - 1], t);
-        k(0, z - 1, !0, t);
-        N[t - 1] = N[0] = !0;
-        I[z - 1] = I[0] = !0;
-        J = t;
+        copyValuesToGrid(0, 0, !1, numCols);
+        calcDiff(tempRow);
+        calcDiff(tempCol);
+        updateValues(gridValues[numRows - 1], tempRow[numRows - 1], numCols);
+        copyValuesToGrid(numRows - 1, 0, !1, numCols);
+        updateValues(gridValues[numRows * (numCols - 1)], tempCol[numCols - 1], numRows);
+        updateValuesFromArray(gridValues[numRows * numCols - 1], numRows);
+        copyValuesToGrid(0, numCols - 1, !0, numRows);
+        rowsVisited[numRows - 1] = rowsVisited[0] = !0;
+        colsVisited[numCols - 1] = colsVisited[0] = !0;
+        J = numRows;
         E.push(0);
         F.push(J);
         G.push(!0);
-        J = z;
+        J = numCols;
         E.push(0);
         F.push(J);
         G.push(!1);
@@ -9185,36 +9267,35 @@ function kS() {
                 H = void 0;
                 var Q;
                 M = L;
-                for (var R = 0, P = 0; P < z - 1;) {
-                    for (Q = R + 1; Q < z; Q++)
-                        if (I[Q]) {
+                for (var R = 0, P = 0; P < numCols - 1;) {
+                    for (Q = R + 1; Q < numCols; Q++)
+                        if (colsVisited[Q]) {
                             P = Q;
                             break
                         } Q = P - R + 1;
-                    g(x[M + t * R], 0 ===
-                        R ? D[M] : C[H - 1] - C[H - 2], Q);
-                    n(x[P * t + M], Q);
-                    k(M, R, !1, Q);
+                    updateValues(gridValues[M + numRows * R], 0 === R ? tempRow[M] : valuesArray[H - 1] - valuesArray[H - 2], Q);
+                    updateValuesFromArray(gridValues[P * numRows + M], Q);
+                    copyValuesToGrid(M, R, !1, Q);
                     H = Q;
                     R = P
                 }
-                N[M] = !0
+                rowsVisited[M] = !0
             } else {
                 H = void 0;
                 M = L;
-                for (P = R = 0; P < t - 1;) {
-                    for (Q = R + 1; Q < t; Q++)
-                        if (N[Q]) {
+                for (P = R = 0; P < numRows - 1;) {
+                    for (Q = R + 1; Q < numRows; Q++)
+                        if (rowsVisited[Q]) {
                             P = Q;
                             break
                         } Q = P - R + 1;
-                    g(x[M * t + R], 0 === R ? K[M] : C[H - 1] - C[H - 2], Q);
-                    n(x[M * t + P], Q);
-                    k(R, M, !0, Q);
+                    updateValues(gridValues[M * numRows + R], 0 === R ? tempCol[M] : valuesArray[H - 1] - valuesArray[H - 2], Q);
+                    updateValuesFromArray(gridValues[M * numRows + P], Q);
+                    copyValuesToGrid(R, M, !0, Q);
                     H = Q;
                     R = P
                 }
-                I[M] = !0
+                colsVisited[M] = !0
             }
             H = E[J] + F[J] - L;
             M = G[J];
@@ -9223,15 +9304,31 @@ function kS() {
             G.push(M);
             F[J] = L - E[J] + 1
         }
-        for (J = 0; J < t; J++)
-            if (!N[J])
-                for (L = 0; L < z; L++) I[L] || (H = x[L * t + J - 1] + x[(L - 1) * t + J], M = 2, N[J + 1] && (M++, H += x[L * t + J + 1]), I[L + 1] && (M++, H += x[(L + 1) * t + J]), x[L * t + J] = divideFloor(H, M))
+        for (J = 0; J < numRows; J++) {
+            if (!rowsVisited[J]) {
+                for (L = 0; L < numCols; L++) {
+                    if (!colsVisited[L]) {
+                        H = gridValues[L * numRows + J - 1] + gridValues[(L - 1) * numRows + J];
+                        M = 2;
+                        if (rowsVisited[J + 1]) {
+                            M++;
+                            H += gridValues[L * numRows + J + 1];
+                        }
+                        if (colsVisited[L + 1]) {
+                            M++;
+                            H += gridValues[(L + 1) * numRows + J];
+                        }
+                        gridValues[L * numRows + J] = divideFloor(H, M);
+                    }
+                }
+            }
+        }
     };
-    this.a2x = function() {
-        return x
+    this.getGridValues = function() {
+        return gridValues
     };
-    this.a2e = function() {
-        x = null
+    this.resetGridValues = function() {
+        gridValues = null
     }
 }
 
@@ -9278,12 +9375,21 @@ function rectEqualOrInside(x1, y1, w1, h1, x2, y2, w2, h2) {
 
 
 function MoreSettings() {
-    function g() {
-        linkButtons.uj[2] = linkButtons.uj[3] = linkButtons.uj[4] = !moreSettings.a4F;
-        var y = moreSettings.a1L ? 1 : 0,
-            A = moreSettings.a4F ? 1 : 0,
-            B = moreSettings.a0g ? 1 : 0;
-        isIOS ? (window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + y), window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + A)) : 5 <= androidVersion ? (androidObject.saveNumber(25, y), androidObject.saveNumber(26, A)) : (userSettings.setSettings(6, 4 * B + 2 * A + y), userSettings.formatSettings())
+    function setSettings() {
+        linkButtons.shouldHideLinks[2] = linkButtons.shouldHideLinks[3] = linkButtons.shouldHideLinks[4] = !moreSettings.hideLinks;
+        var highResolution = moreSettings.highResolution ? 1 : 0,
+            hideLinks = moreSettings.hideLinks ? 1 : 0,
+            hideUsernames = moreSettings.hideUsernames ? 1 : 0;
+        if (isIOS) {
+            window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + highResolution);
+            window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + hideLinks);
+        } else if (5 <= androidVersion) {
+            androidObject.saveNumber(25, highResolution);
+            androidObject.saveNumber(26, hideLinks);
+        } else {
+            userSettings.setSettings(6, 4 * hideUsernames + 2 * hideLinks + highResolution);
+            userSettings.formatSettings();
+        }
     }
 
     function k(y, A, B, C) {
@@ -9293,8 +9399,7 @@ function MoreSettings() {
     }
 
     function n() {
-        var y = Math.floor((isZoom ? .145 : .09) *
-                averageDim),
+        var y = Math.floor((isZoom ? .145 : .09) * averageDim),
             A = Math.floor(1.5 * y),
             B = Math.floor(.065 * (isZoom ? .53 : .36) * averageDim);
         return {
@@ -9321,129 +9426,134 @@ function MoreSettings() {
         mainCanvasCtx.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
     }
     this.selectedRemote = 1;
-    this.a0g = this.a4F = this.a1L = !1;
+    this.hideUsernames = this.hideLinks = this.highResolution = !1;
     var x = -1,
-        t = !1,
+        menuOpen = !1,
         settingsArray = [];
-    this.init =
-        function() {
-            settingsArray = [];
-            settingsArray.push({
-                name: "More",
-                id: 0,
-                red: 140,
-                green: 120,
-                blue: 0
-            });
-            settingsArray.push({
-                name: "Lobby 1",
-                id: 1,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            settingsArray.push({
-                name: "Hide Usernames",
-                id: 2,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            settingsArray.push({
-                name: "Hide Links",
-                id: 3,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            !isIOS && 5 > androidVersion && settingsArray.push({
-                name: "High Resolution",
-                id: 4,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            settingsArray.push({
-                name: "Tutorial",
-                id: 5,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            settingsArray.push({
-                name: "Player List",
-                id: 6,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            settingsArray.push({
-                name: "Clan List",
-                id: 7,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            settingsArray.push({
-                name: "Privacy Policy",
-                id: 8,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            !isIOS && 5 > androidVersion && settingsArray.push({
-                name: "Cookie Policy",
-                id: 9,
-                red: 0,
-                green: 0,
-                blue: 0
-            });
-            settingsArray.push({
-                name: versionLabel,
-                id: 10,
-                red: 90,
-                green: 0,
-                blue: 0
-            });
-            if (isIOS) this.a1L = iosObject.freeSpawn, this.a4F = iosObject.unlimitedTime, this.a0g = !1;
-            else if (5 <= androidVersion) this.a1L = 1 === androidObject.loadNumber(25), this.a4F = 1 === androidObject.loadNumber(26), this.a0g = !1;
-            else {
-                var y = userSettings.getSettings(6);
-                this.a1L = 1 === (y & 1);
-                this.a4F = 2 === (y & 2);
-                this.a0g = 4 === (y & 4)
-            }
-            settingsArray[2].green = this.a1L ? 130 : 0;
-            settingsArray[3].green = this.a4F ? 130 : 0;
-            !isIOS && 5 > androidVersion && (settingsArray[4].green = this.a0g ? 130 : 0);
-            this.a4F && (linkButtons.uj[2] = linkButtons.uj[3] = linkButtons.uj[4] = !1)
-        };
-    this.mouseDown = function(y, A) {
+    this.init = function() {
+        settingsArray = [];
+        settingsArray.push({
+            name: "More",
+            id: 0,
+            red: 140,
+            green: 120,
+            blue: 0
+        });
+        settingsArray.push({
+            name: "Lobby 1",
+            id: 1,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        settingsArray.push({
+            name: "Hide Usernames",
+            id: 2,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        settingsArray.push({
+            name: "Hide Links",
+            id: 3,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        !isIOS && 5 > androidVersion && settingsArray.push({
+            name: "High Resolution",
+            id: 4,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        settingsArray.push({
+            name: "Tutorial",
+            id: 5,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        settingsArray.push({
+            name: "Player List",
+            id: 6,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        settingsArray.push({
+            name: "Clan List",
+            id: 7,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        settingsArray.push({
+            name: "Privacy Policy",
+            id: 8,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        !isIOS && 5 > androidVersion && settingsArray.push({
+            name: "Cookie Policy",
+            id: 9,
+            red: 0,
+            green: 0,
+            blue: 0
+        });
+        settingsArray.push({
+            name: versionLabel,
+            id: 10,
+            red: 90,
+            green: 0,
+            blue: 0
+        });
+        if (isIOS) {
+            this.highResolution = iosObject.freeSpawn;
+            this.hideLinks = iosObject.unlimitedTime;
+            this.hideUsernames = !1;
+        } else if (5 <= androidVersion) {
+            this.highResolution = 1 === androidObject.loadNumber(25);
+            this.hideLinks = 1 === androidObject.loadNumber(26);
+            this.hideUsernames = !1;
+        } else {
+            var y = userSettings.getSettings(6);
+            this.highResolution = 1 === (y & 1);
+            this.hideLinks = 2 === (y & 2);
+            this.hideUsernames = 4 === (y & 4)
+        }
+        settingsArray[2].green = this.highResolution ? 130 : 0;
+        settingsArray[3].green = this.hideLinks ? 130 : 0;
+        if (!isIOS && 5 > androidVersion) settingsArray[4].green = this.hideUsernames ? 130 : 0;
+        if (this.hideLinks) linkButtons.shouldHideLinks[2] = linkButtons.shouldHideLinks[3] = linkButtons.shouldHideLinks[4] = !1;
+    };
+    this.mouseDown = function(xPos, yPos) {
         var sIndex;
-        if (!(7 <= gameStateManager.getState())) {
+        if (7 > gameStateManager.getState()) {
             var C = n();
-            if (t) {
+            if (menuOpen) {
                 for (sIndex = 1; sIndex < settingsArray.length; sIndex++) {
-                    if (k(y, A, C, sIndex)) {
+                    if (k(xPos, yPos, C, sIndex)) {
                         if (1 === settingsArray[sIndex].id) {
                             if (wsManager.terriWsCount === moreSettings.selectedRemote + 1 ) moreSettings.selectedRemote = 1
                             else moreSettings.selectedRemote++;
                             settingsArray[1].name = "Lobby " + (moreSettings.selectedRemote >= wsManager.serverCount ? `${moreSettings.selectedRemote} (${(moreSettings.selectedRemote - 1)% 3 + 1}B)` : moreSettings.selectedRemote);
                             c4.canvasDirty = !0;
                         } else if (2 === settingsArray[sIndex].id) {
-                            moreSettings.a1L = !moreSettings.a1L;
-                            settingsArray[sIndex].green = moreSettings.a1L ? 130 : 0;
-                            g();
+                            moreSettings.highResolution = !moreSettings.highResolution;
+                            settingsArray[sIndex].green = moreSettings.highResolution ? 130 : 0;
+                            setSettings();
                             c4.canvasDirty = !0;
                         } else if (3 === settingsArray[sIndex].id) {
-                            moreSettings.a4F = !moreSettings.a4F;
-                            settingsArray[sIndex].green = moreSettings.a4F ? 130 : 0;
-                            g();
+                            moreSettings.hideLinks = !moreSettings.hideLinks;
+                            settingsArray[sIndex].green = moreSettings.hideLinks ? 130 : 0;
+                            setSettings();
                             c4.canvasDirty = !0;
                         } else if (4 === settingsArray[sIndex].id) {
-                            moreSettings.a0g = !moreSettings.a0g;
-                            settingsArray[sIndex].green = moreSettings.a0g ? 130 : 0;
-                            g();
+                            moreSettings.hideUsernames = !moreSettings.hideUsernames;
+                            settingsArray[sIndex].green = moreSettings.hideUsernames ? 130 : 0;
+                            setSettings();
                             jq.xa();
                             c4.canvasDirty = !0;
                         } else if (5 === settingsArray[sIndex].id) {
@@ -9465,11 +9575,15 @@ function MoreSettings() {
                         return !0;
                     }
                 }
-                t = !1;
+                menuOpen = !1;
                 c4.canvasDirty = !0;
                 return !1
             }
-            return k(y, A, C, 0) ? (t = !0, c4.canvasDirty = !0) : !1
+            if (k(xPos, yPos, C, 0)) {
+                menuOpen = !0;
+                c4.canvasDirty = !0;
+                return !0
+            } else return !1
         }
     };
     this.onPointermove = function(y, A) {
@@ -9477,7 +9591,7 @@ function MoreSettings() {
         if (!(7 <= gameStateManager.getState())) {
             var C = n();
             var E = x;
-            var F = t ? settingsArray.length - 1 : 1;
+            var F = menuOpen ? settingsArray.length - 1 : 1;
             x = -1;
             for (B = 0; B < F; B++)
                 if (k(y, A, C, B)) {
@@ -9493,7 +9607,7 @@ function MoreSettings() {
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
             l(A.f7, A.f8, A.buttonMargin, A.nP, settingsArray[0].red, settingsArray[0].green, settingsArray[0].blue, 0 === x, settingsArray[0].name, .6);
-            if (t) {
+            if (menuOpen) {
                 var B = settingsArray.length;
                 for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nP - 2 * y, A.i5, A.nP, settingsArray[y].red, settingsArray[y].green, settingsArray[y].blue, x === y, settingsArray[y].name,
                     y === B - 1 ? .32 : .45)
@@ -9712,7 +9826,7 @@ function Teams() {
         teamGame && canvasDirty && drawPiechart()
     };
     this.drawCanvasImage = function() {
-        teamGame && mainCanvasCtx.drawImage(pieChartCanvas, m5, gameBoardHeight + 2 * m5)
+        teamGame && mainCanvasCtx.drawImage(pieChartCanvas, canvasPadding, gameBoardHeight + 2 * canvasPadding)
     }
 }
 
@@ -9763,7 +9877,7 @@ function kc() {
             nextContestBar.setCanvasVariables();
             cookiesPrompt.setCanvasVariables();
             mainLeaderboard.setCanvasVariables();
-            a5.init();
+            emojis.init();
             if (1 <= clientStatus) {
                 gameLeaderboard.setCanvasVariables(!1);
                 eO.setCanvasVariables();
@@ -9824,7 +9938,7 @@ function kc() {
             } else maxClientWidth = !1;
             return maxClientWidth
         }
-        moreSettings.a0g ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
+        moreSettings.hideUsernames ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
         maxClientWidth = limitToMinimum(document.documentElement.clientWidth);
         maxClientHeight = limitToMinimum(document.documentElement.clientHeight);
         varClientWidth = Math.floor(.5 + pixelRatio * maxClientWidth);
@@ -10192,7 +10306,7 @@ function Statistics() {
         this.width = canvasWidth < 1.618 * canvasHeight ? canvasWidth : 1.618 * canvasHeight;
         this.width = Math.floor((isZoom && canvasWidth < canvasHeight ? 1 : isZoom ? .8 : canvasWidth < canvasHeight ? .65 : .5) * this.width);
         this.qI = Math.floor(1 + .006 * this.width);
-        this.width -= isZoom && canvasWidth < canvasHeight ? 2 * m5 + this.qI : 0;
+        this.width -= isZoom && canvasWidth < canvasHeight ? 2 * canvasPadding + this.qI : 0;
         this.height = Math.floor(this.width / 1.618);
         this.buttonMargin =
             Math.floor(1 + .02 * this.width);
@@ -10223,8 +10337,8 @@ function Statistics() {
         return !0
     };
     this.a2O = function() {
-        var g = Math.floor((this.a5b[0] + gridWidth) / scaleFactor),
-            k = Math.floor((this.a5b[1] + gridHeight) / scaleFactor);
+        var g = Math.floor((this.a5b[0] + gridWidth) / mainScaleFactor),
+            k = Math.floor((this.a5b[1] + gridHeight) / mainScaleFactor);
         1 > g || 1 > k || g >= currentMapWidth - 1 || k >= currentMapHeight - 1 || console.log(g + " " + k)
     };
     this.onPointermove = function(g, k) {
@@ -10845,8 +10959,7 @@ function a2K() {
         this.canvasDirty = !0; - 1 !== this.a6R && (clearInterval(this.a6R), this.a6R = -1)
     };
     this.jd = function() {
-        this.a6O =
-            this.a6U;
+        this.a6O = this.a6U;
         this.a6P = null;
         this.canvasDirty = !0
     };
@@ -11083,7 +11196,7 @@ function DataDecoder() {
                                         data = decoder(array, 9);
                                         var emojiID = decoder(array, 7);
                                         if (0 !== isAlive[data] && 0 !== isAlive[myID]) {
-                                            emojiID %= a5.a6;
+                                            emojiID %= emojis.totalDistinctEmojisCount;
                                             announcements.newEmojiMessage(data, myID, emojiID);
                                             eA.showIcon(data, 1, emojiID);
                                         }
@@ -11216,8 +11329,8 @@ function a2H() {
         this.a5E = gj.toY();
         this.a59 = -this.a5D;
         this.a5A = -this.a5E;
-        this.a5B = prevClientWidth / scaleFactor;
-        this.a5C = prevClientHeight / scaleFactor;
+        this.a5B = prevClientWidth / mainScaleFactor;
+        this.a5C = prevClientHeight / mainScaleFactor;
         this.tw[0] = Math.floor(this.a59);
         this.tw[1] = Math.floor(this.a5A);
         this.tw[2] = Math.floor(this.tw[0] + this.a5B + 1);
