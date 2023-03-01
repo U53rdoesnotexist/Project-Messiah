@@ -7344,7 +7344,7 @@ function DelayedAttack() {
         for (attackCount -= 2; aIndex < attackCount; aIndex += 2) {
             attacks[aIndex] = attacks[aIndex + 2];
             attacks[aIndex + 1] = attacks[aIndex + 3]
-        }
+    }
     }
     var attackCount = 0, attacks = new Uint16Array(32);
     this.init = function() {
@@ -8479,14 +8479,13 @@ function shiftAliveEntities(shiftIndex) {
 }
 
 function managePrematureDeath() {
-    for (var landDifferenceRatio, aliveEntities = aliveCount - 1; 0 <= aliveEntities; aliveEntities--) {
-        if (land[aliveEntities[aliveEntities]] <= divideFloor(tempLand[aliveEntities[aliveEntities]], 4)) {
-            if (1E3 >= land[aliveEntities[aliveEntities]] && (2 !== isAlive[aliveEntities[aliveEntities]] || 0 === land[aliveEntities[aliveEntities]])) managePlayerDeath(aliveEntities[aliveEntities])
-        } else if (land[aliveEntities[aliveEntities]] >= tempLand[aliveEntities[aliveEntities]]) {
-            tempLand[aliveEntities[aliveEntities]] = land[aliveEntities[aliveEntities]];
-        } else {
-            landDifferenceRatio = divideFloor(tempLand[aliveEntities[aliveEntities]] - land[aliveEntities[aliveEntities]], 1E3);
-            tempLand[aliveEntities[aliveEntities]] -= 1 > landDifferenceRatio ? 1 : landDifferenceRatio
+    for (var landDifferenceRatio, aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
+        if (land[aliveEntities[aliveIndex]] <= divideFloor(tempLand[aliveEntities[aliveIndex]], 4)) {
+            if (1E3 >= land[aliveEntities[aliveIndex]] && (2 !== isAlive[aliveEntities[aliveIndex]] || 0 === land[aliveEntities[aliveIndex]])) managePlayerDeath(aliveEntities[aliveIndex])
+        } else if (land[aliveEntities[aliveIndex]] >= tempLand[aliveEntities[aliveIndex]]) tempLand[aliveEntities[aliveIndex]] = land[aliveEntities[aliveIndex]]
+        else {
+            landDifferenceRatio = divideFloor(tempLand[aliveEntities[aliveIndex]] - land[aliveEntities[aliveIndex]], 1E3);
+            tempLand[aliveEntities[aliveIndex]] -= 1 > landDifferenceRatio ? 1 : landDifferenceRatio;
         }
     }
 }
@@ -11035,6 +11034,9 @@ function MainRenderer() {
         setGameOrigin.processGameInitData();
         mainLeaderboard.update();
         this.canvasDirty && (this.canvasDirty = !1, gameStateManager.drawCanvasImage())
+    };
+    this.a6W = function() {
+        this.a6P.update()
     };
     this.a6Y = function() {
         this.a6Q.update()
