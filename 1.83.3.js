@@ -493,12 +493,12 @@ function botChecksLoseIfBordersStuff(id, considerTeamates) {
     var bIndexOffset = 256 <= bIndex ? 12 : 32 <= bIndex ? 6 : 1;
     bIndex = bIndex - 1 - fakeRandom.calcFractionalValue(bIndexOffset);
     botLastBorderingStuffCount = 0;
-    a: for (; 0 <= bIndex; bIndex -= bIndexOffset)
+    loop: for (; 0 <= bIndex; bIndex -= bIndexOffset)
         for (side = 3; 0 <= side; side--) {
             var ownerID = pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side]) ? maxEntities : pixel.getOwner(landBorderPixels[id][bIndex] + offset[side]);
             if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamates || isNotTeamate(id, ownerID))) {
                 for (bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
-                    if (botLastBorderingStuffs[bsIndex] === ownerID) continue a;
+                    if (botLastBorderingStuffs[bsIndex] === ownerID) continue loop;
                 botLastBorderingStuffs[botLastBorderingStuffCount] = ownerID;
                 if (++botLastBorderingStuffCount >= botMaxBorderingStuffCap) return !0
             }
@@ -910,12 +910,12 @@ function Speed() {
 function BotBoatEngine() {
     function g() {
         l = 3;
-        a: {
+        loop: {
             for (var y = 40; 1 <= y; y--) {
                 x = xMin[z] + divideFloor(fakeRandom.random() * (xMax[z] - xMin[z] + 1), fakeRandom.value(100));
                 t = yMin[z] + divideFloor(fakeRandom.random() * (yMax[z] - yMin[z] + 1), fakeRandom.value(100));
                 var A = k(pixel.toIndex(x, t));
-                if (1 !== A) break a
+                if (1 !== A) break loop
             }
             A = 1
         }
@@ -1252,14 +1252,14 @@ function gK() {
 function FindSpawn() {
     function generateBotSpawn() {
         var hasValidSpawn;
-        a: {
+        loop: {
             for (hasValidSpawn = 0; 8 > hasValidSpawn; hasValidSpawn++)
                 if (t = divideFloor(y * fakeRandom.random(), fakeRandom.value(100)), z = divideFloor(A * fakeRandom.random(), fakeRandom.value(100)), canSpawnHere()) {
                     hasValidSpawn = !0;
-                    break a
+                    break loop
                 } hasValidSpawn = !1
         }
-        if (!hasValidSpawn) a: {
+        if (!hasValidSpawn) loop: {
             var D, K, J, L;hasValidSpawn = divideFloor(y * fakeRandom.random(), fakeRandom.value(100));
             var H = divideFloor(A * fakeRandom.random(), fakeRandom.value(100));
             for (D = 40; 1 <= D; D--)
@@ -1268,7 +1268,7 @@ function FindSpawn() {
                         for (L = y - J; 0 <= L; L -= 40)
                             if (t = (L + hasValidSpawn) % y, canSpawnHere()) {
                                 hasValidSpawn = !0;
-                                break a
+                                break loop
                             } hasValidSpawn = !1
         }
         return hasValidSpawn
@@ -1478,7 +1478,7 @@ function Strings() {
     this.checkValidName = function(x) {
         x = x.trim();
         if (0 === x.indexOf("Bot ") || 0 === x.indexOf("[Bot] ")) x = !1;
-        else a: {
+        else loop: {
             x = x.trim();
             var t = x.length;
             if (3 > t || 20 < t) x = !1;
@@ -1486,7 +1486,7 @@ function Strings() {
                 for (var z = 0, y, A = 0; A < t; A++)
                     if (y = x.charCodeAt(A), z += 65 <= y && 90 >= y || 1040 <= y && 1071 >= y ? 1 : 0, -1 === g(y)) {
                         x = !1;
-                        break a
+                        break loop
                     } x = 3 < z && z > Math.floor(t / 2) ? !1 : !0
             }
         }
@@ -3509,12 +3509,12 @@ function Peace() {
         }
         else if (this.visible) {
             countDown--;
-            if (270 === countDown && 2 <= peaceCount) a: {
+            if (270 === countDown && 2 <= peaceCount) loop: {
                 var aliveIndex;
                 for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--)
                     if (playerActions.isHuman(aliveEntities[aliveIndex])) {
                         aliveIndex = !1;
-                        break a
+                        break loop
                     } aliveIndex = !0
             }
             if (aliveIndex) {
@@ -4387,10 +4387,10 @@ function GameLeaderboard() {
                 landIDOrder[landOrder[const_maxEntities]] = const_maxEntities
             } T = const_maxEntities - 1;
         for (O = 0; O < T; O++) land[landOrder[O]] < land[landOrder[O + 1]] && (S = landOrder[O], landOrder[O] = landOrder[O + 1], landOrder[O + 1] = S, landIDOrder[landOrder[O]] = O, landIDOrder[landOrder[O + 1]] = O + 1);
-        a: {
+        loop: {
             S = W;W = !0;
             for (O = T = landIDOrder[myID] >= visibleLandCount - 1 ? visibleLandCount - 2 : visibleLandCount - 1; 0 <= O; O--)
-                if (P[O] !== landOrder[O] || U[O] !== land[landOrder[O]]) break a;
+                if (P[O] !== landOrder[O] || U[O] !== land[landOrder[O]]) break loop;
             if (T !== visibleLandCount - 2 || P[visibleLandCount] === landIDOrder[myID] && U[visibleLandCount] === land[myID]) W = S
         }
         for (S = visibleLandCount - 1; 0 <= S; S--) P[S] = landOrder[S], U[S] = land[landOrder[S]];
@@ -4862,30 +4862,30 @@ function ts() {
         this.tu[1] = currentMapHeight;
         this.tu[2] = this.tu[3] = 0;
         var k = 1;
-        a: for (; k < currentMapWidth - 1; k++)
+        loop: for (; k < currentMapWidth - 1; k++)
             for (g = currentMapHeight - 2; 1 < g; g--)
                 if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
                     this.tu[0] = k;
-                    break a
+                    break loop
                 } g = 1;
-        a: for (; g < currentMapHeight -
+        loop: for (; g < currentMapHeight -
             1; g++)
             for (k = currentMapWidth - 2; 1 < k; k--)
                 if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
                     this.tu[1] = g;
-                    break a
+                    break loop
                 } k = currentMapWidth - 2;
-        a: for (; 0 < k; k--)
+        loop: for (; 0 < k; k--)
             for (g = currentMapHeight - 2; 1 < g; g--)
                 if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
                     this.tu[2] = k;
-                    break a
+                    break loop
                 } g = currentMapHeight - 2;
-        a: for (; 0 < g; g--)
+        loop: for (; 0 < g; g--)
             for (k = currentMapWidth - 2; 1 < k; k--)
                 if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
                     this.tu[3] = g;
-                    break a
+                    break loop
                 }
     }
 }
@@ -4966,12 +4966,12 @@ function IntelliAttack() {
         var index, side, borderingEntities = [],
             borderingEntityCount = 0;
         var bIndex = landBorderPixels[id].length - 1;
-        a: for (; 0 <= bIndex; bIndex--)
+        loop: for (; 0 <= bIndex; bIndex--)
             for (side = 3; 0 <= side; side--) {
                 var ownerID = pixel.isNeutral(landBorderPixels[id][bIndex] + offset[side]) ? maxEntities : pixel.getOwner(landBorderPixels[id][bIndex] + offset[side]);
                 if (ownerID === maxEntities || pixel.entityControlled(landBorderPixels[id][bIndex] + offset[side]) && ownerID !== id && (considerTeamates || isNotTeamate(id, ownerID))) {
                     for (index = borderingEntityCount - 1; 0 <= index; index--)
-                        if (borderingEntities[index] === ownerID) continue a;
+                        if (borderingEntities[index] === ownerID) continue loop;
                     borderingEntities.push(ownerID);
                     borderingEntityCount++
                 }
@@ -7302,11 +7302,11 @@ function UserSettings() {
                 3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? settingsArray[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
             }
             settingsArray[9] || (settingsArray[9] = "0");
-            a: {
+            loop: {
                 for (C = y - 1; 0 <= C; C--)
                     if (void 0 === settingsArray[C]) {
                         C = !1;
-                        break a
+                        break loop
                     } C = !0
             }
             C ? (cookieStatus = 2, l(), k(), g() !== settingsArray[5] && n()) : n()
@@ -7371,13 +7371,13 @@ function DelayedAttack() {
     };
     this.addDelayedAttack = function(targetID, ratio) {
         var aIndex;
-        a: {
+        loop: {
             for (aIndex = 0; aIndex < attackCount; aIndex += 2)
                 if (attacks[aIndex] === targetID) {
                     attacks[aIndex + 1] += ratio;
                     attacks[aIndex + 1] = getMin(attacks[aIndex + 1], 1E3);
                     aIndex = !0;
-                    break a
+                    break loop
                 } aIndex = !1
         }
         if (!aIndex && 32 !== attackCount) {
@@ -7717,10 +7717,10 @@ function Attacks() {
     };
     this.spilloverNeutral = function(authorID, targetID) {
         var aIndex;
-        a: {
+        loop: {
             var sIndex = getStartingAttackIndex(authorID);
             for (aIndex = currentAttackCount[authorID] - 1; 0 <= aIndex; aIndex--)
-                if (0 === boatIDs[sIndex + aIndex] && targetIDs[sIndex + aIndex] === targetID) break a; aIndex = currentAttackCount[authorID]
+                if (0 === boatIDs[sIndex + aIndex] && targetIDs[sIndex + aIndex] === targetID) break loop; aIndex = currentAttackCount[authorID]
         }
         if (aIndex !== currentAttackCount[authorID]) {
             var remaining = remainingTroops[getStartingAttackIndex(authorID) + aIndex];
@@ -8167,7 +8167,7 @@ function kN() {
                 }
                 Z && t(T)
             } else {
-                a: {
+                loop: {
                     la = T;ma = E[la] + 1;ia = F[la] + 1;
                     for (fa = G[la] - 2;;) {
                         if (1 > fa) {
@@ -8181,7 +8181,7 @@ function kN() {
                             G[la] = fa;
                             N[la] = Z;
                             Z = !0;
-                            break a
+                            break loop
                         }
                         ma++;
                         ia++;
@@ -8280,14 +8280,14 @@ function DiplomacyHandler() {
     };
     this.a1V = function(g, k, n, l) {
         var x;
-        a: {
+        loop: {
             var t;
             for (x = n.length - 1; 0 <= x; x--)
                 for (t = g.length - 1; 0 <=
                     t; t--)
                     if (g[t].player === n[x] && k === g[t].id) {
                         x = !0;
-                        break a
+                        break loop
                     } x = !1
         }
         if (x) return !1;
@@ -9313,10 +9313,10 @@ function GenerateHeightmap() {
         E.push(0);
         F.push(J);
         G.push(!1);
-        a: for (;;) {
+        loop: for (;;) {
             J = E.length - 1;
             for (L = J - 1; 0 <= L; L--) F[L] > F[J] && (J = L);
-            if (5 > F[J]) break a;
+            if (5 > F[J]) break loop;
             L = E[J] + divideFloor(F[J], 2);
             if (G[J]) {
                 H = void 0;
@@ -9740,7 +9740,7 @@ function BoatPathChecker() {
                 }
                 closestWaterPixel = x[y]
             } else closestWaterPixel = waterBorderPixels[id][divideFloor(l * waterBorderPixels[id].length, 21)];
-            a: {
+            loop: {
                 B = closestWaterPixel;y = targetPixelIndex;x = pixel.toX(B);z = pixel.toY(B);t = pixel.toX(y);y = pixel.toY(y);A = Math.abs(t -
                     x) + Math.abs(y - z);
                 if (!(2 > A))
@@ -9749,7 +9749,7 @@ function BoatPathChecker() {
                             if (pixel.canOwn(C)) {
                                 if (0 === B || B + 20 < A) break;
                                 x = !0;
-                                break a
+                                break loop
                             }
                             break
                         } x = !1
@@ -10090,14 +10090,14 @@ function BoatPathHandler() {
                 boatSpeed.setCurrentPixelIndex(boatIndex, oldPIndex);
                 if (pixel.canOwn(oldPIndex) ? !1 : !0) {
                     if (pixel.isWater(oldPIndex)) pixel.changeToBoatPixel(oldPIndex, authorID);
-                } else a: {
+                } else loop: {
                     var landingTargetID;
                     if (pixel.isNeutral(oldPIndex)) landingTargetID = maxEntities;
                     else {
                         landingTargetID = pixel.getOwner(oldPIndex);
                         if (landingTargetID === authorID) {
                             cancelBoat(!0);
-                            break a
+                            break loop
                         }
                         if (!isNotTeamate(authorID, landingTargetID)) {
                             param_boatID = land[landingTargetID] * maxTroopsToLandRatio - troops[landingTargetID];
@@ -10115,7 +10115,7 @@ function BoatPathHandler() {
                                 troops[landingTargetID] += param_boatID;
                             }
                             cancelBoat(!0);
-                            break a
+                            break loop
                         }
                     }
                     if (authorID === myID) statisticNumbers.numbers[13] += remaining;
@@ -10674,7 +10674,7 @@ function TeamColors() {
             teamColorScore = new Uint16Array(numTeams),
             hasClanTag = [],
             playerID = playerCount - 1;
-        a: for (; 0 <= playerID; playerID--) {
+        loop: for (; 0 <= playerID; playerID--) {
             var tempPlayerID = playerID;
             var bracketIndex = tempNickname[tempPlayerID].indexOf("[");
 
@@ -10691,7 +10691,7 @@ function TeamColors() {
                 for (let j = clanTags.length - 1; 0 <= j; j--)
                     if (clanTag === clanTags[j]) {
                         clanTagOfPlayerIDs[j].push(playerID);
-                        continue a
+                        continue loop
                     } 
                 clanTags.push(clanTag);
                 hasClanTag.push(!1);
@@ -10834,12 +10834,12 @@ function updateEditingBorderPixels() {
     var g = potentialBorderAdvances[lastAuthorID].length,
         k;
     var n = g - 1;
-    a: for (; 0 <= n; n--) {
+    loop: for (; 0 <= n; n--) {
         for (k = 3; 0 <= k; k--) {
             var l = potentialBorderAdvances[lastAuthorID][n] + offset[k];
             if (pixel.isNeutral(l) || pixel.entityControlled(l) && pixel.getOwner(l) !== lastAuthorID) {
                 pixel.changeToMovingPixel(potentialBorderAdvances[lastAuthorID][n], lastAuthorID);
-                continue a
+                continue loop
             }
         }
         potentialBorderAdvances[lastAuthorID][n] = potentialBorderAdvances[lastAuthorID][g - 1];
@@ -10851,11 +10851,11 @@ function updateEditingBorderPixels() {
 function updatePixelsBorderingTerrain() {
     var g = landBorderPixels[lastAuthorID].length,
         k, n, l = g - 1;
-    a: for (; 0 <= l; l--) {
+    loop: for (; 0 <= l; l--) {
         var x = n = !1;
         for (k = 3; 0 <= k; k--) {
             var t = landBorderPixels[lastAuthorID][l] + offset[k];
-            if (pixel.canTake(t, lastAuthorID)) continue a;
+            if (pixel.canTake(t, lastAuthorID)) continue loop;
             x = x || pixel.isWater(t);
             n = n || pixel.isMountain(t)
         }
@@ -10917,24 +10917,24 @@ function convertLastInnerPixelsToBorder() {
 
 function updateTargetXYMinMax() {
     var cIndex;
-    a: for (; yMin[lastTargetID] < yMax[lastTargetID];) {
+    loop: for (; yMin[lastTargetID] < yMax[lastTargetID];) {
         for (cIndex = xMax[lastTargetID]; cIndex >= xMin[lastTargetID]; cIndex--)
-            if (pixel.strongIsOwner(lastTargetID, 4 * (yMin[lastTargetID] * currentMapWidth + cIndex))) break a;
+            if (pixel.strongIsOwner(lastTargetID, 4 * (yMin[lastTargetID] * currentMapWidth + cIndex))) break loop;
         yMin[lastTargetID]++
     }
-    a: for (; yMin[lastTargetID] < yMax[lastTargetID];) {
+    loop: for (; yMin[lastTargetID] < yMax[lastTargetID];) {
         for (cIndex = xMax[lastTargetID]; cIndex >= xMin[lastTargetID]; cIndex--)
-            if (pixel.strongIsOwner(lastTargetID, 4 * (yMax[lastTargetID] * currentMapWidth + cIndex))) break a;
+            if (pixel.strongIsOwner(lastTargetID, 4 * (yMax[lastTargetID] * currentMapWidth + cIndex))) break loop;
         yMax[lastTargetID]--
     }
-    a: for (; xMin[lastTargetID] < xMax[lastTargetID];) {
+    loop: for (; xMin[lastTargetID] < xMax[lastTargetID];) {
         for (cIndex = yMax[lastTargetID]; cIndex >= yMin[lastTargetID]; cIndex--)
-            if (pixel.strongIsOwner(lastTargetID, 4 * (cIndex * currentMapWidth + xMin[lastTargetID]))) break a;
+            if (pixel.strongIsOwner(lastTargetID, 4 * (cIndex * currentMapWidth + xMin[lastTargetID]))) break loop;
         xMin[lastTargetID]++
     }
-    a: for (; xMin[lastTargetID] < xMax[lastTargetID];) {
+    loop: for (; xMin[lastTargetID] < xMax[lastTargetID];) {
         for (cIndex = yMax[lastTargetID]; cIndex >= yMin[lastTargetID]; cIndex--)
-            if (pixel.strongIsOwner(lastTargetID, 4 * (cIndex * currentMapWidth + xMax[lastTargetID]))) break a;
+            if (pixel.strongIsOwner(lastTargetID, 4 * (cIndex * currentMapWidth + xMax[lastTargetID]))) break loop;
         xMax[lastTargetID]--
     }
 }
