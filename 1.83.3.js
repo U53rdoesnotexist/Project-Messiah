@@ -410,7 +410,7 @@ function MainLeaderboardIcon() {
                 label: label,
                 font: fontStyle
             };
-            c4.canvasDirty = !0
+            mainRenderer.canvasDirty = !0
         }
     };
     this.getRenderHeight = function() {
@@ -645,7 +645,7 @@ function humanBotProcessTeamStrategy(id, amount) {
 }
 
 function botCheckSetFrequentTiming(authorID, targetID, difficulty) {
-    if(3 <= difficulty && 2142 < c4.ticksElapsed() && (targetID === maxEntities || troops[targetID] < divideFloor(troops[authorID], 20))) difficultyEngine.setTiming(authorID - playerCount, 25)
+    if(3 <= difficulty && 2142 < mainRenderer.ticksElapsed() && (targetID === maxEntities || troops[targetID] < divideFloor(troops[authorID], 20))) difficultyEngine.setTiming(authorID - playerCount, 25)
 }
 
 function botProcessDonation(authorID, amount, difficulty, maxBelowRedI) {
@@ -856,7 +856,7 @@ function ea() {
 }
 
 function ec() {
-    eA.drawCanvas() && (c4.canvasDirty = !0);
+    eA.drawCanvas() && (mainRenderer.canvasDirty = !0);
     wsManager.update()
 }
 
@@ -1051,10 +1051,10 @@ function ProcessAction() {
         announcements.genericAnnouncement(id, 4)
     };
     this.leave = function(id) {
-        inSpawn ? (fm(id), fn()) : humanBots.turnToBot(id)
+        inSpawn ? (managePlayerDeath(id), findShiftAliveEntitiesIndex()) : humanBots.turnToBot(id)
     };
     this.surrender = function(id) {
-        0 !== isAlive[id] && 2 !== playerStatus[id] && gameButtons.canSurrender(id) && (1 === aliveCount ? endGame.endGame(id) : (announcements.genericAnnouncement(id, id === myID ? 21 : 22), 8 === gamemode ? endGame.endGame(1 - id) : singleplayer ? (fm(id), fn(), inSpawn && spawn.update()) : this.leave(id)))
+        0 !== isAlive[id] && 2 !== playerStatus[id] && gameButtons.canSurrender(id) && (1 === aliveCount ? endGame.endGame(id) : (announcements.genericAnnouncement(id, id === myID ? 21 : 22), 8 === gamemode ? endGame.endGame(1 - id) : singleplayer ? (managePlayerDeath(id), findShiftAliveEntitiesIndex(), inSpawn && spawn.update()) : this.leave(id)))
     }
 }
 
@@ -1154,7 +1154,7 @@ function BoatSpeed() {
 
 function gK() {
     function g(J) {
-        N = c4.time;
+        N = mainRenderer.time;
         I = 33;
         t = z = x = 0;
         y = I / J;
@@ -1228,10 +1228,10 @@ function gK() {
     this.update = function() {
         if (D) {
             .5 > x ? z < y && (z += y * l, t = x) : x > 1 - t && (z -= y * l, z = z < y * l ? y * l : z);
-            N = N >= c4.time ? c4.time - 1 : N;
-            var J = c4.time - N;
+            N = N >= mainRenderer.time ? mainRenderer.time - 1 : N;
+            var J = mainRenderer.time - N;
             1E3 < J ? x = 1 : (x += z * J / I, x = 1 < x ? 1 : x);
-            N = c4.time;
+            N = mainRenderer.time;
             var L = mainScaleFactor;
             J = gridWidth;
             var H = gridHeight;
@@ -1244,7 +1244,7 @@ function gK() {
             eA.zoom(L, (J * L - gridWidth) / (1 - L), (H * L - gridHeight) / (1 - L));
             gy.gz();
             1 <= x && (D = !1, h8.h9 = !0);
-            c4.canvasDirty = !0
+            mainRenderer.canvasDirty = !0
         }
     }
 }
@@ -1600,7 +1600,7 @@ function EndGame() {
             announcements.iy(!0);
             gameLeaderboard.drawCanvas(!0);
             gameStatistics.drawCanvas(!0);
-            c4.canvasDirty = !0;
+            mainRenderer.canvasDirty = !0;
             h8.iz();
             setAndroidState(0)
         }
@@ -1609,7 +1609,7 @@ function EndGame() {
 
 function Spawn() {
     this.set = function(authorID, xPos, yPos) {
-        if (0 !== isAlive[authorID] && findSpawn.generateHumanSpawn(authorID, xPos, yPos)) c4.canvasDirty = !0
+        if (0 !== isAlive[authorID] && findSpawn.generateHumanSpawn(authorID, xPos, yPos)) mainRenderer.canvasDirty = !0
     };
     this.update = function() {
         inSpawn = !1;
@@ -1708,10 +1708,10 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     diplomacyHandler.init();
     delayedAttack.init();
     8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(playerInfo)) : points1v1 = null;
-    singleplayer ? c4.jY() : c4.jZ();
+    singleplayer ? mainRenderer.jY() : mainRenderer.jZ();
     ja();
     eX.init();
-    c4.canvasDirty = !0;
+    mainRenderer.canvasDirty = !0;
     singleplayer && inSpawn || setAndroidState(1)
 }
 
@@ -1724,7 +1724,7 @@ function ja() {
 function leaveGame() {
     wsManager.close(wsManager.remote, 3246);
     clientStatus = 0;
-    c4.jd();
+    mainRenderer.jd();
     nameInput.init();
     setAndroidState(0);
     showAd()
@@ -1867,7 +1867,7 @@ function PlayerActions() {
     this.lB = function(L, H) {
         if (this.visible()) {
             var M = this.mouseDown(L, H);
-            c4.canvasDirty = 0 < M;
+            mainRenderer.canvasDirty = 0 < M;
             return 2 > M
         }
         return !1
@@ -1913,7 +1913,7 @@ function PlayerActions() {
         }
         if (3 === type) {
             this.end();
-            if (this.isHuman(targetID) && 7 > gamemode && 1071 > c4.ticksElapsed()) return announcements.antiBoosting(), 1;
+            if (this.isHuman(targetID) && 7 > gamemode && 1071 > mainRenderer.ticksElapsed()) return announcements.antiBoosting(), 1;
             announcements.lowBalance();
             singleplayer ? processDonation(myID, targetID, divideFloor(troopBar.getFlooredRatio() * troops[myID], 1E3)) : dataEncoder.attack(troopBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
             return 1
@@ -1934,7 +1934,7 @@ function PlayerActions() {
                 }
             } else if (x[8]) {
                 this.end();
-                delayedAttack.lX(targetID, troopBar.getFlooredRatio());
+                delayedAttack.addDelayedAttack(targetID, troopBar.getFlooredRatio());
             } else this.end();
             return 1;
         }
@@ -2047,9 +2047,9 @@ function PlayerActions() {
             if (emojis.lG(L, H)) return !1;
             emojis.lI();
             t = !1;
-            return c4.canvasDirty = !0
+            return mainRenderer.canvasDirty = !0
         }
-        return n(getButtonType(L, H)) ? !1 : (this.end(), c4.canvasDirty = !0)
+        return n(getButtonType(L, H)) ? !1 : (this.end(), mainRenderer.canvasDirty = !0)
     };
     this.end = function() {
         var L;
@@ -2082,127 +2082,153 @@ function PlayerActions() {
             x[6] && mainCanvasCtx.drawImage(this.l2[6], 0, -L);
             x[7] && mainCanvasCtx.drawImage(this.l2[7], L, -L);
             mainCanvasCtx.imageSmoothingEnabled = !1;
-            mainCanvasCtx.setTransform(1,
-                0, 0, 1, 0, 0)
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     }
 }
 
 function GameButtons() {
-    function g() {
-        var B = x.getContext("2d", {
+    function drawGameMenuButton() {
+        var gameButtonsCanvasCtx = gameButtonsCanvas.getContext("2d", {
             alpha: !0
         });
-        B.clearRect(0, 0, l, l);
-        B.fillStyle = blackSemiTransparent2;
-        B.fillRect(0, 0, l, l);
-        0 === y && (B.fillStyle = whiteMore2Transparent, B.fillRect(0, 0, l, l));
-        B.fillStyle = whiteRGB2;
-        B.fillRect(0, 0, l, 1);
-        B.fillRect(0, 0, 1, l);
-        B.fillRect(0, l - 1, l, 1);
-        B.fillRect(l - 1, 0, 1, l);
-        var C = .9 * l / sprites.getValueByID(0).width;
-        B.imageSmoothingEnabled = !0;
-        B.setTransform(C, 0, 0, C, Math.floor((l - C * sprites.getValueByID(0).width) / 2), Math.floor((l - C * sprites.getValueByID(0).height) / 2));
-        B.drawImage(sprites.getValueByID(0), 0, 0);
-        B.setTransform(1, 0, 0, 1, 0, 0)
+        gameButtonsCanvasCtx.clearRect(0, 0, buttonSize, buttonSize);
+        gameButtonsCanvasCtx.fillStyle = blackSemiTransparent2;
+        gameButtonsCanvasCtx.fillRect(0, 0, buttonSize, buttonSize);
+        if (0 === selectedBIndex) {
+            gameButtonsCanvasCtx.fillStyle = whiteMore2Transparent;
+            gameButtonsCanvasCtx.fillRect(0, 0, buttonSize, buttonSize);
+        }
+        gameButtonsCanvasCtx.fillStyle = whiteRGB2;
+        gameButtonsCanvasCtx.fillRect(0, 0, buttonSize, 1);
+        gameButtonsCanvasCtx.fillRect(0, 0, 1, buttonSize);
+        gameButtonsCanvasCtx.fillRect(0, buttonSize - 1, buttonSize, 1);
+        gameButtonsCanvasCtx.fillRect(buttonSize - 1, 0, 1, buttonSize);
+        var C = .9 * buttonSize / sprites.getValueByID(0).width;
+        gameButtonsCanvasCtx.imageSmoothingEnabled = !0;
+        gameButtonsCanvasCtx.setTransform(C, 0, 0, C, Math.floor((buttonSize - C * sprites.getValueByID(0).width) / 2), Math.floor((buttonSize - C * sprites.getValueByID(0).height) / 2));
+        gameButtonsCanvasCtx.drawImage(sprites.getValueByID(0), 0, 0);
+        gameButtonsCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 
-    function k(B, C) {
-        if (!gameButtons.lu) return B <= l +
-            canvasPadding && C >= troopBar.startingY ? 0 : -1;
-        if (B <= 4 * l + canvasPadding) {
-            if (C >= troopBar.startingY) return 0;
-            if (C >= troopBar.startingY - l - A * canvasPadding) return 2;
-            if (C >= troopBar.startingY - 2 * (l + A * canvasPadding)) return 3
-        } else if (B <= 7 * l + canvasPadding && C >= troopBar.startingY - l - A * canvasPadding) return 1;
+    function getButtonIndex(xPos, yPos) {
+        if (!gameButtons.menuVisible) return xPos <= buttonSize + canvasPadding && yPos >= troopBar.startingY ? 0 : -1;
+        if (xPos <= 4 * buttonSize + canvasPadding) {
+            if (yPos >= troopBar.startingY) return 0;
+            if (yPos >= troopBar.startingY - buttonSize - buttonScalingFactor * canvasPadding) return 2;
+            if (yPos >= troopBar.startingY - 2 * (buttonSize + buttonScalingFactor * canvasPadding)) return 3
+        } else if (xPos <= 7 * buttonSize + canvasPadding && yPos >= troopBar.startingY - buttonSize - buttonScalingFactor * canvasPadding) return 1;
         return -1
     }
 
-    function n(B, C) {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, troopBar.startingY - B * A * canvasPadding - B * l);
+    function drawGameButtons(bIndex, color) {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, troopBar.startingY - bIndex * buttonScalingFactor * canvasPadding - bIndex * buttonSize);
         mainCanvasCtx.fillStyle = blackSemiTransparent2;
-        mainCanvasCtx.fillRect(0, 0, 4 * l, l);
-        y === B + 1 && C === whiteRGB2 && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * l, l));
-        mainCanvasCtx.fillStyle = C;
-        mainCanvasCtx.fillRect(0, 0, 4 * l, 1);
-        mainCanvasCtx.fillRect(0, 0, 1, l);
-        mainCanvasCtx.fillRect(4 * l, 0, 1, l);
-        mainCanvasCtx.fillRect(0, l - 1, 4 * l, 1);
-        mainCanvasCtx.fillText(z[B], 2 * l, .54 * l)
+        mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize);
+        selectedBIndex === bIndex + 1 && color === whiteRGB2 && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize));
+        mainCanvasCtx.fillStyle = color;
+        mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, 1);
+        mainCanvasCtx.fillRect(0, 0, 1, buttonSize);
+        mainCanvasCtx.fillRect(4 * buttonSize, 0, 1, buttonSize);
+        mainCanvasCtx.fillRect(0, buttonSize - 1, 4 * buttonSize, 1);
+        mainCanvasCtx.fillText(buttonLabels[bIndex], 2 * buttonSize, .54 * buttonSize)
     }
-    var l, x, t, z = ["Quit Game", "Surrender", "Statistics"],
-        y, A;
+    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics"],
+        selectedBIndex, buttonScalingFactor;
     this.init = function() {
-        y = -1;
-        this.lu = !1;
-        A = isZoom ? 1.2 : .6;
+        selectedBIndex = -1;
+        this.menuVisible = !1;
+        buttonScalingFactor = isZoom ? 1.2 : .6;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        l = troopBar.height;
-        x = document.createElement("canvas");
-        x.width = l;
-        x.height = l;
-        t = fontWeightBold + Math.floor((isZoom ? .5 : .45) * l) + fontSizeArial;
-        g()
+        buttonSize = troopBar.height;
+        gameButtonsCanvas = document.createElement("canvas");
+        gameButtonsCanvas.width = buttonSize;
+        gameButtonsCanvas.height = buttonSize;
+        fontStyle = fontWeightBold + Math.floor((isZoom ? .5 : .45) * buttonSize) + fontSizeArial;
+        drawGameMenuButton()
     };
-    this.m0 = function() {
-        (this.lu = !this.lu) ? (isCanvasHidden = !1, singleplayer && 1 === clientStatus && !inSpawn && (setTimeout(function() {
+    this.toggleMenu = function() {
+        (this.menuVisible = !this.menuVisible) ? (isCanvasHidden = !1, singleplayer && 1 === clientStatus && !inSpawn && (setTimeout(function() {
             h8.iz()
-        }, 0), setAndroidState(0))) : (y = -1, g(), singleplayer && setAndroidState(1));
-        c4.canvasDirty = !0
+        }, 0), setAndroidState(0))) : (selectedBIndex = -1, drawGameMenuButton(), singleplayer && setAndroidState(1));
+        mainRenderer.canvasDirty = !0
     };
-    this.mouseDown = function(B, C) {
-        var E = k(B, C);
-        return this.lu ? 0 === E ? (leaveGame(), 2) : 1 === E ? (this.m0(), 2) : 2 === E ? (this.canSurrender(myID) && (singleplayer ? processAction.surrender(myID) : dataEncoder.surrender(), this.m0()), 2) : 3 === E && 2 <= statisticNumbers.m4 ? (statistics.m0(), c4.canvasDirty = !0, 2) : statistics.visible ||
-            singleplayer && !inSpawn ? 1 : (this.m0(), 2) : 0 === E ? (this.m0(), 2) : 0
+    this.mouseDown = function(xPos, yPos) {
+        var bIndex = getButtonIndex(xPos, yPos);
+        if (this.menuVisible) {
+            if (0 === bIndex) {
+                leaveGame();
+                return 2;
+            } else if (1 === bIndex) {
+                this.toggleMenu();
+                return 2;
+            } else if (2 === bIndex) {
+                if (this.canSurrender(myID)) {
+                    if (singleplayer) processAction.surrender(myID)
+                    else dataEncoder.surrender();
+                    this.toggleMenu();
+                }
+                return 2;
+            } else if (3 === bIndex && 2 <= statisticNumbers.m4) {
+                statistics.toggleMenu();
+                mainRenderer.canvasDirty = !0;
+                return 2;
+            } else if (statistics.visible || singleplayer && !inSpawn) return 1
+            else {
+                this.toggleMenu();
+                return 2;
+            }
+        } else if (0 === bIndex) {
+            this.toggleMenu();
+            return 2;
+        } else return 0
     };
-    this.onPointermove = function(B, C) {
-        var E = k(B, C);
-        if (E === y) return -1 !== y;
-        y = E;
-        this.lu || g();
-        c4.canvasDirty = !0;
-        return -1 !== y
+    this.onPointermove = function(xPos, yPos) {
+        var bIndex = getButtonIndex(xPos, yPos);
+        if (bIndex === selectedBIndex) return -1 !== selectedBIndex;
+        selectedBIndex = bIndex;
+        if (!this.menuVisible) drawGameMenuButton();
+        mainRenderer.canvasDirty = !0;
+        return -1 !== selectedBIndex
     };
     this.drawCanvasImage = function() {
-        if (this.lu) {
-            var B = Math.floor(5.5 * l);
+        if (this.menuVisible) {
+            var B = Math.floor(5.5 * buttonSize);
             mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, troopBar.startingY);
             mainCanvasCtx.fillStyle = blackSemiTransparent2;
-            mainCanvasCtx.fillRect(0, 0, B, l);
-            0 === y ? (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * l, l)) : 1 === y && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(4 * l, 0, Math.floor(1.5 * l), l));
+            mainCanvasCtx.fillRect(0, 0, B, buttonSize);
+            0 === selectedBIndex ? (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize)) : 1 === selectedBIndex && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(4 * buttonSize, 0, Math.floor(1.5 * buttonSize), buttonSize));
             mainCanvasCtx.fillStyle = whiteRGB2;
             mainCanvasCtx.fillRect(0, 0, B, 1);
-            mainCanvasCtx.fillRect(0, 0, 1, l);
-            mainCanvasCtx.fillRect(4 * l, 0, 1, l);
-            mainCanvasCtx.fillRect(0, l - 1, B, 1);
-            mainCanvasCtx.fillRect(B - 1, 0, 1, l);
-            mainCanvasCtx.font = t;
+            mainCanvasCtx.fillRect(0, 0, 1, buttonSize);
+            mainCanvasCtx.fillRect(4 * buttonSize, 0, 1, buttonSize);
+            mainCanvasCtx.fillRect(0, buttonSize - 1, B, 1);
+            mainCanvasCtx.fillRect(B - 1, 0, 1, buttonSize);
+            mainCanvasCtx.font = fontStyle;
             mainCanvasCtx.textBaseline = middleAlign;
             mainCanvasCtx.textAlign = centerAlign;
-            mainCanvasCtx.fillText(z[0], 2 * l, .54 * l);
-            B = .4 * l;
-            gameButtons.m9(canvasPadding + 4 * l + (1.5 * l - B) / 2, troopBar.startingY + .3 * l, B);
-            n(1, gameButtons.canSurrender(myID) ? whiteRGB2 : gray128RGB);
-            2 <= statisticNumbers.m4 && n(2, whiteRGB2);
+            mainCanvasCtx.fillText(buttonLabels[0], 2 * buttonSize, .54 * buttonSize);
+            B = .4 * buttonSize;
+            gameButtons.drawMenuSymbol(canvasPadding + 4 * buttonSize + (1.5 * buttonSize - B) / 2, troopBar.startingY + .3 * buttonSize, B);
+            drawGameButtons(1, gameButtons.canSurrender(myID) ? whiteRGB2 : gray128RGB);
+            2 <= statisticNumbers.m4 && drawGameButtons(2, whiteRGB2);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
-        } else mainCanvasCtx.drawImage(x, canvasPadding, troopBar.startingY)
+        } else mainCanvasCtx.drawImage(gameButtonsCanvas, canvasPadding, troopBar.startingY)
     };
-    this.canSurrender = function(B) {
-        return 0 !== isAlive[B] && 2 !== clientStatus && playerActions.isHuman(B)
+    this.canSurrender = function(id) {
+        return 0 !== isAlive[id] && 2 !== clientStatus && playerActions.isHuman(id)
     };
-    this.m9 = function(B, C, E) {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, B, C);
+    this.drawMenuSymbol = function(xEnd, yEnd, size) {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, xEnd, yEnd);
         mainCanvasCtx.lineWidth = 2;
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.beginPath();
         mainCanvasCtx.moveTo(0, 0);
-        mainCanvasCtx.lineTo(E, E);
-        mainCanvasCtx.moveTo(0, E);
-        mainCanvasCtx.lineTo(E, 0);
+        mainCanvasCtx.lineTo(size, size);
+        mainCanvasCtx.moveTo(0, size);
+        mainCanvasCtx.lineTo(size, 0);
         mainCanvasCtx.stroke()
     }
 }
@@ -2211,13 +2237,13 @@ function Announcements() {
     var g, k, n, l, x, pluralLeaveLabels, monoLeaveLabels;
 
     function y() {
-        return troopBar.md(announcements.ma()) ? peace.visible ? troopBar.startingY - troopBar.height - 2 * N : troopBar.startingY - N : peace.visible ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * N : canvasHeight - N
+        return troopBar.md(announcements.ma()) ? peace.visible ? troopBar.startingY - troopBar.height - 2 * canvasPadding : troopBar.startingY - canvasPadding : peace.visible ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * canvasPadding : canvasHeight - canvasPadding
     }
 
     function announce(displayTime, message, messageID, playerID, P, U, W, X) {
         var isEmoji = 1E3 <= messageID;
         var messageWidth = Math.floor(gameMessages.measureText(message, announcements.fontStyle) + 1.5 * I + (isEmoji ? announcementHeight : 1.5 * I));
-        if (messageWidth + N > canvasWidth && !isEmoji && 50 !== messageID && 20 < message.length) {
+        if (messageWidth + canvasPadding > canvasWidth && !isEmoji && 50 !== messageID && 20 < message.length) {
             var ba = Math.floor(.5 * message.length);
             announce(displayTime, message.substring(0, ba), messageID, playerID, P, U, W, X);
             announce(displayTime, message.substring(ba), messageID, playerID, P, U, W, X)
@@ -2279,7 +2305,7 @@ function Announcements() {
         }
         return R
     }
-    var pendingAnnouncements, announcementHeight, N, I, acceptButtonWidth, K, tickCounter, acceptButCanvas;
+    var pendingAnnouncements, announcementHeight, I, acceptButtonWidth, K, tickCounter, acceptButCanvas;
     this.init = function() {
         tickCounter = 0;
         K = isZoom ? 7 : 12;
@@ -2301,13 +2327,13 @@ function Announcements() {
         announce(340, mapLandInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
         0 < mapSpecialInfoLabel.length && announce(340, mapSpecialInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
         10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, getColorRGB(235, 255, 120), blackMoreOpaque, -1, !1);
-        this.mP()
+        this.announceDescription()
     };
-    this.mP = function() {
-        var H;
+    this.announceDescription = function() {
+        var dIndex;
         if (customJSON.isCustomJSON) {
-            var M = customJSON.data.description.length;
-            for (H = 0; H < M; H++) announce(400, customJSON.data.description[H], 6, 0, getColorRGB(255, 255, 255), blackMoreOpaque, -1, !1)
+            var descriptionCount = customJSON.data.description.length;
+            for (dIndex = 0; dIndex < descriptionCount; dIndex++) announce(400, customJSON.data.description[dIndex], 6, 0, getColorRGB(255, 255, 255), blackMoreOpaque, -1, !1)
         }
     };
     this.setCanvasVariables = function() {
@@ -2315,7 +2341,6 @@ function Announcements() {
         announcementHeight = 10 > announcementHeight ? 10 : announcementHeight;
         this.fontRatio = Math.floor(2 * announcementHeight / 3);
         this.fontStyle = fontWeightBold + this.fontRatio + fontSizeArial;
-        N = canvasPadding;
         I = Math.floor(announcementHeight / 5);
         if (0 < pendingAnnouncements.length) {
             for (var aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
@@ -2351,8 +2376,8 @@ function Announcements() {
         for (var Q = y(), R, mIndex = pendingAnnouncements.length - 1; 0 <= mIndex; mIndex--)
             if (R = Q - (mIndex + 1) * announcementHeight, yPos >= R && yPos < R + announcementHeight) {
                 if (50 === pendingAnnouncements[mIndex].id) {
-                    if (xPos >= prevClientWidth - acceptButtonWidth - N - pendingAnnouncements[mIndex].width) {
-                        if (xPos >= prevClientWidth - acceptButtonWidth - N) {
+                    if (xPos >= prevClientWidth - acceptButtonWidth - canvasPadding - pendingAnnouncements[mIndex].width) {
+                        if (xPos >= prevClientWidth - acceptButtonWidth - canvasPadding) {
                             mIndex = pendingAnnouncements[mIndex].player;
                             this.nonAggression(mIndex, 0);
                             dataEncoder.nonAggression(mIndex);
@@ -2361,7 +2386,7 @@ function Announcements() {
                     }
                     break
                 }
-                if (xPos >= prevClientWidth - pendingAnnouncements[mIndex].width - N) {
+                if (xPos >= prevClientWidth - pendingAnnouncements[mIndex].width - canvasPadding) {
                     if (pendingAnnouncements[mIndex].mX) {
                         eV.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
                         if (0 <= pendingAnnouncements[mIndex].mW) {
@@ -2534,7 +2559,7 @@ function Announcements() {
         }
     };
     this.iy = function(H) {
-        var M, Q = c4.ticksElapsed();
+        var M, Q = mainRenderer.ticksElapsed();
         for (M = 2; 0 <= M; M--) 0 < l[M] && (H || x[M] < Q - 220) && this.nL(M)
     };
     this.nL = function(H) {
@@ -2551,7 +2576,7 @@ function Announcements() {
         }
     };
     this.mj = function(H, M, Q) {
-        var R = c4.ticksElapsed(),
+        var R = mainRenderer.ticksElapsed(),
             P = l[H] + 1;
         l[H]++;
         g[H] = M;
@@ -2577,9 +2602,9 @@ function Announcements() {
         for (aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
             M = H - (aIndex + 1) * announcementHeight;
             if (50 === pendingAnnouncements[aIndex].id) {
-                mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - acceptButtonWidth - N, M);
-                mainCanvasCtx.drawImage(acceptButCanvas, prevClientWidth - acceptButtonWidth - N, M)
-            } else mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - N, M)
+                mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - acceptButtonWidth - canvasPadding, M);
+                mainCanvasCtx.drawImage(acceptButCanvas, prevClientWidth - acceptButtonWidth - canvasPadding, M)
+            } else mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - canvasPadding, M)
         }
     }
 }
@@ -2616,13 +2641,13 @@ function CookiesPrompt() {
             userSettings.setCookieStatus(1);
             this.visible = !1;
         }
-        return c4.canvasDirty = !0
+        return mainRenderer.canvasDirty = !0
     };
     this.onPointermove = function(xPos, yPos) {
         if (!this.visible) return !1;
         var n = this.bs;
         this.bs = this.getButtonIndex(xPos, yPos);
-        if (n !== this.bs) c4.canvasDirty = !0;
+        if (n !== this.bs) mainRenderer.canvasDirty = !0;
         return -1 !== this.bs
     };
     this.getButtonIndex = function(xPos, yPos) {
@@ -2669,7 +2694,7 @@ function NextContestBar() {
         this.setTime()
     };
     this.update = function() {
-        this.setTime() && (c4.canvasDirty = !0)
+        this.setTime() && (mainRenderer.canvasDirty = !0)
     };
     this.setTime = function() {
         var y = new Date;
@@ -2803,7 +2828,7 @@ function Emojis() {
     };
     this.show = function(g, k) {
         if (1 > this.ld) return !1;
-        this.nt = c4.time;
+        this.nt = mainRenderer.time;
         var n = Math.floor(prevClientWidth / this.nn);
         n = 3 > n ? 3 : n > this.no ? this.no : n;
         n = this.ld > n ? n : this.ld;
@@ -2825,7 +2850,7 @@ function Emojis() {
         return !(g < this.np[0] || k < this.nq[0] || g >= this.f9 || k >= this.fA)
     };
     this.lH = function(g, k, n) {
-        if (n === myID && this.nt + 190 > c4.time) return !1;
+        if (n === myID && this.nt + 190 > mainRenderer.time) return !1;
         for (var l = this.ld - 1; 0 <= l; l--)
             if (g >= this.np[l] && k >= this.nq[l]) {
                 if (39 === this.ns[l]) return this.o4(), this.show(g, k), !0;
@@ -2972,10 +2997,10 @@ function handleMouseDown(xPos, yPos) {
     else if (!(statistics.mouseDown(xPos, yPos) || playerActions.lB(xPos, yPos) || gameResultBox.mouseDown(xPos, yPos) || attacksBar.mouseDown(xPos, yPos))) {
         var n = gameButtons.mouseDown(xPos, yPos);
         if (2 !== n && !gameLeaderboard.mouseDown(xPos, yPos)) {
-            if (gj.mouseDown(xPos, yPos)) c4.canvasDirty = !0
+            if (gj.mouseDown(xPos, yPos)) mainRenderer.canvasDirty = !0
             else if (troopBar.getClickedButton(xPos, yPos)) {
                 gj.gk = !1;
-                if (troopBar.pQ(xPos, yPos)) c4.canvasDirty = !0
+                if (troopBar.pQ(xPos, yPos)) mainRenderer.canvasDirty = !0
             } else if (!(announcements.mouseDown(xPos, yPos) || peace.mouseDown(xPos, yPos)) && 0 === n) playerActions.lD(xPos, yPos)
         }
     }
@@ -3001,10 +3026,10 @@ function onPointermove(xPos, yPos) {
     else if (!statistics.onPointermove(xPos, yPos)) {
         if (!(playerActions.visible() ? playerActions.onPointermove(xPos, yPos) : gameButtons.onPointermove(xPos, yPos))) {
             if (troopBar.isDragging) {
-                if (troopBar.onPointermove(xPos, yPos)) c4.canvasDirty = !0
+                if (troopBar.onPointermove(xPos, yPos)) mainRenderer.canvasDirty = !0
             } else {
                 gameLeaderboard.onPointermove(xPos, yPos);
-                if (gj.gk && gj.onPointermove(xPos, yPos)) c4.canvasDirty = !0
+                if (gj.gk && gj.onPointermove(xPos, yPos)) mainRenderer.canvasDirty = !0
             }
         }
     }
@@ -3057,7 +3082,7 @@ function onPointerUp(xPos, yPos) {
         statistics.pV();
         troopBar.stopDragging();
         gj.gk = !1;
-        if (playerActions.click(xPos, yPos)) c4.canvasDirty = !0
+        if (playerActions.click(xPos, yPos)) mainRenderer.canvasDirty = !0
     }
 }
 
@@ -3071,8 +3096,8 @@ function onWheel(e) {
     if (0 === clientStatus) gameStateManager.onWheel(xPos, yPos, deltaY)
     else if (!gameLeaderboard.onWheel(xPos, yPos, deltaY)) {
         if (troopBar.getClickedButton(xPos, yPos)) {
-            if (troopBar.onWheel(deltaY)) c4.canvasDirty = !0
-        } else if (gj.onWheel(xPos, yPos, 2 * deltaY)) c4.canvasDirty = !0
+            if (troopBar.onWheel(deltaY)) mainRenderer.canvasDirty = !0
+        } else if (gj.onWheel(xPos, yPos, 2 * deltaY)) mainRenderer.canvasDirty = !0
     }
 }
 
@@ -3317,7 +3342,7 @@ function GameMessages() {
         C[1] = .7;
         F = Array(4);
         I = document.createElement("canvas");
-        J = c4.time + 2E3;
+        J = mainRenderer.time + 2E3;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
@@ -3340,14 +3365,14 @@ function GameMessages() {
     };
     this.update = function() {
         if (0 !== x)
-            if (4 === x) c4.time > J && (x = 0, 1 === clientStatus && gameMessages.mx(mapInfo.getMapName(), 3, 1, 9));
+            if (4 === x) mainRenderer.time > J && (x = 0, 1 === clientStatus && gameMessages.mx(mapInfo.getMapName(), 3, 1, 9));
             else {
                 if (1 === x) 0 === t && (k(), t = 1E-4), t += .002 *
-                    (c4.time - K), 1 <= t && (z = 0, x = 2, t = 1), c4.canvasDirty = !0;
+                    (mainRenderer.time - K), 1 <= t && (z = 0, x = 2, t = 1), mainRenderer.canvasDirty = !0;
                 else if (2 === x) {
-                    if (z += (c4.time - K) / 1E3, z > l[0].gb || 1 < z && 1 < l.length) x = 3
-                } else 3 === x && (t -= .002 * (c4.time - K), 0 >= t && (t = 0, l.shift(), x = 0 < l.length ? 1 : 0), c4.canvasDirty = !0);
-                K = c4.time
+                    if (z += (mainRenderer.time - K) / 1E3, z > l[0].gb || 1 < z && 1 < l.length) x = 3
+                } else 3 === x && (t -= .002 * (mainRenderer.time - K), 0 >= t && (t = 0, l.shift(), x = 0 < l.length ? 1 : 0), mainRenderer.canvasDirty = !0);
+                K = mainRenderer.time
             }
     };
     this.measureText = function(L, H) {
@@ -3367,7 +3392,7 @@ function GameMessages() {
             qP: M,
             gb: Q
         });
-        0 === x && (t = 0, x = 1, K = c4.time)
+        0 === x && (t = 0, x = 1, K = mainRenderer.time)
     };
     this.drawCanvasImage = function() {
         0 !== x && 0 !== t && (1 > t ? (mainCanvasCtx.globalAlpha = t, g(), mainCanvasCtx.globalAlpha = 1) : g())
@@ -3645,7 +3670,7 @@ function TroopBar() {
         needsUpdate && (needsUpdate = !1, redrawTroopBar())
     };
     this.visible = function() {
-        return !(!visibility || gameButtons.lu && startingX < Math.floor(canvasPadding + 5.5 * this.height))
+        return !(!visibility || gameButtons.menuVisible && startingX < Math.floor(canvasPadding + 5.5 * this.height))
     };
     this.md = function(I) {
         return this.visible() ? startingX + troopBarWidth > canvasWidth - I - canvasPadding : !1
@@ -3671,7 +3696,7 @@ function TroopBar() {
         return slideRatio(xPos)
     };
     this.checkAndMultiplyRatio = function(multiplier) {
-        if (0 !== clientStatus && this.visible() && multiplyRatio(multiplier)) c4.canvasDirty = !0
+        if (0 !== clientStatus && this.visible() && multiplyRatio(multiplier)) mainRenderer.canvasDirty = !0
     };
     this.onWheel = function(deltaY) {
         if (0 === deltaY || !this.visible()) return !1;
@@ -3839,7 +3864,7 @@ function Playtime() {
                 P += (U - Q) * t[1] / 864E5;
                 Q = -1
             }
-            0 < P && (t[0] += Math.floor(P), c4.canvasDirty = !0)
+            0 < P && (t[0] += Math.floor(P), mainRenderer.canvasDirty = !0)
         }
     }
     var t, z, y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R;
@@ -4045,19 +4070,19 @@ function Playtime() {
         J = !0;
         for (U = 0; U < P.length; U++) t.unshift(P[U]);
         g();
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.setPosition = function() {
         k()
     };
     this.onPointermove = function(P, U) {
-        U > prevClientHeight - .6 * y ? this.rg ? P !== K && (z += P - K, K = P, k(), n(P), this.rg = -1 !== G, c4.canvasDirty = !0) : n(P) && (c4.canvasDirty = !0) : this.pU()
+        U > prevClientHeight - .6 * y ? this.rg ? P !== K && (z += P - K, K = P, k(), n(P), this.rg = -1 !== G, mainRenderer.canvasDirty = !0) : n(P) && (mainRenderer.canvasDirty = !0) : this.pU()
     };
     this.pU = function() {
-        -1 !== G && (this.rg = !1, G = -1, c4.canvasDirty = !0)
+        -1 !== G && (this.rg = !1, G = -1, mainRenderer.canvasDirty = !0)
     };
     this.onWheel = function(P, U) {
-        -1 !== G && (z += Math.floor(U), k(), n(P), c4.canvasDirty = !0)
+        -1 !== G && (z += Math.floor(U), k(), n(P), mainRenderer.canvasDirty = !0)
     };
     this.mouseDown = function(P, U) {
         this.onPointermove(P, U); - 1 !== G && (K = P, this.rg = !0)
@@ -4349,7 +4374,7 @@ function GameLeaderboard() {
         return gameBoardWidth
     };
     this.drawCanvas = function(S) {
-        W && (S || 14 >= sm && 0 === c4.ticksElapsed() % 6 || 14 < sm) && (W = !1, drawGameLeaderboard())
+        W && (S || 14 >= sm && 0 === mainRenderer.ticksElapsed() % 6 || 14 < sm) && (W = !1, drawGameLeaderboard())
     };
     this.update = function() {
         for (var S = const_maxEntities - 1; 0 <= S; S--)
@@ -4374,13 +4399,13 @@ function GameLeaderboard() {
     };
     this.mouseDown = function(S, O) {
         if (isInBoardCanvas(S, O)) {
-            na = c4.time;
+            na = mainRenderer.time;
             ba = !0;
             ca = pa = getRowIndex(O);
             if (isTouch) {
                 var T = rangeClamp(-1, pa, visibleLandCount);
                 T = T === visibleLandCount ? -1 : T;
-                highlightedLandIndex !== T && (highlightedLandIndex = T, drawGameLeaderboard(), c4.canvasDirty = !0)
+                highlightedLandIndex !== T && (highlightedLandIndex = T, drawGameLeaderboard(), mainRenderer.canvasDirty = !0)
             }
             return !0
         }
@@ -4392,19 +4417,19 @@ function GameLeaderboard() {
             var Y = boardTopIndex;
             boardTopIndex += ca - T;
             boardTopIndex = rangeClamp(0, boardTopIndex, maxEntities - visibleLandCount);
-            boardTopIndex !== Y && (ca = T, T = rangeClamp(-1, T, visibleLandCount), highlightedLandIndex = T = T !== visibleLandCount && isInBoardCanvas(S, O) ? T : -1, drawGameLeaderboard(), c4.canvasDirty = !0);
+            boardTopIndex !== Y && (ca = T, T = rangeClamp(-1, T, visibleLandCount), highlightedLandIndex = T = T !== visibleLandCount && isInBoardCanvas(S, O) ? T : -1, drawGameLeaderboard(), mainRenderer.canvasDirty = !0);
             return !0
         }
         T = rangeClamp(-1, T, visibleLandCount);
         T = T === visibleLandCount || !isInBoardCanvas(S, O) || isTouch ? -1 : T;
-        return highlightedLandIndex !== T ? (highlightedLandIndex = T, drawGameLeaderboard(), c4.canvasDirty = !0) : !1
+        return highlightedLandIndex !== T ? (highlightedLandIndex = T, drawGameLeaderboard(), mainRenderer.canvasDirty = !0) : !1
     };
     this.pV = function(xPos, yPos) {
         if (!ba) return !1;
         ba = !1;
         var T = getRowIndex(yPos);
-        isTouch && -1 !== highlightedLandIndex && (highlightedLandIndex = -1, drawGameLeaderboard(), c4.canvasDirty = !0);
-        if (350 > c4.time - na && pa === T && (T = rangeClamp(-1, T, visibleLandCount), T = T !== visibleLandCount && isInBoardCanvas(xPos, yPos) ? T : -1, -1 !== T)) {
+        isTouch && -1 !== highlightedLandIndex && (highlightedLandIndex = -1, drawGameLeaderboard(), mainRenderer.canvasDirty = !0);
+        if (350 > mainRenderer.time - na && pa === T && (T = rangeClamp(-1, T, visibleLandCount), T = T !== visibleLandCount && isInBoardCanvas(xPos, yPos) ? T : -1, -1 !== T)) {
             var Y = landOrder[T + boardTopIndex];
             T === visibleLandCount - 1 && landIDOrder[myID] >= boardTopIndex + visibleLandCount - 1 && (Y = myID);
             0 !== isAlive[Y] && eV.hoverTo(Y, 800, !1, 0)
@@ -4412,7 +4437,7 @@ function GameLeaderboard() {
         return !0
     };
     this.onWheel = function(S, O, T) {
-        return ba ? !1 : isInBoardCanvas(S, O) ? (S = getRowIndex(O), S = rangeClamp(-1, S, visibleLandCount), S = S === visibleLandCount || isTouch ? -1 : S, 0 < T ? boardTopIndex < maxEntities - visibleLandCount && (boardTopIndex++, highlightedLandIndex = S, drawGameLeaderboard(), c4.canvasDirty = !0) : 0 < boardTopIndex && (boardTopIndex--, highlightedLandIndex = S, drawGameLeaderboard(), c4.canvasDirty = !0), !0) : !1
+        return ba ? !1 : isInBoardCanvas(S, O) ? (S = getRowIndex(O), S = rangeClamp(-1, S, visibleLandCount), S = S === visibleLandCount || isTouch ? -1 : S, 0 < T ? boardTopIndex < maxEntities - visibleLandCount && (boardTopIndex++, highlightedLandIndex = S, drawGameLeaderboard(), mainRenderer.canvasDirty = !0) : 0 < boardTopIndex && (boardTopIndex--, highlightedLandIndex = S, drawGameLeaderboard(), mainRenderer.canvasDirty = !0), !0) : !1
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.drawImage(leaderboardCanvas, canvasPadding, canvasPadding)
@@ -4555,8 +4580,7 @@ function GameStatistics() {
         P = interest.getInterestRate(myID);
         P !== K[5] && (K[5] = P, I++);
         x();
-        K[7] +=
-            c4.tV();
+        K[7] += mainRenderer.getTickInterval();
         P = k(7);
         L !== P && (L = P, I += 100)
     };
@@ -4635,18 +4659,18 @@ function GameResultBox() {
         }
     };
     this.show = function(C, E) {
-        g || (k = C ? 1 : 2, g = !0, this.setCanvasVariables(), playerActions.ln(), troopBar.toggleVisibilityOff(), B = c4.time, -1 === this.tb &&
-            (this.tb = c4.ticksElapsed()), y = E ? 1 : 0)
+        g || (k = C ? 1 : 2, g = !0, this.setCanvasVariables(), playerActions.ln(), troopBar.toggleVisibilityOff(), B = mainRenderer.time, -1 === this.tb &&
+            (this.tb = mainRenderer.ticksElapsed()), y = E ? 1 : 0)
     };
     this.update = function() {
-        !g || 1 <= y || (y += 5E-4 * (c4.time - B), y = 1 < y ? 1 : y, B = c4.time, c4.canvasDirty = !0)
+        !g || 1 <= y || (y += 5E-4 * (mainRenderer.time - B), y = 1 < y ? 1 : y, B = mainRenderer.time, mainRenderer.canvasDirty = !0)
     };
     this.mouseDown = function(C, E) {
         if (!g || 0 >= y) return !1;
         C -= Math.floor((prevClientWidth - n) / 2);
         E -= prevClientHeight - l - 2 * canvasPadding;
         if (0 > C || 0 > E || C > n || E > l) return !1;
-        C > n - l / 3 && E < l / 3 && (g = !1, c4.canvasDirty = !0);
+        C > n - l / 3 && E < l / 3 && (g = !1, mainRenderer.canvasDirty = !0);
         return !0
     };
     this.drawCanvasImage = function() {
@@ -4783,7 +4807,7 @@ function processSendBoat(id, closestPIndex, targetPIndex, amount) {
 
 function processDonation(authorID, targetID, amount) {
     if (!(!teamGame || 0 === isAlive[authorID] || 0 === isAlive[targetID] || 0 > amount || amount > troops[authorID] || authorID === targetID || 
-        isNotTeamate(authorID, targetID) || authorID < playerCount && targetID < playerCount && 7 > gamemode && 1071 > c4.ticksElapsed())) {
+        isNotTeamate(authorID, targetID) || authorID < playerCount && targetID < playerCount && 7 > gamemode && 1071 > mainRenderer.ticksElapsed())) {
         
         var tax = divideFloor(troops[authorID], 16);
         amount -= amount >= divideFloor(troops[authorID], 2) ? tax : 0;
@@ -4918,7 +4942,7 @@ function IntelliAttack() {
                     }
                     returnFactor += returnProbi * attacks.getRemainingTroopsFromIndex(id, aIndex) / (troops[id] + attacks.getTotalTroopsAttacking(id))
                 }
-                var ticksElapsed = c4.ticksElapsed(),
+                var ticksElapsed = mainRenderer.ticksElapsed(),
                     speed = land[myID] < 1E3 ? 1/4 : land[myID] < 1E4 ? 1/3 : land[myID] < 6E4 ? 1/2 : land[myID] < 16E4 ? 1 : land[myID] < 3E5 ? 2 : 3 ;
                 timeLeft = (100 - (ticksElapsed % 100) - (singleplayer ? 1 : 7 - (((divideFloor(ticksElapsed, 100))*100 + (ticksElapsed % 100) - 1) % 7)));
                 targetPenalties.push({
@@ -4985,13 +5009,13 @@ function MainLeaderboard() {
         this.visible = !0;
         this.updateRenderObject();
         nameInput.hide();
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.update = function() {
         this.visible && this.updateRenderObject()
     };
     this.updateRenderObject = function() {
-        c4.time - 12E4 >= n[this.tz] && (n[this.tz] = c4.time, this.paginationDirection = [0, 0], wsManager.sendWhenWSOpen(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
+        mainRenderer.time - 12E4 >= n[this.tz] && (n[this.tz] = mainRenderer.time, this.paginationDirection = [0, 0], wsManager.sendWhenWSOpen(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
     };
     this.setCanvasVariables = function() {
         var l;
@@ -5019,7 +5043,7 @@ function MainLeaderboard() {
         bestEntries = this.buttons[boardType][0][0].name;
         1 === boardType && (bestEntries = "[" + bestEntries + "]");
         0 === page && mainLeaderboardIcon.setLabel(boardType, bestEntries);
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.uN = function(l) {
         this.buttons[l][0].sort(function(x, t) {
@@ -5066,12 +5090,12 @@ function MainLeaderboard() {
         if (!this.visible) return !1;
         l -= (prevClientWidth - this.width) / 2;
         x -= (prevClientHeight - this.height) / 2;
-        if (0 > l || l > this.width || 0 > x || x > this.height) return this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0;
+        if (0 > l || l > this.width || 0 > x || x > this.height) return this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), mainRenderer.canvasDirty = !0;
         if (x < .3 * this.height) var t = 1;
         else x < .85 * this.height ? (t = (0 === this.tz ? 14.1 : 3) * (x - .3 * this.height) / (.55 * this.height), t = Math.floor(1 + t * t)) : t = 0 === this.tz ? 200 : 10;
         this.paginationDirection[this.tz] = l < this.width / 2 ? -t : t;
-        if (n[this.tz] + 50 > c4.time) return !0;
-        n[this.tz] = c4.time;
+        if (n[this.tz] + 50 > mainRenderer.time) return !0;
+        n[this.tz] = mainRenderer.time;
         wsManager.sendWhenWSOpen(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz);
         return !0
     };
@@ -5190,7 +5214,7 @@ function OpenLinkBox() {
             F.style.left = Math.floor((g + (C - B) / 2) / pixelRatio) + "px";
             document.body.appendChild(F);
             this.visible = !0;
-            c4.canvasDirty = !0
+            mainRenderer.canvasDirty = !0
         }
     };
     this.end = function() {
@@ -5201,7 +5225,7 @@ function OpenLinkBox() {
     };
     this.mouseDown = function(G, N) {
         if (!this.visible) return !1;
-        if (G < g || N < k || G > g + C || N > k + l) c4.canvasDirty = !0, this.visible = !1, document.body.removeChild(F),
+        if (G < g || N < k || G > g + C || N > k + l) mainRenderer.canvasDirty = !0, this.visible = !1, document.body.removeChild(F),
             0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0);
         return !0
     };
@@ -5442,7 +5466,7 @@ function MainButtons() {
         else if (5 === gameStateManager.getState()) bIndex = this.getClickedButton(xPos, yPos, 5, 2)
         if (hoverButtonIndex !== bIndex) {
             hoverButtonIndex = bIndex;
-            if (updateCanvas) c4.canvasDirty = !0
+            if (updateCanvas) mainRenderer.canvasDirty = !0
         }
         if (-1 !== bIndex) {
             playtime.pU();
@@ -5494,15 +5518,15 @@ function ColorsPanel() {
         var l = (prevClientHeight - this.height) / 2;
         k -= (prevClientWidth - this.width) / 2;
         n -= l;
-        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), c4.canvasDirty = !0, !1;
+        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), mainRenderer.canvasDirty = !0, !1;
         if (k < this.margins || n < this.margins || k >= this.width - this.margins || n >= this.height - this.margins) return !0;
-        if (k < this.margins + this.v0) return n < this.margins + this.v0 && 0 !== this.ns && (this.ns = 0, c4.canvasDirty = !0), !0;
+        if (k < this.margins + this.v0) return n < this.margins + this.v0 && 0 !== this.ns && (this.ns = 0, mainRenderer.canvasDirty = !0), !0;
         if (k < 2 * this.margins + this.v0) return !0;
         k -= 2 * this.margins + this.v0;
-        if (n < this.margins + this.v2) return this.isSaveRequired = 1, this.colors[this.ns][0] = g(256 * k / this.v1), c4.canvasDirty = !0;
+        if (n < this.margins + this.v2) return this.isSaveRequired = 1, this.colors[this.ns][0] = g(256 * k / this.v1), mainRenderer.canvasDirty = !0;
         if (n < 2 * this.margins + this.v2) return !0;
-        if (n < 2 * this.margins + 2 * this.v2) return this.isSaveRequired = 2, this.colors[this.ns][1] = g(256 * k / this.v1), c4.canvasDirty = !0;
-        n >= 3 * this.margins + 2 * this.v2 && (this.isSaveRequired = 3, this.colors[this.ns][2] = g(256 * k / this.v1), c4.canvasDirty = !0);
+        if (n < 2 * this.margins + 2 * this.v2) return this.isSaveRequired = 2, this.colors[this.ns][1] = g(256 * k / this.v1), mainRenderer.canvasDirty = !0;
+        n >= 3 * this.margins + 2 * this.v2 && (this.isSaveRequired = 3, this.colors[this.ns][2] = g(256 * k / this.v1), mainRenderer.canvasDirty = !0);
         return !0
     };
     this.v5 = function() {
@@ -5514,10 +5538,10 @@ function ColorsPanel() {
         saveColors(k)
     };
     this.onPointermove = function(k) {
-        0 !== this.isSaveRequired && (k -= 2 * this.margins + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.isSaveRequired - 1] = g(256 * k / this.v1), c4.canvasDirty = !0)
+        0 !== this.isSaveRequired && (k -= 2 * this.margins + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.isSaveRequired - 1] = g(256 * k / this.v1), mainRenderer.canvasDirty = !0)
     };
     this.handleSave = function() {
-        0 < this.isSaveRequired && (this.isSaveRequired = 0, this.v5(), this.v7(), c4.canvasDirty = !0)
+        0 < this.isSaveRequired && (this.isSaveRequired = 0, this.v5(), this.v7(), mainRenderer.canvasDirty = !0)
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, (prevClientWidth - this.width) / 2, (prevClientHeight - this.height) / 2);
@@ -5559,7 +5583,7 @@ function PreLobby() {
 
     function sendJoinRequest() {
         remoteIndex++;
-        initTime = c4.time;
+        initTime = mainRenderer.time;
         wsManager.sendWhenWSOpen(getCurrentRemoteIndex(), 4) && (isJoiningLobby = !0, dataEncoder.joinLobby(getCurrentRemoteIndex()))
     }
 
@@ -5587,7 +5611,7 @@ function PreLobby() {
         bgColor = "rgba(0,220,120,0.4)";
         fgColor = "rgba(0,0,0,0.8)";
         this.setCanvasVariables();
-        c4.canvasDirty = !0;
+        mainRenderer.canvasDirty = !0;
         remoteIndex = 0;
         isJoiningLobby = !1;
         sendJoinRequest()
@@ -5608,7 +5632,7 @@ function PreLobby() {
         remoteID === getCurrentRemoteIndex() && (isJoiningLobby = !1, incrementRemoteIndex())
     };
     this.completeFirstAction = function(remoteID) {
-        6 !== gameStateManager.getState() || isJoiningLobby || (initTime = c4.time, isJoiningLobby = !0, dataEncoder.joinLobby(remoteID))
+        6 !== gameStateManager.getState() || isJoiningLobby || (initTime = mainRenderer.time, isJoiningLobby = !0, dataEncoder.joinLobby(remoteID))
     };
     this.mouseDown = function(xPos, yPos) {
         var M = Math.floor((prevClientWidth - progressBarTotalWidth) / 2),
@@ -5622,11 +5646,11 @@ function PreLobby() {
     this.onPreLobbyLeave = function() {
         wsManager.closeAll(3260);
         nameInput.init();
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.update = function() {
         if (6 === gameStateManager.getState()) {
-            if (c4.time > initTime + 2E4) {
+            if (mainRenderer.time > initTime + 2E4) {
                 if (isJoiningLobby) showError.displayError(3250)
                 else incrementRemoteIndex();
             }
@@ -5640,7 +5664,7 @@ function PreLobby() {
             }
             bgColor = "rgba(0," + Math.floor(190 - 1.9 * barProgress) + "," + Math.floor(120 - 1.2 * barProgress) + "," + (.4 + .004 * barProgress) + ")";
             fgColor = "rgba(0," + Math.floor(1.9 * barProgress) + "," + Math.floor(1.2 * barProgress) + "," + (.8 - .004 * barProgress) + ")";
-            c4.canvasDirty = !0;
+            mainRenderer.canvasDirty = !0;
         }
     };    
     this.drawCanvasImage = function() {
@@ -5702,7 +5726,7 @@ function GameStateManager() {
     };
     this.hideIfNotHidden = function(k) {
         if (!mapLoaded) return !1;
-        if (!(400 > c4.time)) {
+        if (!(400 > mainRenderer.time)) {
             if ("Enter" === k.key || "Escape" === k.key) {
                 if (this.vg()) {
                     if (0 === gameState) nameInputBar.toggleVisibility(0, !0)
@@ -5727,11 +5751,11 @@ function GameStateManager() {
         } else return !1
     };
     this.aK = function() {
-        c4.canvasDirty = !0;
+        mainRenderer.canvasDirty = !0;
         if (8 === gameState) {
             if (isCanvasHidden) isCanvasHidden = !isCanvasHidden
-            else if (statistics.visible) statistics.m0()
-            else gameButtons.m0()
+            else if (statistics.visible) statistics.toggleMenu()
+            else gameButtons.toggleMenu()
         } else if (7 === gameState) lobby.vi()
         else if (6 === gameState) preLobby.onPreLobbyLeave()
         else if (3 === gameState) showError.showMainScreen(0, 0)
@@ -5787,7 +5811,7 @@ function GameStateManager() {
         mainButtons.setPosition();
         mainSettings.setPosition();
         0 === gameState ? (nameInputBar.setPosition(0), playtime.setPosition()) : 7 === gameState && lobby.setCanvasVariables();
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
         if (8 !== gameState && 10 !== gameState) {
@@ -5855,7 +5879,7 @@ function EmojisPanel() {
             if (0 === buttonIndex) {
                 this.visible = !1;
                 if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, !0);
-                c4.canvasDirty = !0;
+                mainRenderer.canvasDirty = !0;
             }
             return !1;
         }
@@ -5867,7 +5891,7 @@ function EmojisPanel() {
             this.isDragging = this.isSaveRequired = !0;
             emojis.emojiSelection[xPos] = !emojis.emojiSelection[xPos];
             emojis.o3();
-            c4.canvasDirty = !0;
+            mainRenderer.canvasDirty = !0;
         }
         return !0
     };
@@ -5924,7 +5948,7 @@ function ShowError() {
         mainButtons.setPosition();
         mainButtons.mainButton[2].displayLabel = getErrorLabel(errorCode);
         sounds.play(3);
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     }
 
     function getErrorLabel(param_errorCode) {
@@ -6018,7 +6042,7 @@ function ShowError() {
     this.showMainScreen = function(xPos, yPos) {
         nameInput.init();
         mainButtons.onPointermove(xPos, yPos, !1);
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
         mainButtons.drawErrorButtons()
@@ -6088,7 +6112,7 @@ function SetGameOrigin() {
         if (7 === gameStateManager.getState()) {
             array = param_Array;
             callCounter = 0;
-            switchTime = c4.time + 4500;
+            switchTime = mainRenderer.time + 4500;
             switchCounts = dataDecoder.decodeGameServerInfo(array) ? 2 : 0; //function returns value indicating if server switch is required
             gameStateManager.setState(10);
             mainCanvasCtx.imageSmoothingEnabled = !0;
@@ -6101,10 +6125,10 @@ function SetGameOrigin() {
         }
     };
     this.checkAndSwitchServer = function() {
-        if (0 < switchCounts && c4.time > switchTime) {
+        if (0 < switchCounts && mainRenderer.time > switchTime) {
             switchCounts--;
             switchTime += 4500;
-            if (0 === c4.wD && 0 === c4.wE()) {
+            if (0 === mainRenderer.wD && 0 === mainRenderer.wE()) {
                 if (0 === switchCounts && wsManager.remote < wsManager.serverCount) wsManager.remote += wsManager.gameServerCount
                 wsManager.sendWhenWSOpen(wsManager.remote, 5)
             }
@@ -6185,7 +6209,7 @@ function Lobby() {
                         currentMapSeed = var_currentMapSeed;
                         lobbyGames[P].canvas = previewCanvas
                     }
-                    c4.canvasDirty = !0
+                    mainRenderer.canvasDirty = !0
                 }
         }
     }
@@ -6207,7 +6231,7 @@ function Lobby() {
                 if (xPos > lgBoxXMin && xPos < lgBoxXMin + lgBoxLength && yPos > lgBoxYMin && yPos < lgBoxYMin + lgBoxLength) {
                     dataEncoder.joinGame(lobbyGames[lgIndex].gameID);
                     gameSelected = lobbyGames[lgIndex].gameID !== gameSelected ? lobbyGames[lgIndex].gameID : -1;
-                    c4.canvasDirty = !0;
+                    mainRenderer.canvasDirty = !0;
                     return true
                 }
                 lgIndex++;
@@ -6266,13 +6290,13 @@ function Lobby() {
         g(9, emojis.emojiCanvasList[46]);
         g(10, emojis.emojiCanvasList[36]);
         sounds.play(2);
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.vi = function() {
         this.hide();
         wsManager.closeAll(3240);
         nameInput.init();
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.hide = function() {
         lobbyGames = [];
@@ -6324,7 +6348,7 @@ function Lobby() {
                     break
                 } if (lobbyGames.length > R || lobbyGames.length < R) R = lobbyGames.length, this.setCanvasVariables();
         this.x3();
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.x3 = function() {
         for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
@@ -6392,7 +6416,7 @@ function Lobby() {
                         mainCanvasCtx.fillStyle = blackRGB;
                         mainCanvasCtx.fillRect(pa + z - O, S, 2, O);
                         mainCanvasCtx.fillRect(pa + z - O, S + O - 2, O, 2);
-                        gameButtons.m9(pa + z - O + T, S + T, O - 2 * T);
+                        gameButtons.drawMenuSymbol(pa + z - O + T, S + T, O - 2 * T);
                         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                         mainCanvasCtx.lineWidth = 3;
                         mainCanvasCtx.fillStyle = greenDarkerMoreOpaque
@@ -6435,7 +6459,7 @@ function GameUpdatedPrompt() {
     this.init = function(g, k) {
         gameStateManager.setState(5);
         mainButtons.onPointermove(g, k, !1);
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.drawCanvasImage = function() {
         mainButtons.drawUpdatedButtons()
@@ -6446,7 +6470,7 @@ function GameUpdatedPrompt() {
         else if (6 === n) {
             nameInput.init();
             mainButtons.onPointermove(xPos, yPos, !1);
-            c4.canvasDirty = !0;
+            mainRenderer.canvasDirty = !0;
         }
     }
 }
@@ -6470,7 +6494,7 @@ function SingleSettings() {
         mapMenu.visible = !1;
         gameStateManager.setState(2);
         this.setCanvasVariables();
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.hide = function() {};
     this.setCanvasVariables = function() {
@@ -6495,7 +6519,7 @@ function SingleSettings() {
         }
     };
     this.showMainScreen = function() {
-        c4.canvasDirty = !0;
+        mainRenderer.canvasDirty = !0;
         if (mapMenu.visible) mapMenu.visible = !1
         else {
             this.hide();
@@ -6536,23 +6560,23 @@ function SingleSettings() {
         var x = this.getClickedButton(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.showMainScreen(), !0;
-        if (1 === x) return customJSON.isCustomJSON ? (customJSON.pU(), c4.canvasDirty = !0) : mapMenu.show(), !0;
+        if (1 === x) return customJSON.isCustomJSON ? (customJSON.pU(), mainRenderer.canvasDirty = !0) : mapMenu.show(), !0;
         if (2 === x) return this.hide(), this.xO(), !0;
         if (customJSON.isCustomJSON) return !1;
         if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
             difficulty: 0,
             group: maxEntities
-        }), this.assignBotGroups(), this.setCanvasVariables(), c4.canvasDirty = !0), !0;
+        }), this.assignBotGroups(), this.setCanvasVariables(), mainRenderer.canvasDirty = !0), !0;
         var t = Math.floor((x - 3) / 3);
-        if (0 === x % 3) return 1 < this.botSettings.length && (this.botSettings.splice(t, 1), this.setCanvasVariables(), c4.canvasDirty = !0), !0;
+        if (0 === x % 3) return 1 < this.botSettings.length && (this.botSettings.splice(t, 1), this.setCanvasVariables(), mainRenderer.canvasDirty = !0), !0;
         var z = (k[2] - k[2] / 10 - 2 * bufferLength) / 2;
         if (1 === x % 3) {
             if (0 === t && 1 === this.botSettings[t].group) return !0;
             n < k[0] + k[2] - 1.5 * z - bufferLength ? this.botSettings[t].difficulty-- : this.botSettings[t].difficulty++;
             0 > this.botSettings[t].difficulty ? this.botSettings[t].difficulty = 5 : 5 < this.botSettings[t].difficulty && (this.botSettings[t].difficulty = 0);
-            return c4.canvasDirty = !0
+            return mainRenderer.canvasDirty = !0
         }
-        c4.canvasDirty = !0;
+        mainRenderer.canvasDirty = !0;
         var y = (n - (k[0] + k[2] - z)) / z - .5;
         y = Math.floor((0 > y ?
             -(y * y) : y * y) * maxEntities);
@@ -6706,12 +6730,12 @@ function MainSettings() {
                     jq.xa();
                 }
                 saveOptions(this.buttons[g].active, !1);
-                c4.canvasDirty = !0;
+                mainRenderer.canvasDirty = !0;
                 return !0;
             } else if (1 <= g && 3 > g) {
                 this.buttons[g].buttonClass.init();
                 nameInput.hide();
-                c4.canvasDirty = !0;
+                mainRenderer.canvasDirty = !0;
                 return !0;
             }
         }
@@ -6857,7 +6881,7 @@ function NameInput() {
         }
     };
     this.mouseDown = function(xPos, yPos) {
-        c4.xi();
+        mainRenderer.xi();
         if (1 === mainButtons.getClickedButton(xPos, yPos, 1, 1)) {
             if (!(processAccount() || processVote())) {
                 setAndroidState(10);
@@ -6956,7 +6980,7 @@ function Sprites() {
                 playerActions.l1();
                 emojis.init();
                 linkButtons.setupLinkVariables([spriteCanvases[8], spriteCanvases[16], spriteCanvases[7], spriteCanvases[9], spriteCanvases[10]], [!isIOS, 0 === androidVersion, !0, !0, !0]);
-                c4.canvasDirty = !0;
+                mainRenderer.canvasDirty = !0;
                 spriteCanvases[7] = nullCanvas;
                 spriteCanvases[8] = nullCanvas;
                 spriteCanvases[9] = nullCanvas;
@@ -7316,104 +7340,124 @@ function UserSettings() {
 }
 
 function DelayedAttack() {
-    function g(l) {
-        for (k -= 2; l < k; l += 2) n[l] = n[l + 2], n[l + 1] = n[l + 3]
+    function shiftAttacksLeft(aIndex) {
+        for (attackCount -= 2; aIndex < attackCount; aIndex += 2) {
+            attacks[aIndex] = attacks[aIndex + 2];
+            attacks[aIndex + 1] = attacks[aIndex + 3]
+        }
     }
-    var k = 0,
-        n = new Uint16Array(32);
+    var attackCount = 0, attacks = new Uint16Array(32);
     this.init = function() {
-        k = 0
+        attackCount = 0
     };
     this.update = function() {
-        if (0 !== k)
-            if (0 === isAlive[myID] || attacks.getEntityBoatsCount(myID) === attacks.getCurrentAttackCount(myID)) k = 0;
+        if (0 !== attackCount)
+            if (0 === isAlive[myID] || attacks.getEntityBoatsCount(myID) === attacks.getCurrentAttackCount(myID)) attackCount = 0;
             else {
-                var l;
-                for (l = k - 2; 0 <= l; l -= 2) {
-                    var x = n[l];
-                    if (x < maxEntities && 0 === isAlive[x]) g(l);
+                var aIndex;
+                for (aIndex = attackCount - 2; 0 <= aIndex; aIndex -= 2) {
+                    var targetID = attacks[aIndex];
+                    if (targetID < maxEntities && 0 === isAlive[targetID]) shiftAttacksLeft(aIndex);
                     else {
-                        var t = n[l + 1];
-                        if (x >= maxEntities && bordersNeutral(myID) || x < maxEntities && bordersTarget(myID, x)) singleplayer ? processAttack(myID, x, t) : dataEncoder.attack(t, x === maxEntities ? myID : x), g(l)
+                        var ratio = attacks[aIndex + 1];
+                        if (targetID >= maxEntities && bordersNeutral(myID) || targetID < maxEntities && bordersTarget(myID, targetID)) {
+                            if (singleplayer) processAttack(myID, targetID, ratio)
+                            else dataEncoder.attack(ratio, targetID === maxEntities ? myID : targetID);
+                            shiftAttacksLeft(aIndex);
+                        }
                     }
                 }
             }
     };
-    this.lX = function(l, x) {
-        var t;
+    this.addDelayedAttack = function(targetID, ratio) {
+        var aIndex;
         a: {
-            for (t = 0; t < k; t += 2)
-                if (n[t] === l) {
-                    n[t + 1] += x;
-                    n[t + 1] = getMin(n[t + 1], 1E3);
-                    t = !0;
+            for (aIndex = 0; aIndex < attackCount; aIndex += 2)
+                if (attacks[aIndex] === targetID) {
+                    attacks[aIndex + 1] += ratio;
+                    attacks[aIndex + 1] = getMin(attacks[aIndex + 1], 1E3);
+                    aIndex = !0;
                     break a
-                } t = !1
+                } aIndex = !1
         }
-        t || 32 === k || (n[k] = l, n[k + 1] = x, k += 2)
+        if (!aIndex && 32 !== attackCount) {
+            attacks[attackCount] = targetID;
+            attacks[attackCount + 1] = ratio;
+            attackCount += 2
+        }
     }
 }
 
-function fm(g) {
-    z5(g);
-    z6(g);
-    z7(g);
-    speed.removeEntry(g);
-    boatSpeed.checkBoatDeath(g);
-    attacks.resetCurrentAttackCount(g)
+function managePlayerDeath(id) {
+    manageAttackDeath(id);
+    revertToNeutralLand(id);
+    resetPlayerInfoArrays(id);
+    speed.removeEntry(id);
+    boatSpeed.checkBoatDeath(id);
+    attacks.resetCurrentAttackCount(id)
 }
 
-function z5(g) {
-    playerActions.isHuman(g) && spectatorCount++;
-    var k = attacks.getAttackers(g);
-    0 === k.length ? g === myID && zB() : (zC(g, k), zD(g, k))
+function manageAttackDeath(id) {
+    if (playerActions.isHuman(id)) spectatorCount++;
+    var attackers = attacks.getAttackers(id);
+    if (0 === attackers.length) {
+        if (id === myID) manageOurDeath()
+    } else {
+        manageSpillOver(id, attackers);
+        manageDeathAnnouncements(id, attackers);
+    }
 }
 
-function zB() {
+function manageOurDeath() {
     statisticNumbers.numbers[17] += troops[myID] + attacks.getTotalTroopsSentAway(myID);
     gameResultBox.show(!1, !1);
     gameStatistics.tI()
 }
 
-function zC(g, k) {
-    var n;
-    for (n = k.length - 1; 0 <= n; n--) attacks.spilloverNeutral(k[n], g)
+function manageSpillOver(id, attackers) {
+    for (var attackerIndex = attackers.length - 1; 0 <= attackerIndex; attackerIndex--) attacks.spilloverNeutral(attackers[attackerIndex], id)
 }
 
-function zG(g) {
-    var k, n = 0;
-    for (k = g.length - 1; 1 <= k; k--) land[g[k]] > land[g[n]] && (n = k);
-    return n
+function getLargestAttacker(attackers) {
+    var attackerIndex, largestAttackerIndex = 0;
+    for (attackerIndex = attackers.length - 1; 1 <= attackerIndex; attackerIndex--) land[attackers[attackerIndex]] > land[attackers[largestAttackerIndex]] && (largestAttackerIndex = attackerIndex);
+    return largestAttackerIndex
 }
 
-function zD(g, k) {
-    var n, l = k[zG(k)];
-    9 === gamemode && 1 === teamColors.teamArray[g] && fakeRandom.doesValueMeetProbiThreshold(8) && zombieSettings.zI(l);
-    if (g === myID) announcements.genericAnnouncement(l, 1), zB();
-    else {
-        for (n = k.length - 1; 0 <= n; n--)
-            if (k[n] === myID) {
-                announcements.genericAnnouncement(g, 0);
+function manageDeathAnnouncements(id, attackers) {
+    var attackerIndex, largestAttacker = attackers[getLargestAttacker(attackers)];
+    if (9 === gamemode && 1 === teamColors.teamArray[id] && fakeRandom.doesValueMeetProbiThreshold(8)) zombieSettings.zI(largestAttacker);
+    if (id === myID) {
+        announcements.genericAnnouncement(largestAttacker, 1);
+        manageOurDeath();
+    } else {
+        for (attackerIndex = attackers.length - 1; 0 <= attackerIndex; attackerIndex--)
+            if (attackers[attackerIndex] === myID) {
+                announcements.genericAnnouncement(id, 0);
                 return
-            } g < playerCount && announcements.mj(0, g, l)
+            } 
+            if (id < playerCount) announcements.mj(0, id, largestAttacker)
     }
 }
 
-function z7(g) {
-    isAlive[g] = troops[g] = 0;
-    potentialBorderAdvances[g] = null;
-    landBorderPixels[g] = null;
-    waterBorderPixels[g] = null;
-    mountainBorderPixels[g] = null;
-    humanBots.onLeave(g)
+function resetPlayerInfoArrays(id) {
+    isAlive[id] = troops[id] = 0;
+    potentialBorderAdvances[id] = null;
+    landBorderPixels[id] = null;
+    waterBorderPixels[id] = null;
+    mountainBorderPixels[id] = null;
+    humanBots.onLeave(id)
 }
 
-function z6(g) {
-    var k, n;
-    for (k = xMax[g]; k >= xMin[g]; k--)
-        for (n = yMax[g]; n >= yMin[g]; n--) {
-            var l = 4 * (n * currentMapWidth + k);
-            pixel.strongIsOwner(g, l) && (pixel.revertToNeutralPixel(l), land[g]--)
+function revertToNeutralLand(id) {
+    var xIndex, yIndex;
+    for (xIndex = xMax[id]; xIndex >= xMin[id]; xIndex--)
+        for (yIndex = yMax[id]; yIndex >= yMin[id]; yIndex--) {
+            var pIndex = 4 * (yIndex * currentMapWidth + xIndex);
+            if (pixel.strongIsOwner(id, pIndex)) {
+                pixel.revertToNeutralPixel(pIndex);
+                land[id]--;
+            }
         }
 }
 
@@ -7829,8 +7873,8 @@ function Interest() {
     };
     this.getInterestRate = function(id) {
         var landIRate = discreteInterestArray[divideFloor((const_maxEntities - 1) * land[id], currentLandPixelsCount)];
-        if (1920 > c4.ticksElapsed()) {
-            var timeIRate = divideFloor(100 * (13440 - 6 * c4.ticksElapsed()), 1920);
+        if (1920 > mainRenderer.ticksElapsed()) {
+            var timeIRate = divideFloor(100 * (13440 - 6 * mainRenderer.ticksElapsed()), 1920);
             landIRate = timeIRate > landIRate ? timeIRate : landIRate
         }
         timeIRate = this.getMaxBeforeRedI(id);
@@ -8349,7 +8393,7 @@ function WsManager() {
         return this.lobby < this.serverCount ? this.lobby : this.lobby - this.gameServerCount
     };
     this.update = function() {
-        for (var remoteIndex = this.terriWsCount - 1; 0 <= remoteIndex; remoteIndex--) this.isOpen(remoteIndex) && c4.time > websocketsInfo[remoteIndex].time + 15E3 && dataEncoder.antiDisconnect(remoteIndex, websocketsInfo[remoteIndex].humanLastAction)
+        for (var remoteIndex = this.terriWsCount - 1; 0 <= remoteIndex; remoteIndex--) this.isOpen(remoteIndex) && mainRenderer.time > websocketsInfo[remoteIndex].time + 15E3 && dataEncoder.antiDisconnect(remoteIndex, websocketsInfo[remoteIndex].humanLastAction)
     };
     this.sendWhenWSOpen = function(remote, firstAction) {
         if (!websocketsInfo[remote].wsCreated) return this.createNewTerriWS(remote, firstAction), !1;
@@ -8360,7 +8404,7 @@ function WsManager() {
     };
     this.createNewTerriWS = function(remote, firstAction) {
         websocketsInfo[remote].wsCreated = !0;
-        websocketsInfo[remote].time = c4.time;
+        websocketsInfo[remote].time = mainRenderer.time;
         websocketsInfo[remote].humanLastAction = !1;
         websockets[remote] = new TerriWS;
         websockets[remote].init(remote, firstAction)
@@ -8383,7 +8427,7 @@ function WsManager() {
         return websocketsInfo[l].wsCreated && websockets[l].isOpen()
     };
     this.send = function(remote, message) {
-        websocketsInfo[remote].time = c4.time;
+        websocketsInfo[remote].time = mainRenderer.time;
         websocketsInfo[remote].humanLastAction = !1;
         websockets[remote].send(message)
     };
@@ -8420,29 +8464,40 @@ function updateAliveInfo() {
 }
 
 function eL() {
-    a1w();
-    fn()
+    managePrematureDeath();
+    findShiftAliveEntitiesIndex()
 }
 
-function fn() {
-    for (var g = aliveCount - 1; 0 <= g; g--) 0 === isAlive[aliveEntities[g]] && a1x(g)
+function findShiftAliveEntitiesIndex() {
+    for (var aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
+        if (0 === isAlive[aliveEntities[aliveIndex]]) shiftAliveEntities(aliveIndex)
+    }
 }
 
-function a1x(g) {
-    for (aliveCount--; g < aliveCount; g++) aliveEntities[g] = aliveEntities[g + 1]
+function shiftAliveEntities(shiftIndex) {
+    for (aliveCount--; shiftIndex < aliveCount; shiftIndex++) aliveEntities[shiftIndex] = aliveEntities[shiftIndex + 1]
 }
 
-function a1w() {
-    for (var g, k = aliveCount - 1; 0 <= k; k--) land[aliveEntities[k]] <= divideFloor(tempLand[aliveEntities[k]], 4) ? 1E3 >= land[aliveEntities[k]] && (2 !== isAlive[aliveEntities[k]] || 0 === land[aliveEntities[k]]) && fm(aliveEntities[k]) : land[aliveEntities[k]] >= tempLand[aliveEntities[k]] ? tempLand[aliveEntities[k]] = land[aliveEntities[k]] : (g = divideFloor(tempLand[aliveEntities[k]] - land[aliveEntities[k]], 1E3), tempLand[aliveEntities[k]] -= 1 > g ? 1 : g)
+function managePrematureDeath() {
+    for (var landDifferenceRatio, aliveEntities = aliveCount - 1; 0 <= aliveEntities; aliveEntities--) {
+        if (land[aliveEntities[aliveEntities]] <= divideFloor(tempLand[aliveEntities[aliveEntities]], 4)) {
+            if (1E3 >= land[aliveEntities[aliveEntities]] && (2 !== isAlive[aliveEntities[aliveEntities]] || 0 === land[aliveEntities[aliveEntities]])) managePlayerDeath(aliveEntities[aliveEntities])
+        } else if (land[aliveEntities[aliveEntities]] >= tempLand[aliveEntities[aliveEntities]]) {
+            tempLand[aliveEntities[aliveEntities]] = land[aliveEntities[aliveEntities]];
+        } else {
+            landDifferenceRatio = divideFloor(tempLand[aliveEntities[aliveEntities]] - land[aliveEntities[aliveEntities]], 1E3);
+            tempLand[aliveEntities[aliveEntities]] -= 1 > landDifferenceRatio ? 1 : landDifferenceRatio
+        }
+    }
 }
 
 function getTroopHash() {
-    var g, k = 0;
-    for (g = aliveCount - 1; 0 <= g; g--) k += troops[aliveEntities[g]];
-    return k % 4096
+    var aliveIndex, troopHash = 0;
+    for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) troopHash += troops[aliveEntities[aliveIndex]];
+    return troopHash % 4096
 }
 var mainCanvas, mainCanvasCtx, versionLabel, versionHash, canvasWidth, canvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = !1,
-    isNotTopWindow, isNotClient, clientID, gy, sm, h8, emojis, statisticNumbers, statistics, cookiesPrompt, c4, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
+    isNotTopWindow, isNotClient, clientID, gy, sm, h8, emojis, statisticNumbers, statistics, cookiesPrompt, mainRenderer, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
@@ -8493,9 +8548,9 @@ function main() {
     statisticNumbers = new StatisticNumbers;
     statistics = new Statistics;
     cookiesPrompt = new CookiesPrompt;
-    c4 = new a2K;
-    c4.jd();
-    c4.init();
+    mainRenderer = new MainRenderer;
+    mainRenderer.jd();
+    mainRenderer.init();
     teamColors = new TeamColors;
     teams = new Teams;
     mainLeaderboardIcon = new MainLeaderboardIcon;
@@ -8519,7 +8574,7 @@ function main() {
     addMainCanvasEventListeners();
     sprites.init();
     sounds.init();
-    c4.canvasDirty = !0;
+    mainRenderer.canvasDirty = !0;
     setTimeout(function() {
         loadMap(1, 14071)
     }, 0)
@@ -8574,11 +8629,11 @@ function onKeydown(g) {
 }
 
 function onVisibilitychange() {
-    "hidden" === document.visibilityState ? c4.a2P() : c4.xi()
+    "hidden" === document.visibilityState ? mainRenderer.a2P() : mainRenderer.xi()
 }
 
 function onKeyup(g) {
-    400 > c4.time || (8 !== gameStateManager.getState() && gameStateManager.hideIfNotHidden(g) ? c4.canvasDirty = !0 : "Escape" === g.key ? gameStateManager.aK() : "ArrowLeft" === g.key ? gn.a2Q(3) : "ArrowUp" === g.key ? gn.a2Q(0) : "ArrowRight" === g.key ? gn.a2Q(1) : "ArrowDown" === g.key ? gn.a2Q(2) : "h" === g.key && 1 <= clientStatus && (isCanvasHidden = !isCanvasHidden, c4.canvasDirty = !0))
+    400 > mainRenderer.time || (8 !== gameStateManager.getState() && gameStateManager.hideIfNotHidden(g) ? mainRenderer.canvasDirty = !0 : "Escape" === g.key ? gameStateManager.aK() : "ArrowLeft" === g.key ? gn.a2Q(3) : "ArrowUp" === g.key ? gn.a2Q(0) : "ArrowRight" === g.key ? gn.a2Q(1) : "ArrowDown" === g.key ? gn.a2Q(2) : "h" === g.key && 1 <= clientStatus && (isCanvasHidden = !isCanvasHidden, mainRenderer.canvasDirty = !0))
 }
 
 function setIsNotClientFlag() {
@@ -8744,7 +8799,7 @@ function a2G() {
                         var A = z;
                         (1 < t && n(x - 4) || t < currentMapWidth - 2 && n(x + 4) || 1 < A && n(x - 4 * currentMapWidth) || A < currentMapHeight - 2 && n(x + 4 * currentMapWidth)) && this.a30(y, z)
                     } this.a2k = l;
-            this.a2k >= currentMapHeight - 1 ? (mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2), c4.canvasDirty = !0, this.xA()) : this.a2r && (this.rd = setTimeout(g, 16))
+            this.a2k >= currentMapHeight - 1 ? (mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2), mainRenderer.canvasDirty = !0, this.xA()) : this.a2r && (this.rd = setTimeout(g, 16))
         }
     };
     this.a2z = function(l, x, t) {
@@ -8946,7 +9001,7 @@ function ConfigFakeMap() {
                     mapBaseCanvasCtx.restore();
                 }                
         mapLoaded = !0;
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.jR = function() {
         var k, totalLandMountainPixels = 0;
@@ -9002,7 +9057,7 @@ function configRealMap(g) {
     mapLoaded = !0;
     a2f(g);
     x9.init();
-    c4.canvasDirty = !0
+    mainRenderer.canvasDirty = !0
 }
 
 function MapInfo() {
@@ -9539,23 +9594,23 @@ function MoreSettings() {
                             if (wsManager.terriWsCount === moreSettings.selectedRemote + 1 ) moreSettings.selectedRemote = 1
                             else moreSettings.selectedRemote++;
                             settingsArray[1].name = "Lobby " + (moreSettings.selectedRemote >= wsManager.serverCount ? `${moreSettings.selectedRemote} (${(moreSettings.selectedRemote - 1)% 3 + 1}B)` : moreSettings.selectedRemote);
-                            c4.canvasDirty = !0;
+                            mainRenderer.canvasDirty = !0;
                         } else if (2 === settingsArray[sIndex].id) {
                             moreSettings.highResolution = !moreSettings.highResolution;
                             settingsArray[sIndex].green = moreSettings.highResolution ? 130 : 0;
                             setSettings();
-                            c4.canvasDirty = !0;
+                            mainRenderer.canvasDirty = !0;
                         } else if (3 === settingsArray[sIndex].id) {
                             moreSettings.hideLinks = !moreSettings.hideLinks;
                             settingsArray[sIndex].green = moreSettings.hideLinks ? 130 : 0;
                             setSettings();
-                            c4.canvasDirty = !0;
+                            mainRenderer.canvasDirty = !0;
                         } else if (4 === settingsArray[sIndex].id) {
                             moreSettings.hideUsernames = !moreSettings.hideUsernames;
                             settingsArray[sIndex].green = moreSettings.hideUsernames ? 130 : 0;
                             setSettings();
                             jq.xa();
-                            c4.canvasDirty = !0;
+                            mainRenderer.canvasDirty = !0;
                         } else if (5 === settingsArray[sIndex].id) {
                             openLinkBox.init(tutorialLink, !0);
                             openLinkBox.init(tutorialLink, !1);
@@ -9576,12 +9631,12 @@ function MoreSettings() {
                     }
                 }
                 menuOpen = !1;
-                c4.canvasDirty = !0;
+                mainRenderer.canvasDirty = !0;
                 return !1
             }
             if (k(xPos, yPos, C, 0)) {
                 menuOpen = !0;
-                c4.canvasDirty = !0;
+                mainRenderer.canvasDirty = !0;
                 return !0
             } else return !1
         }
@@ -9597,7 +9652,7 @@ function MoreSettings() {
                 if (k(y, A, C, B)) {
                     x = B;
                     break
-                } E !== x && (c4.canvasDirty = !0)
+                } E !== x && (mainRenderer.canvasDirty = !0)
         }
     };
     this.drawCanvasImage = function() {
@@ -9634,7 +9689,7 @@ function kT() {
         if (-1 !== l)
             if (0 !== clientStatus && eV.h0()) {
                 for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gridWidth += t[A], gridHeight += z[A], eA.onPointermove(t[A], z[A]), gj.rI());
-                y ? c4.canvasDirty = !0 : gn.go()
+                y ? mainRenderer.canvasDirty = !0 : gn.go()
             } else gn.go()
     }
     var n = !1,
@@ -9902,7 +9957,7 @@ function kc() {
                 gameStateManager.vg();
                 gameStateManager.vl();
             }
-            c4.canvasDirty = !0
+            mainRenderer.canvasDirty = !0
         }
     }
 
@@ -10273,8 +10328,7 @@ function StatisticNumbers() {
         this.a5V(0);
         this.m4 = 1 + divideFloor(this.cV, 2);
         for (var g = 1; g < this.m4; g++) this.a5P[g] = this.a5P[2 * g], this.s6[g] = this.s6[2 * g], this.tT[g] = this.tT[2 * g], this.a5V(g);
-        this.a5Q *=
-            2
+        this.a5Q *= 2
     };
     this.a5S = function() {
         this.max[0] = this.max[1] = this.max[2] = 0
@@ -10333,7 +10387,7 @@ function Statistics() {
         if (k < this.height - this.buttonHeight) return this.a5a = !0, this.a5Z = (g - 2 * this.buttonMargin - this.uS) / this.uT, !0;
         n = Math.floor(g / (this.width / this.buttonLabels.length));
         n = 0 > n ? 0 : n >= this.buttonLabels.length ? this.buttonLabels.length - 1 : n;
-        n !== this.bs && (this.bs = n, this.a5c(), c4.canvasDirty = !0);
+        n !== this.bs && (this.bs = n, this.a5c(), mainRenderer.canvasDirty = !0);
         return !0
     };
     this.a2O = function() {
@@ -10349,7 +10403,7 @@ function Statistics() {
             var n = this.a5Z;
             this.a5Z = (g - 2 * this.buttonMargin - this.uS) / this.uT;
             if (0 <= this.a5Z && 1 >= this.a5Z ||
-                0 <= n && 1 >= n) c4.canvasDirty = !0;
+                0 <= n && 1 >= n) mainRenderer.canvasDirty = !0;
             return !0
         }
         return !1
@@ -10357,7 +10411,7 @@ function Statistics() {
     this.pV = function() {
         this.a5a && (this.a5a = !1)
     };
-    this.m0 = function() {
+    this.toggleMenu = function() {
         this.visible ? this.end() : this.show()
     };
     this.show = function() {
@@ -10413,7 +10467,7 @@ function Statistics() {
         for (n = statisticNumbers.m4 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.uT / (statisticNumbers.m4 -
             1), this.xJ - k * Math.sqrt(g[n]));
         mainCanvasCtx.stroke();
-        g = this.m9(g, k, .5);
+        g = this.drawMenuSymbol(g, k, .5);
         .95 > g && mainCanvasCtx.fillText(attacksBar.splitText(l), -this.buttonMargin, 0);
         .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(l / 4)), -this.buttonMargin, Math.floor(this.xJ / 2));
         .05 < g && mainCanvasCtx.fillText("0", -this.buttonMargin, this.xJ)
@@ -10427,7 +10481,7 @@ function Statistics() {
         for (var l = statisticNumbers.m4 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.uT / (statisticNumbers.m4 - 1), this.xJ - n * statisticNumbers.tT[l]);
         mainCanvasCtx.stroke();
         n =
-            this.m9(statisticNumbers.tT, n, 1);
+            this.drawMenuSymbol(statisticNumbers.tT, n, 1);
         l = statisticNumbers.max[this.bs] / 100;
         .95 > n && mainCanvasCtx.fillText(gameStatistics.nG(l, 2), -this.buttonMargin, 0);
         .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(gameStatistics.nG(l / 2, 2), -this.buttonMargin, Math.floor(this.xJ / 2));
@@ -10483,7 +10537,7 @@ function Statistics() {
         mainCanvasCtx.fillText(attacksBar.splitText(n), 0, l);
         mainCanvasCtx.fillStyle = whiteRGB2
     };
-    this.m9 = function(g, k, n) {
+    this.drawMenuSymbol = function(g, k, n) {
         if (0 > this.a5Z || 1 < this.a5Z) return .25;
         var l = this.a5Z * (statisticNumbers.m4 - 1),
             x = Math.floor(l),
@@ -10496,8 +10550,8 @@ function Statistics() {
         mainCanvasCtx.beginPath();
         mainCanvasCtx.arc(l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
         mainCanvasCtx.fill();
-        g = this.a5Z * c4.tV();
-        g = 0 === isAlive[myID] ? Math.floor(g * gameResultBox.tb) : Math.floor(g * c4.ticksElapsed());
+        g = this.a5Z * mainRenderer.getTickInterval();
+        g = 0 === isAlive[myID] ? Math.floor(g * gameResultBox.tb) : Math.floor(g * mainRenderer.ticksElapsed());
         mainCanvasCtx.fillStyle = whiteRGB2;
         mainCanvasCtx.fillText(1 === n ? gameStatistics.nG(t / 100, 2) : attacksBar.splitText(Math.floor(t)), -this.buttonMargin, this.xJ - k * Math.pow(t, n));
         mainCanvasCtx.textAlign = centerAlign;
@@ -10933,16 +10987,16 @@ function bordersTarget(authorID, targetID) {
     return !1
 }
 
-function a2K() {
+function MainRenderer() {
     function g() {
-        c4.time = performance.now();
-        c4.a6O();
+        mainRenderer.time = performance.now();
+        mainRenderer.a6O();
         window.requestAnimationFrame(g)
     }
 
     function k() {
         var n = performance.now();
-        c4.time + 1500 < n && (c4.time = n, c4.a6O())
+        mainRenderer.time + 1500 < n && (mainRenderer.time = n, mainRenderer.a6O())
     }
     this.canvasDirty = !1;
     this.a6Q = this.a6P = this.a6O = null;
@@ -10953,7 +11007,8 @@ function a2K() {
         this.time = performance.now()
     };
     this.a2P = function() {
-        1 !== clientStatus || !singleplayer || gameButtons.lu || inSpawn || gameButtons.m0(); - 1 === this.a6R && (this.a6R = setInterval(k, 2E3))
+        1 !== clientStatus || !singleplayer || gameButtons.menuVisible || inSpawn || gameButtons.toggleMenu();
+        -1 === this.a6R && (this.a6R = setInterval(k, 2E3))
     };
     this.xi = function() {
         this.canvasDirty = !0; - 1 !== this.a6R && (clearInterval(this.a6R), this.a6R = -1)
@@ -10964,11 +11019,11 @@ function a2K() {
         this.canvasDirty = !0
     };
     this.jY = function() {
-        this.a6P = new a6V;
+        this.a6P = new SingleplayerHandler;
         this.a6O = this.a6W
     };
     this.jZ = function() {
-        this.a6Q = new a6X;
+        this.a6Q = new MultiplayerHandler;
         this.a6Q.init();
         this.a6O = this.a6Y
     };
@@ -10981,35 +11036,58 @@ function a2K() {
         mainLeaderboard.update();
         this.canvasDirty && (this.canvasDirty = !1, gameStateManager.drawCanvasImage())
     };
-    this.a6W = function() {
-        this.a6P.update()
-    };
     this.a6Y = function() {
         this.a6Q.update()
     };
     this.ticksElapsed = function() {
         return singleplayer ? this.a6P.wE : this.a6Q.wE
     };
-    this.tV = function() {
+    this.getTickInterval = function() {
         return 56
     }
 }
 
-function a6V() {
-    this.time = c4.time;
+function SingleplayerHandler() {
+    this.time = mainRenderer.time;
     this.a5Q = 56;
     this.wE = this.bs = 0;
     this.a6Z = !1;
     this.update = function() {
         jq.update();
-        inSpawn ? ec() : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === clientStatus || gameButtons.lu ? e8() : (eE(), this.wE++, h8.tv()), this.bs++) : (gameButtons.lu ? ec() : (c4.canvasDirty = !0, ea()), this.bs = 0);
+        if (inSpawn) ec()
+        else {
+            if (0 === this.bs) {
+                if (mainRenderer.time >= this.time) {
+                    this.time += this.a5Q * Math.floor(1 + (mainRenderer.time - this.time) / this.a5Q);
+                    if (2 !== clientStatus) {
+                        if (gameButtons.menuVisible) e8()
+                        else {
+                            eE();
+                            this.wE++;
+                            h8.tv();
+                        }
+                    }
+                    this.bs++
+                }
+            } else {
+                if (gameButtons.menuVisible) ec()
+                else {
+                    mainRenderer.canvasDirty = !0;
+                    ea();
+                }
+                this.bs = 0;
+            }
+        }
         eU();
-        c4.canvasDirty && (c4.canvasDirty = !1, hp())
+        if (mainRenderer.canvasDirty) {
+            mainRenderer.canvasDirty = !1;
+            hp();
+        }
     }
 }
 
-function a6X() {
-    this.time = c4.time;
+function MultiplayerHandler() {
+    this.time = mainRenderer.time;
     this.a5Q = 56;
     this.wD = this.wE = this.bs = 0;
     this.a6a = null;
@@ -11031,14 +11109,14 @@ function a6X() {
         dataDecoder.a6c(k, g);
         g = (g + 1) % 8;
         gameStatistics.tW(this.wD);
-        this.wD === spawnTime ? (spawn.update(), this.wE = this.bs = this.wD = 0, this.time = c4.time) : (this.wD++, eA.j4(), eA.drawCanvas(), h8.tv())
+        this.wD === spawnTime ? (spawn.update(), this.wE = this.bs = this.wD = 0, this.time = mainRenderer.time) : (this.wD++, eA.j4(), eA.drawCanvas(), h8.tv())
     };
     this.update = function() {
         jq.update();
-        inSpawn ? (c4.canvasDirty =
-            gameStatistics.tW(-1) || c4.canvasDirty, ec()) : 0 === this.bs ? c4.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (c4.time - this.time) / this.a5Q), 2 === clientStatus ? e8() : this.a6d(), this.bs++) : (c4.canvasDirty = !0, ea(), this.bs = 0);
+        inSpawn ? (mainRenderer.canvasDirty =
+            gameStatistics.tW(-1) || mainRenderer.canvasDirty, ec()) : 0 === this.bs ? mainRenderer.time >= this.time && (this.time += this.a5Q * Math.floor(1 + (mainRenderer.time - this.time) / this.a5Q), 2 === clientStatus ? e8() : this.a6d(), this.bs++) : (mainRenderer.canvasDirty = !0, ea(), this.bs = 0);
         eU();
-        c4.canvasDirty && (c4.canvasDirty = !1, hp())
+        mainRenderer.canvasDirty && (mainRenderer.canvasDirty = !1, hp())
     };
     this.a6d = function() {
         if (this.wE !== 7 * this.wD) eE(), this.wE++, h8.tv();
@@ -11063,12 +11141,12 @@ function SpecialGames() {
     this.gW = 0;
     this.a6g = !0;
     this.update = function() {
-        c4.time > this.gW && (this.gW = c4.time + 2500, this.a6h())
+        mainRenderer.time > this.gW && (this.gW = mainRenderer.time + 2500, this.a6h())
     };
     this.a6h = function() {
         var k = new Date;
         var n = k.getUTCSeconds();
-        this.a6g ? 55 > n || -1 !== c4.a6R || (this.a6g = !1, n = k.getUTCMinutes(), 4 === n % 5 ? (k = k.getUTCHours(), 59 === n && 15 <= k && 21 >= k ? g("Upcoming Game of the Day", 0) : 14 === n % 30 ? g("Upcoming Alliance Contest", 0) : 29 === n % 30 ? g("Upcoming Battle Royale Contest", 0) : g("Upcoming One-vs-One Game", 8)) : 2 === n % 5 && g("Upcoming Zombie Game",
+        this.a6g ? 55 > n || -1 !== mainRenderer.a6R || (this.a6g = !1, n = k.getUTCMinutes(), 4 === n % 5 ? (k = k.getUTCHours(), 59 === n && 15 <= k && 21 >= k ? g("Upcoming Game of the Day", 0) : 14 === n % 30 ? g("Upcoming Alliance Contest", 0) : 29 === n % 30 ? g("Upcoming Battle Royale Contest", 0) : g("Upcoming One-vs-One Game", 8)) : 2 === n % 5 && g("Upcoming Zombie Game",
             9)) : 55 > n && (this.a6g = !0)
     }
 }
@@ -11096,7 +11174,7 @@ function kY() {
             k(z);
             z = g();
             gj.rJ(Math.floor((n + x) / 2), Math.floor((l + t) / 2), z / y);
-            return c4.canvasDirty = !0
+            return mainRenderer.canvasDirty = !0
         }
         return !1
     }
@@ -11187,7 +11265,7 @@ function DataDecoder() {
                     } else {
                         if (remote !== wsManager.remote) wsManager.closeByError(remote, 3244);
                         else {
-                            if (0 === decoder(array, 1)) c4.a6Q.a6b(array);
+                            if (0 === decoder(array, 1)) mainRenderer.a6Q.a6b(array);
                             else {
                                 data = decoder(array, 2);
                                 if (0 === data) {
@@ -11346,7 +11424,7 @@ function ka() {
         k = 0
     };
     this.update = function() {
-        0 < g && (k = 0 === k ? c4.time + 16 : k, g -= .001 * (c4.time - k), g = 0 > g ? 0 : g, k = c4.time, c4.canvasDirty = !0)
+        0 < g && (k = 0 === k ? mainRenderer.time + 16 : k, g -= .001 * (mainRenderer.time - k), g = 0 > g ? 0 : g, k = mainRenderer.time, mainRenderer.canvasDirty = !0)
     };
     this.drawCanvasImage = function() {
         0 < g && (mainCanvasCtx.fillStyle = "rgba(0,0,0," + g + ")", mainCanvasCtx.fillRect(0, 0, prevClientWidth, prevClientHeight))
@@ -11362,7 +11440,7 @@ function MapMenu() {
     this.show = function() {
         this.visible = !0;
         this.setCanvasVariables();
-        c4.canvasDirty = !0
+        mainRenderer.canvasDirty = !0
     };
     this.setCanvasVariables = function() {
         var k = divideFloor(customMapID + customMapID % 2, 2);
@@ -11378,7 +11456,7 @@ function MapMenu() {
     };
     this.mouseDown = function(k, n) {
         var l = divideFloor(customMapID + customMapID % 2, 2);
-        c4.canvasDirty = !0;
+        mainRenderer.canvasDirty = !0;
         if (k < this.xK[0] || n < this.xK[1] || k > this.xK[0] + this.xK[2] || n > this.xK[1] + this.xK[3]) return this.visible = !1, !0;
         var x = Math.floor(.13 * this.xK[3]);
         if (n < this.xK[1] + x) return k > this.xK[0] + this.xK[2] - 1.2 * x && (this.visible = !1), !0;
@@ -11410,7 +11488,7 @@ function MapMenu() {
             g(k, this.xK[0] + bufferLength, z, t, x);
             g(k + l, this.xK[0] + t + 2 * bufferLength, z, t, x)
         }
-        gameButtons.m9(Math.floor(this.xK[0] + this.xK[2] - .8 * n), Math.floor(this.xK[1] + .25 * n), Math.floor(.5 * n));
+        gameButtons.drawMenuSymbol(Math.floor(this.xK[0] + this.xK[2] - .8 * n), Math.floor(this.xK[1] + .25 * n), Math.floor(.5 * n));
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
@@ -11496,8 +11574,8 @@ function DataEncoder() {
     };
     this.discordVote = function(remote) {
         var idIndex;
-        if (!(nameInput.lastVoteTime + 7E3 > c4.time)) {
-            nameInput.lastVoteTime = c4.time;
+        if (!(nameInput.lastVoteTime + 7E3 > mainRenderer.time)) {
+            nameInput.lastVoteTime = mainRenderer.time;
             var array = new Uint8Array(17);
             arrayIndex = 0;
             encoder(array, 1, 0);
