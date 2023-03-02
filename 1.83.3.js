@@ -1052,6 +1052,7 @@ function ProcessAction() {
         announcements.genericAnnouncement(id, 4)
     };
     this.leave = function(id) {
+        //managePlayerDeath(id), findShiftAliveEntitiesIndex()
         inSpawn ? (managePlayerDeath(id), findShiftAliveEntitiesIndex()) : humanBots.turnToBot(id)
     };
     this.surrender = function(id) {
