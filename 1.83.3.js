@@ -2619,7 +2619,7 @@ function CookiesPrompt() {
     this.init = function() {
         this.setCanvasVariables();
         this.visible = 5 > androidVersion && !isIOS && 0 === userSettings.getCookieStatus()
-        this.visible = false; //Fuck cookies man
+        this.visible = false; //Fuck cookies man // agreed
     };
     this.setCanvasVariables = function() {
         this.width = Math.floor(2.8 * Math.floor((isZoom ? .09 : .062) * averageDim));
@@ -6143,16 +6143,16 @@ function SetGameOrigin() {
 }
 
 function Lobby() {
-    function g(P, U) {
+    function drawImageScaled(P, image) {
         var W = E[P].getContext("2d", {
             alpha: !0
         });
         W.clearRect(0, 0, 48, 48);
-        var X = 48 / U.width,
-            V = 48 / U.height;
+        var X = 48 / image.width,
+            V = 48 / image.height;
         X = V < X ? V : X;
-        W.setTransform(X, 0, 0, X, Math.floor((48 - X * U.width) / 2), Math.floor((48 - X * U.height) / 2));
-        W.drawImage(U, 0, 0);
+        W.setTransform(X, 0, 0, X, Math.floor((48 - X * image.width) / 2), Math.floor((48 - X * image.height) / 2));
+        W.drawImage(image, 0, 0);
         W.setTransform(1, 0, 0, 1, 0, 0)
     }
 
@@ -6163,16 +6163,16 @@ function Lobby() {
         X.stroke()
     }
 
-    function n() {
+    function generateLobbyGamePreviews() {
         if (7 === gameStateManager.getState()) {
-            for (var P = -1, lgIndex = lobbyGames.length - 1; 0 <= lgIndex; lgIndex--)
+            for (var emptyCanvasIndex = -1, lgIndex = lobbyGames.length - 1; 0 <= lgIndex; lgIndex--)
                 if (null === lobbyGames[lgIndex].canvas) {
-                    P = lgIndex;
+                    emptyCanvasIndex = lgIndex;
                     break
                 } 
-                if (-1 !== P) {
-                    lgIndex = getPreviewCanvas(lobbyGames[P].mapID, lobbyGames[P].mapSeed);
-                    if (null !== lgIndex) lobbyGames[P].canvas = lgIndex;
+                if (-1 !== emptyCanvasIndex) {
+                    lgIndex = getPreviewCanvas(lobbyGames[emptyCanvasIndex].mapID, lobbyGames[emptyCanvasIndex].mapSeed);
+                    if (null !== lgIndex) lobbyGames[emptyCanvasIndex].canvas = lgIndex;
                     else {
                         var var_currentMapWidth = currentMapWidth,
                             var_currentMapHeight = currentMapHeight,
@@ -6182,18 +6182,18 @@ function Lobby() {
                             var_mapBaseCanvasImageDataArray = mapBaseCanvasImageDataArray,
                             var_currentMapID = currentMapID,
                             var_currentMapSeed = currentMapSeed;
-                        loadMap(lobbyGames[P].mapID, lobbyGames[P].mapSeed);
+                        loadMap(lobbyGames[emptyCanvasIndex].mapID, lobbyGames[emptyCanvasIndex].mapSeed);
                         mapShading.resetShading();
                         var previewCanvas = document.createElement("canvas");
                         previewCanvas.width = 128;
                         previewCanvas.height = 128;
                         var previewCanvasCtx = previewCanvas.getContext("2d", {
-                                alpha: !1
+                                alpha: false
                             }),
                             T = 128 / currentMapWidth,
                             Y = 128 / currentMapHeight;
                         Y > T && (T = Y);
-                        previewCanvasCtx.imageSmoothingEnabled = !0;
+                        previewCanvasCtx.imageSmoothingEnabled = true;
                         previewCanvasCtx.setTransform(T, 0, 0, T, (128 - T * currentMapWidth) / 2, (128 - T * currentMapHeight) / 2);
                         previewCanvasCtx.drawImage(mapBaseCanvas, 0, 0);
                         currentMapWidth = var_currentMapWidth;
@@ -6204,9 +6204,9 @@ function Lobby() {
                         mapBaseCanvasImageDataArray = var_mapBaseCanvasImageDataArray;
                         currentMapID = var_currentMapID;
                         currentMapSeed = var_currentMapSeed;
-                        lobbyGames[P].canvas = previewCanvas
+                        lobbyGames[emptyCanvasIndex].canvas = previewCanvas
                     }
-                    mainHandler.canvasDirty = !0
+                    mainHandler.canvasDirty = true
                 }
         }
     }
@@ -6248,24 +6248,23 @@ function Lobby() {
         gameStateManager.setState(7);
         lobbyGames = [];
         this.setCanvasVariables();
-        var P;
+        var i;
         E = Array(11);
-        for (P = E.length; 0 <= P; P--) {
-            E[P] = document.createElement("canvas");
-            E[P].width =48;
-            E[P].height = 48;
+        for (i = E.length; 0 <= i; i--) {
+            E[i] = document.createElement("canvas");
+            E[i].width =48;
+            E[i].height = 48;
         }
-        for (P = 0; 7 > P; P++) {
-            var U = P + 2,
-                W = E[U - 2].getContext("2d", {
+        for (i = 0; 7 > i; i++) {
+                W = E[i].getContext("2d", {
                     alpha: !0
                 }),
                 X = 1.5 * Math.PI;
             W.lineWidth = 2;
             W.strokeStyle = whiteRGB2;
             W.clearRect(0, 0, 48, 48);
-            for (var tIndex = 0; tIndex < U; tIndex++) {
-                var na = X + 2 * Math.PI / U;
+            for (var tIndex = 0; tIndex < i + 2; tIndex++) {
+                var na = X + 2 * Math.PI / (i + 2);
                 var ba = X,
                     ca = na,
                     pa = W;
@@ -6282,10 +6281,10 @@ function Lobby() {
             W.arc(24, 24, 23, 0, 2 * Math.PI);
             W.stroke()
         }
-        g(7, sprites.getValueByID(4));
-        g(8, emojis.emojiCanvasList[27]);
-        g(9, emojis.emojiCanvasList[46]);
-        g(10, emojis.emojiCanvasList[36]);
+        drawImageScaled(7, sprites.getValueByID(4));
+        drawImageScaled(8, emojis.emojiCanvasList[27]);
+        drawImageScaled(9, emojis.emojiCanvasList[46]);
+        drawImageScaled(10, emojis.emojiCanvasList[36]);
         sounds.play(2);
         mainHandler.canvasDirty = !0
     };
@@ -6348,7 +6347,7 @@ function Lobby() {
         mainHandler.canvasDirty = !0
     };
     this.x3 = function() {
-        for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
+        for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(generateLobbyGamePreviews, 0)
     };
     this.mouseDown = function(xPos, yPos) {
         return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.closeLobby(), mainButtons.onPointermove(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
