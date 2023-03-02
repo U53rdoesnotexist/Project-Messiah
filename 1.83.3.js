@@ -175,7 +175,8 @@ function setAndroidHTMLHeader() {
     14 > androidVersion || androidObject.saveString(23, '<!DOCTYPE html>\n<html lang="aG">\n' + document.getElementsByTagName("html")[0].innerHTML + "\n</html>")
 }
 self.aiCommand746 = function(option) {
-    0 === option ? init() : 1 !== option || 14 > androidVersion || gameStateManager.aK()
+    if (0 === option) init()
+    else if (1 === option && 14 <= androidVersion) gameStateManager.aK()
 };
 var lastAttackIndex, lastAuthorID, lastRemaining, lastRemainingPerPixel, lastTargetID, lastBorderLength, lastArrayMaxLength, lastBorderLand, lastLandGained, lastInnerPixels, offset, editingMatrix, lastBorderTaken;
 
@@ -803,7 +804,7 @@ function DifficultyEngine() {
     }
 }
 
-function e8() {
+function clientTick1() {
     announcements.update();
     eA.update();
     gameStatistics.eC();
@@ -819,7 +820,7 @@ function gameTick() {
     eJ.update();
     speed.update();
     boatSpeed.update();
-    eL();
+    checkPrematureDeath();
     gameLeaderboard.update();
     zombieSettings.update();
     eA.update();
@@ -836,7 +837,7 @@ function gameTick() {
     wsManager.update()
 }
 
-function eU() {
+function clientTick2() {
     eV.update();
     gameResultBox.update();
     gameMessages.update();
@@ -1121,10 +1122,10 @@ function BoatSpeed() {
     };
     this.drawCanvasImage = function() {
         if (!(40 > mainScaleFactor || 0 === currentBoatIndex)) {
-            var B, C = gridWidth / mainScaleFactor,
-                E = gridHeight / mainScaleFactor,
-                F = (prevClientWidth + gridWidth) / mainScaleFactor,
-                G = (prevClientHeight + gridHeight) / mainScaleFactor;
+            var B, C = viewportX / mainScaleFactor,
+                E = viewportY / mainScaleFactor,
+                F = (prevClientWidth + viewportX) / mainScaleFactor,
+                G = (prevClientHeight + viewportY) / mainScaleFactor;
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
             for (B = currentBoatIndex - 1; 0 <= B; B--) {
@@ -1159,8 +1160,8 @@ function gK() {
         t = z = x = 0;
         y = I / J;
         l = 1 / (J / I / 4);
-        A = (prevClientWidth / 2 + gridWidth) / mainScaleFactor;
-        B = (prevClientHeight / 2 + gridHeight) / mainScaleFactor;
+        A = (prevClientWidth / 2 + viewportX) / mainScaleFactor;
+        B = (prevClientHeight / 2 + viewportY) / mainScaleFactor;
         C = mainScaleFactor
     }
 
@@ -1187,7 +1188,7 @@ function gK() {
     };
     this.hoverTo = function(targetID, L, H, M) {
         if (!(isCanvasHidden || D && !H && K || 0 === land[targetID])) {
-            gj.gk = !1;
+            mapGridHandler.gk = !1;
             K = H;
             g(L);
             E = (xMin[targetID] + xMax[targetID] + 1) / 2;
@@ -1205,7 +1206,7 @@ function gK() {
         }
     };
     this.zoomToFitMap = function(zoomSpeed) {
-        gj.gk = !1;
+        mapGridHandler.gk = !1;
         K = !0;
         g(zoomSpeed);
         n(0, 0, currentMapWidth - 1, currentMapHeight - 1);
@@ -1216,9 +1217,9 @@ function gK() {
     this.gf = function(J, L, H, M) {
         n(J, L, H, M);
         mainScaleFactor = G;
-        gj.gw(E, prevClientWidth / 2);
-        gj.gx(F, prevClientHeight / 2);
-        gy.gz()
+        mapGridHandler.gw(E, prevClientWidth / 2);
+        mapGridHandler.gx(F, prevClientHeight / 2);
+        viewport.updateViewportCoords()
     };
     this.h0 = function() {
         if (D && K) return !1;
@@ -1233,17 +1234,17 @@ function gK() {
             1E3 < J ? x = 1 : (x += z * J / I, x = 1 < x ? 1 : x);
             N = mainHandler.time;
             var L = mainScaleFactor;
-            J = gridWidth;
-            var H = gridHeight;
+            J = viewportX;
+            var H = viewportY;
             mainScaleFactor = C * Math.pow(G /
                 C, x);
             L = mainScaleFactor / L;
             var M = 1 - (C * Math.pow(G / C, 1 - x) - C) / (G - C);
-            gj.gw(A + M * (E - A), prevClientWidth / 2);
-            gj.gx(B + M * (F - B), prevClientHeight / 2);
-            eA.zoom(L, (J * L - gridWidth) / (1 - L), (H * L - gridHeight) / (1 - L));
-            gy.gz();
-            1 <= x && (D = !1, h8.h9 = !0);
+            mapGridHandler.gw(A + M * (E - A), prevClientWidth / 2);
+            mapGridHandler.gx(B + M * (F - B), prevClientHeight / 2);
+            eA.zoom(L, (J * L - viewportX) / (1 - L), (H * L - viewportY) / (1 - L));
+            viewport.updateViewportCoords();
+            1 <= x && (D = !1, mapUpdate.shouldUpdate = !0);
             mainHandler.canvasDirty = !0
         }
     }
@@ -1389,9 +1390,9 @@ function drawCanvasImages() {
     hq.hr();
     mainCanvasCtx.setTransform(mainScaleFactor, 0, 0, mainScaleFactor, 0, 0);
     mainCanvasCtx.imageSmoothingEnabled = 3 > mainScaleFactor;
-    mainCanvasCtx.drawImage(mapBaseCanvas, gj.toX(), gj.toY());
+    mainCanvasCtx.drawImage(mapBaseCanvas, mapGridHandler.toX(), mapGridHandler.toY());
     playerAura.drawCanvasImage();
-    mainCanvasCtx.drawImage(mapCanvas, gj.toX(), gj.toY());
+    mainCanvasCtx.drawImage(mapCanvas, mapGridHandler.toX(), mapGridHandler.toY());
     mainCanvasCtx.imageSmoothingEnabled = !1;
     hq.drawCanvasImage();
     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1404,7 +1405,7 @@ function drawCanvasImages() {
         troopBar.drawCanvasImage();
         peace.drawCanvasImage();
         gameStatistics.drawCanvasImage();
-        gj.drawCanvasImage();
+        mapGridHandler.drawCanvasImage();
         gameMessages.drawCanvasImage();
         teams.drawCanvasImage();
         eO.drawCanvasImage();
@@ -1601,7 +1602,7 @@ function EndGame() {
             gameLeaderboard.drawCanvas(!0);
             gameStatistics.drawCanvas(!0);
             mainHandler.canvasDirty = !0;
-            h8.iz();
+            mapUpdate.updatePartialMap();
             setAndroidState(0)
         }
     }
@@ -1628,8 +1629,8 @@ function Spawn() {
         eA.j4();
         eA.drawCanvas();
         spawn = null;
-        h8.j5 = !0;
-        h8.j6();
+        mapUpdate.hasChanged = !0;
+        mapUpdate.updateFullMap();
         singleplayer && setAndroidState(1)
     }
 }
@@ -1670,7 +1671,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     statisticNumbers.init();
     setMapCanvas();
     configFakeMap.jR();
-    h8.init();
+    mapUpdate.init();
     interest.init();
     receiveDonationsArrayInit();
     pixel.init(playerInfo);
@@ -1685,7 +1686,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     statistics.init();
     mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0);
     gameLeaderboard.init();
-    gj.init();
+    mapGridHandler.init();
     troopBar.init();
     peace.init();
     eO.init();
@@ -1730,7 +1731,7 @@ function leaveGame() {
     showAd()
 }
 var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
-    gameMessages, troopBar, gj, playtime, eO, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
+    gameMessages, troopBar, mapGridHandler, playtime, eO, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
     mapInfo, generateHeightmap, gn, boatPathChecker, fakeRandom, boatPathHandler, hq, jo, dataDecoder, fadeIn, dataEncoder, jq, playerAura, lobby, mapMenu, peace, setGameOrigin, 
     wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
@@ -1752,7 +1753,7 @@ function construct() {
     attacksBar = new AttacksBar;
     gameMessages = new GameMessages;
     troopBar = new TroopBar;
-    gj = new k4;
+    mapGridHandler = new MapGridHandler;
     playtime = new Playtime;
     eO = new k6;
     gameLeaderboard = new GameLeaderboard;
@@ -1974,8 +1975,8 @@ function PlayerActions() {
         if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return !1;
         var M = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - B) > M || Math.abs(yPos - C) > M || (new Date).getTime() > E + 425) return !1;
-        M = Math.floor((xPos + gridWidth) / mainScaleFactor);
-        var Q = Math.floor((yPos + gridHeight) / mainScaleFactor);
+        M = Math.floor((xPos + viewportX) / mainScaleFactor);
+        var Q = Math.floor((yPos + viewportY) / mainScaleFactor);
         if (1 > M || 1 > Q || M >= currentMapWidth - 1 || Q >= currentMapHeight - 1) return !1;
         var R = Q * currentMapWidth * 4 + 4 * M;
         if (!pixel.canOwn(R)) return !1;
@@ -2151,7 +2152,7 @@ function GameButtons() {
     };
     this.toggleMenu = function() {
         (this.menuVisible = !this.menuVisible) ? (isCanvasHidden = !1, singleplayer && 1 === clientStatus && !inSpawn && (setTimeout(function() {
-            h8.iz()
+            mapUpdate.updatePartialMap()
         }, 0), setAndroidState(0))) : (selectedBIndex = -1, drawGameMenuButton(), singleplayer && setAndroidState(1));
         mainHandler.canvasDirty = !0
     };
@@ -2171,7 +2172,7 @@ function GameButtons() {
                     this.toggleMenu();
                 }
                 return 2;
-            } else if (3 === bIndex && 2 <= statisticNumbers.m4) {
+            } else if (3 === bIndex && 2 <= statisticNumbers.currentDataPointIndex) {
                 statistics.toggleMenu();
                 mainHandler.canvasDirty = !0;
                 return 2;
@@ -2213,7 +2214,7 @@ function GameButtons() {
             B = .4 * buttonSize;
             gameButtons.drawMenuSymbol(canvasPadding + 4 * buttonSize + (1.5 * buttonSize - B) / 2, troopBar.startingY + .3 * buttonSize, B);
             drawGameButtons(1, gameButtons.canSurrender(myID) ? whiteRGB2 : gray128RGB);
-            2 <= statisticNumbers.m4 && drawGameButtons(2, whiteRGB2);
+            2 <= statisticNumbers.currentDataPointIndex && drawGameButtons(2, whiteRGB2);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(gameButtonsCanvas, canvasPadding, troopBar.startingY)
     };
@@ -2610,8 +2611,8 @@ function Announcements() {
 }
 
 function CookiesPrompt() {
-    this.fontRatio = this.buttonHeight = this.nP = this.buttonMargin = this.height = this.width = 0;
-    this.bs = -1;
+    this.fontRatio = this.buttonHeight = this.contentPadding = this.buttonMargin = this.height = this.width = 0;
+    this.clickedButtonIndex = -1;
     this.buttonLabels = ["Accept Cookies", "More Information", "Decline"];
     this.colors = ["rgba(0,255,0,0.4)", "rgba(0,0,255,0.4)", "rgba(255,0,0,0.4)"];
     this.visible = !1;
@@ -2624,9 +2625,9 @@ function CookiesPrompt() {
         this.width = Math.floor(2.8 * Math.floor((isZoom ? .09 : .062) * averageDim));
         this.height = Math.floor(1 * this.width);
         this.buttonMargin = Math.floor(.06 * this.width);
-        this.i5 = this.width - 2 * this.buttonMargin;
-        this.nP = this.buttonMargin;
-        this.buttonHeight = (this.height - (this.buttonLabels.length + 1) * this.nP) / this.buttonLabels.length;
+        this.textPadding = this.width - 2 * this.buttonMargin;
+        this.contentPadding = this.buttonMargin;
+        this.buttonHeight = (this.height - (this.buttonLabels.length + 1) * this.contentPadding) / this.buttonLabels.length;
         this.fontRatio = Math.floor(.3 * this.buttonHeight)
     };
     this.mouseDown = function(xPos, yPos) {
@@ -2645,16 +2646,16 @@ function CookiesPrompt() {
     };
     this.onPointermove = function(xPos, yPos) {
         if (!this.visible) return !1;
-        var n = this.bs;
-        this.bs = this.getButtonIndex(xPos, yPos);
-        if (n !== this.bs) mainHandler.canvasDirty = !0;
-        return -1 !== this.bs
+        var n = this.clickedButtonIndex;
+        this.clickedButtonIndex = this.getButtonIndex(xPos, yPos);
+        if (n !== this.clickedButtonIndex) mainHandler.canvasDirty = !0;
+        return -1 !== this.clickedButtonIndex
     };
     this.getButtonIndex = function(xPos, yPos) {
         xPos -= bufferLength;
         yPos -= Math.floor(prevClientHeight - this.height - bufferLength);
         if (0 > xPos || 0 > yPos || xPos >= this.width || yPos >= this.height) return -1;
-        var n = Math.floor((yPos - .5 * this.nP) / ((this.height - this.nP) / this.buttonLabels.length));
+        var n = Math.floor((yPos - .5 * this.contentPadding) / ((this.height - this.contentPadding) / this.buttonLabels.length));
         return 0 > n ? 0 : n >= this.buttonLabels.length ? this.buttonLabels.length - 1 : n
     };
     this.drawCanvasImage = function() {
@@ -2671,8 +2672,8 @@ function CookiesPrompt() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.font = fontWeightBold + this.fontRatio + fontSizeArial;
         mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
-        for (var n = this.buttonLabels.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.buttonMargin, k + this.nP + n * (this.nP + this.buttonHeight)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.i5, this.buttonHeight), this.bs === n && (mainCanvasCtx.fillStyle =
-            whiteMore3Transparent, mainCanvasCtx.fillRect(0, 0, this.i5, this.buttonHeight)), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(this.buttonLabels[n], this.i5 / 2, .54 * this.buttonHeight), mainCanvasCtx.strokeRect(0, 0, this.i5, this.buttonHeight);
+        for (var n = this.buttonLabels.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.buttonMargin, k + this.contentPadding + n * (this.contentPadding + this.buttonHeight)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.textPadding, this.buttonHeight), this.clickedButtonIndex === n && (mainCanvasCtx.fillStyle =
+            whiteMore3Transparent, mainCanvasCtx.fillRect(0, 0, this.textPadding, this.buttonHeight)), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(this.buttonLabels[n], this.textPadding / 2, .54 * this.buttonHeight), mainCanvasCtx.strokeRect(0, 0, this.textPadding, this.buttonHeight);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
@@ -2997,9 +2998,9 @@ function handleMouseDown(xPos, yPos) {
     else if (!(statistics.mouseDown(xPos, yPos) || playerActions.lB(xPos, yPos) || gameResultBox.mouseDown(xPos, yPos) || attacksBar.mouseDown(xPos, yPos))) {
         var n = gameButtons.mouseDown(xPos, yPos);
         if (2 !== n && !gameLeaderboard.mouseDown(xPos, yPos)) {
-            if (gj.mouseDown(xPos, yPos)) mainHandler.canvasDirty = !0
+            if (mapGridHandler.mouseDown(xPos, yPos)) mainHandler.canvasDirty = !0
             else if (troopBar.getClickedButton(xPos, yPos)) {
-                gj.gk = !1;
+                mapGridHandler.gk = !1;
                 if (troopBar.pQ(xPos, yPos)) mainHandler.canvasDirty = !0
             } else if (!(announcements.mouseDown(xPos, yPos) || peace.mouseDown(xPos, yPos)) && 0 === n) playerActions.lD(xPos, yPos)
         }
@@ -3029,7 +3030,7 @@ function onPointermove(xPos, yPos) {
                 if (troopBar.onPointermove(xPos, yPos)) mainHandler.canvasDirty = !0
             } else {
                 gameLeaderboard.onPointermove(xPos, yPos);
-                if (gj.gk && gj.onPointermove(xPos, yPos)) mainHandler.canvasDirty = !0
+                if (mapGridHandler.gk && mapGridHandler.onPointermove(xPos, yPos)) mainHandler.canvasDirty = !0
             }
         }
     }
@@ -3041,10 +3042,10 @@ function onMouseleave(e) {
         gameStateManager.click(-1024, -1024);
         playtime.pU();
     } else {
-        gameLeaderboard.pV(-1024, -1024);
+        gameLeaderboard.onDragEnd(-1024, -1024);
         gameButtons.onPointermove(-1024, -1024);
         troopBar.stopDragging();
-        if (gj.gk) gj.gk = !1
+        if (mapGridHandler.gk) mapGridHandler.gk = !1
     }
 }
 
@@ -3059,7 +3060,7 @@ function onClick(g) {
 
 function onTouchend(g) {
     g.preventDefault();
-    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? gj.gk = !1 : onPointerUp(clientXPos, clientYPos)
+    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? mapGridHandler.gk = !1 : onPointerUp(clientXPos, clientYPos)
 }
 
 function onTouchcancel(g) {
@@ -3078,10 +3079,10 @@ function onDrop(g) {
 function onPointerUp(xPos, yPos) {
     if (0 === clientStatus) gameStateManager.click(xPos, yPos)
     else {
-        gameLeaderboard.pV(xPos, yPos);
-        statistics.pV();
+        gameLeaderboard.onDragEnd(xPos, yPos);
+        statistics.onDragEnd();
         troopBar.stopDragging();
-        gj.gk = !1;
+        mapGridHandler.gk = !1;
         if (playerActions.click(xPos, yPos)) mainHandler.canvasDirty = !0
     }
 }
@@ -3097,7 +3098,7 @@ function onWheel(e) {
     else if (!gameLeaderboard.onWheel(xPos, yPos, deltaY)) {
         if (troopBar.getClickedButton(xPos, yPos)) {
             if (troopBar.onWheel(deltaY)) mainHandler.canvasDirty = !0
-        } else if (gj.onWheel(xPos, yPos, 2 * deltaY)) mainHandler.canvasDirty = !0
+        } else if (mapGridHandler.onWheel(xPos, yPos, 2 * deltaY)) mainHandler.canvasDirty = !0
     }
 }
 
@@ -3722,15 +3723,15 @@ function TroopBar() {
         if (this.visible()) mainCanvasCtx.drawImage(troopBarCanvas, startingX, this.startingY)
     }
 }
-var mainScaleFactor, gridWidth, gridHeight;
+var mainScaleFactor, viewportX, viewportY;
 
-function k4() {
+function MapGridHandler() {
     var g, k, n, l, x, t, z;
     this.init = function() {
         g = Array(2);
         k = Array(2);
         this.gk = !1;
-        z = t = gridHeight = gridWidth = 0;
+        z = t = viewportY = viewportX = 0;
         mainScaleFactor = 1;
         this.setCanvasVariables()
     };
@@ -3746,16 +3747,16 @@ function k4() {
             whiteRGB, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), drawDiagRect(k[A], 0, 0, n, y, .3, 0 === A)
     };
     this.toX = function() {
-        return -gridWidth / mainScaleFactor
+        return -viewportX / mainScaleFactor
     };
     this.toY = function() {
-        return -gridHeight / mainScaleFactor
+        return -viewportY / mainScaleFactor
     };
     this.gw = function(y, A) {
-        gridWidth = mainScaleFactor * y - A
+        viewportX = mainScaleFactor * y - A
     };
     this.gx = function(y, A) {
-        gridHeight = mainScaleFactor * y - A
+        viewportY = mainScaleFactor * y - A
     };
     this.mouseDown = function(y, A) {
         if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200) : this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
@@ -3764,17 +3765,17 @@ function k4() {
     };
     this.onPointermove = function(y, A) {
         if (!eV.h0()) return !0;
-        var B = gridWidth,
-            C = gridHeight,
+        var B = viewportX,
+            C = viewportY,
             E = t - y,
             F = z - A;
-        gridWidth += E;
-        gridHeight += F;
+        viewportX += E;
+        viewportY += F;
         eA.onPointermove(E, F);
         this.rI();
         t = y;
         z = A;
-        return B !== gridWidth || C !== gridHeight
+        return B !== viewportX || C !== viewportY
     };
     this.onWheel = function(y, A, B) {
         if (!eV.h0()) return !0;
@@ -3789,23 +3790,23 @@ function k4() {
         B = .125 > B * mainScaleFactor ? .125 / mainScaleFactor : B;
         eA.zoom(B, y, A);
         mainScaleFactor *= B;
-        gridWidth = (gridWidth + y) * B - y;
-        gridHeight = (gridHeight + A) * B - A;
-        gj.rI()
+        viewportX = (viewportX + y) * B - y;
+        viewportY = (viewportY + A) * B - A;
+        mapGridHandler.rI()
     };
     this.rI = function() {
         var y = canvasWidth / 16,
             A = 0,
             B = canvasHeight / 16,
             C = 0;
-        gridWidth < -canvasWidth + y && (A = -canvasWidth + y - gridWidth);
-        gridWidth > mainScaleFactor * currentMapWidth - y && (A = mainScaleFactor * currentMapWidth - y -
-            gridWidth);
-        gridHeight < -canvasHeight + B && (C = -canvasHeight + B - gridHeight);
-        gridHeight > mainScaleFactor * currentMapHeight - B && (C = mainScaleFactor * currentMapHeight - B - gridHeight);
-        gridWidth += A;
-        gridHeight += C;
-        gy.gz();
+        viewportX < -canvasWidth + y && (A = -canvasWidth + y - viewportX);
+        viewportX > mainScaleFactor * currentMapWidth - y && (A = mainScaleFactor * currentMapWidth - y -
+            viewportX);
+        viewportY < -canvasHeight + B && (C = -canvasHeight + B - viewportY);
+        viewportY > mainScaleFactor * currentMapHeight - B && (C = mainScaleFactor * currentMapHeight - B - viewportY);
+        viewportX += A;
+        viewportY += C;
+        viewport.updateViewportCoords();
         eA.rQ(A, C)
     };
     this.qs = function() {
@@ -4087,7 +4088,7 @@ function Playtime() {
     this.mouseDown = function(P, U) {
         this.onPointermove(P, U); - 1 !== G && (K = P, this.rg = !0)
     };
-    this.pV = function() {
+    this.onDragEnd = function() {
         -1 !== G && (this.rg = !1)
     };
     this.drawCanvasImage = function() {
@@ -4424,7 +4425,7 @@ function GameLeaderboard() {
         T = T === visibleLandCount || !isInBoardCanvas(S, O) || isTouch ? -1 : T;
         return highlightedLandIndex !== T ? (highlightedLandIndex = T, drawGameLeaderboard(), mainHandler.canvasDirty = !0) : !1
     };
-    this.pV = function(xPos, yPos) {
+    this.onDragEnd = function(xPos, yPos) {
         if (!ba) return !1;
         ba = !1;
         var T = getRowIndex(yPos);
@@ -4585,7 +4586,7 @@ function GameStatistics() {
     this.eC = function() {
         J[2] && spectatorCount !== K[2] && (K[2] = spectatorCount, I++)
     };
-    this.tW = function(P) {
+    this.receivedSpawnActions = function(P) {
         if (P === spawnTime) return H = 0, g(), !1;
         if (-1 === P && 0 === M) return !1;
         var U = H,
@@ -4606,7 +4607,7 @@ function GameStatistics() {
 
 function GameResultBox() {
     var g, k, n, l, x, t, z, y, A, B;
-    this.tb = -1;
+    this.ticksElapsedWhenDeath = -1;
     this.init = function() {
         g = !1;
         l = 0;
@@ -4614,7 +4615,7 @@ function GameResultBox() {
         t = .07;
         z = .09;
         B = y = 0;
-        this.tb = -1
+        this.ticksElapsedWhenDeath = -1
     };
     this.setCanvasVariables = function() {
         if (g) {
@@ -4657,8 +4658,8 @@ function GameResultBox() {
         }
     };
     this.show = function(C, E) {
-        g || (k = C ? 1 : 2, g = !0, this.setCanvasVariables(), playerActions.ln(), troopBar.toggleVisibilityOff(), B = mainHandler.time, -1 === this.tb &&
-            (this.tb = mainHandler.getTicksElapsed()), y = E ? 1 : 0)
+        g || (k = C ? 1 : 2, g = !0, this.setCanvasVariables(), playerActions.ln(), troopBar.toggleVisibilityOff(), B = mainHandler.time, -1 === this.ticksElapsedWhenDeath &&
+            (this.ticksElapsedWhenDeath = mainHandler.getTicksElapsed()), y = E ? 1 : 0)
     };
     this.update = function() {
         !g || 1 <= y || (y += 5E-4 * (mainHandler.time - B), y = 1 < y ? 1 : y, B = mainHandler.time, mainHandler.canvasDirty = !0)
@@ -4741,11 +4742,11 @@ function PlayerAura() {
             var idIndex;
             mainCanvasCtx.imageSmoothingEnabled = !0;
             mainCanvasCtx.globalAlpha = 1 - (160 < getTicksElapsed ? (getTicksElapsed - 160) / 190 : 0);
-            var minX = gridWidth / mainScaleFactor,
-                maxX = gridHeight / mainScaleFactor,
-                minY = (prevClientWidth + gridWidth) /
+            var minX = viewportX / mainScaleFactor,
+                maxX = viewportY / mainScaleFactor,
+                minY = (prevClientWidth + viewportX) /
                 mainScaleFactor,
-                maxY = (prevClientHeight + gridHeight) / mainScaleFactor;
+                maxY = (prevClientHeight + viewportY) / mainScaleFactor;
             var scale = .25;
             var depth = diameter * mainScaleFactor * scale;
             for (idIndex = maxEntities - 1; idIndex >= playerCount; idIndex--) drawAura(idIndex, depth, minX, maxX, minY, maxY, scale);
@@ -4827,62 +4828,61 @@ function processDonation(authorID, targetID, amount) {
     }
 }
 
-function ts() {
-    this.j5 = this.h9 = this.tt = !1;
-    this.tu = [0, 0, 0, 0];
-    this.tv = function() {
-        this.j5 = this.j5 || this.h9;
-        if (this.h9 || this.tt && this.j5) {
-            var g = gy.tw[0],
-                k = gy.tw[1],
-                n = gy.tw[2],
-                l = gy.tw[3];
-            g = g < this.tu[0] ? this.tu[0] : g;
-            k = k < this.tu[1] ? this.tu[1] : k;
-            n = n > this.tu[2] ? this.tu[2] : n;
-            l = l > this.tu[3] ? this.tu[3] : l;
-            this.tt = this.h9 = !1;
-            g === this.tu[0] && k === this.tu[1] && n === this.tu[2] && l === this.tu[3] ? this.j6() : n >= g && l >= k && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, g, k, n - g + 1, l - k + 1)
+function MapUpdate() {
+    this.hasChanged = this.shouldUpdate = this.needsUpdate = !1;
+    this.updateBounds = [0, 0, 0, 0];
+    this.updateMapCanvas = function() {
+        this.hasChanged = this.hasChanged || this.shouldUpdate;
+        if (this.shouldUpdate || this.needsUpdate && this.hasChanged) {
+            var g = viewport.viewportCoords[0],
+                k = viewport.viewportCoords[1],
+                n = viewport.viewportCoords[2],
+                l = viewport.viewportCoords[3];
+            g = g < this.updateBounds[0] ? this.updateBounds[0] : g;
+            k = k < this.updateBounds[1] ? this.updateBounds[1] : k;
+            n = n > this.updateBounds[2] ? this.updateBounds[2] : n;
+            l = l > this.updateBounds[3] ? this.updateBounds[3] : l;
+            this.needsUpdate = this.shouldUpdate = !1;
+            g === this.updateBounds[0] && k === this.updateBounds[1] && n === this.updateBounds[2] && l === this.updateBounds[3] ? this.updateFullMap() : n >= g && l >= k && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, g, k, n - g + 1, l - k + 1)
         }
     };
-    this.j6 = function() {
-        this.j5 && this.tu[2] >= this.tu[0] && this.tu[3] >= this.tu[1] && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, this.tu[0], this.tu[1], this.tu[2] - this.tu[0] + 1, this.tu[3] - this.tu[1] + 1);
-        this.j5 = !1
+    this.updateFullMap = function() {
+        this.hasChanged && this.updateBounds[2] >= this.updateBounds[0] && this.updateBounds[3] >= this.updateBounds[1] && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, this.updateBounds[0], this.updateBounds[1], this.updateBounds[2] - this.updateBounds[0] + 1, this.updateBounds[3] - this.updateBounds[1] + 1);
+        this.hasChanged = !1
     };
-    this.iz = function() {
-        this.tu[2] >= this.tu[0] && this.tu[3] >= this.tu[1] && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, this.tu[0], this.tu[1], this.tu[2] - this.tu[0] + 1, this.tu[3] - this.tu[1] + 1);
-        this.j5 = !1
+    this.updatePartialMap = function() {
+        this.updateBounds[2] >= this.updateBounds[0] && this.updateBounds[3] >= this.updateBounds[1] && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, this.updateBounds[0], this.updateBounds[1], this.updateBounds[2] - this.updateBounds[0] + 1, this.updateBounds[3] - this.updateBounds[1] + 1);
+        this.hasChanged = !1
     };
     this.init = function() {
         var g;
-        this.j5 = this.h9 = this.tt = !1;
-        this.tu[0] = currentMapWidth;
-        this.tu[1] = currentMapHeight;
-        this.tu[2] = this.tu[3] = 0;
+        this.hasChanged = this.shouldUpdate = this.needsUpdate = !1;
+        this.updateBounds[0] = currentMapWidth;
+        this.updateBounds[1] = currentMapHeight;
+        this.updateBounds[2] = this.updateBounds[3] = 0;
         var k = 1;
         loop: for (; k < currentMapWidth - 1; k++)
             for (g = currentMapHeight - 2; 1 < g; g--)
                 if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[0] = k;
+                    this.updateBounds[0] = k;
                     break loop
                 } g = 1;
-        loop: for (; g < currentMapHeight -
-            1; g++)
+        loop: for (; g < currentMapHeight - 1; g++)
             for (k = currentMapWidth - 2; 1 < k; k--)
                 if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[1] = g;
+                    this.updateBounds[1] = g;
                     break loop
                 } k = currentMapWidth - 2;
         loop: for (; 0 < k; k--)
             for (g = currentMapHeight - 2; 1 < g; g--)
                 if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[2] = k;
+                    this.updateBounds[2] = k;
                     break loop
                 } g = currentMapHeight - 2;
         loop: for (; 0 < g; g--)
             for (k = currentMapWidth - 2; 1 < k; k--)
                 if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.tu[3] = g;
+                    this.updateBounds[3] = g;
                     break loop
                 }
     }
@@ -5715,25 +5715,25 @@ function GameStateManager() {
     this.getState = function() {
         return gameState
     };
-    this.ve = function() {
+    this.enterInGameState = function() {
         this.setState(8);
         lobby.hide(); 
         mainSettings.hideIfNotHidden();
         mainLeaderboard.visible = !1;
         openLinkBox.mouseDown(-1E3, -1E3)
     };
-    this.hideIfNotHidden = function(k) {
+    this.hideIfNotHidden = function(e) {
         if (!mapLoaded) return !1;
-        if (!(400 > mainHandler.time)) {
-            if ("Enter" === k.key || "Escape" === k.key) {
-                if (this.vg()) {
+        if (400 <= mainHandler.time) {
+            if ("Enter" === e.key || "Escape" === e.key) {
+                if (this.checkAndHideOtherElements()) {
                     if (0 === gameState) nameInputBar.toggleVisibility(0, !0)
                     return !0;
                 }
-                if ("Enter" === k.key) {
+                if ("Enter" === e.key) {
                     if (0 === gameState) {
-                        nameInput.vh();
-                        return !0; //Joins lobby
+                        nameInput.enterPreLobby();
+                        return !0;
                     } 
                     if (7 === gameState) return !0
                 }
@@ -5741,7 +5741,7 @@ function GameStateManager() {
             return !1
         }
     };
-    this.vg = function() {
+    this.checkAndHideOtherElements = function() {
         if (openLinkBox.end() || mainSettings.hideIfNotHidden()) return !0
         else if (mainLeaderboard.visible) {
             mainLeaderboard.visible = !1;
@@ -5754,12 +5754,12 @@ function GameStateManager() {
             if (isCanvasHidden) isCanvasHidden = !isCanvasHidden
             else if (statistics.visible) statistics.toggleMenu()
             else gameButtons.toggleMenu()
-        } else if (7 === gameState) lobby.vi()
+        } else if (7 === gameState) lobby.closeLobby()
         else if (6 === gameState) preLobby.onPreLobbyLeave()
         else if (3 === gameState) showError.showMainScreen(0, 0)
         else if (2 === gameState) singleSettings.showMainScreen()
         else if (0 === gameState) {
-            if (!this.vg()) setAndroidState(11)
+            if (!this.checkAndHideOtherElements()) setAndroidState(11)
         }
     };
     this.mouseDown = function(xPos, yPos) {
@@ -5799,7 +5799,7 @@ function GameStateManager() {
         playtime.onPointermove(xPos, yPos)
     };
     this.click = function(k, n) {
-        playtime.pV();
+        playtime.onDragEnd();
         mainSettings.handleSave() || linkButtons.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
     };
     this.onWheel = function(k, n, l) {
@@ -6290,7 +6290,7 @@ function Lobby() {
         sounds.play(2);
         mainHandler.canvasDirty = !0
     };
-    this.vi = function() {
+    this.closeLobby = function() {
         this.hide();
         wsManager.closeAll(3240);
         nameInput.init();
@@ -6352,7 +6352,7 @@ function Lobby() {
         for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(n, 0)
     };
     this.mouseDown = function(xPos, yPos) {
-        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.vi(), mainButtons.onPointermove(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
+        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.closeLobby(), mainButtons.onPointermove(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
     };
     this.drawCanvasImage = function() {
         var P = 0,
@@ -6537,7 +6537,7 @@ function SingleSettings() {
     this.xO = function() {
         wsManager.remote = 0;
         wsManager.sendWhenWSOpen(0, 3) && dataEncoder.singlePlayed(0);
-        gameStateManager.ve();
+        gameStateManager.enterInGameState();
         if (customJSON.isCustomJSON) customJSON.xQ();
         else {
             var n = this.botSettings.length - 2;
@@ -6834,7 +6834,7 @@ function NameInput() {
         else {
             showError.displayError(3265);
             cookiesPrompt.visible = !0;
-            cookiesPrompt.bs = -1
+            cookiesPrompt.clickedButtonIndex = -1
         }
         return !0
     }
@@ -6889,9 +6889,9 @@ function NameInput() {
                     singleSettings.init()
                 } else showError.displayError(4214)
             }
-        } else if (0 === mainButtons.getClickedButton(xPos, yPos, 0, 1)) this.vh()
+        } else if (0 === mainButtons.getClickedButton(xPos, yPos, 0, 1)) this.enterPreLobby()
     };
-    this.vh = function() {
+    this.enterPreLobby = function() {
         if (!(processAccount() || processVote())) {
             setAndroidState(10);
             if (void 0 !== textInput && strings.checkValidName(textInput) && 40 === textInput.charCodeAt(0) && 41 === textInput.charCodeAt(2)) {
@@ -7043,10 +7043,10 @@ function Pixel() {
     }
 
     function k(D) {
-        if (!h8.h9) {
+        if (!mapUpdate.shouldUpdate) {
             var K = pixel.toX(D);
             D = pixel.toY(D);
-            h8.h9 = K >= gy.tw[0] && K <= gy.tw[2] && D >= gy.tw[1] && D <= gy.tw[3]
+            mapUpdate.shouldUpdate = K >= viewport.viewportCoords[0] && K <= viewport.viewportCoords[2] && D >= viewport.viewportCoords[1] && D <= viewport.viewportCoords[3]
         }
     }
     var boatBaseColor = [224, 224, 224],
@@ -7906,8 +7906,8 @@ function kN() {
         U = 1;
         R = P = 0;
         infoCanvas.clearRect(0, 0, prevClientWidth, prevClientHeight);
-        var camLeft = gridWidth / mainScaleFactor, camTop = gridHeight / mainScaleFactor, 
-            camRight = (prevClientWidth + gridWidth) / mainScaleFactor, camBottom = (prevClientHeight + gridHeight) / mainScaleFactor,
+        var camLeft = viewportX / mainScaleFactor, camTop = viewportY / mainScaleFactor, 
+            camRight = (prevClientWidth + viewportX) / mainScaleFactor, camBottom = (prevClientHeight + viewportY) / mainScaleFactor,
             landCenterX, landCenterY, idIndex, fontSize, infoCanvasCtx, 
             isAlivePlayer = 0 !== isAlive[myID] && playerActions.isHuman(myID), aliveIndex;
 
@@ -8465,7 +8465,7 @@ function updateAliveInfo() {
     for (idIndex = 0; idIndex < maxEntities; idIndex++) 0 !== isAlive[idIndex] && (aliveEntities[aliveIndex++] = idIndex)
 }
 
-function eL() {
+function checkPrematureDeath() {
     managePrematureDeath();
     findShiftAliveEntitiesIndex()
 }
@@ -8498,7 +8498,7 @@ function getTroopHash() {
     return troopHash % 4096
 }
 var mainCanvas, mainCanvasCtx, versionLabel, versionHash, canvasWidth, canvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = !1,
-    isNotTopWindow, isNotClient, clientID, gy, frameRate, h8, emojis, statisticNumbers, statistics, cookiesPrompt, mainHandler, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
+    isNotTopWindow, isNotClient, clientID, viewport, frameRate, mapUpdate, emojis, statisticNumbers, statistics, cookiesPrompt, mainHandler, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = !1;
 
@@ -8543,8 +8543,8 @@ function main() {
     window.addEventListener("error", onError, !0);
     frameRate = 10;
     mapShading = new MapShading;
-    gy = new a2H;
-    h8 = new ts;
+    viewport = new Viewport;
+    mapUpdate = new MapUpdate;
     emojis = new Emojis;
     statisticNumbers = new StatisticNumbers;
     statistics = new Statistics;
@@ -8638,7 +8638,7 @@ function onKeydown(e) {
     } else if (' ' === e.key) {
         1 === clientStatus && intelliAttack.checkIntelli();
     } else if ("c" === e.key && 0 !== clientStatus) {
-        statistics.a2O();
+        statistics.printCoords();
     }
 }
 
@@ -9495,9 +9495,9 @@ function MoreSettings() {
     }
 
     function k(y, A, B, C) {
-        if (0 === C) return y >= B.f7 && (0 === C || A >= B.f8) && A <= B.f8 + B.nP;
-        A -= C * (B.nP - 2);
-        return y >= B.f9 && (0 === C || A >= B.f8) && A <= B.f8 + B.nP
+        if (0 === C) return y >= B.f7 && (0 === C || A >= B.f8) && A <= B.f8 + B.contentPadding;
+        A -= C * (B.contentPadding - 2);
+        return y >= B.f9 && (0 === C || A >= B.f8) && A <= B.f8 + B.contentPadding
     }
 
     function n() {
@@ -9508,9 +9508,9 @@ function MoreSettings() {
             f7: canvasWidth - y - B,
             f8: bufferLength,
             buttonMargin: y,
-            nP: Math.floor(.35 * y),
+            contentPadding: Math.floor(.35 * y),
             f9: canvasWidth - A - B,
-            i5: A
+            textPadding: A
         }
     }
 
@@ -9708,10 +9708,10 @@ function MoreSettings() {
             var A = n();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            l(A.f7, A.f8, A.buttonMargin, A.nP, settingsArray[0].red, settingsArray[0].green, settingsArray[0].blue, 0 === x, settingsArray[0].name, .6);
+            l(A.f7, A.f8, A.buttonMargin, A.contentPadding, settingsArray[0].red, settingsArray[0].green, settingsArray[0].blue, 0 === x, settingsArray[0].name, .6);
             if (menuOpen) {
                 var B = settingsArray.length;
-                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.nP - 2 * y, A.i5, A.nP, settingsArray[y].red, settingsArray[y].green, settingsArray[y].blue, x === y, settingsArray[y].name,
+                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.contentPadding - 2 * y, A.textPadding, A.contentPadding, settingsArray[y].red, settingsArray[y].green, settingsArray[y].blue, x === y, settingsArray[y].name,
                     y === B - 1 ? .32 : .45)
             }
         }
@@ -9735,7 +9735,7 @@ function kT() {
     function k() {
         if (-1 !== l)
             if (0 !== clientStatus && eV.h0()) {
-                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, gridWidth += t[A], gridHeight += z[A], eA.onPointermove(t[A], z[A]), gj.rI());
+                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, viewportX += t[A], viewportY += z[A], eA.onPointermove(t[A], z[A]), mapGridHandler.rI());
                 y ? mainHandler.canvasDirty = !0 : gn.go()
             } else gn.go()
     }
@@ -9984,7 +9984,7 @@ function kc() {
                 gameLeaderboard.setCanvasVariables(!1);
                 eO.setCanvasVariables();
                 gameStatistics.setCanvasVariables();
-                gj.setCanvasVariables();
+                mapGridHandler.setCanvasVariables();
                 troopBar.setCanvasVariables();
                 announcements.setCanvasVariables();
                 gameButtons.setCanvasVariables();
@@ -9996,12 +9996,12 @@ function kc() {
                 eA.setCanvasVariables();
                 gameResultBox.setCanvasVariables();
                 teams.setCanvasVariables();
-                gj.rI();        
+                mapGridHandler.rI();        
             } else {
                 if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, !0)
                 else if (2 === gameStateManager.getState()) singleSettings.setCanvasVariables()
                 else if (3 === gameStateManager.getState()) showError.setCanvasVariables();
-                gameStateManager.vg();
+                gameStateManager.checkAndHideOtherElements();
                 gameStateManager.vl();
             }
             mainHandler.canvasDirty = !0
@@ -10238,11 +10238,11 @@ function kX() {
     };
     this.hr = function() {
         var x = n ? 0 : -g;
-        rectEqualOrInside(x, x, currentMapWidth - 2 * x, currentMapHeight - 2 * x, gy.a59, gy.a5A, gy.a5B, gy.a5C) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, prevClientWidth, prevClientHeight))
+        rectEqualOrInside(x, x, currentMapWidth - 2 * x, currentMapHeight - 2 * x, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, prevClientWidth, prevClientHeight))
     };
     this.drawCanvasImage = function() {
-        n || (rectIntersect(0, -g, currentMapWidth, g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[0], gy.a5D, gy.a5E - g), rectIntersect(currentMapWidth, -g, g, currentMapHeight + 2 * g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[1], gy.a5D + currentMapWidth, gy.a5E - g), rectIntersect(0, currentMapHeight, currentMapWidth, g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[2], gy.a5D, gy.a5E + currentMapHeight), rectIntersect(-g, -g, g,
-            currentMapHeight + 2 * g, gy.a59, gy.a5A, gy.a5B, gy.a5C) && mainCanvasCtx.drawImage(k[3], gy.a5D - g, gy.a5E - g))
+        n || (rectIntersect(0, -g, currentMapWidth, g, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) && mainCanvasCtx.drawImage(k[0], viewport.cameraX, viewport.cameraY - g), rectIntersect(currentMapWidth, -g, g, currentMapHeight + 2 * g, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) && mainCanvasCtx.drawImage(k[1], viewport.cameraX + currentMapWidth, viewport.cameraY - g), rectIntersect(0, currentMapHeight, currentMapWidth, g, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) && mainCanvasCtx.drawImage(k[2], viewport.cameraX, viewport.cameraY + currentMapHeight), rectIntersect(-g, -g, g,
+            currentMapHeight + 2 * g, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) && mainCanvasCtx.drawImage(k[3], viewport.cameraX - g, viewport.cameraY - g))
     }
 }
 
@@ -10347,269 +10347,296 @@ function Sounds() {
 }
 
 function StatisticNumbers() {
-    this.cV = 501;
-    this.a5P = new Uint32Array(this.cV);
-    this.s6 = new Uint32Array(this.cV);
-    this.tT = new Uint16Array(this.cV);
-    this.m4 = 0;
-    this.interval = 1;
-    this.dV = 0;
+    this.maxDataPoints = 501;
+    this.recordedLandValues = new Uint32Array(this.maxDataPoints);
+    this.recordedTroopValues = new Uint32Array(this.maxDataPoints);
+    this.recordedInterestValues = new Uint16Array(this.maxDataPoints);
+    this.currentDataPointIndex = 0;
+    this.updateInterval = 1;
+    this.updateCounter = 0;
     this.max = [0, 0, 0];
     this.numbers = 0;
-    this.a5R = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
+    this.statisticNumbersLabels = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
     this.init = function() {
-        this.m4 = 0;
-        this.interval = 1;
-        this.dV = 0;
-        this.a5S();
-        this.a5T()
+        this.currentDataPointIndex = 0;
+        this.updateInterval = 1;
+        this.updateCounter = 0;
+        this.resetMaxValues();
+        this.initNumberValues()
     };
     this.update = function() {
-        0 < this.dV-- || this.a5U()
+        if (0 >= this.updateCounter--) this.recordData()
     };
-    this.a5U = function() {
-        0 !== isAlive[myID] && (this.a5P[this.m4] = land[myID], this.s6[this.m4] = troops[myID], this.tT[this.m4] = interest.getInterestRate(myID), this.a5V(this.m4), this.m4++, this.m4 === this.cV && this.a5W(), this.dV = this.interval - 1, statistics.updateRenderObject())
+    this.recordData = function() {
+        if (0 !== isAlive[myID]) {
+            this.recordedLandValues[this.currentDataPointIndex] = land[myID];
+            this.recordedTroopValues[this.currentDataPointIndex] = troops[myID];
+            this.recordedInterestValues[this.currentDataPointIndex] = interest.getInterestRate(myID);
+            this.updateMaxValues(this.currentDataPointIndex);
+            this.currentDataPointIndex++;
+            if (this.currentDataPointIndex === this.maxDataPoints) this.shiftData();
+            this.updateCounter = this.updateInterval - 1;
+            statistics.updateRenderObject();
+        }
     };
-    this.a5W = function() {
-        this.a5S();
-        this.a5V(0);
-        this.m4 = 1 + divideFloor(this.cV, 2);
-        for (var g = 1; g < this.m4; g++) this.a5P[g] = this.a5P[2 * g], this.s6[g] = this.s6[2 * g], this.tT[g] = this.tT[2 * g], this.a5V(g);
-        this.interval *= 2
+    this.shiftData = function() {
+        this.resetMaxValues();
+        this.updateMaxValues(0);
+        this.currentDataPointIndex = 1 + divideFloor(this.maxDataPoints, 2);
+        for (var dpIndex = 1; dpIndex < this.currentDataPointIndex; dpIndex++) {
+            this.recordedLandValues[dpIndex] = this.recordedLandValues[2 * dpIndex];
+            this.recordedTroopValues[dpIndex] = this.recordedTroopValues[2 * dpIndex];
+            this.recordedInterestValues[dpIndex] = this.recordedInterestValues[2 * dpIndex];
+            this.updateMaxValues(dpIndex);
+        }
+        this.updateInterval *= 2
     };
-    this.a5S = function() {
+    this.resetMaxValues = function() {
         this.max[0] = this.max[1] = this.max[2] = 0
     };
-    this.a5T = function() {
+    this.initNumberValues = function() {
         this.numbers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     };
-    this.a5V = function(g) {
-        this.max[0] = this.a5P[g] > this.max[0] ? this.a5P[g] : this.max[0];
-        this.max[1] = this.s6[g] > this.max[1] ? this.s6[g] : this.max[1];
-        this.max[2] = this.tT[g] > this.max[2] ? this.tT[g] : this.max[2]
+    this.updateMaxValues = function(dpIndex) {
+        this.max[0] = this.recordedLandValues[dpIndex] > this.max[0] ? this.recordedLandValues[dpIndex] : this.max[0];
+        this.max[1] = this.recordedTroopValues[dpIndex] > this.max[1] ? this.recordedTroopValues[dpIndex] : this.max[1];
+        this.max[2] = this.recordedInterestValues[dpIndex] > this.max[2] ? this.recordedInterestValues[dpIndex] : this.max[2]
     }
 }
 
 function Statistics() {
-    this.bs = this.qI = this.a5Y = this.a5X = this.xJ = this.buttonHeight = this.nP = this.uT = this.uS = this.i5 = this.buttonMargin = this.height = this.width = 0;
-    this.buttonLabels = ["Territory", "Balance", "Interest", "Numbers"];
+    this.clickedButtonIndex = this.horizontalCanvasPadding = this.verticalCanvasPadding = this.fontPadding = this.availableHeight = this.buttonHeight = 
+        this.contentPadding = this.availableWidth = this.textWidth = this.textPadding = this.buttonMargin = this.height = this.width = 0;
+    this.buttonLabels = ["Land", "Troops", "Interest", "Numbers"];
     this.visible = !1;
-    this.a5Z = -1;
-    this.a5a = !1;
-    this.a5b = [0, 0];
+    this.activeSliderValue = -1;
+    this.isDraggingSlider = !1;
+    this.pointerPosition = [0, 0];
     this.init = function() {
         this.visible = !1;
-        this.a5Z = -1;
-        this.a5a = !1;
+        this.activeSliderValue = -1;
+        this.isDraggingSlider = !1;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
         this.width = canvasWidth < 1.618 * canvasHeight ? canvasWidth : 1.618 * canvasHeight;
         this.width = Math.floor((isZoom && canvasWidth < canvasHeight ? 1 : isZoom ? .8 : canvasWidth < canvasHeight ? .65 : .5) * this.width);
-        this.qI = Math.floor(1 + .006 * this.width);
-        this.width -= isZoom && canvasWidth < canvasHeight ? 2 * canvasPadding + this.qI : 0;
+        this.horizontalCanvasPadding = Math.floor(1 + .006 * this.width);
+        this.width -= isZoom && canvasWidth < canvasHeight ? 2 * canvasPadding + this.horizontalCanvasPadding : 0;
         this.height = Math.floor(this.width / 1.618);
-        this.buttonMargin =
-            Math.floor(1 + .02 * this.width);
-        this.nP = this.i5 = Math.floor(1 + .04 * this.width);
+        this.buttonMargin = Math.floor(1 + .02 * this.width);
+        this.contentPadding = this.textPadding = Math.floor(1 + .04 * this.width);
         this.buttonHeight = Math.floor(1 + .075 * this.width);
-        this.a5X = Math.floor(this.width * (isZoom ? .028 : .02));
-        this.a5X = 6 > this.a5X ? 6 : this.a5X;
-        this.a5Y = Math.floor(.028 * this.width);
-        this.a5Y = 6 > this.a5Y ? 6 : this.a5Y;
-        this.xJ = this.height - 2 * this.nP - this.buttonHeight;
-        this.visible && this.a5c()
+        this.fontPadding = Math.floor(this.width * (isZoom ? .028 : .02));
+        this.fontPadding = 6 > this.fontPadding ? 6 : this.fontPadding;
+        this.verticalCanvasPadding = Math.floor(.028 * this.width);
+        this.verticalCanvasPadding = 6 > this.verticalCanvasPadding ? 6 : this.verticalCanvasPadding;
+        this.availableHeight = this.height - 2 * this.contentPadding - this.buttonHeight;
+        this.visible && this.updateSliderProperties()
     };
-    this.mouseDown = function(g, k) {
+    this.mouseDown = function(xPos, yPos) {
         if (!this.visible) return !1;
-        var n = g,
-            l = k;
-        g -= divideFloor(prevClientWidth - this.width, 2);
-        k -= divideFloor(prevClientHeight - this.height, 2);
-        if (0 > g || 0 > k || g >= this.width || k >= this.height) {
-            if (1 < gameButtons.mouseDown(n, l)) return !0;
+        var relX = xPos - divideFloor(prevClientWidth - this.width, 2);
+        var relY = yPos - divideFloor(prevClientHeight - this.height, 2);
+        if (relX < 0 || relY < 0 || relX >= this.width || relY >= this.height) {
+            if (gameButtons.mouseDown(xPos, yPos) > 1) {
+                return true;
+            }
             this.end();
-            return !0
+            return true;
         }
-        if (k < this.height - this.buttonHeight) return this.a5a = !0, this.a5Z = (g - 2 * this.buttonMargin - this.uS) / this.uT, !0;
-        n = Math.floor(g / (this.width / this.buttonLabels.length));
-        n = 0 > n ? 0 : n >= this.buttonLabels.length ? this.buttonLabels.length - 1 : n;
-        n !== this.bs && (this.bs = n, this.a5c(), mainHandler.canvasDirty = !0);
-        return !0
+        if (relY < this.height - this.buttonHeight) {
+            this.isDraggingSlider = true;
+            this.activeSliderValue = (relX - 2 * this.buttonMargin - this.textWidth) / this.availableWidth;
+            return true;
+        }
+        var buttonIndex = Math.floor(relX / (this.width / this.buttonLabels.length));
+        buttonIndex = buttonIndex < 0 ? 0 : buttonIndex >= this.buttonLabels.length ? this.buttonLabels.length - 1 : buttonIndex;
+        if (buttonIndex !== this.clickedButtonIndex) {
+            this.clickedButtonIndex = buttonIndex;
+            this.updateSliderProperties();
+            mainHandler.canvasDirty = true;
+        }
+        return true;
     };
-    this.a2O = function() {
-        var g = Math.floor((this.a5b[0] + gridWidth) / mainScaleFactor),
-            k = Math.floor((this.a5b[1] + gridHeight) / mainScaleFactor);
-        1 > g || 1 > k || g >= currentMapWidth - 1 || k >= currentMapHeight - 1 || console.log(g + " " + k)
+    this.printCoords = function() {
+        var xPos = Math.floor((this.pointerPosition[0] + viewportX) / mainScaleFactor),
+            yPos = Math.floor((this.pointerPosition[1] + viewportY) / mainScaleFactor);
+        if (1 <= xPos && 1 <= yPos && xPos < currentMapWidth - 1 && yPos < currentMapHeight - 1) console.log(xPos + "," + yPos)
     };
-    this.onPointermove = function(g, k) {
-        this.a5b[0] = g;
-        this.a5b[1] = k;
-        if (this.visible && this.a5a) {
-            g -= divideFloor(prevClientWidth - this.width, 2);
-            var n = this.a5Z;
-            this.a5Z = (g - 2 * this.buttonMargin - this.uS) / this.uT;
-            if (0 <= this.a5Z && 1 >= this.a5Z ||
-                0 <= n && 1 >= n) mainHandler.canvasDirty = !0;
+    this.onPointermove = function(xPos, yPos) {
+        this.pointerPosition[0] = xPos;
+        this.pointerPosition[1] = yPos;
+        if (this.visible && this.isDraggingSlider) {
+            xPos -= divideFloor(prevClientWidth - this.width, 2);
+            var oldSliderValue = this.activeSliderValue;
+            this.activeSliderValue = (xPos - 2 * this.buttonMargin - this.textWidth) / this.availableWidth;
+            if (0 <= this.activeSliderValue && 1 >= this.activeSliderValue || 0 <= oldSliderValue && 1 >= oldSliderValue) mainHandler.canvasDirty = !0;
             return !0
         }
         return !1
     };
-    this.pV = function() {
-        this.a5a && (this.a5a = !1)
+    this.onDragEnd = function() {
+        this.isDraggingSlider && (this.isDraggingSlider = !1)
     };
     this.toggleMenu = function() {
         this.visible ? this.end() : this.show()
     };
     this.show = function() {
-        2 > statisticNumbers.m4 || (this.visible = !0, this.a5c())
+        if (2 <= statisticNumbers.currentDataPointIndex) {
+            this.visible = !0;
+            this.updateSliderProperties();
+        }
     };
     this.end = function() {
         this.visible = !1;
-        this.a5Z = -1
+        this.activeSliderValue = -1
     };
-    this.a5c = function() {
-        2 > this.bs ? this.uS = gameMessages.measureText(attacksBar.splitText(statisticNumbers.max[this.bs]), fontWeightBold + this.a5X + fontSizeArial) : 2 === this.bs && (this.uS = gameMessages.measureText(gameStatistics.nG(6, 2), fontWeightBold + this.a5X + fontSizeArial));
-        this.uT = this.width - 2 * this.buttonMargin - this.uS - this.i5
+    this.updateSliderProperties = function() {
+        if (2 > this.clickedButtonIndex) this.textWidth = gameMessages.measureText(attacksBar.splitText(statisticNumbers.max[this.clickedButtonIndex]), fontWeightBold + this.fontPadding + fontSizeArial)
+        else if (2 === this.clickedButtonIndex) this.textWidth = gameMessages.measureText(gameStatistics.nG(6, 2), fontWeightBold + this.fontPadding + fontSizeArial);
+        this.availableWidth = this.width - 2 * this.buttonMargin - this.textWidth - this.textPadding;
     };
     this.updateRenderObject = function() {
-        this.visible && this.a5c()
+        this.visible && this.updateSliderProperties()
     };
     this.drawCanvasImage = function() {
         this.visible && this.drawPrompt()
     };
     this.drawPrompt = function() {
-        var g = divideFloor(prevClientWidth - this.width, 2),
-            k = divideFloor(prevClientHeight - this.height, 2);
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        var startX = divideFloor(prevClientWidth - this.width, 2),
+            startY = divideFloor(prevClientHeight - this.height, 2);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX, startY);
         mainCanvasCtx.fillStyle = blackMoreOpaque;
         mainCanvasCtx.fillRect(0, 0, this.width, this.height);
-        this.a5d();
+        this.drawPromptUI();
         mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
         mainCanvasCtx.textAlign = rightAlign;
-        mainCanvasCtx.font = fontWeightBold + this.a5X + fontSizeArial;
-        0 === this.bs ? this.a5e(statisticNumbers.a5P, g, k) : 1 === this.bs ? this.a5e(statisticNumbers.s6, g, k) : 2 === this.bs ? this.a5f(g, k) : 3 === this.bs && (this.a5g(g, k), this.a5h(g, k));
+        mainCanvasCtx.font = fontWeightBold + this.fontPadding + fontSizeArial;
+        if (0 === this.clickedButtonIndex) this.drawTroopsLandGraph(statisticNumbers.recordedLandValues, startX, startY)
+        else if (1 === this.clickedButtonIndex) this.drawTroopsLandGraph(statisticNumbers.recordedTroopValues, startX, startY)
+        else if (2 === this.clickedButtonIndex) this.drawInterestGraph(startX, startY)
+        else if (3 === this.clickedButtonIndex) {
+            this.drawAttackStatisticsNumbers(startX, startY);
+            this.drawTroopStatisticsNumbers(startX, startY);
+        }
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
-    this.a5d = function() {
-        mainCanvasCtx.lineWidth = this.qI;
+    this.drawPromptUI = function() {
+        mainCanvasCtx.lineWidth = this.horizontalCanvasPadding;
         mainCanvasCtx.textBaseline = middleAlign;
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.font = fontWeightBold + this.a5Y +
-            fontSizeArial;
-        var g = this.width / this.buttonLabels.length;
+        mainCanvasCtx.font = fontWeightBold + this.verticalCanvasPadding + fontSizeArial;
+        var buttonSegmentWidth = this.width / this.buttonLabels.length;
         mainCanvasCtx.fillStyle = greenSemiTransparent;
-        mainCanvasCtx.fillRect(this.bs * g, this.height - this.buttonHeight, g, this.buttonHeight);
+        mainCanvasCtx.fillRect(this.clickedButtonIndex * buttonSegmentWidth, this.height - this.buttonHeight, buttonSegmentWidth, this.buttonHeight);
         mainCanvasCtx.fillStyle = whiteRGB2;
-        for (var k = this.buttonLabels.length - 1; 0 <= k; k--) mainCanvasCtx.strokeRect(k * g, this.height - this.buttonHeight, g, this.buttonHeight), mainCanvasCtx.fillText(this.buttonLabels[k], (k + .5) * g, this.height - .46 * this.buttonHeight)
+        for (var buttonIndex = this.buttonLabels.length - 1; 0 <= buttonIndex; buttonIndex--) {
+            mainCanvasCtx.strokeRect(buttonIndex * buttonSegmentWidth, this.height - this.buttonHeight, buttonSegmentWidth, this.buttonHeight);
+            mainCanvasCtx.fillText(this.buttonLabels[buttonIndex], (buttonIndex + .5) * buttonSegmentWidth, this.height - .46 * this.buttonHeight)
+        }
     };
-    this.a5e = function(g, k, n) {
-        var l = statisticNumbers.max[this.bs];
-        mainCanvasCtx.setTransform(1, 0, 0, 1, k + 2 * this.buttonMargin + this.uS, n + this.nP);
+    this.drawTroopsLandGraph = function(recordedValues, startX, startY) {
+        var maxValue = statisticNumbers.max[this.clickedButtonIndex], yScaleFactor, dpIndex;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + 2 * this.buttonMargin + this.textWidth, startY + this.contentPadding);
         mainCanvasCtx.lineWidth = 2;
-        k = this.xJ / Math.sqrt(l);
+        yScaleFactor = this.availableHeight / Math.sqrt(maxValue);
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.moveTo(this.uT, this.xJ - k * Math.sqrt(g[statisticNumbers.m4 - 1]));
-        for (n = statisticNumbers.m4 - 2; 0 <= n; n--) mainCanvasCtx.lineTo(n * this.uT / (statisticNumbers.m4 -
-            1), this.xJ - k * Math.sqrt(g[n]));
+        mainCanvasCtx.moveTo(this.availableWidth, this.availableHeight - yScaleFactor * Math.sqrt(recordedValues[statisticNumbers.currentDataPointIndex - 1]));
+        for (dpIndex = statisticNumbers.currentDataPointIndex - 2; 0 <= dpIndex; dpIndex--) mainCanvasCtx.lineTo(dpIndex * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight - yScaleFactor * Math.sqrt(recordedValues[dpIndex]));
         mainCanvasCtx.stroke();
-        g = this.drawMenuSymbol(g, k, .5);
-        .95 > g && mainCanvasCtx.fillText(attacksBar.splitText(l), -this.buttonMargin, 0);
-        .05 < Math.abs(g - .5) && mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(l / 4)), -this.buttonMargin, Math.floor(this.xJ / 2));
-        .05 < g && mainCanvasCtx.fillText("0", -this.buttonMargin, this.xJ)
+        recordedValues = this.drawMenuSymbol(recordedValues, yScaleFactor, .5);
+        .95 > recordedValues && mainCanvasCtx.fillText(attacksBar.splitText(maxValue), -this.buttonMargin, 0);
+        .05 < Math.abs(recordedValues - .5) && mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(maxValue / 4)), -this.buttonMargin, Math.floor(this.availableHeight / 2));
+        .05 < recordedValues && mainCanvasCtx.fillText("0", -this.buttonMargin, this.availableHeight)
     };
-    this.a5f = function(g, k) {
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g + 2 * this.buttonMargin + this.uS, k + this.nP);
+    this.drawInterestGraph = function(startX, startY) {
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + 2 * this.buttonMargin + this.textWidth, startY + this.contentPadding);
         mainCanvasCtx.lineWidth = 2;
-        var n = this.xJ / statisticNumbers.max[this.bs];
+        var yScaleFactor = this.availableHeight / statisticNumbers.max[this.clickedButtonIndex];
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.moveTo(this.uT, this.xJ - n * statisticNumbers.tT[statisticNumbers.m4 - 1]);
-        for (var l = statisticNumbers.m4 - 2; 0 <= l; l--) mainCanvasCtx.lineTo(l * this.uT / (statisticNumbers.m4 - 1), this.xJ - n * statisticNumbers.tT[l]);
+        mainCanvasCtx.moveTo(this.availableWidth, this.availableHeight - yScaleFactor * statisticNumbers.recordedInterestValues[statisticNumbers.currentDataPointIndex - 1]);
+        for (var dpIndex = statisticNumbers.currentDataPointIndex - 2; 0 <= dpIndex; dpIndex--) mainCanvasCtx.lineTo(dpIndex * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight - yScaleFactor * statisticNumbers.recordedInterestValues[dpIndex]);
         mainCanvasCtx.stroke();
-        n =
-            this.drawMenuSymbol(statisticNumbers.tT, n, 1);
-        l = statisticNumbers.max[this.bs] / 100;
-        .95 > n && mainCanvasCtx.fillText(gameStatistics.nG(l, 2), -this.buttonMargin, 0);
-        .05 < Math.abs(n - .5) && mainCanvasCtx.fillText(gameStatistics.nG(l / 2, 2), -this.buttonMargin, Math.floor(this.xJ / 2));
-        .05 < n && mainCanvasCtx.fillText(gameStatistics.nG(0, 2), -this.buttonMargin, this.xJ)
+        yScaleFactor = this.drawMenuSymbol(statisticNumbers.recordedInterestValues, yScaleFactor, 1);
+        var maxIRate = statisticNumbers.max[this.clickedButtonIndex] / 100;
+        .95 > yScaleFactor && mainCanvasCtx.fillText(gameStatistics.nG(maxIRate, 2), -this.buttonMargin, 0);
+        .05 < Math.abs(yScaleFactor - .5) && mainCanvasCtx.fillText(gameStatistics.nG(maxIRate / 2, 2), -this.buttonMargin, Math.floor(this.availableHeight / 2));
+        .05 < yScaleFactor && mainCanvasCtx.fillText(gameStatistics.nG(0, 2), -this.buttonMargin, this.availableHeight)
     };
-    this.a5g = function(g, k) {
-        var n;
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .34 * this.width, k + 2 * this.nP);
+    this.drawAttackStatisticsNumbers = function(startX, startY) {
+        var leftIndex;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .34 * this.width, startY + 2 * this.contentPadding);
         mainCanvasCtx.textAlign = rightAlign;
-        var l = this.height - 4 * this.nP - this.buttonHeight;
-        for (n = 7; 0 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n], 0, n * l / 7);
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .39 * this.width, k + 2 * this.nP);
+        var lineHeight = this.height - 4 * this.contentPadding - this.buttonHeight;
+        for (leftIndex = 7; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.statisticNumbersLabels[leftIndex], 0, leftIndex * lineHeight / 7);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .39 * this.width, startY + 2 * this.contentPadding);
         mainCanvasCtx.textAlign = leftAlign;
-        n = statisticNumbers.numbers[1];
-        mainCanvasCtx.fillText(gameStatistics.nG(statisticNumbers.numbers[0] / (10 * (1 > n ? 1 :
-            n)), 1), 0, 0);
-        for (n = 6; 1 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.numbers[n].toString(), 0, n * l / 7);
-        mainCanvasCtx.fillText(gameStatistics.nG(100 * (1 - land[myID] / statisticNumbers.numbers[7]), 0), 0, l)
+        leftIndex = statisticNumbers.numbers[1];
+        mainCanvasCtx.fillText(gameStatistics.nG(statisticNumbers.numbers[0] / (10 * (1 > leftIndex ? 1 : leftIndex)), 1), 0, 0);
+        for (leftIndex = 6; 1 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.numbers[leftIndex].toString(), 0, leftIndex * lineHeight / 7);
+        mainCanvasCtx.fillText(gameStatistics.nG(100 * (1 - land[myID] / statisticNumbers.numbers[7]), 0), 0, lineHeight)
     };
-    this.a5h = function(g, k) {
-        var n;
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .74 * this.width, k + 2 * this.nP);
+    this.drawTroopStatisticsNumbers = function(startX, startY) {
+        var rightIndex;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .74 * this.width, startY + 2 * this.contentPadding);
         mainCanvasCtx.textAlign = rightAlign;
-        var l = this.height - 4 * this.nP - this.buttonHeight;
+        var lineHeight = this.height - 4 * this.contentPadding - this.buttonHeight;
         mainCanvasCtx.fillStyle = greenRGB;
-        for (n = 2; 0 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n + 8], 0, n * l / 9);
+        for (rightIndex = 2; 0 <= rightIndex; rightIndex--) mainCanvasCtx.fillText(statisticNumbers.statisticNumbersLabels[rightIndex + 8], 0, rightIndex * lineHeight / 9);
         mainCanvasCtx.fillStyle = limeGreenRGB;
-        mainCanvasCtx.fillText(statisticNumbers.a5R[11], 0, 3 * l / 9);
+        mainCanvasCtx.fillText(statisticNumbers.statisticNumbersLabels[11], 0, 3 * lineHeight / 9);
         mainCanvasCtx.fillStyle = redBrightRGB;
-        for (n = 8; 4 <= n; n--) mainCanvasCtx.fillText(statisticNumbers.a5R[n + 8], 0, n * l / 9);
+        for (rightIndex = 8; 4 <= rightIndex; rightIndex--) mainCanvasCtx.fillText(statisticNumbers.statisticNumbersLabels[rightIndex + 8], 0, rightIndex * lineHeight / 9);
         mainCanvasCtx.fillStyle = redLightRGB;
-        mainCanvasCtx.fillText(statisticNumbers.a5R[17], 0, 9 * l / 9);
+        mainCanvasCtx.fillText(statisticNumbers.statisticNumbersLabels[17], 0, 9 * lineHeight / 9);
         mainCanvasCtx.fillStyle = greenRGB;
-        n = attacksBar.splitText(statisticNumbers.numbers[8] +
-            statisticNumbers.numbers[9] + statisticNumbers.numbers[10] + statisticNumbers.numbers[11]);
-        var x = mainCanvasCtx.measureText(n).width;
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g + .79 * this.width + x, k + 2 * this.nP);
+        var overall = attacksBar.splitText(statisticNumbers.numbers[8] + statisticNumbers.numbers[9] + statisticNumbers.numbers[10] + statisticNumbers.numbers[11]);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .79 * this.width + mainCanvasCtx.measureText(overall).width, startY + 2 * this.contentPadding);
         mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[8]), 0, 0);
-        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[9]), 0, 1 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[10]), 0, 2 * l / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[9]), 0, 1 * lineHeight / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[10]), 0, 2 * lineHeight / 9);
         mainCanvasCtx.fillStyle = limeGreenRGB;
-        mainCanvasCtx.fillText(n, 0, 3 * l / 9);
+        mainCanvasCtx.fillText(overall, 0, 3 * lineHeight / 9);
         mainCanvasCtx.fillStyle = redBrightRGB;
-        n = statisticNumbers.numbers[13] - attacks.getTotalTroopsAttacking(myID);
-        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[12]), 0, 4 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(n), 0, 5 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[14]), 0, 6 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[15]), 0, 7 * l / 9);
-        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[16]), 0, 8 * l / 9);
-        n = statisticNumbers.numbers[12] + n + statisticNumbers.numbers[14] +
-            statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
+        overall = statisticNumbers.numbers[13] - attacks.getTotalTroopsAttacking(myID);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[12]), 0, 4 * lineHeight / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(overall), 0, 5 * lineHeight / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[14]), 0, 6 * lineHeight / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[15]), 0, 7 * lineHeight / 9);
+        mainCanvasCtx.fillText(attacksBar.splitText(statisticNumbers.numbers[16]), 0, 8 * lineHeight / 9);
+        overall = statisticNumbers.numbers[12] + overall + statisticNumbers.numbers[14] + statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
         mainCanvasCtx.fillStyle = redLightRGB;
-        mainCanvasCtx.fillText(attacksBar.splitText(n), 0, l);
+        mainCanvasCtx.fillText(attacksBar.splitText(overall), 0, lineHeight);
         mainCanvasCtx.fillStyle = whiteRGB2
     };
-    this.drawMenuSymbol = function(g, k, n) {
-        if (0 > this.a5Z || 1 < this.a5Z) return .25;
-        var l = this.a5Z * (statisticNumbers.m4 - 1),
-            x = Math.floor(l),
-            t = g[x];
-        t += (l - x) * (g[x < statisticNumbers.m4 - 1 ? x + 1 : x] - t);
+    this.drawMenuSymbol = function(recordedValues, startX, startY) {
+        if (0 > this.activeSliderValue || 1 < this.activeSliderValue) return .25;
+        var sliderDpValue = this.activeSliderValue * (statisticNumbers.currentDataPointIndex - 1),
+            sliderDpIndex = Math.floor(sliderDpValue),
+            interpolatedValue = recordedValues[sliderDpIndex];
+        interpolatedValue += (sliderDpValue - sliderDpIndex) * (recordedValues[sliderDpIndex < statisticNumbers.currentDataPointIndex - 1 ? sliderDpIndex + 1 : sliderDpIndex] - interpolatedValue);
         mainCanvasCtx.strokeStyle = whiteMoreTransparent;
-        .04 < this.a5Z && this.a5n(0, this.xJ - k * Math.pow(t, n), l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n));
-        .04 < t / statisticNumbers.max[this.bs] && this.a5n(l * this.uT / (statisticNumbers.m4 - 1), this.xJ, l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n));
+        .04 < this.activeSliderValue && this.drawGuides(0, this.availableHeight - startX * Math.pow(interpolatedValue, startY), sliderDpValue * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight - startX * Math.pow(interpolatedValue, startY));
+        .04 < interpolatedValue / statisticNumbers.max[this.clickedButtonIndex] && this.drawGuides(sliderDpValue * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight, sliderDpValue * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight - startX * Math.pow(interpolatedValue, startY));
         mainCanvasCtx.fillStyle = redBrightMoreOpaque;
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.arc(l * this.uT / (statisticNumbers.m4 - 1), this.xJ - k * Math.pow(t, n), 4, 0, 2 * Math.PI);
+        mainCanvasCtx.arc(sliderDpValue * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight - startX * Math.pow(interpolatedValue, startY), 4, 0, 2 * Math.PI);
         mainCanvasCtx.fill();
-        g = this.a5Z * mainHandler.getTickInterval();
-        g = 0 === isAlive[myID] ? Math.floor(g * gameResultBox.tb) : Math.floor(g * mainHandler.getTicksElapsed());
+        var sliderTickValue = this.activeSliderValue * mainHandler.getTickInterval();
+        sliderTickValue = 0 === isAlive[myID] ? Math.floor(sliderTickValue * gameResultBox.ticksElapsedWhenDeath) : Math.floor(sliderTickValue * mainHandler.getTicksElapsed());
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillText(1 === n ? gameStatistics.nG(t / 100, 2) : attacksBar.splitText(Math.floor(t)), -this.buttonMargin, this.xJ - k * Math.pow(t, n));
+        mainCanvasCtx.fillText(1 === startY ? gameStatistics.nG(interpolatedValue / 100, 2) : attacksBar.splitText(Math.floor(interpolatedValue)), -this.buttonMargin, this.availableHeight - startX * Math.pow(interpolatedValue, startY));
         mainCanvasCtx.textAlign = centerAlign;
-        mainCanvasCtx.fillText(gameStatistics.getITicksRemaining(g), l * this.uT / (statisticNumbers.m4 - 1), this.xJ + this.a5X - (isZoom ? 2 : 0));
+        mainCanvasCtx.fillText(gameStatistics.getITicksRemaining(sliderTickValue), sliderDpValue * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight + this.fontPadding - (isZoom ? 2 : 0));
         mainCanvasCtx.textAlign = rightAlign;
-        return k * Math.pow(t, n) / this.xJ
+        return startX * Math.pow(interpolatedValue, startY) / this.availableHeight
     };
-    this.a5n = function(g, k, n, l) {
+    this.drawGuides = function(startX, startY, endX, endY) {
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.moveTo(g, k);
-        mainCanvasCtx.lineTo(n, l);
+        mainCanvasCtx.moveTo(startX, startY);
+        mainCanvasCtx.lineTo(endX, endY);
         mainCanvasCtx.stroke()
     }
 }
@@ -10761,12 +10788,10 @@ function TeamColors() {
             }
             for (let j = numTeams - 1; 0 <= j; j--) {//calculates colorscore for each clan tag and assigns the players to that color
                 var G = clanTagIndex % numTeams;
-
                 for (let i = numTeams - 1; 0 <= i; i--) {//if there is a tie, then the color with the lowest amount of players will be chosen
                     if (teamColorScore[i] > teamColorScore[G]) G = i;
                 }
                 var N = -1;
-
                 for (let i = teamCount; 0 < i; i--) {
                     if (this.teamIDs[i] === G + 1) {
                         N = i;
@@ -10774,10 +10799,8 @@ function TeamColors() {
                     }
                 }
                 teamColorScore[G] = 0;
-                
                 if (-1 !== N) {
                     G = 0;
-
                     for (let i = teamCount; 0 < i; i--) {//if the color with the most score is also the color with the most players, it will choose the second color with highest score
                         if (playersPerTeam[N] > playersPerTeam[i]) G++;
                     }
@@ -10855,7 +10878,6 @@ function TeamColors() {
     this.getClanTagWinningTeam = function(winner) {
         if (singleplayer) return [512, ""];
         var i, j, z = -1, y = -1;
-
         for (j = clanTags.length - 1; 0 <= j; j--)
             for (i = clanTagOfPlayerIDs[j].length - 1; 0 <= i && this.teamIDs[this.teamArray[clanTagOfPlayerIDs[j][i]]] === winner; i--)
                 if (-1 === z || landIDOrder[clanTagOfPlayerIDs[j][i]] < landIDOrder[z]){
@@ -11035,33 +11057,36 @@ function bordersTarget(authorID, targetID) {
 }
 
 function MainHandler() {
-    function g() {
+    function animate() {
         mainHandler.time = performance.now();
         mainHandler.updateHandler();
-        window.requestAnimationFrame(g)
+        window.requestAnimationFrame(animate)
     }
 
-    function k() {
-        var n = performance.now();
-        mainHandler.time + 1500 < n && (mainHandler.time = n, mainHandler.updateHandler())
+    function checkIdle() {
+        var currentDelta = performance.now();
+        if (mainHandler.time + 1500 < currentDelta) {
+            mainHandler.time = currentDelta;
+            mainHandler.updateHandler();
+        }
     }
     this.canvasDirty = !1;
     this.multiplayerHandler = this.singleplayerHandler = this.updateHandler = null;
     this.time = 0;
-    this.a6R = -1;
+    this.idleInterval = -1;
     this.init = function() {
-        window.requestAnimationFrame(g);
+        window.requestAnimationFrame(animate);
         this.time = performance.now()
     };
     this.onVisibilityHidden = function() {
         if (!(1 !== clientStatus || !singleplayer || gameButtons.menuVisible || inSpawn)) gameButtons.toggleMenu();
-        if (-1 === this.a6R) this.a6R = setInterval(k, 2E3)
+        if (-1 === this.idleInterval) this.idleInterval = setInterval(checkIdle, 2E3)
     };
     this.onVisibilityVisible = function() {
         this.canvasDirty = !0;
-        if (-1 !== this.a6R) {
-            clearInterval(this.a6R);
-            this.a6R = -1;
+        if (-1 !== this.idleInterval) {
+            clearInterval(this.idleInterval);
+            this.idleInterval = -1;
         }
     };
     this.setupMainUpdateHandler = function() {
@@ -11106,25 +11131,25 @@ function MainHandler() {
 
 function SingleplayerHandler() {
     this.time = mainHandler.time;
-    this.interval = 56; //a5Q
-    this.tick = this.bs = 0;
+    this.updateInterval = 56;
+    this.tick = this.clientTick = 0;
     this.a6Z = !1; //unused
     this.update = function() {
         jq.update();
         if (inSpawn) updatedPlayerLabels()
         else {
-            if (0 === this.bs) {
+            if (0 === this.clientTick) {
                 if (mainHandler.time >= this.time) {
-                    this.time += this.interval * Math.floor(1 + (mainHandler.time - this.time) / this.interval);
+                    this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
                     if (2 !== clientStatus) {
-                        if (gameButtons.menuVisible) e8()
+                        if (gameButtons.menuVisible) clientTick1()
                         else {
                             gameTick();
                             this.tick++;
-                            h8.tv();
+                            mapUpdate.updateMapCanvas();
                         }
                     }
-                    this.bs++
+                    this.clientTick++
                 }
             } else {
                 if (gameButtons.menuVisible) updatedPlayerLabels()
@@ -11132,10 +11157,10 @@ function SingleplayerHandler() {
                     mainHandler.canvasDirty = !0;
                     drawCanvases();
                 }
-                this.bs = 0;
+                this.clientTick = 0;
             }
         }
-        eU();
+        clientTick2();
         if (mainHandler.canvasDirty) {
             mainHandler.canvasDirty = !1;
             drawCanvasImages();
@@ -11145,18 +11170,18 @@ function SingleplayerHandler() {
 
 function MultiplayerHandler() {
     this.time = mainHandler.time;
-    this.interval = 56;
-    this.packetsReceived = this.tick = this.bs = 0;
+    this.updateInterval = 56;
+    this.packetsReceived = this.tick = this.clientTick = 0;
     this.latestPacket = null;
     this.packetInterval = 7;
     var packetID;
     this.init = function() {
         this.packetsReceived = 0;
         this.latestPacket = [];
-        packetID = this.tick = this.bs = 0
+        packetID = this.tick = this.clientTick = 0
     };
     this.receivedActions = function(array) {
-        if (inSpawn) this.tW(array);
+        if (inSpawn) this.receivedSpawnActions(array);
         else {
             this.latestPacket.push(array);
             if (2 === clientStatus) {
@@ -11168,49 +11193,49 @@ function MultiplayerHandler() {
             }
         }
     };
-    this.tW = function(array) {
+    this.receivedSpawnActions = function(array) {
         dataDecoder.decodeActions(array, packetID);
         packetID = (packetID + 1) % 8;
-        gameStatistics.tW(this.packetsReceived);
+        gameStatistics.receivedSpawnActions(this.packetsReceived);
         if (this.packetsReceived === spawnTime) {
             spawn.update();
-            this.tick = this.bs = this.packetsReceived = 0;
+            this.tick = this.clientTick = this.packetsReceived = 0;
             this.time = mainHandler.time;
         } else {
             this.packetsReceived++;
             eA.j4();
             eA.drawCanvas();
-            h8.tv();
+            mapUpdate.updateMapCanvas();
         }
     };
     this.update = function() {
         jq.update();
         if (inSpawn) {
-            mainHandler.canvasDirty = gameStatistics.tW(-1) || mainHandler.canvasDirty;
+            mainHandler.canvasDirty = gameStatistics.receivedSpawnActions(-1) || mainHandler.canvasDirty;
             updatedPlayerLabels();
-        } else if (0 === this.bs) {
+        } else if (0 === this.clientTick) {
             if (mainHandler.time >= this.time) {
-                this.time += this.interval * Math.floor(1 + (mainHandler.time - this.time) / this.interval);
-                if (2 === clientStatus) e8() 
+                this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
+                if (2 === clientStatus) clientTick1() 
                 else this.latencyResync()
-                this.bs++;
+                this.clientTick++;
             }
         } else {
             mainHandler.canvasDirty = !0;
             drawCanvases();
-            this.bs = 0;
+            this.clientTick = 0;
         }
-        eU();
+        clientTick2();
         mainHandler.canvasDirty && (mainHandler.canvasDirty = !1, drawCanvasImages())
     };
     this.latencyResync = function() {
         if (this.tick !== 7 * this.packetsReceived) {
             gameTick();
             this.tick++;
-            h8.tv();
+            mapUpdate.updateMapCanvas();
         } else {
-            for (var k = !1; this.a6f();) {
-                k = !0;
+            for (var processedPackets = !1; this.hasMorePackets();) {
+                processedPackets = !0;
                 gameTick();
                 this.tick++;
                 if (0 < this.latestPacket.length) {
@@ -11220,14 +11245,14 @@ function MultiplayerHandler() {
                     }
                 } else break;
             }
-            if (k) h8.tv()
+            if (processedPackets) mapUpdate.updateMapCanvas()
             else {
-                e8();
-                h8.j6();
+                clientTick1();
+                mapUpdate.updateFullMap();
             }
         }
     };
-    this.a6f = function() {
+    this.hasMorePackets = function() {
         if (0 < this.latestPacket.length) {
             this.packetsReceived++;
             dataDecoder.decodeActions(this.latestPacket[0], packetID);
@@ -11250,7 +11275,7 @@ function SpecialGames() {
     this.a6h = function() {
         var k = new Date;
         var n = k.getUTCSeconds();
-        this.a6g ? 55 > n || -1 !== mainHandler.a6R || (this.a6g = !1, n = k.getUTCMinutes(), 4 === n % 5 ? (k = k.getUTCHours(), 59 === n && 15 <= k && 21 >= k ? g("Upcoming Game of the Day", 0) : 14 === n % 30 ? g("Upcoming Alliance Contest", 0) : 29 === n % 30 ? g("Upcoming Battle Royale Contest", 0) : g("Upcoming One-vs-One Game", 8)) : 2 === n % 5 && g("Upcoming Zombie Game",
+        this.a6g ? 55 > n || -1 !== mainHandler.idleInterval || (this.a6g = !1, n = k.getUTCMinutes(), 4 === n % 5 ? (k = k.getUTCHours(), 59 === n && 15 <= k && 21 >= k ? g("Upcoming Game of the Day", 0) : 14 === n % 30 ? g("Upcoming Alliance Contest", 0) : 29 === n % 30 ? g("Upcoming Battle Royale Contest", 0) : g("Upcoming One-vs-One Game", 8)) : 2 === n % 5 && g("Upcoming Zombie Game",
             9)) : 55 > n && (this.a6g = !0)
     }
 }
@@ -11277,7 +11302,7 @@ function kY() {
             var y = g();
             k(z);
             z = g();
-            gj.rJ(Math.floor((n + x) / 2), Math.floor((l + t) / 2), z / y);
+            mapGridHandler.rJ(Math.floor((n + x) / 2), Math.floor((l + t) / 2), z / y);
             return mainHandler.canvasDirty = !0
         }
         return !1
@@ -11435,7 +11460,7 @@ function DataDecoder() {
                     status: var_playerStatus
                 })
             };
-            gameStateManager.ve();
+            gameStateManager.enterInGameState();
             loadMap(var_mapID, var_mapSeed);
             1 === var_playerInfo.length && singleSettings.setBotSettings(var_gamemode);
             gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
@@ -11461,7 +11486,7 @@ function DataDecoder() {
                     status: var_playerStatus
                 })
             };
-            gameStateManager.ve();
+            gameStateManager.enterInGameState();
             loadMap(var_mapID, var_mapSeed);
             gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
         }
@@ -11513,21 +11538,21 @@ function DataDecoder() {
     }
 }
 
-function a2H() {
-    this.a5C = this.a5B = this.a5A = this.a59 = this.a5E = this.a5D = 0;
-    this.tw = [0, 0, 0, 0];
-    this.gz = function() {
-        this.a5D = gj.toX();
-        this.a5E = gj.toY();
-        this.a59 = -this.a5D;
-        this.a5A = -this.a5E;
-        this.a5B = prevClientWidth / mainScaleFactor;
-        this.a5C = prevClientHeight / mainScaleFactor;
-        this.tw[0] = Math.floor(this.a59);
-        this.tw[1] = Math.floor(this.a5A);
-        this.tw[2] = Math.floor(this.tw[0] + this.a5B + 1);
-        this.tw[3] = Math.floor(this.tw[1] + this.a5C + 1);
-        h8.tt = !0
+function Viewport() {
+    this.viewportHeight = this.viewportWidth = this.viewportTop = this.viewportLeft = this.cameraY = this.cameraX = 0;
+    this.viewportCoords = [0, 0, 0, 0];
+    this.updateViewportCoords = function() {
+        this.cameraX = mapGridHandler.toX();
+        this.cameraY = mapGridHandler.toY();
+        this.viewportLeft = -this.cameraX;
+        this.viewportTop = -this.cameraY;
+        this.viewportWidth = prevClientWidth / mainScaleFactor;
+        this.viewportHeight = prevClientHeight / mainScaleFactor;
+        this.viewportCoords[0] = Math.floor(this.viewportLeft);
+        this.viewportCoords[1] = Math.floor(this.viewportTop);
+        this.viewportCoords[2] = Math.floor(this.viewportCoords[0] + this.viewportWidth + 1);
+        this.viewportCoords[3] = Math.floor(this.viewportCoords[1] + this.viewportHeight + 1);
+        mapUpdate.needsUpdate = !0
     }
 }
 
@@ -11574,11 +11599,11 @@ function MapMenu() {
         mainHandler.canvasDirty = !0
     };
     this.setCanvasVariables = function() {
-        var k = divideFloor(customMapID + customMapID % 2, 2);
-        k = canvasHeight - k * bufferLength;
+        var mapsOnLeftCol = divideFloor(customMapID + customMapID % 2, 2);
+        mapsOnLeftCol = canvasHeight - mapsOnLeftCol * bufferLength;
         this.boxDimensions[2] = isZoom ? Math.floor(.75 * minDim) : Math.floor(.5 * minDim);
         this.boxDimensions[3] = Math.floor(1.2 * this.boxDimensions[2]);
-        this.boxDimensions[3] > k && (this.boxDimensions[3] = k, this.boxDimensions[2] = Math.floor(k / 1.2));
+        this.boxDimensions[3] > mapsOnLeftCol && (this.boxDimensions[3] = mapsOnLeftCol, this.boxDimensions[2] = Math.floor(mapsOnLeftCol / 1.2));
         this.boxDimensions[0] = Math.floor((canvasWidth - this.boxDimensions[2]) / 2);
         this.boxDimensions[1] = Math.floor((canvasHeight - this.boxDimensions[3]) / 2)
     };
@@ -11599,27 +11624,27 @@ function MapMenu() {
         return !0
     };
     this.drawCanvasImage = function() {
-        var k, n = Math.floor(.13 * this.boxDimensions[3]),
-            l = divideFloor(customMapID + customMapID % 2, 2),
-            x = (this.boxDimensions[3] - n - (l + 1) * bufferLength) / l,
-            t = Math.floor((this.boxDimensions[2] - 3 * bufferLength) / 2);
+        var mapIndex, topMapBoxHeight = Math.floor(.13 * this.boxDimensions[3]),
+            mapsOnLeftCol = divideFloor(customMapID + customMapID % 2, 2),
+            mapBoxHeight = (this.boxDimensions[3] - topMapBoxHeight - (mapsOnLeftCol + 1) * bufferLength) / mapsOnLeftCol,
+            mapBoxWidth = Math.floor((this.boxDimensions[2] - 3 * bufferLength) / 2);
         mainCanvasCtx.lineWidth = 2;
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.textBaseline = middleAlign;
-        mainCanvasCtx.font = fontWeightBold + Math.floor(.48 * x) + fontSizeArial;
+        mainCanvasCtx.font = fontWeightBold + Math.floor(.48 * mapBoxHeight) + fontSizeArial;
         mainCanvasCtx.fillStyle = blackMoreOpaque;
         mainCanvasCtx.fillRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], this.boxDimensions[3]);
         mainCanvasCtx.fillStyle = blueMoreOpaque;
-        mainCanvasCtx.fillRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], n);
+        mainCanvasCtx.fillRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], topMapBoxHeight);
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.strokeRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], this.boxDimensions[3]);
         mainCanvasCtx.fillStyle = whiteRGB2;
-        for (k = l - 1; 0 <= k; k--) {
-            var z = Math.floor(this.boxDimensions[1] + n + bufferLength + k * (x + bufferLength));
-            drawMapBoxes(k, this.boxDimensions[0] + bufferLength, z, t, x);
-            drawMapBoxes(k + l, this.boxDimensions[0] + t + 2 * bufferLength, z, t, x)
+        for (mapIndex = mapsOnLeftCol - 1; 0 <= mapIndex; mapIndex--) {
+            var symbolY = Math.floor(this.boxDimensions[1] + topMapBoxHeight + bufferLength + mapIndex * (mapBoxHeight + bufferLength));
+            drawMapBoxes(mapIndex, this.boxDimensions[0] + bufferLength, symbolY, mapBoxWidth, mapBoxHeight);
+            drawMapBoxes(mapIndex + mapsOnLeftCol, this.boxDimensions[0] + mapBoxWidth + 2 * bufferLength, symbolY, mapBoxWidth, mapBoxHeight)
         }
-        gameButtons.drawMenuSymbol(Math.floor(this.boxDimensions[0] + this.boxDimensions[2] - .8 * n), Math.floor(this.boxDimensions[1] + .25 * n), Math.floor(.5 * n));
+        gameButtons.drawMenuSymbol(Math.floor(this.boxDimensions[0] + this.boxDimensions[2] - .8 * topMapBoxHeight), Math.floor(this.boxDimensions[1] + .25 * topMapBoxHeight), Math.floor(.5 * topMapBoxHeight));
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
