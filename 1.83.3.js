@@ -1202,7 +1202,7 @@ function gK() {
             G *= 0 !== M ? M : 20 > L && 20 > targetID ? .5 : .9;
             k(.875);
             D = !0;
-            gn.go()
+            cameraController.stopCameraMovement()
         }
     };
     this.zoomToFitMap = function(zoomSpeed) {
@@ -1212,7 +1212,7 @@ function gK() {
         n(0, 0, currentMapWidth - 1, currentMapHeight - 1);
         k(.875);
         D = !0;
-        gn.go()
+        cameraController.stopCameraMovement()
     };
     this.gf = function(J, L, H, M) {
         n(J, L, H, M);
@@ -1733,7 +1733,7 @@ function leaveGame() {
 var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
     gameMessages, troopBar, mapGridHandler, playtime, eO, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
-    mapInfo, generateHeightmap, gn, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, jo, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
+    mapInfo, generateHeightmap, cameraController, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, jo, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
     wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
@@ -1779,7 +1779,7 @@ function construct() {
     configFakeMap = new ConfigFakeMap;
     mapInfo = new MapInfo;
     generateHeightmap = new GenerateHeightmap;
-    gn = new kT;
+    cameraController = new CameraController;
     boatPathChecker = new BoatPathChecker;
     fakeRandom = new FakeRandom;
     boatPathHandler = new BoatPathHandler;
@@ -6094,7 +6094,7 @@ function NameInputBar() {
             else document.body.removeChild(inputBars[index].input)
         }
     };
-    this.dynamic = function(index, isValidName) {
+    this.checkAndChangeColor = function(index, isValidName) {
         if (!(isValidName && inputBars[index].color === normalBGColor || !isValidName && inputBars[index].color === invalidBGColor)) {
             inputBars[index].color = isValidName ? normalBGColor : invalidBGColor;
             inputBars[index].input.style.backgroundColor = inputBars[index].color
@@ -6805,7 +6805,7 @@ function NameInput() {
     function displayUsername() {
         textInput = loadUsername();
         nameInputBar.getValueByID(0).input.value = textInput;
-        nameInputBar.dynamic(0, !0)
+        nameInputBar.checkAndChangeColor(0, !0)
     }
 
     function processAccount() {
@@ -6840,10 +6840,10 @@ function NameInput() {
 
     function setBarColor() {
         if (void 0 !== textInput && strings.checkValidName(textInput)) {
-            nameInputBar.dynamic(0, !0);
+            nameInputBar.checkAndChangeColor(0, !0);
             return !0;
         }
-        nameInputBar.dynamic(0, !1);
+        nameInputBar.checkAndChangeColor(0, !1);
         return !1
     }
     var textInput;
@@ -8615,13 +8615,13 @@ function showErrorWarning(error) {
 
 function onKeydown(e) {
     if ("ArrowLeft" === e.key) {
-        gn.dynamic(3);
+        cameraController.checkAndMoveCamera(3);
     } else if ("ArrowUp" === e.key) {
-        gn.dynamic(0);
+        cameraController.checkAndMoveCamera(0);
     } else if ("ArrowRight" === e.key) {
-        gn.dynamic(1);
+        cameraController.checkAndMoveCamera(1);
     } else if ("ArrowDown" === e.key) {
-        gn.dynamic(2);
+        cameraController.checkAndMoveCamera(2);
     } else if ("a" === e.key) {
         troopBar.checkAndMultiplyRatio(.96875);
     } else if ("d" === e.key) {
@@ -8650,10 +8650,10 @@ function onKeyup(e) {
     if (400 <= mainHandler.time) {
         if (8 !== gameStateManager.getState() && gameStateManager.hideIfNotHidden(e)) mainHandler.canvasDirty = !0 
         else if ("Escape" === e.key) gameStateManager.aK()
-        else if ("ArrowLeft" === e.key) gn.a2Q(3)
-        else if ("ArrowUp" === e.key) gn.a2Q(0)
-        else if ("ArrowRight" === e.key) gn.a2Q(1)
-        else if ("ArrowDown" === e.key) gn.a2Q(2)
+        else if ("ArrowLeft" === e.key) cameraController.checkCameraStop(3)
+        else if ("ArrowUp" === e.key) cameraController.checkCameraStop(0)
+        else if ("ArrowRight" === e.key) cameraController.checkCameraStop(1)
+        else if ("ArrowDown" === e.key) cameraController.checkCameraStop(2)
         else if ("h" === e.key && 1 <= clientStatus) {
             isCanvasHidden = !isCanvasHidden;
             mainHandler.canvasDirty = !0;
@@ -9032,7 +9032,6 @@ function ConfigFakeMap() {
                         Math.floor(.5 * currentMapHeight / fakeMapBaseCanvasImageData - widthValues.height / 2)
                     );
                     mapBaseCanvasCtx.restore();
-                    
                     widthValues = sprites.getValueByName("territorial.io");
                     mapBaseCanvasCtx.save();
                     mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
@@ -9717,90 +9716,112 @@ function MoreSettings() {
     }
 }
 
-function kT() {
-    function g() {
-        n = !0;
-        l = -1;
-        x = Array(4);
-        for (var y = 3; 0 <= y; y--) x[y] = !1;
-        y = Math.floor(1 + .02 * minDim);
-        t = Array(4);
-        z = Array(4);
-        z[1] = z[3] = t[0] = t[2] = 0;
-        z[0] = t[3] = -y;
-        t[1] = z[2] = y
+function CameraController() {
+    function cameraInit() {
+        isActive = !0;
+        intervalID = -1;
+        isButtonPressed = Array(4);
+        for (var side = 3; 0 <= side; side--) isButtonPressed[side] = !1;
+        var cameraSpeed = Math.floor(1 + .02 * minDim);
+        movementX = Array(4);
+        movementY = Array(4);
+        movementY[1] = movementY[3] = movementX[0] = movementX[2] = 0;
+        movementY[0] = movementX[3] = -cameraSpeed;
+        movementX[1] = movementY[2] = cameraSpeed
     }
 
-    function k() {
-        if (-1 !== l)
+    function updateCamera() {
+        if (-1 !== intervalID)
             if (0 !== clientStatus && eV.h0()) {
-                for (var y = !1, A = 3; 0 <= A; A--) x[A] && (y = !0, viewportX += t[A], viewportY += z[A], eA.onPointermove(t[A], z[A]), mapGridHandler.rI());
-                y ? mainHandler.canvasDirty = !0 : gn.go()
-            } else gn.go()
+                for (var isMoving = !1, side = 3; 0 <= side; side--) {
+                    if (isButtonPressed[side]) {
+                        isMoving = !0;
+                        viewportX += movementX[side];
+                        viewportY += movementY[side];
+                        eA.onPointermove(movementX[side], movementY[side]);
+                        mapGridHandler.rI();
+                    }
+                }
+                if (isMoving) mainHandler.canvasDirty = !0
+                else cameraController.stopCameraMovement()
+            } else cameraController.stopCameraMovement()
     }
-    var n = !1,
-        l, x, t, z;
-    this.dynamic = function(y) {
-        0 !== clientStatus && eV.h0() && (n || g(), x[y] = !0, -1 === l && (l = setInterval(k, 20), k()))
-    };
-    this.a2Q = function(y) {
-        if (0 !== clientStatus && (n || g(), x[y] = !1, -1 !== l)) {
-            y = !1;
-            for (var A =
-                    3; 0 <= A; A--) y = y || x[A];
-            y || this.go()
+    var isActive = !1, intervalID, isButtonPressed, movementX, movementY;
+    this.checkAndMoveCamera = function(direction) {
+        if (0 !== clientStatus && eV.h0()) {
+            if (!isActive) cameraInit();
+            isButtonPressed[direction] = !0;
+            if (-1 === intervalID) {
+                intervalID = setInterval(updateCamera, 20);
+                updateCamera();
+            }
         }
     };
-    this.go = function() {
-        if (n && -1 !== l) {
-            for (var y = 3; 0 <= y; y--) x[y] = !1;
-            clearInterval(l);
-            l = -1
+    this.checkCameraStop = function(direction) {
+        if (0 !== clientStatus) {
+            if (!isActive) cameraInit();
+            isButtonPressed[direction] = !1;
+            if (-1 !== intervalID) {
+                direction = !1;
+                for (var side = 3; 0 <= side; side--) direction = direction || isButtonPressed[side];
+                if (!direction) this.stopCameraMovement()
+            }
+        }
+    };
+    this.stopCameraMovement = function() {
+        if (isActive && -1 !== intervalID) {
+            for (var side = 3; 0 <= side; side--) isButtonPressed[side] = !1;
+            clearInterval(intervalID);
+            intervalID = -1
         }
     }
 }
 
 function BoatPathChecker() {
-    var closestWaterPixel;
+    var closestWaterPixel, hasValidPath;
     this.getClosestWaterPixel = function() {
         return closestWaterPixel
     };
     this.check = function(id, targetPixelIndex) {
-        var l;
+        var loopIndex;
         if (0 === waterBorderPixels[id].length || !pixel.canOwn(targetPixelIndex) || !pixel.isNeutral(targetPixelIndex) && pixel.getOwner(targetPixelIndex) === id) return !1;
-        for (l = 21; 0 <= l; l--) {
-            if (21 === l) {
-                var x = waterBorderPixels[id],
-                    t = targetPixelIndex,
-                    z = pixel.toX(t);
-                t = pixel.toY(t);
-                var y = 0;
-                var A = pixel.toX(x[0]);
-                var B = pixel.toY(x[0]);
-                A = Math.abs(A - z) + Math.abs(B - t);
-                for (B = x.length - 1; 1 <= B; B--) {
-                    var C = pixel.toX(x[B]);
-                    var E = pixel.toY(x[B]);
-                    C = Math.abs(C - z) + Math.abs(E - t);
-                    C < A && (A = C, y = B)
+        for (loopIndex = 21; 0 <= loopIndex; loopIndex--) {
+            if (21 === loopIndex) {
+                var waterBorder = waterBorderPixels[id],
+                    originPixelBIndex = 0,
+                    targetX = pixel.toX(targetPixelIndex),
+                    targetY = pixel.toY(targetPixelIndex),
+                    originDist = Math.abs(pixel.toX(waterBorder[0]) - targetX) + Math.abs(pixel.toY(waterBorder[0]) - targetY);
+                for (var bIndex = waterBorder.length - 1; 1 <= bIndex; bIndex--) {
+                    var newDist = Math.abs(pixel.toX(waterBorder[bIndex]) - targetX) + Math.abs(pixel.toY(waterBorder[bIndex]) - targetY);
+                    if (newDist < originDist) {
+                        originDist = newDist;
+                        originPixelBIndex = bIndex;
+                    }
                 }
-                closestWaterPixel = x[y]
-            } else closestWaterPixel = waterBorderPixels[id][divideFloor(l * waterBorderPixels[id].length, 21)];
+                closestWaterPixel = waterBorder[originPixelBIndex]
+            } else closestWaterPixel = waterBorderPixels[id][divideFloor(loopIndex * waterBorderPixels[id].length, 21)];
             loop: {
-                B = closestWaterPixel;y = targetPixelIndex;x = pixel.toX(B);z = pixel.toY(B);t = pixel.toX(y);y = pixel.toY(y);A = Math.abs(t -
-                    x) + Math.abs(y - z);
-                if (!(2 > A))
-                    for (C = B, B = 0; B < A; B++)
-                        if (C = Math.abs(t - pixel.toX(C)) >= Math.abs(y - pixel.toY(C)) ? C + offset[t > x ? 1 : 3] : C + offset[y > z ? 2 : 0], !pixel.isWater(C)) {
-                            if (pixel.canOwn(C)) {
-                                if (0 === B || B + 20 < A) break;
-                                x = !0;
+                var closestX = pixel.toX(closestWaterPixel),
+                    closestY = pixel.toY(closestWaterPixel);
+                newDist = Math.abs(targetX - closestX) + Math.abs(targetY - closestY);
+                if (2 <= newDist) {
+                    var currentPIndex = closestWaterPixel;
+                    for (bIndex = 0; bIndex < newDist; bIndex++) {
+                        currentPIndex += Math.abs(targetX - pixel.toX(currentPIndex)) >= Math.abs(targetY - pixel.toY(currentPIndex)) ? offset[targetX > closestX ? 1 : 3] : offset[targetY > closestY ? 2 : 0];
+                        if (!pixel.isWater(currentPIndex)) {
+                            if (pixel.canOwn(currentPIndex)) {
+                                if (0 === bIndex || bIndex + 20 < newDist) break;
+                                hasValidPath = !0;
                                 break loop
                             }
                             break
-                        } x = !1
+                        }
+                    }
+                }
+                hasValidPath = !1; 
             }
-            if (x) return !0
+            if (hasValidPath) return !0
         }
         return !1
     }
@@ -11818,13 +11839,13 @@ function DataEncoder() {
         encoder(array, 9, targetID);
         wsManager.send(wsManager.remote, array)
     };
-    this.setLocation = function(ratio, toX, yCoord) {
+    this.setLocation = function(ratio, xCoord, yCoord) {
         var array = new Uint8Array(5);
         arrayIndex = 0;
         encoder(array, 1, 1);
         encoder(array, 3, 1);
         encoder(array, 10, ratio);
-        encoder(array, 11, toX);
+        encoder(array, 11, xCoord);
         encoder(array, 11, yCoord);
         wsManager.send(wsManager.remote, array)
     };
