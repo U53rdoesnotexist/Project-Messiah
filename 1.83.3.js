@@ -1387,14 +1387,14 @@ function FindSpawn() {
 }
 
 function drawCanvasImages() {
-    hq.hr();
+    gradientEdge.fillBackgroundColor();
     mainCanvasCtx.setTransform(mainScaleFactor, 0, 0, mainScaleFactor, 0, 0);
     mainCanvasCtx.imageSmoothingEnabled = 3 > mainScaleFactor;
     mainCanvasCtx.drawImage(mapBaseCanvas, mapGridHandler.toX(), mapGridHandler.toY());
     playerAura.drawCanvasImage();
     mainCanvasCtx.drawImage(mapCanvas, mapGridHandler.toX(), mapGridHandler.toY());
     mainCanvasCtx.imageSmoothingEnabled = !1;
-    hq.drawCanvasImage();
+    gradientEdge.drawCanvasImage();
     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
     eA.drawCanvasImage();
     boatSpeed.drawCanvasImage();
@@ -1675,7 +1675,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     interest.init();
     receiveDonationsArrayInit();
     pixel.init(playerInfo);
-    hq.init();
+    gradientEdge.init();
     teams.init();
     difficultyEngine.init();
     nickNames.generate();
@@ -1733,7 +1733,7 @@ function leaveGame() {
 var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
     gameMessages, troopBar, mapGridHandler, playtime, eO, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
-    mapInfo, generateHeightmap, gn, boatPathChecker, fakeRandom, boatPathHandler, hq, jo, dataDecoder, fadeIn, dataEncoder, jq, playerAura, lobby, mapMenu, peace, setGameOrigin, 
+    mapInfo, generateHeightmap, gn, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, jo, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
     wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
@@ -1783,12 +1783,12 @@ function construct() {
     boatPathChecker = new BoatPathChecker;
     fakeRandom = new FakeRandom;
     boatPathHandler = new BoatPathHandler;
-    hq = new kX;
-    jo = new kY;
+    gradientEdge = new GradientEdge;
+    jo = new TouchInputHandler;
     dataDecoder = new DataDecoder;
     fadeIn = new FadeIn;
     dataEncoder = new DataEncoder;
-    jq = new kc;
+    canvasManager = new CanvasManager;
     playerAura = new PlayerAura;
     lobby = new Lobby;
     mapMenu = new MapMenu;
@@ -2989,7 +2989,7 @@ function onTouchstart(e) {
     if (0 < e.touches.length) {
         clientXPos = Math.floor(pixelRatio * e.touches[0].clientX);
         clientYPos = Math.floor(pixelRatio * e.touches[0].clientY);
-        if (!jo.pN(e)) handleMouseDown(clientXPos, clientYPos)
+        if (!jo.handleTouchStart(e)) handleMouseDown(clientXPos, clientYPos)
     }
 }
 
@@ -3018,7 +3018,7 @@ function onTouchmove(e) {
     if (0 < e.touches.length) {
         clientXPos = Math.floor(pixelRatio * e.touches[0].clientX);
         clientYPos = Math.floor(pixelRatio * e.touches[0].clientY);
-        if (!jo.pS(e)) onPointermove(clientXPos, clientYPos)
+        if (!jo.handleTouchmove(e)) onPointermove(clientXPos, clientYPos)
     };
 }
 
@@ -5814,7 +5814,7 @@ function GameStateManager() {
     this.drawCanvasImage = function() {
         if (8 !== gameState && 10 !== gameState) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            this.hr();
+            this.fillBackgroundColor();
             playtime.drawCanvasImage();
             nextContestBar.drawCanvasImage();
             var k = Math.floor(.3 * prevClientHeight),
@@ -5841,13 +5841,12 @@ function GameStateManager() {
             openLinkBox.drawCanvasImage()
         }
     };
-    this.hr = function() {
+    this.fillBackgroundColor = function() {
         if (mapLoaded) {
             var k = canvasWidth / currentMapWidth,
                 n = canvasHeight / currentMapHeight;
             k = k > n ? k : n;
-            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((canvasWidth - k * currentMapWidth) /
-                2), Math.floor((canvasHeight - k * currentMapHeight) / 2));
+            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((canvasWidth - k * currentMapWidth) / 2), Math.floor((canvasHeight - k * currentMapHeight) / 2));
             mainCanvasCtx.drawImage(mapBaseCanvas, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             mainCanvasCtx.fillStyle = blackSemiTransparent
@@ -6114,7 +6113,7 @@ function SetGameOrigin() {
             switchCounts = dataDecoder.decodeGameServerInfo(array) ? 2 : 0; //function returns value indicating if server switch is required
             gameStateManager.setState(10);
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            gameStateManager.hr();
+            gameStateManager.fillBackgroundColor();
             var loadingSprite = sprites.getValueByName("loading");
             var scaleFactor = (isZoom ? .396 : .25) * averageDim / loadingSprite.width;
             mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor((canvasWidth - scaleFactor * loadingSprite.width) / 2), Math.floor((canvasHeight - scaleFactor * loadingSprite.height) / 2));
@@ -6725,7 +6724,7 @@ function MainSettings() {
                 this.buttons[g].active = !this.buttons[g].active;
                 if (!g) {
                     isZoom = this.buttons[g].active;
-                    jq.xa();
+                    canvasManager.forceUpdateCanvas();
                 }
                 saveOptions(this.buttons[g].active, !1);
                 mainHandler.canvasDirty = !0;
@@ -8526,7 +8525,7 @@ function main() {
     });
     timeHash = (new Date).getTime() % 1024;
     isNotTopWindow = checkNotTopWindow();
-    jq.init();
+    canvasManager.init();
     userSettings.init();
     setClientID();
     setZoom();
@@ -9656,7 +9655,7 @@ function MoreSettings() {
                             moreSettings.hideUsernames = !moreSettings.hideUsernames;
                             settingsArray[sIndex].green = moreSettings.hideUsernames ? 130 : 0;
                             setSettings();
-                            jq.xa();
+                            canvasManager.forceUpdateCanvas();
                             mainHandler.canvasDirty = !0;
                         } else if (5 === settingsArray[sIndex].id) {
                             openLinkBox.init(tutorialLink, !0);
@@ -9809,14 +9808,13 @@ function BoatPathChecker() {
 
 function Teams() {
     function drawPiechart() {
-        var B, C = 0,
-            E = 0,
-            F = Math.floor(pieChartWidth / 2),
-            G = Math.floor(pieChartRadius / 2),
-            N = 1.5 * Math.PI;
-        for (B = teamCount; 0 <= B; B--) {
-            E += teamLand[B];
-            if (0 === teamLand[B]) C++;
+        var teamIndex, emptyTeamCount = 0, totalLand = 0,
+            centerX = Math.floor(pieChartWidth / 2),
+            centerY = Math.floor(pieChartRadius / 2),
+            startAngle = 1.5 * Math.PI;
+        for (teamIndex = teamCount; 0 <= teamIndex; teamIndex--) {
+            totalLand += teamLand[teamIndex];
+            if (0 === teamLand[teamIndex]) emptyTeamCount++;
         }
         canvasDirty = !1;
         pieChartCanvasCtx.clearRect(0, 0, pieChartWidth, pieChartWidth);
@@ -9827,44 +9825,41 @@ function Teams() {
         pieChartCanvasCtx.fillRect(0, 0, 2, pieChartWidth);
         pieChartCanvasCtx.fillRect(pieChartWidth - 2, 0, 2, pieChartWidth);
         pieChartCanvasCtx.fillRect(0, pieChartWidth - 2, pieChartWidth, 2);
-        if (0 < E)
-            if (C === teamCount)
-                for (B = teamCount; 0 <= B; B--) {
-                    if (0 < teamLand[B]) {
-                        E = F;
-                        N = G;
-                        pieChartCanvasCtx.fillStyle = teamColors.piechartColors[teamColors.teamIDs[B]];
+        if (0 < totalLand) {
+            if (emptyTeamCount === teamCount) {
+                for (teamIndex = teamCount; 0 <= teamIndex; teamIndex--) {
+                    if (0 < teamLand[teamIndex]) {
+                        pieChartCanvasCtx.fillStyle = teamColors.piechartColors[teamColors.teamIDs[teamIndex]];
                         pieChartCanvasCtx.beginPath();
-                        pieChartCanvasCtx.arc(E, E, N, 0, 2 * Math.PI);
+                        pieChartCanvasCtx.arc(centerX, centerX, centerY, 0, 2 * Math.PI);
                         pieChartCanvasCtx.fill();
                         break
                     }
-                } else {
-                    for (B = 0; B <= teamCount; B++)
-                        if (0 < teamLand[B]) {
-                            C = N + 2 * Math.PI * teamLand[B] / E;
-                            var I = F,
-                                D = G,
-                                K = N,
-                                J = C;
-                            pieChartCanvasCtx.fillStyle = teamColors.piechartColors[teamColors.teamIDs[B]];
-                            pieChartCanvasCtx.beginPath();
-                            pieChartCanvasCtx.arc(I, I, D, K, J);
-                            pieChartCanvasCtx.lineTo(I, I);
-                            pieChartCanvasCtx.fill();
-                            0 !== B && drawPieChartSector(F, G, N);
-                            N = C
-                        } drawPieChartSector(F, G, 1.5 * Math.PI)
                 }
+            } else {
+                for (teamIndex = 0; teamIndex <= teamCount; teamIndex++) {
+                    if (0 < teamLand[teamIndex]) {
+                        emptyTeamCount = startAngle + 2 * Math.PI * teamLand[teamIndex] / totalLand;
+                        pieChartCanvasCtx.fillStyle = teamColors.piechartColors[teamColors.teamIDs[teamIndex]];
+                        pieChartCanvasCtx.beginPath();
+                        pieChartCanvasCtx.arc(centerX, centerX, centerY, startAngle, emptyTeamCount);
+                        pieChartCanvasCtx.lineTo(centerX, centerX);
+                        pieChartCanvasCtx.fill();
+                        0 !== teamIndex && drawPieChartSector(centerX, centerY, startAngle);
+                        startAngle = emptyTeamCount;
+                    } drawPieChartSector(centerX, centerY, 1.5 * Math.PI)
+                }
+            }
+        }
         pieChartCanvasCtx.beginPath();
-        pieChartCanvasCtx.arc(F, F, G, 0, 2 * Math.PI);
+        pieChartCanvasCtx.arc(centerX, centerX, centerY, 0, 2 * Math.PI);
         pieChartCanvasCtx.stroke()
     }
 
-    function drawPieChartSector(B, C, E) {
+    function drawPieChartSector(xPos, yPos, angle) {
         pieChartCanvasCtx.beginPath();
-        pieChartCanvasCtx.moveTo(B, B);
-        pieChartCanvasCtx.lineTo(B + Math.cos(E) * C, B + Math.cos(E + 1.5 * Math.PI) * C);
+        pieChartCanvasCtx.moveTo(xPos, xPos);
+        pieChartCanvasCtx.lineTo(xPos + Math.cos(angle) * yPos, xPos + Math.cos(angle + 1.5 * Math.PI) * yPos);
         pieChartCanvasCtx.stroke()
     }
     var canvasDirty = !1,
@@ -9878,7 +9873,7 @@ function Teams() {
         if (teamGame) {
             updateInterval = 16;
             teamLand = new Uint32Array(teamCount + 1);
-            for (var B = teamCount; 0 < B; B--) teamLand[B] = 1;
+            for (var teamIndex = teamCount; 0 < teamIndex; teamIndex--) teamLand[teamIndex] = 1;
             this.setCanvasVariables()
         } else teamLand = pieChartCanvasCtx = pieChartCanvas = null
     };
@@ -9959,16 +9954,16 @@ function FakeRandom() {
     }
 }
 
-function kc() {
+function CanvasManager() {
     function onResize() {
-        (500 <= z || 5 < t) && k()
+        if (500 <= updateFreq || 5 < ticksElapsed) updateCanvas()
     }
 
-    function k() {
-        t = 0;
-        z += 700 > z ? 200 : 0;
-        if (sprites.areAllSpritesLoaded() && (l() || x)) {
-            x = !1;
+    function updateCanvas() {
+        ticksElapsed = 0;
+        updateFreq += 700 > updateFreq ? 200 : 0;
+        if (sprites.areAllSpritesLoaded() && (checkHasNormalClientDims() || forceCanvasUpdate)) {
+            forceCanvasUpdate = !1;
             setCanvasDisplayVariables();
             mainLeaderboardIcon.init();
             mainButtons.init();
@@ -10008,11 +10003,11 @@ function kc() {
         }
     }
 
-    function limitToMinimum(y) {
-        return y && 128 < y ? Math.floor(y) : 128
+    function limitToMinimum(value) {
+        return value && 128 < value ? Math.floor(value) : 128
     }
 
-    function l() {
+    function checkHasNormalClientDims() {
         if (5 <= androidVersion) {
             var varClientWidth = limitToMinimum(document.documentElement.clientWidth);
             var varClientHeight = limitToMinimum(document.documentElement.clientHeight);
@@ -10036,9 +10031,8 @@ function kc() {
                 maxClientHeight > varClientHeight && (varClientHeight = maxClientHeight, mainCanvas.height = maxClientHeight);
                 mainCanvas.style.width = varClientWidth + "px";
                 mainCanvas.style.height = varClientHeight + "px";
-                maxClientWidth = !0
-            } else maxClientWidth = !1;
-            return maxClientWidth
+                return !0;
+            } else return !1;
         }
         moreSettings.hideUsernames ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
         maxClientWidth = limitToMinimum(document.documentElement.clientWidth);
@@ -10056,11 +10050,11 @@ function kc() {
         mainCanvas.style.height = maxClientHeight + "px";
         return !0
     }
-    var x = !1,
-        t, z;
+    var forceCanvasUpdate = !1,
+        ticksElapsed, updateFreq;
     this.init = function() {
-        t = 1;
-        z = 100;
+        ticksElapsed = 1;
+        updateFreq = 100;
         canvasWidth = canvasHeight = minDim = prevClientWidth = prevClientHeight = averageDim = 0;
         pixelRatio = 1;
         mainCanvas = document.getElementById("canvasA");
@@ -10068,24 +10062,24 @@ function kc() {
             alpha: !1
         });
         mainCanvasCtx.imageSmoothingEnabled = !1;
-        l();
+        checkHasNormalClientDims();
         window.addEventListener("resize", onResize)
     };
     this.update = function() {
         specialGames.update();
-        ++t >= z && k()
+        ++ticksElapsed >= updateFreq && updateCanvas()
     };
-    this.xa = function() {
-        x = !0;
-        500 <= z && k()
+    this.forceUpdateCanvas = function() {
+        forceCanvasUpdate = !0;
+        500 <= updateFreq && updateCanvas()
     }
 }
 
 function BoatPathHandler() {
-    function cancelBoat(G) {
+    function cancelBoat(returnTroops) {
         boatSpeed.removeEntry(authorID, boatID);
         attacks.removeAttack(authorID, aIndex);
-        G && (troops[authorID] += remaining)
+        if (returnTroops) troops[authorID] += remaining
     }
 
     function revertToWater() {
@@ -10182,67 +10176,100 @@ function BoatPathHandler() {
     }
 }
 
-function kX() {
-    var g, k, n, l;
+function GradientEdge() {
+    var gradientDepth, gradientCanvases, hasGradient, bgColor;
     this.init = function() {
-        var x, t, z;
-        n = !0;
-        l = "rgb(" + mapBaseCanvasImageDataArray[0] + "," + mapBaseCanvasImageDataArray[1] + "," + mapBaseCanvasImageDataArray[2] + ")";
-        var y = mapIsSurroundedByWater(currentMapID) ? !0 : n = !1;
-        if (y) k = null;
+        var gIndex, depthIndex, depthIndex2;
+        bgColor = "rgb(" + mapBaseCanvasImageDataArray[0] + "," + mapBaseCanvasImageDataArray[1] + "," + mapBaseCanvasImageDataArray[2] + ")";
+        hasGradient = mapIsSurroundedByWater(currentMapID) ? !0 : !1;
+        if (hasGradient) gradientCanvases = null;
         else {
-            g = divideFloor(96, 4);
+            gradientDepth = 24;
             if (1 === currentMapID) {
-                var A = 0;
-                var B = 160
-            } else A = 128, B = 32;
-            l = "rgb(" + A + "," + A + "," + A + ")";
-            k = Array(4);
-            for (y = 3; 0 <= y; y--) {
-                k[y] = document.createElement("canvas");
-                var C = 0 === y % 2 ? currentMapWidth : g;
-                var E = 0 === y % 2 ? g : currentMapHeight + 2 * g;
-                k[y].width = C;
-                k[y].height = E;
-                var F = k[y].getContext("2d", {
+                var outerGradientColor = 0;
+                var innerGradientColor = 160
+            } else outerGradientColor = 128, innerGradientColor = 32;
+            bgColor = "rgb(" + outerGradientColor + "," + outerGradientColor + "," + outerGradientColor + ")";
+            gradientCanvases = Array(4);
+            for (var side = 3; 0 <= side; side--) {
+                gradientCanvases[side] = document.createElement("canvas");
+                var gradientWidth = 0 === side % 2 ? currentMapWidth : gradientDepth;
+                var gradientHeight = 0 === side % 2 ? gradientDepth : currentMapHeight + 2 * gradientDepth;
+                gradientCanvases[side].width = gradientWidth;
+                gradientCanvases[side].height = gradientHeight;
+                var gradientCanvasCtx = gradientCanvases[side].getContext("2d", {
                     alpha: !1
                 });
-                var G = F.getImageData(0, 0, C, E);
-                var N = G.data;
-                if (0 === y % 2)
-                    for (t = g - 1; 0 <= t; t--) {
-                        var I = B + Math.floor((t + 1) * (A - B) /
-                            (g + 1));
-                        for (x = C - 1; 0 <= x; x--) {
-                            var D = 4 * ((0 === y ? g - t - 1 : t) * C + x);
-                            N[D] = I;
-                            N[D + 1] = I;
-                            N[D + 2] = I;
-                            N[D + 3] = 255
+                var gradientCanvasImageData = gradientCanvasCtx.getImageData(0, 0, gradientWidth, gradientHeight);
+                var gradientCanvasImageDataArray = gradientCanvasImageData.data;
+                if (0 === side % 2) {
+                    for (depthIndex = gradientDepth - 1; 0 <= depthIndex; depthIndex--) {
+                        var rgbValue = innerGradientColor + Math.floor((depthIndex + 1) * (outerGradientColor - innerGradientColor) / (gradientDepth + 1));
+                        for (gIndex = gradientWidth - 1; 0 <= gIndex; gIndex--) {
+                            var dataIndex = 4 * ((0 === side ? gradientDepth - depthIndex - 1 : depthIndex) * gradientWidth + gIndex);
+                            gradientCanvasImageDataArray[dataIndex] = rgbValue;
+                            gradientCanvasImageDataArray[dataIndex + 1] = rgbValue;
+                            gradientCanvasImageDataArray[dataIndex + 2] = rgbValue;
+                            gradientCanvasImageDataArray[dataIndex + 3] = 255;
                         }
-                    } else {
-                        for (x = g - 1; 0 <= x; x--)
-                            for (I = B + Math.floor((x + 1) * (A - B) / (g + 1)), t = E - 1 - g; t >= g; t--) D = 4 * (t * C + (3 === y ? g - x - 1 : x)), N[D] = I, N[D + 1] = I, N[D + 2] = I, N[D + 3] = 255;
-                        for (z = 1; 0 <= z; z--)
-                            for (x = g - 1; 0 <= x; x--)
-                                for (t = g - 1; 0 <= t; t--) I = (Math.pow(x * x + t * t, .5) + 1) / (g + 1), I = 1 < I ? 1 : I, I = B + Math.floor(I * (A - B)), D = 4 * ((0 === z ? g - t - 1 : t + z * (E - g)) * C + (1 === y ? x : g - x - 1)), N[D] = I, N[D + 1] = I, N[D + 2] = I, N[D + 3] = 255
                     }
-                F.putImageData(G, 0, 0)
+                } else {
+                    for (gIndex = gradientDepth - 1; 0 <= gIndex; gIndex--) {
+                        rgbValue = innerGradientColor + Math.floor((gIndex + 1) * (outerGradientColor - innerGradientColor) / (gradientDepth + 1));
+                        for (depthIndex = gradientHeight - 1 - gradientDepth; depthIndex >= gradientDepth; depthIndex--) {
+                            dataIndex = 4 * (depthIndex * gradientWidth + (3 === side ? gradientDepth - gIndex - 1 : gIndex));
+                            gradientCanvasImageDataArray[dataIndex] = rgbValue;
+                            gradientCanvasImageDataArray[dataIndex + 1] = rgbValue;
+                            gradientCanvasImageDataArray[dataIndex + 2] = rgbValue;
+                            gradientCanvasImageDataArray[dataIndex + 3] = 255;
+                        }
+                    }
+                    for (depthIndex2 = 1; 0 <= depthIndex2; depthIndex2--) {
+                        for (gIndex = gradientDepth - 1; 0 <= gIndex; gIndex--) {
+                            for (depthIndex = gradientDepth - 1; 0 <= depthIndex; depthIndex--) {
+                                rgbValue = (Math.pow(gIndex * gIndex + depthIndex * depthIndex, .5) + 1) / (gradientDepth + 1);
+                                rgbValue = 1 < rgbValue ? 1 : rgbValue;
+                                rgbValue = innerGradientColor + Math.floor(rgbValue * (outerGradientColor - innerGradientColor));
+                                dataIndex = 4 * ((0 === depthIndex2 ? gradientDepth - depthIndex - 1 : depthIndex + depthIndex2 * (gradientHeight - gradientDepth)) * gradientWidth + (1 === side ? gIndex : gradientDepth - gIndex - 1));
+                                gradientCanvasImageDataArray[dataIndex] = rgbValue;
+                                gradientCanvasImageDataArray[dataIndex + 1] = rgbValue;
+                                gradientCanvasImageDataArray[dataIndex + 2] = rgbValue;
+                                gradientCanvasImageDataArray[dataIndex + 3] = 255;
+                            }
+                        }
+                    }
+                }
+                gradientCanvasCtx.putImageData(gradientCanvasImageData, 0, 0)
             }
-            mapBaseCanvasCtx.fillStyle = "rgb(" + B + "," + B + "," + B + ")";
+            mapBaseCanvasCtx.fillStyle = "rgb(" + innerGradientColor + "," + innerGradientColor + "," + innerGradientColor + ")";
             mapBaseCanvasCtx.fillRect(0, 0, currentMapWidth, 1);
             mapBaseCanvasCtx.fillRect(0, currentMapHeight - 1, currentMapWidth, 1);
             mapBaseCanvasCtx.fillRect(0, 0, 1, currentMapHeight);
             mapBaseCanvasCtx.fillRect(currentMapWidth - 1, 0, 1, currentMapHeight)
         }
     };
-    this.hr = function() {
-        var x = n ? 0 : -g;
-        rectEqualOrInside(x, x, currentMapWidth - 2 * x, currentMapHeight - 2 * x, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) || (mainCanvasCtx.fillStyle = l, mainCanvasCtx.fillRect(0, 0, prevClientWidth, prevClientHeight))
+    this.fillBackgroundColor = function() {
+        var sideIndex = hasGradient ? 0 : -gradientDepth;
+        if (!rectEqualOrInside(sideIndex, sideIndex, currentMapWidth - 2 * sideIndex, currentMapHeight - 2 * sideIndex, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight)) {
+            mainCanvasCtx.fillStyle = bgColor;
+            mainCanvasCtx.fillRect(0, 0, prevClientWidth, prevClientHeight);
+        }
     };
     this.drawCanvasImage = function() {
-        n || (rectIntersect(0, -g, currentMapWidth, g, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) && mainCanvasCtx.drawImage(k[0], viewport.cameraX, viewport.cameraY - g), rectIntersect(currentMapWidth, -g, g, currentMapHeight + 2 * g, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) && mainCanvasCtx.drawImage(k[1], viewport.cameraX + currentMapWidth, viewport.cameraY - g), rectIntersect(0, currentMapHeight, currentMapWidth, g, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) && mainCanvasCtx.drawImage(k[2], viewport.cameraX, viewport.cameraY + currentMapHeight), rectIntersect(-g, -g, g,
-            currentMapHeight + 2 * g, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight) && mainCanvasCtx.drawImage(k[3], viewport.cameraX - g, viewport.cameraY - g))
+        if (!hasGradient) {
+            if (rectIntersect(0, -gradientDepth, currentMapWidth, gradientDepth, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight)) {
+                mainCanvasCtx.drawImage(gradientCanvases[0], viewport.cameraX, viewport.cameraY - gradientDepth);
+            }
+            if (rectIntersect(currentMapWidth, -gradientDepth, gradientDepth, currentMapHeight + 2 * gradientDepth, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight)) {
+                mainCanvasCtx.drawImage(gradientCanvases[1], viewport.cameraX + currentMapWidth, viewport.cameraY - gradientDepth);
+            }
+            if (rectIntersect(0, currentMapHeight, currentMapWidth, gradientDepth, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight)) {
+                mainCanvasCtx.drawImage(gradientCanvases[2], viewport.cameraX, viewport.cameraY + currentMapHeight);
+            }
+            if (rectIntersect(-gradientDepth, -gradientDepth, gradientDepth, currentMapHeight + 2 * gradientDepth, viewport.viewportLeft, viewport.viewportTop, viewport.viewportWidth, viewport.viewportHeight)) {
+                mainCanvasCtx.drawImage(gradientCanvases[3], viewport.cameraX - gradientDepth, viewport.cameraY - gradientDepth);
+            }
+        }
     }
 }
 
@@ -10278,7 +10305,7 @@ function TerriWS() {
         dataReader = new FileReader;
         dataReader.addEventListener("loadend", onLoadend);
         var url = wsUrlStrings[0];
-        url = remote < wsManager.serverCount ? url + (wsManager.originURLs[remote] + wsUrlStrings[1 + const_2_s52]) : url + (wsManager.originURLs[0] + "/i" + (1 + const_2_s52) + (remote - wsManager.gameServerCount) + "/");
+        url += remote < wsManager.serverCount ? (wsManager.originURLs[remote] + wsUrlStrings[1 + const_2_s52]) : (wsManager.originURLs[0] + "/i" + (1 + const_2_s52) + (remote - wsManager.gameServerCount) + "/");
         ws = new WebSocket(url);
         ws.onopen = onOpen;
         ws.onmessage = onMessage;
@@ -10439,9 +10466,7 @@ function Statistics() {
         var relX = xPos - divideFloor(prevClientWidth - this.width, 2);
         var relY = yPos - divideFloor(prevClientHeight - this.height, 2);
         if (relX < 0 || relY < 0 || relX >= this.width || relY >= this.height) {
-            if (gameButtons.mouseDown(xPos, yPos) > 1) {
-                return true;
-            }
+            if (gameButtons.mouseDown(xPos, yPos) > 1) return true;
             this.end();
             return true;
         }
@@ -10547,9 +10572,9 @@ function Statistics() {
         for (dpIndex = statisticNumbers.currentDataPointIndex - 2; 0 <= dpIndex; dpIndex--) mainCanvasCtx.lineTo(dpIndex * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight - yScaleFactor * Math.sqrt(recordedValues[dpIndex]));
         mainCanvasCtx.stroke();
         recordedValues = this.drawMenuSymbol(recordedValues, yScaleFactor, .5);
-        .95 > recordedValues && mainCanvasCtx.fillText(attacksBar.splitText(maxValue), -this.buttonMargin, 0);
-        .05 < Math.abs(recordedValues - .5) && mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(maxValue / 4)), -this.buttonMargin, Math.floor(this.availableHeight / 2));
-        .05 < recordedValues && mainCanvasCtx.fillText("0", -this.buttonMargin, this.availableHeight)
+        if (.95 > recordedValues) mainCanvasCtx.fillText(attacksBar.splitText(maxValue), -this.buttonMargin, 0);
+        if (.05 < Math.abs(recordedValues - .5)) mainCanvasCtx.fillText(attacksBar.splitText(Math.floor(maxValue / 4)), -this.buttonMargin, Math.floor(this.availableHeight / 2));
+        if (.05 < recordedValues) mainCanvasCtx.fillText("0", -this.buttonMargin, this.availableHeight)
     };
     this.drawInterestGraph = function(startX, startY) {
         mainCanvasCtx.setTransform(1, 0, 0, 1, startX + 2 * this.buttonMargin + this.textWidth, startY + this.contentPadding);
@@ -10561,9 +10586,9 @@ function Statistics() {
         mainCanvasCtx.stroke();
         yScaleFactor = this.drawMenuSymbol(statisticNumbers.recordedInterestValues, yScaleFactor, 1);
         var maxIRate = statisticNumbers.max[this.clickedButtonIndex] / 100;
-        .95 > yScaleFactor && mainCanvasCtx.fillText(gameStatistics.nG(maxIRate, 2), -this.buttonMargin, 0);
-        .05 < Math.abs(yScaleFactor - .5) && mainCanvasCtx.fillText(gameStatistics.nG(maxIRate / 2, 2), -this.buttonMargin, Math.floor(this.availableHeight / 2));
-        .05 < yScaleFactor && mainCanvasCtx.fillText(gameStatistics.nG(0, 2), -this.buttonMargin, this.availableHeight)
+        if (.95 > yScaleFactor) mainCanvasCtx.fillText(gameStatistics.nG(maxIRate, 2), -this.buttonMargin, 0);
+        if (.05 < Math.abs(yScaleFactor - .5)) mainCanvasCtx.fillText(gameStatistics.nG(maxIRate / 2, 2), -this.buttonMargin, Math.floor(this.availableHeight / 2));
+        if (.05 < yScaleFactor) mainCanvasCtx.fillText(gameStatistics.nG(0, 2), -this.buttonMargin, this.availableHeight)
     };
     this.drawAttackStatisticsNumbers = function(startX, startY) {
         var leftIndex;
@@ -10672,75 +10697,81 @@ function TeamColors() {
         [0, 0, 0]
     ];
     this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-    var clanTags, clanTagOfPlayerIDs;//stores the Clan Tag for each Player ID
+    var clanTags, clanTagOfPlayerIDs; //stores the Clan Tag for each Player ID
     this.init = function(playerInfo) {
         this.teamArray = new Uint8Array(maxEntities);
-        this.setDefault_teamIDs();
-        teamGame && (customJSON.isCustomJSON && customJSON.data.teamArray ? this.teamsCustomGames() : 9 === gamemode ? this.teamsZombieMode() : this.update(playerInfo))
+        this.setDefaultTeamIDs();
+        if (teamGame) {
+            if (customJSON.isCustomJSON && customJSON.data.teamArray) this.setCustomTeams()
+            else if (9 === gamemode) this.setZombieTeams()
+            else this.update(playerInfo)
+        }
     };
-    this.teamsCustomGames = function() {
-        var l, x = entityCount;
+    this.setCustomTeams = function() {
         this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-        for (l = 0; l < x; l++) this.teamArray[l] = customJSON.data.teamArray[l]
+        for (var entityIndex = 0; entityIndex < entityCount; entityIndex++) this.teamArray[entityIndex] = customJSON.data.teamArray[entityIndex]
     };
-    this.setDefault_teamIDs = function() {
-        for (var l = this.teamIDs.length - 1; 0 <= l; l--) this.teamIDs[l] = l;
+    this.setDefaultTeamIDs = function() {
+        for (var teamIndex = this.teamIDs.length - 1; 0 <= teamIndex; teamIndex--) this.teamIDs[teamIndex] = teamIndex;
         clanTags = [];
         clanTagOfPlayerIDs = []
     };
-    this.teamsZombieMode = function() {
-        var l;
-        for (l = playerCount + zombieSettings.helperBotCount - 1; 0 <= l; l--) this.teamArray[l] = 1;//Players
-        for (l = playerCount + zombieSettings.helperBotCount; l < maxEntities; l++) this.teamArray[l] = 2;//Zombies
+    this.setZombieTeams = function() {
+        var entityIndex;
+        for (entityIndex = playerCount + zombieSettings.helperBotCount - 1; 0 <= entityIndex; entityIndex--) this.teamArray[entityIndex] = 1;
+        for (entityIndex = playerCount + zombieSettings.helperBotCount; entityIndex < maxEntities; entityIndex++) this.teamArray[entityIndex] = 2;
         this.teamIDs[1] = 7;
         this.teamIDs[2] = 8
     };
     this.update = function(playerInfo) {
         var playersTeamColor = new Uint8Array(playerCount),
             players2ndTeamColor = new Uint8Array(playerCount),
-            teamColorScore = new Uint16Array(8),//the teams with the highest scores based on players colors will be chosen
+            teamColorScore = new Uint16Array(8), //the teams with the highest scores based on players colors will be chosen
             playersPerTeam = new Uint16Array(this.teamIDs.length);
         this.setPlayerTeamColor(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore);
         this.sortTeamColorsByScore(teamColorScore);
-        singleplayer || this.distributeClanPlayersToTeams(playersPerTeam, playersTeamColor, players2ndTeamColor);
+        if (!singleplayer) this.distributeClanPlayersToTeams(playersPerTeam, playersTeamColor, players2ndTeamColor);
         this.distributeOtherPlayersToTeams(playersTeamColor, players2ndTeamColor, playersPerTeam);
-        singleplayer ? this.distributeBotsSingle() : this.distributeBotsMulti()
+        if (singleplayer) this.distributeBotsSingle()
+        else this.distributeBotsMulti()
     };
     this.setPlayerTeamColor = function(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
-        var y, A, B = this.teamIDs.length - 1,
-            comparedColors = new Uint16Array(B);//the color assigned is the one with the lowest value
-        for (y = playerCount - 1; 0 <= y; y--) {
-            for (A = B; 1 <= A; A--) comparedColors[A - 1] = Math.abs(4 * playerInfo[y].color[0] - allTeamColors[A][0]) + Math.abs(4 * playerInfo[y].color[1] - allTeamColors[A][1]) + Math.abs(4 * playerInfo[y].color[2] - allTeamColors[A][2]);
+        var playerIndex, teamIndex, teamsCount = this.teamIDs.length - 1,
+            comparedColors = new Uint16Array(teamsCount); //the color assigned is the one with the lowest value
+        for (playerIndex = playerCount - 1; 0 <= playerIndex; playerIndex--) {
+            for (teamIndex = teamsCount; 1 <= teamIndex; teamIndex--) {
+                comparedColors[teamIndex - 1] = Math.abs(4 * playerInfo[playerIndex].color[0] - allTeamColors[teamIndex][0]) + Math.abs(4 * playerInfo[playerIndex].color[1] - allTeamColors[teamIndex][1]) + Math.abs(4 * playerInfo[playerIndex].color[2] - allTeamColors[teamIndex][2]);
+            }
             var lowestComparedValue = 768;
-            for (A = B - 1; A >= 0; A--) {
-                var F = (A + y) % B;
-                if (comparedColors[F] < lowestComparedValue) {
-                    lowestComparedValue = comparedColors[F];
-                    playersTeamColor[y] = F;
+            for (teamIndex = teamsCount - 1; teamIndex >= 0; teamIndex--) {
+                var cyclicIndex = (teamIndex + playerIndex) % teamsCount;
+                if (comparedColors[cyclicIndex] < lowestComparedValue) {
+                    lowestComparedValue = comparedColors[cyclicIndex];
+                    playersTeamColor[playerIndex] = cyclicIndex;
                 }
             }
-            teamColorScore[playersTeamColor[y]] += 4;
+            teamColorScore[playersTeamColor[playerIndex]] += 4;
             lowestComparedValue = 768;
-            for (A = B - 1; A >= 0; A--) {
-                F = (A + y) % B;
-                if (comparedColors[F] < lowestComparedValue && F !== playersTeamColor[y]) {
-                    lowestComparedValue = comparedColors[F];
-                    players2ndTeamColor[y] = F;
+            for (teamIndex = teamsCount - 1; teamIndex >= 0; teamIndex--) {
+                cyclicIndex = (teamIndex + playerIndex) % teamsCount;
+                if (comparedColors[cyclicIndex] < lowestComparedValue && cyclicIndex !== playersTeamColor[playerIndex]) {
+                    lowestComparedValue = comparedColors[cyclicIndex];
+                    players2ndTeamColor[playerIndex] = cyclicIndex;
                 }
             }
-            teamColorScore[players2ndTeamColor[y]]++
+            teamColorScore[players2ndTeamColor[playerIndex]]++
         }
     };
-    this.sortTeamColorsByScore = function(teamColorScore) {//sorting teamsIDs from the color with the highest score to the color with the lowest
-        var x, t, numTeams = this.teamIDs.length - 1;
-        for (x = numTeams; 0 <= x; x--) this.teamIDs[x] = x;//setting default teamIDs
-        for (x = numTeams - 1; 0 <= x; x--) teamColorScore[x]++;//adding 1 to the score so that every team has score != 0 and bigger then the score of index 0
-        for (x = 1; x <= numTeams; x++) {//sorts the color scores and resets their scores to 0
-            var y = 0;
-            for (t = 1; t < numTeams; t++) 
-            if (teamColorScore[t] > teamColorScore[y]) y = t;
-            teamColorScore[y] = 0;
-            this.teamIDs[x] = y + 1
+    this.sortTeamColorsByScore = function(teamColorScore) { //sorting teamsIDs from the color with the highest score to the color with the lowest
+        var teamIndex, currentTeamIndex, numTeams = this.teamIDs.length - 1;
+        for (teamIndex = numTeams; 0 <= teamIndex; teamIndex--) this.teamIDs[teamIndex] = teamIndex;
+        for (teamIndex = numTeams - 1; 0 <= teamIndex; teamIndex--) teamColorScore[teamIndex]++; //adding 1 to the score so that every team has score != 0 and bigger then the score of index 0
+        for (teamIndex = 1; teamIndex <= numTeams; teamIndex++) { //sorts the color scores and resets their scores to 0
+            var highestScoreIndex = 0;
+            for (currentTeamIndex = 1; currentTeamIndex < numTeams; currentTeamIndex++) 
+            if (teamColorScore[currentTeamIndex] > teamColorScore[highestScoreIndex]) highestScoreIndex = currentTeamIndex;
+            teamColorScore[highestScoreIndex] = 0;
+            this.teamIDs[teamIndex] = highestScoreIndex + 1
         }
     };
     this.distributeClanPlayersToTeams = function(playersPerTeam, playersTeamColor, players2ndTeamColor) {
@@ -10775,39 +10806,39 @@ function TeamColors() {
         } 
         for (let numClanTags = clanTags.length - 1; 0 <= numClanTags; numClanTags--) {
             clanTagIndex = -1;
-            var i;
-            for (i = clanTags.length - 1; 0 <= i; i--) {
-                if (!hasClanTag[i] && (-1 === clanTagIndex || clanTagOfPlayerIDs[i].length > clanTagOfPlayerIDs[clanTagIndex].length)) {//It sets clanTagIndex to the index of the first unused clan tag that it finds. If it finds more than one unused clan tag, it chooses the one that has the most players associated with it.
-                    clanTagIndex = i;
+            var teamIndex1;
+            for (teamIndex1 = clanTags.length - 1; 0 <= teamIndex1; teamIndex1--) {
+                if (!hasClanTag[teamIndex1] && (-1 === clanTagIndex || clanTagOfPlayerIDs[teamIndex1].length > clanTagOfPlayerIDs[clanTagIndex].length)) {//It sets clanTagIndex to the index of the first unused clan tag that it finds. If it finds more than one unused clan tag, it chooses the one that has the most players associated with it.
+                    clanTagIndex = teamIndex1;
                 }
             }
-            for (i = numTeams - 1; 0 <= i; i--) teamColorScore[i] = 1;//sets the score of each team to 1
-            for (i = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= i; i--) {//assigns score to each team based on the players that have the clan tag with the most members
-                teamColorScore[playersTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]] += 3;
-                teamColorScore[players2ndTeamColor[clanTagOfPlayerIDs[clanTagIndex][i]]]++;
+            for (teamIndex1 = numTeams - 1; 0 <= teamIndex1; teamIndex1--) teamColorScore[teamIndex1] = 1;//sets the score of each team to 1
+            for (teamIndex1 = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= teamIndex1; teamIndex1--) {//assigns score to each team based on the players that have the clan tag with the most members
+                teamColorScore[playersTeamColor[clanTagOfPlayerIDs[clanTagIndex][teamIndex1]]] += 3;
+                teamColorScore[players2ndTeamColor[clanTagOfPlayerIDs[clanTagIndex][teamIndex1]]]++;
             }
-            for (let j = numTeams - 1; 0 <= j; j--) {//calculates colorscore for each clan tag and assigns the players to that color
-                var G = clanTagIndex % numTeams;
-                for (let i = numTeams - 1; 0 <= i; i--) {//if there is a tie, then the color with the lowest amount of players will be chosen
-                    if (teamColorScore[i] > teamColorScore[G]) G = i;
+            for (let teamIndex1 = numTeams - 1; 0 <= teamIndex1; teamIndex1--) {//calculates colorscore for each clan tag and assigns the players to that color
+                var highestScoreTeamIndex = clanTagIndex % numTeams;
+                for (let teamIndex2 = numTeams - 1; 0 <= teamIndex2; teamIndex2--) {//if there is a tie, then the color with the lowest amount of players will be chosen
+                    if (teamColorScore[teamIndex2] > teamColorScore[highestScoreTeamIndex]) highestScoreTeamIndex = teamIndex2;
                 }
-                var N = -1;
-                for (let i = teamCount; 0 < i; i--) {
-                    if (this.teamIDs[i] === G + 1) {
-                        N = i;
+                var fewestPlayersTeamIndex = -1;
+                for (let teamIndex2 = teamCount; 0 < teamIndex2; teamIndex2--) {
+                    if (this.teamIDs[teamIndex2] === highestScoreTeamIndex + 1) {
+                        fewestPlayersTeamIndex = teamIndex2;
                         break;
                     }
                 }
-                teamColorScore[G] = 0;
-                if (-1 !== N) {
-                    G = 0;
-                    for (let i = teamCount; 0 < i; i--) {//if the color with the most score is also the color with the most players, it will choose the second color with highest score
-                        if (playersPerTeam[N] > playersPerTeam[i]) G++;
+                teamColorScore[highestScoreTeamIndex] = 0;
+                if (-1 !== fewestPlayersTeamIndex) {
+                    highestScoreTeamIndex = 0;
+                    for (let teamIndex2 = teamCount; 0 < teamIndex2; teamIndex2--) {//if the color with the most score is also the color with the most players, it will choose the second color with highest score
+                        if (playersPerTeam[fewestPlayersTeamIndex] > playersPerTeam[teamIndex2]) highestScoreTeamIndex++;
                     }
-                    if (G !== teamCount - 1) {
-                        for (let i = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= i; i--) {
-                            playersPerTeam[N]++;
-                            this.teamArray[clanTagOfPlayerIDs[clanTagIndex][i]] = N;
+                    if (highestScoreTeamIndex !== teamCount - 1) {
+                        for (let clanPlayerIndex = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= clanPlayerIndex; clanPlayerIndex--) {
+                            playersPerTeam[fewestPlayersTeamIndex]++;
+                            this.teamArray[clanTagOfPlayerIDs[clanTagIndex][clanPlayerIndex]] = fewestPlayersTeamIndex;
                         }
                         break
                     }
@@ -10816,63 +10847,51 @@ function TeamColors() {
         }
     };
     this.distributeOtherPlayersToTeams = function(playersTeamColor, players2ndTeamColor, playersPerTeam) {
-        var i;
-        var a = this.teamIDs.length - 1;
-        var idealNumOfPlayers = divideFloor(playerCount, teamCount);
-        var teamIDMap = new Uint8Array(a + 1);
-
+        var teamIndex, playerIndex = this.teamIDs.length - 1,
+            idealNumOfPlayers = divideFloor(playerCount, teamCount),
+            teamIDMap = new Uint8Array(playerIndex + 1);
         if (playerCount % teamCount > 0) idealNumOfPlayers++;
-        for (i = a; i >= 1; i--) teamIDMap[this.teamIDs[i]] = i;
-        for (a = 0; a < playerCount; a++) {
-            i = teamIDMap[playersTeamColor[a] + 1];
-            
-            if (this.teamArray[a] === 0 && i <= teamCount && playersPerTeam[i] < idealNumOfPlayers) {
-                playersPerTeam[i]++;
-                this.teamArray[a] = i;
+        for (teamIndex = playerIndex; teamIndex >= 1; teamIndex--) teamIDMap[this.teamIDs[teamIndex]] = teamIndex;
+        for (playerIndex = 0; playerIndex < playerCount; playerIndex++) {
+            teamIndex = teamIDMap[playersTeamColor[playerIndex] + 1];
+            if (this.teamArray[playerIndex] === 0 && teamIndex <= teamCount && playersPerTeam[teamIndex] < idealNumOfPlayers) {
+                playersPerTeam[teamIndex]++;
+                this.teamArray[playerIndex] = teamIndex;
             }
         }
-        for (a = 0; a < playerCount; a++) {
-            i = teamIDMap[players2ndTeamColor[a] + 1];
-
-            if (this.teamArray[a] === 0 && i <= teamCount && playersPerTeam[i] < idealNumOfPlayers) {
-                playersPerTeam[i]++;
-                this.teamArray[a] = i;
+        for (playerIndex = 0; playerIndex < playerCount; playerIndex++) {
+            teamIndex = teamIDMap[players2ndTeamColor[playerIndex] + 1];
+            if (this.teamArray[playerIndex] === 0 && teamIndex <= teamCount && playersPerTeam[teamIndex] < idealNumOfPlayers) {
+                playersPerTeam[teamIndex]++;
+                this.teamArray[playerIndex] = teamIndex;
             }
         }
-        for (i = teamCount; i >= 1; i--) {
-            for (a = playerCount - 1; a >= 0 && playersPerTeam[i] < idealNumOfPlayers; a--) {
-                if (this.teamArray[a] === 0) {
-                    playersPerTeam[i]++;
-                    this.teamArray[a] = i;
+        for (teamIndex = teamCount; teamIndex >= 1; teamIndex--) {
+            for (playerIndex = playerCount - 1; playerIndex >= 0 && playersPerTeam[teamIndex] < idealNumOfPlayers; playerIndex--) {
+                if (this.teamArray[playerIndex] === 0) {
+                    playersPerTeam[teamIndex]++;
+                    this.teamArray[playerIndex] = teamIndex;
                 }
             }
         }
     };    
     this.distributeBotsSingle = function() {
-        var i, maxEntitiesPerTeam = new Uint16Array(teamCount);
+        var teamIndex, maxEntitiesPerTeam = new Uint16Array(teamCount);
         maxEntitiesPerTeam[teamCount - 1] = maxEntities;
-
-        for (i = teamCount - 2; i >= 0; i--) {
-            maxEntitiesPerTeam[i] = singleSettings.botSettings[i].group;
-        }
+        for (teamIndex = teamCount - 2; teamIndex >= 0; teamIndex--) maxEntitiesPerTeam[teamIndex] = singleSettings.botSettings[teamIndex].group;
         maxEntitiesPerTeam[0]--;
         var currentTeam = maxEntitiesPerTeam[0] === 0 ? 1 : 0;
-
-        for (i = playerCount; i < maxEntities; i++) {
-            this.teamArray[i] = currentTeam + 1;
+        for (teamIndex = playerCount; teamIndex < maxEntities; teamIndex++) {
+            this.teamArray[teamIndex] = currentTeam + 1;
             maxEntitiesPerTeam[currentTeam]--;
             if (maxEntitiesPerTeam[currentTeam] <= 0) currentTeam++;
         }
     };    
-    this.distributeBotsMulti = function() {//added neutral bots
-        var neutralBots = false;
-
-        for (var i = playerCount; i < maxEntities; i++){
-            if (!neutralBots){
-                this.teamArray[i] = 1 + i % teamCount;
-            }
-            else
-            this.teamArray[i] = 0;
+    this.distributeBotsMulti = function() {
+        var neutralBots = false; //Neutral Bots Togglable
+        for (var botIndex = playerCount; botIndex < maxEntities; botIndex++){
+            if (!neutralBots) this.teamArray[botIndex] = 1 + botIndex % teamCount;
+            else this.teamArray[botIndex] = 0;
         }
     };
     this.getClanTagWinningTeam = function(winner) {
@@ -10900,38 +10919,39 @@ function updateAuthorXYMinMax() {
 }
 
 function updateEditingBorderPixels() {
-    var g = potentialBorderAdvances[lastAuthorID].length,
-        k;
-    var n = g - 1;
-    loop: for (; 0 <= n; n--) {
-        for (k = 3; 0 <= k; k--) {
-            var l = potentialBorderAdvances[lastAuthorID][n] + offset[k];
-            if (pixel.isNeutral(l) || pixel.entityControlled(l) && pixel.getOwner(l) !== lastAuthorID) {
-                pixel.changeToMovingPixel(potentialBorderAdvances[lastAuthorID][n], lastAuthorID);
+    var advancesLength = potentialBorderAdvances[lastAuthorID].length, side;
+    var bIndex = advancesLength - 1;
+    loop: for (; 0 <= bIndex; bIndex--) {
+        for (side = 3; 0 <= side; side--) {
+            var pIndex = potentialBorderAdvances[lastAuthorID][bIndex] + offset[side];
+            if (pixel.isNeutral(pIndex) || pixel.entityControlled(pIndex) && pixel.getOwner(pIndex) !== lastAuthorID) {
+                pixel.changeToMovingPixel(potentialBorderAdvances[lastAuthorID][bIndex], lastAuthorID);
                 continue loop
             }
         }
-        potentialBorderAdvances[lastAuthorID][n] = potentialBorderAdvances[lastAuthorID][g - 1];
+        potentialBorderAdvances[lastAuthorID][bIndex] = potentialBorderAdvances[lastAuthorID][advancesLength - 1];
         potentialBorderAdvances[lastAuthorID].pop();
-        g--
+        advancesLength--
     }
 }
 
 function updatePixelsBorderingTerrain() {
-    var g = landBorderPixels[lastAuthorID].length,
-        k, n, l = g - 1;
-    loop: for (; 0 <= l; l--) {
-        var x = n = !1;
-        for (k = 3; 0 <= k; k--) {
-            var t = landBorderPixels[lastAuthorID][l] + offset[k];
-            if (pixel.canTake(t, lastAuthorID)) continue loop;
-            x = x || pixel.isWater(t);
-            n = n || pixel.isMountain(t)
+    var landBorderLength = landBorderPixels[lastAuthorID].length,
+        side, pixelBordersMountain, bIndex = landBorderLength - 1;
+    loop: for (; 0 <= bIndex; bIndex--) {
+        var pixelBordersWater = pixelBordersMountain = !1;
+        for (side = 3; 0 <= side; side--) {
+            var pIndex = landBorderPixels[lastAuthorID][bIndex] + offset[side];
+            if (pixel.canTake(pIndex, lastAuthorID)) continue loop;
+            pixelBordersWater = pixelBordersWater || pixel.isWater(pIndex);
+            pixelBordersMountain = pixelBordersMountain || pixel.isMountain(pIndex)
         }
-        x ? waterBorderPixels[lastAuthorID].push(landBorderPixels[lastAuthorID][l]) : n ? mountainBorderPixels[lastAuthorID].push(landBorderPixels[lastAuthorID][l]) : pixel.changeToInnerPixel(landBorderPixels[lastAuthorID][l], lastAuthorID);
-        landBorderPixels[lastAuthorID][l] = landBorderPixels[lastAuthorID][g - 1];
+        if (pixelBordersWater) waterBorderPixels[lastAuthorID].push(landBorderPixels[lastAuthorID][bIndex])
+        else if (pixelBordersMountain) mountainBorderPixels[lastAuthorID].push(landBorderPixels[lastAuthorID][bIndex])
+        else pixel.changeToInnerPixel(landBorderPixels[lastAuthorID][bIndex], lastAuthorID);
+        landBorderPixels[lastAuthorID][bIndex] = landBorderPixels[lastAuthorID][landBorderLength - 1];
         landBorderPixels[lastAuthorID].pop();
-        g--
+        landBorderLength--
     }
 }
 
@@ -11106,7 +11126,7 @@ function MainHandler() {
     this.mainUpdateHandler = function() {
         nextContestBar.update();
         preLobby.update();
-        jq.update();
+        canvasManager.update();
         wsManager.update();
         setGameOrigin.processGameInitData();
         mainLeaderboard.update();
@@ -11135,7 +11155,7 @@ function SingleplayerHandler() {
     this.tick = this.clientTick = 0;
     this.a6Z = !1; //unused
     this.update = function() {
-        jq.update();
+        canvasManager.update();
         if (inSpawn) updatedPlayerLabels()
         else {
             if (0 === this.clientTick) {
@@ -11209,7 +11229,7 @@ function MultiplayerHandler() {
         }
     };
     this.update = function() {
-        jq.update();
+        canvasManager.update();
         if (inSpawn) {
             mainHandler.canvasDirty = gameStatistics.receivedSpawnActions(-1) || mainHandler.canvasDirty;
             updatedPlayerLabels();
@@ -11264,45 +11284,63 @@ function MultiplayerHandler() {
 }
 
 function SpecialGames() {
-    function g(k, n) {
-        8 !== gameStateManager.getState() || 0 !== n && n !== gamemode || singleplayer || announcements.upcomingGame(k)
+    function sendAnnouncement(message, param_gamemode) {
+        if (8 === gameStateManager.getState() && (0 === param_gamemode || param_gamemode === gamemode) && !singleplayer) announcements.upcomingGame(message)
     }
-    this.gW = 0;
-    this.a6g = !0;
+    this.lastUpdateTime = 0;
+    this.isScheduled = !0;
     this.update = function() {
-        mainHandler.time > this.gW && (this.gW = mainHandler.time + 2500, this.a6h())
+        if (mainHandler.time > this.lastUpdateTime) {
+            this.lastUpdateTime = mainHandler.time + 2500;
+            this.scheduleAnnouncement();
+        }
     };
-    this.a6h = function() {
-        var k = new Date;
-        var n = k.getUTCSeconds();
-        this.a6g ? 55 > n || -1 !== mainHandler.idleInterval || (this.a6g = !1, n = k.getUTCMinutes(), 4 === n % 5 ? (k = k.getUTCHours(), 59 === n && 15 <= k && 21 >= k ? g("Upcoming Game of the Day", 0) : 14 === n % 30 ? g("Upcoming Alliance Contest", 0) : 29 === n % 30 ? g("Upcoming Battle Royale Contest", 0) : g("Upcoming One-vs-One Game", 8)) : 2 === n % 5 && g("Upcoming Zombie Game",
-            9)) : 55 > n && (this.a6g = !0)
+    this.scheduleAnnouncement = function() {
+        var now = new Date;
+        var seconds = now.getUTCSeconds();
+        if (this.isScheduled) {
+            if (55 <= seconds && -1 === mainHandler.idleInterval) {
+                this.isScheduled = !1;
+                seconds = now.getUTCMinutes();
+                if (4 === seconds % 5) {
+                    now = now.getUTCHours();
+                    if (59 === seconds && 15 <= now && 21 >= now) sendAnnouncement("Upcoming Game of the Day", 0)
+                    else if (14 === seconds % 30) sendAnnouncement("Upcoming Alliance Contest", 0)
+                    else if (29 === seconds % 30) sendAnnouncement("Upcoming Battle Royale Contest", 0)
+                    else sendAnnouncement("Upcoming One-vs-One Game", 8)
+                } else if (2 === seconds % 5) sendAnnouncement("Upcoming Zombie Game", 9)
+            }
+        } else if (55 > seconds) this.isScheduled = !0
     }
 }
 
-function kY() {
-    function g() {
-        return Math.pow(Math.pow(x - n, 2) + Math.pow(t - l, 2), .5)
+function TouchInputHandler() {
+    function getPointsDistance() {
+        return Math.pow(Math.pow(touchPoint2X - touchPoint1X, 2) + Math.pow(touchPoint2Y - touchPoint1Y, 2), .5)
     }
 
-    function k(z) {
-        n = pixelRatio * z.touches[0].clientX;
-        l = pixelRatio * z.touches[0].clientY;
-        x = pixelRatio * z.touches[1].clientX;
-        t = pixelRatio * z.touches[1].clientY
+    function setTouchPoints(e) {
+        touchPoint1X = pixelRatio * e.touches[0].clientX;
+        touchPoint1Y = pixelRatio * e.touches[0].clientY;
+        touchPoint2X = pixelRatio * e.touches[1].clientX;
+        touchPoint2Y = pixelRatio * e.touches[1].clientY
     }
-    var n, l, x, t;
-    this.pN = function(z) {
-        return 1 < z.touches.length ? (k(z), playerActions.end(), !0) : !1
+    var touchPoint1X, touchPoint1Y, touchPoint2X, touchPoint2Y;
+    this.handleTouchStart = function(e) {
+        if (1 < e.touches.length) {
+            setTouchPoints(e);
+            playerActions.end();
+            return !0;
+        } else return !1
     };
-    this.pS = function(z) {
+    this.handleTouchmove = function(e) {
         if (0 === clientStatus) return !1;
-        if (1 < z.touches.length) {
+        if (1 < e.touches.length) {
             if (!eV.h0()) return !0;
-            var y = g();
-            k(z);
-            z = g();
-            mapGridHandler.rJ(Math.floor((n + x) / 2), Math.floor((l + t) / 2), z / y);
+            var initDist = getPointsDistance();
+            setTouchPoints(e);
+            var currentDist = getPointsDistance();
+            mapGridHandler.rJ(Math.floor((touchPoint1X + touchPoint2X) / 2), Math.floor((touchPoint1Y + touchPoint2Y) / 2), currentDist / initDist);
             return mainHandler.canvasDirty = !0
         }
         return !1
