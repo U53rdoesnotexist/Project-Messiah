@@ -1,46 +1,4 @@
-<!DOCTYPE html>
-<!-- saved from url=(0023)https://territorial.io/ -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
-  <title>Territorial.io</title>
-  <meta name="description" content="Territorial.io - The Art of Conquest">
-  <meta name="keywords" content="territorial.io,territory games,territorial io,map games,conquest games,conquest game,david tschacher,territorial,territory game,io game,io games,territory.io,territory io,territory games io">
-  <meta name="author" content="David Tschacher">
-
-  <style>
-    html,
-    body {
-      overflow: hidden;
-      padding: 0;
-      margin: 0;
-      background: rgb(0, 0, 0);
-
-      touch-action: none;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-
-
-    
-
-
-
-    
-  </style>
-</head>
-
-<body onload="aiCommand746(0);">
-
-  <canvas id="canvasA" width="1920" height="969" style="width: 1920px; height: 969px;"></canvas>
-
-
-
-  <script>
-    function a() {
+function a() {
     if (b) return c.username;
     if (12 <= d) {
         var g = e.loadString(20);
@@ -10164,8 +10122,3 @@ function kb() {
     }
 }
 setTimeout(aI, 1E4);
-  </script>
-
-
-
-<input type="text" style="text-align: center; background-color: rgba(0, 0, 0, 0.6); border: 3px solid rgb(255, 255, 255); color: rgb(255, 255, 255); position: absolute; font: bold 29px Arial; padding: 8px 5px; width: 549px; left: 677px; bottom: 460px;"></body></html>
