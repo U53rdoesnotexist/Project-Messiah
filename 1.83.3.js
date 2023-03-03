@@ -7869,6 +7869,7 @@ function Interest() {
         }
     };
     this.getInterestRate = function(id) {
+        //land[landIDOrder[0]]
         var landIRate = discreteInterestArray[divideFloor((const_maxEntities - 1) * land[id], currentLandPixelsCount)];
         if (1920 > mainHandler.getTicksElapsed()) {
             var timeIRate = divideFloor(100 * (13440 - 6 * mainHandler.getTicksElapsed()), 1920);
@@ -8729,7 +8730,7 @@ function loadMap(mapID, k) {
     mapID %= customMapID;
     if (mapID !== currentMapID || isnotBAnorRealMap(currentMapID) && k !== currentMapSeed) {
         var delta1 = performance.now();
-        mapLoaded = !1;
+        mapLoaded = false;
         mapShading.resetShading();
         fakeRandom.changeRandomNumber(mapID);
         currentMapID = mapID;
