@@ -2751,7 +2751,7 @@ function Emojis() {
     this.no = 8;
     this.np = Array(this.emoteCount + this.flagCount);
     this.nq = Array(this.emoteCount + this.flagCount);
-    this.fA = this.f9 = 0;
+    this.fA = this.xBoundary = 0;
     this.zoom = 1;
     this.nr = .2;
     this.selectedEmojiCount = 0;
@@ -2852,13 +2852,13 @@ function Emojis() {
         l = Math.floor(l * this.nn);
         z = z + l > prevClientHeight ? prevClientHeight - l : z;
         z = 0 > z ? 0 : z;
-        this.f9 = t + x;
+        this.xBoundary = t + x;
         this.fA = z + l;
         for (x = 0; x < this.selectedEmojiCount; x++) this.np[x] = Math.floor(t + x % n * this.nn), this.nq[x] = Math.floor(z + divideFloor(x, n) * this.nn);
         return !0
     };
     this.lG = function(g, k) {
-        return !(g < this.np[0] || k < this.nq[0] || g >= this.f9 || k >= this.fA)
+        return !(g < this.np[0] || k < this.nq[0] || g >= this.xBoundary || k >= this.fA)
     };
     this.lH = function(g, k, n) {
         if (n === myID && this.nt + 190 > mainHandler.time) return !1;
@@ -6153,24 +6153,22 @@ function SetGameOrigin() {
 }
 
 function Lobby() {
-    function drawImageScaled(P, image) {
-        var W = E[P].getContext("2d", {
+    function drawImageScaled(iconIndex, image) {
+        gameIconCanvasCtx = gameIconCanvases[iconIndex].getContext("2d", {
             alpha: !0
         });
-        W.clearRect(0, 0, 48, 48);
-        var X = 48 / image.width,
-            V = 48 / image.height;
-        X = V < X ? V : X;
-        W.setTransform(X, 0, 0, X, Math.floor((48 - X * image.width) / 2), Math.floor((48 - X * image.height) / 2));
-        W.drawImage(image, 0, 0);
-        W.setTransform(1, 0, 0, 1, 0, 0)
+        gameIconCanvasCtx.clearRect(0, 0, 48, 48);
+        var minImgDim = getMin(48 / image.width, 48 / image.height);
+        gameIconCanvasCtx.setTransform(minImgDim, 0, 0, minImgDim, Math.floor((48 - minImgDim * image.width) / 2), Math.floor((48 - minImgDim * image.height) / 2));
+        gameIconCanvasCtx.drawImage(image, 0, 0);
+        gameIconCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 
-    function drawPieChart(P, U, W, X) {
-        X.beginPath();
-        X.moveTo(P, P);
-        X.lineTo(P + Math.cos(W) * U, P + Math.cos(W + 1.5 * Math.PI) * U);
-        X.stroke()
+    function drawPieChart(center, radius, angle, canvasCtx) {
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(center, center);
+        canvasCtx.lineTo(center + Math.cos(angle) * radius, center + Math.cos(angle + 1.5 * Math.PI) * radius);
+        canvasCtx.stroke()
     }
 
     function generateLobbyGamePreviews() {
@@ -6200,11 +6198,9 @@ function Lobby() {
                         var previewCanvasCtx = previewCanvas.getContext("2d", {
                                 alpha: false
                             }),
-                            T = 128 / currentMapWidth,
-                            Y = 128 / currentMapHeight;
-                        Y > T && (T = Y);
+                            previewMinScale = getMax(128 / currentMapWidth, 128 / currentMapHeight);
                         previewCanvasCtx.imageSmoothingEnabled = true;
-                        previewCanvasCtx.setTransform(T, 0, 0, T, (128 - T * currentMapWidth) / 2, (128 - T * currentMapHeight) / 2);
+                        previewCanvasCtx.setTransform(previewMinScale, 0, 0, previewMinScale, (128 - previewMinScale * currentMapWidth) / 2, (128 - previewMinScale * currentMapHeight) / 2);
                         previewCanvasCtx.drawImage(mapBaseCanvas, 0, 0);
                         currentMapWidth = var_currentMapWidth;
                         currentMapHeight = var_currentMapHeight;
@@ -6231,11 +6227,11 @@ function Lobby() {
         var xIndex, yIndex;
         if (0 === lobbyGames.length) return !1;
         var lgIndex = 0;
-        var lgBoxYMin = B;
+        var lgBoxY = lgBoxYMin;
         for (yIndex = 0; yIndex < lobbyGamesArrangement[1]; yIndex++) {
-            var lgBoxXMin = A;
+            var lgBoxX = lgBoxXMin;
             for (xIndex = 0; xIndex < lobbyGamesArrangement[0]; xIndex++) {
-                if (xPos > lgBoxXMin && xPos < lgBoxXMin + lgBoxLength && yPos > lgBoxYMin && yPos < lgBoxYMin + lgBoxLength) {
+                if (xPos > lgBoxX && xPos < lgBoxX + lgBoxLength && yPos > lgBoxY && yPos < lgBoxY + lgBoxLength) {
                     dataEncoder.joinGame(lobbyGames[lgIndex].gameID);
                     gameSelected = lobbyGames[lgIndex].gameID !== gameSelected ? lobbyGames[lgIndex].gameID : -1;
                     mainHandler.canvasDirty = !0;
@@ -6243,53 +6239,50 @@ function Lobby() {
                 }
                 lgIndex++;
                 if (lgIndex >= lobbyGames.length) return !1;
-                lgBoxXMin += lgBoxLength + bufferLength
+                lgBoxX += lgBoxLength + bufferLength
             }
-            lgBoxYMin += lgBoxLength + bufferLength
+            lgBoxY += lgBoxLength + bufferLength
         }
         return !1
     }
-    var lgBoxLength, z, lobbyGamesArrangement, A, B, C, E, lobbyGames, G, gameSelected, I, D, 
-        K = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
-        lobbyStats = [0, 0, 0, 0], L, H, M, Q, R;
+    var lgBoxLength, lgBoxLengthFloored, lobbyGamesArrangement, lgBoxXMin, lgBoxYMin, lobbyGamesInfoFontStyle, gameIconCanvases, lobbyGames, canvasVariables, gameSelected, I, D, 
+        lobbyStatsLabels = ["Joined", "Skipped", "Multiplayer", "Singleplayer"],
+        lobbyStats = [0, 0, 0, 0], lobbyStatsFontStyle, exitDiameter, exitCenterX, exitCenterY, lobbyGamesLength, gameIconCanvasCtx, angle;
     this.init = function() {
-        R = 0;
+        lobbyGamesLength = 0;
         gameSelected = -1;
         gameStateManager.setState(7);
         lobbyGames = [];
         this.setCanvasVariables();
-        var i;
-        E = Array(11);
-        for (i = E.length; 0 <= i; i--) {
-            E[i] = document.createElement("canvas");
-            E[i].width =48;
-            E[i].height = 48;
+        var iconIndex;
+        gameIconCanvases = Array(11);
+        for (iconIndex = gameIconCanvases.length; 0 <= iconIndex; iconIndex--) {
+            gameIconCanvases[iconIndex] = document.createElement("canvas");
+            gameIconCanvases[iconIndex].width = 48;
+            gameIconCanvases[iconIndex].height = 48;
         }
-        for (i = 0; 7 > i; i++) {
-                W = E[i].getContext("2d", {
-                    alpha: !0
-                }),
-                X = 1.5 * Math.PI;
-            W.lineWidth = 2;
-            W.strokeStyle = whiteRGB2;
-            W.clearRect(0, 0, 48, 48);
-            for (var tIndex = 0; tIndex < i + 2; tIndex++) {
-                var na = X + 2 * Math.PI / (i + 2);
-                var ba = X,
-                    ca = na,
-                    pa = W;
-                pa.fillStyle = teamColors.piechartColors[tIndex + 1];
-                pa.beginPath();
-                pa.arc(24, 24, 23, ba, ca);
-                pa.lineTo(24, 24);
-                pa.fill();
-                0 !== tIndex && drawPieChart(24, 23, X, W);
-                X = na
+        for (iconIndex = 0; 7 > iconIndex; iconIndex++) {
+            gameIconCanvasCtx = gameIconCanvases[iconIndex].getContext("2d", {
+                alpha: !0
+            }),
+            angle = 1.5 * Math.PI;
+            gameIconCanvasCtx.lineWidth = 2;
+            gameIconCanvasCtx.strokeStyle = whiteRGB2;
+            gameIconCanvasCtx.clearRect(0, 0, 48, 48);
+            for (var tIndex = 0; tIndex < iconIndex + 2; tIndex++) {
+                var nextAngle = angle + 2 * Math.PI / (iconIndex + 2);
+                gameIconCanvasCtx.fillStyle = teamColors.piechartColors[tIndex + 1];
+                gameIconCanvasCtx.beginPath();
+                gameIconCanvasCtx.arc(24, 24, 23, angle, nextAngle);
+                gameIconCanvasCtx.lineTo(24, 24);
+                gameIconCanvasCtx.fill();
+                if (0 !== tIndex) drawPieChart(24, 23, angle, gameIconCanvasCtx);
+                angle = nextAngle
             }
-            drawPieChart(24, 23, 1.5 * Math.PI, W);
-            W.beginPath();
-            W.arc(24, 24, 23, 0, 2 * Math.PI);
-            W.stroke()
+            drawPieChart(24, 23, 1.5 * Math.PI, gameIconCanvasCtx);
+            gameIconCanvasCtx.beginPath();
+            gameIconCanvasCtx.arc(24, 24, 23, 0, 2 * Math.PI);
+            gameIconCanvasCtx.stroke()
         }
         drawImageScaled(7, sprites.getValueByID(4));
         drawImageScaled(8, emojis.emojiCanvasList[27]);
@@ -6306,25 +6299,59 @@ function Lobby() {
     };
     this.hide = function() {
         lobbyGames = [];
-        E = []
+        gameIconCanvases = []
     };
     this.setCanvasVariables = function() {
-        var P, U;
         lobbyGamesArrangement = [0, 0];
-        G = [0, 0, 0, 0];
-        isZoom ? (I = Math.floor(.8 * .4 * averageDim), D = Math.floor(.56 * I), G[0] = bufferLength, canvasWidth < canvasHeight ? (G[1] = D + 2 * bufferLength, G[2] = canvasWidth - 3 * G[0], G[3] = mainLeaderboardIcon.toY() - 3 * bufferLength - D, H = Math.floor(.95 * D), M = Math.floor((canvasWidth - I - bufferLength) / 2), Q = Math.floor(bufferLength + D / 2)) : (G[1] = bufferLength, G[2] = canvasWidth - 3 * bufferLength - I, G[3] = mainLeaderboardIcon.toY() - 2 * bufferLength, H = Math.floor(.8 * I), G[3] - D < I && (H = Math.floor(.8 * (G[3] - D)), H = getMax(D, H)), M = Math.floor(canvasWidth - I / 2 - bufferLength), Q = Math.floor(bufferLength + D + (G[3] - D) / 2), Q = getMax(Q, Math.floor(D + 2 * bufferLength + H / 2)))) : (I = Math.floor(.2016 * averageDim), D = Math.floor(.56 *
-            I), G[2] = Math.floor(.5 * canvasWidth), G[3] = Math.floor(.5 * canvasHeight), G[1] = Math.floor(.45 * (canvasHeight - G[3])), G[0] = Math.floor((canvasWidth - G[2]) / 2), H = Math.floor(.75 * D), M = Math.floor(canvasWidth / 2), Q = Math.floor(G[1] + G[3] + (canvasHeight - G[3] - G[1]) / 2));
-        L = fontWeightBold + Math.floor(.65 * D / 4) + fontSizeArial;
-        for (P = U = 1; P * U < lobbyGames.length;) G[2] / (P + 1) > G[3] / (U + 1) ? P++ : U++;
-        var W = (G[2] - (P - 1) * bufferLength) / P;
-        var X = (G[3] - (U - 1) * bufferLength) / U;
-        lgBoxLength = W < X ? W : X;
-        z = Math.floor(lgBoxLength);
-        C = fontWeightBold + Math.floor(.5 * lgBoxLength / 5) + fontSizeArial;
-        lobbyGamesArrangement[0] = P;
-        lobbyGamesArrangement[1] = U;
-        A = G[0] + Math.floor((G[2] - lobbyGamesArrangement[0] * lgBoxLength - (lobbyGamesArrangement[0] - 1) * bufferLength) / 2);
-        B = G[1] + Math.floor((G[3] - lobbyGamesArrangement[1] * lgBoxLength - (lobbyGamesArrangement[1] - 1) * bufferLength) / 2)
+        canvasVariables = [0, 0, 0, 0];
+        if (isZoom) {
+            I = Math.floor(.8 * .4 * averageDim);
+            D = Math.floor(.56 * I);
+            canvasVariables[0] = bufferLength;
+            if (canvasWidth < canvasHeight) {
+                canvasVariables[1] = D + 2 * bufferLength;
+                canvasVariables[2] = canvasWidth - 3 * canvasVariables[0];
+                canvasVariables[3] = mainLeaderboardIcon.toY() - 3 * bufferLength - D;
+                exitDiameter = Math.floor(.95 * D);
+                exitCenterX = Math.floor((canvasWidth - I - bufferLength) / 2);
+                exitCenterY = Math.floor(bufferLength + D / 2);
+            } else {
+                canvasVariables[1] = bufferLength;
+                canvasVariables[2] = canvasWidth - 3 * bufferLength - I;
+                canvasVariables[3] = mainLeaderboardIcon.toY() - 2 * bufferLength;
+                exitDiameter = Math.floor(.8 * I);
+                if (canvasVariables[3] - D < I) {
+                    exitDiameter = Math.floor(.8 * (canvasVariables[3] - D));
+                    exitDiameter = getMax(D, exitDiameter);
+                }
+                exitCenterX = Math.floor(canvasWidth - I / 2 - bufferLength);
+                exitCenterY = Math.floor(bufferLength + D + (canvasVariables[3] - D) / 2);
+                exitCenterY = getMax(exitCenterY, Math.floor(D + 2 * bufferLength + exitDiameter / 2))
+            }
+        } else {
+            I = Math.floor(.2016 * averageDim);
+            D = Math.floor(.56 * I);
+            canvasVariables[2] = Math.floor(.5 * canvasWidth);
+            canvasVariables[3] = Math.floor(.5 * canvasHeight);
+            canvasVariables[1] = Math.floor(.45 * (canvasHeight - canvasVariables[3]));
+            canvasVariables[0] = Math.floor((canvasWidth - canvasVariables[2]) / 2);
+            exitDiameter = Math.floor(.75 * D);
+            exitCenterX = Math.floor(canvasWidth / 2);
+            exitCenterY = Math.floor(canvasVariables[1] + canvasVariables[3] + (canvasHeight - canvasVariables[3] - canvasVariables[1]) / 2);
+        }
+        lobbyStatsFontStyle = fontWeightBold + Math.floor(.65 * D / 4) + fontSizeArial;
+        var verticalCount, horizontalCount;
+        for (verticalCount = horizontalCount = 1; verticalCount * horizontalCount < lobbyGames.length;) {
+            if (canvasVariables[2] / (verticalCount + 1) > canvasVariables[3] / (horizontalCount + 1)) verticalCount++
+            else horizontalCount++;
+        }
+        lgBoxLength = getMin((canvasVariables[2] - (verticalCount - 1) * bufferLength) / verticalCount, (canvasVariables[3] - (horizontalCount - 1) * bufferLength) / horizontalCount)
+        lgBoxLengthFloored = Math.floor(lgBoxLength);
+        lobbyGamesInfoFontStyle = fontWeightBold + Math.floor(.5 * lgBoxLength / 5) + fontSizeArial;
+        lobbyGamesArrangement[0] = verticalCount;
+        lobbyGamesArrangement[1] = horizontalCount;
+        lgBoxXMin = canvasVariables[0] + Math.floor((canvasVariables[2] - lobbyGamesArrangement[0] * lgBoxLength - (lobbyGamesArrangement[0] - 1) * bufferLength) / 2);
+        lgBoxYMin = canvasVariables[1] + Math.floor((canvasVariables[3] - lobbyGamesArrangement[1] * lgBoxLength - (lobbyGamesArrangement[1] - 1) * bufferLength) / 2)
     };
     this.updateObjects = function(param_lobbyStats, param_lobbyGames) {
         var gameIndex, gamesCount = lobbyGames.length;
@@ -6345,40 +6372,53 @@ function Lobby() {
             if (param_lobbyGames[gameIndex].isContest && param_lobbyGames[gameIndex].timeLeft == 30) sounds.play(4)
         }
         for (gameIndex = gamesCount - 1; 0 <= gameIndex; gameIndex--) lobbyGames.shift();
-        if (-1 !== gameSelected)
+        if (-1 !== gameSelected) {
             var selection = gameSelected;
             gameSelected = -1;
-            for (gameIndex = lobbyGames.length - 1; 0 <= gameIndex; gameIndex--)
+            for (gameIndex = lobbyGames.length - 1; 0 <= gameIndex; gameIndex--) {
                 if (lobbyGames[gameIndex].gameID === selection) {
                     gameSelected = selection;
-                    break
-                } if (lobbyGames.length > R || lobbyGames.length < R) R = lobbyGames.length, this.setCanvasVariables();
-        this.x3();
+                    break;
+                }
+            }
+        }
+        if (lobbyGames.length > lobbyGamesLength || lobbyGames.length < lobbyGamesLength) {
+            lobbyGamesLength = lobbyGames.length;
+            this.setCanvasVariables();
+        }
+        this.checkAndGenerateLobbyGamePreviews();
         mainHandler.canvasDirty = !0
     };
-    this.x3 = function() {
-        for (var P = lobbyGames.length - 1; 0 <= P; P--) null === lobbyGames[P].canvas && setTimeout(generateLobbyGamePreviews, 0)
+    this.checkAndGenerateLobbyGamePreviews = function() {
+        for (var lgIndex = lobbyGames.length - 1; 0 <= lgIndex; lgIndex--) {
+            if (null === lobbyGames[lgIndex].canvas) setTimeout(generateLobbyGamePreviews, 0)
+        }
     };
     this.mouseDown = function(xPos, yPos) {
-        return 4 * ((xPos - M) * (xPos - M) + (yPos - Q) * (yPos - Q)) <= H * H ? (this.closeLobby(), mainButtons.onPointermove(xPos, yPos, !1), !0) : checkGameBoxClick(xPos, yPos)
+        if (4 * ((xPos - exitCenterX) * (xPos - exitCenterX) + (yPos - exitCenterY) * (yPos - exitCenterY)) <= exitDiameter * exitDiameter) {
+            this.closeLobby();
+            mainButtons.onPointermove(xPos, yPos, !1);
+            return !0;
+        } else return checkGameBoxClick(xPos, yPos)
     };
     this.drawCanvasImage = function() {
-        var P = 0,
-            U = B;
+        var lgIndex = 0,
+            lgBoxX,
+            lgBoxY = lgBoxYMin;
         mainCanvasCtx.imageSmoothingEnabled = !0;
         mainCanvasCtx.lineWidth = 3;
-        var W = Math.floor(.5 * H);
+        var exitRadius = Math.floor(.5 * exitDiameter);
         mainCanvasCtx.fillStyle = blackSemiTransparent;
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
+        mainCanvasCtx.arc(exitCenterX, exitCenterY, exitRadius, 0, 2 * Math.PI);
         mainCanvasCtx.fill();
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.beginPath();
-        mainCanvasCtx.arc(M, Q, W, 0, 2 * Math.PI);
+        mainCanvasCtx.arc(exitCenterX, exitCenterY, exitRadius, 0, 2 * Math.PI);
         mainCanvasCtx.stroke();
-        W = sprites.getValueByID(0).height;
-        var X = .6 * H / W;
-        mainCanvasCtx.setTransform(X, 0, 0, X, Math.floor(M - .56 * X * sprites.getValueByID(0).width), Math.floor(Q - .5 * X * W));
+        var exitSpriteHeight = sprites.getValueByID(0).height;
+        var exitSpriteScale = .6 * exitDiameter / exitSpriteHeight;
+        mainCanvasCtx.setTransform(exitSpriteScale, 0, 0, exitSpriteScale, Math.floor(exitCenterX - .56 * exitSpriteScale * sprites.getValueByID(0).width), Math.floor(exitCenterY - .5 * exitSpriteScale * exitSpriteHeight));
         mainCanvasCtx.drawImage(sprites.getValueByID(0), 0, 0);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
         mainCanvasCtx.fillStyle = blackSemiTransparent;
@@ -6387,77 +6427,88 @@ function Lobby() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.strokeRect(canvasWidth - I - bufferLength, bufferLength, I, D);
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.font = L;
+        mainCanvasCtx.font = lobbyStatsFontStyle;
         mainCanvasCtx.textBaseline = middleAlign;
-        W = Math.floor(.04 * I);
-        X = Math.floor(.08 * D);
-        for (var V = 3; 0 <= V; V--) {
-            var na = Math.floor(bufferLength + (V + 1) * (D + 2 * X) / 5 - X);
+        for (var statIndex = 3; 0 <= statIndex; statIndex--) {
+            var yOffset = Math.floor(bufferLength + (statIndex + 1) * (D + 2 * Math.floor(.08 * D)) / 5 - Math.floor(.08 * D));
             mainCanvasCtx.textAlign = leftAlign;
-            mainCanvasCtx.fillText(K[V], canvasWidth - I - bufferLength + W, na);
+            mainCanvasCtx.fillText(lobbyStatsLabels[statIndex], canvasWidth - I - bufferLength + Math.floor(.04 * I), yOffset);
             mainCanvasCtx.textAlign = rightAlign;
-            mainCanvasCtx.fillText(attacksBar.splitText(lobbyStats[V]), canvasWidth - bufferLength - W, na)
+            mainCanvasCtx.fillText(attacksBar.splitText(lobbyStats[statIndex]), canvasWidth - bufferLength - Math.floor(.04 * I), yOffset)
         }
-        if (0 !== lobbyGames.length)
-            for (X = 0; X < lobbyGamesArrangement[1]; X++) {
-                na = A;
-                for (W = 0; W < lobbyGamesArrangement[0]; W++) {
-                    V = P;
-                    var ba = Math.floor(na),
-                        ca = Math.floor(U);
-                    if (null === lobbyGames[V].canvas) mainCanvasCtx.fillStyle = blackSemiTransparent, mainCanvasCtx.fillRect(ba, ca, z, z);
-                    else {
-                        var pa = z / 128;
-                        mainCanvasCtx.setTransform(pa, 0, 0, pa, ba, ca);
-                        mainCanvasCtx.drawImage(lobbyGames[V].canvas, 0, 0);
+        if (0 !== lobbyGames.length) {
+            for (var row = 0; row < lobbyGamesArrangement[1]; row++) {
+                lgBoxX = lgBoxXMin;
+                for (var col = 0; col < lobbyGamesArrangement[0]; col++) {
+                    var lgBoxXFloored = Math.floor(lgBoxX),
+                        lgBoxYFloored = Math.floor(lgBoxY);
+                    if (null === lobbyGames[lgIndex].canvas) {
+                        mainCanvasCtx.fillStyle = blackSemiTransparent;
+                        mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored, lgBoxLengthFloored, lgBoxLengthFloored);
+                    } else {
+                        var previewScale = lgBoxLengthFloored / 128;
+                        mainCanvasCtx.setTransform(previewScale, 0, 0, previewScale, lgBoxXFloored, lgBoxYFloored);
+                        mainCanvasCtx.drawImage(lobbyGames[lgIndex].canvas, 0, 0);
                         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
                     }
-                    if (gameSelected === lobbyGames[V].gameID) {
-                        pa = ba;
-                        var S = ca,
-                            O = Math.floor(.2 * z),
-                            T = Math.floor(.3 * O);
+                    if (gameSelected === lobbyGames[lgIndex].gameID) {
+                        var crossBoxScale = Math.floor(.2 * lgBoxLengthFloored),
+                            crossScale = Math.floor(.3 * crossBoxScale);
                         mainCanvasCtx.fillStyle = greenDarkerMoreOpaque;
-                        mainCanvasCtx.fillRect(pa + z - O, S, O, O);
+                        mainCanvasCtx.fillRect(lgBoxXFloored + lgBoxLengthFloored - crossBoxScale, lgBoxYFloored, crossBoxScale, crossBoxScale);
                         mainCanvasCtx.fillStyle = blackRGB;
-                        mainCanvasCtx.fillRect(pa + z - O, S, 2, O);
-                        mainCanvasCtx.fillRect(pa + z - O, S + O - 2, O, 2);
-                        gameButtons.drawMenuSymbol(pa + z - O + T, S + T, O - 2 * T);
+                        mainCanvasCtx.fillRect(lgBoxXFloored + lgBoxLengthFloored - crossBoxScale, lgBoxYFloored, 2, crossBoxScale);
+                        mainCanvasCtx.fillRect(lgBoxXFloored + lgBoxLengthFloored - crossBoxScale, lgBoxYFloored + crossBoxScale - 2, crossBoxScale, 2);
+                        gameButtons.drawMenuSymbol(lgBoxXFloored + lgBoxLengthFloored - crossBoxScale + crossScale, lgBoxYFloored + crossScale, crossBoxScale - 2 * crossScale);
                         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                         mainCanvasCtx.lineWidth = 3;
                         mainCanvasCtx.fillStyle = greenDarkerMoreOpaque
                     } else mainCanvasCtx.fillStyle = blackOpaque;
-                    S = Math.floor(lgBoxLength / 4);
-                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 * lgBoxLength), z, Math.floor(lgBoxLength / 5));
-                    mainCanvasCtx.fillRect(ba, ca, S, S);
+                    var iconBoxSize = Math.floor(lgBoxLength / 4);
+                    mainCanvasCtx.fillRect(lgBoxXFloored, Math.floor(lgBoxYFloored + .8 * lgBoxLength), lgBoxLengthFloored, Math.floor(lgBoxLength / 5));
+                    mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored, iconBoxSize, iconBoxSize);
                     mainCanvasCtx.fillStyle = blackRGB;
-                    mainCanvasCtx.fillRect(ba, Math.floor(ca + .8 * lgBoxLength), z, 2);
-                    mainCanvasCtx.fillRect(ba + S - 2, ca, 2, S);
-                    mainCanvasCtx.fillRect(ba, ca + S - 2, S, 2);
-                    mainCanvasCtx.font = C;
+                    mainCanvasCtx.fillRect(lgBoxXFloored, Math.floor(lgBoxYFloored + .8 * lgBoxLength), lgBoxLengthFloored, 2);
+                    mainCanvasCtx.fillRect(lgBoxXFloored + iconBoxSize - 2, lgBoxYFloored, 2, iconBoxSize);
+                    mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored + iconBoxSize - 2, iconBoxSize, 2);
+
+                    mainCanvasCtx.font = lobbyGamesInfoFontStyle;
                     mainCanvasCtx.textBaseline = middleAlign;
                     mainCanvasCtx.textAlign = leftAlign;
                     mainCanvasCtx.fillStyle = blueBrightRGB;
-                    mainCanvasCtx.fillText(lobbyGames[V].joined.toString(), Math.floor(ba + .07 * lgBoxLength), Math.floor(ca + .9 * lgBoxLength));
-                    256 >= lobbyGames[V].maxPlayers && (mainCanvasCtx.textAlign = centerAlign, mainCanvasCtx.fillStyle = greenBrightRGB, mainCanvasCtx.fillText(lobbyGames[V].maxPlayers.toString(), Math.floor(ba + .5 * lgBoxLength), Math.floor(ca + .9 * lgBoxLength)));
+                    mainCanvasCtx.fillText(lobbyGames[lgIndex].joined.toString(), Math.floor(lgBoxXFloored + .07 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
+
+                    mainCanvasCtx.textAlign = centerAlign;
+                    mainCanvasCtx.fillStyle = greenBrightRGB;
+                    mainCanvasCtx.fillText(lobbyGames[lgIndex].gameID.toString(), Math.floor(lgBoxXFloored + .5 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
+                    
                     mainCanvasCtx.textAlign = rightAlign;
                     mainCanvasCtx.fillStyle = redLighterRGB;
-                    mainCanvasCtx.fillText(lobbyGames[V].timeLeft.toString(), Math.floor(ba + .93 * lgBoxLength), Math.floor(ca +
-                        .9 * lgBoxLength));
+                    mainCanvasCtx.fillText(lobbyGames[lgIndex].timeLeft.toString(), Math.floor(lgBoxXFloored + .93 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
+
                     mainCanvasCtx.strokeStyle = whiteMoreOpaque;
-                    mainCanvasCtx.strokeRect(ba, ca, z, z);
-                    O = Math.floor(.16 * lgBoxLength);
-                    pa = O / 48;
-                    mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (S - O) / 2), Math.floor(ca + (S - O) / 2));
-                    E.length > lobbyGames[V].gamemode && mainCanvasCtx.drawImage(E[lobbyGames[V].gamemode], 0, 0);
+                    mainCanvasCtx.strokeRect(lgBoxXFloored, lgBoxYFloored, lgBoxLengthFloored, lgBoxLengthFloored);
+                    var iconBoxScale = Math.floor(.16 * lgBoxLength),
+                        iconScale = iconBoxScale / 48;
+                    mainCanvasCtx.setTransform(iconScale, 0, 0, iconScale, Math.floor(lgBoxXFloored + (iconBoxSize - iconBoxScale) / 2), Math.floor(lgBoxYFloored + (iconBoxSize - iconBoxScale) / 2));
+                    gameIconCanvases.length > lobbyGames[lgIndex].gamemode && mainCanvasCtx.drawImage(gameIconCanvases[lobbyGames[lgIndex].gamemode], 0, 0);
                     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-                    lobbyGames[V].isContest && (V = sprites.getValueByID(4), pa = .5 * lgBoxLength / V.width, mainCanvasCtx.setTransform(pa, 0, 0, pa, Math.floor(ba + (lgBoxLength - pa * V.width) / 2), Math.floor(ca + (lgBoxLength - pa * V.height) / 2)), mainCanvasCtx.globalAlpha = .6, mainCanvasCtx.drawImage(V, 0, 0), mainCanvasCtx.globalAlpha = 1, mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0));
-                    P++;
-                    if (P >= lobbyGames.length) return;
-                    na += lgBoxLength + bufferLength
+                    if (lobbyGames[lgIndex].isContest) {
+                        var crown = sprites.getValueByID(4),
+                            crownScale = .5 * lgBoxLength / crown.width;
+                        mainCanvasCtx.setTransform(crownScale, 0, 0, crownScale, Math.floor(lgBoxXFloored + (lgBoxLength - crownScale * crown.width) / 2), Math.floor(lgBoxYFloored + (lgBoxLength - crownScale * crown.height) / 2));
+                        mainCanvasCtx.globalAlpha = .6;
+                        mainCanvasCtx.drawImage(crown, 0, 0);
+                        mainCanvasCtx.globalAlpha = 1;
+                        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                    }
+                    lgIndex++;
+                    if (lgIndex >= lobbyGames.length) return;
+                    lgBoxX += lgBoxLength + bufferLength
                 }
-                U += lgBoxLength + bufferLength
+                lgBoxY += lgBoxLength + bufferLength
             }
+        }
     }
 }
 
@@ -8324,7 +8375,10 @@ function setupPlayerInfoArrays(playerInfo) {
     waterBorderPixels = Array(maxEntities);
     mountainBorderPixels = Array(maxEntities);
     playerStatus = new Uint8Array(maxEntities);
-    for (idIndex = playerInfo.length - 1; 0 <= idIndex; idIndex--) nickname[idIndex] = playerInfo[idIndex].name, playerStatus[idIndex] = playerInfo[idIndex].status
+    for (idIndex = playerInfo.length - 1; 0 <= idIndex; idIndex--) {
+        nickname[idIndex] = playerInfo[idIndex].name;
+        playerStatus[idIndex] = playerInfo[idIndex].status;
+    }
 }
 
 function HumanBots() {
@@ -8739,23 +8793,23 @@ function ZombieSettings() {
 }
 var currentMapWidth, currentMapHeight, mapBaseCanvas, mapBaseCanvasCtx, realMapBaseCanvasCtxImageData, mapBaseCanvasImageDataArray, currentMapID, currentMapSeed, mapLoaded, customMapID = 15, mapShading;
 
-function loadMap(mapID, k) {
+function loadMap(mapID, newMapSeed) {
     mapID %= customMapID;
-    if (mapID !== currentMapID || isnotBAnorRealMap(currentMapID) && k !== currentMapSeed) {
+    if (mapID !== currentMapID || isnotBAnorRealMap(currentMapID) && newMapSeed !== currentMapSeed) {
         var delta1 = performance.now();
         mapLoaded = false;
         mapShading.resetShading();
         fakeRandom.changeRandomNumber(mapID);
         currentMapID = mapID;
-        currentMapSeed = k;
-        isnotBAnorRealMap(mapID) && (mapInfo.getValueByID(mapID).a1f = k);
+        currentMapSeed = newMapSeed;
+        isnotBAnorRealMap(mapID) && (mapInfo.getValueByID(mapID).mapStyleSeed = newMapSeed);
         if (isRealMap(currentMapID)) configRealMap(delta1);
         else {
-            var l = mapInfo.getValueByID(currentMapID);
-            currentMapWidth = l.width;
-            currentMapHeight = l.height;
-            fakeRandom.changeRandomNumber(l.a1f);
-            generateHeightmap.generate([currentMapWidth, currentMapHeight, l.gO, l.gL]);
+            var mapInfoObj = mapInfo.getValueByID(currentMapID);
+            currentMapWidth = mapInfoObj.width;
+            currentMapHeight = mapInfoObj.height;
+            fakeRandom.changeRandomNumber(mapInfoObj.mapStyleSeed);
+            generateHeightmap.generate([currentMapWidth, currentMapHeight, mapInfoObj.maxDelta, mapInfoObj.deltaChange]);
             a2c();
             configFakeMap.renderBaseMap();
             generateHeightmap.resetGridValues();
@@ -9127,90 +9181,90 @@ function MapInfo() {
             name: "White Arena",
             width: 230,
             height: 230,
-            gO: 1E3,
-            gL: 2E3,
-            a1f: 173,
+            maxDelta: 1E3,
+            deltaChange: 2E3,
+            mapStyleSeed: 173,
             per: 1
         };
         mapInfoArray[1] = {
             name: "Black Arena",
             width: 800,
             height: 800,
-            gO: 100,
-            gL: 50,
-            a1f: 43,
+            maxDelta: 100,
+            deltaChange: 50,
+            mapStyleSeed: 43,
             per: 1
         };
         mapInfoArray[2] = {
             name: "Island",
             width: 512,
             height: 512,
-            gO: 128,
-            gL: 32,
-            a1f: 0,
+            maxDelta: 128,
+            deltaChange: 32,
+            mapStyleSeed: 0,
             per: 1.5
         };
         mapInfoArray[3] = {
             name: "Mountains",
             width: 960,
             height: 960,
-            gO: 60,
-            gL: 8,
-            a1f: 0,
+            maxDelta: 60,
+            deltaChange: 8,
+            mapStyleSeed: 0,
             per: 1.2
         };
         mapInfoArray[4] = {
             name: "Desert",
             width: 900,
             height: 900,
-            gO: 100,
-            gL: 5,
-            a1f: 0,
+            maxDelta: 100,
+            deltaChange: 5,
+            mapStyleSeed: 0,
             per: 1.2
         };
         mapInfoArray[5] = {
             name: "Swamp",
             width: 1E3,
             height: 1E3,
-            gO: 100,
-            gL: 40,
-            a1f: 0,
+            maxDelta: 100,
+            deltaChange: 40,
+            mapStyleSeed: 0,
             per: 1.2
         };
         mapInfoArray[6] = {
             name: "Snow",
             width: 1E3,
             height: 1E3,
-            gO: 100,
-            gL: 20,
-            a1f: 0,
+            maxDelta: 100,
+            deltaChange: 20,
+            mapStyleSeed: 0,
             per: 1.2
         };
         mapInfoArray[7] = {
             name: "Cliffs",
             width: 1024,
             height: 1024,
-            gO: 128,
-            gL: 32,
-            a1f: 0,
+            maxDelta: 128,
+            deltaChange: 32,
+            mapStyleSeed: 0,
             per: 1.5
         };
         mapInfoArray[8] = {
             name: "Pond",
             width: 820,
             height: 820,
-            gO: 200,
-            gL: 100,
-            a1f: 0,
+            maxDelta: 200,
+            deltaChange: 100,
+            mapStyleSeed: 0,
             per: 1.2
         };
         mapInfoArray[9] = {
             name: "Halo",
             width: 1024,
             height: 1024,
-            gO: 128,
-            gL: 32,
-            a1f: 0,
+            maxDelta: 128,
+            deltaChange: 32,
+            mapStyleSeed: 0,
             per: 1.5
         };
         mapInfoArray[10] = {
@@ -9487,7 +9541,6 @@ function rectEqualOrInside(x1, y1, w1, h1, x2, y2, w2, h2) {
     return x1 <= x2 && y1 <= y2 && x1 + w1 >= x2 + w2 && y1 + h1 >= y2 + h2;
 }
 
-
 function MoreSettings() {
     function setSettings() {
         linkButtons.shouldHideLinks[2] = linkButtons.shouldHideLinks[3] = linkButtons.shouldHideLinks[4] = !moreSettings.hideLinks;
@@ -9506,42 +9559,42 @@ function MoreSettings() {
         }
     }
 
-    function k(y, A, B, C) {
-        if (0 === C) return y >= B.f7 && (0 === C || A >= B.f8) && A <= B.f8 + B.contentPadding;
-        A -= C * (B.contentPadding - 2);
-        return y >= B.f9 && (0 === C || A >= B.f8) && A <= B.f8 + B.contentPadding
+    function isCursorInButton(xPos, yPos, buttonDims, row) {
+        if (0 === row) return xPos >= buttonDims.moreButX && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding;
+        yPos -= row * (buttonDims.contentPadding - 2);
+        return xPos >= buttonDims.xBoundary && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding
     }
 
-    function n() {
-        var y = Math.floor((isZoom ? .145 : .09) * averageDim),
-            A = Math.floor(1.5 * y),
-            B = Math.floor(.065 * (isZoom ? .53 : .36) * averageDim);
+    function calcButtonDims() {
+        var buttonMargin = Math.floor((isZoom ? .145 : .09) * averageDim),
+            textPadding = Math.floor(1.5 * buttonMargin),
+            contentPadding = Math.floor(.065 * (isZoom ? .53 : .36) * averageDim);
         return {
-            f7: canvasWidth - y - B,
-            f8: bufferLength,
-            buttonMargin: y,
-            contentPadding: Math.floor(.35 * y),
-            f9: canvasWidth - A - B,
-            textPadding: A
+            moreButX: canvasWidth - buttonMargin - contentPadding,
+            yBuffer: bufferLength,
+            buttonMargin: buttonMargin,
+            contentPadding: Math.floor(.35 * buttonMargin),
+            xBoundary: canvasWidth - textPadding - contentPadding,
+            textPadding: textPadding
         }
     }
 
-    function l(y, A, B, C, E, F, G, N, I, D) {
-        D = Math.floor(D * C);
-        mainCanvasCtx.font = fontWeightBold + D + fontSizeArial;
-        N && (E += 80, F += 80, G += 80);
-        mainCanvasCtx.fillStyle = "rgba(" + E + "," + F + "," + G + ",0.6)";
-        mainCanvasCtx.fillRect(y, A, B, C);
+    function drawButton(xPos, yPos, buttonWidth, buttonheight, red, green, blue, isHovering, text, textSizeMultiplier) {
+        var textSize = Math.floor(textSizeMultiplier * buttonheight);
+        mainCanvasCtx.font = fontWeightBold + textSize + fontSizeArial;
+        isHovering && (red += 80, green += 80, blue += 80);
+        mainCanvasCtx.fillStyle = "rgba(" + red + "," + green + "," + blue + ",0.6)";
+        mainCanvasCtx.fillRect(xPos, yPos, buttonWidth, buttonheight);
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillRect(y, A, B, 2);
-        mainCanvasCtx.fillRect(y, A + C - 2, B, 2);
-        mainCanvasCtx.fillRect(y, A, 2, C);
-        mainCanvasCtx.fillRect(y + B - 2, A, 2, C);
-        mainCanvasCtx.fillText(I, Math.floor(y + B / 2), Math.floor(A + C / 2 + .1 * D))
+        mainCanvasCtx.fillRect(xPos, yPos, buttonWidth, 2);
+        mainCanvasCtx.fillRect(xPos, yPos + buttonheight - 2, buttonWidth, 2);
+        mainCanvasCtx.fillRect(xPos, yPos, 2, buttonheight);
+        mainCanvasCtx.fillRect(xPos + buttonWidth - 2, yPos, 2, buttonheight);
+        mainCanvasCtx.fillText(text, Math.floor(xPos + buttonWidth / 2), Math.floor(yPos + buttonheight / 2 + .1 * textSize))
     }
     this.selectedRemote = 1;
     this.hideUsernames = this.hideLinks = this.highResolution = !1;
-    var x = -1,
+    var hoveringButtonIndex = -1,
         menuOpen = !1,
         settingsArray = [];
     this.init = function() {
@@ -9632,10 +9685,10 @@ function MoreSettings() {
             this.hideLinks = 1 === androidObject.loadNumber(26);
             this.hideUsernames = !1;
         } else {
-            var y = userSettings.getSettings(6);
-            this.highResolution = 1 === (y & 1);
-            this.hideLinks = 2 === (y & 2);
-            this.hideUsernames = 4 === (y & 4)
+            var binarySetting = userSettings.getSettings(6);
+            this.highResolution = 1 === (binarySetting & 1);
+            this.hideLinks = 2 === (binarySetting & 2);
+            this.hideUsernames = 4 === (binarySetting & 4)
         }
         settingsArray[2].green = this.highResolution ? 130 : 0;
         settingsArray[3].green = this.hideLinks ? 130 : 0;
@@ -9645,10 +9698,10 @@ function MoreSettings() {
     this.mouseDown = function(xPos, yPos) {
         var sIndex;
         if (7 > gameStateManager.getState()) {
-            var C = n();
+            var buttonDims = calcButtonDims();
             if (menuOpen) {
                 for (sIndex = 1; sIndex < settingsArray.length; sIndex++) {
-                    if (k(xPos, yPos, C, sIndex)) {
+                    if (isCursorInButton(xPos, yPos, buttonDims, sIndex)) {
                         if (1 === settingsArray[sIndex].id) {
                             if (wsManager.terriWsCount === moreSettings.selectedRemote + 1 ) moreSettings.selectedRemote = 1
                             else moreSettings.selectedRemote++;
@@ -9693,38 +9746,37 @@ function MoreSettings() {
                 mainHandler.canvasDirty = !0;
                 return !1
             }
-            if (k(xPos, yPos, C, 0)) {
+            if (isCursorInButton(xPos, yPos, buttonDims, 0)) {
                 menuOpen = !0;
                 mainHandler.canvasDirty = !0;
                 return !0
             } else return !1
         }
     };
-    this.onPointermove = function(y, A) {
-        var B;
-        if (!(7 <= gameStateManager.getState())) {
-            var C = n();
-            var E = x;
-            var F = menuOpen ? settingsArray.length - 1 : 1;
-            x = -1;
-            for (B = 0; B < F; B++)
-                if (k(y, A, C, B)) {
-                    x = B;
+    this.onPointermove = function(xPos, yPos) {
+        if (7 > gameStateManager.getState()) {
+            var buttonDims = calcButtonDims();
+            var oldHoveringButtonIndex = hoveringButtonIndex;
+            var settingsCount = menuOpen ? settingsArray.length - 1 : 1;
+            hoveringButtonIndex = -1;
+            for (var bIndex = 0; bIndex < settingsCount; bIndex++) {
+                if (isCursorInButton(xPos, yPos, buttonDims, bIndex)) {
+                    hoveringButtonIndex = bIndex;
                     break
-                } E !== x && (mainHandler.canvasDirty = !0)
+                }
+            }
+            oldHoveringButtonIndex !== hoveringButtonIndex && (mainHandler.canvasDirty = !0)
         }
     };
     this.drawCanvasImage = function() {
-        var y;
-        if (!(7 <= gameStateManager.getState())) {
-            var A = n();
+        if (7 > gameStateManager.getState()) {
+            var buttonDims = calcButtonDims();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            l(A.f7, A.f8, A.buttonMargin, A.contentPadding, settingsArray[0].red, settingsArray[0].green, settingsArray[0].blue, 0 === x, settingsArray[0].name, .6);
+            drawButton(buttonDims.moreButX, buttonDims.yBuffer, buttonDims.buttonMargin, buttonDims.contentPadding, settingsArray[0].red, settingsArray[0].green, settingsArray[0].blue, 0 === hoveringButtonIndex, settingsArray[0].name, .6);
             if (menuOpen) {
-                var B = settingsArray.length;
-                for (y = 1; y < B; y++) l(A.f9, A.f8 + y * A.contentPadding - 2 * y, A.textPadding, A.contentPadding, settingsArray[y].red, settingsArray[y].green, settingsArray[y].blue, x === y, settingsArray[y].name,
-                    y === B - 1 ? .32 : .45)
+                var settingsCount = settingsArray.length;
+                for (var bIndex = 1; bIndex < settingsCount; bIndex++) drawButton(buttonDims.xBoundary, buttonDims.yBuffer + bIndex * buttonDims.contentPadding - 2 * bIndex, buttonDims.textPadding, buttonDims.contentPadding, settingsArray[bIndex].red, settingsArray[bIndex].green, settingsArray[bIndex].blue, hoveringButtonIndex === bIndex, settingsArray[bIndex].name, bIndex === settingsCount - 1 ? .32 : .45)
             }
         }
     }
