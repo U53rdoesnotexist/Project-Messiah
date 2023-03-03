@@ -834,7 +834,7 @@ function gameTick() {
     peace.update();
     statisticNumbers.update();
     teams.update();
-    wsManager.update()
+    wsManager.update();
 }
 
 function clientTick2() {
@@ -8287,6 +8287,7 @@ function NickNames() {
             for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = customJSON.data.ze[entityIndex % entityCount]
         } else if (9 === gamemode) {
             randomValue = fakeRandom.random();
+            var humanAlliesCount = playerCount + zombieSettings.helperBotCount;
             for (entityIndex = humanAlliesCount - 1; entityIndex >= playerCount; entityIndex--) nickname[entityIndex] = "[Bot] " + humanNames[(entityIndex + randomValue) % humanNames.length];
             for (entityIndex = humanAlliesCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = "[Zombie] " + humanNames[(entityIndex + randomValue) % humanNames.length]
         } else if (singleplayer) {
@@ -10693,7 +10694,7 @@ function Statistics() {
     this.drawTroopStatisticsNumbers = function(startX, startY) {
         var rightIndex;
         mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .74 * this.width, startY + 2 * this.contentPadding);
-        mainCanvasCtx.textAlign = rightAlign;
+        mainCanvasCtx.textAlign = rightAlign; 
         var lineHeight = this.height - 4 * this.contentPadding - this.buttonHeight;
         mainCanvasCtx.fillStyle = greenRGB;
         for (rightIndex = 2; 0 <= rightIndex; rightIndex--) mainCanvasCtx.fillText(statisticNumbers.statisticNumbersLabels[rightIndex + 8], 0, rightIndex * lineHeight / 9);
