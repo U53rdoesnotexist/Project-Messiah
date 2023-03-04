@@ -1759,13 +1759,13 @@ function Spawn() {
 var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
     entityCount = 512,
     maxTroopsToLandRatio = 150,
-    singleplayer, j8, clientStatus = 0,
+    singleplayer, neverJoinedGameBefore, clientStatus = 0,
     currentLandPixelsCount, absMaxTroopCap, absMaxTroopsBeforeRedI, humanStartingTroops = 512,
     neutralLandCost = 2,
     myID, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
 function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isContest) {
-    j8 = isCanvasHidden = !1;
+    neverJoinedGameBefore = isCanvasHidden = !1;
     gamemode = param_gamemode;
     isContest = param_isContest;
     teamGame = 7 > gamemode || 9 === gamemode;
@@ -1855,7 +1855,7 @@ function leaveGame() {
 var difficultyEngine, speed, botBoatEngine, botManager, processAction, boatSpeed, cameraController, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
     gameMessages, troopBar, mapGridHandler, playtime, eO, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
-    mapInfo, generateHeightmap, keyboardCamera, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, jo, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
+    mapInfo, generateHeightmap, keyboardCamera, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, touchInputHandler, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
     wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
@@ -1906,7 +1906,7 @@ function construct() {
     fakeRandom = new FakeRandom;
     boatPathHandler = new BoatPathHandler;
     gradientEdge = new GradientEdge;
-    jo = new TouchInputHandler;
+    touchInputHandler = new TouchInputHandler;
     dataDecoder = new DataDecoder;
     fadeIn = new FadeIn;
     dataEncoder = new DataEncoder;
@@ -3120,7 +3120,7 @@ function onTouchstart(e) {
     if (0 < e.touches.length) {
         clientXPos = Math.floor(pixelRatio * e.touches[0].clientX);
         clientYPos = Math.floor(pixelRatio * e.touches[0].clientY);
-        if (!jo.handleTouchStart(e)) handleMouseDown(clientXPos, clientYPos)
+        if (!touchInputHandler.handleTouchStart(e)) handleMouseDown(clientXPos, clientYPos)
     }
 }
 
@@ -3149,7 +3149,7 @@ function onTouchmove(e) {
     if (0 < e.touches.length) {
         clientXPos = Math.floor(pixelRatio * e.touches[0].clientX);
         clientYPos = Math.floor(pixelRatio * e.touches[0].clientY);
-        if (!jo.handleTouchmove(e)) onPointermove(clientXPos, clientYPos)
+        if (!touchInputHandler.handleTouchmove(e)) onPointermove(clientXPos, clientYPos)
     };
 }
 
@@ -3338,7 +3338,7 @@ function AttacksBar() {
         return text.substring(0, E - 3 * F) + " " + G
     };
     this.mouseDown = function(xPos, yPos) {
-        if (2 === clientStatus || 0 === isAlive[myID] || j8 || !playerActions.isHuman(myID)) return !1;
+        if (2 === clientStatus || 0 === isAlive[myID] || neverJoinedGameBefore || !playerActions.isHuman(myID)) return !1;
         var F, G = isZoom ? barCanvasHeight : 0,
             N = isZoom ? Math.floor(.15 * barCanvasHeight) : 0;
         for (F = myAttacks.length - 1; 0 <= F; F--) {
@@ -3366,7 +3366,7 @@ function AttacksBar() {
         return !1
     };
     this.update = function() {
-        if (2 !== clientStatus && 0 !== isAlive[myID] && !j8 && playerActions.isHuman(myID)) {
+        if (2 !== clientStatus && 0 !== isAlive[myID] && !neverJoinedGameBefore && playerActions.isHuman(myID)) {
             var myAttackCount = attacks.getCurrentAttackCount(myID), aIndex;
             loop: if (myAttacks.length !== myAttackCount) var needsUpdate = !0;
                 else {
@@ -3413,7 +3413,7 @@ function AttacksBar() {
         }
     };
     this.drawCanvasImage = function() {
-        if (0 !== isAlive[myID] && playerActions.isHuman(myID) && !j8)
+        if (0 !== isAlive[myID] && playerActions.isHuman(myID) && !neverJoinedGameBefore)
             for (var C = myAttacks.length - 1; 0 <= C; C--) mainCanvasCtx.drawImage(myAttacks[C].canvas, l(C), x(C))
     }
 }
