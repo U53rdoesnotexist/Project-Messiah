@@ -1289,67 +1289,105 @@ function CameraController() {
 }
 
 function FindSpawn() {
-    function generateBotSpawn() {
+    function generateSpawn() {
         var hasValidSpawn;
         loop: {
-            for (hasValidSpawn = 0; 8 > hasValidSpawn; hasValidSpawn++)
-                if (t = divideFloor(y * fakeRandom.random(), fakeRandom.value(100)), z = divideFloor(A * fakeRandom.random(), fakeRandom.value(100)), canSpawnHere()) {
+            for (var trials = 0; 8 > trials; trials++) {
+                randomColSpawn = divideFloor(maxSpawnCols * fakeRandom.random(), fakeRandom.value(100));
+                randomRowSpawn = divideFloor(maxSpawnRows * fakeRandom.random(), fakeRandom.value(100));
+                if (canSpawnHere()) {
                     hasValidSpawn = !0;
                     break loop
-                } hasValidSpawn = !1
+                }
+            }
+            hasValidSpawn = !1
         }
-        if (!hasValidSpawn) loop: {
-            var D, K, J, L;hasValidSpawn = divideFloor(y * fakeRandom.random(), fakeRandom.value(100));
-            var H = divideFloor(A * fakeRandom.random(), fakeRandom.value(100));
-            for (D = 40; 1 <= D; D--)
-                for (K = A - D; 0 <= K; K -= 40)
-                    for (z = (K + H) % A, J = 40; 1 <= J; J--)
-                        for (L = y - J; 0 <= L; L -= 40)
-                            if (t = (L + hasValidSpawn) % y, canSpawnHere()) {
-                                hasValidSpawn = !0;
-                                break loop
-                            } hasValidSpawn = !1
+        if (!hasValidSpawn) {
+            loop: {
+                var rowBlockSize, rowOffset, colBlockSize, colOffset,
+                    baseRandomColSpawn = divideFloor(maxSpawnCols * fakeRandom.random(), fakeRandom.value(100)),
+                    baseRandomRowSpawn = divideFloor(maxSpawnRows * fakeRandom.random(), fakeRandom.value(100));
+                for (rowBlockSize = 40; 1 <= rowBlockSize; rowBlockSize--) {
+                    for (rowOffset = maxSpawnRows - rowBlockSize; 0 <= rowOffset; rowOffset -= 40) {
+                        randomRowSpawn = (rowOffset + baseRandomRowSpawn) % maxSpawnRows;
+                        for (colBlockSize = 40; 1 <= colBlockSize; colBlockSize--) {
+                            for (colOffset = maxSpawnCols - colBlockSize; 0 <= colOffset; colOffset -= 40) {
+                                randomColSpawn = (colOffset + baseRandomColSpawn) % maxSpawnCols;
+                                if (canSpawnHere()) {
+                                    hasValidSpawn = !0;
+                                    break loop
+                                }
+                            }
+                        }
+                    }
+                }
+                hasValidSpawn = !1
+            }
         }
         return hasValidSpawn
     }
 
     function canSpawnHere() {
-        var I, D;
-        var K = divideFloor(B - F, 2);
-        var J = E + z * B + K,
-            L = C + t * B + K;
-        for (I = J + F - 1; I >= J; I--)
-            for (D = L + F - 1; D >= L; D--)
-                if (K = pixel.toIndex(D, I), !pixel.canOwn(K) || pixel.isBorder(K)) return !1;
+        var yIndex, xIndex,
+            spawnBufferOffset = divideFloor(minSpawnBuffer - spawnWidth, 2),
+            minYPos = avgRemainingRowSpace + randomRowSpawn * minSpawnBuffer + spawnBufferOffset,
+            minXPos = avgRemainingColSpace + randomColSpawn * minSpawnBuffer + spawnBufferOffset;
+        for (yIndex = minYPos + spawnWidth - 1; yIndex >= minYPos; yIndex--) {
+            for (xIndex = minXPos + spawnWidth - 1; xIndex >= minXPos; xIndex--) {
+                var pIndex = pixel.toIndex(xIndex, yIndex);
+                if (!pixel.canOwn(pIndex) || pixel.isBorder(pIndex)) return !1;
+            }
+        }
         return !0
     }
 
     function initInfoArrays() {
-        isAlive[G] = 0;
-        troops[G] = 0;
-        land[G] = tempLand[G] = 0;
-        potentialBorderAdvances[G] = [];
-        landBorderPixels[G] = [];
-        waterBorderPixels[G] = [];
-        mountainBorderPixels[G] = [];
-        xMin[G] = yMin[G] = xMax[G] = yMax[G] = 0
+        isAlive[authorID] = 0;
+        troops[authorID] = 0;
+        land[authorID] = tempLand[authorID] = 0;
+        potentialBorderAdvances[authorID] = [];
+        landBorderPixels[authorID] = [];
+        waterBorderPixels[authorID] = [];
+        mountainBorderPixels[authorID] = [];
+        xMin[authorID] = yMin[authorID] = xMax[authorID] = yMax[authorID] = 0
     }
 
     function setupSpawn(xPosOffset, yPosOffset) {
-        isAlive[G] = 1;
-        troops[G] = G < playerCount ? humanStartingTroops : botStartingTroops[difficultyEngine.difficulty[G - playerCount]];
-        xMin[G] = xPosOffset + 10;
-        yMin[G] = yPosOffset + 10;
-        yMax[G] = xMax[G] = 0;
-        var K, J;
-        for (K = xPosOffset; K < xPosOffset + 4; K++)
-            for (J = yPosOffset; J < yPosOffset + 4; J++)
-                if (K > xPosOffset && K < xPosOffset + 3 || J > yPosOffset && J < yPosOffset + 3) {
-                    var L = pixel.toIndex(K, J);
-                    pixel.canOwn(L) && (xMin[G] = K < xMin[G] ? K : xMin[G], xMax[G] = K > xMax[G] ? K : xMax[G], yMin[G] = J < yMin[G] ? J : yMin[G], yMax[G] = J > yMax[G] ? J : yMax[G], N[land[G]] = L, land[G]++, pixel.changeToInnerPixel(L, G))
-                } tempLand[G] = land[G];
-        for (L = land[G] - 1; 0 <= L; L--) pixel.canExpandFromPixel(N[L], G) ? (pixel.changeToBorderPixel(N[L],
-            G), landBorderPixels[G].push(N[L])) : pixel.bordersWater(N[L]) ? (pixel.changeToBorderPixel(N[L], G), waterBorderPixels[G].push(N[L])) : pixel.bordersMountain(N[L]) && (pixel.changeToBorderPixel(N[L], G), mountainBorderPixels[G].push(N[L]))
+        isAlive[authorID] = 1;
+        troops[authorID] = authorID < playerCount ? humanStartingTroops : botStartingTroops[difficultyEngine.difficulty[authorID - playerCount]];
+        xMin[authorID] = xPosOffset + 10;
+        yMin[authorID] = yPosOffset + 10;
+        yMax[authorID] = xMax[authorID] = 0;
+        var xPos, yPos;
+        for (xPos = xPosOffset; xPos < xPosOffset + 4; xPos++) {
+            for (yPos = yPosOffset; yPos < yPosOffset + 4; yPos++) {
+                if (xPos > xPosOffset && xPos < xPosOffset + 3 || yPos > yPosOffset && yPos < yPosOffset + 3) {
+                    var landIndex = pixel.toIndex(xPos, yPos);
+                    if (pixel.canOwn(landIndex)) {
+                        xMin[authorID] = xPos < xMin[authorID] ? xPos : xMin[authorID];
+                        xMax[authorID] = xPos > xMax[authorID] ? xPos : xMax[authorID];
+                        yMin[authorID] = yPos < yMin[authorID] ? yPos : yMin[authorID];
+                        yMax[authorID] = yPos > yMax[authorID] ? yPos : yMax[authorID];
+                        ownedLand[land[authorID]] = landIndex;
+                        land[authorID]++;
+                        pixel.changeToInnerPixel(landIndex, authorID);
+                    }
+                }
+            }
+        }
+        tempLand[authorID] = land[authorID];
+        for (landIndex = land[authorID] - 1; 0 <= landIndex; landIndex--) {
+            if (pixel.canExpandFromPixel(ownedLand[landIndex], authorID)) {
+                pixel.changeToBorderPixel(ownedLand[landIndex], authorID);
+                landBorderPixels[authorID].push(ownedLand[landIndex]);
+            } else if (pixel.bordersWater(ownedLand[landIndex])) {
+                pixel.changeToBorderPixel(ownedLand[landIndex], authorID);
+                waterBorderPixels[authorID].push(ownedLand[landIndex]);
+            } else if (pixel.bordersMountain(ownedLand[landIndex])) {
+                pixel.changeToBorderPixel(ownedLand[landIndex], authorID);
+                mountainBorderPixels[authorID].push(ownedLand[landIndex]);
+            }
+        }
     }
 
     function checkSpawnOverlap(xPosOffset, yPosOffset) {
@@ -1361,65 +1399,96 @@ function FindSpawn() {
             }
         return !0
     }
-    var t, z, y, A, B, C, E, F, G, N;
+    var randomColSpawn, randomRowSpawn, maxSpawnCols, maxSpawnRows, minSpawnBuffer, avgRemainingColSpace, avgRemainingRowSpace, spawnWidth, authorID, ownedLand;
     this.init = function() {
-        var I;
-        N = Array(12);
-        F = 6;
-        B = 10;
-        y = divideFloor(currentMapWidth, B);
-        A = divideFloor(currentMapHeight, B);
-        C = divideFloor(currentMapWidth - B * y, 2);
-        E = divideFloor(currentMapHeight - B * A, 2);
-        if (inSpawn)
-            for (I = 0; I < playerCount; I++) G = I, initInfoArrays(), isAlive[G] = 1;
-        if (customJSON.isCustomJSON && customJSON.data.spawnX)
-            for (G = 0; G < maxEntities; G++) {
-                if (1 !== isAlive[G]) {
-                    if (G < entityCount) {
-                        var D = customJSON.data.spawnX[G] + 1;
-                        I = customJSON.data.spawnY[G] + 1;
-                        3 < D && D < currentMapWidth - 5 && 3 < I && I < currentMapHeight - 5 &&
-                            pixel.canOwn(pixel.toIndex(D, I)) && checkSpawnOverlap(D + 3, I + 3) ? (D += 1, I += 1, initInfoArrays(), setupSpawn(D - 2, I - 2), I = !0) : I = !1;
-                        if (I) continue;
-                        if (generateBotSpawn()) {
-                            D = C + t * B + divideFloor(B, 2);
-                            I = E + z * B + divideFloor(B, 2);
+        var canSpawn;
+        ownedLand = Array(12);
+        spawnWidth = 6;
+        minSpawnBuffer = 10;
+        maxSpawnCols = divideFloor(currentMapWidth, minSpawnBuffer);
+        maxSpawnRows = divideFloor(currentMapHeight, minSpawnBuffer);
+        avgRemainingColSpace = divideFloor(currentMapWidth - minSpawnBuffer * maxSpawnCols, 2);
+        avgRemainingRowSpace = divideFloor(currentMapHeight - minSpawnBuffer * maxSpawnRows, 2);
+        if (inSpawn) {
+            for (var playerIndex = 0; playerIndex < playerCount; playerIndex++) {
+                authorID = playerIndex, initInfoArrays();
+                isAlive[authorID] = 1;
+            }
+        }
+        if (customJSON.isCustomJSON && customJSON.data.spawnX) {
+            for (authorID = 0; authorID < maxEntities; authorID++) {
+                if (1 !== isAlive[authorID]) {
+                    if (authorID < entityCount) {
+                        var spawnX = customJSON.data.spawnX[authorID] + 1,
+                            spawnY = customJSON.data.spawnY[authorID] + 1;
+                        if (3 < spawnX && spawnX < currentMapWidth - 5 && 3 < spawnY && spawnY < currentMapHeight - 5 && pixel.canOwn(pixel.toIndex(spawnX, spawnY)) && checkSpawnOverlap(spawnX + 3, spawnY + 3)) {
+                            spawnX += 1;
+                            spawnY += 1;
                             initInfoArrays();
-                            setupSpawn(D - 2, I - 2);
+                            setupSpawn(spawnX - 2, spawnY - 2);
+                            canSpawn = !0;
+                        } else canSpawn = !1;
+                        if (canSpawn) continue;
+                        if (generateSpawn()) {
+                            spawnX = avgRemainingColSpace + randomColSpawn * minSpawnBuffer + divideFloor(minSpawnBuffer, 2);
+                            spawnY = avgRemainingRowSpace + randomRowSpawn * minSpawnBuffer + divideFloor(minSpawnBuffer, 2);
+                            initInfoArrays();
+                            setupSpawn(spawnX - 2, spawnY - 2);
                             continue
                         }
                     }
                     initInfoArrays()
                 }
-            } else
-                for (G = 0; G < maxEntities; G++) 1 !== isAlive[G] && (G < entityCount && generateBotSpawn() ? (D = C + t * B + divideFloor(B, 2), I = E + z * B + divideFloor(B, 2), initInfoArrays(), setupSpawn(D - 2, I - 2)) : initInfoArrays());
+            }
+        } else {
+            for (authorID = 0; authorID < maxEntities; authorID++) {
+                if (1 !== isAlive[authorID]) {
+                    if (authorID < entityCount && generateSpawn()) {
+                        spawnX = avgRemainingColSpace + randomColSpawn * minSpawnBuffer + divideFloor(minSpawnBuffer, 2);
+                        playerIndex = avgRemainingRowSpace + randomRowSpawn * minSpawnBuffer + divideFloor(minSpawnBuffer, 2);
+                        initInfoArrays();
+                        setupSpawn(spawnX - 2, playerIndex - 2);
+                    } else initInfoArrays();
+                }
+            }
+        }
         statisticNumbers.numbers[7] = land[myID];
         statisticNumbers.numbers[8] = troops[myID]
     };
-    this.generateHumanSpawn = function(I, D, K) {
-        var J, L;
-        G = I;
-        for (J = 0; 20 > J; J++)
-            for (I = D + J; I >= D - J; I--)
-                for (L = K + J; L >= K - J; L--)
-                    if ((I === D + J || I === D - J || L === K + J || L === K - J) && 3 < I && I < currentMapWidth - 5 && 3 < L && L < currentMapHeight - 5 && pixel.canOwn(pixel.toIndex(I, L)) && checkSpawnOverlap(I + 3, L + 3)) {
-                        if (0 < land[G]) {
-                            for (K = xMax[G]; K >= xMin[G]; K--)
-                                for (D = yMax[G]; D >= yMin[G]; D--) J = 4 * (D * currentMapWidth + K), pixel.strongIsOwner(G, J) && (pixel.revertToNeutralPixel(J), land[G]--);
+    this.generateHumanSpawn = function(param_authorID, xPos, yPos) {
+        var spawnOffset, yIndex;
+        authorID = param_authorID;
+        for (spawnOffset = 0; 20 > spawnOffset; spawnOffset++) {
+            for (var xIndex = xPos + spawnOffset; xIndex >= xPos - spawnOffset; xIndex--) {
+                for (yIndex = yPos + spawnOffset; yIndex >= yPos - spawnOffset; yIndex--) {
+                    if ((xIndex === xPos + spawnOffset || xIndex === xPos - spawnOffset || yIndex === yPos + spawnOffset || yIndex === yPos - spawnOffset) && 3 < xIndex && xIndex < currentMapWidth - 5 && 3 < yIndex && yIndex < currentMapHeight - 5 && pixel.canOwn(pixel.toIndex(xIndex, yIndex)) && checkSpawnOverlap(xIndex + 3, yIndex + 3)) {
+                        if (0 < land[authorID]) {
+                            for (yPos = xMax[authorID]; yPos >= xMin[authorID]; yPos--) {
+                                for (xPos = yMax[authorID]; xPos >= yMin[authorID]; xPos--) {
+                                    var pIndex = 4 * (xPos * currentMapWidth + yPos);
+                                    if (pixel.strongIsOwner(authorID, pIndex)) {
+                                        pixel.revertToNeutralPixel(pIndex);
+                                        land[authorID]--;
+                                    }
+                                }
+                            }
                             initInfoArrays()
                         }
-                        setupSpawn(I - 1, L - 1);
+                        setupSpawn(xIndex - 1, yIndex - 1);
                         return !0
-                    } return !1
+                    }
+                }
+            }
+        }
+        return !1
     };
-    this.randomSpawn = function(I) {
-        G = I;
-        if (generateBotSpawn()) {
-            I = C + t * B + divideFloor(B, 2);
-            var D = E + z * B + divideFloor(B, 2);
+    this.randomSpawn = function(param_authorID) {
+        authorID = param_authorID;
+        if (generateSpawn()) {
+            var xCoord = avgRemainingColSpace + randomColSpawn * minSpawnBuffer + divideFloor(minSpawnBuffer, 2),
+                yCoord = avgRemainingRowSpace + randomRowSpawn * minSpawnBuffer + divideFloor(minSpawnBuffer, 2);
             initInfoArrays();
-            setupSpawn(I - 2, D - 2)
+            setupSpawn(xCoord - 2, yCoord - 2)
         } else initInfoArrays()
     }
 }
