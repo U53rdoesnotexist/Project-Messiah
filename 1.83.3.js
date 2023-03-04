@@ -817,7 +817,7 @@ function gameTick() {
     processAction.update();
     delayedAttack.update();
     humanBots.update();
-    eJ.update();
+    botManager.update();
     speed.update();
     boatSpeed.update();
     checkPrematureDeath();
@@ -838,7 +838,7 @@ function gameTick() {
 }
 
 function clientTick2() {
-    eV.update();
+    cameraController.update();
     gameResultBox.update();
     gameMessages.update();
     fadeIn.update();
@@ -982,19 +982,19 @@ function BotBoatEngine() {
     }
 }
 
-function fC() {
-    var g, k;
+function BotManager() {
+    var botIndexCounts, botIndicies;
     this.init = function() {
-        g = botCount;
-        k = new Uint16Array(botCount);
-        for (var n = botCount - 1; 0 <= n; n--) k[n] = n
+        botIndexCounts = botCount;
+        botIndicies = new Uint16Array(botCount);
+        for (var botIndex = botCount - 1; 0 <= botIndex; botIndex--) botIndicies[botIndex] = botIndex
     };
     this.update = function() {
-        for (var n = g - 1; 0 <= n; n--)
-            if (0 === isAlive[k[n] + playerCount]) {
-                var l = n;
-                for (g--; l < g; l++) k[l] = k[l + 1]
-            } else difficultyEngine.update(k[n])
+        for (var botIndex = botIndexCounts - 1; 0 <= botIndex; botIndex--)
+            if (0 === isAlive[botIndicies[botIndex] + playerCount]) {
+                var deadBotIndex = botIndex;
+                for (botIndexCounts--; deadBotIndex < botIndexCounts; deadBotIndex++) botIndicies[deadBotIndex] = botIndicies[deadBotIndex + 1]
+            } else difficultyEngine.update(botIndicies[botIndex])
     }
 }
 
@@ -1081,7 +1081,6 @@ function ProcessAction() {
         announcements.genericAnnouncement(id, 4)
     };
     this.leave = function(id) {
-        //managePlayerDeath(id), findShiftAliveEntitiesIndex()
         inSpawn ? (managePlayerDeath(id), findShiftAliveEntitiesIndex()) : humanBots.turnToBot(id)
     };
     this.surrender = function(id) {
@@ -1151,30 +1150,30 @@ function BoatSpeed() {
         return tempBoatID;
     };
     this.drawCanvasImage = function() {
-        if (!(40 > mainScaleFactor || 0 === currentBoatIndex)) {
-            var B, C = viewportX / mainScaleFactor,
-                E = viewportY / mainScaleFactor,
-                F = (prevClientWidth + viewportX) / mainScaleFactor,
-                G = (prevClientHeight + viewportY) / mainScaleFactor;
+        if (40 <= mainScaleFactor && 0 !== currentBoatIndex) {
+            var boatIndex, leftXBound = viewportX / mainScaleFactor,
+                topYBound = viewportY / mainScaleFactor,
+                rightXBound = (prevClientWidth + viewportX) / mainScaleFactor,
+                bottomYBound = (prevClientHeight + viewportY) / mainScaleFactor;
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            for (B = currentBoatIndex - 1; 0 <= B; B--) {
-                var N = pixel.toX(currentPixelIndicies[B]);
-                var I = pixel.toY(currentPixelIndicies[B]);
-                var D = authorIDs[B];
-                if (N > C - 1 && N < F && I > E - 1 && I < G && 0 !== isAlive[D]) {
-                    var K = Math.floor(.94 * mainScaleFactor * eA.gG(D));
-                    if (6 <= K) {
-                        N = Math.floor(prevClientWidth * (N + .5 - C) / (F - C));
-                        I = Math.floor(prevClientHeight * (I + .48 - E) / (G - E));
-                        mainCanvasCtx.font = fontWeightBold + K + fontSizeArial;
+            for (boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
+                var boatX = pixel.toX(currentPixelIndicies[boatIndex]);
+                var boatY = pixel.toY(currentPixelIndicies[boatIndex]);
+                var authorID = authorIDs[boatIndex];
+                if (boatX > leftXBound - 1 && boatX < rightXBound && boatY > topYBound - 1 && boatY < bottomYBound && 0 !== isAlive[authorID]) {
+                    var fontSize = Math.floor(.94 * mainScaleFactor * eA.gG(authorID));
+                    if (6 <= fontSize) {
+                        boatX = Math.floor(prevClientWidth * (boatX + .5 - leftXBound) / (rightXBound - leftXBound));
+                        boatY = Math.floor(prevClientHeight * (boatY + .48 - topYBound) / (bottomYBound - topYBound));
+                        mainCanvasCtx.font = fontWeightBold + fontSize + fontSizeArial;
                         mainCanvasCtx.fillStyle = blackRGB;
-                        mainCanvasCtx.fillText(nickname[D], N, I);
-                        var J = Math.floor(.57 * K);
-                        if (6 <= J) {
-                            D = attacks.getRemainingTroopsFromIndex(D, attacks.findAttackIndexFromBoatID(D, boatIDs[B]));
-                            mainCanvasCtx.font = fontWeightBold + J + fontSizeArial;
-                            mainCanvasCtx.fillText(attacksBar.splitText(D), N, I + Math.floor(.82 * K));
+                        mainCanvasCtx.fillText(nickname[authorID], boatX, boatY);
+                        var troopSize = Math.floor(.57 * fontSize);
+                        if (6 <= troopSize) {
+                            authorID = attacks.getRemainingTroopsFromIndex(authorID, attacks.findAttackIndexFromBoatID(authorID, boatIDs[boatIndex]));
+                            mainCanvasCtx.font = fontWeightBold + troopSize + fontSizeArial;
+                            mainCanvasCtx.fillText(attacksBar.splitText(authorID), boatX, boatY + Math.floor(.82 * fontSize));
                         }
                     }
                 }
@@ -1183,98 +1182,107 @@ function BoatSpeed() {
     }
 }
 
-function gK() {
-    function g(J) {
-        N = mainHandler.time;
-        I = 33;
-        t = z = x = 0;
-        y = I / J;
-        l = 1 / (J / I / 4);
-        A = (prevClientWidth / 2 + viewportX) / mainScaleFactor;
-        B = (prevClientHeight / 2 + viewportY) / mainScaleFactor;
-        C = mainScaleFactor
+function CameraController() {
+    function setCameraSettings(duration) {
+        previousUpdateTime = mainHandler.time;
+        cameraUpdateInterval = 33;
+        prevStep = stepIncrement = currentStep = 0;
+        totalSteps = cameraUpdateInterval / duration;
+        stepSize = 1 / (duration / cameraUpdateInterval / 4);
+        viewportCenterX = (prevClientWidth / 2 + viewportX) / mainScaleFactor;
+        viewportCenterY = (prevClientHeight / 2 + viewportY) / mainScaleFactor;
+        currentScaleFactor = mainScaleFactor
     }
 
-    function k(J) {
-        .125 > Math.abs(Math.log(G / C)) && (G = J * C)
+    function adjustCameraZoom(zoomValue) {
+        if (.125 > Math.abs(Math.log(targetScaleFactor / currentScaleFactor))) targetScaleFactor = zoomValue * currentScaleFactor
     }
 
-    function n(J, L, H, M) {
-        E = (J + H + 1) / 2;
-        F = (L + M + 1) / 2;
-        J = prevClientWidth / (H - J + 1);
-        L = prevClientHeight / (M - L + 1);
-        G = .9 * (J < L ? J : L)
+    function calculateCameraFit(minX, minY, maxX, maxY) {
+        mapCenterX = (minX + maxX + 1) / 2;
+        mapCenterY = (minY + maxY + 1) / 2;
+        targetScaleFactor = .9 * getMin(prevClientWidth / (maxX - minX + 1), prevClientHeight / (maxY - minY + 1))
     }
-    var l, x, t, z, y, A, B, C, E, F, G, N, I, D = !1,
-        K = !1;
-    this.gd = function() {
-        return D
+    var stepSize, currentStep, prevStep, stepIncrement, totalSteps, viewportCenterX, viewportCenterY, currentScaleFactor, mapCenterX, mapCenterY,
+        targetScaleFactor, previousUpdateTime, cameraUpdateInterval, isCameraActive = !1, isZoomToFitActive = !1;
+    this.getIsCameraActive = function() {
+        return isCameraActive
     };
-    this.ge = function() {
-        g(1);
-        this.gf(0, 0, currentMapWidth - 1, currentMapHeight - 1);
-        inSpawn || this.hoverTo(myID, 3E3, !0, .3)
+    this.activateCamera = function() {
+        setCameraSettings(1);
+        this.fitCameraToMap(0, 0, currentMapWidth - 1, currentMapHeight - 1);
+        if (!inSpawn) this.hoverTo(myID, 3E3, !0, .3)
     };
-    this.hoverTo = function(targetID, L, H, M) {
-        if (!(isCanvasHidden || D && !H && K || 0 === land[targetID])) {
+    this.hoverTo = function(targetID, duration, param_zoomToFitActive, zoomSpeed) {
+        if (!isCanvasHidden && !(isCameraActive && !param_zoomToFitActive && isZoomToFitActive) && 0 !== land[targetID]) {
             mapGridHandler.gk = !1;
-            K = H;
-            g(L);
-            E = (xMin[targetID] + xMax[targetID] + 1) / 2;
-            F = (yMin[targetID] + yMax[targetID] + 1) / 2;
-            L = xMax[targetID] -
-                xMin[targetID] + 1;
-            targetID = yMax[targetID] - yMin[targetID] + 1;
-            H = prevClientWidth / L;
-            var Q = prevClientHeight / targetID;
-            G = H < Q ? H : Q;
-            G *= 0 !== M ? M : 20 > L && 20 > targetID ? .5 : .9;
-            k(.875);
-            D = !0;
-            cameraController.stopCameraMovement()
+            isZoomToFitActive = param_zoomToFitActive;
+            setCameraSettings(duration);
+            mapCenterX = (xMin[targetID] + xMax[targetID] + 1) / 2;
+            mapCenterY = (yMin[targetID] + yMax[targetID] + 1) / 2;
+            var targetCenterX = xMax[targetID] - xMin[targetID] + 1,
+                targetCenterY = yMax[targetID] - yMin[targetID] + 1;
+            targetScaleFactor = getMin(prevClientWidth / targetCenterX, prevClientHeight / targetCenterY)
+            targetScaleFactor *= 0 !== zoomSpeed ? zoomSpeed : 20 > targetCenterX && 20 > targetCenterY ? .5 : .9;
+            adjustCameraZoom(.875);
+            isCameraActive = !0;
+            keyboardCamera.stopCameraMovement()
         }
     };
     this.zoomToFitMap = function(zoomSpeed) {
         mapGridHandler.gk = !1;
-        K = !0;
-        g(zoomSpeed);
-        n(0, 0, currentMapWidth - 1, currentMapHeight - 1);
-        k(.875);
-        D = !0;
-        cameraController.stopCameraMovement()
+        isZoomToFitActive = !0;
+        setCameraSettings(zoomSpeed);
+        calculateCameraFit(0, 0, currentMapWidth - 1, currentMapHeight - 1);
+        adjustCameraZoom(.875);
+        isCameraActive = !0;
+        keyboardCamera.stopCameraMovement()
     };
-    this.gf = function(J, L, H, M) {
-        n(J, L, H, M);
-        mainScaleFactor = G;
-        mapGridHandler.gw(E, prevClientWidth / 2);
-        mapGridHandler.gx(F, prevClientHeight / 2);
+    this.fitCameraToMap = function(minX, minY, maxX, maxY) {
+        calculateCameraFit(minX, minY, maxX, maxY);
+        mainScaleFactor = targetScaleFactor;
+        mapGridHandler.gw(mapCenterX, prevClientWidth / 2);
+        mapGridHandler.gx(mapCenterY, prevClientHeight / 2);
         viewport.updateViewportCoords()
     };
-    this.h0 = function() {
-        if (D && K) return !1;
-        D = !1;
+    this.deactivateCamera = function() {
+        if (isCameraActive && isZoomToFitActive) return !1;
+        isCameraActive = !1;
         return !0
     };
     this.update = function() {
-        if (D) {
-            .5 > x ? z < y && (z += y * l, t = x) : x > 1 - t && (z -= y * l, z = z < y * l ? y * l : z);
-            N = N >= mainHandler.time ? mainHandler.time - 1 : N;
-            var J = mainHandler.time - N;
-            1E3 < J ? x = 1 : (x += z * J / I, x = 1 < x ? 1 : x);
-            N = mainHandler.time;
-            var L = mainScaleFactor;
-            J = viewportX;
-            var H = viewportY;
-            mainScaleFactor = C * Math.pow(G /
-                C, x);
-            L = mainScaleFactor / L;
-            var M = 1 - (C * Math.pow(G / C, 1 - x) - C) / (G - C);
-            mapGridHandler.gw(A + M * (E - A), prevClientWidth / 2);
-            mapGridHandler.gx(B + M * (F - B), prevClientHeight / 2);
-            eA.zoom(L, (J * L - viewportX) / (1 - L), (H * L - viewportY) / (1 - L));
+        if (isCameraActive) {
+            if (.5 > currentStep) {
+                if (stepIncrement < totalSteps) {
+                    stepIncrement += totalSteps * stepSize;
+                    prevStep = currentStep;
+                }
+            } else if (currentStep > 1 - prevStep) {
+                stepIncrement -= totalSteps * stepSize;
+                stepIncrement = stepIncrement < totalSteps * stepSize ? totalSteps * stepSize : stepIncrement;
+            }
+            previousUpdateTime = previousUpdateTime >= mainHandler.time ? mainHandler.time - 1 : previousUpdateTime;
+            var timeElapsed = mainHandler.time - previousUpdateTime;
+            if (1E3 < timeElapsed) currentStep = 1
+            else {
+                currentStep += stepIncrement * timeElapsed / cameraUpdateInterval;
+                currentStep = 1 < currentStep ? 1 : currentStep;
+            }
+            previousUpdateTime = mainHandler.time;
+            var oldMainScaleFactor = mainScaleFactor;
+            var oldViewportX = viewportX,
+                oldViewportY = viewportY;
+            mainScaleFactor = currentScaleFactor * Math.pow(targetScaleFactor / currentScaleFactor, currentStep);
+            var scaleFactorChangeRatio = mainScaleFactor / oldMainScaleFactor,
+                transitionScaleFactorChangeRatio = 1 - (currentScaleFactor * Math.pow(targetScaleFactor / currentScaleFactor, 1 - currentStep) - currentScaleFactor) / (targetScaleFactor - currentScaleFactor);
+            mapGridHandler.gw(viewportCenterX + transitionScaleFactorChangeRatio * (mapCenterX - viewportCenterX), prevClientWidth / 2);
+            mapGridHandler.gx(viewportCenterY + transitionScaleFactorChangeRatio * (mapCenterY - viewportCenterY), prevClientHeight / 2);
+            eA.zoom(scaleFactorChangeRatio, (oldViewportX * scaleFactorChangeRatio - viewportX) / (1 - scaleFactorChangeRatio), (oldViewportY * scaleFactorChangeRatio - viewportY) / (1 - scaleFactorChangeRatio));
             viewport.updateViewportCoords();
-            1 <= x && (D = !1, mapUpdate.shouldUpdate = !0);
+            if (1 <= currentStep) {
+                isCameraActive = !1;
+                mapUpdate.shouldUpdate = !0;
+            }
             mainHandler.canvasDirty = !0
         }
     }
@@ -1652,7 +1660,7 @@ function Spawn() {
             statisticNumbers.numbers[8] = troops[myID];
             troopBar.toggleVisibility();
             gameStatistics.j2();
-            eV.gf(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5);
+            cameraController.fitCameraToMap(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5);
             fadeIn.init();
         } else gameResultBox.show(!1, !1);
         announcements.j3(18);
@@ -1730,7 +1738,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     processAction.init();
     boatSpeed.init();
     speed.init();
-    eJ.init();
+    botManager.init();
     attackMatrixInit();
     attacks.init();
     eA.init();
@@ -1747,7 +1755,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
 }
 
 function ja() {
-    eV.ge();
+    cameraController.activateCamera();
     0 === isAlive[myID] && gameResultBox.show(!1, !0);
     eA.drawCanvas()
 }
@@ -1760,20 +1768,20 @@ function leaveGame() {
     setAndroidState(0);
     showAd()
 }
-var difficultyEngine, speed, botBoatEngine, eJ, processAction, boatSpeed, eV, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
+var difficultyEngine, speed, botBoatEngine, botManager, processAction, boatSpeed, cameraController, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attacksBar, 
     gameMessages, troopBar, mapGridHandler, playtime, eO, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
-    mapInfo, generateHeightmap, cameraController, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, jo, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
+    mapInfo, generateHeightmap, keyboardCamera, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, jo, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
     wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
     speed = new Speed;
     botBoatEngine = new BotBoatEngine;
-    eJ = new fC;
+    botManager = new BotManager;
     processAction = new ProcessAction;
     boatSpeed = new BoatSpeed;
-    eV = new gK;
+    cameraController = new CameraController;
     findSpawn = new FindSpawn;
     strings = new Strings;
     playerActions = new PlayerActions;
@@ -1809,7 +1817,7 @@ function construct() {
     configFakeMap = new ConfigFakeMap;
     mapInfo = new MapInfo;
     generateHeightmap = new GenerateHeightmap;
-    cameraController = new CameraController;
+    keyboardCamera = new KeyboardCamera;
     boatPathChecker = new BoatPathChecker;
     fakeRandom = new FakeRandom;
     boatPathHandler = new BoatPathHandler;
@@ -2422,14 +2430,14 @@ function Announcements() {
                             mIndex = pendingAnnouncements[mIndex].player;
                             this.nonAggression(mIndex, 0);
                             dataEncoder.nonAggression(mIndex);
-                        } else eV.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
+                        } else cameraController.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
                         return true;
                     }
                     break
                 }
                 if (xPos >= prevClientWidth - pendingAnnouncements[mIndex].width - canvasPadding) {
                     if (pendingAnnouncements[mIndex].mX) {
-                        eV.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
+                        cameraController.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
                         if (0 <= pendingAnnouncements[mIndex].mW) {
                             Q = pendingAnnouncements[mIndex].mW;
                             pendingAnnouncements[mIndex].mW = pendingAnnouncements[mIndex].player;
@@ -2453,15 +2461,15 @@ function Announcements() {
             E(50, maxEntities);
             gameMessages.set(id, 1);
             announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", blackMoreOpaque, -1, true);
-            eV.hoverTo(id, 2700, true, 0);
+            cameraController.hoverTo(id, 2700, true, 0);
         } else if (2 === messageType) {
             gameMessages.set(id, 2);
             announce(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", blackMoreOpaque, -1, true);
-            eV.hoverTo(id, 2700, true, 0);
+            cameraController.hoverTo(id, 2700, true, 0);
         } else if (3 === messageType) {
             gameMessages.set(id, 2);
             announce(0, nickname[id] + " won the game.", 0, id, whiteRGB2, blackMoreOpaque, -1, true);
-            eV.hoverTo(id, 2700, true, 0);
+            cameraController.hoverTo(id, 2700, true, 0);
         } else if (4 === messageType) {
             playersIngame--;
             spectatorCount--;
@@ -2484,7 +2492,7 @@ function Announcements() {
         gameMessages.set(winnerID, 2);
         if (100 > playerCount) announce(0, nickname[winnerID] + " won the game.", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0)
         else announce(0, nickname[winnerID] + " has been immortalized!", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0);
-        eV.hoverTo(winnerID, 2700, !0, 0)
+        cameraController.hoverTo(winnerID, 2700, !0, 0)
     };
     this.newEmojiMessage = function(authorID, targetID, emojiID) {
         if (authorID === myID) announce(175, " Message to " + nickname[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, !0)
@@ -2522,7 +2530,7 @@ function Announcements() {
             }
         }
         if (9 !== gamemode) gameMessages.mx("Team " + teamColors.colorLabels[largestTeamID], 2, 1, 12);
-        eV.zoomToFitMap(2700)
+        cameraController.zoomToFitMap(2700)
     };
     this.new1v1 = function(players) {
         announce(300, players[0].name + " [" + points1v1.formatElo(players[0].elo) + "] vs " + players[1].name + " [" + points1v1.formatElo(players[1].elo) + "]", 65, 0, blackRGB, "rgba(100,255,255,0.75)", -1, !1)
@@ -3799,11 +3807,11 @@ function MapGridHandler() {
     };
     this.mouseDown = function(y, A) {
         if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200) : this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
-        eV.h0() && (this.gk = !0, t = y, z = A);
+        cameraController.deactivateCamera() && (this.gk = !0, t = y, z = A);
         return !1
     };
     this.onPointermove = function(y, A) {
-        if (!eV.h0()) return !0;
+        if (!cameraController.deactivateCamera()) return !0;
         var B = viewportX,
             C = viewportY,
             E = t - y,
@@ -3817,7 +3825,7 @@ function MapGridHandler() {
         return B !== viewportX || C !== viewportY
     };
     this.onWheel = function(y, A, B) {
-        if (!eV.h0()) return !0;
+        if (!cameraController.deactivateCamera()) return !0;
         if (0 < B) B = 450 / (450 + B), B = .5 > B ? .5 : B;
         else if (0 > B) B = (450 - B) / 450, B = 2 < B ? 2 : B;
         else return !1;
@@ -4472,7 +4480,7 @@ function GameLeaderboard() {
         if (350 > mainHandler.time - na && pa === T && (T = rangeClamp(-1, T, visibleLandCount), T = T !== visibleLandCount && isInBoardCanvas(xPos, yPos) ? T : -1, -1 !== T)) {
             var Y = landOrder[T + boardTopIndex];
             T === visibleLandCount - 1 && landIDOrder[myID] >= boardTopIndex + visibleLandCount - 1 && (Y = myID);
-            0 !== isAlive[Y] && eV.hoverTo(Y, 800, !1, 0)
+            0 !== isAlive[Y] && cameraController.hoverTo(Y, 800, !1, 0)
         }
         return !0
     };
@@ -8713,13 +8721,13 @@ function showErrorWarning(error) {
 
 function onKeydown(e) {
     if ("ArrowLeft" === e.key) {
-        cameraController.checkAndMoveCamera(3);
+        keyboardCamera.checkAndMoveCamera(3);
     } else if ("ArrowUp" === e.key) {
-        cameraController.checkAndMoveCamera(0);
+        keyboardCamera.checkAndMoveCamera(0);
     } else if ("ArrowRight" === e.key) {
-        cameraController.checkAndMoveCamera(1);
+        keyboardCamera.checkAndMoveCamera(1);
     } else if ("ArrowDown" === e.key) {
-        cameraController.checkAndMoveCamera(2);
+        keyboardCamera.checkAndMoveCamera(2);
     } else if ("a" === e.key) {
         troopBar.checkAndMultiplyRatio(.96875);
     } else if ("d" === e.key) {
@@ -8748,10 +8756,10 @@ function onKeyup(e) {
     if (400 <= mainHandler.time) {
         if (8 !== gameStateManager.getState() && gameStateManager.hideIfNotHidden(e)) mainHandler.canvasDirty = !0 
         else if ("Escape" === e.key) gameStateManager.aK()
-        else if ("ArrowLeft" === e.key) cameraController.checkCameraStop(3)
-        else if ("ArrowUp" === e.key) cameraController.checkCameraStop(0)
-        else if ("ArrowRight" === e.key) cameraController.checkCameraStop(1)
-        else if ("ArrowDown" === e.key) cameraController.checkCameraStop(2)
+        else if ("ArrowLeft" === e.key) keyboardCamera.checkCameraStop(3)
+        else if ("ArrowUp" === e.key) keyboardCamera.checkCameraStop(0)
+        else if ("ArrowRight" === e.key) keyboardCamera.checkCameraStop(1)
+        else if ("ArrowDown" === e.key) keyboardCamera.checkCameraStop(2)
         else if ("h" === e.key && 1 <= clientStatus) {
             isCanvasHidden = !isCanvasHidden;
             mainHandler.canvasDirty = !0;
@@ -8918,7 +8926,7 @@ function MapShading() {
         }
     };
     this.update = function() {
-        if (8 === gameStateManager.getState() && eV.gd()) this.updateTimeout = setTimeout(g, 16);
+        if (8 === gameStateManager.getState() && cameraController.getIsCameraActive()) this.updateTimeout = setTimeout(g, 16);
         else {
             if (0 === this.heightMapGenerationCount) {
                 var l = fakeRandom.getMedian();
@@ -9812,7 +9820,7 @@ function MoreSettings() {
     }
 }
 
-function CameraController() {
+function KeyboardCamera() {
     function cameraInit() {
         isActive = !0;
         intervalID = -1;
@@ -9828,7 +9836,7 @@ function CameraController() {
 
     function updateCamera() {
         if (-1 !== intervalID)
-            if (0 !== clientStatus && eV.h0()) {
+            if (0 !== clientStatus && cameraController.deactivateCamera()) {
                 for (var isMoving = !1, side = 3; 0 <= side; side--) {
                     if (isButtonPressed[side]) {
                         isMoving = !0;
@@ -9839,12 +9847,12 @@ function CameraController() {
                     }
                 }
                 if (isMoving) mainHandler.canvasDirty = !0
-                else cameraController.stopCameraMovement()
-            } else cameraController.stopCameraMovement()
+                else keyboardCamera.stopCameraMovement()
+            } else keyboardCamera.stopCameraMovement()
     }
     var isActive = !1, intervalID, isButtonPressed, movementX, movementY;
     this.checkAndMoveCamera = function(direction) {
-        if (0 !== clientStatus && eV.h0()) {
+        if (0 !== clientStatus && cameraController.deactivateCamera()) {
             if (!isActive) cameraInit();
             isButtonPressed[direction] = !0;
             if (-1 === intervalID) {
@@ -11453,7 +11461,7 @@ function TouchInputHandler() {
     this.handleTouchmove = function(e) {
         if (0 === clientStatus) return !1;
         if (1 < e.touches.length) {
-            if (!eV.h0()) return !0;
+            if (!cameraController.deactivateCamera()) return !0;
             var initDist = getPointsDistance();
             setTouchPoints(e);
             var currentDist = getPointsDistance();
