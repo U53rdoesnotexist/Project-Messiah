@@ -909,45 +909,74 @@ function Speed() {
 }
 
 function BotBoatEngine() {
-    function g() {
-        l = 3;
+    function generateRandomCoords() {
+        remainingChecks = 3;
         loop: {
             for (var y = 40; 1 <= y; y--) {
-                x = xMin[z] + divideFloor(fakeRandom.random() * (xMax[z] - xMin[z] + 1), fakeRandom.value(100));
-                t = yMin[z] + divideFloor(fakeRandom.random() * (yMax[z] - yMin[z] + 1), fakeRandom.value(100));
-                var A = k(pixel.toIndex(x, t));
-                if (1 !== A) break loop
+                currentX = xMin[authorID] + divideFloor(fakeRandom.random() * (xMax[authorID] - xMin[authorID] + 1), fakeRandom.value(100));
+                currentY = yMin[authorID] + divideFloor(fakeRandom.random() * (yMax[authorID] - yMin[authorID] + 1), fakeRandom.value(100));
+                var ownershipResult = checkOwnership(pixel.toIndex(currentX, currentY));
+                if (1 !== ownershipResult) break loop
             }
-            A = 1
+            ownershipResult = 1
         }
-        if (0 === A) return !1;
-        if (2 === A) return !0;
-        A = n(1, 1);
-        return 0 === A ? !1 : 2 === A ? !0 : 2 === n(54, 4)
+        if (0 === ownershipResult) return !1;
+        if (2 === ownershipResult) return !0;
+        ownershipResult = generateRandomArea(1, 1);
+        if (0 === ownershipResult) return !1
+        else if (2 === ownershipResult) return !0
+        else return 2 === generateRandomArea(54, 4)
     }
 
-    function k(y) {
-        if (pixel.canOwn(y) && (pixel.isNeutral(y) || pixel.getOwner(y) !== z && isNotTeamate(z, pixel.getOwner(y)))) {
-            if (boatPathChecker.check(z, y)) return 2;
-            if (0 === l--) return 0
+    function checkOwnership(pIndex) { //2 for validpath, 1 for no path, 0 for give up boat
+        if (pixel.canOwn(pIndex) && (pixel.isNeutral(pIndex) || pixel.getOwner(pIndex) !== authorID && isNotTeamate(authorID, pixel.getOwner(pIndex)))) {
+            if (boatPathChecker.check(authorID, pIndex)) return 2;
+            if (0 === remainingChecks--) return 0
         }
         return 1
     }
 
-    function n(y, A) {
-        for (var B, C, E, F, G, N, I, D = y; D < y + 50 * A; D += A)
-            if (B = xMin[z] - D, B = 1 > B ? 1 : B, C = yMin[z] - D, C = 1 >
-                C ? 1 : C, E = xMax[z] + D, E = E >= currentMapWidth - 1 ? currentMapWidth - 2 : E, F = yMax[z] + D, F = F >= currentMapHeight - 1 ? currentMapHeight - 2 : F, I = divideFloor(2 * fakeRandom.random() * (E - B + F - C), fakeRandom.value(100)), G = E - B, N = F - C, I <= G ? (x = B + I, t = C) : I <= G + N ? (x = E, t = C + I - G) : I <= 2 * G + N ? (x = B + I - G - N, t = F) : (x = B, t = C + I - 2 * G - N), B = k(pixel.toIndex(x, t)), 1 !== B) return B;
-        return 1
+    function generateRandomArea(initBoatDist, areaWidth) {
+    for (var maxBoatDist = initBoatDist; maxBoatDist < initBoatDist + 50 * areaWidth; maxBoatDist += areaWidth) {
+        var coordXMin = xMin[authorID] - maxBoatDist;
+        coordXMin = 1 > coordXMin ? 1 : coordXMin;
+        var coordYMin = yMin[authorID] - maxBoatDist;
+        coordYMin = 1 > coordYMin ? 1 : coordYMin;
+        var coordXMax = xMax[authorID] + maxBoatDist;
+        coordXMax = coordXMax >= currentMapWidth - 1 ? currentMapWidth - 2 : coordXMax;
+        var coordYMax = yMax[authorID] + maxBoatDist;
+        coordYMax = coordYMax >= currentMapHeight - 1 ? currentMapHeight - 2 : coordYMax;
+        var distThreshold = divideFloor(2 * fakeRandom.random() * (coordXMax - coordXMin + coordYMax - coordYMin), fakeRandom.value(100));
+        var xOffset = coordXMax - coordXMin;
+        var yOffset = coordYMax - coordYMin;
+        if (distThreshold <= xOffset) {
+            currentX = coordXMin + distThreshold;
+            currentY = coordYMin;
+        } else if (distThreshold <= xOffset + yOffset) {
+            currentX = coordXMax;
+            currentY = coordYMin + distThreshold - xOffset;
+        } else if (distThreshold <= 2 * xOffset + yOffset) {
+            currentX = coordXMin + distThreshold - xOffset - yOffset;
+            currentY = coordYMax;
+        } else {
+            currentX = coordXMin;
+            currentY = coordYMin + distThreshold - 2 * xOffset - yOffset;
+        }
+        var pIndex = pixel.toIndex(currentX, currentY);
+        var ownershipCheck = checkOwnership(pIndex);
+        if (1 !== ownershipCheck) return ownershipCheck;
     }
-    var l, x, t, z;
-    this.update = function(y, A) {
-        z = y;
-        if (0 === waterBorderPixels[z].length) return !1;
-        if (g()) {
-            var B = divideFloor(difficultyEngine.boatSendRatio[A] * troops[z], 100);
-            100 > B && 100 <= troops[z] && (B = 100);
-            if (100 <= B) return processSendBoat(z, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(x, t), B)
+    return 1;
+}
+
+    var remainingChecks, currentX, currentY, authorID;
+    this.update = function(param_authorID, A) {
+        authorID = param_authorID;
+        if (0 === waterBorderPixels[authorID].length) return !1;
+        if (generateRandomCoords()) {
+            var amount = divideFloor(difficultyEngine.boatSendRatio[A] * troops[authorID], 100);
+            if (100 > amount && 100 <= troops[authorID]) amount = 100;
+            if (100 <= amount) return processSendBoat(authorID, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(currentX, currentY), amount)
         }
         return !1
     }
