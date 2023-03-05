@@ -1720,7 +1720,7 @@ function EndGame() {
             }
             if (!singleplayer) dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(didWeWin, !1);
-            announcements.iy(!0);
+            announcements.checkAnnounceDeath(!0);
             gameLeaderboard.drawCanvas(!0);
             gameStatistics.drawCanvas(!0);
             mainHandler.canvasDirty = !0;
@@ -1747,7 +1747,7 @@ function Spawn() {
             cameraController.fitCameraToMap(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5);
             fadeIn.init();
         } else gameResultBox.show(!1, !1);
-        announcements.j3(18);
+        announcements.removeSpawnMessage(18);
         eA.j4();
         eA.drawCanvas();
         spawn = null;
@@ -2237,9 +2237,9 @@ function GameButtons() {
         gameButtonsCanvasCtx.fillRect(0, 0, 1, buttonSize);
         gameButtonsCanvasCtx.fillRect(0, buttonSize - 1, buttonSize, 1);
         gameButtonsCanvasCtx.fillRect(buttonSize - 1, 0, 1, buttonSize);
-        var C = .9 * buttonSize / sprites.getValueByID(0).width;
+        var buttonScaleFactor = .9 * buttonSize / sprites.getValueByID(0).width;
         gameButtonsCanvasCtx.imageSmoothingEnabled = !0;
-        gameButtonsCanvasCtx.setTransform(C, 0, 0, C, Math.floor((buttonSize - C * sprites.getValueByID(0).width) / 2), Math.floor((buttonSize - C * sprites.getValueByID(0).height) / 2));
+        gameButtonsCanvasCtx.setTransform(buttonScaleFactor, 0, 0, buttonScaleFactor, Math.floor((buttonSize - buttonScaleFactor * sprites.getValueByID(0).width) / 2), Math.floor((buttonSize - buttonScaleFactor * sprites.getValueByID(0).height) / 2));
         gameButtonsCanvasCtx.drawImage(sprites.getValueByID(0), 0, 0);
         gameButtonsCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
@@ -2258,7 +2258,10 @@ function GameButtons() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, troopBar.startingY - bIndex * buttonScalingFactor * canvasPadding - bIndex * buttonSize);
         mainCanvasCtx.fillStyle = blackSemiTransparent2;
         mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize);
-        selectedBIndex === bIndex + 1 && color === whiteRGB2 && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize));
+        if (selectedBIndex === bIndex + 1 && color === whiteRGB2) {
+            mainCanvasCtx.fillStyle = whiteMore2Transparent;
+            mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize);
+        }
         mainCanvasCtx.fillStyle = color;
         mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, 1);
         mainCanvasCtx.fillRect(0, 0, 1, buttonSize);
@@ -2283,9 +2286,19 @@ function GameButtons() {
         drawGameMenuButton()
     };
     this.toggleMenu = function() {
-        (this.menuVisible = !this.menuVisible) ? (isCanvasHidden = !1, singleplayer && 1 === clientStatus && !inSpawn && (setTimeout(function() {
-            mapUpdate.updatePartialMap()
-        }, 0), setAndroidState(0))) : (selectedBIndex = -1, drawGameMenuButton(), singleplayer && setAndroidState(1));
+        if (this.menuVisible = !this.menuVisible) {
+            isCanvasHidden = !1;
+            if (singleplayer && 1 === clientStatus && !inSpawn) {
+                setTimeout(function() {
+                    mapUpdate.updatePartialMap()
+                }, 0)
+            };
+            setAndroidState(0);
+        } else {
+            selectedBIndex = -1;
+            drawGameMenuButton();
+            if (singleplayer) setAndroidState(1);
+        }
         mainHandler.canvasDirty = !0
     };
     this.mouseDown = function(xPos, yPos) {
@@ -2328,25 +2341,31 @@ function GameButtons() {
     };
     this.drawCanvasImage = function() {
         if (this.menuVisible) {
-            var B = Math.floor(5.5 * buttonSize);
+            var buttonWidth = Math.floor(5.5 * buttonSize);
             mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, troopBar.startingY);
             mainCanvasCtx.fillStyle = blackSemiTransparent2;
-            mainCanvasCtx.fillRect(0, 0, B, buttonSize);
-            0 === selectedBIndex ? (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize)) : 1 === selectedBIndex && (mainCanvasCtx.fillStyle = whiteMore2Transparent, mainCanvasCtx.fillRect(4 * buttonSize, 0, Math.floor(1.5 * buttonSize), buttonSize));
+            mainCanvasCtx.fillRect(0, 0, buttonWidth, buttonSize);
+            if (0 === selectedBIndex) {
+                mainCanvasCtx.fillStyle = whiteMore2Transparent;
+                mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize)
+            } else if (1 === selectedBIndex) {
+                mainCanvasCtx.fillStyle = whiteMore2Transparent;
+                mainCanvasCtx.fillRect(4 * buttonSize, 0, Math.floor(1.5 * buttonSize), buttonSize);
+            }
             mainCanvasCtx.fillStyle = whiteRGB2;
-            mainCanvasCtx.fillRect(0, 0, B, 1);
+            mainCanvasCtx.fillRect(0, 0, buttonWidth, 1);
             mainCanvasCtx.fillRect(0, 0, 1, buttonSize);
             mainCanvasCtx.fillRect(4 * buttonSize, 0, 1, buttonSize);
-            mainCanvasCtx.fillRect(0, buttonSize - 1, B, 1);
-            mainCanvasCtx.fillRect(B - 1, 0, 1, buttonSize);
+            mainCanvasCtx.fillRect(0, buttonSize - 1, buttonWidth, 1);
+            mainCanvasCtx.fillRect(buttonWidth - 1, 0, 1, buttonSize);
             mainCanvasCtx.font = fontStyle;
             mainCanvasCtx.textBaseline = middleAlign;
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.fillText(buttonLabels[0], 2 * buttonSize, .54 * buttonSize);
-            B = .4 * buttonSize;
-            gameButtons.drawMenuSymbol(canvasPadding + 4 * buttonSize + (1.5 * buttonSize - B) / 2, troopBar.startingY + .3 * buttonSize, B);
+            var menuSymbolSize = .4 * buttonSize;
+            gameButtons.drawMenuSymbol(canvasPadding + 4 * buttonSize + (1.5 * buttonSize - menuSymbolSize) / 2, troopBar.startingY + .3 * buttonSize, menuSymbolSize);
             drawGameButtons(1, gameButtons.canSurrender(myID) ? whiteRGB2 : gray128RGB);
-            2 <= statisticNumbers.currentDataPointIndex && drawGameButtons(2, whiteRGB2);
+            if (2 <= statisticNumbers.currentDataPointIndex) drawGameButtons(2, whiteRGB2);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(gameButtonsCanvas, canvasPadding, troopBar.startingY)
     };
@@ -2367,99 +2386,113 @@ function GameButtons() {
 }
 
 function Announcements() {
-    var g, k, n, l, x, pluralLeaveLabels, monoLeaveLabels;
+    var latestDeaths, latestKillers, deathAnnouncementTime, latestDeathCounts, lastDeathOccuredTime, pluralLeaveLabels, monoLeaveLabels;
 
-    function y() {
-        return troopBar.md(announcements.ma()) ? peace.visible ? troopBar.startingY - troopBar.height - 2 * canvasPadding : troopBar.startingY - canvasPadding : peace.visible ? canvasHeight - troopBar.height - (isZoom ? 3 : 2) * canvasPadding : canvasHeight - canvasPadding
+    function getBaseAnnouncementY() {
+        if (troopBar.overlapsWithAnnouncements(announcements.getAnnouncementWidth())) {
+            if (peace.visible) return troopBar.startingY - troopBar.height - 2 * canvasPadding
+            else return troopBar.startingY - canvasPadding
+        } else if (peace.visible) return canvasHeight - troopBar.height - (isZoom ? 3 : 2) * canvasPadding
+        else return canvasHeight - canvasPadding
     }
-
-    function announce(displayTime, message, messageID, playerID, P, U, W, X) {
+    function announce(displayTime, message, messageID, playerID, fontStyle, bgFillStyle, nextHoverToTarget, canHoverToTarget) {
         var isEmoji = 1E3 <= messageID;
-        var messageWidth = Math.floor(gameMessages.measureText(message, announcements.fontStyle) + 1.5 * I + (isEmoji ? announcementHeight : 1.5 * I));
+        var messageWidth = Math.floor(gameMessages.measureText(message, announcements.fontStyle) + 1.5 * marginWidth + (isEmoji ? announcementHeight : 1.5 * marginWidth));
         if (messageWidth + canvasPadding > canvasWidth && !isEmoji && 50 !== messageID && 20 < message.length) {
-            var ba = Math.floor(.5 * message.length);
-            announce(displayTime, message.substring(0, ba), messageID, playerID, P, U, W, X);
-            announce(displayTime, message.substring(ba), messageID, playerID, P, U, W, X)
+            var totalAnnouncementWidth = Math.floor(.5 * message.length);
+            announce(displayTime, message.substring(0, totalAnnouncementWidth), messageID, playerID, fontStyle, bgFillStyle, nextHoverToTarget, canHoverToTarget);
+            announce(displayTime, message.substring(totalAnnouncementWidth), messageID, playerID, fontStyle, bgFillStyle, nextHoverToTarget, canHoverToTarget)
         } else {
-            var ca = messageID - 1E3;
-            ba = messageWidth + (50 === messageID ? acceptButtonWidth : 0);
+            totalAnnouncementWidth = messageWidth + (50 === messageID ? acceptButtonWidth : 0);
             var messageCanvas = document.createElement("canvas");
             messageCanvas.width = messageWidth;
             messageCanvas.height = announcementHeight;
-            var S = messageCanvas.getContext("2d", {
+            var messageCanvasCtx = messageCanvas.getContext("2d", {
                 alpha: !0
             });
-            S.font = announcements.fontStyle;
-            S.textBaseline = middleAlign;
-            S.textAlign = leftAlign;
-            S.clearRect(0, 0, messageWidth, announcementHeight);
-            S.fillStyle = U;
-            S.fillRect(0, 0, messageWidth, announcementHeight);
-            S.fillStyle = P;
-            S.fillText(message, Math.floor(1.5 * I), Math.floor(announcementHeight / 2));
-            isEmoji && (isEmoji = announcementHeight / emojis.width, S.imageSmoothingEnabled = !0, S.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - announcementHeight, 0), S.drawImage(emojis.emojiCanvasList[ca], 0, 0));
+            messageCanvasCtx.font = announcements.fontStyle;
+            messageCanvasCtx.textBaseline = middleAlign;
+            messageCanvasCtx.textAlign = leftAlign;
+            messageCanvasCtx.clearRect(0, 0, messageWidth, announcementHeight);
+            messageCanvasCtx.fillStyle = bgFillStyle;
+            messageCanvasCtx.fillRect(0, 0, messageWidth, announcementHeight);
+            messageCanvasCtx.fillStyle = fontStyle;
+            messageCanvasCtx.fillText(message, Math.floor(1.5 * marginWidth), Math.floor(announcementHeight / 2));
+            if (isEmoji) {
+                isEmoji = announcementHeight / emojis.width;
+                messageCanvasCtx.imageSmoothingEnabled = !0;
+                messageCanvasCtx.setTransform(isEmoji, 0, 0, isEmoji, messageWidth - announcementHeight, 0);
+                messageCanvasCtx.drawImage(emojis.emojiCanvasList[messageID - 1E3], 0, 0);
+            }
             pendingAnnouncements.unshift({
                 time: displayTime,
                 label: message,
                 id: messageID,
                 player: playerID,
                 canvas: messageCanvas,
-                mU: P,
-                mV: U,
+                announcementFontStyle: fontStyle,
+                announcementFillStyle: bgFillStyle,
                 width: messageWidth,
-                mb: ba,
-                mW: W,
-                mX: X
+                announcementWidth: totalAnnouncementWidth,
+                nextHoverTo: nextHoverToTarget,
+                canHoverTo: canHoverToTarget
             })
         }
     }
 
-    function B(H, M) {
-        var Q, R = 0,
-            P = pendingAnnouncements.length;
-        for (Q = 0; Q < P; Q++)
-            if (pendingAnnouncements[Q].id === H && (R++, R >= M)) {
-                pendingAnnouncements.splice(Q, 1);
-                break
+    function removeExcessSameMessages(messageID, threshold) {
+        var pendingIndex, sameMessageCount = 0;
+        for (pendingIndex = 0; pendingIndex < pendingAnnouncements.length; pendingIndex++) {
+            if (pendingAnnouncements[pendingIndex].id === messageID) {
+                sameMessageCount++;
+                if (sameMessageCount >= threshold) {
+                    pendingAnnouncements.splice(pendingIndex, 1);
+                    break
+                }
             }
+        }
     }
 
     function getColorRGB(R, G, B) {
         return "rgb(" + R + "," + G + "," + B + ")"
     }
 
-    function E(H, M) {
-        var aIndex, R = !1;
+    function removePendingAnnouncement(messageID, playerID) {
+        var aIndex, removeSuccessful = !1;
         for (aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
-            if (!(pendingAnnouncements[aIndex].id !== H || M !== maxEntities && pendingAnnouncements[aIndex].player !== M)) {
+            if (pendingAnnouncements[aIndex].id === messageID && (playerID === maxEntities || pendingAnnouncements[aIndex].player === playerID)) {
                 pendingAnnouncements.splice(aIndex, 1);
-                R = !0;
+                removeSuccessful = !0;
             }
         }
-        return R
+        return removeSuccessful
     }
-    var pendingAnnouncements, announcementHeight, I, acceptButtonWidth, K, tickCounter, acceptButCanvas;
+    var pendingAnnouncements, announcementHeight, marginWidth, acceptButtonWidth, maxAnnouncementsCount, tickCounter, acceptButCanvas;
     this.init = function() {
         tickCounter = 0;
-        K = isZoom ? 7 : 12;
-        g = [0, 0, 0];
-        k = [0, 0, 0];
-        n = [220, 180, 180];
-        l = [0, 0, 0];
-        x = [0, 0, 0];
+        maxAnnouncementsCount = isZoom ? 7 : 12;
+        latestDeaths = [0, 0, 0];
+        latestKillers = [0, 0, 0];
+        deathAnnouncementTime = [220, 180, 180];
+        latestDeathCounts = [0, 0, 0];
+        lastDeathOccuredTime = [0, 0, 0];
         pluralLeaveLabels = [" were conquered.", " left the game.", " surrendered."];
         monoLeaveLabels = [" was conquered by ", " left the game.", " surrendered."];
         pendingAnnouncements = [];
         this.setCanvasVariables();
-        inSpawn && this.genericAnnouncement(0, 18);
+        if (inSpawn) this.genericAnnouncement(0, 18);
         var mapLandInfoLabel = "Map: " + mapInfo.getMapName() + "   Pixels: " + attacksBar.splitText(configFakeMap.totalNonBorderPixelsCount) + "   Land: " + attacksBar.splitText(configFakeMap.landPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.landPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")",
             mapSpecialInfoLabel = "";
-        0 < configFakeMap.waterPixelsCount && (mapSpecialInfoLabel += "Water: " + attacksBar.splitText(configFakeMap.waterPixelsCount) +
-            " (" + gameStatistics.nG(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
-        0 < configFakeMap.mountainPixelsCount && (mapSpecialInfoLabel += 0 < configFakeMap.waterPixelsCount ? "   " : "", mapSpecialInfoLabel += "Mountains: " + attacksBar.splitText(configFakeMap.mountainPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")");
+        if (0 < configFakeMap.waterPixelsCount) {
+            mapSpecialInfoLabel += "Water: " + attacksBar.splitText(configFakeMap.waterPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")";
+        }
+        if (0 < configFakeMap.mountainPixelsCount) {
+            mapSpecialInfoLabel += 0 < configFakeMap.waterPixelsCount ? "   " : "";
+            mapSpecialInfoLabel += "Mountains: " + attacksBar.splitText(configFakeMap.mountainPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")";
+        }
         announce(340, mapLandInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
-        0 < mapSpecialInfoLabel.length && announce(340, mapSpecialInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
-        10 === gamemode && announce(120, "Full sending against human players is disabled.", 6, 0, getColorRGB(235, 255, 120), blackMoreOpaque, -1, !1);
+        if (0 < mapSpecialInfoLabel.length) announce(340, mapSpecialInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
+        if (10 === gamemode) announce(120, "Full sending against human players is disabled.", 6, 0, getColorRGB(235, 255, 120), blackMoreOpaque, -1, !1);
         this.announceDescription()
     };
     this.announceDescription = function() {
@@ -2474,18 +2507,18 @@ function Announcements() {
         announcementHeight = 10 > announcementHeight ? 10 : announcementHeight;
         this.fontRatio = Math.floor(2 * announcementHeight / 3);
         this.fontStyle = fontWeightBold + this.fontRatio + fontSizeArial;
-        I = Math.floor(announcementHeight / 5);
+        marginWidth = Math.floor(announcementHeight / 5);
         if (0 < pendingAnnouncements.length) {
             for (var aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
                 var cAnnouncement = pendingAnnouncements.pop()
-                announce(cAnnouncement.time, cAnnouncement.label, cAnnouncement.id, cAnnouncement.player, cAnnouncement.mU, cAnnouncement.mV, cAnnouncement.mW, cAnnouncement.mX);
+                announce(cAnnouncement.time, cAnnouncement.label, cAnnouncement.id, cAnnouncement.player, cAnnouncement.announcementFontStyle, cAnnouncement.announcementFillStyle, cAnnouncement.nextHoverTo, cAnnouncement.canHoverTo);
             }
         }
         this.setAcceptButtonCanvasVariables()
     };
     this.setAcceptButtonCanvasVariables = function() {
         acceptButCanvas = document.createElement("canvas");
-        acceptButtonWidth = gameMessages.measureText("Accept", this.fontStyle) + 5 * I;
+        acceptButtonWidth = gameMessages.measureText("Accept", this.fontStyle) + 5 * marginWidth;
         acceptButCanvas.height = announcementHeight;
         acceptButCanvas.width = acceptButtonWidth;
         var acceptButCanvasCtx = acceptButCanvas.getContext("2d", {
@@ -2500,14 +2533,16 @@ function Announcements() {
         acceptButCanvasCtx.fillStyle = whiteRGB2;
         acceptButCanvasCtx.fillText("Accept", Math.floor(acceptButtonWidth / 2), Math.floor(announcementHeight / 2))
     };
-    this.ma = function() {
+    this.getAnnouncementWidth = function() {
         if (peace.visible) return peace.width;
         var H = pendingAnnouncements.length;
-        return 0 === H ? 0 : 1 === H ? pendingAnnouncements[0].mb : getMax(pendingAnnouncements[0].mb, pendingAnnouncements[1].mb)
+        if (0 === H) return 0
+        else if (1 === H) return pendingAnnouncements[0].announcementWidth
+        else return getMax(pendingAnnouncements[0].announcementWidth, pendingAnnouncements[1].announcementWidth)
     };
     this.mouseDown = function(xPos, yPos) {
-        for (var Q = y(), R, mIndex = pendingAnnouncements.length - 1; 0 <= mIndex; mIndex--)
-            if (R = Q - (mIndex + 1) * announcementHeight, yPos >= R && yPos < R + announcementHeight) {
+        for (var announcementYCoord, mIndex = pendingAnnouncements.length - 1; 0 <= mIndex; mIndex--) {
+            if (announcementYCoord = getBaseAnnouncementY() - (mIndex + 1) * announcementHeight, yPos >= announcementYCoord && yPos < announcementYCoord + announcementHeight) {
                 if (50 === pendingAnnouncements[mIndex].id) {
                     if (xPos >= prevClientWidth - acceptButtonWidth - canvasPadding - pendingAnnouncements[mIndex].width) {
                         if (xPos >= prevClientWidth - acceptButtonWidth - canvasPadding) {
@@ -2520,21 +2555,23 @@ function Announcements() {
                     break
                 }
                 if (xPos >= prevClientWidth - pendingAnnouncements[mIndex].width - canvasPadding) {
-                    if (pendingAnnouncements[mIndex].mX) {
+                    if (pendingAnnouncements[mIndex].canHoverTo) {
                         cameraController.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
-                        if (0 <= pendingAnnouncements[mIndex].mW) {
-                            Q = pendingAnnouncements[mIndex].mW;
-                            pendingAnnouncements[mIndex].mW = pendingAnnouncements[mIndex].player;
-                            pendingAnnouncements[mIndex].player = Q;
+                        if (0 <= pendingAnnouncements[mIndex].nextHoverTo) {
+                            var nextHoverTo = pendingAnnouncements[mIndex].nextHoverTo;
+                            pendingAnnouncements[mIndex].nextHoverTo = pendingAnnouncements[mIndex].player;
+                            pendingAnnouncements[mIndex].player = nextHoverTo;
                         }
                     }
                     return !0;
                 }
                 break
-            } return !1
+            }
+        }
+        return !1
     };
-    this.j3 = function(H) {
-        for (var M = pendingAnnouncements.length - 1; 0 <= M; M--) pendingAnnouncements[M].id === H && (pendingAnnouncements[M].time = 1)
+    this.removeSpawnMessage = function(spawnMessageID) {
+        for (var paIndex = pendingAnnouncements.length - 1; 0 <= paIndex; paIndex--) pendingAnnouncements[paIndex].id === spawnMessageID && (pendingAnnouncements[paIndex].time = 1)
     };
     this.genericAnnouncement = function(id, messageType) {
         if (0 === messageType) {
@@ -2542,7 +2579,7 @@ function Announcements() {
             gameMessages.set(id, 0);
             announce(isZoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", blackMoreOpaque, -1, false);
         } else if (1 === messageType) {
-            E(50, maxEntities);
+            removePendingAnnouncement(50, maxEntities);
             gameMessages.set(id, 1);
             announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", blackMoreOpaque, -1, true);
             cameraController.hoverTo(id, 2700, true, 0);
@@ -2557,16 +2594,16 @@ function Announcements() {
         } else if (4 === messageType) {
             playersIngame--;
             spectatorCount--;
-            this.mj(1, id, id);
+            this.addLatestDeath(1, id, id);
         } else if (5 === messageType) {
             if (2 !== playerStatus[id] && playerActions.isHuman(myID)) {
-                B(1, 5);
+                removeExcessSameMessages(1, 5);
                 if (eA.ml(id)) announce(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, getColorRGB(255, 200, 180), blackMoreOpaque, -1, true);
                 else announce(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", blackMoreOpaque, -1, true);
             }
         } else if (18 === messageType) announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, false);
         else if (21 === messageType) announce(220, "You surrendered!", messageType, 0, "rgb(255,40,40)", blackMoreOpaque, -1, false);
-        else if (22 === messageType) this.mj(2, id, id);
+        else if (22 === messageType) this.addLatestDeath(2, id, id);
     };
     this.error = function(errorCode) {
         announce(200, "Error [" + errorCode + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, !1);
@@ -2633,14 +2670,14 @@ function Announcements() {
     };
     this.nonAggression = function(friendID, ratifier) {
         if (ratifier === 0) {
-            if (E(50, friendID)) {
+            if (removePendingAnnouncement(50, friendID)) {
                 announce(128, "You signed a non-aggression pact with " + nickname[friendID] + ".", 52, friendID, getColorRGB(180, 255, 180), blackMoreOpaque, -1, !0);
                 eA.showIcon(friendID, 2, 255);
             } else {
                 announce(384, "You asked " + nickname[friendID] + " to sign a non-aggression pact.", 51, friendID, getColorRGB(210, 210, 255), blackMoreOpaque, -1, !0);
             }
         } else {
-            if (E(51, friendID)) {
+            if (removePendingAnnouncement(51, friendID)) {
                 announce(128, nickname[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, !0);
                 eA.showIcon(friendID, 2, 255);
             } else {
@@ -2669,10 +2706,11 @@ function Announcements() {
         else announce(230, message + nickname[friends[0]] + " to attack " + nickname[targetID] + ".", 66, friends[0], fIndex, blackMoreOpaque, targetID, true);
     };    
     this.requestedToAttack = function(requesterID, targetID) {
-        land[requesterID] > 2 * land[myID] ? announce(230, nickname[requesterID] + " orders you to attack " + nickname[targetID] + "!", 66, requesterID, whiteRGB2, "rgba(90,50,5,0.9)", targetID, !0) : announce(230, nickname[requesterID] + " asks you to attack " + nickname[targetID] + ".", 66, requesterID, whiteRGB2, "rgba(75,65,5,0.9)", targetID, !0)
+        if (land[requesterID] > 2 * land[myID]) announce(230, nickname[requesterID] + " orders you to attack " + nickname[targetID] + "!", 66, requesterID, whiteRGB2, "rgba(90,50,5,0.9)", targetID, !0)
+        else announce(230, nickname[requesterID] + " asks you to attack " + nickname[targetID] + ".", 66, requesterID, whiteRGB2, "rgba(75,65,5,0.9)", targetID, !0)
     };
-    this.n7 = function(H, M) {
-        E(H, M)
+    this.removePendingAnnouncement = function(messageID, playerID) {
+        removePendingAnnouncement(messageID, playerID)
     };
     this.lowBalance = function() {
         if (100 > troops[myID]) announce(80, "Your balance is too low!", 9, 0, whiteRGB2, blackMoreOpaque, -1, !1)
@@ -2688,56 +2726,64 @@ function Announcements() {
             var isBot = 2 === playerStatus[targetID] || targetID >= playerCount;
             var announcementsCount = 200 - 20 * pendingAnnouncements.length;
             announce(80 > announcementsCount ? 80 : announcementsCount, (isBot ? "A bot" : nickname[targetID]) + " supported you with " + attacksBar.splitText(amount) + " resource" + (1 === amount ? "" : "s") + ".", 31, targetID, blackRGB, isBot ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, !0);
-            B(31, isZoom ? 4 : 6)
+            removeExcessSameMessages(31, isZoom ? 4 : 6)
         }
     };
-    this.iy = function(H) {
-        var M, Q = mainHandler.getTicksElapsed();
-        for (M = 2; 0 <= M; M--) 0 < l[M] && (H || x[M] < Q - 220) && this.nL(M)
+    this.checkAnnounceDeath = function(notConsiderOccurenceTime) {
+        for (var deathTypeIndex = 2; 0 <= deathTypeIndex; deathTypeIndex--) {
+            if (0 < latestDeathCounts[deathTypeIndex] && (notConsiderOccurenceTime || lastDeathOccuredTime[deathTypeIndex] < mainHandler.getTicksElapsed() - 220)) this.announceDeath(deathTypeIndex)
+        }
     };
-    this.nL = function(H) {
-        var message = l[H];
-        var Q = g[H];
-        l[H] = 0;
+    this.announceDeath = function(deathType) {
+        var message = latestDeathCounts[deathType];
+        var authorID = latestDeaths[deathType];
+        latestDeathCounts[deathType] = 0;
         if (1 === message) {
-            message = nickname[Q] + monoLeaveLabels[H];
-            if (0 === H) message += nickname[k[H]] + "."
-            announce(n[H], message, 7, k[H], whiteRGB2, blackMoreOpaque, -1, !0)
+            message = nickname[authorID] + monoLeaveLabels[deathType];
+            if (0 === deathType) message += nickname[latestKillers[deathType]] + "."
+            announce(deathAnnouncementTime[deathType], message, 7, latestKillers[deathType], whiteRGB2, blackMoreOpaque, -1, !0)
         } else if (2 <= message) {
-            message = nickname[Q] + " and " + (message - 1) + " other player" + (2 === message ? "" : "s") + pluralLeaveLabels[H];
-            announce(n[H], message, 7, Q, whiteRGB2, blackMoreOpaque, -1, !1);
+            message = nickname[authorID] + " and " + (message - 1) + " other player" + (2 === message ? "" : "s") + pluralLeaveLabels[deathType];
+            announce(deathAnnouncementTime[deathType], message, 7, authorID, whiteRGB2, blackMoreOpaque, -1, !1);
         }
     };
-    this.mj = function(H, M, Q) {
-        var R = mainHandler.getTicksElapsed(),
-            P = l[H] + 1;
-        l[H]++;
-        g[H] = M;
-        k[H] = Q;
-        if (1 === P) x[H] = R
-        if (1 === P && (32 > playersIngame || 2 === clientStatus)) this.nL(H)
-        else if (1 < P && (x[H] < R - 140 || 2 === clientStatus)) this.nL(H)
+    this.addLatestDeath = function(deathType, deathID, killerID) {
+        latestDeathCounts[deathType]++;
+        latestDeaths[deathType] = deathID;
+        latestKillers[deathType] = killerID;
+        if (1 === latestDeathCounts[deathType]) lastDeathOccuredTime[deathType] = mainHandler.getTicksElapsed()
+        if (1 === latestDeathCounts[deathType] && (32 > playersIngame || 2 === clientStatus)) this.announceDeath(deathType)
+        else if (1 < latestDeathCounts[deathType] && (lastDeathOccuredTime[deathType] < mainHandler.getTicksElapsed() - 140 || 2 === clientStatus)) this.announceDeath(deathType)
     };
     this.update = function() {
-        var H, M = pendingAnnouncements.length - K;
-        M = 1 >= M ? 1 : M * M;
-        for (H = pendingAnnouncements.length - 1; 0 <= H; H--) 0 < pendingAnnouncements[H].time && (pendingAnnouncements[H].time -= M, 0 >= pendingAnnouncements[H].time && pendingAnnouncements.splice(H, 1));
-        if (128 !== tickCounter && (tickCounter++, !(128 > tickCounter)))
-            for (H = 5, M = aliveCount - 1; 0 <= M; M--) {
-                if (1 === playerStatus[aliveEntities[M]] && 0 < H--) {
-                    announce(240, nickname[aliveEntities[M]] + " joined the game.", 1, aliveEntities[M], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
-                }
+        var paIndex, timeReduction = pendingAnnouncements.length - maxAnnouncementsCount;
+        timeReduction = 1 >= timeReduction ? 1 : timeReduction * timeReduction;
+        for (paIndex = pendingAnnouncements.length - 1; 0 <= paIndex; paIndex--) {
+            if (0 < pendingAnnouncements[paIndex].time) {
+                pendingAnnouncements[paIndex].time -= timeReduction;
+                if (0 >= pendingAnnouncements[paIndex].time) pendingAnnouncements.splice(paIndex, 1);
             }
-        this.iy(!1)
+        }
+        if (128 !== tickCounter) {
+            tickCounter++;
+            if (128 <= tickCounter) {
+                for (var specialMessageQuota = 5, aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
+                    if (1 === playerStatus[aliveEntities[aliveIndex]] && 0 < specialMessageQuota--) {
+                        announce(240, nickname[aliveEntities[aliveIndex]] + " joined the game.", 1, aliveEntities[aliveIndex], blackRGB, "rgba(255,255,255,0.75)", -1, !0);
+                    }
+                }    
+            }
+        }
+        this.checkAnnounceDeath(!1)
     };
     this.drawCanvasImage = function() {
-        var H = y(), M, aIndex;
+        var announcementY, aIndex;
         for (aIndex = pendingAnnouncements.length - 1; 0 <= aIndex; aIndex--) {
-            M = H - (aIndex + 1) * announcementHeight;
+            announcementY = getBaseAnnouncementY() - (aIndex + 1) * announcementHeight;
             if (50 === pendingAnnouncements[aIndex].id) {
-                mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - acceptButtonWidth - canvasPadding, M);
-                mainCanvasCtx.drawImage(acceptButCanvas, prevClientWidth - acceptButtonWidth - canvasPadding, M)
-            } else mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - canvasPadding, M)
+                mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - acceptButtonWidth - canvasPadding, announcementY);
+                mainCanvasCtx.drawImage(acceptButCanvas, prevClientWidth - acceptButtonWidth - canvasPadding, announcementY)
+            } else mainCanvasCtx.drawImage(pendingAnnouncements[aIndex].canvas, prevClientWidth - pendingAnnouncements[aIndex].width - canvasPadding, announcementY)
         }
     }
 }
@@ -3569,7 +3615,8 @@ function Peace() {
     }
 
     function getPeaceBarYPos() {
-        return troopBar.md(announcements.ma()) ? troopBar.startingY - peaceBarHeight - canvasPadding : canvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * canvasPadding
+        if (troopBar.overlapsWithAnnouncements(announcements.getAnnouncementWidth())) return troopBar.startingY - peaceBarHeight - canvasPadding
+        else return canvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * canvasPadding
     }
     var peaceBarHeight, peaceCanvas, peaceCanvasCtx, peaceIconCanvas, myChoice, peaceProgress, peaceRequirement, voterList, hasVoted, countDown, oldTop10Land, peaceCount, timeBeforeHidden;
     this.init = function() {
@@ -3804,8 +3851,8 @@ function TroopBar() {
     this.visible = function() {
         return !(!visibility || gameButtons.menuVisible && startingX < Math.floor(canvasPadding + 5.5 * this.height))
     };
-    this.md = function(I) {
-        return this.visible() ? startingX + troopBarWidth > canvasWidth - I - canvasPadding : !1
+    this.overlapsWithAnnouncements = function(announcementsWidth) {
+        return this.visible() ? startingX + troopBarWidth > canvasWidth - announcementsWidth - canvasPadding : !1
     };
     this.toggleVisibility = function() {
         visibility = !0
@@ -7447,7 +7494,7 @@ function UserSettings() {
         settingsArray[4] = canvasWidth < canvasHeight ? 0 : 1;
         settingsArray[5] = 0;
         settingsArray[6] = "000";
-        settingsArray[7] = "0";
+        settingsArray[7] = "302332333132331222330213200000000000000000000000000000";
         settingsArray[8] = "0";
         settingsArray[9] = "0";
         userSettings.formatSettings()
@@ -7614,7 +7661,7 @@ function manageDeathAnnouncements(id, attackers) {
                 announcements.genericAnnouncement(id, 0);
                 return
             } 
-            if (id < playerCount) announcements.mj(0, id, largestAttacker)
+            if (id < playerCount) announcements.addLatestDeath(0, id, largestAttacker)
     }
 }
 
@@ -8381,10 +8428,10 @@ function kN() {
             } B += O;
         B %= aliveCount
     };
-    this.ml = function(O) {
-        var T = O + 2 * maxEntities,
+    this.ml = function(playerID) {
+        var T = playerID + 2 * maxEntities,
             Y = ca[T];
-        return 0 < Y ? (announcements.n7(50, O), ca[T] = 0, 255 === Y) : !1
+        return 0 < Y ? (announcements.removePendingAnnouncement(50, playerID), ca[T] = 0, 255 === Y) : !1
     };
     this.li = function(O) {
         return 255 === ca[O + 2 * maxEntities]
