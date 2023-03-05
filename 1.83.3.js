@@ -838,7 +838,7 @@ function gameTick() {
 }
 
 function clientTick2() {
-    cameraController.update();
+    autoCamera.update();
     gameResultBox.update();
     gameMessages.update();
     fadeIn.update();
@@ -1182,7 +1182,7 @@ function BoatSpeed() {
     }
 }
 
-function CameraController() {
+function AutoCamera() {
     function setCameraSettings(duration) {
         previousUpdateTime = mainHandler.time;
         cameraUpdateInterval = 33;
@@ -1215,7 +1215,7 @@ function CameraController() {
     };
     this.hoverTo = function(targetID, duration, param_zoomToFitActive, zoomSpeed) {
         if (!isCanvasHidden && !(isCameraActive && !param_zoomToFitActive && isZoomToFitActive) && 0 !== land[targetID]) {
-            mapGridHandler.gk = !1;
+            mouseCamera.isPanning = !1;
             isZoomToFitActive = param_zoomToFitActive;
             setCameraSettings(duration);
             mapCenterX = (xMin[targetID] + xMax[targetID] + 1) / 2;
@@ -1230,7 +1230,7 @@ function CameraController() {
         }
     };
     this.zoomToFitMap = function(zoomSpeed) {
-        mapGridHandler.gk = !1;
+        mouseCamera.isPanning = !1;
         isZoomToFitActive = !0;
         setCameraSettings(zoomSpeed);
         calculateCameraFit(0, 0, currentMapWidth - 1, currentMapHeight - 1);
@@ -1241,8 +1241,8 @@ function CameraController() {
     this.fitCameraToMap = function(minX, minY, maxX, maxY) {
         calculateCameraFit(minX, minY, maxX, maxY);
         mainScaleFactor = targetScaleFactor;
-        mapGridHandler.gw(mapCenterX, prevClientWidth / 2);
-        mapGridHandler.gx(mapCenterY, prevClientHeight / 2);
+        mouseCamera.updateViewportX(mapCenterX, prevClientWidth / 2);
+        mouseCamera.updateViewportY(mapCenterY, prevClientHeight / 2);
         viewport.updateViewportCoords()
     };
     this.deactivateCamera = function() {
@@ -1275,8 +1275,8 @@ function CameraController() {
             mainScaleFactor = currentScaleFactor * Math.pow(targetScaleFactor / currentScaleFactor, currentStep);
             var scaleFactorChangeRatio = mainScaleFactor / oldMainScaleFactor,
                 transitionScaleFactorChangeRatio = 1 - (currentScaleFactor * Math.pow(targetScaleFactor / currentScaleFactor, 1 - currentStep) - currentScaleFactor) / (targetScaleFactor - currentScaleFactor);
-            mapGridHandler.gw(viewportCenterX + transitionScaleFactorChangeRatio * (mapCenterX - viewportCenterX), prevClientWidth / 2);
-            mapGridHandler.gx(viewportCenterY + transitionScaleFactorChangeRatio * (mapCenterY - viewportCenterY), prevClientHeight / 2);
+            mouseCamera.updateViewportX(viewportCenterX + transitionScaleFactorChangeRatio * (mapCenterX - viewportCenterX), prevClientWidth / 2);
+            mouseCamera.updateViewportY(viewportCenterY + transitionScaleFactorChangeRatio * (mapCenterY - viewportCenterY), prevClientHeight / 2);
             eA.zoom(scaleFactorChangeRatio, (oldViewportX * scaleFactorChangeRatio - viewportX) / (1 - scaleFactorChangeRatio), (oldViewportY * scaleFactorChangeRatio - viewportY) / (1 - scaleFactorChangeRatio));
             viewport.updateViewportCoords();
             if (1 <= currentStep) {
@@ -1497,9 +1497,9 @@ function drawCanvasImages() {
     gradientEdge.fillBackgroundColor();
     mainCanvasCtx.setTransform(mainScaleFactor, 0, 0, mainScaleFactor, 0, 0);
     mainCanvasCtx.imageSmoothingEnabled = 3 > mainScaleFactor;
-    mainCanvasCtx.drawImage(mapBaseCanvas, mapGridHandler.toX(), mapGridHandler.toY());
+    mainCanvasCtx.drawImage(mapBaseCanvas, mouseCamera.toX(), mouseCamera.toY());
     playerAura.drawCanvasImage();
-    mainCanvasCtx.drawImage(mapCanvas, mapGridHandler.toX(), mapGridHandler.toY());
+    mainCanvasCtx.drawImage(mapCanvas, mouseCamera.toX(), mouseCamera.toY());
     mainCanvasCtx.imageSmoothingEnabled = !1;
     gradientEdge.drawCanvasImage();
     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1512,7 +1512,7 @@ function drawCanvasImages() {
         attackRatioBar.drawCanvasImage();
         peace.drawCanvasImage();
         gameStatistics.drawCanvasImage();
-        mapGridHandler.drawCanvasImage();
+        mouseCamera.drawCanvasImage();
         gameMessages.drawCanvasImage();
         teams.drawCanvasImage();
         troopBar.drawCanvasImage();
@@ -1744,7 +1744,7 @@ function Spawn() {
             statisticNumbers.numbers[8] = troops[myID];
             attackRatioBar.toggleVisibility();
             gameStatistics.j2();
-            cameraController.fitCameraToMap(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5);
+            autoCamera.fitCameraToMap(xMin[myID] - 5, yMin[myID] - 5, xMax[myID] + 5, yMax[myID] + 5);
             fadeIn.init();
         } else gameResultBox.show(!1, !1);
         announcements.removeSpawnMessage(18);
@@ -1808,7 +1808,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     statistics.init();
     mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0);
     gameLeaderboard.init();
-    mapGridHandler.init();
+    mouseCamera.init();
     attackRatioBar.init();
     peace.init();
     troopBar.init();
@@ -1839,7 +1839,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
 }
 
 function ja() {
-    cameraController.activateCamera();
+    autoCamera.activateCamera();
     0 === isAlive[myID] && gameResultBox.show(!1, !0);
     eA.drawCanvas()
 }
@@ -1852,8 +1852,8 @@ function leaveGame() {
     setAndroidState(0);
     showAd()
 }
-var difficultyEngine, speed, botBoatEngine, botManager, processAction, boatSpeed, cameraController, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attackBars, 
-    gameMessages, attackRatioBar, mapGridHandler, playtime, troopBar, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
+var difficultyEngine, speed, botBoatEngine, botManager, processAction, boatSpeed, autoCamera, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attackBars, 
+    gameMessages, attackRatioBar, mouseCamera, playtime, troopBar, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
     mapInfo, generateHeightmap, keyboardCamera, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, touchInputHandler, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
     wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
@@ -1865,7 +1865,7 @@ function construct() {
     botManager = new BotManager;
     processAction = new ProcessAction;
     boatSpeed = new BoatSpeed;
-    cameraController = new CameraController;
+    autoCamera = new AutoCamera;
     findSpawn = new FindSpawn;
     strings = new Strings;
     playerActions = new PlayerActions;
@@ -1875,7 +1875,7 @@ function construct() {
     attackBars = new AttackBars;
     gameMessages = new GameMessages;
     attackRatioBar = new AttackRatioBar;
-    mapGridHandler = new MapGridHandler;
+    mouseCamera = new MouseCamera;
     playtime = new Playtime;
     troopBar = new TroopBar;
     gameLeaderboard = new GameLeaderboard;
@@ -2549,14 +2549,14 @@ function Announcements() {
                             mIndex = pendingAnnouncements[mIndex].player;
                             this.nonAggression(mIndex, 0);
                             dataEncoder.nonAggression(mIndex);
-                        } else cameraController.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
+                        } else autoCamera.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
                         return true;
                     }
                     break
                 }
                 if (xPos >= prevClientWidth - pendingAnnouncements[mIndex].width - canvasPadding) {
                     if (pendingAnnouncements[mIndex].canHoverTo) {
-                        cameraController.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
+                        autoCamera.hoverTo(pendingAnnouncements[mIndex].player, 800, !1, 0);
                         if (0 <= pendingAnnouncements[mIndex].nextHoverTo) {
                             var nextHoverTo = pendingAnnouncements[mIndex].nextHoverTo;
                             pendingAnnouncements[mIndex].nextHoverTo = pendingAnnouncements[mIndex].player;
@@ -2582,15 +2582,15 @@ function Announcements() {
             removePendingAnnouncement(50, maxEntities);
             gameMessages.set(id, 1);
             announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", blackMoreOpaque, -1, true);
-            cameraController.hoverTo(id, 2700, true, 0);
+            autoCamera.hoverTo(id, 2700, true, 0);
         } else if (2 === messageType) {
             gameMessages.set(id, 2);
             announce(0, "Congratulations! You won the game.", 0, id, "rgb(10,255,255)", blackMoreOpaque, -1, true);
-            cameraController.hoverTo(id, 2700, true, 0);
+            autoCamera.hoverTo(id, 2700, true, 0);
         } else if (3 === messageType) {
             gameMessages.set(id, 2);
             announce(0, nickname[id] + " won the game.", 0, id, whiteRGB2, blackMoreOpaque, -1, true);
-            cameraController.hoverTo(id, 2700, true, 0);
+            autoCamera.hoverTo(id, 2700, true, 0);
         } else if (4 === messageType) {
             playersIngame--;
             spectatorCount--;
@@ -2613,7 +2613,7 @@ function Announcements() {
         gameMessages.set(winnerID, 2);
         if (100 > playerCount) announce(0, nickname[winnerID] + " won the game.", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0)
         else announce(0, nickname[winnerID] + " has been immortalized!", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, !0);
-        cameraController.hoverTo(winnerID, 2700, !0, 0)
+        autoCamera.hoverTo(winnerID, 2700, !0, 0)
     };
     this.newEmojiMessage = function(authorID, targetID, emojiID) {
         if (authorID === myID) announce(175, " Message to " + nickname[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, !0)
@@ -2651,7 +2651,7 @@ function Announcements() {
             }
         }
         if (9 !== gamemode) gameMessages.startGameMessage("Team " + teamColors.colorLabels[largestTeamID], 2, 1, 12);
-        cameraController.zoomToFitMap(2700)
+        autoCamera.zoomToFitMap(2700)
     };
     this.new1v1 = function(players) {
         announce(300, players[0].name + " [" + points1v1.formatElo(players[0].elo) + "] vs " + players[1].name + " [" + points1v1.formatElo(players[1].elo) + "]", 65, 0, blackRGB, "rgba(100,255,255,0.75)", -1, !1)
@@ -3198,10 +3198,10 @@ function handleMouseDown(xPos, yPos) {
     else if (!statistics.mouseDown(xPos, yPos) && !playerActions.hasClickedIcon(xPos, yPos) && !gameResultBox.mouseDown(xPos, yPos) && !attackBars.mouseDown(xPos, yPos)) {
         var n = gameButtons.mouseDown(xPos, yPos);
         if (2 !== n && !gameLeaderboard.mouseDown(xPos, yPos)) {
-            if (mapGridHandler.mouseDown(xPos, yPos)) mainHandler.canvasDirty = !0
+            if (mouseCamera.mouseDown(xPos, yPos)) mainHandler.canvasDirty = !0
             else if (attackRatioBar.getClickedButton(xPos, yPos)) {
-                mapGridHandler.gk = !1;
-                if (attackRatioBar.pQ(xPos, yPos)) mainHandler.canvasDirty = !0
+                mouseCamera.isPanning = !1;
+                if (attackRatioBar.clickedButton(xPos, yPos)) mainHandler.canvasDirty = !0
             } else if (!(announcements.mouseDown(xPos, yPos) || peace.mouseDown(xPos, yPos)) && 0 === n) playerActions.setLastClickPos(xPos, yPos)
         }
     }
@@ -3230,7 +3230,7 @@ function onPointermove(xPos, yPos) {
                 if (attackRatioBar.onPointermove(xPos, yPos)) mainHandler.canvasDirty = !0
             } else {
                 gameLeaderboard.onPointermove(xPos, yPos);
-                if (mapGridHandler.gk && mapGridHandler.onPointermove(xPos, yPos)) mainHandler.canvasDirty = !0
+                if (mouseCamera.isPanning && mouseCamera.onPointermove(xPos, yPos)) mainHandler.canvasDirty = !0
             }
         }
     }
@@ -3245,7 +3245,7 @@ function onMouseleave(e) {
         gameLeaderboard.onDragEnd(-1024, -1024);
         gameButtons.onPointermove(-1024, -1024);
         attackRatioBar.stopDragging();
-        if (mapGridHandler.gk) mapGridHandler.gk = !1
+        if (mouseCamera.isPanning) mouseCamera.isPanning = !1
     }
 }
 
@@ -3260,7 +3260,7 @@ function onClick(g) {
 
 function onTouchend(g) {
     g.preventDefault();
-    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? mapGridHandler.gk = !1 : onPointerUp(clientXPos, clientYPos)
+    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? mouseCamera.isPanning = !1 : onPointerUp(clientXPos, clientYPos)
 }
 
 function onTouchcancel(g) {
@@ -3282,7 +3282,7 @@ function onPointerUp(xPos, yPos) {
         gameLeaderboard.onDragEnd(xPos, yPos);
         statistics.onDragEnd();
         attackRatioBar.stopDragging();
-        mapGridHandler.gk = !1;
+        mouseCamera.isPanning = !1;
         if (playerActions.click(xPos, yPos)) mainHandler.canvasDirty = !0
     }
 }
@@ -3298,7 +3298,7 @@ function onWheel(e) {
     else if (!gameLeaderboard.onWheel(xPos, yPos, deltaY)) {
         if (attackRatioBar.getClickedButton(xPos, yPos)) {
             if (attackRatioBar.onWheel(deltaY)) mainHandler.canvasDirty = !0
-        } else if (mapGridHandler.onWheel(xPos, yPos, 2 * deltaY)) mainHandler.canvasDirty = !0
+        } else if (mouseCamera.onWheel(xPos, yPos, 2 * deltaY)) mainHandler.canvasDirty = !0
     }
 }
 
@@ -3823,98 +3823,104 @@ function AttackRatioBar() {
         return "rgba(180,0," + colorValue + ",0.75)"
     }
 
-    function redrawTroopBar() {
-        troopBarCanvasCtx.clearRect(0, 0, troopBarWidth, attackRatioBar.height);
-        var I = Math.floor(ratio * (troopBarWidth - 2 * buttonWidth));
-        troopBarCanvasCtx.fillStyle = blackMoreOpaque;
-        troopBarCanvasCtx.fillRect(0, 0, buttonWidth, attackRatioBar.height);
-        troopBarCanvasCtx.fillRect(buttonWidth + I, 0, troopBarWidth - buttonWidth - I, attackRatioBar.height);
-        troopBarCanvasCtx.fillStyle = getBarColor();
-        troopBarCanvasCtx.fillRect(buttonWidth, 0, I, attackRatioBar.height);
-        troopBarCanvasCtx.fillStyle = whiteRGB2;
-        troopBarCanvasCtx.fillRect(0, 0, troopBarWidth, 1);
-        troopBarCanvasCtx.fillRect(0, attackRatioBar.height - 1, troopBarWidth, 1);
-        troopBarCanvasCtx.fillRect(0, 0, 1, attackRatioBar.height);
-        troopBarCanvasCtx.fillRect(buttonWidth, 0, 1, attackRatioBar.height);
-        troopBarCanvasCtx.fillRect(buttonWidth + I, 0, 1, attackRatioBar.height);
-        troopBarCanvasCtx.fillRect(troopBarWidth - buttonWidth, 0, 1, attackRatioBar.height);
-        troopBarCanvasCtx.fillRect(troopBarWidth - 1, 0, 1, attackRatioBar.height);
-        I = 1 + Math.floor(.0625 * attackRatioBar.height);
-        var D = 1 + Math.floor(.3 * attackRatioBar.height);
-        troopBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + D, Math.floor((attackRatioBar.height - I) / 2), attackRatioBar.height - 2 * D, I);
-        troopBarCanvasCtx.fillRect(Math.floor(troopBarWidth - 1.25 * attackRatioBar.height) + D, Math.floor((attackRatioBar.height - I) / 2), attackRatioBar.height - 2 * D - D % 2, I);
-        troopBarCanvasCtx.fillRect(Math.floor(troopBarWidth - 1.25 * attackRatioBar.height) + Math.floor((attackRatioBar.height - I) / 2), D, I, attackRatioBar.height - 2 * D - D % 2);
+    function redrawAttackRatioBar() {
+        attackRatioBarCanvasCtx.clearRect(0, 0, attackRatioBarWidth, attackRatioBar.height);
+        var sliderRatio = Math.floor(ratio * (attackRatioBarWidth - 2 * buttonWidth));
+        attackRatioBarCanvasCtx.fillStyle = blackMoreOpaque;
+        attackRatioBarCanvasCtx.fillRect(0, 0, buttonWidth, attackRatioBar.height);
+        attackRatioBarCanvasCtx.fillRect(buttonWidth + sliderRatio, 0, attackRatioBarWidth - buttonWidth - sliderRatio, attackRatioBar.height);
+        attackRatioBarCanvasCtx.fillStyle = getBarColor();
+        attackRatioBarCanvasCtx.fillRect(buttonWidth, 0, sliderRatio, attackRatioBar.height);
+        attackRatioBarCanvasCtx.fillStyle = whiteRGB2;
+        attackRatioBarCanvasCtx.fillRect(0, 0, attackRatioBarWidth, 1);
+        attackRatioBarCanvasCtx.fillRect(0, attackRatioBar.height - 1, attackRatioBarWidth, 1);
+        attackRatioBarCanvasCtx.fillRect(0, 0, 1, attackRatioBar.height);
+        attackRatioBarCanvasCtx.fillRect(buttonWidth, 0, 1, attackRatioBar.height);
+        attackRatioBarCanvasCtx.fillRect(buttonWidth + sliderRatio, 0, 1, attackRatioBar.height);
+        attackRatioBarCanvasCtx.fillRect(attackRatioBarWidth - buttonWidth, 0, 1, attackRatioBar.height);
+        attackRatioBarCanvasCtx.fillRect(attackRatioBarWidth - 1, 0, 1, attackRatioBar.height);
+        sliderRatio = 1 + Math.floor(.0625 * attackRatioBar.height);
+        var symbolSize = 1 + Math.floor(.3 * attackRatioBar.height);
+        attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize, sliderRatio);
+        attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize - symbolSize % 2, sliderRatio);
+        attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + Math.floor((attackRatioBar.height - sliderRatio) / 2), symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);
         sendAmount = Math.floor(troops[myID] * ratio);
-        troopBarCanvasCtx.fillText(attackBars.splitNumber(sendAmount), Math.floor(troopBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
+        percentage = attackRatioBar.getFlooredRatio()/10;
+        var label = attackBars.splitNumber(sendAmount) + " (" + percentage + "%)"
+        attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
     }
 
     function multiplyRatio(multiplier) {
         if (1 < multiplier && 0 === ratio) {
             ratio = .01;
-            redrawTroopBar();
+            redrawAttackRatioBar();
             return !0;
         }
         if (1 < multiplier && 1 === ratio || 0 === ratio) return !1;
         ratio *= multiplier;
         ratio = 1 < ratio ? 1 : 0 > ratio ? 0 : ratio;
-        redrawTroopBar();
+        redrawAttackRatioBar();
         return !0
     }
 
     function slideRatio(xPos) {
         var oldRatio = ratio;
-        ratio = (xPos - startingX - buttonWidth) / (troopBarWidth - 2 * buttonWidth);
+        ratio = (xPos - startingX - buttonWidth) / (attackRatioBarWidth - 2 * buttonWidth);
         ratio = 0 > ratio ? 0 : ratio;
         ratio = 1 < ratio ? 1 : ratio;
         if (oldRatio !== ratio) {
-            redrawTroopBar();
+            redrawAttackRatioBar();
             return !0;
         } else return !1;
     }
-    var troopBarWidth, startingX, buttonWidth, troopBarCanvas, troopBarCanvasCtx, visibility, ratio, sendAmount, F, needsUpdate, buttonMultiplier = 11 / 12;
+    var attackRatioBarWidth, startingX, buttonWidth, attackRatioBarCanvas, attackRatioBarCanvasCtx, visibility, ratio, sendAmount, percentage, fontStyle, needsUpdate, buttonMultiplier = 11 / 12;
     this.init = function() {
         visibility = !inSpawn;
         needsUpdate = !1;
         ratio = .5;
         sendAmount = 0;
+        percentage = 0;
         this.isDragging = !1;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
         if (isZoom && canvasWidth < .8 * canvasHeight) {
             this.height = Math.floor(.0536 * averageDim);
-            troopBarWidth = canvasWidth - 4 * canvasPadding - this.height;
+            attackRatioBarWidth = canvasWidth - 4 * canvasPadding - this.height;
         } else {
-            troopBarWidth = Math.floor((isZoom ? .65 : .389) * averageDim);
-            troopBarWidth += 12 - troopBarWidth % 12;
-            this.height = Math.floor(troopBarWidth / 12)
+            attackRatioBarWidth = Math.floor((isZoom ? .65 : .389) * averageDim);
+            attackRatioBarWidth += 12 - attackRatioBarWidth % 12;
+            this.height = Math.floor(attackRatioBarWidth / 12)
         };
         buttonWidth = Math.floor(3 * this.height / 2);
-        F = fontWeightBold + Math.floor(.5 * this.height) + fontSizeArial;
-        troopBarCanvas = document.createElement("canvas");
-        troopBarCanvas.width = troopBarWidth;
-        troopBarCanvas.height = this.height;
-        troopBarCanvasCtx = troopBarCanvas.getContext("2d", {
+        fontStyle = fontWeightBold + Math.floor(.5 * this.height) + fontSizeArial;
+        attackRatioBarCanvas = document.createElement("canvas");
+        attackRatioBarCanvas.width = attackRatioBarWidth;
+        attackRatioBarCanvas.height = this.height;
+        attackRatioBarCanvasCtx = attackRatioBarCanvas.getContext("2d", {
             alpha: !0
         });
-        troopBarCanvasCtx.font = F;
-        troopBarCanvasCtx.textBaseline = middleAlign;
-        troopBarCanvasCtx.textAlign = centerAlign;
-        this.qs();
-        redrawTroopBar()
+        attackRatioBarCanvasCtx.font = fontStyle;
+        attackRatioBarCanvasCtx.textBaseline = middleAlign;
+        attackRatioBarCanvasCtx.textAlign = centerAlign;
+        this.setStartingPosition();
+        redrawAttackRatioBar()
     };
-    this.qs = function() {
-        startingX = isZoom && canvasWidth < .8 * canvasHeight ? this.height + 3 * canvasPadding : Math.floor((prevClientWidth - troopBarWidth) / 2);
+    this.setStartingPosition = function() {
+        startingX = isZoom && canvasWidth < .8 * canvasHeight ? this.height + 3 * canvasPadding : Math.floor((prevClientWidth - attackRatioBarWidth) / 2);
         this.startingY = prevClientHeight - this.height - (isZoom ? 2 : 1) * canvasPadding;
     };
     this.drawCanvas = function() {
-        needsUpdate && (needsUpdate = !1, redrawTroopBar())
+        if (needsUpdate) {
+            needsUpdate = !1;
+            redrawAttackRatioBar();
+        }
     };
     this.visible = function() {
         return !(!visibility || gameButtons.menuVisible && startingX < Math.floor(canvasPadding + 5.5 * this.height))
     };
     this.overlapsWithAnnouncements = function(announcementsWidth) {
-        return this.visible() ? startingX + troopBarWidth > canvasWidth - announcementsWidth - canvasPadding : !1
+        return this.visible() ? startingX + attackRatioBarWidth > canvasWidth - announcementsWidth - canvasPadding : !1
     };
     this.toggleVisibility = function() {
         visibility = !0
@@ -3927,12 +3933,12 @@ function AttackRatioBar() {
         return 0 >= flooredRatio ? 1 : 1E3 < flooredRatio ? 1E3 : flooredRatio
     };
     this.getClickedButton = function(xPos, yPos) {
-        return this.visible() && xPos > startingX && xPos < startingX + troopBarWidth && yPos > this.startingY
+        return this.visible() && xPos > startingX && xPos < startingX + attackRatioBarWidth && yPos > this.startingY
     };
-    this.pQ = function(xPos, yPos) {
+    this.clickedButton = function(xPos, yPos) {
         if (!this.visible()) return !1;
         if (xPos > startingX && xPos < startingX + buttonWidth && yPos > attackRatioBar.startingY) return multiplyRatio(buttonMultiplier);
-        if (xPos > startingX + troopBarWidth - buttonWidth && xPos < startingX + troopBarWidth && yPos > attackRatioBar.startingY) return multiplyRatio(1 / buttonMultiplier);
+        if (xPos > startingX + attackRatioBarWidth - buttonWidth && xPos < startingX + attackRatioBarWidth && yPos > attackRatioBar.startingY) return multiplyRatio(1 / buttonMultiplier);
         this.isDragging = !0;
         return slideRatio(xPos)
     };
@@ -3950,7 +3956,7 @@ function AttackRatioBar() {
         }
         return multiplyRatio(deltaY)
     };
-    this.onPointermove = function(xPos, yPos) {
+    this.onPointermove = function(xPos) {
         return this.isDragging ? slideRatio(xPos) : !1
     };
     this.stopDragging = function() {
@@ -3960,31 +3966,48 @@ function AttackRatioBar() {
         if (this.visible() && Math.floor(troops[myID] * ratio) !== sendAmount) needsUpdate = !0
     };
     this.drawCanvasImage = function() {
-        if (this.visible()) mainCanvasCtx.drawImage(troopBarCanvas, startingX, this.startingY)
+        if (this.visible()) mainCanvasCtx.drawImage(attackRatioBarCanvas, startingX, this.startingY)
     }
 }
 var mainScaleFactor, viewportX, viewportY;
 
-function MapGridHandler() {
-    var g, k, n, l, x, t, z;
+function MouseCamera() {
+    var canvases, contexts, canvasSize, canvasXPos, canvasYPos, lastMouseX, lastMouseY;
     this.init = function() {
-        g = Array(2);
-        k = Array(2);
-        this.gk = !1;
-        z = t = viewportY = viewportX = 0;
+        canvases = Array(2);
+        contexts = Array(2);
+        this.isPanning = !1;
+        lastMouseY = lastMouseX = viewportY = viewportX = 0;
         mainScaleFactor = 1;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        n = Math.floor((isZoom ? .072 : .0502) * averageDim);
-        n = 8 > n ? 8 : n;
-        for (var y = 1; 0 <= y; y--) g[y] = document.createElement("canvas"), g[y].width = n, g[y].height = n, k[y] = g[y].getContext("2d", {
-            alpha: !0
-        });
-        this.qs();
-        y = Math.floor(1 + n / 20);
-        for (var A = 1; 0 <= A; A--) k[A].clearRect(0, 0, n, n), k[A].fillStyle = blackOpaque, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].fill(), k[A].lineWidth = y, k[A].fillStyle = whiteRGB, k[A].strokeStyle =
-            whiteRGB, k[A].beginPath(), k[A].arc(n / 2, n / 2, n / 2 - y, 0, 2 * Math.PI), k[A].stroke(), drawDiagRect(k[A], 0, 0, n, y, .3, 0 === A)
+        canvasSize = Math.floor((isZoom ? .072 : .0502) * averageDim);
+        canvasSize = 8 > canvasSize ? 8 : canvasSize;
+        for (var canvasIndex = 1; 0 <= canvasIndex; canvasIndex--) {
+            canvases[canvasIndex] = document.createElement("canvas");
+            canvases[canvasIndex].width = canvasSize;
+            canvases[canvasIndex].height = canvasSize;
+            contexts[canvasIndex] = canvases[canvasIndex].getContext("2d", {
+                alpha: !0
+            });
+        }
+        this.setStartingPosition();
+        canvasIndex = Math.floor(1 + canvasSize / 20);
+        for (var canvasIndex = 1; 0 <= canvasIndex; canvasIndex--) {
+            contexts[canvasIndex].clearRect(0, 0, canvasSize, canvasSize);
+            contexts[canvasIndex].fillStyle = blackOpaque;
+            contexts[canvasIndex].beginPath();
+            contexts[canvasIndex].arc(canvasSize / 2, canvasSize / 2, canvasSize / 2 - canvasIndex, 0, 2 * Math.PI);
+            contexts[canvasIndex].fill();
+            contexts[canvasIndex].lineWidth = canvasIndex;
+            contexts[canvasIndex].fillStyle = whiteRGB;
+            contexts[canvasIndex].strokeStyle = whiteRGB;
+            contexts[canvasIndex].beginPath();
+            contexts[canvasIndex].arc(canvasSize / 2, canvasSize / 2, canvasSize / 2 - canvasIndex, 0, 2 * Math.PI);
+            contexts[canvasIndex].stroke();
+            drawDiagRect(contexts[canvasIndex], 0, 0, canvasSize, canvasIndex, .3, 0 === canvasIndex);
+        }
     };
     this.toX = function() {
         return -viewportX / mainScaleFactor
@@ -3992,70 +4015,76 @@ function MapGridHandler() {
     this.toY = function() {
         return -viewportY / mainScaleFactor
     };
-    this.gw = function(y, A) {
-        viewportX = mainScaleFactor * y - A
+    this.updateViewportX = function(xPos, prevViewportCenterX) {
+        viewportX = mainScaleFactor * xPos - prevViewportCenterX
     };
-    this.gx = function(y, A) {
-        viewportY = mainScaleFactor * y - A
+    this.updateViewportY = function(yPos, prevViewportCenterY) {
+        viewportY = mainScaleFactor * yPos - prevViewportCenterY
     };
-    this.mouseDown = function(y, A) {
-        if (Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + n / 2), 2) < n * n / 4 || Math.pow(y - (l + n / 2), 2) + Math.pow(A - (x + 2 * n), 2) < n * n / 4) return A < x + 1.25 * n ? this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200) : this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
-        cameraController.deactivateCamera() && (this.gk = !0, t = y, z = A);
+    this.mouseDown = function(xPos, yPos) {
+        if (Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + canvasSize / 2), 2) < canvasSize * canvasSize / 4 || Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + 2 * canvasSize), 2) < canvasSize * canvasSize / 4) {
+            if (yPos < canvasYPos + 1.25 * canvasSize) return this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200)
+            else return this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
+        }
+        if (autoCamera.deactivateCamera()) {
+            this.isPanning = !0;
+            lastMouseX = xPos;
+            lastMouseY = yPos;
+        }
         return !1
     };
-    this.onPointermove = function(y, A) {
-        if (!cameraController.deactivateCamera()) return !0;
-        var B = viewportX,
-            C = viewportY,
-            E = t - y,
-            F = z - A;
-        viewportX += E;
-        viewportY += F;
-        eA.onPointermove(E, F);
-        this.rI();
-        t = y;
-        z = A;
-        return B !== viewportX || C !== viewportY
+    this.onPointermove = function(xPos, yPos) {
+        if (!autoCamera.deactivateCamera()) return !0;
+        var oldViewportX = viewportX,
+            oldViewportY = viewportY,
+            dispX = lastMouseX - xPos,
+            dispY = lastMouseY - yPos;
+        viewportX += dispX;
+        viewportY += dispY;
+        eA.onPointermove(dispX, dispY);
+        this.restrictViewportToMap();
+        lastMouseX = xPos;
+        lastMouseY = yPos;
+        return oldViewportX !== viewportX || oldViewportY !== viewportY
     };
-    this.onWheel = function(y, A, B) {
-        if (!cameraController.deactivateCamera()) return !0;
-        if (0 < B) B = 450 / (450 + B), B = .5 > B ? .5 : B;
-        else if (0 > B) B = (450 - B) / 450, B = 2 < B ? 2 : B;
+    this.onWheel = function(xPos, yPos, deltaY) {
+        if (!autoCamera.deactivateCamera()) return !0;
+        if (0 < deltaY) deltaY = 450 / (450 + deltaY), deltaY = .5 > deltaY ? .5 : deltaY;
+        else if (0 > deltaY) deltaY = (450 - deltaY) / 450, deltaY = 2 < deltaY ? 2 : deltaY;
         else return !1;
-        this.rJ(y, A, B);
+        this.zoomAndUpdateViewport(xPos, yPos, deltaY);
         return !0
     };
-    this.rJ = function(y, A, B) {
-        B = 1024 < B * mainScaleFactor ? 1024 / mainScaleFactor : B;
-        B = .125 > B * mainScaleFactor ? .125 / mainScaleFactor : B;
-        eA.zoom(B, y, A);
-        mainScaleFactor *= B;
-        viewportX = (viewportX + y) * B - y;
-        viewportY = (viewportY + A) * B - A;
-        mapGridHandler.rI()
+    this.zoomAndUpdateViewport = function(xPos, yPos, deltaY) {
+        deltaY = 1024 < deltaY * mainScaleFactor ? 1024 / mainScaleFactor : deltaY;
+        deltaY = .125 > deltaY * mainScaleFactor ? .125 / mainScaleFactor : deltaY;
+        eA.zoom(deltaY, xPos, yPos);
+        mainScaleFactor *= deltaY;
+        viewportX = (viewportX + xPos) * deltaY - xPos;
+        viewportY = (viewportY + yPos) * deltaY - yPos;
+        mouseCamera.restrictViewportToMap()
     };
-    this.rI = function() {
-        var y = canvasWidth / 16,
-            A = 0,
-            B = canvasHeight / 16,
-            C = 0;
-        viewportX < -canvasWidth + y && (A = -canvasWidth + y - viewportX);
-        viewportX > mainScaleFactor * currentMapWidth - y && (A = mainScaleFactor * currentMapWidth - y -
-            viewportX);
-        viewportY < -canvasHeight + B && (C = -canvasHeight + B - viewportY);
-        viewportY > mainScaleFactor * currentMapHeight - B && (C = mainScaleFactor * currentMapHeight - B - viewportY);
-        viewportX += A;
-        viewportY += C;
+    this.restrictViewportToMap = function() {
+        var minXFromEdge = canvasWidth / 16,
+            readjustX = 0,
+            minYFromEdge = canvasHeight / 16,
+            readjustY = 0;
+        viewportX < -canvasWidth + minXFromEdge && (readjustX = -canvasWidth + minXFromEdge - viewportX);
+        viewportX > mainScaleFactor * currentMapWidth - minXFromEdge && (readjustX = mainScaleFactor * currentMapWidth - minXFromEdge - viewportX);
+        viewportY < -canvasHeight + minYFromEdge && (readjustY = -canvasHeight + minYFromEdge - viewportY);
+        viewportY > mainScaleFactor * currentMapHeight - minYFromEdge && (readjustY = mainScaleFactor * currentMapHeight - minYFromEdge - viewportY);
+        viewportX += readjustX;
+        viewportY += readjustY;
         viewport.updateViewportCoords();
-        eA.rQ(A, C)
+        eA.rQ(readjustX, readjustY)
     };
-    this.qs = function() {
-        l = prevClientWidth - n - canvasPadding;
-        x = Math.floor(prevClientHeight / 2 - 1.25 * n)
+    this.setStartingPosition = function() {
+        canvasXPos = prevClientWidth - canvasSize - canvasPadding;
+        canvasYPos = Math.floor(prevClientHeight / 2 - 1.25 * canvasSize)
     };
     this.drawCanvasImage = function() {
-        mainCanvasCtx.drawImage(g[0], l, x);
-        mainCanvasCtx.drawImage(g[1], l, Math.floor(x + 3 * n / 2))
+        mainCanvasCtx.drawImage(canvases[0], canvasXPos, canvasYPos);
+        mainCanvasCtx.drawImage(canvases[1], canvasXPos, Math.floor(canvasYPos + 3 * canvasSize / 2))
     }
 }
 
@@ -4418,7 +4447,7 @@ function TroopBar() {
     this.qD = function() {
         return isZoom && canvasWidth < 1.2 * canvasHeight
     };
-    this.qs = function() {
+    this.setStartingPosition = function() {
         this.startingX = this.qD() ? prevClientWidth - k - canvasPadding : Math.floor(gameLeaderboard.sC() + (prevClientWidth - gameLeaderboard.sC() - gameStatistics.width - k) / 2 - .5 * canvasPadding)
     };
     this.drawCanvas = function() {
@@ -4673,7 +4702,7 @@ function GameLeaderboard() {
         if (350 > mainHandler.time - na && pa === T && (T = rangeClamp(-1, T, visibleLandCount), T = T !== visibleLandCount && isInBoardCanvas(xPos, yPos) ? T : -1, -1 !== T)) {
             var Y = landOrder[T + boardTopIndex];
             T === visibleLandCount - 1 && landIDOrder[myID] >= boardTopIndex + visibleLandCount - 1 && (Y = myID);
-            0 !== isAlive[Y] && cameraController.hoverTo(Y, 800, !1, 0)
+            0 !== isAlive[Y] && autoCamera.hoverTo(Y, 800, !1, 0)
         }
         return !0
     };
@@ -4781,11 +4810,11 @@ function GameStatistics() {
         z.textBaseline = middleAlign;
         z.lineWidth = 1;
         this.j2();
-        this.qs();
-        troopBar.qs();
+        this.setStartingPosition();
+        troopBar.setStartingPosition();
         g()
     };
-    this.qs = function() {
+    this.setStartingPosition = function() {
         y = prevClientWidth - this.width - canvasPadding
     };
     this.tI = function() {
@@ -9119,7 +9148,7 @@ function MapShading() {
         }
     };
     this.update = function() {
-        if (8 === gameStateManager.getState() && cameraController.getIsCameraActive()) this.updateTimeout = setTimeout(g, 16);
+        if (8 === gameStateManager.getState() && autoCamera.getIsCameraActive()) this.updateTimeout = setTimeout(g, 16);
         else {
             if (0 === this.heightMapGenerationCount) {
                 var l = fakeRandom.getMedian();
@@ -10029,14 +10058,14 @@ function KeyboardCamera() {
 
     function updateCamera() {
         if (-1 !== intervalID)
-            if (0 !== clientStatus && cameraController.deactivateCamera()) {
+            if (0 !== clientStatus && autoCamera.deactivateCamera()) {
                 for (var isMoving = !1, side = 3; 0 <= side; side--) {
                     if (isButtonPressed[side]) {
                         isMoving = !0;
                         viewportX += movementX[side];
                         viewportY += movementY[side];
                         eA.onPointermove(movementX[side], movementY[side]);
-                        mapGridHandler.rI();
+                        mouseCamera.restrictViewportToMap();
                     }
                 }
                 if (isMoving) mainHandler.canvasDirty = !0
@@ -10045,7 +10074,7 @@ function KeyboardCamera() {
     }
     var isActive = !1, intervalID, isButtonPressed, movementX, movementY;
     this.checkAndMoveCamera = function(direction) {
-        if (0 !== clientStatus && cameraController.deactivateCamera()) {
+        if (0 !== clientStatus && autoCamera.deactivateCamera()) {
             if (!isActive) cameraInit();
             isButtonPressed[direction] = !0;
             if (-1 === intervalID) {
@@ -10297,7 +10326,7 @@ function CanvasManager() {
                 gameLeaderboard.setCanvasVariables(!1);
                 troopBar.setCanvasVariables();
                 gameStatistics.setCanvasVariables();
-                mapGridHandler.setCanvasVariables();
+                mouseCamera.setCanvasVariables();
                 attackRatioBar.setCanvasVariables();
                 announcements.setCanvasVariables();
                 gameButtons.setCanvasVariables();
@@ -10309,7 +10338,7 @@ function CanvasManager() {
                 eA.setCanvasVariables();
                 gameResultBox.setCanvasVariables();
                 teams.setCanvasVariables();
-                mapGridHandler.rI();        
+                mouseCamera.restrictViewportToMap();        
             } else {
                 if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, !0)
                 else if (2 === gameStateManager.getState()) singleSettings.setCanvasVariables()
@@ -11654,11 +11683,11 @@ function TouchInputHandler() {
     this.handleTouchmove = function(e) {
         if (0 === clientStatus) return !1;
         if (1 < e.touches.length) {
-            if (!cameraController.deactivateCamera()) return !0;
+            if (!autoCamera.deactivateCamera()) return !0;
             var initDist = getPointsDistance();
             setTouchPoints(e);
             var currentDist = getPointsDistance();
-            mapGridHandler.rJ(Math.floor((touchPoint1X + touchPoint2X) / 2), Math.floor((touchPoint1Y + touchPoint2Y) / 2), currentDist / initDist);
+            mouseCamera.zoomAndUpdateViewport(Math.floor((touchPoint1X + touchPoint2X) / 2), Math.floor((touchPoint1Y + touchPoint2Y) / 2), currentDist / initDist);
             return mainHandler.canvasDirty = !0
         }
         return !1
@@ -11898,8 +11927,8 @@ function Viewport() {
     this.viewportHeight = this.viewportWidth = this.viewportTop = this.viewportLeft = this.cameraY = this.cameraX = 0;
     this.viewportCoords = [0, 0, 0, 0];
     this.updateViewportCoords = function() {
-        this.cameraX = mapGridHandler.toX();
-        this.cameraY = mapGridHandler.toY();
+        this.cameraX = mouseCamera.toX();
+        this.cameraY = mouseCamera.toY();
         this.viewportLeft = -this.cameraX;
         this.viewportTop = -this.cameraY;
         this.viewportWidth = prevClientWidth / mainScaleFactor;
