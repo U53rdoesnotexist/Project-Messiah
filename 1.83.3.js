@@ -928,7 +928,7 @@ function BotBoatEngine() {
         else return 2 === generateRandomArea(54, 4)
     }
 
-    function checkOwnership(pIndex) { //2 for validpath, 1 for no path, 0 for give up boat
+    function checkOwnership(pIndex) {
         if (pixel.canOwn(pIndex) && (pixel.isNeutral(pIndex) || pixel.getOwner(pIndex) !== authorID && isNotTeamate(authorID, pixel.getOwner(pIndex)))) {
             if (boatPathChecker.check(authorID, pIndex)) return 2;
             if (0 === remainingChecks--) return 0
@@ -2010,8 +2010,8 @@ function PlayerActions() {
         if (2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return this.end(), 1;
         if (emojisShown) {
             this.end();
-            if (emojis.lG(xPos, yPos)) emojis.lH(xPos, yPos, targetID) && (emojisShown = !0);
-            else return emojis.lI(), 2;
+            if (emojis.insideEmojiSelectionArea(xPos, yPos)) emojis.checkChooseEmoji(xPos, yPos, targetID) && (emojisShown = !0);
+            else return emojis.resetDirectionSelection(), 2;
             return 1
         }
         var buttonType = getButtonType(xPos, yPos);
@@ -2171,8 +2171,8 @@ function PlayerActions() {
     this.onPointermove = function(xPos, yPos) {
         if (!this.visible()) return !1;
         if (emojisShown) {
-            if (emojis.lG(xPos, yPos)) return !1;
-            emojis.lI();
+            if (emojis.insideEmojiSelectionArea(xPos, yPos)) return !1;
+            emojis.resetDirectionSelection();
             emojisShown = !1;
             return mainHandler.canvasDirty = !0
         }
@@ -2824,25 +2824,24 @@ function CookiesPrompt() {
     };
     this.onPointermove = function(xPos, yPos) {
         if (!this.visible) return !1;
-        var n = this.clickedButtonIndex;
+        var oldBindex = this.clickedButtonIndex;
         this.clickedButtonIndex = this.getButtonIndex(xPos, yPos);
-        if (n !== this.clickedButtonIndex) mainHandler.canvasDirty = !0;
+        if (oldBindex !== this.clickedButtonIndex) mainHandler.canvasDirty = !0;
         return -1 !== this.clickedButtonIndex
     };
     this.getButtonIndex = function(xPos, yPos) {
         xPos -= bufferLength;
         yPos -= Math.floor(prevClientHeight - this.height - bufferLength);
         if (0 > xPos || 0 > yPos || xPos >= this.width || yPos >= this.height) return -1;
-        var n = Math.floor((yPos - .5 * this.contentPadding) / ((this.height - this.contentPadding) / this.buttonLabels.length));
-        return 0 > n ? 0 : n >= this.buttonLabels.length ? this.buttonLabels.length - 1 : n
+        var bIndex = Math.floor((yPos - .5 * this.contentPadding) / ((this.height - this.contentPadding) / this.buttonLabels.length));
+        return 0 > bIndex ? 0 : bIndex >= this.buttonLabels.length ? this.buttonLabels.length - 1 : bIndex
     };
     this.drawCanvasImage = function() {
         this.visible && this.drawPrompt()
     };
     this.drawPrompt = function() {
-        var g = bufferLength,
-            k = Math.floor(prevClientHeight - this.height - bufferLength);
-        mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+        var yPos = Math.floor(prevClientHeight - this.height - bufferLength);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, bufferLength, yPos);
         mainCanvasCtx.fillStyle = blackMoreOpaque;
         mainCanvasCtx.fillRect(0, 0, this.width, this.height);
         mainCanvasCtx.textBaseline = middleAlign;
@@ -2850,58 +2849,68 @@ function CookiesPrompt() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.font = fontWeightBold + this.fontRatio + fontSizeArial;
         mainCanvasCtx.strokeRect(0, 0, this.width, this.height);
-        for (var n = this.buttonLabels.length - 1; 0 <= n; n--) mainCanvasCtx.setTransform(1, 0, 0, 1, g + this.buttonMargin, k + this.contentPadding + n * (this.contentPadding + this.buttonHeight)), mainCanvasCtx.fillStyle = this.colors[n], mainCanvasCtx.fillRect(0, 0, this.textPadding, this.buttonHeight), this.clickedButtonIndex === n && (mainCanvasCtx.fillStyle =
-            whiteMore3Transparent, mainCanvasCtx.fillRect(0, 0, this.textPadding, this.buttonHeight)), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(this.buttonLabels[n], this.textPadding / 2, .54 * this.buttonHeight), mainCanvasCtx.strokeRect(0, 0, this.textPadding, this.buttonHeight);
+        for (var bIndex = this.buttonLabels.length - 1; 0 <= bIndex; bIndex--) {
+            mainCanvasCtx.setTransform(1, 0, 0, 1, bufferLength + this.buttonMargin, yPos + this.contentPadding + bIndex * (this.contentPadding + this.buttonHeight));
+            mainCanvasCtx.fillStyle = this.colors[bIndex];
+            mainCanvasCtx.fillRect(0, 0, this.textPadding, this.buttonHeight);
+            if (this.clickedButtonIndex === bIndex) {
+                mainCanvasCtx.fillStyle = whiteMore3Transparent;
+                mainCanvasCtx.fillRect(0, 0, this.textPadding, this.buttonHeight)
+            };
+            mainCanvasCtx.fillStyle = whiteRGB2;
+            mainCanvasCtx.fillText(this.buttonLabels[bIndex], this.textPadding / 2, .54 * this.buttonHeight);
+            mainCanvasCtx.strokeRect(0, 0, this.textPadding, this.buttonHeight);
+        }
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
 
 function NextContestBar() {
-    function g(y) {
-        return 10 > y ? "0" + y : String(y)
+    function formatTime(minutes) {
+        return 10 > minutes ? "0" + minutes : String(minutes)
     }
-    var k, n, l, x, t, z;
+    var label, timeLeft, prevTime, barWidth, barHeight, fontStyle;
     this.init = function() {
-        void 0 === x && this.setCanvasVariables();
+        void 0 === barWidth && this.setCanvasVariables();
         this.setTime()
     };
     this.setCanvasVariables = function() {
-        x = Math.floor((isZoom ? .53 : .36) * averageDim);
-        t = Math.floor(.065 * x);
-        z = fontWeightBold + Math.floor(.9 * t) + fontSizeArial;
-        l--;
+        barWidth = Math.floor((isZoom ? .53 : .36) * averageDim);
+        barHeight = Math.floor(.065 * barWidth);
+        fontStyle = fontWeightBold + Math.floor(.9 * barHeight) + fontSizeArial;
+        prevTime--;
         this.setTime()
     };
     this.update = function() {
         this.setTime() && (mainHandler.canvasDirty = !0)
     };
     this.setTime = function() {
-        var y = new Date;
-        var A = y.getUTCMinutes(),
-            B = y.getUTCSeconds();
-        n = 3600 - 60 * A - B;
-        n %= 900;
-        k = "Next Contest: " + g(Math.floor(n / 60)) + ":" + g(n % 60);
-        y = l;
-        l = 60 * A + B;
-        if (y === l) return !1;
-        x = gameMessages.measureText(k, z);
-        x += Math.floor(.4 * t);
+        var now = new Date;
+        var minutes = now.getUTCMinutes(),
+            seconds = now.getUTCSeconds();
+        timeLeft = 3600 - 60 * minutes - seconds;
+        timeLeft %= 900;
+        label = "Next Contest: " + formatTime(Math.floor(timeLeft / 60)) + ":" + formatTime(timeLeft % 60);
+        now = prevTime;
+        prevTime = 60 * minutes + seconds;
+        if (now === prevTime) return !1;
+        barWidth = gameMessages.measureText(label, fontStyle);
+        barWidth += Math.floor(.4 * barHeight);
         return !0
     };
     this.drawCanvasImage = function() {
-        mainCanvasCtx.lineWidth = 1 + Math.floor(t / 15);
-        mainCanvasCtx.translate(prevClientWidth - t, Math.floor(.5 * (prevClientHeight + x)));
+        mainCanvasCtx.lineWidth = 1 + Math.floor(barHeight / 15);
+        mainCanvasCtx.translate(prevClientWidth - barHeight, Math.floor(.5 * (prevClientHeight + barWidth)));
         mainCanvasCtx.rotate(-Math.PI / 2);
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillRect(0, 0, x, t);
+        mainCanvasCtx.fillRect(0, 0, barWidth, barHeight);
         mainCanvasCtx.strokeStyle = blackRGB;
-        mainCanvasCtx.strokeRect(0, 0, x, t + 10);
+        mainCanvasCtx.strokeRect(0, 0, barWidth, barHeight + 10);
         mainCanvasCtx.fillStyle = blackRGB;
-        mainCanvasCtx.font = z;
+        mainCanvasCtx.font = fontStyle;
         mainCanvasCtx.textBaseline = middleAlign;
         mainCanvasCtx.textAlign = centerAlign;
-        mainCanvasCtx.fillText(k, Math.floor(x / 2), Math.floor(.59 * t));
+        mainCanvasCtx.fillText(label, Math.floor(barWidth / 2), Math.floor(.59 * barHeight));
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 }
@@ -2913,34 +2922,33 @@ function Emojis() {
     this.totalEmojisCount = this.emoteCount + this.flagCount;
     this.totalDistinctEmojisCount = this.emoteCount + this.flagCount + this.directionCount; //Arrow emoji gives choices for 8 directions
     this.width = 72;
-    this.nn = this.nm = 0;
+    this.emojiCanvasRow = this.emojiCanvasColumn = 0;
     this.emojiCanvasList = Array(this.totalDistinctEmojisCount);
-    this.no = 8;
-    this.np = Array(this.emoteCount + this.flagCount);
-    this.nq = Array(this.emoteCount + this.flagCount);
-    this.fA = this.xBoundary = 0;
+    this.maxEmojiColumnCount = 8;
+    this.emojiSelectionXPos = Array(this.emoteCount + this.flagCount);
+    this.emojiSelectionYPos = Array(this.emoteCount + this.flagCount);
+    this.yBoundary = this.xBoundary = 0;
     this.zoom = 1;
-    this.nr = .2;
+    this.emojiZoomLevel = .2;
     this.selectedEmojiCount = 0;
-    this.ns = this.emojiSelection = null;
-    this.nt = 0;
+    this.selection = this.emojiSelection = null;
+    this.openedDirectionEmojiTime = 0;
     this.init = function() {
-        var g;
+        var efIndex;
         this.emojiSelection = Array(this.totalDistinctEmojisCount);
-        this.ns = Array(this.totalDistinctEmojisCount);
-        var k = sprites.getValueByName("emojis");
-        this.nv();
-        for (g = this.selectedEmojiCount = 0; g < this.emoteCount; g++) this.nw(g, g, k);
-        k = sprites.getValueByName("flags");
-        for (g = 0; g < this.flagCount; g++) this.nw(g,
-            this.emoteCount + g, k);
-        this.ny();
-        this.emojiCanvasList[26] = this.nz(25, 2);
-        this.o0()
+        this.selection = Array(this.totalDistinctEmojisCount);
+        var emojiSprite = sprites.getValueByName("emojis");
+        this.setEmojiCanvasVariables();
+        for (efIndex = this.selectedEmojiCount = 0; efIndex < this.emoteCount; efIndex++) this.createEmojiCanvas(efIndex, efIndex, emojiSprite);
+        emojiSprite = sprites.getValueByName("flags");
+        for (efIndex = 0; efIndex < this.flagCount; efIndex++) this.createEmojiCanvas(efIndex, this.emoteCount + efIndex, emojiSprite);
+        this.generateArrowEmojis();
+        this.emojiCanvasList[26] = this.rotateEmoji(25, 2);
+        this.loadEmojis()
     };
-    this.nw = function(g, k, n) {
-        this.emojiSelection[k] = !1;
-        this.ns[k] = 0;
+    this.createEmojiCanvas = function(g, emoteOrFlagIndex, emojiSprite) {
+        this.emojiSelection[emoteOrFlagIndex] = !1;
+        this.selection[emoteOrFlagIndex] = 0;
         var emojiCanvas = document.createElement("canvas");
         emojiCanvas.width = this.width;
         emojiCanvas.height = this.width;
@@ -2948,108 +2956,123 @@ function Emojis() {
             alpha: !0
         });
         emojiCanvasCtx.clearRect(0, 0, this.width, this.width);
-        if (23 === k) emojiCanvasCtx.drawImage(playerActions.spriteIcons[2], 0, 0)
-        else if (36 === k) emojiCanvasCtx.drawImage(playerActions.spriteIcons[0], 0, 0)
-        else if (49 === k) emojiCanvasCtx.drawImage(playerActions.spriteIcons[1], 0, 0)
-        else emojiCanvasCtx.drawImage(n, this.width * g % (g === k ? this.numEmojisPerRow  * this.width : 4E3), g === k ? divideFloor(g, this.numEmojisPerRow ) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
-        this.emojiCanvasList[k] = emojiCanvas;
+        if (23 === emoteOrFlagIndex) emojiCanvasCtx.drawImage(playerActions.spriteIcons[2], 0, 0)
+        else if (36 === emoteOrFlagIndex) emojiCanvasCtx.drawImage(playerActions.spriteIcons[0], 0, 0)
+        else if (49 === emoteOrFlagIndex) emojiCanvasCtx.drawImage(playerActions.spriteIcons[1], 0, 0)
+        else emojiCanvasCtx.drawImage(emojiSprite, this.width * g % (g === emoteOrFlagIndex ? this.numEmojisPerRow  * this.width : 4E3), g === emoteOrFlagIndex ? divideFloor(g, this.numEmojisPerRow ) * this.width : 0, this.width, this.width, 0, 0, this.width, this.width);
+        this.emojiCanvasList[emoteOrFlagIndex] = emojiCanvas;
     };
-    this.ny = function() {
+    this.generateArrowEmojis = function() {
         this.emojiCanvasList[this.totalDistinctEmojisCount - 5] = this.emojiCanvasList[26];
-        this.emojiCanvasList[this.totalDistinctEmojisCount - 4] = this.nz(this.totalDistinctEmojisCount - 5, 2);
-        this.emojiCanvasList[this.totalDistinctEmojisCount - 1] = this.nz(this.totalDistinctEmojisCount - 5, 1);
-        this.emojiCanvasList[this.totalDistinctEmojisCount - 8] = this.nz(this.totalDistinctEmojisCount - 4, 1);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 4] = this.rotateEmoji(this.totalDistinctEmojisCount - 5, 2);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 1] = this.rotateEmoji(this.totalDistinctEmojisCount - 5, 1);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 8] = this.rotateEmoji(this.totalDistinctEmojisCount - 4, 1);
         this.emojiCanvasList[this.totalDistinctEmojisCount - 3] = this.emojiCanvasList[39];
-        this.emojiCanvasList[this.totalDistinctEmojisCount - 2] = this.nz(this.totalDistinctEmojisCount - 3, 1);
-        this.emojiCanvasList[this.totalDistinctEmojisCount - 7] = this.nz(this.totalDistinctEmojisCount - 2, 1);
-        this.emojiCanvasList[this.totalDistinctEmojisCount - 6] = this.nz(this.totalDistinctEmojisCount - 7, 1)
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 2] = this.rotateEmoji(this.totalDistinctEmojisCount - 3, 1);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 7] = this.rotateEmoji(this.totalDistinctEmojisCount - 2, 1);
+        this.emojiCanvasList[this.totalDistinctEmojisCount - 6] = this.rotateEmoji(this.totalDistinctEmojisCount - 7, 1)
     };
-    this.nz = function(g, k) {
-        var n = document.createElement("canvas");
-        n.width = this.width;
-        n.height = this.width;
-        var l = n.getContext("2d", {
+    this.rotateEmoji = function(emojiId, multiplier) {
+        var emojiCanvas = document.createElement("canvas");
+        emojiCanvas.width = this.width;
+        emojiCanvas.height = this.width;
+        var emojiCanvasCtx = emojiCanvas.getContext("2d", {
             alpha: !0
         });
-        l.clearRect(0, 0, this.width, this.width);
-        l.rotate(k * Math.PI / 2);
-        l.drawImage(this.emojiCanvasList[g], 1 === k ?
-            0 : -this.width, -this.width);
-        return n
+        emojiCanvasCtx.clearRect(0, 0, this.width, this.width);
+        emojiCanvasCtx.rotate(multiplier * Math.PI / 2);
+        emojiCanvasCtx.drawImage(this.emojiCanvasList[emojiId], 1 === multiplier ? 0 : -this.width, -this.width);
+        return emojiCanvas
     };
-    this.o0 = function() {
-        var g = loadEmojis().split("");
-        if (2 * g.length !== this.totalDistinctEmojisCount) this.selectedEmojiCount = 0;
+    this.loadEmojis = function() {
+        var digitsCount = loadEmojis().split("");
+        if (2 * digitsCount.length !== this.totalDistinctEmojisCount) this.selectedEmojiCount = 0;
         else {
-            for (var k = 0; k < this.totalDistinctEmojisCount; k += 2) {
-                var n = parseInt(g[Math.floor(k / 2)]);
-                this.emojiSelection[k] = 1 === n % 2;
-                this.emojiSelection[k + 1] = 1 < n
+            for (var digitIndex = 0; digitIndex < this.totalDistinctEmojisCount; digitIndex += 2) {
+                var digit = parseInt(digitsCount[Math.floor(digitIndex / 2)]);
+                this.emojiSelection[digitIndex] = 1 === digit % 2;
+                this.emojiSelection[digitIndex + 1] = 1 < digit
             }
-            this.o3()
+            this.updateEmojiSelection()
         }
     };
-    this.o3 = function() {
-        for (var g = this.selectedEmojiCount = 0; g < this.totalDistinctEmojisCount; g++) this.emojiSelection[g] && (this.ns[this.selectedEmojiCount++] = g)
+    this.updateEmojiSelection = function() {
+        for (var emojiIndex = this.selectedEmojiCount = 0; emojiIndex < this.totalDistinctEmojisCount; emojiIndex++) {
+            if (this.emojiSelection[emojiIndex]) this.selection[this.selectedEmojiCount++] = emojiIndex
+        }
     };
-    this.lI = function() {
-        8 === this.selectedEmojiCount && this.ns[0] === this.totalEmojisCount && this.o3()
+    this.resetDirectionSelection = function() {
+        if (8 === this.selectedEmojiCount && this.selection[0] === this.totalEmojisCount) this.updateEmojiSelection()
     };
-    this.o4 = function() {
+    this.setDirectionSelection = function() {
         this.selectedEmojiCount = this.directionCount;
-        for (var g = 0; g < this.directionCount; g++) this.ns[g] = this.totalEmojisCount + g
+        for (var directionIndex = 0; directionIndex < this.directionCount; directionIndex++) this.selection[directionIndex] = this.totalEmojisCount + directionIndex
     };
-    this.nv = function() {
-        this.nm = Math.floor((isZoom ? .075 : .0468) * averageDim);
-        this.zoom = this.nm / this.width;
-        this.nn = (1 + this.nr) * this.nm
+    this.setEmojiCanvasVariables = function() {
+        this.emojiCanvasColumn = Math.floor((isZoom ? .075 : .0468) * averageDim);
+        this.zoom = this.emojiCanvasColumn / this.width;
+        this.emojiCanvasRow = (1 + this.emojiZoomLevel) * this.emojiCanvasColumn
     };
-    this.show = function(g, k) {
+    this.show = function(xPos, yPos) {
         if (1 > this.selectedEmojiCount) return !1;
-        this.nt = mainHandler.time;
-        var n = Math.floor(prevClientWidth / this.nn);
-        n = 3 > n ? 3 : n > this.no ? this.no : n;
-        n = this.selectedEmojiCount > n ? n : this.selectedEmojiCount;
-        var l = 1 + divideFloor(this.selectedEmojiCount - 1, n),
-            x = Math.floor(n * this.nn),
-            t = Math.floor(g - x / 2);
-        t = t + x > prevClientWidth ? prevClientWidth - x : t;
-        t = 0 > t ? 0 : t;
-        var z = Math.floor(k - this.nn / 2);
-        l = Math.floor(l * this.nn);
-        z = z + l > prevClientHeight ? prevClientHeight - l : z;
-        z = 0 > z ? 0 : z;
-        this.xBoundary = t + x;
-        this.fA = z + l;
-        for (x = 0; x < this.selectedEmojiCount; x++) this.np[x] = Math.floor(t + x % n * this.nn), this.nq[x] = Math.floor(z + divideFloor(x, n) * this.nn);
+        this.openedDirectionEmojiTime = mainHandler.time;
+        var emojiColumnCount = Math.floor(prevClientWidth / this.emojiCanvasRow);
+        emojiColumnCount = 3 > emojiColumnCount ? 3 : emojiColumnCount > this.maxEmojiColumnCount ? this.maxEmojiColumnCount : emojiColumnCount;
+        emojiColumnCount = this.selectedEmojiCount > emojiColumnCount ? emojiColumnCount : this.selectedEmojiCount;
+        var emojiRowCount = 1 + divideFloor(this.selectedEmojiCount - 1, emojiColumnCount),
+            totalWidth = Math.floor(emojiColumnCount * this.emojiCanvasRow),
+            xLeftBound = Math.floor(xPos - totalWidth / 2);
+        xLeftBound = xLeftBound + totalWidth > prevClientWidth ? prevClientWidth - totalWidth : xLeftBound;
+        xLeftBound = 0 > xLeftBound ? 0 : xLeftBound;
+        var yTopBound = Math.floor(yPos - this.emojiCanvasRow / 2);
+        emojiRowCount = Math.floor(emojiRowCount * this.emojiCanvasRow);
+        yTopBound = yTopBound + emojiRowCount > prevClientHeight ? prevClientHeight - emojiRowCount : yTopBound;
+        yTopBound = 0 > yTopBound ? 0 : yTopBound;
+        this.xBoundary = xLeftBound + totalWidth;
+        this.yBoundary = yTopBound + emojiRowCount;
+        for (totalWidth = 0; totalWidth < this.selectedEmojiCount; totalWidth++) {
+            this.emojiSelectionXPos[totalWidth] = Math.floor(xLeftBound + totalWidth % emojiColumnCount * this.emojiCanvasRow);
+            this.emojiSelectionYPos[totalWidth] = Math.floor(yTopBound + divideFloor(totalWidth, emojiColumnCount) * this.emojiCanvasRow);
+        }
         return !0
     };
-    this.lG = function(g, k) {
-        return !(g < this.np[0] || k < this.nq[0] || g >= this.xBoundary || k >= this.fA)
+    this.insideEmojiSelectionArea = function(xPos, yPos) {
+        return xPos >= this.emojiSelectionXPos[0] && yPos >= this.emojiSelectionYPos[0] && xPos < this.xBoundary && yPos < this.yBoundary
     };
-    this.lH = function(g, k, n) {
-        if (n === myID && this.nt + 190 > mainHandler.time) return !1;
-        for (var l = this.selectedEmojiCount - 1; 0 <= l; l--)
-            if (g >= this.np[l] && k >= this.nq[l]) {
-                if (39 === this.ns[l]) return this.o4(), this.show(g, k), !0;
-                singleplayer ? eA.showIcon(myID, 0, this.ns[l]) : n === myID ? dataEncoder.selfEmoji(this.ns[l]) : dataEncoder.sendEmoji(this.ns[l], n);
-                this.o3();
+    this.checkChooseEmoji = function(xPos, yPos, targetID) {
+        if (targetID === myID && this.openedDirectionEmojiTime + 190 > mainHandler.time) return !1;
+        for (var selectionIndex = this.selectedEmojiCount - 1; 0 <= selectionIndex; selectionIndex--) {
+            if (xPos >= this.emojiSelectionXPos[selectionIndex] && yPos >= this.emojiSelectionYPos[selectionIndex]) {
+                if (39 === this.selection[selectionIndex]) {
+                    this.setDirectionSelection();
+                    this.show(xPos, yPos);
+                    return !0;
+                }
+                if (singleplayer) eA.showIcon(myID, 0, this.selection[selectionIndex])
+                else if (targetID === myID) dataEncoder.selfEmoji(this.selection[selectionIndex])
+                else dataEncoder.sendEmoji(this.selection[selectionIndex], targetID);
+                this.updateEmojiSelection();
                 break
-            } return !1
+            }
+        }
+        return !1
     };
-    this.oA = function(g) {
-        return 16 > g || 40 <= g && 47 > g
+    this.isFacialEmoji = function(emojiID) {
+        return 16 > emojiID || 40 <= emojiID && 47 > emojiID
     };
-    this.oB = function(g) {
-        return g >= this.emoteCount && g < this.emoteCount + this.flagCount
+    this.isFlag = function(emojiID) {
+        return emojiID >= this.emoteCount && emojiID < this.emoteCount + this.flagCount
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.imageSmoothingEnabled = !0;
-        for (var g = this.nr * this.nm / 2, k = this.selectedEmojiCount - 1; 0 <= k; k--) mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.np[k] + g, this.nq[k] + g), mainCanvasCtx.drawImage(this.emojiCanvasList[this.ns[k]], 0, 0);
+        for (var halfZoomedCol = this.emojiZoomLevel * this.emojiCanvasColumn / 2, selectionIndex = this.selectedEmojiCount - 1; 0 <= selectionIndex; selectionIndex--) {
+            mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, this.emojiSelectionXPos[selectionIndex] + halfZoomedCol, this.emojiSelectionYPos[selectionIndex] + halfZoomedCol);
+            mainCanvasCtx.drawImage(this.emojiCanvasList[this.selection[selectionIndex]], 0, 0);
+        }
         mainCanvasCtx.imageSmoothingEnabled = !1;
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
-    this.oC = function(g, k, n) {
+    this.oC = function(g, k, n) { //unused
         mainCanvasCtx.imageSmoothingEnabled = !0;
         mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, g, k);
         mainCanvasCtx.drawImage(this.emojiCanvasList[n], 0, 0);
@@ -5662,7 +5685,7 @@ function ColorsPanel() {
     }
     this.height = this.width = 0;
     this.visible = !1;
-    this.v2 = this.v1 = this.v0 = this.ns = this.margins = this.isSaveRequired = 0;
+    this.v2 = this.v1 = this.v0 = this.selection = this.margins = this.isSaveRequired = 0;
     this.colors = null;
     this.init = function() {
         canvasWidth < 2 * canvasHeight ? this.width = Math.floor((isZoom ? .94 : .4) * canvasWidth) : (this.height = Math.floor((isZoom ? .88 : .4) * canvasHeight), this.width = Math.floor(2 * this.height));
@@ -5696,13 +5719,13 @@ function ColorsPanel() {
         n -= l;
         if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = !1, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, !0), mainHandler.canvasDirty = !0, !1;
         if (k < this.margins || n < this.margins || k >= this.width - this.margins || n >= this.height - this.margins) return !0;
-        if (k < this.margins + this.v0) return n < this.margins + this.v0 && 0 !== this.ns && (this.ns = 0, mainHandler.canvasDirty = !0), !0;
+        if (k < this.margins + this.v0) return n < this.margins + this.v0 && 0 !== this.selection && (this.selection = 0, mainHandler.canvasDirty = !0), !0;
         if (k < 2 * this.margins + this.v0) return !0;
         k -= 2 * this.margins + this.v0;
-        if (n < this.margins + this.v2) return this.isSaveRequired = 1, this.colors[this.ns][0] = g(256 * k / this.v1), mainHandler.canvasDirty = !0;
+        if (n < this.margins + this.v2) return this.isSaveRequired = 1, this.colors[this.selection][0] = g(256 * k / this.v1), mainHandler.canvasDirty = !0;
         if (n < 2 * this.margins + this.v2) return !0;
-        if (n < 2 * this.margins + 2 * this.v2) return this.isSaveRequired = 2, this.colors[this.ns][1] = g(256 * k / this.v1), mainHandler.canvasDirty = !0;
-        n >= 3 * this.margins + 2 * this.v2 && (this.isSaveRequired = 3, this.colors[this.ns][2] = g(256 * k / this.v1), mainHandler.canvasDirty = !0);
+        if (n < 2 * this.margins + 2 * this.v2) return this.isSaveRequired = 2, this.colors[this.selection][1] = g(256 * k / this.v1), mainHandler.canvasDirty = !0;
+        n >= 3 * this.margins + 2 * this.v2 && (this.isSaveRequired = 3, this.colors[this.selection][2] = g(256 * k / this.v1), mainHandler.canvasDirty = !0);
         return !0
     };
     this.v5 = function() {
@@ -5714,7 +5737,7 @@ function ColorsPanel() {
         saveColors(k)
     };
     this.onPointermove = function(k) {
-        0 !== this.isSaveRequired && (k -= 2 * this.margins + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.ns][this.isSaveRequired - 1] = g(256 * k / this.v1), mainHandler.canvasDirty = !0)
+        0 !== this.isSaveRequired && (k -= 2 * this.margins + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.selection][this.isSaveRequired - 1] = g(256 * k / this.v1), mainHandler.canvasDirty = !0)
     };
     this.handleSave = function() {
         0 < this.isSaveRequired && (this.isSaveRequired = 0, this.v5(), this.v7(), mainHandler.canvasDirty = !0)
@@ -5746,7 +5769,7 @@ function ColorsPanel() {
     this.vA = function(k) {
         mainCanvasCtx.fillStyle = "rgb(" + (0 === k ? 200 : 2 === k ? 50 :
             0) + "," + (1 === k ? 200 : 2 === k ? 50 : 0) + "," + (2 === k ? 255 : 0) + ")";
-        mainCanvasCtx.fillRect(2 * this.margins + this.v0, this.margins + k * (this.margins + this.v2), Math.floor(this.colors[this.ns][k] * this.v1 / 255), this.v2);
+        mainCanvasCtx.fillRect(2 * this.margins + this.v0, this.margins + k * (this.margins + this.v2), Math.floor(this.colors[this.selection][k] * this.v1 / 255), this.v2);
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.strokeRect(2 * this.margins + this.v0, this.margins + k * (this.margins + this.v2), this.v1, this.v2)
     }
@@ -6065,7 +6088,7 @@ function EmojisPanel() {
             this.isToggled = !emojis.emojiSelection[xPos];
             this.isDragging = this.isSaveRequired = !0;
             emojis.emojiSelection[xPos] = !emojis.emojiSelection[xPos];
-            emojis.o3();
+            emojis.updateEmojiSelection();
             mainHandler.canvasDirty = !0;
         }
         return !0
@@ -7786,7 +7809,7 @@ function CustomJSON() {
     function handleCustomJSONLoad(z) {
         customJSON.isCustomJSON = !0;
         customJSON.zf(JSON.parse(z.target.result));
-        customJSON.lH()
+        customJSON.checkChooseEmoji()
     }
 
     function loadJSONCustomMap(data) {
@@ -7912,7 +7935,7 @@ function CustomJSON() {
         this.data.gamemode = 0 === this.data.customGamemodeID ? 7 : 2 === this.data.customGamemodeID ? 9 : 6;
         this.data.spawnX = this.data.spawnY ? this.data.spawnX : null
     };
-    this.lH = function() {
+    this.checkChooseEmoji = function() {
         loadJSONCustomMap(this.data.mapBase64) || loadMap(this.data.mapID, this.data.mapSeed)
     };
     this.zx = function() {
@@ -8155,7 +8178,7 @@ function kN() {
 
                 if (0 < ca[idIndex]) {
                     if (0 === landIDOrder[idIndex])
-                        if (emojis.oB(ba[idIndex])) {
+                        if (emojis.isFlag(ba[idIndex])) {
                             var transform = .9 * fontSize / emojis.width,
                                 Ca = Math.floor(landCenterY - .5 * transform * emojis.width - .05 * fontSize);
                             infoCanvas.globalAlpha = x(fontSize);
@@ -8169,7 +8192,7 @@ function kN() {
                             infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
                             n(landCenterX, landCenterY, fontSize, 0, 0)
 
-                        } else if (emojis.oA(ba[idIndex])) {
+                        } else if (emojis.isFacialEmoji(ba[idIndex])) {
                             l(landCenterX, landCenterY, fontSize, ba[idIndex], 0);
                             n(landCenterX, landCenterY, fontSize, 0, 1)
                         }
@@ -8324,7 +8347,7 @@ function kN() {
             (E[O] = xMin[O] + (xMax[O] !== xMin[O] ? 1 : 0), F[O] = yMin[O], G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2)
     };
     this.showIcon = function(O, T, Y) {
-        0 === isAlive[O] || 4 !== T && 2 === playerStatus[O] || (O += T * maxEntities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = emojis.oB(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
+        0 === isAlive[O] || 4 !== T && 2 === playerStatus[O] || (O += T * maxEntities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = emojis.isFlag(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
     };
     this.drawCanvasImage = function() {
         needsDrawImage && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = !0, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = !1, mainCanvasCtx.drawImage(X, -R, -P)))
