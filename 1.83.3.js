@@ -4891,8 +4891,8 @@ function GameStatistics() {
 
     function checkPotentialAdvances() {
         for (var entityIndex = aliveCount - 1; 0 <= entityIndex; entityIndex--)
-            if (0 < potentialBorderAdvances[aliveEntities[entityIndex]].length) return !1;
-        return !0
+            if (0 < potentialBorderAdvances[aliveEntities[entityIndex]].length) return false;
+        return true
     }
 
     function updateStatLand() {
@@ -4926,9 +4926,9 @@ function GameStatistics() {
         stats[7] = 0;
         myIncome = getStat(6);
         isDisplayed = Array(statLabels.length);
-        for (var statIndex = statLabels.length - 1; 0 <= statIndex; statIndex--) isDisplayed[statIndex] = !0;
+        for (var statIndex = statLabels.length - 1; 0 <= statIndex; statIndex--) isDisplayed[statIndex] = true;
         hiddenStatCount = 0;
-        singleplayer ? (isDisplayed[0] = !1, isDisplayed[2] = !1, isDisplayed[3] = !1, hiddenStatCount = 3) : (isDisplayed[3] = !1, hiddenStatCount = 1);
+        singleplayer ? (isDisplayed[0] = false, isDisplayed[2] = false, isDisplayed[3] = false, hiddenStatCount = 3) : (isDisplayed[3] = false, hiddenStatCount = 1);
         updateCount = 0;
         this.setCanvasVariables()
     };
@@ -4946,7 +4946,7 @@ function GameStatistics() {
         statBoxCanvas.width = this.width;
         statBoxCanvas.height = this.height;
         statBoxCanvasCtx = statBoxCanvas.getContext("2d", {
-            alpha: !0
+            alpha: true
         });
         statBoxCanvasCtx.font = fontStyle;
         statBoxCanvasCtx.textBaseline = middleAlign;
@@ -5008,9 +5008,9 @@ function GameStatistics() {
         if (packetsReceived === spawnTime) {
             H = 0;
             drawStatsBox();
-            return !1;
+            return false;
         }
-        if (-1 === packetsReceived && 0 === M) return !1;
+        if (-1 === packetsReceived && 0 === M) return false;
         var U = H,
             W = performance.now();
         if (0 <= packetsReceived) {
