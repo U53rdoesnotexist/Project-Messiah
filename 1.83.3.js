@@ -7969,7 +7969,7 @@ function getLargestAttacker(attackers) {
 
 function manageDeathAnnouncements(id, attackers) {
     var attackerIndex, largestAttacker = attackers[getLargestAttacker(attackers)];
-    if (9 === gamemode && 1 === teamColors.teamArray[id] && fakeRandom.doesValueMeetProbiThreshold(8)) zombieSettings.zI(largestAttacker);
+    if (9 === gamemode && 1 === teamColors.teamArray[id] && fakeRandom.doesValueMeetProbiThreshold(8)) zombieSettings.storeLargestAttacker(largestAttacker);
     if (id === myID) {
         announcements.genericAnnouncement(largestAttacker, 1);
         manageOurDeath();
@@ -9222,58 +9222,64 @@ function setIsNotClientFlag() {
 }
 
 function ZombieSettings() {
-    var g;
+    var playerInfoArray;
     this.init = function() {
-        g = [];
-        9 === gamemode && this.a2S()
+        playerInfoArray = [];
+        9 === gamemode && this.calculateDifficultyLevels()
     };
-    this.a2S = function() {
-        var k = [8, 51, 68, 88, 138, 178, 313];
-        var n = [35, 330];
+    this.calculateDifficultyLevels = function() {
+        var difficulty = [8, 51, 68, 88, 138, 178, 313];
+        var helperBotCount = [35, 330];
         this.helperBotCount = 0;
         this.difficultyArray = [0, 0, 0, 0, 0, 0];
-        if (playerCount <= k[0]) {
-            this.helperBotCount = n[0] - playerCount;
-            this.difficultyArray[1] = n[1] - divideFloor(n[1] * playerCount, k[0]);
-            this.difficultyArray[0] = 512 - this.difficultyArray[1] - n[0];
-        } else if (playerCount <= k[1]) {
-            this.helperBotCount = n[0] - k[0] - divideFloor((n[0] - k[0]) * (playerCount - k[0]), k[1] - k[0]);
+        if (playerCount <= difficulty[0]) {
+            this.helperBotCount = helperBotCount[0] - playerCount;
+            this.difficultyArray[1] = helperBotCount[1] - divideFloor(helperBotCount[1] * playerCount, difficulty[0]);
+            this.difficultyArray[0] = 512 - this.difficultyArray[1] - helperBotCount[0];
+        } else if (playerCount <= difficulty[1]) {
+            this.helperBotCount = helperBotCount[0] - difficulty[0] - divideFloor((helperBotCount[0] - difficulty[0]) * (playerCount - difficulty[0]), difficulty[1] - difficulty[0]);
             this.difficultyArray[0] = 512 - this.helperBotCount - playerCount;
-        } else if (playerCount <= k[2]) {
-            this.difficultyArray[0] = 512 - k[1] - divideFloor((512 - k[1]) * (playerCount - k[1]), k[2] - k[1]);
+        } else if (playerCount <= difficulty[2]) {
+            this.difficultyArray[0] = 512 - difficulty[1] - divideFloor((512 - difficulty[1]) * (playerCount - difficulty[1]), difficulty[2] - difficulty[1]);
             this.difficultyArray[1] = 512 - playerCount - this.difficultyArray[0];
-        } else if (playerCount <= k[3]) {
-            this.difficultyArray[1] = 512 - k[2] - divideFloor((512 - k[2]) * (playerCount - k[2]), k[3] - k[2]);
+        } else if (playerCount <= difficulty[3]) {
+            this.difficultyArray[1] = 512 - difficulty[2] - divideFloor((512 - difficulty[2]) * (playerCount - difficulty[2]), difficulty[3] - difficulty[2]);
             this.difficultyArray[2] = 512 - playerCount - this.difficultyArray[1];
-        } else if (playerCount <= k[4]) {
-            this.difficultyArray[2] = 512 - k[3] - divideFloor((512 - k[3]) * (playerCount - k[3]), k[4] - k[3]);
+        } else if (playerCount <= difficulty[4]) {
+            this.difficultyArray[2] = 512 - difficulty[3] - divideFloor((512 - difficulty[3]) * (playerCount - difficulty[3]), difficulty[4] - difficulty[3]);
             this.difficultyArray[3] = 512 - playerCount - this.difficultyArray[2];
-        } else if (playerCount <= k[5]) {
-            this.difficultyArray[3] = 512 - k[4] - divideFloor((512 - k[4]) * (playerCount - k[4]), k[5] - k[4]);
+        } else if (playerCount <= difficulty[5]) {
+            this.difficultyArray[3] = 512 - difficulty[4] - divideFloor((512 - difficulty[4]) * (playerCount - difficulty[4]), difficulty[5] - difficulty[4]);
             this.difficultyArray[4] = 512 - playerCount - this.difficultyArray[3];
-        } else if (playerCount <= k[6]) {
-            this.difficultyArray[4] = 512 - k[5] - divideFloor((512 - k[5]) * (playerCount - k[5]), k[6] - k[5]);
+        } else if (playerCount <= difficulty[6]) {
+            this.difficultyArray[4] = 512 - difficulty[5] - divideFloor((512 - difficulty[5]) * (playerCount - difficulty[5]), difficulty[6] - difficulty[5]);
             this.difficultyArray[5] = 512 - playerCount - this.difficultyArray[4];
         } else {
             this.difficultyArray[5] = 512 - playerCount;
         }
-        n = this.helperBotCount;
-        for (k = 0; 6 > k; k++) n += this.difficultyArray[k];
-        if (n > botCount) {
-            for (k = this.helperBotCount = 0; 5 > k; k++) this.difficultyArray[k] = 0;
+        helperBotCount = this.helperBotCount;
+        for (var i = 0; 6 > i; i++) helperBotCount += this.difficultyArray[i];
+        if (helperBotCount > botCount) {
+            for (i = this.helperBotCount = 0; 5 > i; i++) this.difficultyArray[i] = 0;
             this.difficultyArray[5] = botCount
         }
     };
-    this.zI = function(k) {
-        g.push({
-            player: k,
+    this.storeLargestAttacker = function(largestAttacker) {
+        playerInfoArray.push({
+            player: largestAttacker,
             group: 14 + fakeRandom.calcFractionalValue(20)
         })
     };
     this.update = function() {
-        if (9 === gamemode) {
-            var k;
-            for (k = g.length - 1; 0 <= k; k--) 0 >= --g[k].group && (eA.showIcon(g[k].player, 0, 46), g.splice(k))
+        if (gamemode === 9) {
+            var i = playerInfoArray.length - 1;
+            while (i >= 0) {
+                if (playerInfoArray[i].group <= 0) {
+                    eA.showIcon(playerInfoArray[i].player, 0, 46);
+                    playerInfoArray.splice(i, 1);
+                } else playerInfoArray[i].group--;
+                i--;
+            }
         }
     }
 }
