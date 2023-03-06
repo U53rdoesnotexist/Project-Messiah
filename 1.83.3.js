@@ -5673,66 +5673,66 @@ function MainLeaderboard() {
 }
 
 function OpenLinkBox() {
-    var g, k, n, l, x, t, z, y, A, B, C, E, F;
+    var leftMargin, topMargin, boxScaleFactor, height, boxCanvasWidth, topPadding, bottomPadding, verticalSpacing, linkBoxCanvasSize, textWidth, boxWidth, link, linkBoxCanvas;
     this.visible = false;
-    this.init = function(G, N) {
-        if (13 <= androidVersion) N ? E = G : E === G && androidObject.saveString(200, G);
-        else if (N) {
+    this.init = function(param_link, isNewTab) {
+        if (13 <= androidVersion) isNewTab ? link = param_link : link === param_link && androidObject.saveString(200, param_link);
+        else if (isNewTab) {
             (mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) && mainSettings.hideIfNotHidden();
             nameInput.hide();
-            E = G;
-            A = Math.floor((isZoom ? canvasWidth > canvasHeight ? .6 : .45 : .4) * minDim);
-            n = A / sprites.getValueByID(17).width;
-            x = Math.floor(n * sprites.getValueByID(17).height);
-            t = Math.floor(.4 * x);
-            z = Math.floor(.6 * x);
-            y = Math.floor(2.5 * z);
-            l = x + t + 3 * z;
-            var I = fontWeightBold + Math.floor(t / pixelRatio) + fontSizeArial;
-            B = Math.floor(pixelRatio * gameMessages.measureText(E, I));
-            C = (B > A ? B : A) + 2 * y;
-            g = Math.floor((prevClientWidth - C) / 2);
-            k = Math.floor((prevClientHeight - l) / 2);
-            F = document.createElement("a");
-            F.appendChild(document.createTextNode(E));
-            F.title = E;
-            F.target = "blank";
-            F.href = E;
-            F.style.font = I;
-            F.style.textAlign = "center";
-            F.style.color = whiteRGB2;
-            F.style.position = "absolute";
-            F.style.padding = "0px";
-            F.style.margin = "0px";
-            F.style.top = Math.floor((k + 2 * z + x) / pixelRatio) + "px";
-            F.style.left = Math.floor((g + (C - B) / 2) / pixelRatio) + "px";
-            document.body.appendChild(F);
+            link = param_link;
+            linkBoxCanvasSize = Math.floor((isZoom ? canvasWidth > canvasHeight ? .6 : .45 : .4) * minDim);
+            boxScaleFactor = linkBoxCanvasSize / sprites.getValueByID(17).width;
+            boxCanvasWidth = Math.floor(boxScaleFactor * sprites.getValueByID(17).height);
+            topPadding = Math.floor(.4 * boxCanvasWidth);
+            bottomPadding = Math.floor(.6 * boxCanvasWidth);
+            verticalSpacing = Math.floor(2.5 * bottomPadding);
+            height = boxCanvasWidth + topPadding + 3 * bottomPadding;
+            var fontStyle = fontWeightBold + Math.floor(topPadding / pixelRatio) + fontSizeArial;
+            textWidth = Math.floor(pixelRatio * gameMessages.measureText(link, fontStyle));
+            boxWidth = (textWidth > linkBoxCanvasSize ? textWidth : linkBoxCanvasSize) + 2 * verticalSpacing;
+            leftMargin = Math.floor((prevClientWidth - boxWidth) / 2);
+            topMargin = Math.floor((prevClientHeight - height) / 2);
+            linkBoxCanvas = document.createElement("a");
+            linkBoxCanvas.appendChild(document.createTextNode(link));
+            linkBoxCanvas.title = link;
+            linkBoxCanvas.target = "blank";
+            linkBoxCanvas.href = link;
+            linkBoxCanvas.style.font = fontStyle;
+            linkBoxCanvas.style.textAlign = "center";
+            linkBoxCanvas.style.color = whiteRGB2;
+            linkBoxCanvas.style.position = "absolute";
+            linkBoxCanvas.style.padding = "0px";
+            linkBoxCanvas.style.margin = "0px";
+            linkBoxCanvas.style.top = Math.floor((topMargin + 2 * bottomPadding + boxCanvasWidth) / pixelRatio) + "px";
+            linkBoxCanvas.style.left = Math.floor((leftMargin + (boxWidth - textWidth) / 2) / pixelRatio) + "px";
+            document.body.appendChild(linkBoxCanvas);
             this.visible = true;
             mainHandler.canvasDirty = true
         }
     };
     this.end = function() {
         if (!this.visible) return false;
-        document.body.removeChild(F);
+        document.body.removeChild(linkBoxCanvas);
         this.visible = false;
         return true
     };
-    this.mouseDown = function(G, N) {
+    this.mouseDown = function(xPos, yPos) {
         if (!this.visible) return false;
-        if (G < g || N < k || G > g + C || N > k + l) mainHandler.canvasDirty = true, this.visible = false, document.body.removeChild(F),
+        if (xPos < leftMargin || yPos < topMargin || xPos > leftMargin + boxWidth || yPos > topMargin + height) mainHandler.canvasDirty = true, this.visible = false, document.body.removeChild(linkBoxCanvas),
             0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, true);
         return true
     };
     this.drawCanvasImage = function() {
         if (this.visible) {
             mainCanvasCtx.imageSmoothingEnabled = true;
-            mainCanvasCtx.setTransform(1, 0, 0, 1, g, k);
+            mainCanvasCtx.setTransform(1, 0, 0, 1, leftMargin, topMargin);
             mainCanvasCtx.fillStyle = blackMoreOpaque;
-            mainCanvasCtx.fillRect(0, 0, C, l);
+            mainCanvasCtx.fillRect(0, 0, boxWidth, height);
             mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
             mainCanvasCtx.strokeStyle = whiteRGB2;
-            mainCanvasCtx.strokeRect(0, 0, C, l);
-            mainCanvasCtx.setTransform(n, 0, 0, n, g + (C - A) / 2, k + z);
+            mainCanvasCtx.strokeRect(0, 0, boxWidth, height);
+            mainCanvasCtx.setTransform(boxScaleFactor, 0, 0, boxScaleFactor, leftMargin + (boxWidth - linkBoxCanvasSize) / 2, topMargin + bottomPadding);
             mainCanvasCtx.drawImage(sprites.getValueByID(17), 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
         }
