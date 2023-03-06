@@ -9236,7 +9236,7 @@ function ZombieSettings() {
         } else if (playerCount <= difficulty[1]) {
             this.helperBotCount = helperBotCount[0] - difficulty[0] - divideFloor((helperBotCount[0] - difficulty[0]) * (playerCount - difficulty[0]), difficulty[1] - difficulty[0]);
             this.difficultyArray[0] = 512 - this.helperBotCount - playerCount;
-        } else if (playerCount <= difficulty[2]) {ZombieSettings
+        } else if (playerCount <= difficulty[2]) {
             this.difficultyArray[0] = 512 - difficulty[1] - divideFloor((512 - difficulty[1]) * (playerCount - difficulty[1]), difficulty[2] - difficulty[1]);
             this.difficultyArray[1] = 512 - playerCount - this.difficultyArray[0];
         } else if (playerCount <= difficulty[3]) {
