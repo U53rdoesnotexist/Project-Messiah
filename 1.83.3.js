@@ -1658,19 +1658,19 @@ function Strings() {
         }
         return numericPassword
     };
-    this.convertToMapData = function(base64) {
-        var stringIndex, base64Chars = [], mapDataArray = [];
-        for (stringIndex = 0; stringIndex < base64.length; stringIndex++) {
-            var currentCharCode = base64.charCodeAt(stringIndex);
-            if (58 > currentCharCode) base64Chars.push(base64[stringIndex])
+    this.convertToMapData = function(rawMapData) {
+        var stringIndex, processedData = [], mapDataArray = [];
+        for (stringIndex = 0; stringIndex < rawMapData.length; stringIndex++) {
+            var currentCharCode = rawMapData.charCodeAt(stringIndex);
+            if (58 > currentCharCode) processedData.push(rawMapData[stringIndex])
             else {
                 currentCharCode = 91 > currentCharCode ? currentCharCode - 65 : currentCharCode - 71;
-                base64Chars.push(String(divideFloor(currentCharCode, 10)));
-                base64Chars.push(String(currentCharCode - 10 * divideFloor(currentCharCode, 10)));
+                processedData.push(String(divideFloor(currentCharCode, 10)));
+                processedData.push(String(currentCharCode - 10 * divideFloor(currentCharCode, 10)));
             };
         }
         currentCharCode = 0;
-        for (stringIndex = 0; stringIndex < base64Chars.length - 2; stringIndex += 3) mapDataArray[currentCharCode++] = parseInt(base64Chars[stringIndex] + base64Chars[stringIndex + 1] + base64Chars[stringIndex + 2]);
+        for (stringIndex = 0; stringIndex < processedData.length - 2; stringIndex += 3) mapDataArray[currentCharCode++] = parseInt(processedData[stringIndex] + processedData[stringIndex + 1] + processedData[stringIndex + 2]);
         return mapDataArray
     };
     this.generateOriginURLs = function() {
@@ -9469,14 +9469,28 @@ function configRealMap(delta1) {
     });
     realMapBaseCanvasCtxImageData = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
     mapBaseCanvasImageDataArray = realMapBaseCanvasCtxImageData.data;
-    for (var x = mapData.length, t = !0, z = 0, y = 4; y < x; y++)
-        if (t) {
-            for (; 0 < mapData[y]--;) mapBaseCanvasImageDataArray[z] = waterColor[0], mapBaseCanvasImageDataArray[z + 1] = waterColor[1], mapBaseCanvasImageDataArray[z + 2] = waterColor[2], mapBaseCanvasImageDataArray[z + 3] = 255, z += 4;
-            t = !1
+    for (var isWaterSegment = !0, pIndex = 0, segmentIndex = 4; segmentIndex < mapData.length; segmentIndex++) {
+        if (isWaterSegment) {
+            for (; 0 < mapData[segmentIndex]--;) {
+                mapBaseCanvasImageDataArray[pIndex] = waterColor[0];
+                mapBaseCanvasImageDataArray[pIndex + 1] = waterColor[1];
+                mapBaseCanvasImageDataArray[pIndex + 2] = waterColor[2];
+                mapBaseCanvasImageDataArray[pIndex + 3] = 255;
+                pIndex += 4;
+            }
+            isWaterSegment = !1
         } else {
-            for (; 0 < mapData[y]--;) mapBaseCanvasImageDataArray[z] = neutralColor[0], mapBaseCanvasImageDataArray[z + 1] = neutralColor[1], mapBaseCanvasImageDataArray[z + 2] = neutralColor[2], mapBaseCanvasImageDataArray[z + 3] = 255, z += 4;
-            t = !0
-        } mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0);
+            for (; 0 < mapData[segmentIndex]--;) {
+                mapBaseCanvasImageDataArray[pIndex] = neutralColor[0];
+                mapBaseCanvasImageDataArray[pIndex + 1] = neutralColor[1];
+                mapBaseCanvasImageDataArray[pIndex + 2] = neutralColor[2];
+                mapBaseCanvasImageDataArray[pIndex + 3] = 255;
+                pIndex += 4;
+            }
+            isWaterSegment = !0
+        }
+    }
+    mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0);
     mapLoaded = !0;
     calculateFrameRate(delta1);
     mapShading.init();
