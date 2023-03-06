@@ -2057,7 +2057,7 @@ function PlayerActions() {
                     this.end();
                     announcements.lowBalance();
                     if (singleplayer) processAttack(myID, targetID, attackRatioBar.getFlooredRatio());
-                    else if (!freeSpawn || 300 < gameStatistics.lV()) dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
+                    else if (!freeSpawn || 300 < gameStatistics.getTime()) dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
                 }
             } else if (iconActive[8]) {
                 this.end();
@@ -2481,14 +2481,14 @@ function Announcements() {
         pendingAnnouncements = [];
         this.setCanvasVariables();
         if (inSpawn) this.genericAnnouncement(0, 18);
-        var mapLandInfoLabel = "Map: " + mapInfo.getMapName() + "   Pixels: " + attackBars.splitNumber(configFakeMap.totalNonBorderPixelsCount) + "   Land: " + attackBars.splitNumber(configFakeMap.landPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.landPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")",
+        var mapLandInfoLabel = "Map: " + mapInfo.getMapName() + "   Pixels: " + attackBars.splitNumber(configFakeMap.totalNonBorderPixelsCount) + "   Land: " + attackBars.splitNumber(configFakeMap.landPixelsCount) + " (" + gameStatistics.getPercentage(100 * configFakeMap.landPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")",
             mapSpecialInfoLabel = "";
         if (0 < configFakeMap.waterPixelsCount) {
-            mapSpecialInfoLabel += "Water: " + attackBars.splitNumber(configFakeMap.waterPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")";
+            mapSpecialInfoLabel += "Water: " + attackBars.splitNumber(configFakeMap.waterPixelsCount) + " (" + gameStatistics.getPercentage(100 * configFakeMap.waterPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")";
         }
         if (0 < configFakeMap.mountainPixelsCount) {
             mapSpecialInfoLabel += 0 < configFakeMap.waterPixelsCount ? "   " : "";
-            mapSpecialInfoLabel += "Mountains: " + attackBars.splitNumber(configFakeMap.mountainPixelsCount) + " (" + gameStatistics.nG(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")";
+            mapSpecialInfoLabel += "Mountains: " + attackBars.splitNumber(configFakeMap.mountainPixelsCount) + " (" + gameStatistics.getPercentage(100 * configFakeMap.mountainPixelsCount / configFakeMap.totalNonBorderPixelsCount, 1) + ")";
         }
         announce(340, mapLandInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
         if (0 < mapSpecialInfoLabel.length) announce(340, mapSpecialInfoLabel, 6, 0, getColorRGB(215, 245, 255), blackMoreOpaque, -1, !1);
@@ -4834,104 +4834,127 @@ function GameLeaderboard() {
 }
 
 function GameStatistics() {
-    function g() {
-        z.clearRect(0, 0, gameStatistics.width, gameStatistics.height);
-        z.fillStyle = blackMoreOpaque;
-        z.fillRect(0, 0, gameStatistics.width, gameStatistics.height);
-        z.fillStyle = greenBrightMoreOpaque;
-        z.fillRect(0, gameStatistics.height - B - 1, Math.floor((0 < H ? H : Math.sqrt(K[4] / K[3])) * gameStatistics.width), B);
-        z.fillStyle = whiteRGB2;
-        z.fillRect(0, 0, gameStatistics.width, 1);
-        z.fillRect(0, 0, 1, gameStatistics.height);
-        z.fillRect(gameStatistics.width - 1, 0, 1, gameStatistics.height);
-        z.fillRect(0, gameStatistics.height - 1, gameStatistics.width, 1);
-        z.fillRect(0, gameStatistics.height - B - 1, gameStatistics.width, 1);
-        for (var P = 0, U = 0; U < D.length; U++)
-            if (J[U]) {
-                z.textAlign = leftAlign;
-                var W = Math.floor((C - B + 2 * F) * (U - P + 1) / (D.length + 1) - .7 * F);
-                z.fillText(D[U], E, W);
-                z.textAlign = rightAlign;
-                5 === U && 0 !== isAlive[myID] &&
-                    troops[myID] >= interest.getMaxBeforeRedI(myID) ? (z.fillStyle = orangeRGB, z.fillText(k(U), gameStatistics.width - E, W), z.fillStyle = whiteRGB2) : z.fillText(k(U), gameStatistics.width - E, W)
-            } else P++
+    function drawStatsBox() {
+        statBoxCanvasCtx.clearRect(0, 0, gameStatistics.width, gameStatistics.height);
+        statBoxCanvasCtx.fillStyle = blackMoreOpaque;
+        statBoxCanvasCtx.fillRect(0, 0, gameStatistics.width, gameStatistics.height);
+        statBoxCanvasCtx.fillStyle = greenBrightMoreOpaque;
+        statBoxCanvasCtx.fillRect(0, gameStatistics.height - spawnTimerBarHeight - 1, Math.floor((0 < H ? H : Math.sqrt(stats[4] / stats[3])) * gameStatistics.width), spawnTimerBarHeight);
+        statBoxCanvasCtx.fillStyle = whiteRGB2;
+        statBoxCanvasCtx.fillRect(0, 0, gameStatistics.width, 1);
+        statBoxCanvasCtx.fillRect(0, 0, 1, gameStatistics.height);
+        statBoxCanvasCtx.fillRect(gameStatistics.width - 1, 0, 1, gameStatistics.height);
+        statBoxCanvasCtx.fillRect(0, gameStatistics.height - 1, gameStatistics.width, 1);
+        statBoxCanvasCtx.fillRect(0, gameStatistics.height - spawnTimerBarHeight - 1, gameStatistics.width, 1);
+        for (var vertShift = 0, statIndex = 0; statIndex < statLabels.length; statIndex++) {
+            if (isDisplayed[statIndex]) {
+                statBoxCanvasCtx.textAlign = leftAlign;
+                var W = Math.floor((oldBoxHeight - spawnTimerBarHeight + 2 * labelMargin) * (statIndex - vertShift + 1) / (statLabels.length + 1) - .7 * labelMargin);
+                statBoxCanvasCtx.fillText(statLabels[statIndex], labelXOffset, W);
+                statBoxCanvasCtx.textAlign = rightAlign;
+                if (5 === statIndex && 0 !== isAlive[myID] && troops[myID] >= interest.getMaxBeforeRedI(myID)) {
+                    statBoxCanvasCtx.fillStyle = orangeRGB;
+                    statBoxCanvasCtx.fillText(getStat(statIndex), gameStatistics.width - labelXOffset, W);
+                    statBoxCanvasCtx.fillStyle = whiteRGB2;
+                } else statBoxCanvasCtx.fillText(getStat(statIndex), gameStatistics.width - labelXOffset, W);
+            } else vertShift++;
+        }
     }
 
-    function k(P) {
-        return 3 > P ? K[P].toString() : 3 === P ? gameStatistics.nG(K[P] / 100, 2) : 4 === P ? gameStatistics.nG(K[P] / 100, 2) : 5 === P ? gameStatistics.nG(K[P] / 100, 2) : 7 > P ? attackBars.splitNumber(K[P]) : gameStatistics.getITicksRemaining(K[7])
+    function getStat(statIndex) {
+        if (statIndex < 3) {
+            return stats[statIndex].toString();
+        } else if (statIndex === 3 || statIndex === 4 || statIndex === 5) {
+            return gameStatistics.getPercentage(stats[statIndex] / 100, 2);
+        } else if (statIndex < 7) {
+            return attackBars.splitNumber(stats[statIndex]);
+        } else {
+            return gameStatistics.getITicksRemaining(stats[7]);
+        }
     }
 
-    function n(P) {
-        P = divideFloor(1E4 * P, currentLandPixelsCount);
-        8 === gamemode && (0 === isAlive[0] ? endGame.endGame(1) : 0 === isAlive[1] && endGame.endGame(0));
-        P >= K[3] && (endGame.endGame(-1), K[4] = -1);
-        K[4] !== P && (I++, K[4] = P)
+    function checkWinCondition(largestLand) {
+        largestLand = divideFloor(1E4 * largestLand, currentLandPixelsCount);
+        if (8 === gamemode) {
+            if (0 === isAlive[0]) endGame.endGame(1)
+            else if (0 === isAlive[1]) endGame.endGame(0)
+        }
+        if (largestLand >= stats[3]) {
+            endGame.endGame(-1);
+            stats[4] = -1;
+        }
+        if (stats[4] !== largestLand) {
+            updateCount++;
+            stats[4] = largestLand;
+        }
     }
 
-    function l() {
-        for (var P = aliveCount - 1; 0 <= P; P--)
-            if (0 < potentialBorderAdvances[aliveEntities[P]].length) return !1;
+    function checkPotentialAdvances() {
+        for (var entityIndex = aliveCount - 1; 0 <= entityIndex; entityIndex--)
+            if (0 < potentialBorderAdvances[aliveEntities[entityIndex]].length) return !1;
         return !0
     }
 
-    function x() {
-        land[myID] !== K[6] && (K[6] = land[myID], I++)
+    function updateStatLand() {
+        if (land[myID] !== stats[6]) {
+            stats[6] = land[myID];
+            updateCount++;
+        }
     }
-    var t, z, y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R;
+    var statBoxCanvas, statBoxCanvasCtx, y, A, spawnTimerBarHeight, oldBoxHeight, labelXOffset, labelMargin, fontStyle, fontSize, updateCount, statLabels, stats, isDisplayed, myIncome, H, M, hiddenStatCount, thresholdLandToWin;
     this.init = function() {
         H = M = 0;
-        D = Array(8);
-        D[0] = "Humans";
-        D[1] = singleplayer ? "Players" : "Bots";
-        D[2] = "Spectators";
-        D[3] = "Threshold";
-        D[4] = "Occupation";
-        D[5] = "Interest";
-        D[6] = "Income";
-        D[7] = "Time";
-        R = currentLandPixelsCount - divideFloor(currentLandPixelsCount, 100);
-        K = Array(D.length);
-        K[0] = singleplayer ? 0 : playerCount;
-        K[1] = singleplayer ? aliveCount : botCount;
-        K[2] = spectatorCount;
-        K[3] = 1E4;
-        K[4] = divideFloor(1E4 * land[0], currentLandPixelsCount);
-        K[5] = 700;
-        K[6] = 0;
-        x();
-        K[7] = 0;
-        L = k(6);
-        J = Array(D.length);
-        for (var P = D.length - 1; 0 <= P; P--) J[P] = !0;
-        Q = 0;
-        singleplayer ? (J[0] = !1, J[2] = !1, J[3] = !1, Q = 3) : (J[3] = !1, Q = 1);
-        I = 0;
+        statLabels = Array(8);
+        statLabels[0] = "Humans";
+        statLabels[1] = singleplayer ? "Players" : "Bots";
+        statLabels[2] = "Spectators";
+        statLabels[3] = "Threshold";
+        statLabels[4] = "Occupation";
+        statLabels[5] = "Interest";
+        statLabels[6] = "Income";
+        statLabels[7] = "Time";
+        thresholdLandToWin = currentLandPixelsCount - divideFloor(currentLandPixelsCount, 100);
+        stats = Array(statLabels.length);
+        stats[0] = singleplayer ? 0 : playerCount;
+        stats[1] = singleplayer ? aliveCount : botCount;
+        stats[2] = spectatorCount;
+        stats[3] = 1E4;
+        stats[4] = divideFloor(1E4 * land[0], currentLandPixelsCount);
+        stats[5] = 700;
+        stats[6] = 0;
+        updateStatLand();
+        stats[7] = 0;
+        myIncome = getStat(6);
+        isDisplayed = Array(statLabels.length);
+        for (var statIndex = statLabels.length - 1; 0 <= statIndex; statIndex--) isDisplayed[statIndex] = !0;
+        hiddenStatCount = 0;
+        singleplayer ? (isDisplayed[0] = !1, isDisplayed[2] = !1, isDisplayed[3] = !1, hiddenStatCount = 3) : (isDisplayed[3] = !1, hiddenStatCount = 1);
+        updateCount = 0;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        this.width = Math.floor((isZoom ?
-            .1646 : .126) * averageDim);
+        this.width = Math.floor((isZoom ? .1646 : .126) * averageDim);
         this.height = Math.floor(1.18 * this.width);
-        B = Math.floor(.04 * this.width);
-        E = Math.floor(.05 * this.width);
-        F = .04 * this.width;
-        C = this.height;
-        this.height -= Math.floor(Q * (this.height - 2 * B) / D.length);
-        N = Math.floor(.55 * (C - B) / D.length);
-        G = fontWeightBold + N + fontSizeArial;
-        t = document.createElement("canvas");
-        t.width = this.width;
-        t.height = this.height;
-        z = t.getContext("2d", {
+        spawnTimerBarHeight = Math.floor(.04 * this.width);
+        labelXOffset = Math.floor(.05 * this.width);
+        labelMargin = .04 * this.width;
+        oldBoxHeight = this.height;
+        this.height -= Math.floor(hiddenStatCount * (this.height - 2 * spawnTimerBarHeight) / statLabels.length);
+        fontSize = Math.floor(.55 * (oldBoxHeight - spawnTimerBarHeight) / statLabels.length);
+        fontStyle = fontWeightBold + fontSize + fontSizeArial;
+        statBoxCanvas = document.createElement("canvas");
+        statBoxCanvas.width = this.width;
+        statBoxCanvas.height = this.height;
+        statBoxCanvasCtx = statBoxCanvas.getContext("2d", {
             alpha: !0
         });
-        z.font = G;
-        z.textBaseline = middleAlign;
-        z.lineWidth = 1;
+        statBoxCanvasCtx.font = fontStyle;
+        statBoxCanvasCtx.textBaseline = middleAlign;
+        statBoxCanvasCtx.lineWidth = 1;
         this.j2();
         this.setStartingPosition();
         troopBar.setStartingPosition();
-        g()
+        drawStatsBox()
     };
     this.setStartingPosition = function() {
         y = prevClientWidth - this.width - canvasPadding
@@ -4942,54 +4965,65 @@ function GameStatistics() {
     this.j2 = function() {
         A = canvasPadding + (troopBar.placeBarOnTopRight() && 0 !== isAlive[myID] && !inSpawn ? troopBar.height + canvasPadding : 0)
     };
-    this.drawCanvas = function(P) {
-        0 < I && (P || 12 > frameRate && 100 <= I || 12 <= frameRate) && (I = 0, g())
+    this.drawCanvas = function(ignoreFramerate) {
+        0 < updateCount && (ignoreFramerate || 12 > frameRate && 100 <= updateCount || 12 <= frameRate) && (updateCount = 0, drawStatsBox())
     };
-    this.lV = function() {
-        return K[7]
+    this.getTime = function() {
+        return stats[7]
     };
     this.getITicksRemaining = function(P) {
         var U = Math.floor(P / 1E3 / 60);
         P = Math.floor((P - 6E4 * U) / 1E3);
         return 10 > P ? U + ":0" + P : U + ":" + P
     };
-    this.nG = function(P, U) {
-        return P.toFixed(U) + "%"
+    this.getPercentage = function(number, digits) {
+        return number.toFixed(digits) + "%"
     };
     this.update = function() {
-        J[0] && playersIngame - spectatorCount !== K[0] && (K[0] = playersIngame - spectatorCount, I++);
-        aliveCount - K[0] !== K[1] && (K[1] = aliveCount - K[0], I++);
+        isDisplayed[0] && playersIngame - spectatorCount !== stats[0] && (stats[0] = playersIngame - spectatorCount, updateCount++);
+        aliveCount - stats[0] !== stats[1] && (stats[1] = aliveCount - stats[0], updateCount++);
         this.eC();
         if (teamGame) {
-            var P = teams.getLargestTeamLand();
-            P >= R && l() ? (endGame.endGame(-1), n(teams.getLargestTeamLand())) : n(P)
-        } else P = land[landOrder[0]], P >= R && l() && endGame.endGame(-1), n(P);
-        P = interest.getInterestRate(myID);
-        P !== K[5] && (K[5] = P, I++);
-        x();
-        K[7] += mainHandler.getTickInterval();
-        P = k(7);
-        L !== P && (L = P, I += 100)
+            var largestLand = teams.getLargestTeamLand();
+            if (largestLand >= thresholdLandToWin && checkPotentialAdvances()) {
+                endGame.endGame(-1);
+                checkWinCondition(teams.getLargestTeamLand());
+            } else checkWinCondition(largestLand)
+        } else {
+            largestLand = land[landOrder[0]];
+            if (largestLand >= thresholdLandToWin && checkPotentialAdvances()) endGame.endGame(-1);
+            checkWinCondition(largestLand);
+        }
+        var P = interest.getInterestRate(myID);
+        P !== stats[5] && (stats[5] = P, updateCount++);
+        updateStatLand();
+        stats[7] += mainHandler.getTickInterval();
+        P = getStat(7);
+        myIncome !== P && (myIncome = P, updateCount += 100)
     };
     this.eC = function() {
-        J[2] && spectatorCount !== K[2] && (K[2] = spectatorCount, I++)
+        isDisplayed[2] && spectatorCount !== stats[2] && (stats[2] = spectatorCount, updateCount++)
     };
-    this.receivedSpawnActions = function(P) {
-        if (P === spawnTime) return H = 0, g(), !1;
-        if (-1 === P && 0 === M) return !1;
+    this.receivedSpawnActions = function(packetsReceived) {
+        if (packetsReceived === spawnTime) {
+            H = 0;
+            drawStatsBox();
+            return !1;
+        }
+        if (-1 === packetsReceived && 0 === M) return !1;
         var U = H,
             W = performance.now();
-        if (0 <= P) {
-            var X = W - 392 * P;
-            M = 0 === P || X < M ? X : M
+        if (0 <= packetsReceived) {
+            var X = W - 392 * packetsReceived;
+            M = 0 === packetsReceived || X < M ? X : M
         }
         H = (W - M) / (392 * spawnTime);
         H = 1 < H ? 1 : H;
-        g();
+        drawStatsBox();
         return H !== U
     };
     this.drawCanvasImage = function() {
-        mainCanvasCtx.drawImage(t, y, A)
+        mainCanvasCtx.drawImage(statBoxCanvas, y, A)
     }
 }
 
@@ -10998,7 +11032,7 @@ function Statistics() {
     };
     this.updateSliderProperties = function() {
         if (2 > this.clickedButtonIndex) this.textWidth = gameMessages.measureText(attackBars.splitNumber(statisticNumbers.max[this.clickedButtonIndex]), fontWeightBold + this.fontPadding + fontSizeArial)
-        else if (2 === this.clickedButtonIndex) this.textWidth = gameMessages.measureText(gameStatistics.nG(6, 2), fontWeightBold + this.fontPadding + fontSizeArial);
+        else if (2 === this.clickedButtonIndex) this.textWidth = gameMessages.measureText(gameStatistics.getPercentage(6, 2), fontWeightBold + this.fontPadding + fontSizeArial);
         this.availableWidth = this.width - 2 * this.buttonMargin - this.textWidth - this.textPadding;
     };
     this.updateRenderObject = function() {
@@ -11065,9 +11099,9 @@ function Statistics() {
         mainCanvasCtx.stroke();
         yScaleFactor = this.drawMenuSymbol(statisticNumbers.recordedInterestValues, yScaleFactor, 1);
         var maxIRate = statisticNumbers.max[this.clickedButtonIndex] / 100;
-        if (.95 > yScaleFactor) mainCanvasCtx.fillText(gameStatistics.nG(maxIRate, 2), -this.buttonMargin, 0);
-        if (.05 < Math.abs(yScaleFactor - .5)) mainCanvasCtx.fillText(gameStatistics.nG(maxIRate / 2, 2), -this.buttonMargin, Math.floor(this.availableHeight / 2));
-        if (.05 < yScaleFactor) mainCanvasCtx.fillText(gameStatistics.nG(0, 2), -this.buttonMargin, this.availableHeight)
+        if (.95 > yScaleFactor) mainCanvasCtx.fillText(gameStatistics.getPercentage(maxIRate, 2), -this.buttonMargin, 0);
+        if (.05 < Math.abs(yScaleFactor - .5)) mainCanvasCtx.fillText(gameStatistics.getPercentage(maxIRate / 2, 2), -this.buttonMargin, Math.floor(this.availableHeight / 2));
+        if (.05 < yScaleFactor) mainCanvasCtx.fillText(gameStatistics.getPercentage(0, 2), -this.buttonMargin, this.availableHeight)
     };
     this.drawAttackStatisticsNumbers = function(startX, startY) {
         var leftIndex;
@@ -11078,9 +11112,9 @@ function Statistics() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .39 * this.width, startY + 2 * this.contentPadding);
         mainCanvasCtx.textAlign = leftAlign;
         leftIndex = statisticNumbers.numbers[1];
-        mainCanvasCtx.fillText(gameStatistics.nG(statisticNumbers.numbers[0] / (10 * (1 > leftIndex ? 1 : leftIndex)), 1), 0, 0);
+        mainCanvasCtx.fillText(gameStatistics.getPercentage(statisticNumbers.numbers[0] / (10 * (1 > leftIndex ? 1 : leftIndex)), 1), 0, 0);
         for (leftIndex = 6; 1 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.numbers[leftIndex].toString(), 0, leftIndex * lineHeight / 7);
-        mainCanvasCtx.fillText(gameStatistics.nG(100 * (1 - land[myID] / statisticNumbers.numbers[7]), 0), 0, lineHeight)
+        mainCanvasCtx.fillText(gameStatistics.getPercentage(100 * (1 - land[myID] / statisticNumbers.numbers[7]), 0), 0, lineHeight)
     };
     this.drawTroopStatisticsNumbers = function(startX, startY) {
         var rightIndex;
@@ -11131,7 +11165,7 @@ function Statistics() {
         var sliderTickValue = this.activeSliderValue * mainHandler.getTickInterval();
         sliderTickValue = 0 === isAlive[myID] ? Math.floor(sliderTickValue * gameResultBox.ticksElapsedWhenDeath) : Math.floor(sliderTickValue * mainHandler.getTicksElapsed());
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.fillText(1 === startY ? gameStatistics.nG(interpolatedValue / 100, 2) : attackBars.splitNumber(Math.floor(interpolatedValue)), -this.buttonMargin, this.availableHeight - startX * Math.pow(interpolatedValue, startY));
+        mainCanvasCtx.fillText(1 === startY ? gameStatistics.getPercentage(interpolatedValue / 100, 2) : attackBars.splitNumber(Math.floor(interpolatedValue)), -this.buttonMargin, this.availableHeight - startX * Math.pow(interpolatedValue, startY));
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.fillText(gameStatistics.getITicksRemaining(sliderTickValue), sliderDpValue * this.availableWidth / (statisticNumbers.currentDataPointIndex - 1), this.availableHeight + this.fontPadding - (isZoom ? 2 : 0));
         mainCanvasCtx.textAlign = rightAlign;
