@@ -3196,13 +3196,13 @@ function onTouchstart(e) {
 function handleMouseDown(xPos, yPos) {
     if (0 === clientStatus) gameStateManager.mouseDown(xPos, yPos);
     else if (!statistics.mouseDown(xPos, yPos) && !playerActions.hasClickedIcon(xPos, yPos) && !gameResultBox.mouseDown(xPos, yPos) && !attackBars.mouseDown(xPos, yPos)) {
-        var n = gameButtons.mouseDown(xPos, yPos);
-        if (2 !== n && !gameLeaderboard.mouseDown(xPos, yPos)) {
+        var clickedResult = gameButtons.mouseDown(xPos, yPos);
+        if (2 !== clickedResult && !gameLeaderboard.mouseDown(xPos, yPos)) {
             if (mouseCamera.mouseDown(xPos, yPos)) mainHandler.canvasDirty = !0
             else if (attackRatioBar.getClickedButton(xPos, yPos)) {
                 mouseCamera.isPanning = !1;
                 if (attackRatioBar.clickedButton(xPos, yPos)) mainHandler.canvasDirty = !0
-            } else if (!(announcements.mouseDown(xPos, yPos) || peace.mouseDown(xPos, yPos)) && 0 === n) playerActions.setLastClickPos(xPos, yPos)
+            } else if (!(announcements.mouseDown(xPos, yPos) || peace.mouseDown(xPos, yPos)) && 0 === clickedResult) playerActions.setLastClickPos(xPos, yPos)
         }
     }
 }
@@ -3240,7 +3240,7 @@ function onMouseleave(e) {
     e.preventDefault();
     if (0 === clientStatus) {
         gameStateManager.click(-1024, -1024);
-        playtime.pU();
+        playtime.reset();
     } else {
         gameLeaderboard.onDragEnd(-1024, -1024);
         gameButtons.onPointermove(-1024, -1024);
@@ -4089,227 +4089,236 @@ function MouseCamera() {
 }
 
 function Playtime() {
-    function g() {
-        A = Math.floor(.2 * (isZoom ? .07 : .035) * averageDim);
-        A = getMax(isZoom ? 3 : 1, A);
-        var P = canvasWidth / (t.length + B);
-        A = P > A ? P : A;
-        H = Math.floor((1 - B) * A);
-        z = 0;
-        k()
+    function calculatePlaytimeWidth() {
+        playtimeCanvasWidth = Math.floor(.2 * (isZoom ? .07 : .035) * averageDim);
+        playtimeCanvasWidth = getMax(isZoom ? 3 : 1, playtimeCanvasWidth);
+        var P = canvasWidth / (playTimes.length + playtimePadding);
+        playtimeCanvasWidth = P > playtimeCanvasWidth ? P : playtimeCanvasWidth;
+        playtimeBarWidth = Math.floor((1 - playtimePadding) * playtimeCanvasWidth);
+        playtimeCanvasPosition = 0;
+        setPlaytimeBoundaries()
     }
 
-    function k() {
-        z = -20 > z ? -20 : z;
-        z = z > (t.length - 15) * A ? (t.length - 15) * A : z;
-        E = Math.floor(z / A);
-        F = E + Math.floor(prevClientWidth / A);
-        F = F > t.length - 1 ? t.length - 1 : F;
-        E = F < E ? F : E;
-        E = 0 > E ? 0 : E;
-        var P = F;
-        C = y / t[P];
-        for (var U = F - 1; U >= E; U--) t[U] > t[P] && (P = U, C = y / Math.pow(t[U], L))
+    function setPlaytimeBoundaries() {
+        playtimeCanvasPosition = -20 > playtimeCanvasPosition ? -20 : playtimeCanvasPosition;
+        playtimeCanvasPosition = playtimeCanvasPosition > (playTimes.length - 15) * playtimeCanvasWidth ? (playTimes.length - 15) * playtimeCanvasWidth : playtimeCanvasPosition;
+        playtimeStartIndex = Math.floor(playtimeCanvasPosition / playtimeCanvasWidth);
+        playtimeEndIndex = playtimeStartIndex + Math.floor(prevClientWidth / playtimeCanvasWidth);
+        playtimeEndIndex = playtimeEndIndex > playTimes.length - 1 ? playTimes.length - 1 : playtimeEndIndex;
+        playtimeStartIndex = playtimeEndIndex < playtimeStartIndex ? playtimeEndIndex : playtimeStartIndex;
+        playtimeStartIndex = 0 > playtimeStartIndex ? 0 : playtimeStartIndex;
+        var P = playtimeEndIndex;
+        playtimeDuration = playtimeCanvasHeight / playTimes[P];
+        for (var U = playtimeEndIndex - 1; U >= playtimeStartIndex; U--) playTimes[U] > playTimes[P] && (P = U, playtimeDuration = playtimeCanvasHeight / Math.pow(playTimes[U], playtimeExponent))
     }
 
-    function n(P) {
-        P = Math.floor((z + prevClientWidth - P - B * A) / A);
-        P = -1 > P ? -1 : -1 === P ? 0 : P > t.length - 1 ? -1 : P;
-        return P !== G ? (G = P, -1 === M && 0 === G && J && (M = setInterval(x, 100)),
-            !0) : !1
-    }
-
-    function l(P) {
-        var U = Math.floor(C * Math.pow(t[P], L));
-        mainCanvasCtx.fillRect(z + prevClientWidth - (P + 1) * A, prevClientHeight - U, H, U)
-    }
-
-    function x() {
-        8 === gameStateManager.getState() && (G = -1);
-        if (0 !== G) Q = (new Date).getTime(), clearInterval(M), M = -1;
-        else {
-            var P = t[1] / 864E3;
-            if (-1 !== Q) {
-                var U = (new Date).getTime();
-                P += (U - Q) * t[1] / 864E5;
-                Q = -1
+    function updatePlaytimeIndex(mouseXPos) {
+        var newPtIndex = Math.floor((playtimeCanvasPosition + prevClientWidth - mouseXPos - playtimePadding * playtimeCanvasWidth) / playtimeCanvasWidth);
+        newPtIndex = -1 > newPtIndex ? -1 : -1 === newPtIndex ? 0 : newPtIndex > playTimes.length - 1 ? -1 : newPtIndex;
+        if (newPtIndex !== hoveringPlaytimeIndex) {
+            hoveringPlaytimeIndex = newPtIndex;
+            if (-1 === playtimeIntervalID && 0 === hoveringPlaytimeIndex && isLoadInfoRequested) {
+                playtimeIntervalID = setInterval(updateCurrentPlaytime, 100);
             }
-            0 < P && (t[0] += Math.floor(P), mainHandler.canvasDirty = !0)
+            return !0;
+        } else return !1;
+    }
+
+    function drawPlaytimeRect(playtimeIndex) {
+        var U = Math.floor(playtimeDuration * Math.pow(playTimes[playtimeIndex], playtimeExponent));
+        mainCanvasCtx.fillRect(playtimeCanvasPosition + prevClientWidth - (playtimeIndex + 1) * playtimeCanvasWidth, prevClientHeight - U, playtimeBarWidth, U)
+    }
+
+    function updateCurrentPlaytime() {
+        8 === gameStateManager.getState() && (hoveringPlaytimeIndex = -1);
+        if (0 !== hoveringPlaytimeIndex) {
+            playtimeLastUpdateTime = (new Date).getTime();
+            clearInterval(playtimeIntervalID);
+            playtimeIntervalID = -1;
+        } else {
+            var playTimeIncrease = playTimes[1] / 864E3;
+            if (-1 !== playtimeLastUpdateTime) {
+                var now = (new Date).getTime();
+                playTimeIncrease += (now - playtimeLastUpdateTime) * playTimes[1] / 864E5;
+                playtimeLastUpdateTime = -1
+            }
+            0 < playTimeIncrease && (playTimes[0] += Math.floor(playTimeIncrease), mainHandler.canvasDirty = !0)
         }
     }
-    var t, z, y, A, B, C, E, F, G, N, I, D, K, J, L, H, M, Q, R;
+    var playTimes, playtimeCanvasPosition, playtimeCanvasHeight, playtimeCanvasWidth, playtimePadding, playtimeDuration, playtimeStartIndex, playtimeEndIndex, hoveringPlaytimeIndex,
+        fontSize, fontStyle, currentDate, lastPointerXPos, isLoadInfoRequested, playtimeExponent, playtimeBarWidth, playtimeIntervalID, playtimeLastUpdateTime, timeStampLabels;
     this.init = function() {
-        Q = M = -1;
-        J = !1;
-        L = 1;
-        G = -1;
-        this.rg = !1;
-        K = 0;
-        D = new Date;
-        z = 0;
-        B = .3;
-        R = [];
-        R.push({
+        playtimeLastUpdateTime = playtimeIntervalID = -1;
+        isLoadInfoRequested = !1;
+        playtimeExponent = 1;
+        hoveringPlaytimeIndex = -1;
+        this.isDraggingPlaytime = !1;
+        lastPointerXPos = 0;
+        currentDate = new Date;
+        playtimeCanvasPosition = 0;
+        playtimePadding = .3;
+        timeStampLabels = [];
+        timeStampLabels.push({
             group: "Plateau A",
-            b3: 0,
-            pJ: 57
+            count: 0,
+            range: 57
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max A",
-            b3: 1,
-            pJ: 1
+            count: 1,
+            range: 1
         });
-        R.push({
+        timeStampLabels.push({
             group: "Black Friday",
-            b3: 15,
-            pJ: 15
+            count: 15,
+            range: 15
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max B",
-            b3: 19,
-            pJ: 19
+            count: 19,
+            range: 19
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max C",
-            b3: 44,
-            pJ: 44
+            count: 44,
+            range: 44
         });
-        R.push({
+        timeStampLabels.push({
             group: "First Android Version",
-            b3: 58,
-            pJ: 58
+            count: 58,
+            range: 58
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max D",
-            b3: 67,
-            pJ: 67
+            count: 67,
+            range: 67
         });
-        R.push({
+        timeStampLabels.push({
             group: "The iFrame Explosion",
-            b3: 98,
-            pJ: 99
+            count: 98,
+            range: 99
         });
-        R.push({
+        timeStampLabels.push({
             group: "The 155-Day Uptrend",
-            b3: 58,
-            pJ: 213
+            count: 58,
+            range: 213
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max E",
-            b3: 213,
-            pJ: 213
+            count: 213,
+            range: 213
         });
-        R.push({
+        timeStampLabels.push({
             group: "Plateau B",
-            b3: 214,
-            pJ: 259
+            count: 214,
+            range: 259
         });
-        R.push({
+        timeStampLabels.push({
             group: "Turbulent Times",
-            b3: 260,
-            pJ: 344
+            count: 260,
+            range: 344
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max F",
-            b3: 262,
-            pJ: 262
+            count: 262,
+            range: 262
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max G",
-            b3: 282,
-            pJ: 282
+            count: 282,
+            range: 282
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max H",
-            b3: 333,
-            pJ: 333
+            count: 333,
+            range: 333
         });
-        R.push({
+        timeStampLabels.push({
             group: "The 19-Day Downtrend",
-            b3: 283,
-            pJ: 301
+            count: 283,
+            range: 301
         });
-        R.push({
+        timeStampLabels.push({
             group: "Plateau C",
-            b3: 345,
-            pJ: 385
+            count: 345,
+            range: 385
         });
-        R.push({
+        timeStampLabels.push({
             group: "The Alliance Ascent",
-            b3: 386,
-            pJ: 395
+            count: 386,
+            range: 395
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max I",
-            b3: 395,
-            pJ: 395
+            count: 395,
+            range: 395
         });
-        R.push({
+        timeStampLabels.push({
             group: "First iOS Version",
-            b3: 411,
-            pJ: 411
+            count: 411,
+            range: 411
         });
-        R.push({
+        timeStampLabels.push({
             group: "Plateau D",
-            b3: 396,
-            pJ: 453
+            count: 396,
+            range: 453
         });
-        R.push({
+        timeStampLabels.push({
             group: "The TikTok Revolution",
-            b3: 454,
-            pJ: 470
+            count: 454,
+            range: 470
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max J",
-            b3: 456,
-            pJ: 456
+            count: 456,
+            range: 456
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max K",
-            b3: 472,
-            pJ: 472
+            count: 472,
+            range: 472
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max L",
-            b3: 478,
-            pJ: 478
+            count: 478,
+            range: 478
         });
-        R.push({
+        timeStampLabels.push({
             group: "YT Drew",
-            b3: 471,
-            pJ: 485
+            count: 471,
+            range: 485
         });
-        R.push({
+        timeStampLabels.push({
             group: "Plateau E",
-            b3: 485,
-            pJ: 600
+            count: 485,
+            range: 600
         });
-        R.push({
+        timeStampLabels.push({
             group: "Uptrend A",
-            b3: 600,
-            pJ: 613
+            count: 600,
+            range: 613
         });
-        R.push({
+        timeStampLabels.push({
             group: "Max M",
-            b3: 613,
-            pJ: 613
+            count: 613,
+            range: 613
         });
-        R.push({
+        timeStampLabels.push({
             group: "Downtrend A",
-            b3: 614,
-            pJ: 635
+            count: 614,
+            range: 635
         });
-        R.push({
+        timeStampLabels.push({
             group: "Plateau F",
-            b3: 636,
-            pJ: 737
+            count: 636,
+            range: 737
         });
-        R.push({
+        timeStampLabels.push({
             group: "End of Record",
-            b3: 738,
-            pJ: 738
+            count: 738,
+            range: 738
         });
-        t = [208644377, 208644377, 208644377, 206964709, 205156594, 250680803, 249089835, 234476552, 252346209, 263196406, 270821533, 291436400, 294907103, 288866179, 297960890, 310165928, 323215738, 326005712, 312078872, 282668674, 268883231, 261100885, 247870209, 240175828, 231697235, 240614202, 237647174, 230525212, 228239099, 226070733, 215992739, 216961676, 231079584, 235793502, 234032821, 228402462,
+        playTimes = [208644377, 208644377, 208644377, 206964709, 205156594, 250680803, 249089835, 234476552, 252346209, 263196406, 270821533, 291436400, 294907103, 288866179, 297960890, 310165928, 323215738, 326005712, 312078872, 282668674, 268883231, 261100885, 247870209, 240175828, 231697235, 240614202, 237647174, 230525212, 228239099, 226070733, 215992739, 216961676, 231079584, 235793502, 234032821, 228402462,
             216942832, 211862670, 209792418, 220626495, 221020535, 228198633, 226910806, 227687295, 210969547, 197393506, 205629061, 215820135, 213694935, 209455870, 215822584, 215130299, 214034219, 229190414, 230055290, 225313791, 223398523, 231870169, 226224938, 218242706, 235891029, 210498444, 195329116, 187676007, 183432634, 175752106, 170096205, 173369342, 171454357, 185810310, 189616577, 190788861, 179291487, 179513980, 189122353, 188375572, 202060722, 203256609, 197948652, 191950448, 194693217, 196335490, 195911919, 202264283, 199251620, 193699336, 188441210,
             183419345, 195919988, 198126823, 199780788, 197440550, 190144884, 179139362, 166469099, 178827877, 183801980, 197952484, 188875861, 185919783, 186237411, 182504952, 183532013, 174109004, 178159701, 161031347, 194622838, 205645645, 200496457, 194773327, 194546481, 207893217, 210920126, 213376144, 173859897, 154326886, 158943729, 166772975, 175066046, 177406405, 179018562, 185986119, 186747583, 200787939, 208959937, 161987576, 185512400, 185788899, 185957487, 194591063, 215634157, 230579314, 237637383, 240518707, 221398239, 225230795, 224891285, 211292916,
             216944626, 219436299, 226523918, 232405568, 232166426, 216921782, 244767964, 257278946, 243548100, 237386943, 242802627, 229717622, 168149709, 259971896, 267057767, 257606635, 209857364, 126035568, 129833237, 151312703, 197006695, 73120657, 37551024, 39229432, 29517736, 29382631, 31512045, 42652097, 47363019, 49624906, 46687310, 33767120, 31230439, 34211643, 43094531, 53747053, 55380682, 49779117, 47748833, 21038802, 20406484, 24523793, 26566139, 25284142, 26825553, 23497443, 20291865, 17765022, 21291320, 21106123, 19050128, 18324426, 19044067, 19594721,
@@ -4325,87 +4334,129 @@ function Playtime() {
         wsManager.sendWhenWSOpen(0, 0)
     };
     this.setCanvasVariables = function() {
-        y = Math.floor(.15 *
-            canvasHeight);
-        N = Math.floor((isZoom ? .018 : .0137) * averageDim);
-        N = 10 > N ? 10 : N;
-        I = fontWeightBold + N + fontSizeArial;
-        g()
+        playtimeCanvasHeight = Math.floor(.15 * canvasHeight);
+        fontSize = Math.floor((isZoom ? .018 : .0137) * averageDim);
+        fontSize = 10 > fontSize ? 10 : fontSize;
+        fontStyle = fontWeightBold + fontSize + fontSizeArial;
+        calculatePlaytimeWidth()
     };
     this.completeFirstAction = function() {
-        J || dataEncoder.requestLoadInfo()
+        isLoadInfoRequested || dataEncoder.requestLoadInfo()
     };
-    this.addPlaytimes = function(P) {
-        var U;
-        J = !0;
-        for (U = 0; U < P.length; U++) t.unshift(P[U]);
-        g();
+    this.addPlaytimes = function(newPlaytimes) {
+        var ptIndex;
+        isLoadInfoRequested = !0;
+        for (ptIndex = 0; ptIndex < newPlaytimes.length; ptIndex++) playTimes.unshift(newPlaytimes[ptIndex]);
+        calculatePlaytimeWidth();
         mainHandler.canvasDirty = !0
     };
     this.setPosition = function() {
-        k()
+        setPlaytimeBoundaries()
     };
-    this.onPointermove = function(P, U) {
-        U > prevClientHeight - .6 * y ? this.rg ? P !== K && (z += P - K, K = P, k(), n(P), this.rg = -1 !== G, mainHandler.canvasDirty = !0) : n(P) && (mainHandler.canvasDirty = !0) : this.pU()
+    this.onPointermove = function(xPos, yPos) {
+        if (yPos > prevClientHeight - .6 * playtimeCanvasHeight) {
+            if (this.isDraggingPlaytime) {
+                if (xPos !== lastPointerXPos) {
+                    playtimeCanvasPosition += xPos - lastPointerXPos;
+                    lastPointerXPos = xPos;
+                    setPlaytimeBoundaries();
+                    updatePlaytimeIndex(xPos);
+                    this.isDraggingPlaytime = -1 !== hoveringPlaytimeIndex;
+                    mainHandler.canvasDirty = !0;
+                }
+            } else if (updatePlaytimeIndex(xPos)) mainHandler.canvasDirty = !0
+        } else this.reset()
     };
-    this.pU = function() {
-        -1 !== G && (this.rg = !1, G = -1, mainHandler.canvasDirty = !0)
+    this.reset = function() {
+        if (-1 !== hoveringPlaytimeIndex) {
+            this.isDraggingPlaytime = !1;
+            hoveringPlaytimeIndex = -1;
+            mainHandler.canvasDirty = !0;
+        }
     };
-    this.onWheel = function(P, U) {
-        -1 !== G && (z += Math.floor(U), k(), n(P), mainHandler.canvasDirty = !0)
+    this.onWheel = function(xPos, deltaY) {
+        if (-1 !== hoveringPlaytimeIndex) {
+            playtimeCanvasPosition += Math.floor(deltaY);
+            setPlaytimeBoundaries();
+            updatePlaytimeIndex(xPos);
+            mainHandler.canvasDirty = !0;
+        }
     };
-    this.mouseDown = function(P, U) {
-        this.onPointermove(P, U); - 1 !== G && (K = P, this.rg = !0)
+    this.mouseDown = function(xPos, yPos) {
+        this.onPointermove(xPos, yPos);
+        if (-1 !== hoveringPlaytimeIndex) {
+            lastPointerXPos = xPos;
+            this.isDraggingPlaytime = !0
+        }
     };
     this.onDragEnd = function() {
-        -1 !== G && (this.rg = !1)
+        -1 !== hoveringPlaytimeIndex && (this.isDraggingPlaytime = !1)
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.fillStyle = whiteMoreTransparent;
-        for (var P = F; P >= E; P--) l(P);
-        J && 0 === E && (mainCanvasCtx.fillStyle = redMoreOpaque, l(0)); - 1 !== G && (mainCanvasCtx.fillStyle = whiteMoreOpaque, l(G));
-        if (-1 !== G) {
-            mainCanvasCtx.font = I;
+        for (var ptIndex = playtimeEndIndex; ptIndex >= playtimeStartIndex; ptIndex--) drawPlaytimeRect(ptIndex);
+        if (isLoadInfoRequested && 0 === playtimeStartIndex) {
+            mainCanvasCtx.fillStyle = redMoreOpaque;
+            drawPlaytimeRect(0);
+        }
+        if (-1 !== hoveringPlaytimeIndex) {
+            mainCanvasCtx.fillStyle = whiteMoreOpaque;
+            drawPlaytimeRect(hoveringPlaytimeIndex);
+        }
+        if (-1 !== hoveringPlaytimeIndex) {
+            mainCanvasCtx.font = fontStyle;
             mainCanvasCtx.textBaseline = bottomAlign;
-            P = new Date;
-            P.setTime(D.getTime() - 864E5 * G);
-            var U = "month",
-                W = "day";
-            "undefined" !== typeof Intl && (U = (new Intl.DateTimeFormat("en-US", {
-                month: "long"
-            })).format(P), W = (new Intl.DateTimeFormat("en-US", {
-                weekday: "long"
-            })).format(P));
-            P = W + ", " + P.getUTCDate() + " " + U + " " + P.getFullYear();
-            var X = 1 === t[G] ? " second played" :
-                " seconds played";
-            X = attackBars.splitNumber(t[G]) + X;
-            var V = Math.floor(mainCanvasCtx.measureText(P).width),
-                na = Math.floor(mainCanvasCtx.measureText(X).width),
-                ba = Math.floor(.5 * (V + N));
-            U = z + prevClientWidth - (G + 1) * A;
-            U = U < ba ? ba : U > prevClientWidth - ba ? prevClientWidth - ba : U;
-            W = prevClientHeight - Math.floor(C * Math.pow(t[G], L));
-            var ca = Math.floor(1.1 * N),
-                pa = W > prevClientHeight - ca ? prevClientHeight - ca : W;
+            var date = new Date;
+            date.setTime(currentDate.getTime() - 864E5 * hoveringPlaytimeIndex);
+            var month = "month",
+                day = "day";
+            if ("undefined" !== typeof Intl) {
+                month = (new Intl.DateTimeFormat("en-US", {
+                    month: "long"
+                })).format(date);
+                day = (new Intl.DateTimeFormat("en-US", {
+                    weekday: "long"
+                })).format(date);
+            }
+            date = day + ", " + date.getUTCDate() + " " + month + " " + date.getFullYear();
+            var playtimeInfoLabel = 1 === playTimes[hoveringPlaytimeIndex] ? " second played" : " seconds played";
+            playtimeInfoLabel = attackBars.splitNumber(playTimes[hoveringPlaytimeIndex]) + playtimeInfoLabel;
+            var dateWidth = Math.floor(mainCanvasCtx.measureText(date).width),
+                infoLabelWidth = Math.floor(mainCanvasCtx.measureText(playtimeInfoLabel).width),
+                halfWidth = Math.floor(.5 * (dateWidth + fontSize));
+            var posX = playtimeCanvasPosition + prevClientWidth - (hoveringPlaytimeIndex + 1) * playtimeCanvasWidth;
+            posX = posX < halfWidth ? halfWidth : posX > prevClientWidth - halfWidth ? prevClientWidth - halfWidth : posX;
+            var posY = prevClientHeight - Math.floor(playtimeDuration * Math.pow(playTimes[hoveringPlaytimeIndex], playtimeExponent));
+            var textHeight = Math.floor(1.1 * fontSize),
+                maxPosY = posY > prevClientHeight - textHeight ? prevClientHeight - textHeight : posY;
             mainCanvasCtx.fillStyle = blackMoreOpaque;
-            mainCanvasCtx.fillRect(prevClientWidth - na - N, pa - ca, na + N, ca);
-            mainCanvasCtx.fillRect(U - ba, prevClientHeight - ca, V + N, ca);
+            mainCanvasCtx.fillRect(prevClientWidth - infoLabelWidth - fontSize, maxPosY - textHeight, infoLabelWidth + fontSize, textHeight);
+            mainCanvasCtx.fillRect(posX - halfWidth, prevClientHeight - textHeight, dateWidth + fontSize, textHeight);
             mainCanvasCtx.fillStyle = whiteRGB2;
             mainCanvasCtx.textAlign = rightAlign;
-            mainCanvasCtx.fillText(X, Math.floor(prevClientWidth - .5 * N), pa);
-            X = pa - 2 * ca;
-            V = -1;
-            na = t.length - G - 1;
-            for (ba = R.length - 1; 0 <= ba; ba--) na >= R[ba].b3 && na <= R[ba].pJ && (-1 ===
-                V || R[ba].pJ - R[ba].b3 < R[V].pJ - R[V].b3) && (V = ba); - 1 !== V && (na = Math.floor(mainCanvasCtx.measureText(R[V].group).width), mainCanvasCtx.fillStyle = blackMoreOpaque, mainCanvasCtx.fillRect(prevClientWidth - na - N, X, na + N, ca), mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.fillText(R[V].group, Math.floor(prevClientWidth - .5 * N), X + ca));
+            mainCanvasCtx.fillText(playtimeInfoLabel, Math.floor(prevClientWidth - .5 * fontSize), maxPosY);
+            var labelPosY = maxPosY - 2 * textHeight;
+            var index = -1;
+            var reverseHoveringPtIndex = playTimes.length - hoveringPlaytimeIndex - 1;
+            for (var tsIndex = timeStampLabels.length - 1; 0 <= tsIndex; tsIndex--) {
+                if (reverseHoveringPtIndex >= timeStampLabels[tsIndex].count && reverseHoveringPtIndex <= timeStampLabels[tsIndex].range) {
+                    if (-1 === index || timeStampLabels[tsIndex].range - timeStampLabels[tsIndex].count < timeStampLabels[index].range - timeStampLabels[index].count) index = tsIndex
+                    if (-1 !== index) {
+                        reverseHoveringPtIndex = Math.floor(mainCanvasCtx.measureText(timeStampLabels[index].group).width);
+                        mainCanvasCtx.fillStyle = blackMoreOpaque;
+                        mainCanvasCtx.fillRect(prevClientWidth - reverseHoveringPtIndex - fontSize, labelPosY, reverseHoveringPtIndex + fontSize, textHeight);
+                        mainCanvasCtx.fillStyle = whiteRGB2;
+                        mainCanvasCtx.fillText(timeStampLabels[index].group, Math.floor(prevClientWidth - .5 * fontSize), labelPosY + textHeight);
+                    }
+                }
+            }
             mainCanvasCtx.textAlign = centerAlign;
-            mainCanvasCtx.fillText(P, U, prevClientHeight);
+            mainCanvasCtx.fillText(date, posX, prevClientHeight);
             mainCanvasCtx.strokeStyle = whiteMore3Transparent;
             mainCanvasCtx.lineWidth = 1;
             mainCanvasCtx.beginPath();
-            mainCanvasCtx.moveTo(0, W);
-            mainCanvasCtx.lineTo(prevClientWidth, W);
+            mainCanvasCtx.moveTo(0, posY);
+            mainCanvasCtx.lineTo(prevClientWidth, posY);
             mainCanvasCtx.closePath();
             mainCanvasCtx.stroke()
         }
@@ -5736,7 +5787,7 @@ function MainButtons() {
             if (updateCanvas) mainHandler.canvasDirty = !0
         }
         if (-1 !== bIndex) {
-            playtime.pU();
+            playtime.reset();
             return !0;
         } else return !1
     };
@@ -6046,21 +6097,21 @@ function GameStateManager() {
     };
     this.onPointermove = function(xPos, yPos) {
         moreSettings.onPointermove(xPos, yPos);
-        if (!playtime.rg) {
+        if (!playtime.isDraggingPlaytime) {
             if (cookiesPrompt.onPointermove(xPos, yPos)) {
-                playtime.pU();
+                playtime.reset();
                 return
             }
             if (2 === gameState && singleSettings.onPointermove(xPos, yPos)) {
-                playtime.pU();
+                playtime.reset();
                 return
             }
             if (0 <= mainSettings.getClickedButton(xPos, yPos)) {
-                playtime.pU();
+                playtime.reset();
                 return
             }
             if (mainSettings.onPointermove(xPos, yPos)) {
-                playtime.pU();
+                playtime.reset();
                 return
             }
             if (mainButtons.onPointermove(xPos, yPos, !0)) return
@@ -6071,8 +6122,8 @@ function GameStateManager() {
         playtime.onDragEnd();
         mainSettings.handleSave() || linkButtons.mouseDown(k, n, !1) || mainSettings.mouseDown(k, n, !1)
     };
-    this.onWheel = function(k, n, l) {
-        mainSettings.buttons[1].buttonClass.visible || 0 === gameState && playtime.onWheel(k, l)
+    this.onWheel = function(xPos, yPos, deltaY) {
+        mainSettings.buttons[1].buttonClass.visible || 0 === gameState && playtime.onWheel(xPos, deltaY)
     };
     this.vl = function() {
         mainButtons.setPosition();
@@ -6876,7 +6927,7 @@ function SingleSettings() {
         var x = this.getClickedButton(n, l);
         if (-1 === x) return !1;
         if (0 === x) return this.showMainScreen(), !0;
-        if (1 === x) return customJSON.isCustomJSON ? (customJSON.pU(), mainHandler.canvasDirty = !0) : mapMenu.show(), !0;
+        if (1 === x) return customJSON.isCustomJSON ? (customJSON.reset(), mainHandler.canvasDirty = !0) : mapMenu.show(), !0;
         if (2 === x) return this.hide(), this.xO(), !0;
         if (customJSON.isCustomJSON) return !1;
         if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
@@ -6976,7 +7027,7 @@ function SingleSettings() {
 }
 
 function MainSettings() {
-    this.width = this.b3 = 0;
+    this.width = this.count = 0;
     this.buttons = null;
     this.init = function() {
         this.buttons = [];
@@ -7005,7 +7056,7 @@ function MainSettings() {
             buttonClass: null
         });
         this.buttons[2].buttonClass.v3();
-        this.b3 = this.buttons.length;
+        this.count = this.buttons.length;
         this.width = 0
     };
     this.setPosition = function() {
@@ -7013,14 +7064,14 @@ function MainSettings() {
         this.width += 4 - this.width % 4;
         this.buttons[0].startingX = bufferLength;
         this.buttons[0].startingY = prevClientHeight - this.width - bufferLength;
-        for (var butIndex = 1; butIndex < this.b3; butIndex++) {
+        for (var butIndex = 1; butIndex < this.count; butIndex++) {
             this.buttons[butIndex].startingX = this.buttons[butIndex - 1].startingX + Math.floor(isZoom ? 1.5 * bufferLength : 1.36 * bufferLength) + this.width;
             this.buttons[butIndex].startingY = this.buttons[0].startingY
         }
     };
     this.getClickedButton = function(xPos, yPos) {
         if (!sprites.areAllSpritesLoaded()) return -1;
-        for (var n = this.b3 - 1; 0 <= n; n--)
+        for (var n = this.count - 1; 0 <= n; n--)
             if (xPos >= this.buttons[n].startingX && yPos >= this.buttons[n].startingY && xPos < this.buttons[n].startingX + this.width && yPos < this.buttons[n].startingY + this.width) return n;
         return -1
     };
@@ -7068,7 +7119,7 @@ function MainSettings() {
     this.drawCanvasImage = function() {
         if (sprites.areAllSpritesLoaded()) {
             mainCanvasCtx.imageSmoothingEnabled = !0;
-            for (var g = this.b3 - 1; 0 <= g; g--) {
+            for (var g = this.count - 1; 0 <= g; g--) {
                 mainCanvasCtx.fillStyle = this.buttons[g].active ? greenDarkMoreOpaque : blackMoreOpaque;
                 mainCanvasCtx.fillRect(this.buttons[g].startingX, this.buttons[g].startingY, this.width, this.width);
                 if (0 === g) this.xb(g, sprites.getValueByID(15))
@@ -7220,7 +7271,7 @@ function NameInput() {
                     if (sprites.areAllSpritesLoaded()) {
                         this.hide();
                         saveUsername(textInput);
-                        customJSON.pU();
+                        customJSON.reset();
                         preLobby.init()
                     } else showError.displayError(3228) 
                 } else showError.displayError(4214)
@@ -7932,7 +7983,7 @@ function CustomJSON() {
     this.isCustomJSON = !1;
     this.data = null;
     this.mapName = "";
-    this.pU = function() {
+    this.reset = function() {
         this.isCustomJSON = !1;
         this.data = null
     };
@@ -8188,7 +8239,6 @@ function Interest() {
         }
     };
     this.getInterestRate = function(id) {
-        //land[landIDOrder[0]]
         var landIRate = discreteInterestArray[divideFloor((const_maxEntities - 1) * land[id], currentLandPixelsCount)];
         if (1920 > mainHandler.getTicksElapsed()) {
             var timeIRate = divideFloor(100 * (13440 - 6 * mainHandler.getTicksElapsed()), 1920);
