@@ -5756,15 +5756,15 @@ function LinkButtons() {
     };
     this.init = function() {
         if (sprites.areAllSpritesLoaded()) {
-            var y = Math.floor((isZoom ? .261 : .195) * averageDim);
-            var A = Math.floor(.9 * y),
-                B = Math.floor(.17 * A);
+            var googlePlayButtonScale = Math.floor((isZoom ? .261 : .195) * averageDim);
+            var appStoreButtonScale = Math.floor(.9 * googlePlayButtonScale),
+                buttonScale = Math.floor(.17 * appStoreButtonScale);
             padding = isZoom ? 2 * canvasPadding : canvasPadding;
-            buttonScales[0] = y / spriteList[0].width;
-            buttonScales[1] = A / spriteList[1].width;
-            buttonScales[2] = B / spriteList[2].height;
-            buttonScales[3] = B / spriteList[3].height;
-            buttonScales[4] = B / spriteList[4].height;
+            buttonScales[0] = googlePlayButtonScale / spriteList[0].width;
+            buttonScales[1] = appStoreButtonScale / spriteList[1].width;
+            buttonScales[2] = buttonScale / spriteList[2].height;
+            buttonScales[3] = buttonScale / spriteList[3].height;
+            buttonScales[4] = buttonScale / spriteList[4].height;
             buttonScales[3] *= 1.07;
             buttonXPos[0] = padding;
             buttonXPos[1] = padding;
@@ -5787,16 +5787,15 @@ function LinkButtons() {
     this.visible = function() {
         return 7 !== gameStateManager.getState() || !isZoom
     };
-    this.mouseDown = function(xPos, yPos, B) {
+    this.mouseDown = function(xPos, yPos, isNewTab) {
         if (!spriteList || !this.visible()) return false;
         var bIndex;
-        for (bIndex = isVisible.length - 1; 0 <= bIndex; bIndex--)
-            if (isVisible[bIndex] && this.shouldHideLinks[bIndex] && xPos > buttonXPos[bIndex] && yPos > buttonYPos[bIndex] && 
-                xPos < buttonXPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].width && yPos < buttonYPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].height) {
-                
-                openLinkBox.init(links[bIndex], B);
+        for (bIndex = isVisible.length - 1; 0 <= bIndex; bIndex--) {
+            if (isVisible[bIndex] && this.shouldHideLinks[bIndex] && xPos > buttonXPos[bIndex] && yPos > buttonYPos[bIndex] && xPos < buttonXPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].width && yPos < buttonYPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].height) {
+                openLinkBox.init(links[bIndex], isNewTab);
                 return true;
             }
+        }
         return false
     };
     this.drawCanvasImage = function() {
