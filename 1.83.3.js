@@ -7966,7 +7966,7 @@ function getLargestAttacker(attackers) {
 
 function manageDeathAnnouncements(id, attackers) {
     var attackerIndex, largestAttacker = attackers[getLargestAttacker(attackers)];
-    if (9 === gamemode && 1 === teamColors.teamArray[id] && fakeRandom.doesValueMeetProbiThreshold(8)) zombieSettings.zI(largestAttacker);
+    if (9 === gamemode && 1 === teamColors.teamArray[id] && fakeRandom.doesValueMeetProbiThreshold(8)) zombieSettings.storeLargestAttacker(largestAttacker);
     if (id === myID) {
         announcements.genericAnnouncement(largestAttacker, 1);
         manageOurDeath();
