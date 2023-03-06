@@ -5974,67 +5974,108 @@ function MainButtons() {
 }
 
 function ColorsPanel() {
-    function g(k) {
-        return 0 > k ? 0 : 255 < k ? 255 : Math.floor(k)
+    function getNormalValue(value) {
+        return 0 > value ? 0 : 255 < value ? 255 : Math.floor(value)
     }
     this.height = this.width = 0;
     this.visible = false;
-    this.v2 = this.v1 = this.v0 = this.selection = this.margins = this.isSaveRequired = 0;
+    this.individualBarHeight = this.individualBarWidth = this.compositeColorBarSize = this.selection = this.margins = this.isSaveRequired = 0;
     this.colors = null;
     this.init = function() {
-        canvasWidth < 2 * canvasHeight ? this.width = Math.floor((isZoom ? .94 : .4) * canvasWidth) : (this.height = Math.floor((isZoom ? .88 : .4) * canvasHeight), this.width = Math.floor(2 * this.height));
+        if (canvasWidth < 2 * canvasHeight) this.width = Math.floor((isZoom ? .94 : .4) * canvasWidth)
+        else {
+            this.height = Math.floor((isZoom ? .88 : .4) * canvasHeight);
+            this.width = Math.floor(2 * this.height);
+        }
         this.height = this.width / 2;
         this.margins = this.height / 16;
         this.visible = true;
         this.isSaveRequired = 0;
-        this.v0 = (this.height - 3 * this.margins) / 2;
-        this.v1 = this.width - 3 * this.margins - this.v0;
-        this.v2 = (this.height - 4 * this.margins) / 3
+        this.compositeColorBarSize = (this.height - 3 * this.margins) / 2;
+        this.individualBarWidth = this.width - 3 * this.margins - this.compositeColorBarSize;
+        this.individualBarHeight = (this.height - 4 * this.margins) / 3
     };
-    this.v3 = function() {
+    this.loadColors = function() {
         this.colors = [
             [0, 0, 0],
             [0, 0, 0]
         ];
-        var k = loadColors().split("");
-        if (6 !== k.length)
-            for (k = 2; 0 <= k; k--) this.colors[0][k] = g(256 * Math.random());
-        else
-            for (var n = 2; 0 <= n; n--) this.colors[0][n] = g(4 * (10 * parseInt(k[2 * n]) + parseInt(k[2 * n + 1])));
-        this.v5()
+        var rgbIndex = loadColors().split("");
+        if (6 !== rgbIndex.length) {
+            for (rgbIndex = 2; 0 <= rgbIndex; rgbIndex--) this.colors[0][rgbIndex] = getNormalValue(256 * Math.random());
+        } else {
+            for (var rgbIndex = 2; 0 <= rgbIndex; rgbIndex--) this.colors[0][rgbIndex] = getNormalValue(4 * (10 * parseInt(rgbIndex[2 * rgbIndex]) + parseInt(rgbIndex[2 * rgbIndex + 1])));
+        }
+        this.setNormalColorValue()
     };
     this.getRGB64 = function() {
         return [divideFloor(this.colors[0][0], 4), divideFloor(this.colors[0][1], 4), divideFloor(this.colors[0][2], 4)]
     };
-    this.mouseDown = function(k, n) {
+    this.mouseDown = function(xPos, yPos) {
         this.isSaveRequired = 0;
-        var l = (prevClientHeight - this.height) / 2;
-        k -= (prevClientWidth - this.width) / 2;
-        n -= l;
-        if (0 > k || 0 > n || k >= this.width - 1 || n >= this.height - 1) return this.visible = false, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, true), mainHandler.canvasDirty = true, false;
-        if (k < this.margins || n < this.margins || k >= this.width - this.margins || n >= this.height - this.margins) return true;
-        if (k < this.margins + this.v0) return n < this.margins + this.v0 && 0 !== this.selection && (this.selection = 0, mainHandler.canvasDirty = true), true;
-        if (k < 2 * this.margins + this.v0) return true;
-        k -= 2 * this.margins + this.v0;
-        if (n < this.margins + this.v2) return this.isSaveRequired = 1, this.colors[this.selection][0] = g(256 * k / this.v1), mainHandler.canvasDirty = true;
-        if (n < 2 * this.margins + this.v2) return true;
-        if (n < 2 * this.margins + 2 * this.v2) return this.isSaveRequired = 2, this.colors[this.selection][1] = g(256 * k / this.v1), mainHandler.canvasDirty = true;
-        n >= 3 * this.margins + 2 * this.v2 && (this.isSaveRequired = 3, this.colors[this.selection][2] = g(256 * k / this.v1), mainHandler.canvasDirty = true);
+        xPos -= (prevClientWidth - this.width) / 2;
+        yPos -= (prevClientHeight - this.height) / 2;
+        if (0 > xPos || 0 > yPos || xPos >= this.width - 1 || yPos >= this.height - 1) {
+            this.visible = false;
+            if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, true);
+            mainHandler.canvasDirty = true;
+            return false;
+        }
+        if (xPos < this.margins || yPos < this.margins || xPos >= this.width - this.margins || yPos >= this.height - this.margins) return true;
+        if (xPos < this.margins + this.compositeColorBarSize) {
+            if (yPos < this.margins + this.compositeColorBarSize && 0 !== this.selection) {
+                this.selection = 0;
+                mainHandler.canvasDirty = true;
+            }
+            return true;
+        }
+        if (xPos < 2 * this.margins + this.compositeColorBarSize) return true;
+        xPos -= 2 * this.margins + this.compositeColorBarSize;
+        if (yPos < this.margins + this.individualBarHeight) {
+            this.isSaveRequired = 1;
+            this.colors[this.selection][0] = getNormalValue(256 * xPos / this.individualBarWidth);
+            mainHandler.canvasDirty = true;
+            return true
+        }
+        if (yPos < 2 * this.margins + this.individualBarHeight) return true;
+        if (yPos < 2 * this.margins + 2 * this.individualBarHeight) {
+            this.isSaveRequired = 2;
+            this.colors[this.selection][1] = getNormalValue(256 * xPos / this.individualBarWidth);
+            mainHandler.canvasDirty = true;
+            return true;
+        }
+        if (yPos >= 3 * this.margins + 2 * this.individualBarHeight) {
+            this.isSaveRequired = 3;
+            this.colors[this.selection][2] = getNormalValue(256 * xPos / this.individualBarWidth);
+            mainHandler.canvasDirty = true;
+        }
         return true
     };
-    this.v5 = function() {
-        for (var k = 2; 0 <= k; k--) this.colors[0][k] =
-            g(this.colors[0][k])
+    this.setNormalColorValue = function() {
+        for (var rgbIndex = 2; 0 <= rgbIndex; rgbIndex--) this.colors[0][rgbIndex] = getNormalValue(this.colors[0][rgbIndex])
     };
-    this.v7 = function() {
-        for (var k = "", n, l = 0; 3 > l; l++) n = divideFloor(this.colors[0][l], 4), 10 > n && (k += "0"), k += n.toString();
-        saveColors(k)
+    this.formatColorString = function() {
+        for (var colorString = "", colorValue64, rgbIndex = 0; 3 > rgbIndex; rgbIndex++) {
+            colorValue64 = divideFloor(this.colors[0][rgbIndex], 4);
+            if (10 > colorValue64) colorString += "0";
+            colorString += colorValue64.toString();
+        }
+        saveColors(colorString)
     };
-    this.onPointermove = function(k) {
-        0 !== this.isSaveRequired && (k -= 2 * this.margins + this.v0 + (prevClientWidth - this.width) / 2, this.colors[this.selection][this.isSaveRequired - 1] = g(256 * k / this.v1), mainHandler.canvasDirty = true)
+    this.onPointermove = function(xPos) {
+        if (0 !== this.isSaveRequired) {
+            xPos -= 2 * this.margins + this.compositeColorBarSize + (prevClientWidth - this.width) / 2;
+            this.colors[this.selection][this.isSaveRequired - 1] = getNormalValue(256 * xPos / this.individualBarWidth);
+            mainHandler.canvasDirty = true;
+        }
     };
     this.handleSave = function() {
-        0 < this.isSaveRequired && (this.isSaveRequired = 0, this.v5(), this.v7(), mainHandler.canvasDirty = true)
+        if (0 < this.isSaveRequired) {
+            this.isSaveRequired = 0;
+            this.setNormalColorValue();
+            this.formatColorString();
+            mainHandler.canvasDirty = true;
+        }
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, (prevClientWidth - this.width) / 2, (prevClientHeight - this.height) / 2);
@@ -6043,29 +6084,28 @@ function ColorsPanel() {
         mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.height + 2);
-        mainCanvasCtx.font = fontWeightBold + Math.floor(.8 * this.v0) + fontSizeArial;
+        mainCanvasCtx.font = fontWeightBold + Math.floor(.8 * this.compositeColorBarSize) + fontSizeArial;
         mainCanvasCtx.textBaseline = middleAlign;
         mainCanvasCtx.textAlign = centerAlign;
-        this.v9(0);
+        this.fillCompositeColor(0);
         mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
-        this.vA(0);
-        this.vA(1);
-        this.vA(2);
+        this.fillIndividualBar(0);
+        this.fillIndividualBar(1);
+        this.fillIndividualBar(2);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
-    this.v9 = function(k) {
-        mainCanvasCtx.fillStyle = "rgb(" + this.colors[k][0] + "," + this.colors[k][1] + "," + this.colors[k][2] + ")";
-        mainCanvasCtx.fillRect(this.margins, this.margins, this.v0, 2 * this.v0 + this.margins);
+    this.fillCompositeColor = function(colorIndex) {
+        mainCanvasCtx.fillStyle = "rgb(" + this.colors[colorIndex][0] + "," + this.colors[colorIndex][1] + "," + this.colors[colorIndex][2] + ")";
+        mainCanvasCtx.fillRect(this.margins, this.margins, this.compositeColorBarSize, 2 * this.compositeColorBarSize + this.margins);
         mainCanvasCtx.lineWidth = 2 + mainSettingsMarginWidth;
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(this.margins, this.margins, this.v0, 2 * this.v0 + this.margins)
+        mainCanvasCtx.strokeRect(this.margins, this.margins, this.compositeColorBarSize, 2 * this.compositeColorBarSize + this.margins)
     };
-    this.vA = function(k) {
-        mainCanvasCtx.fillStyle = "rgb(" + (0 === k ? 200 : 2 === k ? 50 :
-            0) + "," + (1 === k ? 200 : 2 === k ? 50 : 0) + "," + (2 === k ? 255 : 0) + ")";
-        mainCanvasCtx.fillRect(2 * this.margins + this.v0, this.margins + k * (this.margins + this.v2), Math.floor(this.colors[this.selection][k] * this.v1 / 255), this.v2);
+    this.fillIndividualBar = function(rgbIndex) {
+        mainCanvasCtx.fillStyle = "rgb(" + (0 === rgbIndex ? 200 : 2 === rgbIndex ? 50 : 0) + "," + (1 === rgbIndex ? 200 : 2 === rgbIndex ? 50 : 0) + "," + (2 === rgbIndex ? 255 : 0) + ")";
+        mainCanvasCtx.fillRect(2 * this.margins + this.compositeColorBarSize, this.margins + rgbIndex * (this.margins + this.individualBarHeight), Math.floor(this.colors[this.selection][rgbIndex] * this.individualBarWidth / 255), this.individualBarHeight);
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(2 * this.margins + this.v0, this.margins + k * (this.margins + this.v2), this.v1, this.v2)
+        mainCanvasCtx.strokeRect(2 * this.margins + this.compositeColorBarSize, this.margins + rgbIndex * (this.margins + this.individualBarHeight), this.individualBarWidth, this.individualBarHeight)
     }
 }
 
@@ -7230,7 +7270,7 @@ function MainSettings() {
             active: setSound(),
             buttonClass: null
         });
-        this.buttons[2].buttonClass.v3();
+        this.buttons[2].buttonClass.loadColors();
         this.count = this.buttons.length;
         this.width = 0
     };
