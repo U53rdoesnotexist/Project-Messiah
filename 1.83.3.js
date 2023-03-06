@@ -5269,16 +5269,17 @@ function MapUpdate() {
     this.updateMapCanvas = function() {
         this.hasChanged = this.hasChanged || this.shouldUpdate;
         if (this.shouldUpdate || this.needsUpdate && this.hasChanged) {
-            var g = viewport.viewportCoords[0],
-                k = viewport.viewportCoords[1],
-                n = viewport.viewportCoords[2],
-                l = viewport.viewportCoords[3];
-            g = g < this.updateBounds[0] ? this.updateBounds[0] : g;
-            k = k < this.updateBounds[1] ? this.updateBounds[1] : k;
-            n = n > this.updateBounds[2] ? this.updateBounds[2] : n;
-            l = l > this.updateBounds[3] ? this.updateBounds[3] : l;
+            var viewportLeftCoord = viewport.viewportCoords[0],
+                viewportTopCoord = viewport.viewportCoords[1],
+                viewportRightCoord = viewport.viewportCoords[2],
+                viewportBottomCoord = viewport.viewportCoords[3];
+            viewportLeftCoord = viewportLeftCoord < this.updateBounds[0] ? this.updateBounds[0] : viewportLeftCoord;
+            viewportTopCoord = viewportTopCoord < this.updateBounds[1] ? this.updateBounds[1] : viewportTopCoord;
+            viewportRightCoord = viewportRightCoord > this.updateBounds[2] ? this.updateBounds[2] : viewportRightCoord;
+            viewportBottomCoord = viewportBottomCoord > this.updateBounds[3] ? this.updateBounds[3] : viewportBottomCoord;
             this.needsUpdate = this.shouldUpdate = false;
-            g === this.updateBounds[0] && k === this.updateBounds[1] && n === this.updateBounds[2] && l === this.updateBounds[3] ? this.updateFullMap() : n >= g && l >= k && mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, g, k, n - g + 1, l - k + 1)
+            if (viewportLeftCoord === this.updateBounds[0] && viewportTopCoord === this.updateBounds[1] && viewportRightCoord === this.updateBounds[2] && viewportBottomCoord === this.updateBounds[3]) this.updateFullMap()
+            else if (viewportRightCoord >= viewportLeftCoord && viewportBottomCoord >= viewportTopCoord) mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0, viewportLeftCoord, viewportTopCoord, viewportRightCoord - viewportLeftCoord + 1, viewportBottomCoord - viewportTopCoord + 1)
         }
     };
     this.updateFullMap = function() {
@@ -5290,36 +5291,47 @@ function MapUpdate() {
         this.hasChanged = false
     };
     this.init = function() {
-        var g;
+        var yIndex;
         this.hasChanged = this.shouldUpdate = this.needsUpdate = false;
         this.updateBounds[0] = currentMapWidth;
         this.updateBounds[1] = currentMapHeight;
         this.updateBounds[2] = this.updateBounds[3] = 0;
-        var k = 1;
-        loop: for (; k < currentMapWidth - 1; k++)
-            for (g = currentMapHeight - 2; 1 < g; g--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.updateBounds[0] = k;
-                    break loop
-                } g = 1;
-        loop: for (; g < currentMapHeight - 1; g++)
-            for (k = currentMapWidth - 2; 1 < k; k--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.updateBounds[1] = g;
-                    break loop
-                } k = currentMapWidth - 2;
-        loop: for (; 0 < k; k--)
-            for (g = currentMapHeight - 2; 1 < g; g--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.updateBounds[2] = k;
-                    break loop
-                } g = currentMapHeight - 2;
-        loop: for (; 0 < g; g--)
-            for (k = currentMapWidth - 2; 1 < k; k--)
-                if (1 === pixelRGBA[pixel.toIndex(k, g) + 2]) {
-                    this.updateBounds[3] = g;
+        var xIndex = 1;
+        loop: for (; xIndex < currentMapWidth - 1; xIndex++) {
+            for (yIndex = currentMapHeight - 2; 1 < yIndex; yIndex--) {
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.updateBounds[0] = xIndex;
                     break loop
                 }
+            }
+        }
+        yIndex = 1;
+        loop: for (; yIndex < currentMapHeight - 1; yIndex++) {
+            for (xIndex = currentMapWidth - 2; 1 < xIndex; xIndex--) {
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.updateBounds[1] = yIndex;
+                    break loop
+                }
+            }
+        }
+        xIndex = currentMapWidth - 2;
+        loop: for (; 0 < xIndex; xIndex--) {
+            for (yIndex = currentMapHeight - 2; 1 < yIndex; yIndex--) {
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.updateBounds[2] = xIndex;
+                    break loop
+                }
+            }
+        }
+        yIndex = currentMapHeight - 2;
+        loop: for (; 0 < yIndex; yIndex--) {
+            for (xIndex = currentMapWidth - 2; 1 < xIndex; xIndex--) {
+                if (1 === pixelRGBA[pixel.toIndex(xIndex, yIndex) + 2]) {
+                    this.updateBounds[3] = yIndex;
+                    break loop
+                }
+            }
+        }
     }
 }
 
@@ -5416,29 +5428,29 @@ function IntelliAttack() {
 function MainLeaderboard() {
     this.visible = false;
     this.buttons = null;
-    this.tz = 0;
+    this.boardType = 0;
     this.height = this.width = null;
-    this.u0 = .013;
-    this.u1 = .022;
-    this.u2 = .025;
-    this.u4 = 3;
-    this.u5 = 1.2;
-    this.u6 = .2;
-    this.u7 = .235;
-    this.u8 = .9;
-    this.u9 = .08;
-    var g = ["Best Players", "Best Clans", "LEGENDS NEVER DIE", "THE NEVER ENDING WAR"],
-        k, n = [-1E6, -1E6];
+    this.lateralTriangleScale = .013;
+    this.diagonalTriangleScale = .022;
+    this.borderWidth = .025;
+    this.lateralTriangleHeight = 3;
+    this.diagonalTriangleHeight = 1.2;
+    this.rankXRatio = .2;
+    this.bestEntryNameXRatio = .235;
+    this.pointsXRatio = .9;
+    this.spaceIntervalYRatio = .08;
+    var leaderboardLabels = ["Best Players", "Best Clans", "LEGENDS NEVER DIE", "THE NEVER ENDING WAR"],
+        fontStyle, lastUpdateTime = [-1E6, -1E6];
     this.position = [0, 0];
     this.paginationDirection = [0, 0];
     this.init = function() {
         this.buttons = [null, null];
         this.visible = false;
-        this.tz = 0;
+        this.boardType = 0;
         this.setCanvasVariables()
     };
     this.toggleVisibility = function(l) {
-        this.tz = l;
+        this.boardType = l;
         this.visible = true;
         this.updateRenderObject();
         nameInput.hide();
@@ -5448,14 +5460,22 @@ function MainLeaderboard() {
         this.visible && this.updateRenderObject()
     };
     this.updateRenderObject = function() {
-        mainHandler.time - 12E4 >= n[this.tz] && (n[this.tz] = mainHandler.time, this.paginationDirection = [0, 0], wsManager.sendWhenWSOpen(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz))
+        if (mainHandler.time - 12E4 >= lastUpdateTime[this.boardType]) {
+            lastUpdateTime[this.boardType] = mainHandler.time;
+            this.paginationDirection = [0, 0];
+            wsManager.sendWhenWSOpen(0, 1 + this.boardType) && dataEncoder.loadLeaderboard(0, this.boardType);
+        }
     };
     this.setCanvasVariables = function() {
-        var l;
+        var typeIndex;
         this.width = this.uG(isZoom ? .85 : .66, .75, canvasWidth, canvasHeight);
         this.height = Math.floor(this.width / .75);
-        for (l = 1; 0 <= l; l--) this.buttons[l] && (this.buttons[l][4] = fontWeightBold + Math.floor(this.buttons[l][5] * this.height / 10) + fontSizeArial);
-        k = fontWeightBold + Math.floor(.1 * this.height) + fontSizeArial
+        for (typeIndex = 1; 0 <= typeIndex; typeIndex--) {
+            if (this.buttons[typeIndex]) {
+                this.buttons[typeIndex][4] = fontWeightBold + Math.floor(this.buttons[typeIndex][5] * this.height / 10) + fontSizeArial;
+            }
+        }
+        fontStyle = fontWeightBold + Math.floor(.1 * this.height) + fontSizeArial
     };
     this.uG = function(l, x, t, z) {
         return t < x * z ? Math.floor(l * t) : Math.floor(x * l * z)
@@ -5472,15 +5492,15 @@ function MainLeaderboard() {
             colorIndex: bestEntries[y].colorIndex
         }, z[0].push(A);
         this.buttons[boardType] = z;
-        this.uN(boardType);
+        this.sortPoints(boardType);
         bestEntries = this.buttons[boardType][0][0].name;
         1 === boardType && (bestEntries = "[" + bestEntries + "]");
         0 === page && mainLeaderboardIcon.setLabel(boardType, bestEntries);
         mainHandler.canvasDirty = true
     };
-    this.uN = function(l) {
-        this.buttons[l][0].sort(function(x, t) {
-            return t.value - x.value
+    this.sortPoints = function(l) {
+        this.buttons[l][0].sort(function(prev, next) {
+            return next.value - prev.value
         })
     };
     this.updateObjects = function(l, x, t, z) {
@@ -5488,71 +5508,87 @@ function MainLeaderboard() {
             var y, A = false,
                 B = 383 / 384;
             if (0 === l) {
-                for (y = 0; y < this.buttons[l][0].length; y++)
+                for (y = 0; y < this.buttons[l][0].length; y++) {
                     if (x === this.buttons[l][0][y].name && t > .99 * this.buttons[l][0][y].value && t < 1.01 * this.buttons[l][0][y].value) {
-                        this.buttons[l][0][y].value =
-                            z;
+                        this.buttons[l][0][y].value = z;
                         A = true;
                         break
-                    } A || this.buttons[l][0].push({
-                    name: x,
-                    value: z
-                })
+                    }
+                }
+                if (!A) {
+                    this.buttons[l][0].push({
+                        name: x,
+                        value: z
+                    })
+                }
             } else {
-                for (y = 0; y < this.buttons[l][0].length; y++)
+                for (y = 0; y < this.buttons[l][0].length; y++) {
                     if (x === this.buttons[l][0][y].name) {
                         this.buttons[l][0][y].value += 32 < this.buttons[l][0][y].value ? (64 - this.buttons[l][0][y].value) / 256 : .25;
                         this.buttons[l][0][y].value *= 1 / B;
                         A = true;
                         break
-                    } for (y = 0; y < this.buttons[l][0].length; y++) this.buttons[l][0][y].value *= B;
-                A || this.buttons[l][0].push({
-                    name: x,
-                    value: .25
-                })
+                    }
+                }
+                for (y = 0; y < this.buttons[l][0].length; y++) this.buttons[l][0][y].value *= B;
+                if (!A) {
+                    this.buttons[l][0].push({
+                        name: x,
+                        value: .25
+                    })
+                }
             }
-            this.uN(l)
+            this.sortPoints(l)
         }
     };
     this.uM = function(l, x, t) {
-        for (var z = l.length - 1; 0 <= z; z--)
-            for (; 3 < l[z].name.length && gameMessages.measureText(l[z].name, x) > t;) l[z].name = l[z].name.substring(0,
-                l[z].name.length - 4) + "..."
+        for (var z = l.length - 1; 0 <= z; z--) {
+            for (; 3 < l[z].name.length && gameMessages.measureText(l[z].name, x) > t;) {
+                l[z].name = l[z].name.substring(0, l[z].name.length - 4) + "..."
+            }
+        }
     };
-    this.mouseDown = function(l, x) {
+    this.mouseDown = function(xPos, yPos) {
         if (!this.visible) return false;
-        l -= (prevClientWidth - this.width) / 2;
-        x -= (prevClientHeight - this.height) / 2;
-        if (0 > l || l > this.width || 0 > x || x > this.height) return this.visible = false, 0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, true), mainHandler.canvasDirty = true;
-        if (x < .3 * this.height) var t = 1;
-        else x < .85 * this.height ? (t = (0 === this.tz ? 14.1 : 3) * (x - .3 * this.height) / (.55 * this.height), t = Math.floor(1 + t * t)) : t = 0 === this.tz ? 200 : 10;
-        this.paginationDirection[this.tz] = l < this.width / 2 ? -t : t;
-        if (n[this.tz] + 50 > mainHandler.time) return true;
-        n[this.tz] = mainHandler.time;
-        wsManager.sendWhenWSOpen(0, 1 + this.tz) && dataEncoder.loadLeaderboard(0, this.tz);
+        xPos -= (prevClientWidth - this.width) / 2;
+        yPos -= (prevClientHeight - this.height) / 2;
+        if (0 > xPos || xPos > this.width || 0 > yPos || yPos > this.height) {
+            this.visible = false;
+            0 === gameStateManager.getState() && nameInputBar.toggleVisibility(0, true);
+            mainHandler.canvasDirty = true;
+            return true
+        }
+        if (yPos < .3 * this.height) var t = 1;
+        else if (yPos < .85 * this.height) {
+            t = (0 === this.boardType ? 14.1 : 3) * (yPos - .3 * this.height) / (.55 * this.height);
+            t = Math.floor(1 + t * t)
+        } else t = 0 === this.boardType ? 200 : 10;
+        this.paginationDirection[this.boardType] = xPos < this.width / 2 ? -t : t;
+        if (lastUpdateTime[this.boardType] + 50 > mainHandler.time) return true;
+        lastUpdateTime[this.boardType] = mainHandler.time;
+        wsManager.sendWhenWSOpen(0, 1 + this.boardType) && dataEncoder.loadLeaderboard(0, this.boardType);
         return true
     };
     this.drawCanvasImage = function() {
         if (this.visible) {
-            var l = this.u0 *
-                this.width,
-                x = this.u4 * l,
-                t = this.u1 * this.width,
-                z = this.u5 * t,
-                y = this.u2 * this.width,
-                A = Math.floor(.25 * this.height);
+            var l = this.lateralTriangleScale * this.width,
+                x = this.lateralTriangleHeight * l,
+                t = this.diagonalTriangleScale * this.width,
+                z = this.diagonalTriangleHeight * t,
+                y = this.borderWidth * this.width,
+                headerHeight = Math.floor(.25 * this.height);
             mainCanvasCtx.setTransform(1, 0, 0, 1, (prevClientWidth - this.width) / 2, (prevClientHeight - this.height) / 2);
-            mainCanvasCtx.fillStyle = 0 === this.tz ? blueGreenMoreOpaque : redDarkerMoreOpaque;
-            mainCanvasCtx.fillRect(0, 0, this.width, A);
+            mainCanvasCtx.fillStyle = 0 === this.boardType ? blueGreenMoreOpaque : redDarkerMoreOpaque;
+            mainCanvasCtx.fillRect(0, 0, this.width, headerHeight);
             mainCanvasCtx.fillStyle = blackMore2Opaque;
-            mainCanvasCtx.fillRect(0, A, this.width, this.height - A);
+            mainCanvasCtx.fillRect(0, headerHeight, this.width, this.height - headerHeight);
             mainCanvasCtx.fillStyle = whiteRGB2;
-            mainCanvasCtx.font = k;
+            mainCanvasCtx.font = fontStyle;
             mainCanvasCtx.textBaseline = middleAlign;
             mainCanvasCtx.textAlign = centerAlign;
-            mainCanvasCtx.fillText(g[this.tz], Math.floor(this.width / 2), Math.floor(.135 * this.height));
+            mainCanvasCtx.fillText(leaderboardLabels[this.boardType], Math.floor(this.width / 2), Math.floor(.135 * this.height));
             mainCanvasCtx.font = fontWeightBold + Math.floor(.025 * this.height) + fontSizeArial;
-            mainCanvasCtx.fillText(g[this.tz + 2], Math.floor(this.width / 2), Math.floor(.2125 * this.height));
+            mainCanvasCtx.fillText(leaderboardLabels[this.boardType + 2], Math.floor(this.width / 2), Math.floor(.2125 * this.height));
             mainCanvasCtx.beginPath();
             mainCanvasCtx.moveTo(this.width / 4, 0);
             mainCanvasCtx.lineTo(this.width / 2 - l, 0);
@@ -5572,8 +5608,7 @@ function MainLeaderboard() {
             mainCanvasCtx.lineTo(this.width / 2 - l, this.height);
             mainCanvasCtx.lineTo(t, this.height);
             mainCanvasCtx.lineTo(-z, this.height + z);
-            mainCanvasCtx.lineTo(0,
-                this.height - t);
+            mainCanvasCtx.lineTo(0, this.height - t);
             mainCanvasCtx.lineTo(0, this.height / 2 + l);
             mainCanvasCtx.lineTo(-x, this.height / 2);
             mainCanvasCtx.lineTo(0, this.height / 2 - l);
@@ -5588,26 +5623,31 @@ function MainLeaderboard() {
             mainCanvasCtx.lineTo(this.width - y, y);
             mainCanvasCtx.lineTo(this.width / 4, y);
             mainCanvasCtx.fill();
-            this.buttons[this.tz] && this.uV(A);
-            this.uW(A);
+            this.buttons[this.boardType] && this.uV(headerHeight);
+            this.drawScrollButtons(headerHeight);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     };
-    this.uW = function(l) {
+    this.drawScrollButtons = function(l) {
         var x = getMax(2, Math.floor(.06 * this.width));
         x -= x % 2;
         var t = getMax(2, Math.floor(.01 * this.width));
         t -= t % 2;
         l = Math.floor(.82 * l);
-        mainCanvasCtx.fillRect(x,
-            l, x, t);
+        mainCanvasCtx.fillRect(x, l, x, t);
         mainCanvasCtx.fillRect(this.width - x - x, l, x, t);
         mainCanvasCtx.fillRect(Math.floor(this.width - x - x + (x - t) / 2), Math.floor(l - (x - t) / 2), t, x)
     };
     this.uV = function(l) {
-        mainCanvasCtx.font = this.buttons[this.tz][4];
-        for (var x, t = this.buttons[this.tz][1] - 1; 0 <= t; t--) mainCanvasCtx.textAlign = rightAlign, x = Math.floor(this.u9 * this.height + l + t * ((1 - 2 * this.u9) * this.height - l) / 9), mainCanvasCtx.fillText(this.buttons[this.tz][0][t].value.toFixed(this.buttons[this.tz][3]), Math.floor(this.u8 * this.width), x), mainCanvasCtx.fillText(t + 1 + this.buttons[this.tz][6] + ".", Math.floor(this.u6 * this.width), x), mainCanvasCtx.textAlign = leftAlign, mainCanvasCtx.fillText(this.buttons[this.tz][0][t].name,
-            Math.floor(this.u7 * this.width), x)
+        mainCanvasCtx.font = this.buttons[this.boardType][4];
+        for (var x, t = this.buttons[this.boardType][1] - 1; 0 <= t; t--) {
+            mainCanvasCtx.textAlign = rightAlign;
+            x = Math.floor(this.spaceIntervalYRatio * this.height + l + t * ((1 - 2 * this.spaceIntervalYRatio) * this.height - l) / 9);
+            mainCanvasCtx.fillText(this.buttons[this.boardType][0][t].value.toFixed(this.buttons[this.boardType][3]), Math.floor(this.pointsXRatio * this.width), x);
+            mainCanvasCtx.fillText(t + 1 + this.buttons[this.boardType][6] + ".", Math.floor(this.rankXRatio * this.width), x);
+            mainCanvasCtx.textAlign = leftAlign;
+            mainCanvasCtx.fillText(this.buttons[this.boardType][0][t].name, Math.floor(this.bestEntryNameXRatio * this.width), x)
+        }
     }
 }
 
