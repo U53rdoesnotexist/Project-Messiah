@@ -5046,11 +5046,11 @@ function GameStatistics() {
 }
 
 function GameResultBox() {
-    var gameEnded, gameResult, canvasWidth, canvasHeight, spriteScale, topPadding, rightPadding, fadeAlpha, gameResultCanvas, lastUpdate;
+    var gameEnded, gameResult, boxCanvasWidth, boxCanvasHeight, spriteScale, topPadding, rightPadding, fadeAlpha, gameResultCanvas, lastUpdate;
     this.ticksElapsedWhenDeath = -1;
     this.init = function() {
         gameEnded = false;
-        canvasHeight = 0;
+        boxCanvasHeight = 0;
         spriteScale = .61;
         topPadding = .07;
         rightPadding = .09;
@@ -5059,41 +5059,41 @@ function GameResultBox() {
     };
     this.setCanvasVariables = function() {
         if (gameEnded) {
-            canvasWidth = isZoom ? Math.floor(.69 * averageDim) : Math.floor(.5 * averageDim);
-            canvasWidth = getMin(canvasWidth, getMax(canvasWidth - 2 * canvasPadding, 10));
-            canvasWidth = getMin(canvasWidth, Math.floor(3.57 * getMax(canvasHeight - 2 * canvasPadding, 3)));
-            canvasHeight = Math.floor(.28 * canvasWidth);
+            boxCanvasWidth = isZoom ? Math.floor(.69 * averageDim) : Math.floor(.5 * averageDim);
+            boxCanvasWidth = getMin(boxCanvasWidth, getMax(canvasWidth - 2 * canvasPadding, 10));
+            boxCanvasWidth = getMin(boxCanvasWidth, Math.floor(3.57 * getMax(canvasHeight - 2 * canvasPadding, 3)));
+            boxCanvasHeight = Math.floor(.28 * boxCanvasWidth);
             gameResultCanvas = document.createElement("canvas");
-            gameResultCanvas.width = canvasWidth;
-            gameResultCanvas.height = canvasHeight;
-            var ctx = gameResultCanvas.getContext("2d", {
+            gameResultCanvas.width = boxCanvasWidth;
+            gameResultCanvas.height = boxCanvasHeight;
+            var gameResultCanvasCtx = gameResultCanvas.getContext("2d", {
                     alpha: true
                 }),
-                i = Math.floor(1 + canvasHeight / 40);
-            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-            ctx.fillStyle = blackMoreOpaque;
-            ctx.fillRect(i, i, canvasWidth - 2 * i, canvasHeight - 2 * i);
-            ctx.lineJoin = "bevel";
-            ctx.lineWidth = 2 * i;
-            ctx.strokeStyle = whiteRGB2;
-            ctx.strokeRect(i, i, canvasWidth - 2 * i, canvasHeight - 2 * i);
-            ctx.imageSmoothingEnabled = true;
-            var F = sprites.getValueByID(gameResult),
-                G = F.height,
-                N = spriteScale * canvasHeight / G;
-            ctx.setTransform(N, 0, 0, N, Math.floor((canvasWidth - N * F.width) / 2), Math.floor((canvasHeight - N * G) / 2));
-            ctx.drawImage(F, 0, 0);
-            ctx.setTransform(1, 0, 0, 1, Math.floor(canvasWidth - rightPadding * canvasHeight - topPadding * canvasHeight - i), Math.floor(i + topPadding * canvasHeight));
-            i = Math.floor(rightPadding * canvasHeight);
-            ctx.lineWidth = Math.floor(1 + canvasHeight / 80);
-            ctx.strokeStyle = whiteRGB2;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(i, i);
-            ctx.moveTo(0, i);
-            ctx.lineTo(i, 0);
-            ctx.stroke();
-            ctx.setTransform(1, 0, 0, 1, 0, 0)
+                marginLength = Math.floor(1 + boxCanvasHeight / 40);
+            gameResultCanvasCtx.clearRect(0, 0, boxCanvasWidth, boxCanvasHeight);
+            gameResultCanvasCtx.fillStyle = blackMoreOpaque;
+            gameResultCanvasCtx.fillRect(marginLength, marginLength, boxCanvasWidth - 2 * marginLength, boxCanvasHeight - 2 * marginLength);
+            gameResultCanvasCtx.lineJoin = "bevel";
+            gameResultCanvasCtx.lineWidth = 2 * marginLength;
+            gameResultCanvasCtx.strokeStyle = whiteRGB2;
+            gameResultCanvasCtx.strokeRect(marginLength, marginLength, boxCanvasWidth - 2 * marginLength, boxCanvasHeight - 2 * marginLength);
+            gameResultCanvasCtx.imageSmoothingEnabled = true;
+            var gameResultSprite = sprites.getValueByID(gameResult),
+                spriteHeight = gameResultSprite.height,
+                spriteSize = spriteScale * boxCanvasHeight / spriteHeight;
+            gameResultCanvasCtx.setTransform(spriteSize, 0, 0, spriteSize, Math.floor((boxCanvasWidth - spriteSize * gameResultSprite.width) / 2), Math.floor((boxCanvasHeight - spriteSize * spriteHeight) / 2));
+            gameResultCanvasCtx.drawImage(gameResultSprite, 0, 0);
+            gameResultCanvasCtx.setTransform(1, 0, 0, 1, Math.floor(boxCanvasWidth - rightPadding * boxCanvasHeight - topPadding * boxCanvasHeight - marginLength), Math.floor(marginLength + topPadding * boxCanvasHeight));
+            marginLength = Math.floor(rightPadding * boxCanvasHeight);
+            gameResultCanvasCtx.lineWidth = Math.floor(1 + boxCanvasHeight / 80);
+            gameResultCanvasCtx.strokeStyle = whiteRGB2;
+            gameResultCanvasCtx.beginPath();
+            gameResultCanvasCtx.moveTo(0, 0);
+            gameResultCanvasCtx.lineTo(marginLength, marginLength);
+            gameResultCanvasCtx.moveTo(0, marginLength);
+            gameResultCanvasCtx.lineTo(marginLength, 0);
+            gameResultCanvasCtx.stroke();
+            gameResultCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
     };
     this.show = function(didWeWin, didFadeIn) {
@@ -5106,9 +5106,7 @@ function GameResultBox() {
             lastUpdate = mainHandler.time;
             if (-1 === this.ticksElapsedWhenDeath) this.ticksElapsedWhenDeath = mainHandler.getTicksElapsed();
             if (didFadeIn) fadeAlpha = 1;
-            else {
-                fadeAlpha = 0;
-            }
+            else fadeAlpha = 0;
         }
     };
     this.update = function() {
@@ -5121,16 +5119,16 @@ function GameResultBox() {
     };
     this.mouseDown = function(xPos, yPos) {
         if (!gameEnded || 0 >= fadeAlpha) return false;
-        xPos -= Math.floor((prevClientWidth - canvasWidth) / 2);
-        yPos -= prevClientHeight - canvasHeight - 2 * canvasPadding;
-        if (0 > xPos || 0 > yPos || xPos > canvasWidth || yPos > canvasHeight) return false;
-        xPos > canvasWidth - canvasHeight / 3 && yPos < canvasHeight / 3 && (gameEnded = false, mainHandler.canvasDirty = true);
+        xPos -= Math.floor((prevClientWidth - boxCanvasWidth) / 2);
+        yPos -= prevClientHeight - boxCanvasHeight - 2 * canvasPadding;
+        if (0 > xPos || 0 > yPos || xPos > boxCanvasWidth || yPos > boxCanvasHeight) return false;
+        xPos > boxCanvasWidth - boxCanvasHeight / 3 && yPos < boxCanvasHeight / 3 && (gameEnded = false, mainHandler.canvasDirty = true);
         return true
     };
     this.drawCanvasImage = function() {
         if (!gameEnded || 0 >= fadeAlpha) return;
         mainCanvasCtx.globalAlpha = fadeAlpha;
-        mainCanvasCtx.drawImage(gameResultCanvas, Math.floor((prevClientWidth - canvasWidth) / 2), prevClientHeight - canvasHeight - 2 * canvasPadding);
+        mainCanvasCtx.drawImage(gameResultCanvas, Math.floor((prevClientWidth - boxCanvasWidth) / 2), prevClientHeight - boxCanvasHeight - 2 * canvasPadding);
         mainCanvasCtx.globalAlpha = 1;
     }
 }
