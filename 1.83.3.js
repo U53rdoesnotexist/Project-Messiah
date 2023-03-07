@@ -1162,7 +1162,7 @@ function BoatSpeed() {
                 var boatY = pixel.toY(currentPixelIndicies[boatIndex]);
                 var authorID = authorIDs[boatIndex];
                 if (boatX > leftXBound - 1 && boatX < rightXBound && boatY > topYBound - 1 && boatY < bottomYBound && 0 !== isAlive[authorID]) {
-                    var fontSize = Math.floor(.94 * mainScaleFactor * infoRenderer.gG(authorID));
+                    var fontSize = Math.floor(.94 * mainScaleFactor * infoRenderer.getEntityLabelScaleY(authorID));
                     if (6 <= fontSize) {
                         boatX = Math.floor(prevClientWidth * (boatX + .5 - leftXBound) / (rightXBound - leftXBound));
                         boatY = Math.floor(prevClientHeight * (boatY + .48 - topYBound) / (bottomYBound - topYBound));
@@ -4075,7 +4075,7 @@ function MouseCamera() {
         viewportX += readjustX;
         viewportY += readjustY;
         viewport.updateViewportCoords();
-        infoRenderer.rQ(readjustX, readjustY)
+        infoRenderer.translateCanvas(readjustX, readjustY)
     };
     this.setStartingPosition = function() {
         canvasXPos = prevClientWidth - canvasSize - canvasPadding;
@@ -8612,8 +8612,8 @@ function InfoRenderer() {
 
     function renderEntityLabels() {
         needsDrawImage = false;
-        U = 1;
-        R = P = 0;
+        canvasScale = 1;
+        renderOffsetX = renderOffsetY = 0;
         infoCanvasCtx.clearRect(0, 0, prevClientWidth, prevClientHeight);
         var camLeft = viewportX / mainScaleFactor, camTop = viewportY / mainScaleFactor, 
             camRight = (prevClientWidth + viewportX) / mainScaleFactor, camBottom = (prevClientHeight + viewportY) / mainScaleFactor,
@@ -8622,13 +8622,13 @@ function InfoRenderer() {
 
         for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
             idIndex = aliveEntities[aliveIndex];
-            fontSize = Math.floor(Q * mainScaleFactor * I[idIndex] * labelWidth[idIndex]);
+            fontSize = Math.floor(fontScalarConst * mainScaleFactor * entityLabelScaleY[idIndex] * labelWidth[idIndex]);
             if (fontSize >= minFontSize && fontSize < maxFontSize && labelXPos[idIndex] + labelWidth[idIndex] > camLeft && labelXPos[idIndex] < camRight && labelYPos[idIndex] + labelHeight[idIndex] > camTop && labelYPos[idIndex] < camBottom) {
                 landCenterX = Math.floor(prevClientWidth * (labelXPos[idIndex] + labelWidth[idIndex] / 2 - camLeft) / (camRight - camLeft));
                 landCenterY = Math.floor(prevClientHeight * (labelYPos[idIndex] + labelHeight[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
-                infoCanvasCtx.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
+                infoCanvasCtx.font = fontStyles[playerStatus[idIndex]] + fontSize * 1.5 + fontSizeArial;
 
-                var fontColor = fontSize >= J && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]];
+                var fontColor = fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]];
                 infoCanvasCtx.fillStyle = fontColor;
                 infoCanvasCtx.fillText(attackBars.splitNumber(troops[idIndex]), landCenterX, landCenterY);
                 needsDrawImage = true;
@@ -8639,7 +8639,7 @@ function InfoRenderer() {
                             var emojiSizeMultiplier = .9 * fontSize / emojis.width,
                                 emojiVerticalPos = Math.floor(landCenterY - .5 * emojiSizeMultiplier * emojis.width - .05 * fontSize);
                             infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
-                            var emojiHorizontalPos = Math.floor(landCenterX - .5 * fontSize / D[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
+                            var emojiHorizontalPos = Math.floor(landCenterX - .5 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
                             for (var index = 0; 2 > index; index++) {
                                 infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
                                 infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
@@ -8706,7 +8706,7 @@ function InfoRenderer() {
     }
     
     function getAlphaFromFontSize(fontSize) {
-        return fontSize >= J && fontSize < maxFontSize ? 1 - (fontSize - J) / (maxFontSize - J) : 1
+        return fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? 1 - (fontSize - imposterFontColorThresholdSize) / (maxFontSize - imposterFontColorThresholdSize) : 1
     }
 
     function calculateLabelPosition(id) {
@@ -8766,40 +8766,41 @@ function InfoRenderer() {
     function checkXCoverage(id, xCoord, yCoord, xOffset) {
         return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord + xOffset - 1))
     }
-    var B, updateLabelCounters, labelXPos, labelYPos, labelWidth, labelHeight, I, D, maxFontSize, J, fontScaleFactor, H, minFontSize, Q, R, P, U, needsDrawImage, infoCanvas, infoCanvasCtx, updateInterval, displayingEmojiID, displayIconRemainingTime, crownWidth, crownHeight;
+    var entityBatchIndex, updateLabelCounters, labelXPos, labelYPos, labelWidth, labelHeight, entityLabelScaleY, entityLabelScaleX, maxFontSize, imposterFontColorThresholdSize, fontScaleFactor, labelYScalarFactor, minFontSize, fontScalarConst, renderOffsetX, renderOffsetY, canvasScale, needsDrawImage, infoCanvas, infoCanvasCtx, updateInterval, displayingEmojiID, displayIconRemainingTime, crownWidth, crownHeight;
     this.init = function() {
         needsDrawImage = false;
-        Q = .88;
+        fontScalarConst = .88;
         fontScaleFactor = .5;
-        H = 1.8;
+        labelYScalarFactor = 1.8;
         maxFontSize = Math.floor(.5 * minDim);
-        J = Math.floor(.2 * maxFontSize);
+        imposterFontColorThresholdSize = Math.floor(.2 * maxFontSize);
         minFontSize = 8 === gamemode ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
-        updateLabelCounters = B = 0;
+        updateLabelCounters = entityBatchIndex = 0;
         labelXPos = new Uint16Array(maxEntities);
         labelYPos = new Uint16Array(maxEntities);
         labelWidth = new Uint16Array(maxEntities);
         labelHeight = new Uint16Array(maxEntities);
-        I = new Float32Array(maxEntities);
-        D = new Float32Array(maxEntities);
+        entityLabelScaleY = new Float32Array(maxEntities);
+        entityLabelScaleX = new Float32Array(maxEntities);
         displayingEmojiID = new Uint8Array(2 * maxEntities);
         displayIconRemainingTime = new Uint8Array(5 * maxEntities);
         infoCanvas = infoCanvas ? infoCanvas : document.createElement("canvas");
         setupInfoCanvas();
-        P = R = 0;
-        U = 1;
+        renderOffsetY = renderOffsetX = 0;
+        canvasScale = 1;
         updateInterval = 0;
         if (8 === gamemode) {
             var entityIndex;
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
-            var T = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000").width);
-            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) D[entityIndex] = I[entityIndex] = T
+            var entityLabelScale = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000").width);
+            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale
         } else {
             infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
-            T = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap)).width);
+            entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap)).width);
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
-                D[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nickname[entityIndex]).width), I[entityIndex] = T < D[entityIndex] ? T : D[entityIndex];
+                entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nickname[entityIndex]).width);
+                entityLabelScaleY[entityIndex] = entityLabelScale < entityLabelScaleX[entityIndex] ? entityLabelScale : entityLabelScaleX[entityIndex];
             }
         }
         for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
@@ -8857,28 +8858,28 @@ function InfoRenderer() {
     };
     this.drawCanvasImage = function() {
         if (needsDrawImage) {
-            if (1 !== U) {
+            if (1 !== canvasScale) {
                 mainCanvasCtx.imageSmoothingEnabled = true;
-                mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0);
-                mainCanvasCtx.drawImage(infoCanvas, -R / U, -P / U);
+                mainCanvasCtx.setTransform(canvasScale, 0, 0, canvasScale, 0, 0);
+                mainCanvasCtx.drawImage(infoCanvas, -renderOffsetX / canvasScale, -renderOffsetY / canvasScale);
                 mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
             } else {
                 mainCanvasCtx.imageSmoothingEnabled = false;
-                mainCanvasCtx.drawImage(infoCanvas, -R, -P);
+                mainCanvasCtx.drawImage(infoCanvas, -renderOffsetX, -renderOffsetY);
             }
         }
     };
-    this.rQ = function(xPos, yPos) {
-        R += xPos;
-        P += yPos
+    this.translateCanvas = function(xPos, yPos) {
+        renderOffsetX += xPos;
+        renderOffsetY += yPos
     };
     this.onPointermove = function(xPos, yPos) {
-        infoRenderer.rQ(xPos, yPos)
+        infoRenderer.translateCanvas(xPos, yPos)
     };
-    this.zoom = function(O, T, Y) {
-        U *= O;
-        R = (R + T) * O - T;
-        P = (P + Y) * O - Y
+    this.zoom = function(scaleFactorChangeRatio, newX, newY) {
+        canvasScale *= scaleFactorChangeRatio;
+        renderOffsetX = (renderOffsetX + newX) * scaleFactorChangeRatio - newX;
+        renderOffsetY = (renderOffsetY + newY) * scaleFactorChangeRatio - newY
     };
     this.drawCanvas = function() {
         if (0 >= --updateInterval) {
@@ -8887,8 +8888,8 @@ function InfoRenderer() {
             return true;
         } else return false
     };
-    this.gG = function(O) {
-        return I[O]
+    this.getEntityLabelScaleY = function(id) {
+        return entityLabelScaleY[id]
     };
     this.update = function() {
         if (4 <= ++updateLabelCounters) {
@@ -8906,7 +8907,7 @@ function InfoRenderer() {
             }
         }
         var entitiesToProcess = rangeClamp(8, Math.floor(.1 * aliveCount), aliveCount), validLabelPositionFound;
-        for (var currentIndex = B + entitiesToProcess - 1; currentIndex >= B; currentIndex--) {
+        for (var currentIndex = entityBatchIndex + entitiesToProcess - 1; currentIndex >= entityBatchIndex; currentIndex--) {
             var idIndex = aliveEntities[currentIndex % aliveCount];
             if (0 < labelWidth[idIndex] && isLabelPositionValid(idIndex, labelXPos[idIndex], labelYPos[idIndex], labelWidth[idIndex], labelHeight[idIndex])) {
                 for (var validLabelPositionFound = false, offsetMultiplier = 0; 8 > offsetMultiplier; offsetMultiplier++) {
@@ -8924,7 +8925,7 @@ function InfoRenderer() {
                     for (var labelWidthOffset = 1 + Math.floor(.02 * labelWidth[idIndex]), offsetMultiplier = 1; 5 > offsetMultiplier; offsetMultiplier++) {
                         var newLabelWidth = labelWidth[idIndex] + offsetMultiplier * labelWidthOffset;
                         if (newLabelWidth > xMax[idIndex] - xMin[idIndex] + 1) break;
-                        var newLabelHeight = 1 + Math.floor(H * I[idIndex] * newLabelWidth);
+                        var newLabelHeight = 1 + Math.floor(labelYScalarFactor * entityLabelScaleY[idIndex] * newLabelWidth);
                         if (newLabelHeight > yMax[idIndex] - yMin[idIndex] + 1) break;
                         var randomXPos = xMin[idIndex] + Math.floor(Math.random() * (xMax[idIndex] - xMin[idIndex] + 2 - newLabelWidth));
                         var randomYPos = yMin[idIndex] + Math.floor(Math.random() * (yMax[idIndex] - yMin[idIndex] + 2 - newLabelHeight));
@@ -8947,7 +8948,7 @@ function InfoRenderer() {
                             labelWidth[idIndex] = 0;
                             break
                         }
-                        var labelHeightYIndex = 1 + Math.floor(H * I[idIndex] * labelWidthXIndex);
+                        var labelHeightYIndex = 1 + Math.floor(labelYScalarFactor * entityLabelScaleY[idIndex] * labelWidthXIndex);
                         if (isLabelPositionValid(idIndex, labelXPosIndex, labelYPosIndex, labelWidthXIndex, labelHeightYIndex)) {
                             labelXPos[idIndex] = labelXPosIndex;
                             labelYPos[idIndex] = labelYPosIndex;
@@ -8968,7 +8969,7 @@ function InfoRenderer() {
                         leftShift = getMax(1, Math.floor(.02 * xDiff));
                     for (; xDiff >= -6 * leftShift; xDiff -= leftShift) {
                         var newLabelWidth = 0 < xDiff ? xDiff : 1,
-                            newLabelHeight = 1 + Math.floor(H * I[idIndex] * newLabelWidth),
+                            newLabelHeight = 1 + Math.floor(labelYScalarFactor * entityLabelScaleY[idIndex] * newLabelWidth),
                             randomXPos = xMin[idIndex] + Math.floor(Math.random() * (xMax[idIndex] - xMin[idIndex] + 2 - newLabelWidth)),
                             randomYPos = yMin[idIndex] + Math.floor(Math.random() * (yMax[idIndex] - yMin[idIndex] + 2 - newLabelHeight));
                         if (isLabelPositionValid(idIndex, randomXPos, randomYPos, newLabelWidth, newLabelHeight)) {
@@ -8982,8 +8983,8 @@ function InfoRenderer() {
                 }
             }
         }
-        B += entitiesToProcess;
-        B %= aliveCount
+        entityBatchIndex += entitiesToProcess;
+        entityBatchIndex %= aliveCount
     };
     this.breakNonAggression = function(playerID) {
         var T = playerID + 2 * maxEntities,
