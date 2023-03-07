@@ -57,20 +57,20 @@ function setSound() {
 }
 
 function setZoom() {
-    if (isIOS) isZoom = iosObject.zoom || canvasWidth < canvasHeight;
+    if (isIOS) isZoom = iosObject.zoom || mainCanvasWidth < mainCanvasHeight;
     else if (12 <= androidVersion) {
         var zoom = androidObject.loadNumber(21);
         if (-1 === zoom) {
-            isZoom = 100 >= androidObject.getNumber(0) || canvasWidth < canvasHeight;
+            isZoom = 100 >= androidObject.getNumber(0) || mainCanvasWidth < mainCanvasHeight;
             androidObject.saveNumber(21, isZoom ? 1 : 0);
-        } else isZoom = 1 === zoom || canvasWidth < canvasHeight;
+        } else isZoom = 1 === zoom || mainCanvasWidth < mainCanvasHeight;
     } else if (5 <= androidVersion) {
         var zoom = androidObject.loadNumber(1);
         if (2 === zoom) {
             isZoom = true;
             androidObject.saveNumber(1, isZoom ? 1 : 0);
         } else isZoom = 1 === zoom;
-    } else isZoom = 0 === userSettings.getSettings(4) || canvasWidth < canvasHeight;
+    } else isZoom = 0 === userSettings.getSettings(4) || mainCanvasWidth < mainCanvasHeight;
 }
 
 
@@ -2398,13 +2398,13 @@ function Announcements() {
         if (attackRatioBar.overlapsWithAnnouncements(announcements.getAnnouncementWidth())) {
             if (peace.visible) return attackRatioBar.startingY - attackRatioBar.height - 2 * canvasPadding
             else return attackRatioBar.startingY - canvasPadding
-        } else if (peace.visible) return canvasHeight - attackRatioBar.height - (isZoom ? 3 : 2) * canvasPadding
-        else return canvasHeight - canvasPadding
+        } else if (peace.visible) return mainCanvasHeight - attackRatioBar.height - (isZoom ? 3 : 2) * canvasPadding
+        else return mainCanvasHeight - canvasPadding
     }
     function announce(displayTime, message, messageID, playerID, fontStyle, bgFillStyle, nextHoverToTarget, canHoverToTarget) {
         var isEmoji = 1E3 <= messageID;
         var messageWidth = Math.floor(gameMessages.measureText(message, announcements.fontStyle) + 1.5 * marginWidth + (isEmoji ? announcementHeight : 1.5 * marginWidth));
-        if (messageWidth + canvasPadding > canvasWidth && !isEmoji && 50 !== messageID && 20 < message.length) {
+        if (messageWidth + canvasPadding > mainCanvasWidth && !isEmoji && 50 !== messageID && 20 < message.length) {
             var totalAnnouncementWidth = Math.floor(.5 * message.length);
             announce(displayTime, message.substring(0, totalAnnouncementWidth), messageID, playerID, fontStyle, bgFillStyle, nextHoverToTarget, canHoverToTarget);
             announce(displayTime, message.substring(totalAnnouncementWidth), messageID, playerID, fontStyle, bgFillStyle, nextHoverToTarget, canHoverToTarget)
@@ -3683,7 +3683,7 @@ function Peace() {
 
     function getPeaceBarYPos() {
         if (attackRatioBar.overlapsWithAnnouncements(announcements.getAnnouncementWidth())) return attackRatioBar.startingY - peaceBarHeight - canvasPadding
-        else return canvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * canvasPadding
+        else return mainCanvasHeight - peaceBarHeight - (isZoom ? 2 : 1) * canvasPadding
     }
     var peaceBarHeight, peaceCanvas, peaceCanvasCtx, peaceIconCanvas, myChoice, peaceProgress, peaceRequirement, voterList, hasVoted, countDown, oldTop10Land, peaceCount, timeBeforeHidden;
     this.init = function() {
@@ -3740,10 +3740,10 @@ function Peace() {
         }
     };
     this.mouseDown = function(xPos, yPos) {
-        if (xPos < canvasWidth - this.width - canvasPadding) return false;
+        if (xPos < mainCanvasWidth - this.width - canvasPadding) return false;
         var peaceBarYPos = getPeaceBarYPos();
         if (yPos < peaceBarYPos || yPos > peaceBarYPos + peaceBarHeight) return false;
-        var vote = xPos > canvasWidth - canvasPadding - this.width / 2;
+        var vote = xPos > mainCanvasWidth - canvasPadding - this.width / 2;
         if (singleplayer) this.processVotePeace(0, vote)
         else if (playerActions.isHuman(myID) && 0 !== isAlive[myID]) dataEncoder.votePeace(vote);
         return true
@@ -3809,7 +3809,7 @@ function Peace() {
     this.drawCanvasImage = function() {
         if (this.visible) {
             var D = getPeaceBarYPos();
-            mainCanvasCtx.drawImage(peaceCanvas, canvasWidth - this.width - canvasPadding, D)
+            mainCanvasCtx.drawImage(peaceCanvas, mainCanvasWidth - this.width - canvasPadding, D)
         }
     }
 }
@@ -3889,9 +3889,9 @@ function AttackRatioBar() {
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        if (isZoom && canvasWidth < .8 * canvasHeight) {
+        if (isZoom && mainCanvasWidth < .8 * mainCanvasHeight) {
             this.height = Math.floor(.0536 * averageDim);
-            attackRatioBarWidth = canvasWidth - 4 * canvasPadding - this.height;
+            attackRatioBarWidth = mainCanvasWidth - 4 * canvasPadding - this.height;
         } else {
             attackRatioBarWidth = Math.floor((isZoom ? .65 : .389) * averageDim);
             attackRatioBarWidth += 12 - attackRatioBarWidth % 12;
@@ -3912,7 +3912,7 @@ function AttackRatioBar() {
         redrawAttackRatioBar()
     };
     this.setStartingPosition = function() {
-        startingX = isZoom && canvasWidth < .8 * canvasHeight ? this.height + 3 * canvasPadding : Math.floor((prevClientWidth - attackRatioBarWidth) / 2);
+        startingX = isZoom && mainCanvasWidth < .8 * mainCanvasHeight ? this.height + 3 * canvasPadding : Math.floor((prevClientWidth - attackRatioBarWidth) / 2);
         this.startingY = prevClientHeight - this.height - (isZoom ? 2 : 1) * canvasPadding;
     };
     this.drawCanvas = function() {
@@ -3925,7 +3925,7 @@ function AttackRatioBar() {
         return !(!visibility || gameButtons.menuVisible && startingX < Math.floor(canvasPadding + 5.5 * this.height))
     };
     this.overlapsWithAnnouncements = function(announcementsWidth) {
-        return this.visible() ? startingX + attackRatioBarWidth > canvasWidth - announcementsWidth - canvasPadding : false
+        return this.visible() ? startingX + attackRatioBarWidth > mainCanvasWidth - announcementsWidth - canvasPadding : false
     };
     this.toggleVisibility = function() {
         visibility = true
@@ -4070,13 +4070,13 @@ function MouseCamera() {
         mouseCamera.restrictViewportToMap()
     };
     this.restrictViewportToMap = function() {
-        var minXFromEdge = canvasWidth / 16,
+        var minXFromEdge = mainCanvasWidth / 16,
             readjustX = 0,
-            minYFromEdge = canvasHeight / 16,
+            minYFromEdge = mainCanvasHeight / 16,
             readjustY = 0;
-        viewportX < -canvasWidth + minXFromEdge && (readjustX = -canvasWidth + minXFromEdge - viewportX);
+        viewportX < -mainCanvasWidth + minXFromEdge && (readjustX = -mainCanvasWidth + minXFromEdge - viewportX);
         viewportX > mainScaleFactor * currentMapWidth - minXFromEdge && (readjustX = mainScaleFactor * currentMapWidth - minXFromEdge - viewportX);
-        viewportY < -canvasHeight + minYFromEdge && (readjustY = -canvasHeight + minYFromEdge - viewportY);
+        viewportY < -mainCanvasHeight + minYFromEdge && (readjustY = -mainCanvasHeight + minYFromEdge - viewportY);
         viewportY > mainScaleFactor * currentMapHeight - minYFromEdge && (readjustY = mainScaleFactor * currentMapHeight - minYFromEdge - viewportY);
         viewportX += readjustX;
         viewportY += readjustY;
@@ -4097,7 +4097,7 @@ function Playtime() {
     function calculatePlaytimeWidth() {
         playtimeCanvasWidth = Math.floor(.2 * (isZoom ? .07 : .035) * averageDim);
         playtimeCanvasWidth = getMax(isZoom ? 3 : 1, playtimeCanvasWidth);
-        var P = canvasWidth / (playTimes.length + playtimePadding);
+        var P = mainCanvasWidth / (playTimes.length + playtimePadding);
         playtimeCanvasWidth = P > playtimeCanvasWidth ? P : playtimeCanvasWidth;
         playtimeBarWidth = Math.floor((1 - playtimePadding) * playtimeCanvasWidth);
         playtimeCanvasPosition = 0;
@@ -4339,7 +4339,7 @@ function Playtime() {
         wsManager.sendWhenWSOpen(0, 0)
     };
     this.setCanvasVariables = function() {
-        playtimeCanvasHeight = Math.floor(.15 * canvasHeight);
+        playtimeCanvasHeight = Math.floor(.15 * mainCanvasHeight);
         fontSize = Math.floor((isZoom ? .018 : .0137) * averageDim);
         fontSize = 10 > fontSize ? 10 : fontSize;
         fontStyle = fontWeightBold + fontSize + fontSizeArial;
@@ -4502,7 +4502,7 @@ function TroopBar() {
         this.drawTroopBar()
     };
     this.placeBarOnTopRight = function() {
-        return isZoom && canvasWidth < 1.2 * canvasHeight
+        return isZoom && mainCanvasWidth < 1.2 * mainCanvasHeight
     };
     this.setStartingPosition = function() {
         this.startingX = this.placeBarOnTopRight() ? prevClientWidth - troopBarWidth - canvasPadding : Math.floor(gameLeaderboard.getGameBoardWidth() + (prevClientWidth - gameLeaderboard.getGameBoardWidth() - gameStatistics.width - troopBarWidth) / 2 - .5 * canvasPadding)
@@ -5060,8 +5060,8 @@ function GameResultBox() {
     this.setCanvasVariables = function() {
         if (gameEnded) {
             boxCanvasWidth = isZoom ? Math.floor(.69 * averageDim) : Math.floor(.5 * averageDim);
-            boxCanvasWidth = getMin(boxCanvasWidth, getMax(canvasWidth - 2 * canvasPadding, 10));
-            boxCanvasWidth = getMin(boxCanvasWidth, Math.floor(3.57 * getMax(canvasHeight - 2 * canvasPadding, 3)));
+            boxCanvasWidth = getMin(boxCanvasWidth, getMax(mainCanvasWidth - 2 * canvasPadding, 10));
+            boxCanvasWidth = getMin(boxCanvasWidth, Math.floor(3.57 * getMax(mainCanvasHeight - 2 * canvasPadding, 3)));
             boxCanvasHeight = Math.floor(.28 * boxCanvasWidth);
             gameResultCanvas = document.createElement("canvas");
             gameResultCanvas.width = boxCanvasWidth;
@@ -5489,7 +5489,7 @@ function MainLeaderboard() {
     };
     this.setCanvasVariables = function() {
         var typeIndex;
-        this.width = this.getLeaderboardWidth(isZoom ? .85 : .66, .75, canvasWidth, canvasHeight);
+        this.width = this.getLeaderboardWidth(isZoom ? .85 : .66, .75, mainCanvasWidth, mainCanvasHeight);
         this.height = Math.floor(this.width / .75);
         for (typeIndex = 1; 0 <= typeIndex; typeIndex--) {
             if (this.buttons[typeIndex]) {
@@ -5684,7 +5684,7 @@ function OpenLinkBox() {
             (mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) && mainSettings.hideIfNotHidden();
             nameInput.hide();
             link = param_link;
-            linkBoxCanvasSize = Math.floor((isZoom ? canvasWidth > canvasHeight ? .6 : .45 : .4) * minDim);
+            linkBoxCanvasSize = Math.floor((isZoom ? mainCanvasWidth > mainCanvasHeight ? .6 : .45 : .4) * minDim);
             boxScaleFactor = linkBoxCanvasSize / sprites.getValueByID(17).width;
             boxCanvasWidth = Math.floor(boxScaleFactor * sprites.getValueByID(17).height);
             topPadding = Math.floor(.4 * boxCanvasWidth);
@@ -5985,9 +5985,9 @@ function ColorsPanel() {
     this.individualBarHeight = this.individualBarWidth = this.compositeColorBarSize = this.selection = this.margins = this.isSaveRequired = 0;
     this.colors = null;
     this.init = function() {
-        if (canvasWidth < 2 * canvasHeight) this.width = Math.floor((isZoom ? .94 : .4) * canvasWidth)
+        if (mainCanvasWidth < 2 * mainCanvasHeight) this.width = Math.floor((isZoom ? .94 : .4) * mainCanvasWidth)
         else {
-            this.height = Math.floor((isZoom ? .88 : .4) * canvasHeight);
+            this.height = Math.floor((isZoom ? .88 : .4) * mainCanvasHeight);
             this.width = Math.floor(2 * this.height);
         }
         this.height = this.width / 2;
@@ -6381,15 +6381,15 @@ function GameStateManager() {
     };
     this.fillBackgroundColor = function() {
         if (mapLoaded) {
-            var k = canvasWidth / currentMapWidth,
-                n = canvasHeight / currentMapHeight;
+            var k = mainCanvasWidth / currentMapWidth,
+                n = mainCanvasHeight / currentMapHeight;
             k = k > n ? k : n;
-            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((canvasWidth - k * currentMapWidth) / 2), Math.floor((canvasHeight - k * currentMapHeight) / 2));
+            mainCanvasCtx.setTransform(k, 0, 0, k, Math.floor((mainCanvasWidth - k * currentMapWidth) / 2), Math.floor((mainCanvasHeight - k * currentMapHeight) / 2));
             mainCanvasCtx.drawImage(mapBaseCanvas, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             mainCanvasCtx.fillStyle = blackSemiTransparent
         } else mainCanvasCtx.fillStyle = blackRGB;
-        mainCanvasCtx.fillRect(0, 0, canvasWidth, canvasHeight)
+        mainCanvasCtx.fillRect(0, 0, mainCanvasWidth, mainCanvasHeight)
     }
 }
 
@@ -6400,7 +6400,7 @@ function EmojisPanel() {
     this.emojiMarginRatio = .12;
     this.isDragging = this.isToggled = this.isSaveRequired = false;
     this.init = function() {
-        this.width = canvasWidth < 1 * canvasHeight ? Math.floor((isZoom ? .94 : .6) * canvasWidth) : Math.floor((isZoom ? .94 : .6) * canvasHeight);
+        this.width = mainCanvasWidth < 1 * mainCanvasHeight ? Math.floor((isZoom ? .94 : .6) * mainCanvasWidth) : Math.floor((isZoom ? .94 : .6) * mainCanvasHeight);
         this.width -= this.width % this.numEmojisPerRow ;
         this.height = 1 * this.width;
         this.visible = true;
@@ -6654,7 +6654,7 @@ function SetGameOrigin() {
             gameStateManager.fillBackgroundColor();
             var loadingSprite = sprites.getValueByName("loading");
             var scaleFactor = (isZoom ? .396 : .25) * averageDim / loadingSprite.width;
-            mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor((canvasWidth - scaleFactor * loadingSprite.width) / 2), Math.floor((canvasHeight - scaleFactor * loadingSprite.height) / 2));
+            mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor((mainCanvasWidth - scaleFactor * loadingSprite.width) / 2), Math.floor((mainCanvasHeight - scaleFactor * loadingSprite.height) / 2));
             mainCanvasCtx.drawImage(loadingSprite, 0, 0);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         }
@@ -6836,36 +6836,36 @@ function Lobby() {
             I = Math.floor(.8 * .4 * averageDim);
             D = Math.floor(.56 * I);
             canvasVariables[0] = bufferLength;
-            if (canvasWidth < canvasHeight) {
+            if (mainCanvasWidth < mainCanvasHeight) {
                 canvasVariables[1] = D + 2 * bufferLength;
-                canvasVariables[2] = canvasWidth - 3 * canvasVariables[0];
+                canvasVariables[2] = mainCanvasWidth - 3 * canvasVariables[0];
                 canvasVariables[3] = mainLeaderboardIcon.toY() - 3 * bufferLength - D;
                 exitDiameter = Math.floor(.95 * D);
-                exitCenterX = Math.floor((canvasWidth - I - bufferLength) / 2);
+                exitCenterX = Math.floor((mainCanvasWidth - I - bufferLength) / 2);
                 exitCenterY = Math.floor(bufferLength + D / 2);
             } else {
                 canvasVariables[1] = bufferLength;
-                canvasVariables[2] = canvasWidth - 3 * bufferLength - I;
+                canvasVariables[2] = mainCanvasWidth - 3 * bufferLength - I;
                 canvasVariables[3] = mainLeaderboardIcon.toY() - 2 * bufferLength;
                 exitDiameter = Math.floor(.8 * I);
                 if (canvasVariables[3] - D < I) {
                     exitDiameter = Math.floor(.8 * (canvasVariables[3] - D));
                     exitDiameter = getMax(D, exitDiameter);
                 }
-                exitCenterX = Math.floor(canvasWidth - I / 2 - bufferLength);
+                exitCenterX = Math.floor(mainCanvasWidth - I / 2 - bufferLength);
                 exitCenterY = Math.floor(bufferLength + D + (canvasVariables[3] - D) / 2);
                 exitCenterY = getMax(exitCenterY, Math.floor(D + 2 * bufferLength + exitDiameter / 2))
             }
         } else {
             I = Math.floor(.2016 * averageDim);
             D = Math.floor(.56 * I);
-            canvasVariables[2] = Math.floor(.5 * canvasWidth);
-            canvasVariables[3] = Math.floor(.5 * canvasHeight);
-            canvasVariables[1] = Math.floor(.45 * (canvasHeight - canvasVariables[3]));
-            canvasVariables[0] = Math.floor((canvasWidth - canvasVariables[2]) / 2);
+            canvasVariables[2] = Math.floor(.5 * mainCanvasWidth);
+            canvasVariables[3] = Math.floor(.5 * mainCanvasHeight);
+            canvasVariables[1] = Math.floor(.45 * (mainCanvasHeight - canvasVariables[3]));
+            canvasVariables[0] = Math.floor((mainCanvasWidth - canvasVariables[2]) / 2);
             exitDiameter = Math.floor(.75 * D);
-            exitCenterX = Math.floor(canvasWidth / 2);
-            exitCenterY = Math.floor(canvasVariables[1] + canvasVariables[3] + (canvasHeight - canvasVariables[3] - canvasVariables[1]) / 2);
+            exitCenterX = Math.floor(mainCanvasWidth / 2);
+            exitCenterY = Math.floor(canvasVariables[1] + canvasVariables[3] + (mainCanvasHeight - canvasVariables[3] - canvasVariables[1]) / 2);
         }
         lobbyStatsFontStyle = fontWeightBold + Math.floor(.65 * D / 4) + fontSizeArial;
         var verticalCount, horizontalCount;
@@ -6950,19 +6950,19 @@ function Lobby() {
         mainCanvasCtx.drawImage(sprites.getValueByID(0), 0, 0);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
         mainCanvasCtx.fillStyle = blackSemiTransparent;
-        mainCanvasCtx.fillRect(canvasWidth - I - bufferLength, bufferLength, I, D);
-        0 <= gameSelected ? (mainCanvasCtx.fillStyle = greenBrightSemiTransparent, mainCanvasCtx.fillRect(canvasWidth - I - bufferLength, bufferLength, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = yellowSemiTransparent, mainCanvasCtx.fillRect(canvasWidth - I - bufferLength, bufferLength + Math.floor(.25 * D), I, Math.floor(.25 * D)));
+        mainCanvasCtx.fillRect(mainCanvasWidth - I - bufferLength, bufferLength, I, D);
+        0 <= gameSelected ? (mainCanvasCtx.fillStyle = greenBrightSemiTransparent, mainCanvasCtx.fillRect(mainCanvasWidth - I - bufferLength, bufferLength, I, Math.floor(.25 * D))) : (mainCanvasCtx.fillStyle = yellowSemiTransparent, mainCanvasCtx.fillRect(mainCanvasWidth - I - bufferLength, bufferLength + Math.floor(.25 * D), I, Math.floor(.25 * D)));
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(canvasWidth - I - bufferLength, bufferLength, I, D);
+        mainCanvasCtx.strokeRect(mainCanvasWidth - I - bufferLength, bufferLength, I, D);
         mainCanvasCtx.fillStyle = whiteRGB2;
         mainCanvasCtx.font = lobbyStatsFontStyle;
         mainCanvasCtx.textBaseline = middleAlign;
         for (var statIndex = 3; 0 <= statIndex; statIndex--) {
             var yOffset = Math.floor(bufferLength + (statIndex + 1) * (D + 2 * Math.floor(.08 * D)) / 5 - Math.floor(.08 * D));
             mainCanvasCtx.textAlign = leftAlign;
-            mainCanvasCtx.fillText(lobbyStatsLabels[statIndex], canvasWidth - I - bufferLength + Math.floor(.04 * I), yOffset);
+            mainCanvasCtx.fillText(lobbyStatsLabels[statIndex], mainCanvasWidth - I - bufferLength + Math.floor(.04 * I), yOffset);
             mainCanvasCtx.textAlign = rightAlign;
-            mainCanvasCtx.fillText(attackBars.splitNumber(lobbyStats[statIndex]), canvasWidth - bufferLength - Math.floor(.04 * I), yOffset)
+            mainCanvasCtx.fillText(attackBars.splitNumber(lobbyStats[statIndex]), mainCanvasWidth - bufferLength - Math.floor(.04 * I), yOffset)
         }
         if (0 !== lobbyGames.length) {
             for (var row = 0; row < lobbyGamesArrangement[1]; row++) {
@@ -7094,8 +7094,8 @@ function SingleSettings() {
     this.hide = function() {};
     this.setCanvasVariables = function() {
         canvasDimensionVariables[2] = Math.floor((isZoom ? .49 : .4) * averageDim);
-        canvasDimensionVariables[1] = Math.floor((canvasHeight - canvasDimensionVariables[2] / 6 - this.botSettings.length * (bufferLength + canvasDimensionVariables[2] / 10)) / 2);
-        canvasDimensionVariables[0] = Math.floor((canvasWidth - canvasDimensionVariables[2]) / 2);
+        canvasDimensionVariables[1] = Math.floor((mainCanvasHeight - canvasDimensionVariables[2] / 6 - this.botSettings.length * (bufferLength + canvasDimensionVariables[2] / 10)) / 2);
+        canvasDimensionVariables[0] = Math.floor((mainCanvasWidth - canvasDimensionVariables[2]) / 2);
         mapMenu.visible && mapMenu.setCanvasVariables()
     };
     this.setBotSettings = function(param_gamemode) {
@@ -7960,10 +7960,10 @@ function UserSettings() {
 
     function initSettingsArray() {
         settingsArray[0] = "Player " + Math.floor(1E3 * Math.random());
-        settingsArray[1] = canvasWidth < canvasHeight ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
+        settingsArray[1] = mainCanvasWidth < mainCanvasHeight ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
         settingsArray[2] = 1;
         settingsArray[3] = 1;
-        settingsArray[4] = canvasWidth < canvasHeight ? 0 : 1;
+        settingsArray[4] = mainCanvasWidth < mainCanvasHeight ? 0 : 1;
         settingsArray[5] = 0;
         settingsArray[6] = "000";
         settingsArray[7] = "302332333132331222330213200000000000000000000000000000";
@@ -9308,7 +9308,7 @@ function getTroopHash() {
     for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) troopHash += troops[aliveEntities[aliveIndex]];
     return troopHash % 4096
 }
-var mainCanvas, mainCanvasCtx, versionLabel, versionHash, canvasWidth, canvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = false,
+var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainCanvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = false,
     isNotTopWindow, isNotClient, clientID, viewport, frameRate, mapUpdate, emojis, statisticNumbers, statistics, cookiesPrompt, mainHandler, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = false;
@@ -10354,11 +10354,11 @@ function MoreSettings() {
             textPadding = Math.floor(1.5 * buttonMargin),
             contentPadding = Math.floor(.065 * (isZoom ? .53 : .36) * averageDim);
         return {
-            moreButX: canvasWidth - buttonMargin - contentPadding,
+            moreButX: mainCanvasWidth - buttonMargin - contentPadding,
             yBuffer: bufferLength,
             buttonMargin: buttonMargin,
             contentPadding: Math.floor(.35 * buttonMargin),
-            xBoundary: canvasWidth - textPadding - contentPadding,
+            xBoundary: mainCanvasWidth - textPadding - contentPadding,
             textPadding: textPadding
         }
     }
@@ -10886,10 +10886,10 @@ function CanvasManager() {
             if (varClientWidth !== prevClientWidth || varClientHeight !== prevClientHeight) {
                 prevClientWidth = varClientWidth;
                 prevClientHeight = varClientHeight;
-                canvasWidth = prevClientWidth;
-                canvasHeight = prevClientHeight;
-                minDim = getMin(canvasWidth, canvasHeight);
-                averageDim = divideFloor(canvasHeight + canvasWidth, 2);
+                mainCanvasWidth = prevClientWidth;
+                mainCanvasHeight = prevClientHeight;
+                minDim = getMin(mainCanvasWidth, mainCanvasHeight);
+                averageDim = divideFloor(mainCanvasHeight + mainCanvasWidth, 2);
                 if (5 <= androidVersion) {
                     var maxClientWidth = androidObject.loadNumber(23);
                     var maxClientHeight = androidObject.loadNumber(24);
@@ -10911,10 +10911,10 @@ function CanvasManager() {
         varClientWidth = Math.floor(.5 + pixelRatio * maxClientWidth);
         varClientHeight = Math.floor(.5 + pixelRatio * maxClientHeight);
         if (varClientWidth === prevClientWidth && varClientHeight === prevClientHeight) return false;
-        prevClientWidth = canvasWidth = varClientWidth;
-        prevClientHeight = canvasHeight = varClientHeight;
-        minDim = getMin(canvasWidth, canvasHeight);
-        averageDim = divideFloor(canvasHeight + canvasWidth, 2);
+        prevClientWidth = mainCanvasWidth = varClientWidth;
+        prevClientHeight = mainCanvasHeight = varClientHeight;
+        minDim = getMin(mainCanvasWidth, mainCanvasHeight);
+        averageDim = divideFloor(mainCanvasHeight + mainCanvasWidth, 2);
         mainCanvas.width = varClientWidth;
         mainCanvas.height = varClientHeight;
         mainCanvas.style.width = maxClientWidth + "px";
@@ -10926,7 +10926,7 @@ function CanvasManager() {
     this.init = function() {
         ticksElapsed = 1;
         updateFreq = 100;
-        canvasWidth = canvasHeight = minDim = prevClientWidth = prevClientHeight = averageDim = 0;
+        mainCanvasWidth = mainCanvasHeight = minDim = prevClientWidth = prevClientHeight = averageDim = 0;
         pixelRatio = 1;
         mainCanvas = document.getElementById("canvasA");
         mainCanvasCtx = mainCanvas.getContext("2d", {
@@ -11317,10 +11317,10 @@ function Statistics() {
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        this.width = canvasWidth < 1.618 * canvasHeight ? canvasWidth : 1.618 * canvasHeight;
-        this.width = Math.floor((isZoom && canvasWidth < canvasHeight ? 1 : isZoom ? .8 : canvasWidth < canvasHeight ? .65 : .5) * this.width);
+        this.width = mainCanvasWidth < 1.618 * mainCanvasHeight ? mainCanvasWidth : 1.618 * mainCanvasHeight;
+        this.width = Math.floor((isZoom && mainCanvasWidth < mainCanvasHeight ? 1 : isZoom ? .8 : mainCanvasWidth < mainCanvasHeight ? .65 : .5) * this.width);
         this.horizontalCanvasPadding = Math.floor(1 + .006 * this.width);
-        this.width -= isZoom && canvasWidth < canvasHeight ? 2 * canvasPadding + this.horizontalCanvasPadding : 0;
+        this.width -= isZoom && mainCanvasWidth < mainCanvasHeight ? 2 * canvasPadding + this.horizontalCanvasPadding : 0;
         this.height = Math.floor(this.width / 1.618);
         this.buttonMargin = Math.floor(1 + .02 * this.width);
         this.contentPadding = this.textPadding = Math.floor(1 + .04 * this.width);
@@ -12509,12 +12509,12 @@ function MapMenu() {
     };
     this.setCanvasVariables = function() {
         var mapsOnLeftCol = divideFloor(customMapID + customMapID % 2, 2);
-        mapsOnLeftCol = canvasHeight - mapsOnLeftCol * bufferLength;
+        mapsOnLeftCol = mainCanvasHeight - mapsOnLeftCol * bufferLength;
         this.boxDimensions[2] = isZoom ? Math.floor(.75 * minDim) : Math.floor(.5 * minDim);
         this.boxDimensions[3] = Math.floor(1.2 * this.boxDimensions[2]);
         this.boxDimensions[3] > mapsOnLeftCol && (this.boxDimensions[3] = mapsOnLeftCol, this.boxDimensions[2] = Math.floor(mapsOnLeftCol / 1.2));
-        this.boxDimensions[0] = Math.floor((canvasWidth - this.boxDimensions[2]) / 2);
-        this.boxDimensions[1] = Math.floor((canvasHeight - this.boxDimensions[3]) / 2)
+        this.boxDimensions[0] = Math.floor((mainCanvasWidth - this.boxDimensions[2]) / 2);
+        this.boxDimensions[1] = Math.floor((mainCanvasHeight - this.boxDimensions[3]) / 2)
     };
     this.onPointermove = function(xPos, yPos) {
         return xPos < this.boxDimensions[0] || yPos < this.boxDimensions[1] || xPos > this.boxDimensions[0] + this.boxDimensions[2] || yPos > this.boxDimensions[1] + this.boxDimensions[3] ? false : true
