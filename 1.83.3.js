@@ -806,7 +806,7 @@ function DifficultyEngine() {
 
 function clientTick1() {
     announcements.update();
-    eA.update();
+    infoRenderer.update();
     gameStatistics.updateSpectatorCount();
     wsManager.update()
 }
@@ -823,7 +823,7 @@ function gameTick() {
     checkPrematureDeath();
     gameLeaderboard.update();
     zombieSettings.update();
-    eA.update();
+    infoRenderer.update();
     gameStatistics.update();
     playerAura.update();
     troopBar.update();
@@ -852,12 +852,12 @@ function drawCanvases() {
     troopBar.drawCanvas();
     attackRatioBar.drawCanvas();
     peace.drawCanvas();
-    eA.drawCanvas();
+    infoRenderer.drawCanvas();
     teams.updateRenderObject()
 }
 
 function updatedPlayerLabels() {
-    eA.drawCanvas() && (mainHandler.canvasDirty = true);
+    infoRenderer.drawCanvas() && (mainHandler.canvasDirty = true);
     wsManager.update()
 }
 
@@ -1162,7 +1162,7 @@ function BoatSpeed() {
                 var boatY = pixel.toY(currentPixelIndicies[boatIndex]);
                 var authorID = authorIDs[boatIndex];
                 if (boatX > leftXBound - 1 && boatX < rightXBound && boatY > topYBound - 1 && boatY < bottomYBound && 0 !== isAlive[authorID]) {
-                    var fontSize = Math.floor(.94 * mainScaleFactor * eA.gG(authorID));
+                    var fontSize = Math.floor(.94 * mainScaleFactor * infoRenderer.gG(authorID));
                     if (6 <= fontSize) {
                         boatX = Math.floor(prevClientWidth * (boatX + .5 - leftXBound) / (rightXBound - leftXBound));
                         boatY = Math.floor(prevClientHeight * (boatY + .48 - topYBound) / (bottomYBound - topYBound));
@@ -1277,7 +1277,7 @@ function AutoCamera() {
                 transitionScaleFactorChangeRatio = 1 - (currentScaleFactor * Math.pow(targetScaleFactor / currentScaleFactor, 1 - currentStep) - currentScaleFactor) / (targetScaleFactor - currentScaleFactor);
             mouseCamera.updateViewportX(viewportCenterX + transitionScaleFactorChangeRatio * (mapCenterX - viewportCenterX), prevClientWidth / 2);
             mouseCamera.updateViewportY(viewportCenterY + transitionScaleFactorChangeRatio * (mapCenterY - viewportCenterY), prevClientHeight / 2);
-            eA.zoom(scaleFactorChangeRatio, (oldViewportX * scaleFactorChangeRatio - viewportX) / (1 - scaleFactorChangeRatio), (oldViewportY * scaleFactorChangeRatio - viewportY) / (1 - scaleFactorChangeRatio));
+            infoRenderer.zoom(scaleFactorChangeRatio, (oldViewportX * scaleFactorChangeRatio - viewportX) / (1 - scaleFactorChangeRatio), (oldViewportY * scaleFactorChangeRatio - viewportY) / (1 - scaleFactorChangeRatio));
             viewport.updateViewportCoords();
             if (1 <= currentStep) {
                 isCameraActive = false;
@@ -1503,7 +1503,7 @@ function drawCanvasImages() {
     mainCanvasCtx.imageSmoothingEnabled = false;
     gradientEdge.drawCanvasImage();
     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-    eA.drawCanvasImage();
+    infoRenderer.drawCanvasImage();
     boatSpeed.drawCanvasImage();
     if (!isCanvasHidden) {
         mainCanvasCtx.imageSmoothingEnabled = false;
@@ -1748,8 +1748,8 @@ function Spawn() {
             fadeIn.init();
         } else gameResultBox.show(false, false);
         announcements.removeSpawnMessage(18);
-        eA.j4();
-        eA.drawCanvas();
+        infoRenderer.setPlayerLabels();
+        infoRenderer.drawCanvas();
         spawn = null;
         mapUpdate.hasChanged = true;
         mapUpdate.updateFullMap();
@@ -1825,7 +1825,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     botManager.init();
     attackMatrixInit();
     attacks.init();
-    eA.init();
+    infoRenderer.init();
     antiFullSend.init();
     humanBots.init();
     diplomacyHandler.init();
@@ -1841,7 +1841,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
 function ja() {
     autoCamera.activateCamera();
     0 === isAlive[myID] && gameResultBox.show(false, true);
-    eA.drawCanvas()
+    infoRenderer.drawCanvas()
 }
 
 function leaveGame() {
@@ -1854,7 +1854,7 @@ function leaveGame() {
 }
 var difficultyEngine, speed, botBoatEngine, botManager, processAction, boatSpeed, autoCamera, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attackBars, 
     gameMessages, attackRatioBar, mouseCamera, playtime, troopBar, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
-    singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, eA, nickNames, zombieSettings, configFakeMap,
+    singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, infoRenderer, nickNames, zombieSettings, configFakeMap,
     mapInfo, generateHeightmap, keyboardCamera, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, touchInputHandler, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
     wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
 
@@ -1895,7 +1895,7 @@ function construct() {
     userSettings = new UserSettings;
     attacks = new Attacks;
     interest = new Interest;
-    eA = new kN;
+    infoRenderer = new InfoRenderer;
     nickNames = new NickNames;
     zombieSettings = new ZombieSettings;
     configFakeMap = new ConfigFakeMap;
@@ -2134,7 +2134,7 @@ function PlayerActions() {
         iconActive[6] = playerActions.isHuman(targetID) && !canRequestToAttackTarget(targetID) && diplomacyHandler.lO(1, [targetID], false);
         iconActive[4] = 1 <= emojis.selectedEmojiCount && this.isHuman(targetID);
         if (isNotTeamate(targetID, myID)) {
-            iconActive[5] = this.isHuman(targetID) && !eA.li(targetID) && diplomacyHandler.lO(0, [targetID], false);
+            iconActive[5] = this.isHuman(targetID) && !infoRenderer.li(targetID) && diplomacyHandler.lO(0, [targetID], false);
             var showTargetIcon;
             if (0 === friends.length) showTargetIcon = false;
             else if ((new Date).getTime() > lastFriendAddedTime + 4E3) {
@@ -2598,7 +2598,7 @@ function Announcements() {
         } else if (5 === messageType) {
             if (2 !== playerStatus[id] && playerActions.isHuman(myID)) {
                 removeExcessSameMessages(1, 5);
-                if (eA.ml(id)) announce(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, getColorRGB(255, 200, 180), blackMoreOpaque, -1, true);
+                if (infoRenderer.breakNonAggression(id)) announce(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, getColorRGB(255, 200, 180), blackMoreOpaque, -1, true);
                 else announce(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", blackMoreOpaque, -1, true);
             }
         } else if (18 === messageType) announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, false);
@@ -2672,17 +2672,17 @@ function Announcements() {
         if (ratifier === 0) {
             if (removePendingAnnouncement(50, friendID)) {
                 announce(128, "You signed a non-aggression pact with " + nickname[friendID] + ".", 52, friendID, getColorRGB(180, 255, 180), blackMoreOpaque, -1, true);
-                eA.showIcon(friendID, 2, 255);
+                infoRenderer.showIcon(friendID, 2, 255);
             } else {
                 announce(384, "You asked " + nickname[friendID] + " to sign a non-aggression pact.", 51, friendID, getColorRGB(210, 210, 255), blackMoreOpaque, -1, true);
             }
         } else {
             if (removePendingAnnouncement(51, friendID)) {
                 announce(128, nickname[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, true);
-                eA.showIcon(friendID, 2, 255);
+                infoRenderer.showIcon(friendID, 2, 255);
             } else {
                 announce(384, nickname[friendID] + " requests a non-aggression pact.", 50, friendID, whiteRGB2, "rgba(90,90,90,0.9)", -1, true);
-                eA.showIcon(friendID, 2, 96);
+                infoRenderer.showIcon(friendID, 2, 96);
             }
         }
     };
@@ -3048,7 +3048,7 @@ function Emojis() {
                     this.show(xPos, yPos);
                     return true;
                 }
-                if (singleplayer) eA.showIcon(myID, 0, this.selection[selectionIndex])
+                if (singleplayer) infoRenderer.showIcon(myID, 0, this.selection[selectionIndex])
                 else if (targetID === myID) dataEncoder.selfEmoji(this.selection[selectionIndex])
                 else dataEncoder.sendEmoji(this.selection[selectionIndex], targetID);
                 this.updateEmojiSelection();
@@ -3417,7 +3417,6 @@ function AttackBars() {
             zoomedYOffset = isZoom ? Math.floor(.15 * barCanvasHeight) : 0;
         for (aIndex = myAttacks.length - 1; 0 <= aIndex; aIndex--) {
             var attackBarXPos = getAttackBarXPos(aIndex), attackBarYPos = getAttackBarYPos(aIndex), attackBarWidth = myAttacks[aIndex].canvas.width;
-            console.log(yPos, attackBarYPos, zoomedYOffset, barCanvasHeight)
             if (yPos >= attackBarYPos - zoomedYOffset && yPos <= attackBarYPos + barCanvasHeight + zoomedYOffset) {
                 if (xPos >= attackBarXPos - buttonSize && xPos <= attackBarXPos + barCanvasHeight + buttonSize) {
                     if (!myAttacks[aIndex].cancelling) {
@@ -4041,7 +4040,7 @@ function MouseCamera() {
             dispY = lastMouseY - yPos;
         viewportX += dispX;
         viewportY += dispY;
-        eA.onPointermove(dispX, dispY);
+        infoRenderer.onPointermove(dispX, dispY);
         this.restrictViewportToMap();
         lastMouseX = xPos;
         lastMouseY = yPos;
@@ -4058,7 +4057,7 @@ function MouseCamera() {
     this.zoomAndUpdateViewport = function(xPos, yPos, deltaY) {
         deltaY = 1024 < deltaY * mainScaleFactor ? 1024 / mainScaleFactor : deltaY;
         deltaY = .125 > deltaY * mainScaleFactor ? .125 / mainScaleFactor : deltaY;
-        eA.zoom(deltaY, xPos, yPos);
+        infoRenderer.zoom(deltaY, xPos, yPos);
         mainScaleFactor *= deltaY;
         viewportX = (viewportX + xPos) * deltaY - xPos;
         viewportY = (viewportY + yPos) * deltaY - yPos;
@@ -4076,7 +4075,7 @@ function MouseCamera() {
         viewportX += readjustX;
         viewportY += readjustY;
         viewport.updateViewportCoords();
-        eA.rQ(readjustX, readjustY)
+        infoRenderer.rQ(readjustX, readjustY)
     };
     this.setStartingPosition = function() {
         canvasXPos = prevClientWidth - canvasSize - canvasPadding;
@@ -8507,7 +8506,7 @@ function Attacks() {
         remainingTroops[sIndex + currentAttackCount[authorID]] = amount;
         boatIDs[sIndex + currentAttackCount[authorID]] = 0;
         currentAttackCount[authorID]++;
-        authorID < playerCount && (targetID === myID ? announcements.genericAnnouncement(authorID, 5) : authorID === myID && eA.ml(targetID))
+        authorID < playerCount && (targetID === myID ? announcements.genericAnnouncement(authorID, 5) : authorID === myID && infoRenderer.breakNonAggression(targetID))
     };
     this.addBoat = function(id, amount, boatID) {
         var sIndex = getStartingAttackIndex(id);
@@ -8599,23 +8598,23 @@ function Interest() {
     }
 }
 
-function kN() {
-    function g() {
-        X.width = prevClientWidth;
-        X.height = prevClientHeight;
-        infoCanvas = X.getContext("2d", {
+function InfoRenderer() {
+    function setupInfoCanvas() {
+        infoCanvas.width = prevClientWidth;
+        infoCanvas.height = prevClientHeight;
+        infoCanvasCtx = infoCanvas.getContext("2d", {
             alpha: true
         });
-        infoCanvas.textAlign = centerAlign;
-        infoCanvas.textBaseline = middleAlign;
-        infoCanvas.imageSmoothingEnabled = true
+        infoCanvasCtx.textAlign = centerAlign;
+        infoCanvasCtx.textBaseline = middleAlign;
+        infoCanvasCtx.imageSmoothingEnabled = true
     }
 
     function renderEntityLabels() {
         needsDrawImage = false;
         U = 1;
         R = P = 0;
-        infoCanvas.clearRect(0, 0, prevClientWidth, prevClientHeight);
+        infoCanvasCtx.clearRect(0, 0, prevClientWidth, prevClientHeight);
         var camLeft = viewportX / mainScaleFactor, camTop = viewportY / mainScaleFactor, 
             camRight = (prevClientWidth + viewportX) / mainScaleFactor, camBottom = (prevClientHeight + viewportY) / mainScaleFactor,
             landCenterX, landCenterY, idIndex, fontSize,
@@ -8623,144 +8622,152 @@ function kN() {
 
         for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
             idIndex = aliveEntities[aliveIndex];
-            fontSize = Math.floor(Q * mainScaleFactor * I[idIndex] * G[idIndex]);
+            fontSize = Math.floor(Q * mainScaleFactor * I[idIndex] * labelWidth[idIndex]);
+            if (fontSize >= minFontSize && fontSize < maxFontSize && labelXPos[idIndex] + labelWidth[idIndex] > camLeft && labelXPos[idIndex] < camRight && labelYPos[idIndex] + labelHeight[idIndex] > camTop && labelYPos[idIndex] < camBottom) {
+                landCenterX = Math.floor(prevClientWidth * (labelXPos[idIndex] + labelWidth[idIndex] / 2 - camLeft) / (camRight - camLeft));
+                landCenterY = Math.floor(prevClientHeight * (labelYPos[idIndex] + labelHeight[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
+                infoCanvasCtx.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
 
-            if (fontSize >= minFontSize && fontSize < maxFontSize && E[idIndex] + G[idIndex] > camLeft && E[idIndex] < camRight && F[idIndex] + N[idIndex] > camTop && F[idIndex] < camBottom) {
-                landCenterX = Math.floor(prevClientWidth * (E[idIndex] + G[idIndex] / 2 - camLeft) / (camRight - camLeft));
-                landCenterY = Math.floor(prevClientHeight * (F[idIndex] + N[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
-                infoCanvas.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
-
-                var fontColor = fontSize >= J && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + x(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]];
-                infoCanvas.fillStyle = fontColor;
-                infoCanvas.fillText(8 === gamemode ? attackBars.splitNumber(troops[idIndex]) : nickname[idIndex], landCenterX, landCenterY);
+                var fontColor = fontSize >= J && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]];
+                infoCanvasCtx.fillStyle = fontColor;
+                infoCanvasCtx.fillText(attackBars.splitNumber(troops[idIndex]), landCenterX, landCenterY);
                 needsDrawImage = true;
 
-                if (0 < ca[idIndex]) {
+                if (0 < displayIconRemainingTime[idIndex]) {
                     if (0 === landIDOrder[idIndex])
-                        if (emojis.isFlag(ba[idIndex])) {
-                            var transform = .9 * fontSize / emojis.width,
-                                Ca = Math.floor(landCenterY - .5 * transform * emojis.width - .05 * fontSize);
-                            infoCanvas.globalAlpha = x(fontSize);
-                            var Ba = Math.floor(landCenterX - .5 * fontSize / D[idIndex] - .4 * fontSize - transform * emojis.width)
+                        if (emojis.isFlag(displayingEmojiID[idIndex])) {
+                            var emojiSizeMultiplier = .9 * fontSize / emojis.width,
+                                emojiVerticalPos = Math.floor(landCenterY - .5 * emojiSizeMultiplier * emojis.width - .05 * fontSize);
+                            infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
+                            var emojiHorizontalPos = Math.floor(landCenterX - .5 * fontSize / D[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
                             for (var index = 0; 2 > index; index++) {
-                                infoCanvas.setTransform(transform, 0, 0, transform, Ba, Ca);
-                                infoCanvas.drawImage(emojis.emojiCanvasList[ba[idIndex]], 0, 0);
+                                infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
+                                infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
                             }
-                            infoCanvas.globalAlpha = 1;
-                            infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
-                            n(landCenterX, landCenterY, fontSize, 0, 0)
+                            infoCanvasCtx.globalAlpha = 1;
+                            infoCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                            renderIcon(landCenterX, landCenterY, fontSize, 0, 0)
 
-                        } else if (emojis.isFacialEmoji(ba[idIndex])) {
-                            l(landCenterX, landCenterY, fontSize, ba[idIndex], 0);
-                            n(landCenterX, landCenterY, fontSize, 0, 1)
+                        } else if (emojis.isFacialEmoji(displayingEmojiID[idIndex])) {
+                            renderEmoji(landCenterX, landCenterY, fontSize, displayingEmojiID[idIndex], 0);
+                            renderIcon(landCenterX, landCenterY, fontSize, 0, 1)
                         }
                         else {
-                            l(landCenterX, landCenterY, fontSize, ba[idIndex], 1);
-                            n(landCenterX, landCenterY, fontSize, 1, 0)
+                            renderEmoji(landCenterX, landCenterY, fontSize, displayingEmojiID[idIndex], 1);
+                            renderIcon(landCenterX, landCenterY, fontSize, 1, 0)
                         }
-                    else l(landCenterX, landCenterY, fontSize, ba[idIndex], 0)
+                    else renderEmoji(landCenterX, landCenterY, fontSize, displayingEmojiID[idIndex], 0)
 
-                } else if (0 === landIDOrder[idIndex]) n(landCenterX, landCenterY, fontSize, 0, 0);
+                } else if (0 === landIDOrder[idIndex]) renderIcon(landCenterX, landCenterY, fontSize, 0, 0);
 
-                if (isAlivePlayer && (0 < ca[idIndex + maxEntities] || 0 < ca[idIndex + 2 * maxEntities] || 0 < ca[idIndex + 3 * maxEntities] || 0 < ca[idIndex + 4 * maxEntities])) {
+                if (isAlivePlayer && (0 < displayIconRemainingTime[idIndex + maxEntities] || 0 < displayIconRemainingTime[idIndex + 2 * maxEntities] || 0 < displayIconRemainingTime[idIndex + 3 * maxEntities] || 0 < displayIconRemainingTime[idIndex + 4 * maxEntities])) {
                     fontColor = landCenterX;
-                    var level = -1;
+                    var iconLevel = -1;
                     for (index = 4; 1 <= index; index--) {
-                        if (0 < ca[idIndex + index * maxEntities]) level++
+                        if (0 < displayIconRemainingTime[idIndex + index * maxEntities]) iconLevel++
                     }
                     for (index = 1; 5 > index; index++) {
-                        if (0 < ca[idIndex + index * maxEntities]) {
-                            transform = index;
-                            Ca = idIndex;
-                            Ba = ca[idIndex + index * maxEntities];
-                            var xa = .8 * fontSize / emojis.width;
-                            infoCanvas.setTransform(xa, 0, 0, xa, Math.floor(fontColor - .5 * xa * emojis.width - .534 * level * fontSize), Math.floor(landCenterY + 1.4 * xa * emojis.width));
-                            infoCanvas.globalAlpha = x(fontSize);
-                            infoCanvas.drawImage(1 === transform ? emojis.emojiCanvasList[ba[Ca + maxEntities]] : 2 === transform && 255 > Ba ? playerActions.spriteIcons[2] : playerActions.greenIcons[transform + 3], 0, 0);
-                            infoCanvas.globalAlpha = 1;
-                            infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
-                            level -= 2
+                        if (0 < displayIconRemainingTime[idIndex + index * maxEntities]) {
+                            var iconScale = .8 * fontSize / emojis.width;
+                            infoCanvasCtx.setTransform(iconScale, 0, 0, iconScale, Math.floor(fontColor - .5 * iconScale * emojis.width - .534 * iconLevel * fontSize), Math.floor(landCenterY + 1.4 * iconScale * emojis.width));
+                            infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
+                            infoCanvasCtx.drawImage(1 === index ? emojis.emojiCanvasList[displayingEmojiID[idIndex + maxEntities]] : 2 === index && 255 > displayIconRemainingTime[idIndex + index * maxEntities] ? playerActions.spriteIcons[2] : playerActions.greenIcons[index + 3], 0, 0);
+                            infoCanvasCtx.globalAlpha = 1;
+                            infoCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                            iconLevel -= 2
                         }
                     }
                 }
                 var getFontSize = Math.floor(fontScaleFactor * fontSize);
                 if (getFontSize >= minFontSize) {
-                    infoCanvas.font = fontWeightBold + getFontSize + fontSizeArial;
-                    infoCanvas.fillText(8 === gamemode ? nickname[idIndex] : attackBars.splitNumber(troops[idIndex]), landCenterX, landCenterY + Math.floor(.78 * fontSize))
+                    infoCanvasCtx.font = fontWeightBold + getFontSize + fontSizeArial;
+                    infoCanvasCtx.fillText(nickname[idIndex], landCenterX, landCenterY + Math.floor(.78 * fontSize))
                 }
             }
         }
     }
-
-    function n(O, T, Y, Z, la) {
-        var ma = .95 * Y / S;
-        infoCanvas.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * pa + .8 * Z * Y), Math.floor(T - 1.76 * ma * S - .82 * la * Y));
-        infoCanvas.globalAlpha = x(Y);
-        infoCanvas.drawImage(sprites.getValueByID(4), 0, 0);
-        infoCanvas.globalAlpha = 1;
-        infoCanvas.setTransform(1, 0, 0, 1, 0, 0)
+    
+    function renderIcon(centerX, centerY, fontSize, xOffset, yOffset) {
+        var scaleFactor = .95 * fontSize / crownHeight;
+        infoCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor(centerX - .5 * scaleFactor * crownWidth + .8 * xOffset * fontSize), Math.floor(centerY - 1.76 * scaleFactor * crownHeight - .82 * yOffset * fontSize));
+        infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
+        infoCanvasCtx.drawImage(sprites.getValueByID(4), 0, 0);
+        infoCanvasCtx.globalAlpha = 1;
+        infoCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     }
 
-    function l(O, T, Y, Z, la) {
-        var ma = 1.2 * Y / emojis.width;
-        infoCanvas.setTransform(ma, 0, 0, ma, Math.floor(O - .5 * ma * emojis.width - .8 * la * Y), Math.floor(T - 1.5 * ma * emojis.width));
-        infoCanvas.globalAlpha = x(Y);
-        infoCanvas.drawImage(emojis.emojiCanvasList[Z], 0, 0);
-        infoCanvas.globalAlpha = 1;
-        infoCanvas.setTransform(1, 0, 0, 1, 0, 0)
+    function renderEmoji(centerX, centerY, fontSize, emojiID, xOffset) {
+        var scaleFactor = 1.2 * fontSize / emojis.width;
+        infoCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor(centerX - .5 * scaleFactor * emojis.width - .8 * xOffset * fontSize), Math.floor(centerY - 1.5 * scaleFactor * emojis.width));
+        infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
+        infoCanvasCtx.drawImage(emojis.emojiCanvasList[emojiID], 0, 0);
+        infoCanvasCtx.globalAlpha = 1;
+        infoCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    }
+    
+    function getAlphaFromFontSize(fontSize) {
+        return fontSize >= J && fontSize < maxFontSize ? 1 - (fontSize - J) / (maxFontSize - J) : 1
     }
 
-    function x(O) {
-        return O >= J && O < maxFontSize ? 1 - (O - J) / (maxFontSize - J) : 1
-    }
-
-    function t(O) {
-        var T, Y = E[O];
-        for (T = E[O] - xMin[O] - 1; 0 <= T; T--)
-            if (Y--, !y(O, Y, F[O], N[O])) {
+    function calculateLabelPosition(id) {
+        var T, Y = labelXPos[id];
+        for (T = labelXPos[id] - xMin[id] - 1; 0 <= T; T--) {
+            Y--;
+            if (!y(id, Y, labelYPos[id], labelHeight[id])) {
                 Y++;
                 break
-            } var Z = E[O];
-        for (T = xMax[O] - E[O] - G[O]; 0 <= T; T--)
-            if (Z++, !y(O, Z + G[O] - 1, F[O], N[O])) {
+            }
+        }
+        var Z = labelXPos[id];
+        for (T = xMax[id] - labelXPos[id] - labelWidth[id]; 0 <= T; T--) {
+            Z++;
+            if (!y(id, Z + labelWidth[id] - 1, labelYPos[id], labelHeight[id])) {
                 Z--;
                 break
-            } Y = Math.floor((Y + Z) / 2);
-        Z = F[O];
-        for (T = F[O] - yMin[O] - 1; 0 <=
-            T; T--)
-            if (Z--, !A(O, Y, Z, G[O])) {
+            }
+        }
+        Y = Math.floor((Y + Z) / 2);
+        Z = labelYPos[id];
+        for (T = labelYPos[id] - yMin[id] - 1; 0 <= T; T--) {
+            Z--;
+            if (!A(id, Y, Z, labelWidth[id])) {
                 Z++;
                 break
-            } var la = F[O];
-        for (T = yMax[O] - F[O] - N[O]; 0 <= T; T--)
-            if (la++, !A(O, Y, la + N[O] - 1, G[O])) {
+            }
+        }
+        var la = labelYPos[id];
+        for (T = yMax[id] - labelYPos[id] - labelHeight[id]; 0 <= T; T--) {
+            la++;
+            if (!A(id, Y, la + labelHeight[id] - 1, labelWidth[id])) {
                 la--;
                 break
-            } T = Math.floor((Z + la) / 2);
-        z(O, Y, T, G[O], N[O]) && (E[O] = Y, F[O] = T)
+            }
+        }
+        T = Math.floor((Z + la) / 2);
+        isLabelPositionValid(id, Y, T, labelWidth[id], labelHeight[id]) && (labelXPos[id] = Y, labelYPos[id] = T)
     }
 
-    function z(O, T, Y, Z, la) {
+    function isLabelPositionValid(id, T, Y, Z, la) {
         var ma;
-        for (ma = T + Z - 1; ma >= T; ma--)
-            if (!y(O, ma, Y, la)) return false;
+        for (ma = T + Z - 1; ma >= T; ma--) {
+            if (!y(id, ma, Y, la)) return false;
+        }
         var ia = Math.floor(.25 * la);
         ia = 1 > ia ? 1 : ia;
-        for (ma = Y + la - 1 - ia; ma >= Y + ia; ma--)
-            if (!A(O, T, ma, Z)) return false;
+        for (ma = Y + la - 1 - ia; ma >= Y + ia; ma--) {
+            if (!A(id, T, ma, Z)) return false;
+        }
         return true
     }
 
-    function y(O, T, Y, Z) {
-        return pixel.strongIsOwner(O, 4 * (Y * currentMapWidth + T)) && pixel.strongIsOwner(O, 4 * ((Y + Z - 1) * currentMapWidth + T))
+    function y(id, xCoord, yCoord, Z) {
+        return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * ((yCoord + Z - 1) * currentMapWidth + xCoord))
     }
 
-    function A(O, T, Y, Z) {
-        return pixel.strongIsOwner(O, 4 * (Y * currentMapWidth + T)) && pixel.strongIsOwner(O, 4 * (Y *
-            currentMapWidth + T + Z - 1))
+    function A(id, xCoord, yCoord, Z) {
+        return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord + Z - 1))
     }
-    var B, C, E, F, G, N, I, D, maxFontSize, J, fontScaleFactor, H, minFontSize, Q, R, P, U, needsDrawImage, X, infoCanvas, na, ba, ca, pa, S;
+    var B, C, labelXPos, labelYPos, labelWidth, labelHeight, I, D, maxFontSize, J, fontScaleFactor, H, minFontSize, Q, R, P, U, needsDrawImage, infoCanvas, infoCanvasCtx, updateInterval, displayingEmojiID, displayIconRemainingTime, crownWidth, crownHeight;
     this.init = function() {
         needsDrawImage = false;
         Q = .88;
@@ -8770,53 +8777,104 @@ function kN() {
         J = Math.floor(.2 * maxFontSize);
         minFontSize = 8 === gamemode ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
         C = B = 0;
-        E = new Uint16Array(maxEntities);
-        F = new Uint16Array(maxEntities);
-        G = new Uint16Array(maxEntities);
-        N = new Uint16Array(maxEntities);
+        labelXPos = new Uint16Array(maxEntities);
+        labelYPos = new Uint16Array(maxEntities);
+        labelWidth = new Uint16Array(maxEntities);
+        labelHeight = new Uint16Array(maxEntities);
         I = new Float32Array(maxEntities);
         D = new Float32Array(maxEntities);
-        ba = new Uint8Array(2 * maxEntities);
-        ca = new Uint8Array(5 * maxEntities);
-        X = X ? X : document.createElement("canvas");
-        g();
+        displayingEmojiID = new Uint8Array(2 * maxEntities);
+        displayIconRemainingTime = new Uint8Array(5 * maxEntities);
+        infoCanvas = infoCanvas ? infoCanvas : document.createElement("canvas");
+        setupInfoCanvas();
         P = R = 0;
         U = 1;
-        na = 0;
+        updateInterval = 0;
         if (8 === gamemode) {
-            var O;
-            infoCanvas.font = fontWeightBold + 100 + fontSizeArial;
-            var T = 100 / Math.floor(infoCanvas.measureText("20 000 000").width);
-            for (O = maxEntities - 1; 0 <= O; O--) D[O] = I[O] = T
-        } else
-            for (infoCanvas.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial, T = 80 / Math.floor(infoCanvas.measureText(attackBars.splitNumber(absMaxTroopCap)).width), infoCanvas.font = fontWeightBold + 100 + fontSizeArial, O = maxEntities - 1; 0 <= O; O--) D[O] = 100 / Math.floor(infoCanvas.measureText(nickname[O]).width), I[O] = T < D[O] ? T : D[O];
-        for (O = maxEntities - 1; 0 <= O; O--) 12 > land[O] ? (E[O] = xMin[O] + 1, F[O] = yMin[O] + 1, G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2);
-        if (inSpawn)
-            for (O = 0; O < playerCount; O++) G[O] = 0;
-        pa = sprites.getValueByID(4).width;
-        S = sprites.getValueByID(4).height
+            var entityIndex;
+            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
+            var T = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000").width);
+            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) D[entityIndex] = I[entityIndex] = T
+        } else {
+            infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
+            T = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap)).width);
+            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
+            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
+                D[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nickname[entityIndex]).width), I[entityIndex] = T < D[entityIndex] ? T : D[entityIndex];
+            }
+        }
+        for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
+            if (12 > land[entityIndex]) {
+                labelXPos[entityIndex] = xMin[entityIndex] + 1;
+                labelYPos[entityIndex] = yMin[entityIndex] + 1;
+                labelWidth[entityIndex] = 1;
+                labelHeight[entityIndex] = 1
+            } else {
+                labelXPos[entityIndex] = xMin[entityIndex];
+                labelYPos[entityIndex] = yMin[entityIndex] + 1;
+                labelWidth[entityIndex] = 4;
+                labelHeight[entityIndex] = 2;
+            }
+        } 
+        if (inSpawn) {
+            for (entityIndex = 0; entityIndex < playerCount; entityIndex++) labelWidth[entityIndex] = 0;
+        }
+        crownWidth = sprites.getValueByID(4).width;
+        crownHeight = sprites.getValueByID(4).height
     };
     this.setCanvasVariables = function() {
-        g();
+        setupInfoCanvas();
         renderEntityLabels()
     };
-    this.j4 = function() {
-        for (var O = na = 0; O < playerCount; O++) 3 !== xMax[O] - xMin[O] || 3 !== yMax[O] - yMin[O] ?
-            (E[O] = xMin[O] + (xMax[O] !== xMin[O] ? 1 : 0), F[O] = yMin[O], G[O] = 1, N[O] = 1) : (E[O] = xMin[O], F[O] = yMin[O] + 1, G[O] = 4, N[O] = 2)
+    this.setPlayerLabels = function() {
+        for (var playerIndex = updateInterval = 0; playerIndex < playerCount; playerIndex++) {
+            if (3 !== xMax[playerIndex] - xMin[playerIndex] || 3 !== yMax[playerIndex] - yMin[playerIndex]) {
+                labelXPos[playerIndex] = xMin[playerIndex] + (xMax[playerIndex] !== xMin[playerIndex] ? 1 : 0);
+                labelYPos[playerIndex] = yMin[playerIndex];
+                labelWidth[playerIndex] = 1;
+                labelHeight[playerIndex] = 1;
+            } else {
+                labelXPos[playerIndex] = xMin[playerIndex];
+                labelYPos[playerIndex] = yMin[playerIndex] + 1;
+                labelWidth[playerIndex] = 4;
+                labelHeight[playerIndex] = 2;
+            }
+        }
     };
-    this.showIcon = function(O, T, Y) {
-        0 === isAlive[O] || 4 !== T && 2 === playerStatus[O] || (O += T * maxEntities, 0 === T ? ba[O] === Y && 0 < ca[O] ? ca[O] = 0 : (ba[O] = Y, ca[O] = emojis.isFlag(Y) ? 255 : 64) : 1 === T ? (ca[O] = 64, ba[O] = Y) : ca[O] = Y)
+    this.showIcon = function(authorID, iconID, emojiID) {
+        if (0 !== isAlive[authorID] && (4 === iconID || 2 !== playerStatus[authorID])) {
+            authorID += iconID * maxEntities;
+            if (0 === iconID) {
+                if (displayingEmojiID[authorID] === emojiID && 0 < displayIconRemainingTime[authorID]) displayIconRemainingTime[authorID] = 0
+                else {
+                    displayingEmojiID[authorID] = emojiID;
+                    displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 255 : 64
+                }
+            } else if (1 === iconID) {
+                displayIconRemainingTime[authorID] = 64;
+                displayingEmojiID[authorID] = emojiID;
+            } else displayIconRemainingTime[authorID] = emojiID;
+        }
     };
     this.drawCanvasImage = function() {
-        needsDrawImage && (1 !== U ? (mainCanvasCtx.imageSmoothingEnabled = true, mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0), mainCanvasCtx.drawImage(X, -R / U, -P / U), mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)) : (mainCanvasCtx.imageSmoothingEnabled = false, mainCanvasCtx.drawImage(X, -R, -P)))
+        if (needsDrawImage) {
+            if (1 !== U) {
+                mainCanvasCtx.imageSmoothingEnabled = true;
+                mainCanvasCtx.setTransform(U, 0, 0, U, 0, 0);
+                mainCanvasCtx.drawImage(infoCanvas, -R / U, -P / U);
+                mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+            } else {
+                mainCanvasCtx.imageSmoothingEnabled = false;
+                mainCanvasCtx.drawImage(infoCanvas, -R, -P);
+            }
+        }
     };
-    this.rQ = function(O, T) {
-        R += O;
-        P += T
+    this.rQ = function(xPos, yPos) {
+        R += xPos;
+        P += yPos
     };
-    this.onPointermove = function(O,
-        T) {
-        eA.rQ(O, T)
+    this.onPointermove = function(xPos, yPos) {
+        infoRenderer.rQ(xPos, yPos)
     };
     this.zoom = function(O, T, Y) {
         U *= O;
@@ -8824,7 +8882,11 @@ function kN() {
         P = (P + Y) * O - Y
     };
     this.drawCanvas = function() {
-        return 0 >= --na ? (na = 4 >= frameRate ? 10 : 12 > frameRate ? 5 : 2, renderEntityLabels(), true) : false
+        if (0 >= --updateInterval) {
+            updateInterval = 4 >= frameRate ? 10 : 12 > frameRate ? 5 : 2;
+            renderEntityLabels();
+            return true;
+        } else return false
     };
     this.gG = function(O) {
         return I[O]
@@ -8833,59 +8895,65 @@ function kN() {
         if (4 <= ++C) {
             var O, T;
             C = 0;
-            for (T = 4; 1 <= T; T--)
-                for (O = aliveCount - 1; 0 <= O; O--) {
-                    var Y = aliveEntities[O] + T * maxEntities;
-                    0 < ca[Y] && 255 > ca[Y] && ca[Y]--
+            for (T = 4; 1 <= T; T--) {
+                for (var aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
+                    var Y = aliveEntities[aliveIndex] + T * maxEntities;
+                    0 < displayIconRemainingTime[Y] && 255 > displayIconRemainingTime[Y] && displayIconRemainingTime[Y]--
                 }
             if (2 !== clientStatus)
-                for (O = aliveCount - 1; 0 <= O; O--) Y = aliveEntities[O], 0 < ca[Y] && 255 > ca[Y] && ca[Y]--
+                for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
+                    Y = aliveEntities[aliveIndex];
+                    if (0 < displayIconRemainingTime[Y] && 255 > displayIconRemainingTime[Y]) displayIconRemainingTime[Y]--
+                }
+            }
         }
         O = Math.floor(.1 * aliveCount);
         O = 8 > O ? 8 : O;
         O = O > aliveCount ? aliveCount : O;
-        for (Y = B + O - 1; Y >= B; Y--)
-            if (T = Y % aliveCount, T = aliveEntities[T], 0 < G[T] && z(T, E[T], F[T], G[T], N[T])) {
-                for (var Z, la, ma, ia, fa =
-                        T, qa = false, ua = 0; 8 > ua; ua++) {
-                    la = G[fa] + 2;
-                    Z = N[fa] + 2;
-                    if (la > xMax[fa] - xMin[fa] + 1 || Z > yMax[fa] - yMin[fa] + 1) break;
-                    ia = E[fa] - 1;
-                    ma = F[fa] - 1;
-                    if (z(fa, ia, ma, la, Z)) E[fa] = ia, F[fa] = ma, G[fa] = la, N[fa] = Z, qa = true;
-                    else break
+        for (Y = B + O - 1; Y >= B; Y--) {
+            if (T = Y % aliveCount, T = aliveEntities[T], 0 < labelWidth[T] && isLabelPositionValid(T, labelXPos[T], labelYPos[T], labelWidth[T], labelHeight[T])) {
+                for (var Z, la, ma, ia, qa = false, ua = 0; 8 > ua; ua++) {
+                    la = labelWidth[T] + 2;
+                    Z = labelHeight[T] + 2;
+                    if (la > xMax[T] - xMin[T] + 1 || Z > yMax[T] - yMin[T] + 1) break;
+                    ia = labelXPos[T] - 1;
+                    ma = labelYPos[T] - 1;
+                    if (isLabelPositionValid(T, ia, ma, la, Z)) {
+                        labelXPos[T] = ia;
+                        labelYPos[T] = ma;
+                        labelWidth[T] = la;
+                        labelHeight[T] = Z;
+                        qa = true;
+                    } else break
                 }
-                if (Z = !qa) {
-                    fa = T;
+                if (!qa) {
                     qa = false;
-                    ua = G[fa];
-                    for (var za = 1 + Math.floor(.02 * ua), ra = 1; 5 > ra; ra++) {
-                        la = ua + ra * za;
-                        if (la > xMax[fa] - xMin[fa] + 1) break;
-                        Z = 1 + Math.floor(H * I[fa] * la);
-                        if (Z > yMax[fa] - yMin[fa] + 1) break;
-                        ia = xMin[fa] + Math.floor(Math.random() * (xMax[fa] - xMin[fa] + 2 - la));
-                        ma = yMin[fa] + Math.floor(Math.random() * (yMax[fa] - yMin[fa] + 2 - Z));
-                        z(fa, ia, ma, la, Z) && (E[fa] = ia, F[fa] = ma, G[fa] = la, N[fa] = Z, qa = true)
+                    for (var za = 1 + Math.floor(.02 * labelWidth[T]), ra = 1; 5 > ra; ra++) {
+                        la = labelWidth[T] + ra * za;
+                        if (la > xMax[T] - xMin[T] + 1) break;
+                        Z = 1 + Math.floor(H * I[T] * la);
+                        if (Z > yMax[T] - yMin[T] + 1) break;
+                        ia = xMin[T] + Math.floor(Math.random() * (xMax[T] - xMin[T] + 2 - la));
+                        ma = yMin[T] + Math.floor(Math.random() * (yMax[T] - yMin[T] + 2 - Z));
+                        isLabelPositionValid(T, ia, ma, la, Z) && (labelXPos[T] = ia, labelYPos[T] = ma, labelWidth[T] = la, labelHeight[T] = Z, qa = true)
                     }
-                    Z = qa
                 }
-                Z && t(T)
+                qa && calculateLabelPosition(T)
             } else {
                 loop: {
-                    la = T;ma = E[la] + 1;ia = F[la] + 1;
-                    for (fa = G[la] - 2;;) {
+                    ma = labelXPos[T] + 1;
+                    ia = labelYPos[T] + 1;
+                    for (fa = labelWidth[T] - 2;;) {
                         if (1 > fa) {
-                            G[la] = 0;
+                            labelWidth[T] = 0;
                             break
                         }
-                        Z = 1 + Math.floor(H * I[la] * fa);
-                        if (z(la, ma, ia, fa, Z)) {
-                            E[la] = ma;
-                            F[la] = ia;
-                            G[la] = fa;
-                            N[la] = Z;
+                        Z = 1 + Math.floor(H * I[T] * fa);
+                        if (isLabelPositionValid(T, ma, ia, fa, Z)) {
+                            labelXPos[T] = ma;
+                            labelYPos[T] = ia;
+                            labelWidth[T] = fa;
+                            labelHeight[T] = Z;
                             Z = true;
                             break loop
                         }
@@ -8895,26 +8963,37 @@ function kN() {
                     }
                     Z = false
                 }
-                if (Z) t(T);
-                else
-                    for (Z = T, ma = xMax[Z] - xMin[Z] + 1, la = Math.floor(.02 * ma), la = 1 > la ? 1 : la, T = -6 * la; ma >= T; ma -= la)
-                        if (fa = 0 < ma ? ma : 1, ia = 1 + Math.floor(H * I[Z] * fa), ua = xMin[Z] + Math.floor(Math.random() * (xMax[Z] - xMin[Z] + 2 - fa)), qa = yMin[Z] + Math.floor(Math.random() * (yMax[Z] - yMin[Z] + 2 - ia)), z(Z, ua, qa, fa, ia)) {
-                            E[Z] = ua;
-                            F[Z] = qa;
-                            G[Z] = fa;
-                            N[Z] = ia;
+                if (Z) calculateLabelPosition(T);
+                else {
+                    ma = xMax[T] - xMin[T] + 1;
+                    la = Math.floor(.02 * ma);
+                    la = 1 > la ? 1 : la;
+                    for (var kk = -6 * la; ma >= kk; ma -= la) {
+                        if (fa = 0 < ma ? ma : 1, ia = 1 + Math.floor(H * I[T] * fa), ua = xMin[T] + Math.floor(Math.random() * (xMax[T] - xMin[T] + 2 - fa)), qa = yMin[T] + Math.floor(Math.random() * (yMax[T] - yMin[T] + 2 - ia)), isLabelPositionValid(T, ua, qa, fa, ia)) {
+                            labelXPos[T] = ua;
+                            labelYPos[T] = qa;
+                            labelWidth[T] = fa;
+                            labelHeight[T] = ia;
                             break
                         }
-            } B += O;
+                    }
+                }
+            }
+        }
+        B += O;
         B %= aliveCount
     };
-    this.ml = function(playerID) {
+    this.breakNonAggression = function(playerID) {
         var T = playerID + 2 * maxEntities,
-            Y = ca[T];
-        return 0 < Y ? (announcements.removePendingAnnouncement(50, playerID), ca[T] = 0, 255 === Y) : false
+            remainingTime = displayIconRemainingTime[T];
+        if (0 < remainingTime) {
+            announcements.removePendingAnnouncement(50, playerID);
+            displayIconRemainingTime[T] = 0;
+            return 255 === remainingTime
+        } else return false
     };
     this.li = function(O) {
-        return 255 === ca[O + 2 * maxEntities]
+        return 255 === displayIconRemainingTime[O + 2 * maxEntities]
     }
 }
 
@@ -9043,7 +9122,7 @@ function HumanBots() {
         playerStatus[id] = 2;
         pixel.shading[id] = (pixel.shading[id] + 2) % 4;
         id === myID && (gameResultBox.show(false, false), gameStatistics.shiftBoxUpAfterDeath());
-        eA.ml(id)
+        infoRenderer.breakNonAggression(id)
     };
     this.onLeave = function(id) {
         if (2 !== playerStatus[id]) {
@@ -9438,7 +9517,7 @@ function ZombieSettings() {
             var i = playerInfoArray.length - 1;
             while (i >= 0) {
                 if (playerInfoArray[i].group <= 0) {
-                    eA.showIcon(playerInfoArray[i].player, 0, 46);
+                    infoRenderer.showIcon(playerInfoArray[i].player, 0, 46);
                     playerInfoArray.splice(i, 1);
                 } else playerInfoArray[i].group--;
                 i--;
@@ -10473,7 +10552,7 @@ function KeyboardCamera() {
                         isMoving = true;
                         viewportX += movementX[side];
                         viewportY += movementY[side];
-                        eA.onPointermove(movementX[side], movementY[side]);
+                        infoRenderer.onPointermove(movementX[side], movementY[side]);
                         mouseCamera.restrictViewportToMap();
                     }
                 }
@@ -10744,7 +10823,7 @@ function CanvasManager() {
                 gameMessages.setCanvasVariables();
                 playerActions.initIcon();
                 statistics.setCanvasVariables();
-                eA.setCanvasVariables();
+                infoRenderer.setCanvasVariables();
                 gameResultBox.setCanvasVariables();
                 teams.setCanvasVariables();
                 mouseCamera.restrictViewportToMap();        
@@ -11979,8 +12058,8 @@ function MultiplayerHandler() {
             this.time = mainHandler.time;
         } else {
             this.packetsReceived++;
-            eA.j4();
-            eA.drawCanvas();
+            infoRenderer.setPlayerLabels();
+            infoRenderer.drawCanvas();
             mapUpdate.updateMapCanvas();
         }
     };
@@ -12200,7 +12279,7 @@ function DataDecoder() {
                                         if (0 !== isAlive[data] && 0 !== isAlive[myID]) {
                                             emojiID %= emojis.totalDistinctEmojisCount;
                                             announcements.newEmojiMessage(data, myID, emojiID);
-                                            eA.showIcon(data, 1, emojiID);
+                                            infoRenderer.showIcon(data, 1, emojiID);
                                         }
                                     }
                                 } else {
@@ -12216,8 +12295,8 @@ function DataDecoder() {
                                             data = decoder(array, 9);
                                             var requester = decoder(array, 9);
                                             if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && diplomacyHandler.a1W(1, [data], true)) {
-                                                eA.showIcon(data, 3, 96);
-                                                eA.showIcon(requester, 4, 96);
+                                                infoRenderer.showIcon(data, 3, 96);
+                                                infoRenderer.showIcon(requester, 4, 96);
                                                 announcements.requestedToAttack(data, requester);
                                             }
                                         }
@@ -12324,7 +12403,7 @@ function DataDecoder() {
                 } else if (3 === actionType) processAction.onLeave(authorID)
                 else if (4 === actionType) {
                     actionType = decoder(array, 7);
-                    eA.showIcon(authorID, 0, actionType);
+                    infoRenderer.showIcon(authorID, 0, actionType);
                 } else if (5 === actionType) processAction.surrender(authorID)
                 else if (6 === actionType) processAction.pendingPeace(authorID, decoder(array, 1))
                 else if (7 === actionType) processAction.pendingCancelBoat(authorID, 1 + decoder(array, 11))
