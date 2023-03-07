@@ -3993,20 +3993,20 @@ function MouseCamera() {
             });
         }
         this.setStartingPosition();
-        canvasIndex = Math.floor(1 + canvasSize / 20);
+        var lineWidth = Math.floor(1 + canvasSize / 20);
         for (var canvasIndex = 1; 0 <= canvasIndex; canvasIndex--) {
             contexts[canvasIndex].clearRect(0, 0, canvasSize, canvasSize);
             contexts[canvasIndex].fillStyle = blackOpaque;
             contexts[canvasIndex].beginPath();
-            contexts[canvasIndex].arc(canvasSize / 2, canvasSize / 2, canvasSize / 2 - canvasIndex, 0, 2 * Math.PI);
+            contexts[canvasIndex].arc(canvasSize / 2, canvasSize / 2, canvasSize / 2 - lineWidth, 0, 2 * Math.PI);
             contexts[canvasIndex].fill();
-            contexts[canvasIndex].lineWidth = canvasIndex;
+            contexts[canvasIndex].lineWidth = lineWidth;
             contexts[canvasIndex].fillStyle = whiteRGB;
             contexts[canvasIndex].strokeStyle = whiteRGB;
             contexts[canvasIndex].beginPath();
-            contexts[canvasIndex].arc(canvasSize / 2, canvasSize / 2, canvasSize / 2 - canvasIndex, 0, 2 * Math.PI);
+            contexts[canvasIndex].arc(canvasSize / 2, canvasSize / 2, canvasSize / 2 - lineWidth, 0, 2 * Math.PI);
             contexts[canvasIndex].stroke();
-            drawDiagRect(contexts[canvasIndex], 0, 0, canvasSize, canvasIndex, .3, 0 === canvasIndex);
+            drawDiagRect(contexts[canvasIndex], 0, 0, canvasSize, lineWidth, .3, 0 === canvasIndex);
         }
     };
     this.toX = function() {
