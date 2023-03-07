@@ -7946,16 +7946,16 @@ function Pixel() {
 }
 
 function UserSettings() {
-    function g() {
-        for (var C = 0, E = 1; 5 > E; E++) C += settingsArray[E] % 1024;
-        return C
+    function getSettingsHash() {
+        for (var settingsHash = 0, settingIndex = 1; 5 > settingIndex; settingIndex++) settingsHash += settingsArray[settingIndex] % 1024;
+        return settingsHash
     }
 
-    function k() {
-        for (var C = 1; C < y - B; C++) settingsArray[C] = parseInt(settingsArray[C])
+    function convertToInteger() {
+        for (var settingIndex = 1; settingIndex < settingsCount - stringSettingsCount; settingIndex++) settingsArray[settingIndex] = parseInt(settingsArray[settingIndex])
     }
 
-    function n() {
+    function initSettingsArray() {
         settingsArray[0] = "Player " + Math.floor(1E3 * Math.random());
         settingsArray[1] = canvasWidth < canvasHeight ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
         settingsArray[2] = 1;
@@ -7969,53 +7969,65 @@ function UserSettings() {
         userSettings.formatSettings()
     }
 
-    function l() {
-        for (var C = y - B - 1; 0 <= C; C--) settingsArray[C] = strings.convertToNumeric(settingsArray[C]);
+    function convertToNumericString() {
+        for (var settingIndex = settingsCount - stringSettingsCount - 1; 0 <= settingIndex; settingIndex--) settingsArray[settingIndex] = strings.convertToNumeric(settingsArray[settingIndex]);
         settingsArray[0] = strings.convert3DigitToString(settingsArray[0])
     }
 
-    function x(C, E, F) {
-        var G = new Date;
-        G.setTime(G.getTime() + Math.floor(31536E6 * F));
-        C = C + "=" + E + ";expires=" + G.toUTCString() +
-            ";SameSite=Strict;Secure;path=/";
-        document.cookie = C
+    function setCookies(cookieText, E, years) {
+        var now = new Date;
+        now.setTime(now.getTime() + Math.floor(31536E6 * years));
+        cookieText = cookieText + "=" + E + ";expires=" + now.toUTCString() + ";SameSite=Strict;Secure;path=/";
+        document.cookie = cookieText
     }
-    var t, settingsArray, y, cookieStatus, B;
+    var cookieNames, settingsArray, settingsCount, cookieStatus, stringSettingsCount;
     this.init = function() {
-        if (!(5 <= androidVersion || isIOS)) {
-            B = 4;
+        if (5 >= androidVersion && !isIOS) {
+            stringSettingsCount = 4;
             cookieStatus = 2;
-            t = [];
-            y = 10;
-            for (var C = 0; C < y; C++) t.push("u" + C);
-            settingsArray = Array(y);
-            for (var E, F = document.cookie.split(";"), G = F.length - 1; 0 <= G; G--) {
-                F[G] = F[G].trim();
-                for (C = 2; 0 <= C; C--) F[G] = F[G].replace(" ", "");
-                3 < F[G].length && (C = t.indexOf(F[G].substring(0, 2)), E = F[G].indexOf("="), 0 <= C && 2 === E ? settingsArray[C] = F[G].substring(E + 1, F[G].length) : 0 < E && x(F[G].substring(0, E), "0", 0))
+            cookieNames = [];
+            settingsCount = 10;
+            for (var settingsIndex = 0; settingsIndex < settingsCount; settingsIndex++) cookieNames.push("u" + settingsIndex);
+            settingsArray = Array(settingsCount);
+            for (var cookieValueIndex, cookieText = document.cookie.split(";"), charIndex = cookieText.length - 1; 0 <= charIndex; charIndex--) {
+                cookieText[charIndex] = cookieText[charIndex].trim();
+                for (settingsIndex = 2; 0 <= settingsIndex; settingsIndex--) cookieText[charIndex] = cookieText[charIndex].replace(" ", "");
+                if (3 < cookieText[charIndex].length) {
+                    settingsIndex = cookieNames.indexOf(cookieText[charIndex].substring(0, 2));
+                    cookieValueIndex = cookieText[charIndex].indexOf("=");
+                    if (0 <= settingsIndex && 2 === cookieValueIndex) settingsArray[settingsIndex] = cookieText[charIndex].substring(cookieValueIndex + 1, cookieText[charIndex].length)
+                    else if (0 < cookieValueIndex) setCookies(cookieText[charIndex].substring(0, cookieValueIndex), "0", 0)
+                }
             }
-            settingsArray[9] || (settingsArray[9] = "0");
+            if (!settingsArray[9]) settingsArray[9] = "0";
+            var functionalCookies
             loop: {
-                for (C = y - 1; 0 <= C; C--)
-                    if (void 0 === settingsArray[C]) {
-                        C = false;
+                for (settingsIndex = settingsCount - 1; 0 <= settingsIndex; settingsIndex--) {
+                    if (void 0 === settingsArray[settingsIndex]) {
+                        functionalCookies = false;
                         break loop
-                    } C = true
+                    }
+                }
+                functionalCookies = true
             }
-            C ? (cookieStatus = 2, l(), k(), g() !== settingsArray[5] && n()) : n()
+            if (functionalCookies) {
+                cookieStatus = 2;
+                convertToNumericString();
+                convertToInteger();
+                if (getSettingsHash() !== settingsArray[5]) initSettingsArray()
+            } else initSettingsArray()
         }
     };
     this.formatSettings = function() {
         if (2 === cookieStatus) {
             settingsArray[1] = 0 === settingsArray[1] ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : settingsArray[1];
-            settingsArray[5] = g();
-            for (var C = 1; C < y - B; C++) settingsArray[C] = settingsArray[C].toString();
+            settingsArray[5] = getSettingsHash();
+            for (var settingIndex = 1; settingIndex < settingsCount - stringSettingsCount; settingIndex++) settingsArray[settingIndex] = settingsArray[settingIndex].toString();
             settingsArray[0] = strings.convertTo3DigitString(settingsArray[0]);
-            for (C = y - B - 1; 0 <= C; C--) settingsArray[C] = strings.convertToAlphanumeric(settingsArray[C]);
-            for (C = y - 1; 0 <= C; C--) x(t[C], settingsArray[C], 1);
-            l();
-            k()
+            for (settingIndex = settingsCount - stringSettingsCount - 1; 0 <= settingIndex; settingIndex--) settingsArray[settingIndex] = strings.convertToAlphanumeric(settingsArray[settingIndex]);
+            for (settingIndex = settingsCount - 1; 0 <= settingIndex; settingIndex--) setCookies(cookieNames[settingIndex], settingsArray[settingIndex], 1);
+            convertToNumericString();
+            convertToInteger()
         }
     };
     this.getCookieStatus = function() {
