@@ -1832,13 +1832,13 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     delayedAttack.init();
     8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(playerInfo)) : points1v1 = null;
     singleplayer ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
-    ja();
+    activateCameraRenderer();
     fadeIn.init();
     mainHandler.canvasDirty = true;
     singleplayer && inSpawn || setAndroidState(1)
 }
 
-function ja() {
+function activateCameraRenderer() {
     autoCamera.activateCamera();
     0 === isAlive[myID] && gameResultBox.show(false, true);
     infoRenderer.drawCanvas()
