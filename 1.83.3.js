@@ -11765,16 +11765,18 @@ function TeamColors() {
             else this.teamArray[botIndex] = 0;
         }
     };
-    this.getClanTagWinningTeam = function(winner) {
+    this.getClanTagWinningTeam = function(winningTeam) {
         if (singleplayer) return [512, ""];
-        var i, j, z = -1, y = -1;
-        for (j = clanTags.length - 1; 0 <= j; j--)
-            for (i = clanTagOfPlayerIDs[j].length - 1; 0 <= i && this.teamIDs[this.teamArray[clanTagOfPlayerIDs[j][i]]] === winner; i--)
-                if (-1 === z || landIDOrder[clanTagOfPlayerIDs[j][i]] < landIDOrder[z]){
-                 z = clanTagOfPlayerIDs[j][i];
-                 y = j;
+        var playerIndex, clanTagIndex, winner = -1, winningClanIndex = -1;
+        for (clanTagIndex = clanTags.length - 1; 0 <= clanTagIndex; clanTagIndex--) {
+            for (playerIndex = clanTagOfPlayerIDs[clanTagIndex].length - 1; 0 <= playerIndex && this.teamIDs[this.teamArray[clanTagOfPlayerIDs[clanTagIndex][playerIndex]]] === winningTeam; playerIndex--) {
+                if (-1 === winner || landIDOrder[clanTagOfPlayerIDs[clanTagIndex][playerIndex]] < landIDOrder[winner]){
+                    winner = clanTagOfPlayerIDs[clanTagIndex][playerIndex];
+                    winningClanIndex = clanTagIndex;
                 }
-        return -1 === z || 0 === isAlive[z] ? [512, ""] : [z, clanTags[y]]
+            }
+        }
+        return -1 === winner || 0 === isAlive[winner] ? [512, ""] : [winner, clanTags[winningClanIndex]]
     }
 }
 
