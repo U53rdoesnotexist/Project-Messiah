@@ -6370,7 +6370,7 @@ function GameStateManager() {
             mainSettings.drawCanvasImage();
             moreSettings.drawCanvasImage();
             0 === gameState ? nameInput.drawCanvasImage() : 2 === gameState ? singleSettings.drawCanvasImage() : 3 === gameState ? showError.drawCanvasImage() : 5 === gameState ? gameUpdatedPrompt.drawCanvasImage() : 6 === gameState ? preLobby.drawCanvasImage() : 7 === gameState && lobby.drawCanvasImage();
-            mainSettings.vn();
+            mainSettings.drawPanels();
             cookiesPrompt.drawCanvasImage();
             mainLeaderboard.drawCanvasImage();
             openLinkBox.drawCanvasImage()
@@ -7351,8 +7351,8 @@ function MainSettings() {
     };
     this.getClickedButton = function(xPos, yPos) {
         if (!sprites.areAllSpritesLoaded()) return -1;
-        for (var n = this.count - 1; 0 <= n; n--)
-            if (xPos >= this.buttons[n].startingX && yPos >= this.buttons[n].startingY && xPos < this.buttons[n].startingX + this.width && yPos < this.buttons[n].startingY + this.width) return n;
+        for (var butIndex = this.count - 1; 0 <= butIndex; butIndex--)
+            if (xPos >= this.buttons[butIndex].startingX && yPos >= this.buttons[butIndex].startingY && xPos < this.buttons[butIndex].startingX + this.width && yPos < this.buttons[butIndex].startingY + this.width) return butIndex;
         return -1
     };
     this.panelsHidden = function() {
@@ -7363,24 +7363,24 @@ function MainSettings() {
     this.hideIfNotHidden = function() {
         return this.buttons[1].buttonClass.visible ? (this.buttons[1].buttonClass.mouseDown(-5E3, -5E3, 0), true) : this.buttons[2].buttonClass.visible ? (this.buttons[2].buttonClass.mouseDown(-5E3, -5E3), true) : false
     };
-    this.mouseDown = function(g, k, n) {
+    this.mouseDown = function(xPos, yPos, n) {
         if (n) {
-            if (this.buttons[1].buttonClass.visible) return this.buttons[1].buttonClass.mouseDown(g, k, 0), true;
-            if (this.buttons[2].buttonClass.visible) return this.buttons[2].buttonClass.mouseDown(g, k), true
+            if (this.buttons[1].buttonClass.visible) return this.buttons[1].buttonClass.mouseDown(xPos, yPos, 0), true;
+            if (this.buttons[2].buttonClass.visible) return this.buttons[2].buttonClass.mouseDown(xPos, yPos), true
         }
-        g = this.getClickedButton(g, k);
+        xPos = this.getClickedButton(xPos, yPos);
         if (n) {
-            if (0 === g || 3 === g) {
-                this.buttons[g].active = !this.buttons[g].active;
-                if (!g) {
-                    isZoom = this.buttons[g].active;
+            if (0 === xPos || 3 === xPos) {
+                this.buttons[xPos].active = !this.buttons[xPos].active;
+                if (!xPos) {
+                    isZoom = this.buttons[xPos].active;
                     canvasManager.forceUpdateCanvas();
                 }
-                saveOptions(this.buttons[g].active, false);
+                saveOptions(this.buttons[xPos].active, false);
                 mainHandler.canvasDirty = true;
                 return true;
-            } else if (1 <= g && 3 > g) {
-                this.buttons[g].buttonClass.init();
+            } else if (1 <= xPos && 3 > xPos) {
+                this.buttons[xPos].buttonClass.init();
                 nameInput.hide();
                 mainHandler.canvasDirty = true;
                 return true;
@@ -7388,55 +7388,60 @@ function MainSettings() {
         }
         return false
     };
-    this.onPointermove = function(g, k) {
-        return this.buttons[1].buttonClass.visible ? (this.buttons[1].buttonClass.onPointermove(g, k), true) : this.buttons[2].buttonClass.visible ? (this.buttons[2].buttonClass.onPointermove(g), true) : false
+    this.onPointermove = function(xPos, yPos) {
+        if (this.buttons[1].buttonClass.visible) {
+            this.buttons[1].buttonClass.onPointermove(xPos, yPos);
+            return true;
+        } else if (this.buttons[2].buttonClass.visible) {
+            this.buttons[2].buttonClass.onPointermove(xPos);
+            return true;
+        } else return false
     };
     this.handleSave = function() {
-        for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.visible) return this.buttons[g].buttonClass.handleSave(), true;
+        for (var butIndex = 2; 1 <= butIndex; butIndex--)
+            if (this.buttons[butIndex].buttonClass.visible) return this.buttons[butIndex].buttonClass.handleSave(), true;
         return false
     };
     this.drawCanvasImage = function() {
         if (sprites.areAllSpritesLoaded()) {
             mainCanvasCtx.imageSmoothingEnabled = true;
-            for (var g = this.count - 1; 0 <= g; g--) {
-                mainCanvasCtx.fillStyle = this.buttons[g].active ? greenDarkMoreOpaque : blackMoreOpaque;
-                mainCanvasCtx.fillRect(this.buttons[g].startingX, this.buttons[g].startingY, this.width, this.width);
-                if (0 === g) this.xb(g, sprites.getValueByID(15))
-                else if (1 === g) this.xc()
-                else if (2 === g) this.xd()
-                else if (3 === g) this.xb(g, sprites.getValueByID(20))
+            for (var butIndex = this.count - 1; 0 <= butIndex; butIndex--) {
+                mainCanvasCtx.fillStyle = this.buttons[butIndex].active ? greenDarkMoreOpaque : blackMoreOpaque;
+                mainCanvasCtx.fillRect(this.buttons[butIndex].startingX, this.buttons[butIndex].startingY, this.width, this.width);
+                if (0 === butIndex) this.drawSpriteOnButton(butIndex, sprites.getValueByID(15))
+                else if (1 === butIndex) this.drawSpriteOnButton(butIndex, emojis.emojiCanvasList[4])
+                else if (2 === butIndex) this.drawColorIcon()
+                else if (3 === butIndex) this.drawSpriteOnButton(butIndex, sprites.getValueByID(20))
                 mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                 mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
                 mainCanvasCtx.strokeStyle = whiteRGB2;
-                mainCanvasCtx.strokeRect(this.buttons[g].startingX, this.buttons[g].startingY, this.width, this.width);
+                mainCanvasCtx.strokeRect(this.buttons[butIndex].startingX, this.buttons[butIndex].startingY, this.width, this.width);
             }
             mainCanvasCtx.imageSmoothingEnabled = false
         }
     };
-    this.xb = function(g, k) {
-        var n = .08 * this.width,
-            l = (this.width - 2 * n) / k.width;
-        mainCanvasCtx.setTransform(l, 0, 0, l, this.buttons[g].startingX + n, this.buttons[g].startingY + (this.width - l * k.height) / 2);
-        mainCanvasCtx.drawImage(k, 0, 0)
+    this.drawSpriteOnButton = function(butIndex, sprite) {
+        var bufferLength = .08 * this.width,
+            buttonWidth = (this.width - 2 * bufferLength) / sprite.width;
+        mainCanvasCtx.setTransform(buttonWidth, 0, 0, buttonWidth, this.buttons[butIndex].startingX + bufferLength, this.buttons[butIndex].startingY + (this.width - buttonWidth * sprite.height) / 2);
+        mainCanvasCtx.drawImage(sprite, 0, 0)
     };
-    this.xc = function() {
-        var g = .06 * this.width,
-            k = (this.width - 2 * g) / emojis.width;
-        mainCanvasCtx.setTransform(k, 0, 0, k, this.buttons[1].startingX + g, this.buttons[1].startingY + g);
-        mainCanvasCtx.drawImage(emojis.emojiCanvasList[4], 0, 0)
-    };
-    this.xd = function() {
+    this.drawColorIcon = function() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, this.buttons[2].startingX, this.buttons[2].startingY);
-        for (var g = this.width / 4, k = 3; 0 <= k; k--)
-            for (var n = 3; 0 <= n; n--) mainCanvasCtx.fillStyle = "rgb(" + Math.floor(367 * (k + 1) * (n + 1) % 256) + "," + Math.floor(687 * (k + 1) * (n + 1) % 256) + "," + Math.floor(651 * (k + 1) * (n + 1) % 256) + ")", mainCanvasCtx.fillRect(k * g, n * g, g, g)
+        for (var quadWidth = this.width / 4, xIndex = 3; 0 <= xIndex; xIndex--) {
+            for (var yIndex = 3; 0 <= yIndex; yIndex--) {
+                mainCanvasCtx.fillStyle = "rgb(" + Math.floor(367 * (xIndex + 1) * (yIndex + 1) % 256) + "," + Math.floor(687 * (xIndex + 1) * (yIndex + 1) % 256) + "," + Math.floor(651 * (xIndex + 1) * (yIndex + 1) % 256) + ")";
+                mainCanvasCtx.fillRect(xIndex * quadWidth, yIndex * quadWidth, quadWidth, quadWidth);
+            }
+        }
     };
-    this.vn = function() {
-        for (var g = 2; 1 <= g; g--)
-            if (this.buttons[g].buttonClass.visible) {
-                this.buttons[g].buttonClass.drawCanvasImage();
+    this.drawPanels = function() {
+        for (var butIndex = 2; 1 <= butIndex; butIndex--) {
+            if (this.buttons[butIndex].buttonClass.visible) {
+                this.buttons[butIndex].buttonClass.drawCanvasImage();
                 break
             }
+        }
     }
 }
 
@@ -7598,29 +7603,71 @@ function Sprites() {
                     var K = 2 === threshold ? 160 : 600;
                     for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--)
                         for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) {
-                            var J = 4 * (xIndex + yIndex * spriteWidth);
-                            spriteCanvasImageDataArray[J] + spriteCanvasImageDataArray[J + 1] + spriteCanvasImageDataArray[J + 2] < K && (spriteCanvasImageDataArray[J + 3] = Math.floor(255 * (spriteCanvasImageDataArray[J] + spriteCanvasImageDataArray[J + 1] + spriteCanvasImageDataArray[J + 2]) / K))
+                            var spritePIndex = 4 * (xIndex + yIndex * spriteWidth);
+                            spriteCanvasImageDataArray[spritePIndex] + spriteCanvasImageDataArray[spritePIndex + 1] + spriteCanvasImageDataArray[spritePIndex + 2] < K && (spriteCanvasImageDataArray[spritePIndex + 3] = Math.floor(255 * (spriteCanvasImageDataArray[spritePIndex] + spriteCanvasImageDataArray[spritePIndex + 1] + spriteCanvasImageDataArray[spritePIndex + 2]) / K))
                         }
-                } else if (3 === threshold)
-                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--)
-                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) J = 4 * (xIndex + yIndex * spriteWidth), 0 === spriteCanvasImageDataArray[J] &&
-                            200 < spriteCanvasImageDataArray[J + 1] && 0 === spriteCanvasImageDataArray[J + 2] && (spriteCanvasImageDataArray[J + 3] = 0);
-                else if (4 === threshold)
-                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--)
-                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) J = 4 * (xIndex + yIndex * spriteWidth), spriteCanvasImageDataArray[J + 1] > spriteCanvasImageDataArray[J] + 20 && spriteCanvasImageDataArray[J + 1] > spriteCanvasImageDataArray[J + 2] + 20 && 40 > spriteCanvasImageDataArray[J] + spriteCanvasImageDataArray[2] && (spriteCanvasImageDataArray[J + 3] = 255 - spriteCanvasImageDataArray[J + 1], spriteCanvasImageDataArray[J] = spriteCanvasImageDataArray[J + 1] = spriteCanvasImageDataArray[J + 2] = spriteCanvasImageDataArray[J]);
-                else if (5 === threshold)
-                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--)
-                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) J = 4 * (xIndex + yIndex * spriteWidth), 200 < spriteCanvasImageDataArray[J + 1] && spriteCanvasImageDataArray[J + 1] - 20 > spriteCanvasImageDataArray[J] && spriteCanvasImageDataArray[J + 1] - 20 > spriteCanvasImageDataArray[J + 2] ? 40 > spriteCanvasImageDataArray[J] + spriteCanvasImageDataArray[J + 2] ? spriteCanvasImageDataArray[J + 3] = 0 : (spriteCanvasImageDataArray[J + 3] = spriteCanvasImageDataArray[J], spriteCanvasImageDataArray[J] = 255, spriteCanvasImageDataArray[J + 1] = 255, spriteCanvasImageDataArray[J + 2] = 255) : 50 > spriteCanvasImageDataArray[J] && 50 > spriteCanvasImageDataArray[J + 1] && 50 > spriteCanvasImageDataArray[J + 2] && (50 > spriteCanvasImageDataArray[J] + spriteCanvasImageDataArray[J + 1] + spriteCanvasImageDataArray[J + 2] ? (spriteCanvasImageDataArray[J + 1] = spriteCanvasImageDataArray[J + 1], spriteCanvasImageDataArray[J + 3] = 180) : (spriteCanvasImageDataArray[J + 1] = spriteCanvasImageDataArray[J + 1], spriteCanvasImageDataArray[J + 3] = 180 + Math.floor(75 * (spriteCanvasImageDataArray[J] + spriteCanvasImageDataArray[J + 1] +
-                            spriteCanvasImageDataArray[J + 2] - 50) / 100)));
-                else if (6 === threshold)
-                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--)
-                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) J = 4 * (xIndex + yIndex * spriteWidth), spriteCanvasImageDataArray[J + 3] = Math.floor(255 * (spriteCanvasImageDataArray[J] + spriteCanvasImageDataArray[J + 1] + spriteCanvasImageDataArray[J + 2]) / 765), spriteCanvasImageDataArray[J] = spriteCanvasImageDataArray[J + 1] = spriteCanvasImageDataArray[J + 2] = 255;
-                else if (7 === threshold)
-                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--)
-                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) J = 4 * (xIndex + yIndex * spriteWidth), spriteCanvasImageDataArray[J + 1] > spriteCanvasImageDataArray[J + 2] + 10 && (spriteCanvasImageDataArray[J + 3] = spriteCanvasImageDataArray[J], spriteCanvasImageDataArray[J + 1] = spriteCanvasImageDataArray[J + 2]);
+                } else if (3 === threshold) {
+                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--) {
+                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) {
+                            spritePIndex = 4 * (xIndex + yIndex * spriteWidth);
+                            if (0 === spriteCanvasImageDataArray[spritePIndex] && 200 < spriteCanvasImageDataArray[spritePIndex + 1] && 0 === spriteCanvasImageDataArray[spritePIndex + 2]) spriteCanvasImageDataArray[spritePIndex + 3] = 0;
+                        }
+                    }
+                } else if (4 === threshold) {
+                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--) {
+                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) {
+                            spritePIndex = 4 * (xIndex + yIndex * spriteWidth);
+                            if (spriteCanvasImageDataArray[spritePIndex + 1] > spriteCanvasImageDataArray[spritePIndex] + 20 && spriteCanvasImageDataArray[spritePIndex + 1] > spriteCanvasImageDataArray[spritePIndex + 2] + 20 && 40 > spriteCanvasImageDataArray[spritePIndex] + spriteCanvasImageDataArray[2]) {
+                                spriteCanvasImageDataArray[spritePIndex + 3] = 255 - spriteCanvasImageDataArray[spritePIndex + 1];
+                                spriteCanvasImageDataArray[spritePIndex] = spriteCanvasImageDataArray[spritePIndex + 1] = spriteCanvasImageDataArray[spritePIndex + 2] = spriteCanvasImageDataArray[spritePIndex];
+                            }
+                        }
+                    }
+                } else if (5 === threshold)
+                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--) {
+                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) {
+                            spritePIndex = 4 * (xIndex + yIndex * spriteWidth);
+                            if (200 < spriteCanvasImageDataArray[spritePIndex + 1] && spriteCanvasImageDataArray[spritePIndex + 1] - 20 > spriteCanvasImageDataArray[spritePIndex] && spriteCanvasImageDataArray[spritePIndex + 1] - 20 > spriteCanvasImageDataArray[spritePIndex + 2]) {
+                                if (40 > spriteCanvasImageDataArray[spritePIndex] + spriteCanvasImageDataArray[spritePIndex + 2]) spriteCanvasImageDataArray[spritePIndex + 3] = 0
+                                else {
+                                    spriteCanvasImageDataArray[spritePIndex + 3] = spriteCanvasImageDataArray[spritePIndex];
+                                    spriteCanvasImageDataArray[spritePIndex] = 255;
+                                    spriteCanvasImageDataArray[spritePIndex + 1] = 255;
+                                    spriteCanvasImageDataArray[spritePIndex + 2] = 255;
+                                }
+                            } else if (50 > spriteCanvasImageDataArray[spritePIndex] && 50 > spriteCanvasImageDataArray[spritePIndex + 1] && 50 > spriteCanvasImageDataArray[spritePIndex + 2]) {
+                                if (50 > spriteCanvasImageDataArray[spritePIndex] + spriteCanvasImageDataArray[spritePIndex + 1] + spriteCanvasImageDataArray[spritePIndex + 2]) {
+                                    spriteCanvasImageDataArray[spritePIndex + 1] = spriteCanvasImageDataArray[spritePIndex + 1];
+                                    spriteCanvasImageDataArray[spritePIndex + 3] = 180;
+                                } else {
+                                    spriteCanvasImageDataArray[spritePIndex + 1] = spriteCanvasImageDataArray[spritePIndex + 1];
+                                    spriteCanvasImageDataArray[spritePIndex + 3] = 180 + Math.floor(75 * (spriteCanvasImageDataArray[spritePIndex] + spriteCanvasImageDataArray[spritePIndex + 1] + spriteCanvasImageDataArray[spritePIndex + 2] - 50) / 100);
+                                }
+                            }
+                        }
+                    }
+                else if (6 === threshold) {
+                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--) {
+                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) {
+                            spritePIndex = 4 * (xIndex + yIndex * spriteWidth);
+                            spriteCanvasImageDataArray[spritePIndex + 3] = Math.floor(255 * (spriteCanvasImageDataArray[spritePIndex] + spriteCanvasImageDataArray[spritePIndex + 1] + spriteCanvasImageDataArray[spritePIndex + 2]) / 765);
+                            spriteCanvasImageDataArray[spritePIndex] = spriteCanvasImageDataArray[spritePIndex + 1] = spriteCanvasImageDataArray[spritePIndex + 2] = 255;
+                        }
+                    }
+                } else if (7 === threshold) {
+                    for (xIndex = spriteWidth - 1; 0 <= xIndex; xIndex--) {
+                        for (yIndex = spriteHeight - 1; 0 <= yIndex; yIndex--) {
+                            spritePIndex = 4 * (xIndex + yIndex * spriteWidth);
+                            if (spriteCanvasImageDataArray[spritePIndex + 1] > spriteCanvasImageDataArray[spritePIndex + 2] + 10) {
+                                spriteCanvasImageDataArray[spritePIndex + 3] = spriteCanvasImageDataArray[spritePIndex];
+                                spriteCanvasImageDataArray[spritePIndex + 1] = spriteCanvasImageDataArray[spritePIndex + 2];
+                            }
+                        }
+                    }
+                }
                 spriteCanvasCtx.putImageData(spriteCanvasImageData, 0, 0);
                 spriteCanvases[spriteID] = spriteCanvas
-                        }
+            }
             unloadedSprites--;
             if (sprites.areAllSpritesLoaded()) {
                 mainLeaderboardIcon.updateRenderObject();
