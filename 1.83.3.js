@@ -7132,7 +7132,7 @@ function SingleSettings() {
         wsManager.remote = 0;
         wsManager.sendWhenWSOpen(0, 3) && dataEncoder.singlePlayed(0);
         gameStateManager.enterInGameState();
-        if (customJSON.isCustomJSON) customJSON.xQ();
+        if (customJSON.isCustomJSON) customJSON.startCustomGame();
         else {
             var var_gamemode = this.botSettings.length - 2;
             var_gamemode = 0 > var_gamemode ? 7 : var_gamemode;
@@ -7800,8 +7800,8 @@ function Pixel() {
                 }
             }
         }
-        else if (customJSON.isCustomJSON && customJSON.data.yP) {
-            var customColorValues = customJSON.data.yP;
+        else if (customJSON.isCustomJSON && customJSON.data.customColor) {
+            var customColorValues = customJSON.data.customColor;
             for (idIndex = entityCount - 1; 0 <= idIndex; idIndex--) {
                 innerR[idIndex] = 4 * customColorValues[idIndex][0];
                 innerG[idIndex] = 4 * customColorValues[idIndex][1];
@@ -8266,7 +8266,7 @@ function AntiFullSend() {
 function CustomJSON() {
     function handleCustomJSONLoad(z) {
         customJSON.isCustomJSON = true;
-        customJSON.zf(JSON.parse(z.target.result));
+        customJSON.parseCustomJSONData(JSON.parse(z.target.result));
         customJSON.checkChooseEmoji()
     }
 
@@ -8326,23 +8326,25 @@ function CustomJSON() {
         this.isCustomJSON = false;
         this.data = null
     };
-    this.xQ = function() {
-        this.data.yP && this.data.freeColor && (this.data.yP[0] = mainSettings.buttons[2].buttonClass.getRGB64());
-        gameInit(this.data.seedSpawn, 0, this.zc(), this.data.gamemode, false)
+    this.startCustomGame = function() {
+        if (this.data.customColor && this.data.freeColor) {
+            this.data.customColor[0] = mainSettings.buttons[2].buttonClass.getRGB64();
+        }
+        gameInit(this.data.seedSpawn, 0, this.generatePlayerInfo(), this.data.gamemode, false)
     };
-    this.zc = function() {
+    this.generatePlayerInfo = function() {
         return [{
-            name: this.data.freeNickname ? nameInput.getInput() : this.data.ze[0],
+            name: this.data.freeNickname ? nameInput.getInput() : this.data.nicknames[0],
             color: [0, 0, 0],
             status: 0
         }]
     };
-    this.loadJSON = function(z) {
-        var y = new FileReader;
-        y.onload = handleCustomJSONLoad;
-        y.readAsText(z)
+    this.loadJSON = function(e) {
+        var fileReader = new FileReader;
+        fileReader.onload = handleCustomJSONLoad;
+        fileReader.readAsText(e)
     };
-    this.zf = function(result) {
+    this.parseCustomJSONData = function(result) {
         this.data = {};
         this.data.entityCount = clamp(result.numberPlayers, 1, 512);
         this.data.customGamemodeID = clamp(result.modeID, 0, 1);
@@ -8371,32 +8373,32 @@ function CustomJSON() {
         index = this.data.entityCount;
         if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = null;
         else {
-            var E = Array(index);
-            var F = mapDescription.length;
-            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) E[descriptionLength] = createClampedArray(mapDescription[descriptionLength % F], 3, 63, 8);
-            mapDescription = E
+            var playerColors = Array(index),
+                colorLength = mapDescription.length;
+            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) playerColors[descriptionLength] = createClampedArray(mapDescription[descriptionLength % colorLength], 3, 63, 8);
+            mapDescription = playerColors
         }
-        data.yP = mapDescription;
+        data.customColor = mapDescription;
         data = this.data;
         mapDescription = result.playerName;
         index = this.data.entityCount;
         if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = null;
         else {
-            E = Array(index);
-            F = mapDescription.length;
-            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) E[descriptionLength] = truncateString(mapDescription[descriptionLength % F], 3, 26, "Bot");
-            mapDescription = E
+            var entityNicknames = Array(index),
+                namesLength = mapDescription.length;
+            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) entityNicknames[descriptionLength] = truncateString(mapDescription[descriptionLength % namesLength], 3, 26, "Bot");
+            mapDescription = entityNicknames
         }
-        data.ze = mapDescription;
+        data.nicknames = mapDescription;
         this.data.mapBase64 = "string" === typeof result.mapBase64 ? result.mapBase64 : "";
-        this.data.freeNickname = this.data.freeNickname || !this.data.ze;
+        this.data.freeNickname = this.data.freeNickname || !this.data.nicknames;
         this.data.gamemode = 0 === this.data.customGamemodeID ? 7 : 2 === this.data.customGamemodeID ? 9 : 6;
         this.data.spawnX = this.data.spawnY ? this.data.spawnX : null
     };
     this.checkChooseEmoji = function() {
         loadJSONCustomMap(this.data.mapBase64) || loadMap(this.data.mapID, this.data.mapSeed)
     };
-    this.zx = function() {
+    this.zx = function() { //unused
         var z, y = 0,
             A = this.data.entityCount;
         for (z = 0; z < A; z++) this.data.teamArray[z] > y && (y = this.data.teamArray[z]);
@@ -8623,7 +8625,7 @@ function kN() {
             idIndex = aliveEntities[aliveIndex];
             fontSize = Math.floor(Q * mainScaleFactor * I[idIndex] * G[idIndex]);
 
-            if (!(fontSize < minFontSize || fontSize >= maxFontSize) && E[idIndex] + G[idIndex] > camLeft && E[idIndex] < camRight && F[idIndex] + N[idIndex] > camTop && F[idIndex] < camBottom) {
+            if (fontSize >= minFontSize && fontSize < maxFontSize && E[idIndex] + G[idIndex] > camLeft && E[idIndex] < camRight && F[idIndex] + N[idIndex] > camTop && F[idIndex] < camBottom) {
                 landCenterX = Math.floor(prevClientWidth * (E[idIndex] + G[idIndex] / 2 - camLeft) / (camRight - camLeft));
                 landCenterY = Math.floor(prevClientHeight * (F[idIndex] + N[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
                 infoCanvas.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
@@ -8643,7 +8645,6 @@ function kN() {
                             for (var index = 0; 2 > index; index++) {
                                 infoCanvas.setTransform(transform, 0, 0, transform, Ba, Ca);
                                 infoCanvas.drawImage(emojis.emojiCanvasList[ba[idIndex]], 0, 0);
-                                Ba = Math.floor(landCenterX + .5 * fontSize / D[idIndex] + .4 * fontSize);
                             }
                             infoCanvas.globalAlpha = 1;
                             infoCanvas.setTransform(1, 0, 0, 1, 0, 0);
@@ -8898,8 +8899,7 @@ function kN() {
                 else
                     for (Z = T, ma = xMax[Z] - xMin[Z] + 1, la = Math.floor(.02 * ma), la = 1 > la ? 1 : la, T = -6 * la; ma >= T; ma -= la)
                         if (fa = 0 < ma ? ma : 1, ia = 1 + Math.floor(H * I[Z] * fa), ua = xMin[Z] + Math.floor(Math.random() * (xMax[Z] - xMin[Z] + 2 - fa)), qa = yMin[Z] + Math.floor(Math.random() * (yMax[Z] - yMin[Z] + 2 - ia)), z(Z, ua, qa, fa, ia)) {
-                            E[Z] =
-                                ua;
+                            E[Z] = ua;
                             F[Z] = qa;
                             G[Z] = fa;
                             N[Z] = ia;
@@ -8931,8 +8931,8 @@ function NickNames() {
     };
     this.generate = function() {
         var entityIndex, randomValue;
-        if (customJSON.isCustomJSON && customJSON.data.ze) {
-            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = customJSON.data.ze[entityIndex % entityCount]
+        if (customJSON.isCustomJSON && customJSON.data.nicknames) {
+            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = customJSON.data.nicknames[entityIndex % entityCount]
         } else if (9 === gamemode) {
             randomValue = fakeRandom.random();
             var humanAlliesCount = playerCount + zombieSettings.helperBotCount;
