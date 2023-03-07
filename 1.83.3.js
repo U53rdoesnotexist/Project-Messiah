@@ -2134,7 +2134,7 @@ function PlayerActions() {
         iconActive[6] = playerActions.isHuman(targetID) && !canRequestToAttackTarget(targetID) && diplomacyHandler.lO(1, [targetID], false);
         iconActive[4] = 1 <= emojis.selectedEmojiCount && this.isHuman(targetID);
         if (isNotTeamate(targetID, myID)) {
-            iconActive[5] = this.isHuman(targetID) && !infoRenderer.li(targetID) && diplomacyHandler.lO(0, [targetID], false);
+            iconActive[5] = this.isHuman(targetID) && !infoRenderer.ratifiedNonAggression(targetID) && diplomacyHandler.lO(0, [targetID], false);
             var showTargetIcon;
             if (0 === friends.length) showTargetIcon = false;
             else if ((new Date).getTime() > lastFriendAddedTime + 4E3) {
@@ -8710,64 +8710,63 @@ function InfoRenderer() {
     }
 
     function calculateLabelPosition(id) {
-        var T, Y = labelXPos[id];
-        for (T = labelXPos[id] - xMin[id] - 1; 0 <= T; T--) {
-            Y--;
-            if (!y(id, Y, labelYPos[id], labelHeight[id])) {
-                Y++;
+        var xyIndex, minLabelXIndex = labelXPos[id];
+        for (xyIndex = labelXPos[id] - xMin[id] - 1; 0 <= xyIndex; xyIndex--) {
+            minLabelXIndex--;
+            if (!checkYCoverage(id, minLabelXIndex, labelYPos[id], labelHeight[id])) {
+                minLabelXIndex++;
                 break
             }
         }
-        var Z = labelXPos[id];
-        for (T = xMax[id] - labelXPos[id] - labelWidth[id]; 0 <= T; T--) {
-            Z++;
-            if (!y(id, Z + labelWidth[id] - 1, labelYPos[id], labelHeight[id])) {
-                Z--;
+        var maxLabelXYIndex = labelXPos[id];
+        for (xyIndex = xMax[id] - labelXPos[id] - labelWidth[id]; 0 <= xyIndex; xyIndex--) {
+            maxLabelXYIndex++;
+            if (!checkYCoverage(id, maxLabelXYIndex + labelWidth[id] - 1, labelYPos[id], labelHeight[id])) {
+                maxLabelXYIndex--;
                 break
             }
         }
-        Y = Math.floor((Y + Z) / 2);
-        Z = labelYPos[id];
-        for (T = labelYPos[id] - yMin[id] - 1; 0 <= T; T--) {
-            Z--;
-            if (!A(id, Y, Z, labelWidth[id])) {
-                Z++;
+        minLabelXIndex = Math.floor((minLabelXIndex + maxLabelXYIndex) / 2);
+        maxLabelXYIndex = labelYPos[id];
+        for (xyIndex = labelYPos[id] - yMin[id] - 1; 0 <= xyIndex; xyIndex--) {
+            maxLabelXYIndex--;
+            if (!checkXCoverage(id, minLabelXIndex, maxLabelXYIndex, labelWidth[id])) {
+                maxLabelXYIndex++;
                 break
             }
         }
-        var la = labelYPos[id];
-        for (T = yMax[id] - labelYPos[id] - labelHeight[id]; 0 <= T; T--) {
-            la++;
-            if (!A(id, Y, la + labelHeight[id] - 1, labelWidth[id])) {
-                la--;
+        var maxLabelYIndex = labelYPos[id];
+        for (xyIndex = yMax[id] - labelYPos[id] - labelHeight[id]; 0 <= xyIndex; xyIndex--) {
+            maxLabelYIndex++;
+            if (!checkXCoverage(id, minLabelXIndex, maxLabelYIndex + labelHeight[id] - 1, labelWidth[id])) {
+                maxLabelYIndex--;
                 break
             }
         }
-        T = Math.floor((Z + la) / 2);
-        isLabelPositionValid(id, Y, T, labelWidth[id], labelHeight[id]) && (labelXPos[id] = Y, labelYPos[id] = T)
+        xyIndex = Math.floor((maxLabelXYIndex + maxLabelYIndex) / 2);
+        isLabelPositionValid(id, minLabelXIndex, xyIndex, labelWidth[id], labelHeight[id]) && (labelXPos[id] = minLabelXIndex, labelYPos[id] = xyIndex)
     }
 
-    function isLabelPositionValid(id, T, Y, Z, la) {
-        var ma;
-        for (ma = T + Z - 1; ma >= T; ma--) {
-            if (!y(id, ma, Y, la)) return false;
+    function isLabelPositionValid(id, xCoord, yCoord, xOffset, yOffset) {
+        var xyIndex;
+        for (xyIndex = xCoord + xOffset - 1; xyIndex >= xCoord; xyIndex--) {
+            if (!checkYCoverage(id, xyIndex, yCoord, yOffset)) return false;
         }
-        var ia = Math.floor(.25 * la);
-        ia = 1 > ia ? 1 : ia;
-        for (ma = Y + la - 1 - ia; ma >= Y + ia; ma--) {
-            if (!A(id, T, ma, Z)) return false;
+        var yMiniOffset = getMax(1, Math.floor(.25 * yOffset));
+        for (xyIndex = yCoord + yOffset - 1 - yMiniOffset; xyIndex >= yCoord + yMiniOffset; xyIndex--) {
+            if (!checkXCoverage(id, xCoord, xyIndex, xOffset)) return false;
         }
         return true
     }
 
-    function y(id, xCoord, yCoord, Z) {
-        return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * ((yCoord + Z - 1) * currentMapWidth + xCoord))
+    function checkYCoverage(id, xCoord, yCoord, yOffset) {
+        return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * ((yCoord + yOffset - 1) * currentMapWidth + xCoord))
     }
 
-    function A(id, xCoord, yCoord, Z) {
-        return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord + Z - 1))
+    function checkXCoverage(id, xCoord, yCoord, xOffset) {
+        return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord + xOffset - 1))
     }
-    var B, C, labelXPos, labelYPos, labelWidth, labelHeight, I, D, maxFontSize, J, fontScaleFactor, H, minFontSize, Q, R, P, U, needsDrawImage, infoCanvas, infoCanvasCtx, updateInterval, displayingEmojiID, displayIconRemainingTime, crownWidth, crownHeight;
+    var B, updateLabelCounters, labelXPos, labelYPos, labelWidth, labelHeight, I, D, maxFontSize, J, fontScaleFactor, H, minFontSize, Q, R, P, U, needsDrawImage, infoCanvas, infoCanvasCtx, updateInterval, displayingEmojiID, displayIconRemainingTime, crownWidth, crownHeight;
     this.init = function() {
         needsDrawImage = false;
         Q = .88;
@@ -8776,7 +8775,7 @@ function InfoRenderer() {
         maxFontSize = Math.floor(.5 * minDim);
         J = Math.floor(.2 * maxFontSize);
         minFontSize = 8 === gamemode ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
-        C = B = 0;
+        updateLabelCounters = B = 0;
         labelXPos = new Uint16Array(maxEntities);
         labelYPos = new Uint16Array(maxEntities);
         labelWidth = new Uint16Array(maxEntities);
@@ -8892,95 +8891,98 @@ function InfoRenderer() {
         return I[O]
     };
     this.update = function() {
-        if (4 <= ++C) {
-            var O, T;
-            C = 0;
-            for (T = 4; 1 <= T; T--) {
+        if (4 <= ++updateLabelCounters) {
+            updateLabelCounters = 0;
+            for (var iconRelativeIndex = 4; 1 <= iconRelativeIndex; iconRelativeIndex--) {
                 for (var aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
-                    var Y = aliveEntities[aliveIndex] + T * maxEntities;
-                    0 < displayIconRemainingTime[Y] && 255 > displayIconRemainingTime[Y] && displayIconRemainingTime[Y]--
+                    var iconRelativeIDIndex = aliveEntities[aliveIndex] + iconRelativeIndex * maxEntities;
+                    0 < displayIconRemainingTime[iconRelativeIDIndex] && 255 > displayIconRemainingTime[iconRelativeIDIndex] && displayIconRemainingTime[iconRelativeIDIndex]--
                 }
             if (2 !== clientStatus)
                 for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
-                    Y = aliveEntities[aliveIndex];
-                    if (0 < displayIconRemainingTime[Y] && 255 > displayIconRemainingTime[Y]) displayIconRemainingTime[Y]--
+                    iconRelativeIDIndex = aliveEntities[aliveIndex];
+                    if (0 < displayIconRemainingTime[iconRelativeIDIndex] && 255 > displayIconRemainingTime[iconRelativeIDIndex]) displayIconRemainingTime[iconRelativeIDIndex]--
                 }
             }
         }
-        O = Math.floor(.1 * aliveCount);
-        O = 8 > O ? 8 : O;
-        O = O > aliveCount ? aliveCount : O;
-        for (Y = B + O - 1; Y >= B; Y--) {
-            if (T = Y % aliveCount, T = aliveEntities[T], 0 < labelWidth[T] && isLabelPositionValid(T, labelXPos[T], labelYPos[T], labelWidth[T], labelHeight[T])) {
-                for (var Z, la, ma, ia, qa = false, ua = 0; 8 > ua; ua++) {
-                    la = labelWidth[T] + 2;
-                    Z = labelHeight[T] + 2;
-                    if (la > xMax[T] - xMin[T] + 1 || Z > yMax[T] - yMin[T] + 1) break;
-                    ia = labelXPos[T] - 1;
-                    ma = labelYPos[T] - 1;
-                    if (isLabelPositionValid(T, ia, ma, la, Z)) {
-                        labelXPos[T] = ia;
-                        labelYPos[T] = ma;
-                        labelWidth[T] = la;
-                        labelHeight[T] = Z;
-                        qa = true;
+        var entitiesToProcess = rangeClamp(8, Math.floor(.1 * aliveCount), aliveCount), validLabelPositionFound;
+        for (var currentIndex = B + entitiesToProcess - 1; currentIndex >= B; currentIndex--) {
+            var idIndex = aliveEntities[currentIndex % aliveCount];
+            if (0 < labelWidth[idIndex] && isLabelPositionValid(idIndex, labelXPos[idIndex], labelYPos[idIndex], labelWidth[idIndex], labelHeight[idIndex])) {
+                for (var validLabelPositionFound = false, offsetMultiplier = 0; 8 > offsetMultiplier; offsetMultiplier++) {
+                    if (labelWidth[idIndex] + 2 > xMax[idIndex] - xMin[idIndex] + 1 || labelHeight[idIndex] + 2 > yMax[idIndex] - yMin[idIndex] + 1) break;
+                    if (isLabelPositionValid(idIndex, labelXPos[idIndex] - 1, labelYPos[idIndex] - 1, labelWidth[idIndex] + 2, labelHeight[idIndex] + 2)) {
+                        labelXPos[idIndex] -= 1;
+                        labelYPos[idIndex] -= 1;
+                        labelWidth[idIndex] += 2;
+                        labelHeight[idIndex] += 2;
+                        validLabelPositionFound = true;
                     } else break
                 }
-                if (!qa) {
-                    qa = false;
-                    for (var za = 1 + Math.floor(.02 * labelWidth[T]), ra = 1; 5 > ra; ra++) {
-                        la = labelWidth[T] + ra * za;
-                        if (la > xMax[T] - xMin[T] + 1) break;
-                        Z = 1 + Math.floor(H * I[T] * la);
-                        if (Z > yMax[T] - yMin[T] + 1) break;
-                        ia = xMin[T] + Math.floor(Math.random() * (xMax[T] - xMin[T] + 2 - la));
-                        ma = yMin[T] + Math.floor(Math.random() * (yMax[T] - yMin[T] + 2 - Z));
-                        isLabelPositionValid(T, ia, ma, la, Z) && (labelXPos[T] = ia, labelYPos[T] = ma, labelWidth[T] = la, labelHeight[T] = Z, qa = true)
+                if (!validLabelPositionFound) {
+                    validLabelPositionFound = false;
+                    for (var labelWidthOffset = 1 + Math.floor(.02 * labelWidth[idIndex]), offsetMultiplier = 1; 5 > offsetMultiplier; offsetMultiplier++) {
+                        var newLabelWidth = labelWidth[idIndex] + offsetMultiplier * labelWidthOffset;
+                        if (newLabelWidth > xMax[idIndex] - xMin[idIndex] + 1) break;
+                        var newLabelHeight = 1 + Math.floor(H * I[idIndex] * newLabelWidth);
+                        if (newLabelHeight > yMax[idIndex] - yMin[idIndex] + 1) break;
+                        var randomXPos = xMin[idIndex] + Math.floor(Math.random() * (xMax[idIndex] - xMin[idIndex] + 2 - newLabelWidth));
+                        var randomYPos = yMin[idIndex] + Math.floor(Math.random() * (yMax[idIndex] - yMin[idIndex] + 2 - newLabelHeight));
+                        if (isLabelPositionValid(idIndex, randomXPos, randomYPos, newLabelWidth, newLabelHeight)) {
+                            labelXPos[idIndex] = randomXPos;
+                            labelYPos[idIndex] = randomYPos;
+                            labelWidth[idIndex] = newLabelWidth;
+                            labelHeight[idIndex] = newLabelHeight;
+                            validLabelPositionFound = true;
+                        }
                     }
                 }
-                qa && calculateLabelPosition(T)
+                if (validLabelPositionFound) calculateLabelPosition(idIndex);
             } else {
                 loop: {
-                    ma = labelXPos[T] + 1;
-                    ia = labelYPos[T] + 1;
-                    for (fa = labelWidth[T] - 2;;) {
-                        if (1 > fa) {
-                            labelWidth[T] = 0;
+                    var labelXPosIndex = labelXPos[idIndex] + 1,
+                        labelYPosIndex = labelYPos[idIndex] + 1;
+                    for (labelWidthXIndex = labelWidth[idIndex] - 2;;) {
+                        if (1 > labelWidthXIndex) {
+                            labelWidth[idIndex] = 0;
                             break
                         }
-                        Z = 1 + Math.floor(H * I[T] * fa);
-                        if (isLabelPositionValid(T, ma, ia, fa, Z)) {
-                            labelXPos[T] = ma;
-                            labelYPos[T] = ia;
-                            labelWidth[T] = fa;
-                            labelHeight[T] = Z;
-                            Z = true;
+                        var labelHeightYIndex = 1 + Math.floor(H * I[idIndex] * labelWidthXIndex);
+                        if (isLabelPositionValid(idIndex, labelXPosIndex, labelYPosIndex, labelWidthXIndex, labelHeightYIndex)) {
+                            labelXPos[idIndex] = labelXPosIndex;
+                            labelYPos[idIndex] = labelYPosIndex;
+                            labelWidth[idIndex] = labelWidthXIndex;
+                            labelHeight[idIndex] = labelHeightYIndex;
+                            validLabelPositionFound = true;
                             break loop
                         }
-                        ma++;
-                        ia++;
-                        fa -= 2
+                        labelXPosIndex++;
+                        labelYPosIndex++;
+                        labelWidthXIndex -= 2
                     }
-                    Z = false
+                    validLabelPositionFound = false
                 }
-                if (Z) calculateLabelPosition(T);
+                if (validLabelPositionFound) calculateLabelPosition(idIndex);
                 else {
-                    ma = xMax[T] - xMin[T] + 1;
-                    la = Math.floor(.02 * ma);
-                    la = 1 > la ? 1 : la;
-                    for (var kk = -6 * la; ma >= kk; ma -= la) {
-                        if (fa = 0 < ma ? ma : 1, ia = 1 + Math.floor(H * I[T] * fa), ua = xMin[T] + Math.floor(Math.random() * (xMax[T] - xMin[T] + 2 - fa)), qa = yMin[T] + Math.floor(Math.random() * (yMax[T] - yMin[T] + 2 - ia)), isLabelPositionValid(T, ua, qa, fa, ia)) {
-                            labelXPos[T] = ua;
-                            labelYPos[T] = qa;
-                            labelWidth[T] = fa;
-                            labelHeight[T] = ia;
+                    var xDiff = xMax[idIndex] - xMin[idIndex] + 1,
+                        leftShift = getMax(1, Math.floor(.02 * xDiff));
+                    for (; xDiff >= -6 * leftShift; xDiff -= leftShift) {
+                        var newLabelWidth = 0 < xDiff ? xDiff : 1,
+                            newLabelHeight = 1 + Math.floor(H * I[idIndex] * newLabelWidth),
+                            randomXPos = xMin[idIndex] + Math.floor(Math.random() * (xMax[idIndex] - xMin[idIndex] + 2 - newLabelWidth)),
+                            randomYPos = yMin[idIndex] + Math.floor(Math.random() * (yMax[idIndex] - yMin[idIndex] + 2 - newLabelHeight));
+                        if (isLabelPositionValid(idIndex, randomXPos, randomYPos, newLabelWidth, newLabelHeight)) {
+                            labelXPos[idIndex] = randomXPos;
+                            labelYPos[idIndex] = randomYPos;
+                            labelWidth[idIndex] = newLabelWidth;
+                            labelHeight[idIndex] = newLabelHeight;
                             break
                         }
                     }
                 }
             }
         }
-        B += O;
+        B += entitiesToProcess;
         B %= aliveCount
     };
     this.breakNonAggression = function(playerID) {
@@ -8992,8 +8994,8 @@ function InfoRenderer() {
             return 255 === remainingTime
         } else return false
     };
-    this.li = function(O) {
-        return 255 === displayIconRemainingTime[O + 2 * maxEntities]
+    this.ratifiedNonAggression = function(id) {
+        return 255 === displayIconRemainingTime[id + 2 * maxEntities]
     }
 }
 
@@ -9052,36 +9054,44 @@ function DiplomacyHandler() {
     };
     this.a1T = function(g) {
         var k, n = -1;
-        for (k = g.length - 1; 0 <= k; k--)
+        for (k = g.length - 1; 0 <= k; k--) {
             if (g[k].time--, 0 >= g[k].time) {
                 n = k;
                 break
-            } for (k = n; 0 <= k; k--) g.shift()
+            }
+        }
+        for (k = n; 0 <= k; k--) g.shift()
     };
-    this.lO = function(g, k, n) {
-        return this.a1V(this.a1R, g, k, n)
+    this.lO = function(diplomacyType, targets, ratifiedStatus) {
+        return this.a1V(this.a1R, diplomacyType, targets, ratifiedStatus)
     };
     this.a1W = function(g, k, n) {
         return this.a1V(this.a1S, g, k, n)
     };
-    this.a1V = function(g, k, n, l) {
+    this.a1V = function(g, diplomacyType, n, l) {
         var x;
         loop: {
             var t;
-            for (x = n.length - 1; 0 <= x; x--)
-                for (t = g.length - 1; 0 <= t; t--)
-                    if (g[t].player === n[x] && k === g[t].id) {
+            for (x = n.length - 1; 0 <= x; x--) {
+                for (t = g.length - 1; 0 <= t; t--) {
+                    if (g[t].player === n[x] && diplomacyType === g[t].id) {
                         x = true;
                         break loop
-                    } x = false
+                    }
+                }
+            }
+            x = false
         }
         if (x) return false;
-        if (l)
-            for (l = n.length - 1; 0 <= l; l--) g.push({
-                player: n[l],
-                id: k,
-                time: 384
-            });
+        if (l) {
+            for (l = n.length - 1; 0 <= l; l--) {
+                g.push({
+                    player: n[l],
+                    id: diplomacyType,
+                    time: 384
+                });
+            }
+        }
         return true
     }
 }
