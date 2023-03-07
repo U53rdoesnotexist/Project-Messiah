@@ -1792,7 +1792,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     absMaxTroopsBeforeRedI = 1E9;
     statisticNumbers.init();
     setMapCanvas();
-    configFakeMap.jR();
+    configFakeMap.setAndCountMapPixels();
     mapUpdate.init();
     interest.init();
     receiveDonationsArrayInit();
@@ -9518,9 +9518,9 @@ function ZombieSettings() {
             this.difficultyArray[5] = 512 - playerCount;
         }
         helperBotCount = this.helperBotCount;
-        for (var i = 0; 6 > i; i++) helperBotCount += this.difficultyArray[i];
+        for (var difficultyIndex = 0; 6 > difficultyIndex; difficultyIndex++) helperBotCount += this.difficultyArray[difficultyIndex];
         if (helperBotCount > botCount) {
-            for (i = this.helperBotCount = 0; 5 > i; i++) this.difficultyArray[i] = 0;
+            for (difficultyIndex = this.helperBotCount = 0; 5 > difficultyIndex; difficultyIndex++) this.difficultyArray[difficultyIndex] = 0;
             this.difficultyArray[5] = botCount
         }
     };
@@ -9532,13 +9532,13 @@ function ZombieSettings() {
     };
     this.update = function() {
         if (gamemode === 9) {
-            var i = playerInfoArray.length - 1;
-            while (i >= 0) {
-                if (playerInfoArray[i].group <= 0) {
-                    infoRenderer.showIcon(playerInfoArray[i].player, 0, 46);
-                    playerInfoArray.splice(i, 1);
-                } else playerInfoArray[i].group--;
-                i--;
+            var playerInfoArrayIndex = playerInfoArray.length - 1;
+            while (playerInfoArrayIndex >= 0) {
+                if (playerInfoArray[playerInfoArrayIndex].group <= 0) {
+                    infoRenderer.showIcon(playerInfoArray[playerInfoArrayIndex].player, 0, 46);
+                    playerInfoArray.splice(playerInfoArrayIndex, 1);
+                } else playerInfoArray[playerInfoArrayIndex].group--;
+                playerInfoArrayIndex--;
             }
         }
     }
@@ -9626,7 +9626,7 @@ function MapShading() {
         generateHeightmap.resetGridValues()
     };
     this.init = function() {
-        if (!(7 === gameStateManager.getState() && this.a2s)) {
+        if (7 !== gameStateManager.getState() || !this.a2s) {
             this.useTimeoutForUpdate = true;
             this.heightMapGenerationCount = 0;
             this.shadingStartIndex = 1;
@@ -9657,16 +9657,23 @@ function MapShading() {
             l = this.useTimeoutForUpdate ? 10 : 1E6;
             l = currentMapHeight - this.shadingStartIndex - 1 < l ? currentMapHeight - this.shadingStartIndex - 1 : l;
             l = this.shadingStartIndex + l;
-            for (var x, t, z = this.shadingStartIndex; z < l; z++)
-                for (var y = 1; y < currentMapWidth - 1; y++)
+            for (var x, t, z = this.shadingStartIndex; z < l; z++) {
+                for (var y = 1; y < currentMapWidth - 1; y++) {
                     if (t = y + z * currentMapWidth, x = 4 * t, n(x)) this.updatePixelShading(x, t, 1);
                     else {
                         this.updatePixelShading(x, t, 0);
                         t = y;
                         var A = z;
-                        (1 < t && n(x - 4) || t < currentMapWidth - 2 && n(x + 4) || 1 < A && n(x - 4 * currentMapWidth) || A < currentMapHeight - 2 && n(x + 4 * currentMapWidth)) && this.updateNeighbourShading(y, z)
-                    } this.shadingStartIndex = l;
-            this.shadingStartIndex >= currentMapHeight - 1 ? (mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2), mainHandler.canvasDirty = true, this.resetShading()) : this.useTimeoutForUpdate && (this.updateTimeout = setTimeout(g, 16))
+                        if (1 < t && n(x - 4) || t < currentMapWidth - 2 && n(x + 4) || 1 < A && n(x - 4 * currentMapWidth) || A < currentMapHeight - 2 && n(x + 4 * currentMapWidth)) this.updateNeighbourShading(y, z)
+                    }
+                }
+            }
+            this.shadingStartIndex = l;
+            if (this.shadingStartIndex >= currentMapHeight - 1) {
+                mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2);
+                mainHandler.canvasDirty = true;
+                this.resetShading();
+            } else if (this.useTimeoutForUpdate) this.updateTimeout = setTimeout(g, 16);
         }
     };
     this.updatePixelShading = function(l, x, t) {
@@ -9683,21 +9690,25 @@ function MapShading() {
         t = 1 > t ? 1 : t;
         y = y > currentMapWidth - 2 ? currentMapWidth - 2 : y;
         A = A > currentMapHeight - 2 ? currentMapHeight - 2 : A;
-        for (var B = 1 > z ? 1 : z; B <= A; B++)
-            for (var C = t; C <= y; C++)
+        for (var B = 1 > z ? 1 : z; B <= A; B++) {
+            for (var C = t; C <= y; C++) {
                 if (z = 4 * (C + B * currentMapWidth), n(z)) {
                     var E = this.neutralShadingIntensity + (this.waterShadingIntensity - this.neutralShadingIntensity) * this.heightMap[C + currentMapWidth * B] / 1E4;
                     if (!(Math.abs(l - C) > E || Math.abs(x - B) > E)) {
                         var F = Math.sqrt((l - C) * (l - C) + (x - B) * (x - B));
                         F >= E || this.updateLineShading(z, F, E, 1, this.shading[3])
                     }
-                } else E = this.neutralShadingOffset + (this.waterShadingOffset - this.neutralShadingOffset) * this.heightMap[C + currentMapWidth * B] / 1E4, Math.abs(l - C) > E || Math.abs(x - B) > E || (F = Math.sqrt((l - C) *
-                    (l - C) + (x - B) * (x - B)), F >= E || this.updateLineShading(z, F, E, 0, this.shading[2]))
+                } else E = this.neutralShadingOffset + (this.waterShadingOffset - this.neutralShadingOffset) * this.heightMap[C + currentMapWidth * B] / 1E4, Math.abs(l - C) > E || Math.abs(x - B) > E || (F = Math.sqrt((l - C) * (l - C) + (x - B) * (x - B)), F >= E || this.updateLineShading(z, F, E, 0, this.shading[2]))
+            }
+        }
     }
 }
 
 function a2c() {
-    2 === currentMapID ? a36([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0]) : 7 === currentMapID ? a36([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0]) : 8 === currentMapID ? a36([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0]) : 9 === currentMapID && a36([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
+    if (2 === currentMapID) a36([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0])
+    else if (7 === currentMapID) a36([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0])
+    else if (8 === currentMapID) a36([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0])
+    else if (9 === currentMapID) a36([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
 }
 
 function a36(g, k, n, l, x) {
@@ -9722,14 +9733,16 @@ function a36(g, k, n, l, x) {
             }
             D = l[C - 1];
             var K = x[C - 1];
-            for (t = 1; t < C; t++)
+            for (t = 1; t < C; t++) {
                 if (I < n[t]) {
                     D = l[t - 1] + allDivideFloor((I - n[t - 1]) * F[t], E[t]);
                     K = x[t - 1] + allDivideFloor((I - n[t - 1]) * G[t],
                         E[t]);
                     break
-                } a3K(currentMapWidth * y + z, D, K, N)
-        }
+                }
+            }
+            a3K(currentMapWidth * y + z, D, K, N)
+    }
 }
 
 function a3K(g, k, n, l) {
@@ -9816,75 +9829,82 @@ function ConfigFakeMap() {
             redValues = mapValues[currentMapID].red,
             greenValues = mapValues[currentMapID].green,
             blueValues = mapValues[currentMapID].blue,
-            pixelIndex, y, A = generateHeightmap.getGridValues(),
-            B = widthValues.length - 2,
-            C = Array(B + 1),
-            E = Array(B + 1),
-            F = Array(B + 1),
-            G = Array(B + 1);
-        for (y = B; 0 <= y; y--) {
-            C[y] = widthValues[y + 1] - widthValues[y];
-            E[y] = redValues[y + 1] - redValues[y];
-            F[y] = greenValues[y + 1] - greenValues[y];
-            G[y] = blueValues[y + 1] - blueValues[y];
+            pixelIndex, widthIndex, gridValues = generateHeightmap.getGridValues(),
+            compositeWidthValues = Array(widthValues.length - 1),
+            compositeRedValues = Array(widthValues.length - 1),
+            compositeGreenValues = Array(widthValues.length - 1),
+            compositeBlueValues = Array(widthValues.length - 1);
+        for (widthIndex = widthValues.length - 2; 0 <= widthIndex; widthIndex--) {
+            compositeWidthValues[widthIndex] = widthValues[widthIndex + 1] - widthValues[widthIndex];
+            compositeRedValues[widthIndex] = redValues[widthIndex + 1] - redValues[widthIndex];
+            compositeGreenValues[widthIndex] = greenValues[widthIndex + 1] - greenValues[widthIndex];
+            compositeBlueValues[widthIndex] = blueValues[widthIndex + 1] - blueValues[widthIndex];
         }
-        for (pixelIndex = currentMapWidth * currentMapHeight - 1; 0 <= pixelIndex; pixelIndex--) 
-            for (y = B; 0 <= y; y--) 
-                if (A[pixelIndex] >= widthValues[y]) {
-                    var N = A[pixelIndex] - widthValues[y];
-                    mapBaseCanvasImageDataArray[4 * pixelIndex] = redValues[y] + allDivideFloor(E[y] * N, C[y]);
-                    mapBaseCanvasImageDataArray[4 * pixelIndex + 1] = greenValues[y] + allDivideFloor(F[y] * N, C[y]);
-                    mapBaseCanvasImageDataArray[4 * pixelIndex + 2] = blueValues[y] + allDivideFloor(G[y] * N, C[y]);
+        for (pixelIndex = currentMapWidth * currentMapHeight - 1; 0 <= pixelIndex; pixelIndex--) {
+            for (widthIndex = widthValues.length - 2; 0 <= widthIndex; widthIndex--) {
+                if (gridValues[pixelIndex] >= widthValues[widthIndex]) {
+                    var valueDifference = gridValues[pixelIndex] - widthValues[widthIndex];
+                    mapBaseCanvasImageDataArray[4 * pixelIndex] = redValues[widthIndex] + allDivideFloor(compositeRedValues[widthIndex] * valueDifference, compositeWidthValues[widthIndex]);
+                    mapBaseCanvasImageDataArray[4 * pixelIndex + 1] = greenValues[widthIndex] + allDivideFloor(compositeGreenValues[widthIndex] * valueDifference, compositeWidthValues[widthIndex]);
+                    mapBaseCanvasImageDataArray[4 * pixelIndex + 2] = blueValues[widthIndex] + allDivideFloor(compositeBlueValues[widthIndex] * valueDifference, compositeWidthValues[widthIndex]);
                     mapBaseCanvasImageDataArray[4 * pixelIndex + 3] = 255;
                     break
                 }
-                mapBaseCanvasCtx.putImageData(fakeMapBaseCanvasImageData, 0, 0);
-                if (mapInfo.isBA() && sprites.areAllSpritesLoaded() && mapInfo.isBA()) {
-                    widthValues = sprites.getValueByName("arena");
-                    mapBaseCanvasCtx.save();
-                    mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
-                    mapBaseCanvasCtx.imageSmoothingEnabled = true;
-                    fakeMapBaseCanvasImageData = 2.8;
-                    mapBaseCanvasCtx.scale(fakeMapBaseCanvasImageData, fakeMapBaseCanvasImageData);
-                    mapBaseCanvasCtx.drawImage(
-                        widthValues,
-                        Math.floor((currentMapWidth / fakeMapBaseCanvasImageData - widthValues.width) / 2),
-                        Math.floor(.5 * currentMapHeight / fakeMapBaseCanvasImageData - widthValues.height / 2)
-                    );
-                    mapBaseCanvasCtx.restore();
-                    widthValues = sprites.getValueByName("territorial.io");
-                    mapBaseCanvasCtx.save();
-                    mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
-                    mapBaseCanvasCtx.imageSmoothingEnabled = true;
-                    fakeMapBaseCanvasImageData = .87;
-                    mapBaseCanvasCtx.scale(fakeMapBaseCanvasImageData, fakeMapBaseCanvasImageData);
-                    mapBaseCanvasCtx.drawImage(
-                        widthValues,
-                        Math.floor(.745 * (currentMapWidth / fakeMapBaseCanvasImageData - widthValues.width)),
-                        Math.floor(.422 * currentMapHeight / fakeMapBaseCanvasImageData - widthValues.height / 2)
-                    );
-                    mapBaseCanvasCtx.restore();
-                }                
+            }
+        }
+        mapBaseCanvasCtx.putImageData(fakeMapBaseCanvasImageData, 0, 0);
+        if (mapInfo.isBA() && sprites.areAllSpritesLoaded() && mapInfo.isBA()) {
+            widthValues = sprites.getValueByName("arena");
+            mapBaseCanvasCtx.save();
+            mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
+            mapBaseCanvasCtx.imageSmoothingEnabled = true;
+            fakeMapBaseCanvasImageData = 2.8;
+            mapBaseCanvasCtx.scale(fakeMapBaseCanvasImageData, fakeMapBaseCanvasImageData);
+            mapBaseCanvasCtx.drawImage(widthValues, Math.floor((currentMapWidth / fakeMapBaseCanvasImageData - widthValues.width) / 2), Math.floor(.5 * currentMapHeight / fakeMapBaseCanvasImageData - widthValues.height / 2));
+            mapBaseCanvasCtx.restore();
+            widthValues = sprites.getValueByName("territorial.io");
+            mapBaseCanvasCtx.save();
+            mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
+            mapBaseCanvasCtx.imageSmoothingEnabled = true;
+            fakeMapBaseCanvasImageData = .87;
+            mapBaseCanvasCtx.scale(fakeMapBaseCanvasImageData, fakeMapBaseCanvasImageData);
+            mapBaseCanvasCtx.drawImage(widthValues, Math.floor(.745 * (currentMapWidth / fakeMapBaseCanvasImageData - widthValues.width)), Math.floor(.422 * currentMapHeight / fakeMapBaseCanvasImageData - widthValues.height / 2));
+            mapBaseCanvasCtx.restore();
+        }             
         mapLoaded = true;
         mainHandler.canvasDirty = true
     };
-    this.jR = function() {
-        var k, totalLandMountainPixels = 0;
-        var l = currentMapHeight * currentMapWidth * 4;
-        var x = pixelRGBA,
-            t = mapBaseCanvasImageDataArray;
-        for (k = currentMapWidth - 1; 0 <= k; k--) x[4 * k + 2] = 3, x[l - 4 * k - 2] = 3;
-        l = 4 * currentMapWidth;
-        for (k = currentMapHeight - 1; 0 <= k; k--) x[k * l + 2] = 3, x[k * l + l - 2] = 3;
-        for (k = currentMapWidth * currentMapHeight - 1; 0 <= k; k--) l = 4 * k, 3 !== x[l + 2] && (t[l + 2] > t[l + 1] && t[l + 2] > t[l] ? x[l + 2] = 2 : (x[l + 2] = 1, totalLandMountainPixels++));
+    this.setAndCountMapPixels = function() {
+        var xyIndex, totalLandMountainPixels = 0;
+        for (xyIndex = currentMapWidth - 1; 0 <= xyIndex; xyIndex--) {
+            pixelRGBA[4 * xyIndex + 2] = 3;
+            pixelRGBA[currentMapHeight * currentMapWidth * 4 - 4 * xyIndex - 2] = 3;
+        }
+        for (xyIndex = currentMapHeight - 1; 0 <= xyIndex; xyIndex--) {
+            pixelRGBA[xyIndex * 4 * currentMapWidth + 2] = 3;
+            pixelRGBA[xyIndex * 4 * currentMapWidth + 4 * currentMapWidth - 2] = 3;
+        }
+        for (var coordIndex = currentMapWidth * currentMapHeight - 1; 0 <= coordIndex; coordIndex--) {
+            var pIndex = 4 * coordIndex;
+            if (3 !== pixelRGBA[pIndex + 2]) {
+                if (mapBaseCanvasImageDataArray[pIndex + 2] > mapBaseCanvasImageDataArray[pIndex + 1] && mapBaseCanvasImageDataArray[pIndex + 2] > mapBaseCanvasImageDataArray[pIndex]) pixelRGBA[pIndex + 2] = 2
+                else {
+                    pixelRGBA[pIndex + 2] = 1;
+                    totalLandMountainPixels++;
+                }
+            }
+        }
         this.totalNonBorderPixelsCount = (currentMapWidth - 2) * (currentMapHeight - 2);
         this.mountainPixelsCount = 0;
         if (mapHasMountains(currentMapID)) {
-            t = 0;
-            l = pixelRGBA;
-            var z = mapBaseCanvasImageDataArray;
-            for (x = currentMapWidth * currentMapHeight - 1; 0 <= x; x--) k = 4 * x, z[k] === z[k + 1] && z[k] === z[k + 2] && 3 !== l[k + 2] && (t++, l[k + 2] = 3);
-            configFakeMap.mountainPixelsCount = t
+            configFakeMap.mountainPixelsCount = 0;
+            for (coordIndex = currentMapWidth * currentMapHeight - 1; 0 <= coordIndex; coordIndex--) {
+                pIndex = 4 * coordIndex;
+                if (mapBaseCanvasImageDataArray[pIndex] === mapBaseCanvasImageDataArray[pIndex + 1] && mapBaseCanvasImageDataArray[pIndex] === mapBaseCanvasImageDataArray[pIndex + 2] && 3 !== pIndex[pIndex + 2]) {
+                    configFakeMap.mountainPixelsCount++;
+                    pixelRGBA[pIndex + 2] = 3;
+                }
+            }
         }
         this.landPixelsCount = currentLandPixelsCount = totalLandMountainPixels - this.mountainPixelsCount;
         this.waterPixelsCount = this.totalNonBorderPixelsCount - this.landPixelsCount - this.mountainPixelsCount
