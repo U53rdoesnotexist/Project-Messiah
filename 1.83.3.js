@@ -7038,18 +7038,18 @@ function Lobby() {
 }
 
 function GameUpdatedPrompt() {
-    this.init = function(g, k) {
+    this.init = function(xPos, yPos) {
         gameStateManager.setState(5);
-        mainButtons.onPointermove(g, k, false);
+        mainButtons.onPointermove(xPos, yPos, false);
         mainHandler.canvasDirty = true
     };
     this.drawCanvasImage = function() {
         mainButtons.drawUpdatedButtons()
     };
     this.mouseDown = function(xPos, yPos) {
-        var n = mainButtons.getClickedButton(xPos, yPos, 5, 2);
-        if (5 === n) reloadClient()
-        else if (6 === n) {
+        var buttonIndex = mainButtons.getClickedButton(xPos, yPos, 5, 2);
+        if (5 === buttonIndex) reloadClient()
+        else if (6 === buttonIndex) {
             nameInput.init();
             mainButtons.onPointermove(xPos, yPos, false);
             mainHandler.canvasDirty = true;
@@ -7058,16 +7058,26 @@ function GameUpdatedPrompt() {
 }
 
 function SingleSettings() {
-    function g(n, l, x, t, z, y, A, B, C) {
-        mainCanvasCtx.fillStyle = z;
-        mainCanvasCtx.fillRect(n, l, x, t);
-        0 <= B && (mainCanvasCtx.fillStyle = "rgba(" + 22 * B + "," + (110 - 22 * B) + ",0,0.75)", mainCanvasCtx.fillRect(n, l, (1 + B) * x / 6, t));
-        0 < C && (mainCanvasCtx.fillStyle = "rgba(255,255,255,0.3)", mainCanvasCtx.fillRect(n, l, C * x / maxEntities, t));
+    function drawButton(startingX, startingY, width, height, param_fillStyle, param_fontSize, textLabel, difficultyRatio, entityCompositionRatio) {
+        mainCanvasCtx.fillStyle = param_fillStyle;
+        mainCanvasCtx.fillRect(startingX, startingY, width, height);
+        if (0 <= difficultyRatio) {
+            mainCanvasCtx.fillStyle = "rgba(" + 22 * difficultyRatio + "," + (110 - 22 * difficultyRatio) + ",0,0.75)";
+            mainCanvasCtx.fillRect(startingX, startingY, (1 + difficultyRatio) * width / 6, height);
+        }
+        if (0 < entityCompositionRatio) {
+            mainCanvasCtx.fillStyle = "rgba(255,255,255,0.3)";
+            mainCanvasCtx.fillRect(startingX, startingY, entityCompositionRatio * width / maxEntities, height);
+        }
         mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(n, l, x, t);
-        0 !== y && (mainCanvasCtx.fillStyle = whiteRGB2, mainCanvasCtx.font = fontWeightBold + Math.floor(y * t) + fontSizeArial, mainCanvasCtx.fillText(A, Math.floor(n + x / 2), Math.floor(l + .52 * t)))
+        mainCanvasCtx.strokeRect(startingX, startingY, width, height);
+        if (0 !== param_fontSize) {
+            mainCanvasCtx.fillStyle = whiteRGB2;
+            mainCanvasCtx.font = fontWeightBold + Math.floor(param_fontSize * height) + fontSizeArial;
+            mainCanvasCtx.fillText(textLabel, Math.floor(startingX + width / 2), Math.floor(startingY + .52 * height));
+        }
     }
-    var k = [0, 0, 0, 0];
+    var canvasDimensionVariables = [0, 0, 0, 0];
     this.botSettings = [{
         difficulty: 0,
         group: 512
@@ -7080,9 +7090,9 @@ function SingleSettings() {
     };
     this.hide = function() {};
     this.setCanvasVariables = function() {
-        k[2] = Math.floor((isZoom ? .49 : .4) * averageDim);
-        k[1] = Math.floor((canvasHeight - k[2] / 6 - this.botSettings.length * (bufferLength + k[2] / 10)) / 2);
-        k[0] = Math.floor((canvasWidth - k[2]) / 2);
+        canvasDimensionVariables[2] = Math.floor((isZoom ? .49 : .4) * averageDim);
+        canvasDimensionVariables[1] = Math.floor((canvasHeight - canvasDimensionVariables[2] / 6 - this.botSettings.length * (bufferLength + canvasDimensionVariables[2] / 10)) / 2);
+        canvasDimensionVariables[0] = Math.floor((canvasWidth - canvasDimensionVariables[2]) / 2);
         mapMenu.visible && mapMenu.setCanvasVariables()
     };
     this.setBotSettings = function(param_gamemode) {
@@ -7109,67 +7119,108 @@ function SingleSettings() {
         }
     };
     this.getEntityCount = function() {
-        var n;
+        var teamIndex;
         if (customJSON.isCustomJSON) return customJSON.data.entityCount;
-        var l = 0;
-        for (n = this.botSettings.length - 1; 0 <= n; n--) l += this.botSettings[n].group;
-        return l
+        var entities = 0;
+        for (teamIndex = this.botSettings.length - 1; 0 <= teamIndex; teamIndex--) entities += this.botSettings[teamIndex].group;
+        return entities
     };
-    this.onPointermove = function(n, l) {
-        return mapMenu.visible && mapMenu.onPointermove(n, l) ? true : -1 === this.getClickedButton(n, l) ? false : true
+    this.onPointermove = function(xPos, yPos) {
+        return mapMenu.visible && mapMenu.onPointermove(xPos, yPos) ? true : -1 === this.getClickedButton(xPos, yPos) ? false : true
     };
-    this.xO = function() {
+    this.startSingleGame = function() {
         wsManager.remote = 0;
         wsManager.sendWhenWSOpen(0, 3) && dataEncoder.singlePlayed(0);
         gameStateManager.enterInGameState();
         if (customJSON.isCustomJSON) customJSON.xQ();
         else {
-            var n = this.botSettings.length - 2;
-            n = 0 > n ? 7 : n;
+            var var_gamemode = this.botSettings.length - 2;
+            var_gamemode = 0 > var_gamemode ? 7 : var_gamemode;
             gameInit(Math.floor(16384 * Math.random()), 0, [{
                 name: nameInput.getInput(),
                 color: mainSettings.buttons[2].buttonClass.getRGB64(),
                 status: 0
-            }], n, false)
+            }], var_gamemode, false)
         }
     };
-    this.click = function(n, l) {
+    this.click = function(xPos, yPos) {
         return false
     };
-    this.mouseDown = function(n, l) {
+    this.mouseDown = function(xPos, yPos) {
         if (mainLeaderboard.visible || mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) return false;
-        if (mapMenu.visible && !customJSON.isCustomJSON) return mapMenu.mouseDown(n, l);
-        var x = this.getClickedButton(n, l);
-        if (-1 === x) return false;
-        if (0 === x) return this.showMainScreen(), true;
-        if (1 === x) return customJSON.isCustomJSON ? (customJSON.reset(), mainHandler.canvasDirty = true) : mapMenu.show(), true;
-        if (2 === x) return this.hide(), this.xO(), true;
+        if (mapMenu.visible && !customJSON.isCustomJSON) return mapMenu.mouseDown(xPos, yPos);
+        var buttonIndex = this.getClickedButton(xPos, yPos);
+        if (-1 === buttonIndex) return false;
+        if (0 === buttonIndex) {
+            this.showMainScreen();
+            return true;
+        }
+        if (1 === buttonIndex) {
+            if (customJSON.isCustomJSON) {
+                customJSON.reset();
+                mainHandler.canvasDirty = true;
+                return true;
+            } else {
+                mapMenu.show();
+                return true;
+            }
+        }
+        if (2 === buttonIndex) {
+            this.hide();
+            this.startSingleGame();
+            return true;
+        }
         if (customJSON.isCustomJSON) return false;
-        if (27 === x) return 8 > this.botSettings.length && (this.botSettings.push({
-            difficulty: 0,
-            group: maxEntities
-        }), this.assignBotGroups(), this.setCanvasVariables(), mainHandler.canvasDirty = true), true;
-        var t = Math.floor((x - 3) / 3);
-        if (0 === x % 3) return 1 < this.botSettings.length && (this.botSettings.splice(t, 1), this.setCanvasVariables(), mainHandler.canvasDirty = true), true;
-        var z = (k[2] - k[2] / 10 - 2 * bufferLength) / 2;
-        if (1 === x % 3) {
-            if (0 === t && 1 === this.botSettings[t].group) return true;
-            n < k[0] + k[2] - 1.5 * z - bufferLength ? this.botSettings[t].difficulty-- : this.botSettings[t].difficulty++;
-            0 > this.botSettings[t].difficulty ? this.botSettings[t].difficulty = 5 : 5 < this.botSettings[t].difficulty && (this.botSettings[t].difficulty = 0);
+        if (27 === buttonIndex) {
+            if (8 > this.botSettings.length) {
+                this.botSettings.push({
+                    difficulty: 0,
+                    group: maxEntities
+                });
+                this.assignBotGroups();
+                this.setCanvasVariables();
+                mainHandler.canvasDirty = true;
+            }
+            return true;
+        }
+        var teamIndex = Math.floor((buttonIndex - 3) / 3);
+        if (0 === buttonIndex % 3) {
+            if (1 < this.botSettings.length) {
+                this.botSettings.splice(teamIndex, 1);
+                this.setCanvasVariables();
+                mainHandler.canvasDirty = true;
+            }
+            return true;
+        }
+        var buttonXPos = (canvasDimensionVariables[2] - canvasDimensionVariables[2] / 10 - 2 * bufferLength) / 2;
+        if (1 === buttonIndex % 3) {
+            if (0 === teamIndex && 1 === this.botSettings[teamIndex].group) return true;
+            if (xPos < canvasDimensionVariables[0] + canvasDimensionVariables[2] - 1.5 * buttonXPos - bufferLength) this.botSettings[teamIndex].difficulty--
+            else this.botSettings[teamIndex].difficulty++;
+            if (0 > this.botSettings[teamIndex].difficulty) this.botSettings[teamIndex].difficulty = 5
+            else if (5 < this.botSettings[teamIndex].difficulty) this.botSettings[teamIndex].difficulty = 0;
             return mainHandler.canvasDirty = true
         }
         mainHandler.canvasDirty = true;
-        var y = (n - (k[0] + k[2] - z)) / z - .5;
-        y = Math.floor((0 > y ?
-            -(y * y) : y * y) * maxEntities);
-        y = 0 === y ? 1 : y;
-        z = maxEntities;
-        for (x = this.botSettings.length - 1; 0 <= x; x--) t !== x && (z -= this.botSettings[x].group);
-        if (0 > y) {
-            if (1 === this.botSettings[t].group) return this.botSettings[t].group = z, true
-        } else if (this.botSettings[t].group === z) return this.botSettings[t].group = 1, true;
-        this.botSettings[t].group += y;
-        1 > this.botSettings[t].group ? this.botSettings[t].group = 1 : this.botSettings[t].group > z && (this.botSettings[t].group = z);
+        var buttonYPos = (xPos - (canvasDimensionVariables[0] + canvasDimensionVariables[2] - buttonXPos)) / buttonXPos - .5;
+        var entityChange = Math.floor((0 > buttonYPos ? -(buttonYPos * buttonYPos) : buttonYPos * buttonYPos) * maxEntities);
+        entityChange = 0 === entityChange ? 1 : entityChange;
+        var newEntityCount = maxEntities;
+        for (buttonIndex = this.botSettings.length - 1; 0 <= buttonIndex; buttonIndex--) {
+            if (teamIndex !== buttonIndex) newEntityCount -= this.botSettings[buttonIndex].group;
+        }
+        if (0 > entityChange) {
+            if (1 === this.botSettings[teamIndex].group) {
+                this.botSettings[teamIndex].group = newEntityCount;
+                return true
+            } 
+        } else if (this.botSettings[teamIndex].group === newEntityCount) {
+            this.botSettings[teamIndex].group = 1;
+            return true;
+        }
+        this.botSettings[teamIndex].group += entityChange;
+        if (1 > this.botSettings[teamIndex].group) this.botSettings[teamIndex].group = 1
+        else if (this.botSettings[teamIndex].group > newEntityCount) this.botSettings[teamIndex].group = newEntityCount;
         return true
     };
     this.assignBotGroups = function() {
@@ -7181,54 +7232,68 @@ function SingleSettings() {
         }
         this.botSettings[0].group += unsortedEntities
     };
-    this.getClickedButton = function(n, l) {
-        var x, t = (k[2] - 2 * bufferLength) / 3,
-            z = k[2] / 6;
-        if (n < k[0] || l < k[1] ||
-            n >= k[0] + k[2]) return -1;
-        if (l < k[1] + z) return n < k[0] + t ? 0 : n < k[0] + t + bufferLength ? -1 : n < k[0] + 2 * t + bufferLength ? 1 : n < k[0] + 2 * t + 2 * bufferLength ? -1 : 2;
-        var y = k[2] / 10;
-        t = (k[2] - y - 2 * bufferLength) / 2;
-        for (x = 0; x < this.botSettings.length; x++) {
-            var A = k[1] + z + bufferLength + x * (y + bufferLength);
-            if (l < A) return -1;
-            if (!(l > A + y)) return n < k[0] + y ? 3 + 3 * x : n < k[0] + y + bufferLength ? -1 : n < k[0] + k[2] - t - bufferLength ? 4 + 3 * x : n < k[0] + k[2] - t ? -1 : 5 + 3 * x
+    this.getClickedButton = function(xPos, yPos) {
+        var teamIndex, buttonWidth = (canvasDimensionVariables[2] - 2 * bufferLength) / 3,
+            buttonHeight = canvasDimensionVariables[2] / 6;
+        if (xPos < canvasDimensionVariables[0] || yPos < canvasDimensionVariables[1] || xPos >= canvasDimensionVariables[0] + canvasDimensionVariables[2]) return -1;
+        if (yPos < canvasDimensionVariables[1] + buttonHeight) {
+            if (xPos < canvasDimensionVariables[0] + buttonWidth) return 0
+            else if (xPos < canvasDimensionVariables[0] + buttonWidth + bufferLength) return -1
+            else if (xPos < canvasDimensionVariables[0] + 2 * buttonWidth + bufferLength) return 1
+            else if (xPos < canvasDimensionVariables[0] + 2 * buttonWidth + 2 * bufferLength) return -1
+            else return 2;
         }
-        return 8 > this.botSettings.length ? (A = k[1] + z + bufferLength + this.botSettings.length * (y + bufferLength), l < A || l > A + y || n > k[0] + y ? -1 : 27) : -1
+        var buttonSpacing = canvasDimensionVariables[2] / 10;
+        buttonWidth = (canvasDimensionVariables[2] - buttonSpacing - 2 * bufferLength) / 2;
+        for (teamIndex = 0; teamIndex < this.botSettings.length; teamIndex++) {
+            var buttonYPos = canvasDimensionVariables[1] + buttonHeight + bufferLength + teamIndex * (buttonSpacing + bufferLength);
+            if (yPos < buttonYPos) return -1;
+            if (yPos <= buttonYPos + buttonSpacing) {
+                if (xPos < canvasDimensionVariables[0] + buttonSpacing) return 3 + 3 * teamIndex
+                else if (xPos < canvasDimensionVariables[0] + buttonSpacing + bufferLength) return -1
+                else if (xPos < canvasDimensionVariables[0] + canvasDimensionVariables[2] - buttonWidth - bufferLength) return 4 + 3 * teamIndex
+                else if (xPos < canvasDimensionVariables[0] + canvasDimensionVariables[2] - buttonWidth) return -1
+                else return 5 + 3 * teamIndex
+            }
+        }
+        if (8 > this.botSettings.length) {
+            buttonYPos = canvasDimensionVariables[1] + buttonHeight + bufferLength + this.botSettings.length * (buttonSpacing + bufferLength);
+            if (yPos < buttonYPos || yPos > buttonYPos + buttonSpacing || xPos > canvasDimensionVariables[0] + buttonSpacing) return -1
+            else return 27
+        } else return -1
     };
     this.drawCanvasImage = function() {
-        var n;
+        var teamIndex;
         mainCanvasCtx.lineWidth = 2;
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.textBaseline = middleAlign;
-        var l = (k[2] - 2 * bufferLength) / 3,
-            x = k[2] / 6;
-        g(k[0], k[1], l, x, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
-        g(k[0] + l + bufferLength, k[1], l, x, "rgba(" + (customJSON.isCustomJSON ? 128 : 0) + ",128,128,0.75)", .4, customJSON.isCustomJSON ? "Reset" : "Maps", -1, -1);
-        g(k[0] + k[2] - l, k[1], l, x, "rgba(0,128,0,0.75)", .4, "Start", -1, -1);
+        var buttonWidth = (canvasDimensionVariables[2] - 2 * bufferLength) / 3,
+            buttonHeight = canvasDimensionVariables[2] / 6;
+        drawButton(canvasDimensionVariables[0], canvasDimensionVariables[1], buttonWidth, buttonHeight, "rgba(128,0,0,0.75)", .4, "Back", -1, -1);
+        drawButton(canvasDimensionVariables[0] + buttonWidth + bufferLength, canvasDimensionVariables[1], buttonWidth, buttonHeight, "rgba(" + (customJSON.isCustomJSON ? 128 : 0) + ",128,128,0.75)", .4, customJSON.isCustomJSON ? "Reset" : "Maps", -1, -1);
+        drawButton(canvasDimensionVariables[0] + canvasDimensionVariables[2] - buttonWidth, canvasDimensionVariables[1], buttonWidth, buttonHeight, "rgba(0,128,0,0.75)", .4, "Start", -1, -1);
         if (!customJSON.isCustomJSON) {
-            var t = k[2] / 10;
-            l = (k[2] - t - 2 * bufferLength) / 2;
-            for (n = 0; n < this.botSettings.length; n++) {
-                var z = k[1] + x + bufferLength + n * (t + bufferLength);
-                g(k[0], z, t, t, "rgba(0,128,0,0.75)", 0, null, -1);
-                g(k[0] + t + bufferLength, z, l, t, blackMoreOpaque, .4, this.getMyGroupLabel(n), this.botSettings[n].difficulty, -1);
-                g(k[0] + k[2] - l, z, l, t, blackMoreOpaque, .4, this.getOtherGroupLabel(n), -1, this.botSettings[n].group)
+            var buttonSpacing = canvasDimensionVariables[2] / 10;
+            buttonWidth = (canvasDimensionVariables[2] - buttonSpacing - 2 * bufferLength) / 2;
+            for (teamIndex = 0; teamIndex < this.botSettings.length; teamIndex++) {
+                var buttonYOffset = canvasDimensionVariables[1] + buttonHeight + bufferLength + teamIndex * (buttonSpacing + bufferLength);
+                drawButton(canvasDimensionVariables[0], buttonYOffset, buttonSpacing, buttonSpacing, "rgba(0,128,0,0.75)", 0, null, -1);
+                drawButton(canvasDimensionVariables[0] + buttonSpacing + bufferLength, buttonYOffset, buttonWidth, buttonSpacing, blackMoreOpaque, .4, this.getMyGroupLabel(teamIndex), this.botSettings[teamIndex].difficulty, -1);
+                drawButton(canvasDimensionVariables[0] + canvasDimensionVariables[2] - buttonWidth, buttonYOffset, buttonWidth, buttonSpacing, blackMoreOpaque, .4, this.getOtherGroupLabel(teamIndex), -1, this.botSettings[teamIndex].group)
             }
             if (8 > this.botSettings.length) {
-                z = k[1] + x + bufferLength + this.botSettings.length * (t +
-                    bufferLength);
-                g(k[0], z, t, t, "rgba(128,128,20,0.75)", 0, null, -1, -1);
-                n = k[0];
+                buttonYOffset = canvasDimensionVariables[1] + buttonHeight + bufferLength + this.botSettings.length * (buttonSpacing + bufferLength);
+                drawButton(canvasDimensionVariables[0], buttonYOffset, buttonSpacing, buttonSpacing, "rgba(128,128,20,0.75)", 0, null, -1, -1);
+                teamIndex = canvasDimensionVariables[0];
                 mainCanvasCtx.fillStyle = whiteRGB2;
-                l = getMax(2, Math.floor(.5 * t));
-                l -= l % 2;
-                x = getMax(2, Math.floor(.1 * t));
-                x -= x % 2;
-                t = Math.floor((t - l) / 2);
-                var y = Math.floor(t + (l - x) / 2);
-                mainCanvasCtx.fillRect(n + t, z + y, l, x);
-                mainCanvasCtx.fillRect(n + y, z + t, x, l)
+                buttonWidth = getMax(2, Math.floor(.5 * buttonSpacing));
+                buttonWidth -= buttonWidth % 2;
+                buttonHeight = getMax(2, Math.floor(.1 * buttonSpacing));
+                buttonHeight -= buttonHeight % 2;
+                buttonSpacing = Math.floor((buttonSpacing - buttonWidth) / 2);
+                var symbolPos = Math.floor(buttonSpacing + (buttonWidth - buttonHeight) / 2);
+                mainCanvasCtx.fillRect(teamIndex + buttonSpacing, buttonYOffset + symbolPos, buttonWidth, buttonHeight);
+                mainCanvasCtx.fillRect(teamIndex + symbolPos, buttonYOffset + buttonSpacing, buttonHeight, buttonWidth)
             }
             mapMenu.visible && mapMenu.drawCanvasImage()
         }
