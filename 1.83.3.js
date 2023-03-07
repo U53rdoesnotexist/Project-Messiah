@@ -10683,7 +10683,7 @@ function Teams() {
             centerX = Math.floor(pieChartWidth / 2),
             centerY = Math.floor(pieChartRadius / 2),
             startAngle = 1.5 * Math.PI;
-        for (teamIndex = teamCount; 0 <= teamIndex; teamIndex--) {
+        for (teamIndex = teamCount; 1 <= teamIndex; teamIndex--) {
             totalLand += teamLand[teamIndex];
             if (0 === teamLand[teamIndex]) emptyTeamCount++;
         }
@@ -10698,7 +10698,7 @@ function Teams() {
         pieChartCanvasCtx.fillRect(0, pieChartWidth - 2, pieChartWidth, 2);
         if (0 < totalLand) {
             if (emptyTeamCount === teamCount) {
-                for (teamIndex = teamCount; 0 <= teamIndex; teamIndex--) {
+                for (teamIndex = teamCount; 1 <= teamIndex; teamIndex--) {
                     if (0 < teamLand[teamIndex]) {
                         pieChartCanvasCtx.fillStyle = teamColors.piechartColors[teamColors.teamIDs[teamIndex]];
                         pieChartCanvasCtx.beginPath();
@@ -10708,7 +10708,7 @@ function Teams() {
                     }
                 }
             } else {
-                for (teamIndex = 0; teamIndex <= teamCount; teamIndex++) {
+                for (teamIndex = 1; teamIndex <= teamCount; teamIndex++) {
                     if (0 < teamLand[teamIndex]) {
                         emptyTeamCount = startAngle + 2 * Math.PI * teamLand[teamIndex] / totalLand;
                         pieChartCanvasCtx.fillStyle = teamColors.piechartColors[teamColors.teamIDs[teamIndex]];
