@@ -2032,7 +2032,13 @@ function PlayerActions() {
         if (2 === buttonType) {
             if (iconActive[7]) {
                 for (buttonType = friends.length - 1; 0 <= buttonType; buttonType--) 0 === isAlive[friends[buttonType]] && friends.splice(buttonType, 1);
-                0 < friends.length && (diplomacyHandler.lO(1, friends, true) && (announcements.requestToAttack(friends, targetID), dataEncoder.requestAttack(friends, targetID)), friends = []);
+                if (0 < friends.length) {
+                    if (diplomacyHandler.addOutboundDiplomacy(1, friends, true)) {
+                        announcements.requestToAttack(friends, targetID);
+                        dataEncoder.requestAttack(friends, targetID)
+                    };
+                    friends = [];
+                }
                 this.end();
                 return 1
             }
@@ -2082,7 +2088,7 @@ function PlayerActions() {
         }
         if (8 === buttonType) {
             if (iconActive[5]) {
-                if (diplomacyHandler.lO(0, [targetID], true)) {
+                if (diplomacyHandler.addOutboundDiplomacy(0, [targetID], true)) {
                     announcements.nonAggression(targetID, 0);
                     dataEncoder.nonAggression(targetID);
                 }
@@ -2131,10 +2137,10 @@ function PlayerActions() {
             iconActive[4] = true;
             return this.setIconPosition(xPos, yPos)
         }
-        iconActive[6] = playerActions.isHuman(targetID) && !canRequestToAttackTarget(targetID) && diplomacyHandler.lO(1, [targetID], false);
+        iconActive[6] = playerActions.isHuman(targetID) && !canRequestToAttackTarget(targetID) && diplomacyHandler.addOutboundDiplomacy(1, [targetID], false); 
         iconActive[4] = 1 <= emojis.selectedEmojiCount && this.isHuman(targetID);
         if (isNotTeamate(targetID, myID)) {
-            iconActive[5] = this.isHuman(targetID) && !infoRenderer.ratifiedNonAggression(targetID) && diplomacyHandler.lO(0, [targetID], false);
+            iconActive[5] = this.isHuman(targetID) && !infoRenderer.ratifiedNonAggression(targetID) && diplomacyHandler.addOutboundDiplomacy(0, [targetID], false);
             var showTargetIcon;
             if (0 === friends.length) showTargetIcon = false;
             else if ((new Date).getTime() > lastFriendAddedTime + 4E3) {
@@ -9043,51 +9049,52 @@ function NickNames() {
 }
 
 function DiplomacyHandler() {
-    this.a1R = [];
-    this.a1S = [];
+    this.outboundDiplomacies = [];
+    this.inboundDiplomacies = [];
     this.init = function() {
-        this.a1R = [];
-        this.a1S = []
+        this.outboundDiplomacies = [];
+        this.inboundDiplomacies = []
     };
     this.update = function() {
-        0 <= this.a1R.length && this.a1T(this.a1R);
-        0 <= this.a1S.length && this.a1T(this.a1S)
+        0 <= this.outboundDiplomacies.length && this.processDiplomacy(this.outboundDiplomacies);
+        0 <= this.inboundDiplomacies.length && this.processDiplomacy(this.inboundDiplomacies)
     };
-    this.a1T = function(g) {
-        var k, n = -1;
-        for (k = g.length - 1; 0 <= k; k--) {
-            if (g[k].time--, 0 >= g[k].time) {
-                n = k;
+    this.processDiplomacy = function(diplomacies) {
+        var diplomacyIndex, shiftDiplomacyIndex = -1;
+        for (diplomacyIndex = diplomacies.length - 1; 0 <= diplomacyIndex; diplomacyIndex--) {
+            diplomacies[diplomacyIndex].time--;
+            if (0 >= diplomacies[diplomacyIndex].time) {
+                shiftDiplomacyIndex = diplomacyIndex;
                 break
             }
         }
-        for (k = n; 0 <= k; k--) g.shift()
+        for (diplomacyIndex = shiftDiplomacyIndex; 0 <= diplomacyIndex; diplomacyIndex--) diplomacies.shift()
     };
-    this.lO = function(diplomacyType, targets, ratifiedStatus) {
-        return this.a1V(this.a1R, diplomacyType, targets, ratifiedStatus)
+    this.addOutboundDiplomacy = function(diplomacyType, targets, addNewEntry) { 
+        return this.addDiplomacy(this.outboundDiplomacies, diplomacyType, targets, addNewEntry)
     };
-    this.a1W = function(g, k, n) {
-        return this.a1V(this.a1S, g, k, n)
+    this.addInboundDiplomacy = function(diplomacyType, targets, addNewEntry) {
+        return this.addDiplomacy(this.inboundDiplomacies, diplomacyType, targets, addNewEntry)
     };
-    this.a1V = function(g, diplomacyType, n, l) {
-        var x;
+    this.addDiplomacy = function(diplomacies, diplomacyType, targets, addNewEntry) {
+        var targetIDIndex, existsAlready;
         loop: {
-            var t;
-            for (x = n.length - 1; 0 <= x; x--) {
-                for (t = g.length - 1; 0 <= t; t--) {
-                    if (g[t].player === n[x] && diplomacyType === g[t].id) {
-                        x = true;
+            var diplomacyIndex;
+            for (targetIDIndex = targets.length - 1; 0 <= targetIDIndex; targetIDIndex--) {
+                for (diplomacyIndex = diplomacies.length - 1; 0 <= diplomacyIndex; diplomacyIndex--) {
+                    if (diplomacies[diplomacyIndex].player === targets[targetIDIndex] && diplomacyType === diplomacies[diplomacyIndex].id) {
+                        existsAlready = true;
                         break loop
                     }
                 }
             }
-            x = false
+            existsAlready = false
         }
-        if (x) return false;
-        if (l) {
-            for (l = n.length - 1; 0 <= l; l--) {
-                g.push({
-                    player: n[l],
+        if (existsAlready) return false;
+        if (addNewEntry) {
+            for (var targetIDIndex = targets.length - 1; 0 <= targetIDIndex; targetIDIndex--) {
+                diplomacies.push({
+                    player: targets[targetIDIndex],
                     id: diplomacyType,
                     time: 384
                 });
@@ -12298,14 +12305,14 @@ function DataDecoder() {
                                         if (2 !== messageLength) wsManager.closeByError(wsManager.remote, 3235);
                                         else {
                                             data = decoder(array, 9);
-                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && diplomacyHandler.a1W(0, [data], true)) announcements.nonAggression(data, 1);
+                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(0, [data], true)) announcements.nonAggression(data, 1);
                                         }
                                     } else {
                                         if (3 !== messageLength) wsManager.closeByError(wsManager.remote, 3236);
                                         else {
                                             data = decoder(array, 9);
                                             var requester = decoder(array, 9);
-                                            if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && diplomacyHandler.a1W(1, [data], true)) {
+                                            if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(1, [data], true)) {
                                                 infoRenderer.showIcon(data, 3, 96);
                                                 infoRenderer.showIcon(requester, 4, 96);
                                                 announcements.requestedToAttack(data, requester);
