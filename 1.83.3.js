@@ -1558,8 +1558,8 @@ function Points1v1() {
     this.calculateElo = function(winner) {
         var eloChange = 8 / (1 + Math.pow(2, (this.players[winner].elo - this.players[1 - winner].elo) / 10 / 32));
         eloChange = Math.floor(10 * eloChange + .5);
-        var winnerElo = this.formatElo(this.players[winner].elo + loserElo + 1),
-            loserElo = this.formatElo(this.players[1 - winner].elo - loserElo);
+        var winnerElo = this.formatElo(this.players[winner].elo + eloChange + 1),
+            loserElo = this.formatElo(this.players[1 - winner].elo - eloChange);
         if (0 === winner) announcements.result1v1(this.players, winnerElo, loserElo, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"])
         else announcements.result1v1(this.players, loserElo, winnerElo, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
     };
