@@ -835,6 +835,9 @@ function gameTick() {
     statisticNumbers.update();
     teams.update();
     wsManager.update();
+
+    if (typeof(modHandler) == 'object') modHandler.scriptGameTick();
+    if (typeof(latencySimulator) == 'object') latencySimulator.update();
 }
 
 function clientTick2() {
@@ -937,44 +940,44 @@ function BotBoatEngine() {
     }
 
     function generateRandomArea(initBoatDist, areaWidth) {
-    for (var maxBoatDist = initBoatDist; maxBoatDist < initBoatDist + 50 * areaWidth; maxBoatDist += areaWidth) {
-        var coordXMin = xMin[authorID] - maxBoatDist;
-        coordXMin = 1 > coordXMin ? 1 : coordXMin;
-        var coordYMin = yMin[authorID] - maxBoatDist;
-        coordYMin = 1 > coordYMin ? 1 : coordYMin;
-        var coordXMax = xMax[authorID] + maxBoatDist;
-        coordXMax = coordXMax >= currentMapWidth - 1 ? currentMapWidth - 2 : coordXMax;
-        var coordYMax = yMax[authorID] + maxBoatDist;
-        coordYMax = coordYMax >= currentMapHeight - 1 ? currentMapHeight - 2 : coordYMax;
-        var distThreshold = divideFloor(2 * fakeRandom.random() * (coordXMax - coordXMin + coordYMax - coordYMin), fakeRandom.value(100));
-        var xOffset = coordXMax - coordXMin;
-        var yOffset = coordYMax - coordYMin;
-        if (distThreshold <= xOffset) {
-            currentX = coordXMin + distThreshold;
-            currentY = coordYMin;
-        } else if (distThreshold <= xOffset + yOffset) {
-            currentX = coordXMax;
-            currentY = coordYMin + distThreshold - xOffset;
-        } else if (distThreshold <= 2 * xOffset + yOffset) {
-            currentX = coordXMin + distThreshold - xOffset - yOffset;
-            currentY = coordYMax;
-        } else {
-            currentX = coordXMin;
-            currentY = coordYMin + distThreshold - 2 * xOffset - yOffset;
+        for (var maxBoatDist = initBoatDist; maxBoatDist < initBoatDist + 50 * areaWidth; maxBoatDist += areaWidth) {
+            var coordXMin = xMin[authorID] - maxBoatDist;
+            coordXMin = 1 > coordXMin ? 1 : coordXMin;
+            var coordYMin = yMin[authorID] - maxBoatDist;
+            coordYMin = 1 > coordYMin ? 1 : coordYMin;
+            var coordXMax = xMax[authorID] + maxBoatDist;
+            coordXMax = coordXMax >= currentMapWidth - 1 ? currentMapWidth - 2 : coordXMax;
+            var coordYMax = yMax[authorID] + maxBoatDist;
+            coordYMax = coordYMax >= currentMapHeight - 1 ? currentMapHeight - 2 : coordYMax;
+            var distThreshold = divideFloor(2 * fakeRandom.random() * (coordXMax - coordXMin + coordYMax - coordYMin), fakeRandom.value(100));
+            var xOffset = coordXMax - coordXMin;
+            var yOffset = coordYMax - coordYMin;
+            if (distThreshold <= xOffset) {
+                currentX = coordXMin + distThreshold;
+                currentY = coordYMin;
+            } else if (distThreshold <= xOffset + yOffset) {
+                currentX = coordXMax;
+                currentY = coordYMin + distThreshold - xOffset;
+            } else if (distThreshold <= 2 * xOffset + yOffset) {
+                currentX = coordXMin + distThreshold - xOffset - yOffset;
+                currentY = coordYMax;
+            } else {
+                currentX = coordXMin;
+                currentY = coordYMin + distThreshold - 2 * xOffset - yOffset;
+            }
+            var pIndex = pixel.toIndex(currentX, currentY);
+            var ownershipCheck = checkOwnership(pIndex);
+            if (1 !== ownershipCheck) return ownershipCheck;
         }
-        var pIndex = pixel.toIndex(currentX, currentY);
-        var ownershipCheck = checkOwnership(pIndex);
-        if (1 !== ownershipCheck) return ownershipCheck;
+        return 1;
     }
-    return 1;
-}
 
     var remainingChecks, currentX, currentY, authorID;
-    this.update = function(param_authorID, A) {
+    this.update = function(param_authorID, difficultyIndex) {
         authorID = param_authorID;
         if (0 === waterBorderPixels[authorID].length) return false;
         if (generateRandomCoords()) {
-            var amount = divideFloor(difficultyEngine.boatSendRatio[A] * troops[authorID], 100);
+            var amount = divideFloor(difficultyEngine.boatSendRatio[difficultyIndex] * troops[authorID], 100);
             if (100 > amount && 100 <= troops[authorID]) amount = 100;
             if (100 <= amount) return processSendBoat(authorID, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(currentX, currentY), amount)
         }
@@ -999,31 +1002,31 @@ function BotManager() {
 }
 
 function ProcessAction() {
-    function addPendingAction(authorID, actionType, param1, param2, param3, param4) {
-        if (0 < param1 && 1E3 >= param1) {
+    function addPendingAction(authorID, actionType, ratio, param, xCoord, yCoord) {
+        if (0 < ratio && 1E3 >= ratio) {
             authors.push(authorID), actionsType.push(actionType), 
-            actionsParam1.push(param1), actionsParam2.push(param2), actionsParam3.push(param3), actionsParam4.push(param4);
+            actionsRatio.push(ratio), actionsParam.push(param), actionsXCoord.push(xCoord), actionsYCoord.push(yCoord);
         }
     }
-    var authors, actionsType, actionsParam1, actionsParam2, actionsParam3, actionsParam4;
+    var authors, actionsType, actionsRatio, actionsParam, actionsXCoord, actionsYCoord;
     this.init = function() {
         authors = [];
         actionsType = [];
-        actionsParam1 = [];
-        actionsParam2 = [];
-        actionsParam3 = [];
-        actionsParam4 = []
+        actionsRatio = [];
+        actionsParam = [];
+        actionsXCoord = [];
+        actionsYCoord = []
     };
     this.update = function() {
         var actionIndex, authorsCount = authors.length;
         for (actionIndex = 0; actionIndex < authorsCount; actionIndex++) {
-            if (0 === actionsType[actionIndex]) processAttack(authors[actionIndex], actionsParam2[actionIndex], actionsParam1[actionIndex]);
-            else if (1 === actionsType[actionIndex]) this.processSendBoat(authors[actionIndex], actionsParam1[actionIndex], actionsParam3[actionIndex], actionsParam4[actionIndex]);
-            else if (2 === actionsType[actionIndex]) this.processCancel(authors[actionIndex], actionsParam2[actionIndex]);
+            if (0 === actionsType[actionIndex]) processAttack(authors[actionIndex], actionsParam[actionIndex], actionsRatio[actionIndex]);
+            else if (1 === actionsType[actionIndex]) this.processSendBoat(authors[actionIndex], actionsRatio[actionIndex], actionsXCoord[actionIndex], actionsYCoord[actionIndex]);
+            else if (2 === actionsType[actionIndex]) this.processCancel(authors[actionIndex], actionsParam[actionIndex]);
             else if (6 === actionsType[actionIndex]) {
                 var author = authors[actionIndex];
-                0 !== isAlive[author] && 2 !== playerStatus[authors] && peace.processVotePeace(author, 1 === actionsParam2[actionIndex])
-            } else 7 === actionsType[actionIndex] && this.processCancelBoat(authors[actionIndex], actionsParam2[actionIndex]);
+                0 !== isAlive[author] && 2 !== playerStatus[authors] && peace.processVotePeace(author, 1 === actionsParam[actionIndex])
+            } else 7 === actionsType[actionIndex] && this.processCancelBoat(authors[actionIndex], actionsParam[actionIndex]);
         }
         0 < authorsCount && this.init()
     };
@@ -1064,8 +1067,11 @@ function ProcessAction() {
     this.pendingAttack = function(authorID, ratio, targetID) {
         1 === clientStatus && addPendingAction(authorID, 0, ratio, targetID, 0, 0)
     };
-    this.pendingSetLocation = function(authorID, ratio, toX, yCoord) {
-        1 === clientStatus && (inSpawn ? spawn.set(authorID, toX, yCoord) : addPendingAction(authorID, 1, ratio, 0, toX, yCoord))
+    this.pendingSetLocation = function(authorID, ratio, xCoord, yCoord) {
+        if (1 === clientStatus) {
+            if (inSpawn) spawn.set(authorID, xCoord, yCoord)
+            else addPendingAction(authorID, 1, ratio, 0, xCoord, yCoord)
+        }
     };
     this.pendingCancel = function(authorID, targetID) {
         1 === clientStatus && addPendingAction(authorID, 2, 1, targetID, 0, 0)
@@ -1077,14 +1083,31 @@ function ProcessAction() {
         1 === clientStatus && addPendingAction(id, 6, 1, choice, 0, 0)
     };
     this.onLeave = function(id) {
-        1 === clientStatus && 0 !== isAlive[id] && 2 !== playerStatus[id] && (8 === gamemode ? endGame.endGame(1 - id) : this.leave(id));
+        if (1 === clientStatus && 0 !== isAlive[id] && 2 !== playerStatus[id]) {
+            if (8 === gamemode) endGame.endGame(1 - id)
+            else this.leave(id)
+        }
         announcements.genericAnnouncement(id, 4)
     };
     this.leave = function(id) {
-        inSpawn ? (managePlayerDeath(id), findShiftAliveEntitiesIndex()) : humanBots.turnToBot(id)
+        if (inSpawn) {
+            managePlayerDeath(id);
+            findShiftAliveEntitiesIndex();
+        } else humanBots.turnToBot(id)
     };
     this.surrender = function(id) {
-        0 !== isAlive[id] && 2 !== playerStatus[id] && gameButtons.canSurrender(id) && (1 === aliveCount ? endGame.endGame(id) : (announcements.genericAnnouncement(id, id === myID ? 21 : 22), 8 === gamemode ? endGame.endGame(1 - id) : singleplayer ? (managePlayerDeath(id), findShiftAliveEntitiesIndex(), inSpawn && spawn.update()) : this.leave(id)))
+        if (0 !== isAlive[id] && 2 !== playerStatus[id] && gameButtons.canSurrender(id)) {
+            if (1 === aliveCount) endGame.endGame(id)
+            else {
+                announcements.genericAnnouncement(id, id === myID ? 21 : 22);
+                if (8 === gamemode) endGame.endGame(1 - id)
+                else if (singleplayer) {
+                    managePlayerDeath(id);
+                    findShiftAliveEntitiesIndex();
+                    if (inSpawn) spawn.update()
+                } else this.leave(id)
+            }
+        }
     }
 }
 
@@ -1836,6 +1859,8 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     fadeIn.init();
     mainHandler.canvasDirty = true;
     singleplayer && inSpawn || setAndroidState(1)
+
+    if (typeof(modHandler) == 'object') modHandler.scriptGameInit();
 }
 
 function activateCameraRenderer() {
@@ -1856,7 +1881,7 @@ var difficultyEngine, speed, botBoatEngine, botManager, processAction, boatSpeed
     gameMessages, attackRatioBar, mouseCamera, playtime, troopBar, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, infoRenderer, nickNames, zombieSettings, configFakeMap,
     mapInfo, generateHeightmap, keyboardCamera, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, touchInputHandler, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
-    wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
+    wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds, modHandler, latencySimulator;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
@@ -1927,6 +1952,8 @@ function construct() {
     customJSON = new CustomJSON;
     intelliAttack = new IntelliAttack;
     sounds = new Sounds;
+    if (typeof(ModHandler) == 'function') modHandler = new ModHandler;
+    if (typeof(LatencySimulator) == 'function') latencySimulator = new LatencySimulator;
 }
 
 function PlayerActions() {
@@ -2048,7 +2075,10 @@ function PlayerActions() {
             this.end();
             if (this.isHuman(targetID) && 7 > gamemode && 1071 > mainHandler.getTicksElapsed()) return announcements.antiBoosting(), 1;
             announcements.lowBalance();
-            singleplayer ? processDonation(myID, targetID, divideFloor(attackRatioBar.getFlooredRatio() * troops[myID], 1E3)) : dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
+            if (singleplayer) {
+                if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, divideFloor(attackRatioBar.getFlooredRatio()), targetID, 0, 0)
+                else processDonation(myID, targetID, divideFloor(attackRatioBar.getFlooredRatio() * troops[myID], 1E3))
+            } else dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
             return 1
         }
         if (4 === buttonType) {
@@ -2062,8 +2092,10 @@ function PlayerActions() {
                 } else {
                     this.end();
                     announcements.lowBalance();
-                    if (singleplayer) processAttack(myID, targetID, attackRatioBar.getFlooredRatio());
-                    else if (!freeSpawn || 300 < gameStatistics.getUnformattedTime()) dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
+                    if (singleplayer) {
+                        if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, attackRatioBar.getFlooredRatio(), targetID, 0, 0)
+                        else processAttack(myID, targetID, attackRatioBar.getFlooredRatio());
+                    } else if (!freeSpawn || 300 < gameStatistics.getUnformattedTime()) dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
                 }
             } else if (iconActive[8]) {
                 this.end();
@@ -2075,8 +2107,10 @@ function PlayerActions() {
             if (iconActive[1]) {
                 this.end();
                 announcements.lowBalance();
-                if (singleplayer) processAction.processSendBoat(myID, attackRatioBar.getFlooredRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
-                else dataEncoder.setLocation(attackRatioBar.getFlooredRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
+                if (singleplayer) {
+                    if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(1, attackRatioBar.getFlooredRatio(), 0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
+                    else processAction.processSendBoat(myID, attackRatioBar.getFlooredRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
+                } else dataEncoder.setLocation(attackRatioBar.getFlooredRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 return 1;
             }
             return 0;
@@ -3429,16 +3463,22 @@ function AttackBars() {
                         myAttacks[aIndex].updated = true;
                         myAttacks[aIndex].cancelling = true;
                         if (myAttacks[aIndex].id === 0) {
-                            if (singleplayer) processAction.processCancel(myID, myAttacks[aIndex].targetID);
-                            else dataEncoder.cancel(myAttacks[aIndex].targetID === maxEntities ? myID : myAttacks[aIndex].targetID);
-                        } else if (singleplayer) processAction.processCancelBoat(myID, myAttacks[aIndex].id);
-                        else dataEncoder.cancelBoat(myAttacks[aIndex].id);
+                            if (singleplayer) {
+                                if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(2, 0, myAttacks[aIndex].targetID, 0, 0)
+                                else processAction.processCancel(myID, myAttacks[aIndex].targetID);
+                            } else dataEncoder.cancel(myAttacks[aIndex].targetID === maxEntities ? myID : myAttacks[aIndex].targetID);
+                        } else if (singleplayer) {
+                            if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(7, 0, myAttacks[aIndex].id, 0 ,0)
+                            else processAction.processCancelBoat(myID, myAttacks[aIndex].id);
+                        } else dataEncoder.cancelBoat(myAttacks[aIndex].id);
                     }
                     return true;
                 }
                 if (myAttacks[aIndex].id === 0 && xPos >= attackBarXPos + attackBarWidth - barCanvasHeight - buttonSize && xPos <= attackBarXPos + attackBarWidth + buttonSize) {
-                    if (singleplayer) processAttack(myID, myAttacks[aIndex].targetID, attackRatioBar.getFlooredRatio());
-                    else dataEncoder.attack(attackRatioBar.getFlooredRatio(), myAttacks[aIndex].targetID === maxEntities ? myID : myAttacks[aIndex].targetID);
+                    if (singleplayer) {
+                        if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, attackRatioBar.getFlooredRatio(), myAttacks[aIndex].targetID, 0, 0)
+                        else processAttack(myID, myAttacks[aIndex].targetID, attackRatioBar.getFlooredRatio());
+                    } else dataEncoder.attack(attackRatioBar.getFlooredRatio(), myAttacks[aIndex].targetID === maxEntities ? myID : myAttacks[aIndex].targetID);
                     return true;
                 }
             }
@@ -3744,8 +3784,10 @@ function Peace() {
         var peaceBarYPos = getPeaceBarYPos();
         if (yPos < peaceBarYPos || yPos > peaceBarYPos + peaceBarHeight) return false;
         var vote = xPos > mainCanvasWidth - canvasPadding - this.width / 2;
-        if (singleplayer) this.processVotePeace(0, vote)
-        else if (playerActions.isHuman(myID) && 0 !== isAlive[myID]) dataEncoder.votePeace(vote);
+        if (singleplayer) {
+            if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(6, 0, vote, 0, 0)
+            else this.processVotePeace(0, vote)
+        } else if (playerActions.isHuman(myID) && 0 !== isAlive[myID]) dataEncoder.votePeace(vote);
         return true
     };
     this.update = function() {
@@ -4479,7 +4521,7 @@ function TroopBar() {
         shouldRedBG = true;
         shouldUpdate = false;
         lastTroops = troops[myID];
-        sizeRatio = 1.5;
+        sizeRatio = 1.2;
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
@@ -5363,11 +5405,18 @@ function IntelliAttack() {
     this.startIntelli = function() {
         var targets = this.getBorderingEntities(myID, !teamGame).filter(targetID => targetID != maxEntities);
         this.removeAttackingTarget(myID, targets);
-        0 !== targets.length && (targets = this.calcValue(targets), this.sortTargets(targets), this.doIntelliAttack(targets[0]))
+        if (0 !== targets.length) {
+            targets = this.calcValue(targets);
+            this.sortTargets(targets);
+            this.doIntelliAttack(targets[0]);
+        }
     };
     this.doIntelliAttack = function(target) {
         announcements.lowBalance();
-        singleplayer ? processAttack(myID, target.player, target.ratio) : dataEncoder.attack(target.ratio, target.player === maxEntities ? myID : target.player)
+        if (singleplayer) {
+            if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, target.ratio, target.player, 0, 0)
+            else processAttack(myID, target.player, target.ratio)
+        } else dataEncoder.attack(target.ratio, target.player === maxEntities ? myID : target.player)
     };
     this.sortTargets = function(targetPenalties) {
         targetPenalties.sort(function(prev, next) {
@@ -7961,7 +8010,7 @@ function UserSettings() {
     function initSettingsArray() {
         settingsArray[0] = "Player " + Math.floor(1E3 * Math.random());
         settingsArray[1] = mainCanvasWidth < mainCanvasHeight ? Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)) : 0;
-        settingsArray[2] = 1;
+        settingsArray[2] = 0;
         settingsArray[3] = 1;
         settingsArray[4] = mainCanvasWidth < mainCanvasHeight ? 0 : 1;
         settingsArray[5] = 0;
@@ -8070,8 +8119,10 @@ function DelayedAttack() {
                     else {
                         var ratio = savedAttacks[aIndex + 1];
                         if (targetID >= maxEntities && bordersNeutral(myID) || targetID < maxEntities && bordersTarget(myID, targetID)) {
-                            if (singleplayer) processAttack(myID, targetID, ratio)
-                            else dataEncoder.attack(ratio, targetID === maxEntities ? myID : targetID);
+                            if (singleplayer) {
+                                if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, ratio, targetID, 0, 0)
+                                else processAttack(myID, targetID, ratio)
+                            } else dataEncoder.attack(ratio, targetID === maxEntities ? myID : targetID);
                             shiftAttacksLeft(aIndex);
                         }
                     }
@@ -8626,17 +8677,27 @@ function InfoRenderer() {
 
         for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
             idIndex = aliveEntities[aliveIndex];
-            fontSize = Math.floor(fontScalarConst * mainScaleFactor * entityLabelScaleY[idIndex] * labelWidth[idIndex]);
+            fontSize = Math.floor(fontScalarConst * mainScaleFactor * entityLabelScaleY[idIndex] * labelWidth[idIndex] * (playerCount <= 16 ? 1.5 : 1));
             if (fontSize >= minFontSize && fontSize < maxFontSize && labelXPos[idIndex] + labelWidth[idIndex] > camLeft && labelXPos[idIndex] < camRight && labelYPos[idIndex] + labelHeight[idIndex] > camTop && labelYPos[idIndex] < camBottom) {
                 landCenterX = Math.floor(prevClientWidth * (labelXPos[idIndex] + labelWidth[idIndex] / 2 - camLeft) / (camRight - camLeft));
                 landCenterY = Math.floor(prevClientHeight * (labelYPos[idIndex] + labelHeight[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
-                infoCanvasCtx.font = fontStyles[playerStatus[idIndex]] + fontSize * 1.5 + fontSizeArial;
+                infoCanvasCtx.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
 
-                var fontColor = fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]];
+                var fontColor = fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]],
+                    textLabel = playerCount <= 16 ? attackBars.splitNumber(troops[idIndex]): nickname[idIndex];
+                if (typeof(modHandler) == 'object' && modHandler.font) {
+                    if (modHandler.density(idIndex) <= 0.5 || idIndex < playerCount && modHandler.density(idIndex) <= (divideFloor(mainHandler.getTicksElapsed(), 100) >= 5 ? 1.5 : 4)) {
+                        fontColor = redBrightRGB;
+                    } else if (idIndex >= playerCount && difficultyEngine.botTiming[idIndex - playerCount] <= 20 && mainHandler.getTicksElapsed() % 100 <= 80) {
+                        fontColor = "rgb(0,0,200)";
+                    }
+                    if (playerCount > 16) textLabel += ` (${idIndex})`
+                }
                 infoCanvasCtx.fillStyle = fontColor;
-                infoCanvasCtx.fillText(attackBars.splitNumber(troops[idIndex]), landCenterX, landCenterY);
+                infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY);
                 needsDrawImage = true;
-
+                
+                fontSize *= (playerCount <= 16 ? 0.67 : 1)
                 if (0 < displayIconRemainingTime[idIndex]) {
                     if (0 === landIDOrder[idIndex])
                         if (emojis.isFlag(displayingEmojiID[idIndex])) {
@@ -8685,7 +8746,8 @@ function InfoRenderer() {
                 var getFontSize = Math.floor(fontScaleFactor * fontSize);
                 if (getFontSize >= minFontSize) {
                     infoCanvasCtx.font = fontWeightBold + getFontSize + fontSizeArial;
-                    infoCanvasCtx.fillText(nickname[idIndex], landCenterX, landCenterY + Math.floor(.78 * fontSize))
+                    textLabel = playerCount <= 16 ? nickname[idIndex] + (typeof(modHandler) == 'object' && modHandler.font ? ` (${idIndex})` : ""): attackBars.splitNumber(troops[idIndex])
+                    infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY + Math.floor(.78 * fontSize))
                 }
             }
         }
@@ -8778,7 +8840,7 @@ function InfoRenderer() {
         labelYScalarFactor = 1.8;
         maxFontSize = Math.floor(.5 * minDim);
         imposterFontColorThresholdSize = Math.floor(.2 * maxFontSize);
-        minFontSize = 8 === gamemode ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
+        minFontSize = playerCount <= 16 ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
         updateLabelCounters = entityBatchIndex = 0;
         labelXPos = new Uint16Array(maxEntities);
         labelYPos = new Uint16Array(maxEntities);
@@ -8793,14 +8855,14 @@ function InfoRenderer() {
         renderOffsetY = renderOffsetX = 0;
         canvasScale = 1;
         updateInterval = 0;
-        if (8 === gamemode) {
+        if (playerCount <= 16) {
             var entityIndex;
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             var entityLabelScale = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000").width);
             for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale
         } else {
             infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
-            entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap)).width);
+            entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap) + (typeof(modHandler) == "object") ? ` (${maxEntities - 1})` : "").width);
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
                 entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nickname[entityIndex]).width);
@@ -12099,6 +12161,7 @@ function MultiplayerHandler() {
             infoRenderer.setPlayerLabels();
             infoRenderer.drawCanvas();
             mapUpdate.updateMapCanvas();
+            if (typeof(modHandler) == 'object') modHandler.scriptSpawnTick()
         }
     };
     this.update = function() {
