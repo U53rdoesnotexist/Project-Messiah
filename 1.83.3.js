@@ -1881,7 +1881,7 @@ var difficultyEngine, speed, botBoatEngine, botManager, processAction, boatSpeed
     gameMessages, attackRatioBar, mouseCamera, playtime, troopBar, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
     singleSettings, nameInput, sprites, pixel, userSettings, attacks, interest, infoRenderer, nickNames, zombieSettings, configFakeMap,
     mapInfo, generateHeightmap, keyboardCamera, boatPathChecker, fakeRandom, boatPathHandler, gradientEdge, touchInputHandler, dataDecoder, fadeIn, dataEncoder, canvasManager, playerAura, lobby, mapMenu, peace, setGameOrigin, 
-    wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds, modHandler, latencySimulator;
+    wsManager, delayedAttack, moreSettings, specialGames, humanBots, antiFullSend, diplomacyHandler, loadCustomMap, customJSON, intelliAttack, sounds;
 
 function construct() {
     difficultyEngine = new DifficultyEngine;
@@ -1952,8 +1952,7 @@ function construct() {
     customJSON = new CustomJSON;
     intelliAttack = new IntelliAttack;
     sounds = new Sounds;
-    if (typeof(ModHandler) == 'function') modHandler = new ModHandler;
-    if (typeof(LatencySimulator) == 'function') latencySimulator = new LatencySimulator;
+    if (typeof(modConstruct) == "function") modConstruct();
 }
 
 function PlayerActions() {
@@ -2088,7 +2087,8 @@ function PlayerActions() {
                     if (singleplayer) {
                         spawn.set(0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                         spawn.update();
-                    } else dataEncoder.setLocation(1E3, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
+                    } else if (typeof(spawnHider) == "object" && typeof(modHandler) == "object" && modHandler.hideSpawn) spawnHider.addSpawn(pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
+                    else dataEncoder.setLocation(1E3, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 } else {
                     this.end();
                     announcements.lowBalance();
