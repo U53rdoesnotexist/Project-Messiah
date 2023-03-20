@@ -244,8 +244,8 @@ function Messiah() {
                     }
                 }
             }
-        } else if (modHandler.cycle == 9 && earlyMicro || modHandler.cycle >= 10 && modHandler.tick <= upperTimeLimit[land[myID] <= 6E4 ? 0 : 1]) {
-            if (this.opponent == null || this.opponent != null && (this.opponent.distance >= 20 || troops[myID] >= 0.8 * troops[this.opponent])) {
+        } else if ((modHandler.cycle == 9 && earlyMicro || modHandler.cycle >= 10) && modHandler.tick <= upperTimeLimit[land[myID] <= 6E4 ? 0 : 1] && modHandler.tick > 10) {
+            if (this.opponent == null || this.opponent != null && (this.opponent.distance >= 20 || troops[myID] >= 0.85 * troops[this.opponent.id])) {
                 //If conditions allow, search and attack all bots which will attack within 7 ticks and does not border free land
                 this.borderingBots[myID].sort((prev, next) => land[next] - land[prev]);
                 for (var idIndex of this.borderingBots[myID]) {
