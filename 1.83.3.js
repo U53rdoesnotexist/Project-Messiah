@@ -837,7 +837,6 @@ function gameTick() {
     wsManager.update();
 
     if (typeof(modHandler) == 'object') modHandler.scriptGameTick();
-    if (typeof(latencySimulator) == 'object') latencySimulator.update();
 }
 
 function clientTick2() {
@@ -2075,7 +2074,7 @@ function PlayerActions() {
             if (this.isHuman(targetID) && 7 > gamemode && 1071 > mainHandler.getTicksElapsed()) return announcements.antiBoosting(), 1;
             announcements.lowBalance();
             if (singleplayer) {
-                if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, divideFloor(attackRatioBar.getFlooredRatio()), targetID, 0, 0)
+                if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, divideFloor(attackRatioBar.getFlooredRatio()), targetID, 0, 0)
                 else processDonation(myID, targetID, divideFloor(attackRatioBar.getFlooredRatio() * troops[myID], 1E3))
             } else dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
             return 1
@@ -2087,13 +2086,13 @@ function PlayerActions() {
                     if (singleplayer) {
                         spawn.set(0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                         spawn.update();
-                    } else if (typeof(spawnHider) == "object" && typeof(modHandler) == "object" && modHandler.hideSpawn) spawnHider.addSpawn(pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
+                    } else if (typeof(spawnHider) == "object" && modHandler.hideSpawn) spawnHider.addSpawn(pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
                     else dataEncoder.setLocation(1E3, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 } else {
                     this.end();
                     announcements.lowBalance();
                     if (singleplayer) {
-                        if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, attackRatioBar.getFlooredRatio(), targetID, 0, 0)
+                        if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, attackRatioBar.getFlooredRatio(), targetID, 0, 0)
                         else processAttack(myID, targetID, attackRatioBar.getFlooredRatio());
                     } else if (!freeSpawn || 300 < gameStatistics.getUnformattedTime()) dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
                 }
@@ -2108,7 +2107,7 @@ function PlayerActions() {
                 this.end();
                 announcements.lowBalance();
                 if (singleplayer) {
-                    if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(1, attackRatioBar.getFlooredRatio(), 0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
+                    if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(1, attackRatioBar.getFlooredRatio(), 0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
                     else processAction.processSendBoat(myID, attackRatioBar.getFlooredRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 } else dataEncoder.setLocation(attackRatioBar.getFlooredRatio(), pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 return 1;
@@ -3464,11 +3463,11 @@ function AttackBars() {
                         myAttacks[aIndex].cancelling = true;
                         if (myAttacks[aIndex].id === 0) {
                             if (singleplayer) {
-                                if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(2, 0, myAttacks[aIndex].targetID, 0, 0)
+                                if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(2, 0, myAttacks[aIndex].targetID, 0, 0)
                                 else processAction.processCancel(myID, myAttacks[aIndex].targetID);
                             } else dataEncoder.cancel(myAttacks[aIndex].targetID === maxEntities ? myID : myAttacks[aIndex].targetID);
                         } else if (singleplayer) {
-                            if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(7, 0, myAttacks[aIndex].id, 0 ,0)
+                            if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(7, 0, myAttacks[aIndex].id, 0 ,0)
                             else processAction.processCancelBoat(myID, myAttacks[aIndex].id);
                         } else dataEncoder.cancelBoat(myAttacks[aIndex].id);
                     }
@@ -3476,7 +3475,7 @@ function AttackBars() {
                 }
                 if (myAttacks[aIndex].id === 0 && xPos >= attackBarXPos + attackBarWidth - barCanvasHeight - buttonSize && xPos <= attackBarXPos + attackBarWidth + buttonSize) {
                     if (singleplayer) {
-                        if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, attackRatioBar.getFlooredRatio(), myAttacks[aIndex].targetID, 0, 0)
+                        if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, attackRatioBar.getFlooredRatio(), myAttacks[aIndex].targetID, 0, 0)
                         else processAttack(myID, myAttacks[aIndex].targetID, attackRatioBar.getFlooredRatio());
                     } else dataEncoder.attack(attackRatioBar.getFlooredRatio(), myAttacks[aIndex].targetID === maxEntities ? myID : myAttacks[aIndex].targetID);
                     return true;
@@ -3785,7 +3784,7 @@ function Peace() {
         if (yPos < peaceBarYPos || yPos > peaceBarYPos + peaceBarHeight) return false;
         var vote = xPos > mainCanvasWidth - canvasPadding - this.width / 2;
         if (singleplayer) {
-            if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(6, 0, vote, 0, 0)
+            if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(6, 0, vote, 0, 0)
             else this.processVotePeace(0, vote)
         } else if (playerActions.isHuman(myID) && 0 !== isAlive[myID]) dataEncoder.votePeace(vote);
         return true
@@ -5285,6 +5284,10 @@ function processAttack(authorID, targetID, ratio) {
                 }
             }
         }
+        if (authorID == myID && typeof(modHandler) == "object" && modHandler.messiah) {
+            var paIndex = messiah.pending.findIndex(action => action.targetID == targetID && action.ratio == ratio);
+            if (paIndex != -1) messiah.pending.splice(paIndex)
+        }
     }
 }
 
@@ -5414,7 +5417,7 @@ function IntelliAttack() {
     this.doIntelliAttack = function(target) {
         announcements.lowBalance();
         if (singleplayer) {
-            if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, target.ratio, target.player, 0, 0)
+            if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, target.ratio, target.player, 0, 0)
             else processAttack(myID, target.player, target.ratio)
         } else dataEncoder.attack(target.ratio, target.player === maxEntities ? myID : target.player)
     };
@@ -8120,7 +8123,7 @@ function DelayedAttack() {
                         var ratio = savedAttacks[aIndex + 1];
                         if (targetID >= maxEntities && bordersNeutral(myID) || targetID < maxEntities && bordersTarget(myID, targetID)) {
                             if (singleplayer) {
-                                if (typeof(modHandler) == "object" && typeof(latencySimulator) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, ratio, targetID, 0, 0)
+                                if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, ratio, targetID, 0, 0)
                                 else processAttack(myID, targetID, ratio)
                             } else dataEncoder.attack(ratio, targetID === maxEntities ? myID : targetID);
                             shiftAttacksLeft(aIndex);
@@ -9385,18 +9388,22 @@ function main() {
     androidVersion = (androidObject = "undefined" !== typeof Android ? Android : null) ? androidObject.getVersion() : 0;
     12 <= androidVersion && androidObject.prepareAd("6685097465");
     isIOS = false;
-    window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iosCommandA && (isIOS = true, window.webkit.messageHandlers.iosCommandA.postMessage("prepare ad 5907904081"), iosObject = "undefined" !== typeof mwIOSdataX ? mwIOSdataX : {
-        username: "iOS User " + Math.floor(1E3 * Math.random()),
-        id: Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)),
-        zoom: true,
-        sound: true,
-        emojis: "0",
-        colors: "0",
-        password: "0",
-        freeSpawn: false,
-        unlimitedTime: false,
-        alliances: false
-    });
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iosCommandA) {
+        isIOS = true;
+        window.webkit.messageHandlers.iosCommandA.postMessage("prepare ad 5907904081");
+        iosObject = "undefined" !== typeof mwIOSdataX ? mwIOSdataX : {
+            username: "iOS User " + Math.floor(1E3 * Math.random()),
+            id: Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1)),
+            zoom: true,
+            sound: true,
+            emojis: "0",
+            colors: "0",
+            password: "0",
+            freeSpawn: false,
+            unlimitedTime: false,
+            alliances: false
+        };
+    }
     timeHash = (new Date).getTime() % 1024;
     isNotTopWindow = checkNotTopWindow();
     canvasManager.init();

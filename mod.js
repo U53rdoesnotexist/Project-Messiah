@@ -27,6 +27,7 @@ function ModHandler() {
             this.cycle++;
             this.tick %= 100;
         }
+        if (this.latency) latencySimulator.update();
         if (this.messiah) messiah.update()
     };
     this.density = function(id) {
@@ -106,30 +107,23 @@ function SpawnHider() {
 }
 
 function Messiah() {
-    function opening() {
-        var ratio = 0;
-        const timings = (!singleplayer || modHandler.latency) ? [64, 69, 67, 65, 63] : [71, 76, 74, 72, 70],
-            ratios = [282, 345, 321, 307, 320];
-        if (modHandler.tick == timings[modHandler.cycle - 1] - (this.opponent != null && !this.opponent.getDistance) ? 7 : 0) ratio = ratios[modHandler.cycle - 1];
-        //If Touching bot, reduce send percentage or do earlier depend on coverage?
-        if (ratio) doAttack(maxEntities, ratio);
-    }
-    function continuousExpansion() {
-
-    }
-    function micro() {
-
-    }
     function doAttack(targetID, ratio) {
         if (singleplayer) {
             if (modHandler.latency) latencySimulator.addPendingAction(0, ratio, targetID, 0, 0)
             else processAttack(myID, targetID, ratio)
         } else dataEncoder.attack(ratio, targetID === maxEntities ? myID : targetID)
+        messiah.pending.push({
+            targetID: targetID,
+            ratio: ratio,
+            tick: latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed() + latencySimulator.ping)
+        })
     }
-    this.borderingLandPixels;
-    this.borderingBots;
+    function getBorderRatio(authorID, targetID) {
+        return messiah.borderingLandPixels[authorID].filter(pIndex => targetID === maxEntities ? pixel.isNeutral(pIndex) : pixel.strongIsOwner(targetID, pIndex)).length / messiah.borderingLandPixels[authorID].length
+    }
+    this.borderingLandPixels, this.borderingBots = null;
     this.opponent = null;
-    this.pending = [];
+    this.pending = null;
     this.init = function() {
         if (playerCount == 2) {
             this.opponent = {
@@ -138,11 +132,25 @@ function Messiah() {
             }
         }
         this.pending = [];
-        this.borderingBots = new Array(512);
-        this.borderingLandPixels = new Array(512);
-        for (let idIndex of this.borderingLandPixels) this.borderingLandPixels[idIndex] = new Array();
+        this.borderingBots = new Array(maxEntities);
+        this.borderingLandPixels = new Array(maxEntities);
+        for (var idIndex = 0; idIndex < maxEntities; idIndex++) {
+            this.borderingLandPixels[idIndex] = new Array();
+            this.borderingBots[idIndex] = new Array();
+        }
     }
     this.update = function() {
+        this.updateBorderInfo();
+        for (var pendingAction of this.pending) {
+            if (pendingAction.tick + 7 <= mainHandler.getTicksElapsed() + 1) this.pending = this.pending.filter(action => action != pendingAction)
+        }
+
+        if (modHandler.cycle <= 5) this.opening();
+        else if (modHandler.cycle <= 9) this.continuousExpansion();
+        if (modHandler.cycle >= 7) this.micro();
+
+    }
+    this.updateBorderInfo = function() {
         this.borderingLandPixels[myID] = new Array();
         this.borderingBots[myID] = new Array();
         if (this.opponent != null && latencySimulator.getNextUpdateTick(modHandler.tick)) {
@@ -172,9 +180,31 @@ function Messiah() {
                 }
             }
         }
+    }
+    this.opening = function() {
+        if (this.pending.findIndex(atk => atk.targetID == maxEntities) !== -1) return 0
+        var ratio = 0;
+        const borderCondition = this.borderingBots[myID].length > 0 ? getBorderRatio(myID, maxEntities) < .8 ? 2 : 1 : 0
+        const timings = (!singleplayer || modHandler.latency) ? [64, 69, 67, 65, 63] : [71, 76, 74, 72, 70],
+            ratios = [282, 345, 321, 307, 320];
+        if (modHandler.tick == timings[modHandler.cycle - 1] - (this.opponent != null && !this.opponent.getDistance || borderCondition == 2) ? 7 : 0) ratio = ratios[modHandler.cycle - 1] * (borderCondition == 1 ? 19/20 : 1);
+        if (ratio) doAttack(maxEntities, ratio);
+    }
+    this.continuousExpansion = function() {
+        const cycleAttackInitTimings = [[26, 33], [3, 17]],
+            reinforcementThresholds = [850, 1250, 1500, 1250],
+            reinforcementAmounts = [2500, 3000, 3000, 2750]
+        if (this.pending.findIndex(atk => atk.targetID == maxEntities) !== -1 || attacks.getRemainingTroopsFromTarget(myID, maxEntities) > reinforcementThresholds[modHandler.cycle - 6]) return 0
+        var amount = 0;
+        const cycleIndex = modHandler.cycle - 6;
+        if (cycleIndex <= 1) {
+            if (this.opponent != null && !this.opponent.distance && troops[myID] < troops[this.opponent.id] && modHandler.tick == cycleAttackInitTimings[cycleIndex][1] || modHandler.tick == cycleAttackInitTimings[cycleIndex][0]) amount = 2500
+            else if (modHandler.tick > cycleAttackInitTimings[cycleIndex][1] && modHandler.tick <= 74) amount = 1;
+        } else amount = 1;
+        if (amount == 1) amount = getBorderRatio(myID, maxEntities) <= 0.05 ? 0 : reinforcementAmounts[cycleIndex] *= getMin(1, 0.5 + getBorderRatio(myID, maxEntities))
+        if (amount) doAttack(maxEntities, divideFloor(amount * 1E3, troops[myID]))
+    }
+    this.micro = function() {
 
-        if (modHandler.cycle <= 5) opening();
-        else if (modHandler.cycle <= 9) continuousExpansion();
-        if (modHandler.cycle >= 7) micro();
     }
 }
