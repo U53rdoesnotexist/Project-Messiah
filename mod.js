@@ -121,10 +121,15 @@ function Messiah() {
     function getBorderRatio(authorID, targetID) {
         return messiah.borderingLandPixels[authorID].filter(pIndex => targetID === maxEntities ? pixel.isNeutral(pIndex) : pixel.strongIsOwner(targetID, pIndex)).length / messiah.borderingLandPixels[authorID].length
     }
+    function alreadyAttacking(targetID, reinforcementThreshold) {
+        return messiah.pending.findIndex(atk => atk.targetID == targetID) !== -1 || attacks.getRemainingTroopsFromTarget(myID, targetID) > reinforcementThreshold;
+    }
+    var earlyMicro;
     this.borderingLandPixels, this.borderingBots = null;
     this.opponent = null;
     this.pending = null;
     this.init = function() {
+        earlyMicro = false;
         if (playerCount == 2) {
             this.opponent = {
                 id: 1 - myID,
@@ -144,6 +149,7 @@ function Messiah() {
         for (var pendingAction of this.pending) {
             if (pendingAction.tick + 7 <= mainHandler.getTicksElapsed() + 1) this.pending = this.pending.filter(action => action != pendingAction)
         }
+        if (modHandler.cycle == 9 && modHandler.tick == 0) earlyMicro = land[myID] < 8E3
 
         if (modHandler.cycle <= 5) this.opening();
         else if (modHandler.cycle <= 9) this.continuousExpansion();
@@ -168,7 +174,7 @@ function Messiah() {
                     for (var pIndex3 of landBorderPixels[owner]) {
                         for (var side2 = 3; side2 >= 0; side2--) {
                             var pIndex4 = pIndex3 + offset[side2];
-                            if (!pixel.strongIsOwner(owner, pIndex4) && !this.borderingLandPixels[owner].includes(pIndex4)) this.borderingLandPixels[pIndex4].push(pIndex4);
+                            if (!pixel.strongIsOwner(owner, pIndex4) && !this.borderingLandPixels[owner].includes(pIndex4)) this.borderingLandPixels[owner].push(pIndex4);
                         }
                     }
                 }
@@ -203,7 +209,7 @@ function Messiah() {
         }
     }
     this.opening = function() {
-        if (this.pending.findIndex(atk => atk.targetID == maxEntities) !== -1) return 0
+        if (alreadyAttacking(maxEntities, 0)) return 0
         var ratio = 0;
         const borderCondition = this.borderingBots[myID].length > 0 ? getBorderRatio(myID, maxEntities) < .8 ? 2 : 1 : 0
         const timings = (!singleplayer || modHandler.latency) ? [64, 69, 67, 65, 63] : [71, 76, 74, 72, 70],
@@ -213,9 +219,9 @@ function Messiah() {
     }
     this.continuousExpansion = function() {
         const cycleAttackInitTimings = [[26, 33], [3, 17]],
-            reinforcementThresholds = [850, 1250, 1500, 1250],
-            reinforcementAmounts = [2500, 3000, 3000, 2750]
-        if (this.pending.findIndex(atk => atk.targetID == maxEntities) !== -1 || attacks.getRemainingTroopsFromTarget(myID, maxEntities) > reinforcementThresholds[modHandler.cycle - 6]) return 0
+            reinforcementThresholds = [850, 1250, 1500, 1000],
+            reinforcementAmounts = [2500, 3000, 3000, 2500]
+        if (alreadyAttacking(maxEntities, reinforcementThresholds[modHandler.cycle - 6])) return 0
         var amount = 0;
         const cycleIndex = modHandler.cycle - 6;
         if (cycleIndex <= 1) {
@@ -226,6 +232,36 @@ function Messiah() {
         if (amount) doAttack(maxEntities, divideFloor(amount * 1E3, troops[myID]))
     }
     this.micro = function() {
-        
+        const upperTimeLimit = [70, 80];
+        var targetID, amount = 0;
+        if (modHandler.tick >= 50) { //Attack Opening Encircled Bots
+            for (var idIndex of this.borderingBots[myID]) {
+                if (getBorderRatio(idIndex, myID) >= 0.98 && !alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5)) {
+                    if (modHandler.tick <= 80 && (modHandler.density(idIndex) <= 0.5 || difficultyEngine.botTiming[idIndex - playerCount] + latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed() + 1) <= 90)) {
+                        targetID = idIndex;
+                        amount = 2.6 * land[idIndex];
+                        break;
+                    }
+                }
+            }
+        } else if (modHandler.cycle == 9 && earlyMicro || modHandler.cycle >= 10 && modHandler.tick <= upperTimeLimit[land[myID] <= 6E4 ? 0 : 1]) {
+            if (this.opponent == null || this.opponent != null && (this.opponent.distance >= 20 || troops[myID] >= 0.8 * troops[this.opponent])) {
+                //If conditions allow, search and attack all bots which will attack within 7 ticks and does not border free land
+                this.borderingBots[myID].sort((prev, next) => land[next] - land[prev]);
+                for (var idIndex of this.borderingBots[myID]) {
+                    if (!alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5) && this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1 && !attacks.check(idIndex, maxEntities)) {
+                        if (modHandler.density(idIndex) <= 0.5 || difficultyEngine.botTiming[idIndex - playerCount] <= 7) {
+                            targetID = idIndex;
+                            amount = 2.3 * land[idIndex];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (amount) {
+            amount = getMin(amount, Math.floor(0.15 * troops[myID]));
+            doAttack(targetID, divideFloor(amount * 1E3, troops[myID]))
+        }
     }
 }
