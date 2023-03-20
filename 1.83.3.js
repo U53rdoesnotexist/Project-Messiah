@@ -1122,6 +1122,14 @@ function BoatSpeed() {
             targetPixelIndicies[boatIndex] = targetPixelIndicies[boatIndex + 1];
         }
     }
+
+    function getXPos(xCoord) {
+        return Math.floor(mainScaleFactor * xCoord - viewportX)
+    }
+    
+    function getYPos(yCoord) {
+        return Math.floor(mainScaleFactor * yCoord - viewportY)
+    }
     var currentBoatID, maxBoatID, currentBoatIndex, authorIDs, ticksUntilUpdate, boatIDs, currentPixelIndicies, targetPixelIndicies;
     this.init = function() {
         currentBoatID = 1;
@@ -1201,6 +1209,27 @@ function BoatSpeed() {
                         }
                     }
                 }
+            }
+        }
+        if (0 !== currentBoatIndex && typeof(modHandler) == "object" && modHandler.boatLines) {
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            for (boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
+                var borderColors = null;
+                if (landBorderPixels[myID].length != 0) borderColors = [pixelRGBA[landBorderPixels[myID][0]], pixelRGBA[landBorderPixels[myID][0]+1], pixelRGBA[landBorderPixels[myID][0]+2], pixelRGBA[landBorderPixels[myID][0]+3]]
+                else if (waterBorderPixels[myID].length != 0) borderColors = [pixelRGBA[waterBorderPixels[myID][0]], pixelRGBA[waterBorderPixels[myID][0]+1], pixelRGBA[waterBorderPixels[myID][0]+2], pixelRGBA[waterBorderPixels[myID][0]+3]]
+                else if (mountainBorderPixels[myID].length != 0) borderColors = [pixelRGBA[mountainBorderPixels[myID][0]], pixelRGBA[mountainBorderPixels[myID][0]+1], pixelRGBA[mountainBorderPixels[myID][0]+2], pixelRGBA[mountainBorderPixels[myID][0]+3]]
+                mainCanvasCtx.strokeStyle = borderColors != null ? `rgba(${borderColors[0]}, ${borderColors[1]}, ${borderColors[2]}, ${(borderColors[3] + 224)/255})` : whiteRGB;
+                var boatX = pixel.toX(currentPixelIndicies[boatIndex]),
+                    boatY = pixel.toY(currentPixelIndicies[boatIndex]),
+                    targetX = pixel.toX(targetPixelIndicies[boatIndex]),
+                    targetY = pixel.toY(targetPixelIndicies[boatIndex]);
+                mainCanvasCtx.beginPath();
+                mainCanvasCtx.moveTo(getXPos(boatX + .5), getYPos(boatY + .5));
+                for (;!pixel.canOwn(pixel.toIndex(boatX, boatY));) {
+                    Math.abs(targetX - boatX) >= Math.abs(targetY - boatY) ? targetX > boatX ? boatX++ : boatX-- : targetY > boatY ? boatY++ : boatY--;
+                    mainCanvasCtx.lineTo(getXPos(boatX + .5), getYPos(boatY + .5));
+                }
+                mainCanvasCtx.stroke()
             }
         }
     }

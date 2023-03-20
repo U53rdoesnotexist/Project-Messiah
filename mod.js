@@ -12,6 +12,7 @@ function ModHandler() {
     this.latency = true;
     this.hideSpawn = true;
     this.messiah = true;
+    this.boatLines = true;
     this.scriptGameInit = function() {
         this.cycle = 1;
         this.tick = 0;
