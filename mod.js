@@ -239,7 +239,7 @@ function Messiah() {
                 if (getBorderRatio(idIndex, myID) >= 0.98 && !alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5)) {
                     if (modHandler.tick <= 80 && (modHandler.density(idIndex) <= 0.5 || difficultyEngine.botTiming[idIndex - playerCount] + latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed() + 1) <= 90)) {
                         targetID = idIndex;
-                        amount = 2.6 * land[idIndex];
+                        amount = 2.7 * land[idIndex];
                         break;
                     }
                 }
@@ -252,14 +252,14 @@ function Messiah() {
                     if (!alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5) && this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1 && !attacks.check(idIndex, maxEntities)) {
                         if (modHandler.density(idIndex) <= 0.5 || difficultyEngine.botTiming[idIndex - playerCount] <= 7) {
                             targetID = idIndex;
-                            amount = 2.3 * land[idIndex];
+                            amount = 2.6 * land[idIndex];
                             break;
                         }
                     }
                 }
             }
         }
-        if (amount) {
+        if (amount && amount < 0.5 * troops[myID]) {
             amount = getMin(amount, Math.floor(0.15 * troops[myID]));
             doAttack(targetID, divideFloor(amount * 1E3, troops[myID]))
         }

@@ -7136,7 +7136,7 @@ function SingleSettings() {
     }
     var canvasDimensionVariables = [0, 0, 0, 0];
     this.botSettings = [{
-        difficulty: 0,
+        difficulty: 1,
         group: 512
     }];
     this.init = function() {
