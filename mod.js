@@ -132,11 +132,11 @@ function Messiah() {
             }
         }
         this.pending = [];
-        this.borderingBots = new Array(maxEntities);
+        this.borderingBots = new Array(playerCount);
         this.borderingLandPixels = new Array(maxEntities);
         for (var idIndex = 0; idIndex < maxEntities; idIndex++) {
             this.borderingLandPixels[idIndex] = new Array();
-            this.borderingBots[idIndex] = new Array();
+            if (idIndex < playerCount) this.borderingBots[idIndex] = new Array();
         }
     }
     this.update = function() {
@@ -148,27 +148,35 @@ function Messiah() {
         if (modHandler.cycle <= 5) this.opening();
         else if (modHandler.cycle <= 9) this.continuousExpansion();
         if (modHandler.cycle >= 7) this.micro();
+        if (modHandler.cycle % 2 == 1 && modHandler.cycle >= 11 && modHandler.tick == 80) doAttack(maxEntities, 10)
 
     }
     this.updateBorderInfo = function() {
-        this.borderingLandPixels[myID] = new Array();
-        this.borderingBots[myID] = new Array();
-        if (this.opponent != null && latencySimulator.getNextUpdateTick(modHandler.tick)) {
-            this.borderingLandPixels[this.opponent.id] = new Array()
-            this.borderingBots[this.opponent.id] = new Array();
+        for (var idIndex = 0; idIndex < maxEntities; idIndex++) {
+            this.borderingLandPixels[idIndex] = new Array();
+            if (idIndex < playerCount) this.borderingBots[idIndex] = new Array();
         }
         for (var pIndex1 of landBorderPixels[myID]) {
-            //Update My Own Border Info
-            for (var side = 3; side >= 0; side--) {
-                var pIndex2 = pIndex1 + offset[side];
+            //Update My Own Border Info and my bots info
+            for (var side1 = 3; side1 >= 0; side1--) {
+                var pIndex2 = pIndex1 + offset[side1];
                 if (!pixel.strongIsOwner(myID, pIndex2) && !this.borderingLandPixels[myID].includes(pIndex2)) this.borderingLandPixels[myID].push(pIndex2);
                 var owner = pixel.getOwner(pIndex2)
-                if (pixel.entityControlled(pIndex2) && owner >= playerCount && !this.borderingBots[myID].includes(owner)) this.borderingBots[myID].push(owner)
+                if (pixel.entityControlled(pIndex2) && owner >= playerCount && !this.borderingBots[myID].includes(owner)) {
+                    this.borderingBots[myID].push(owner);
+                    this.borderingLandPixels[owner] = new Array();
+                    for (var pIndex3 of landBorderPixels[owner]) {
+                        for (var side2 = 3; side2 >= 0; side2--) {
+                            var pIndex4 = pIndex3 + offset[side2];
+                            if (!pixel.strongIsOwner(owner, pIndex4) && !this.borderingLandPixels[owner].includes(pIndex4)) this.borderingLandPixels[pIndex4].push(pIndex4);
+                        }
+                    }
+                }
             }
-            //Update Opponent Border Info and Find Min Distance
-            if (this.opponent != null && modHandler.tick % 5 == 1) {
+            //Update Opponent Border Info and Find Min Distance between us
+            if (this.opponent != null) {
                 for (var pIndex2 of landBorderPixels[this.opponent.id]) {
-                    if (this.opponent.distance) this.opponent.distance = Math.min(modHandler.getDistance(pixel.toX(pIndex1) - pixel.toX(pIndex2), pixel.toY(pIndex1) - pixel.toY(pIndex2)) - 1, this.opponent.distance);
+                    if (modHandler.tick % 5 == 1 && this.opponent.distance) this.opponent.distance = Math.min(modHandler.getDistance(pixel.toX(pIndex1) - pixel.toX(pIndex2), pixel.toY(pIndex1) - pixel.toY(pIndex2)) - 1, this.opponent.distance);
                     if (!this.borderingLandPixels[this.opponent.id].length) {
                         for (var side = 3; side >= 0; side--) {
                             var pIndex3 = pIndex2 + offset[side];
@@ -176,6 +184,19 @@ function Messiah() {
                             var owner = pixel.getOwner(pIndex3)
                             if (pixel.entityControlled(pIndex3) && owner >= playerCount && !this.borderingBots[this.opponent.id].includes(owner)) this.borderingBots[this.opponent.id].push(owner)
                         }
+                    }
+                }
+            }
+        }
+        //Update Other players Border Info
+        for (var idIndex = 0; idIndex < playerCount; idIndex++) {
+            if (idIndex != myID && this.opponent != null && idIndex != this.opponent.id) {
+                for (var pIndex1 of landBorderPixels[idIndex]) {
+                    for (var side = 3; side >= 0; side--) {
+                        var pIndex2 = pIndex1 + offset[side];
+                        if (!pixel.strongIsOwner(idIndex, pIndex2) && !this.borderingLandPixels[idIndex].includes(pIndex2)) this.borderingLandPixels[idIndex].push(pIndex2)
+                        var owner = pixel.getOwner(pIndex2);
+                        if (pixel.entityControlled(pIndex2) && owner >= playerCount && !this.borderingBots[idIndex].includes(owner)) this.borderingBots[idIndex].push(owner)
                     }
                 }
             }
@@ -205,6 +226,6 @@ function Messiah() {
         if (amount) doAttack(maxEntities, divideFloor(amount * 1E3, troops[myID]))
     }
     this.micro = function() {
-
+        
     }
 }

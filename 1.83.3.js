@@ -522,11 +522,13 @@ function botChecksStrongIfBordersStuff(id, considerTeamates) {
 }
 
 function botChecksAndRemovesNeutral() {
-    for (var bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--)
+    for (var bsIndex = botLastBorderingStuffCount - 1; 0 <= bsIndex; bsIndex--) {
         if (botLastBorderingStuffs[bsIndex] === maxEntities) {
             for (botLastBorderingStuffCount--; bsIndex < botLastBorderingStuffCount; bsIndex++) botLastBorderingStuffs[bsIndex] = botLastBorderingStuffs[bsIndex + 1];
             return true
-        } return false
+        }
+    }
+    return false
 }
 
 function botChecksAndRemovesIfAttackingAllTargets(id) {
