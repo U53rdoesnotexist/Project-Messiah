@@ -719,7 +719,7 @@ function DifficultyEngine() {
         this.difficulty = new Uint8Array(botCount);
         botTimingInterval = new Uint16Array(botCount);
         randomTimingInterval = new Uint16Array(botCount);
-        if (customJSON.isCustomJSON) {
+        if (customJSON.isCustomJSON && !customJSON.data.replay) {
             if (customJSON.data.difficulty) {
                 for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
                     this.difficulty[botIndex] = customJSON.data.difficulty[botIndex + 1];
@@ -814,6 +814,7 @@ function clientTick1() {
 }
 
 function gameTick() {
+    if (customJSON.isCustomJSON && customJSON.data.replay && typeof(replayLogger) == "object") replayLogger.update() 
     interest.update();
     antiFullSend.update();
     processAction.update();
@@ -1214,22 +1215,23 @@ function BoatSpeed() {
         if (0 !== currentBoatIndex && typeof(modHandler) == "object" && modHandler.boatLines) {
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             for (boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
-                var borderColors = null;
-                if (landBorderPixels[myID].length != 0) borderColors = [pixelRGBA[landBorderPixels[myID][0]], pixelRGBA[landBorderPixels[myID][0]+1], pixelRGBA[landBorderPixels[myID][0]+2], pixelRGBA[landBorderPixels[myID][0]+3]]
-                else if (waterBorderPixels[myID].length != 0) borderColors = [pixelRGBA[waterBorderPixels[myID][0]], pixelRGBA[waterBorderPixels[myID][0]+1], pixelRGBA[waterBorderPixels[myID][0]+2], pixelRGBA[waterBorderPixels[myID][0]+3]]
-                else if (mountainBorderPixels[myID].length != 0) borderColors = [pixelRGBA[mountainBorderPixels[myID][0]], pixelRGBA[mountainBorderPixels[myID][0]+1], pixelRGBA[mountainBorderPixels[myID][0]+2], pixelRGBA[mountainBorderPixels[myID][0]+3]]
-                mainCanvasCtx.strokeStyle = borderColors != null ? `rgba(${borderColors[0]}, ${borderColors[1]}, ${borderColors[2]}, ${(borderColors[3] + 224)/255})` : whiteRGB;
+                authorID = authorIDs[boatIndex];
+                var boatColor = pixel.getInnerColors(authorID);
+                mainCanvasCtx.strokeStyle = `rgba(${boatColor[0]}, ${boatColor[1]}, ${boatColor[2]}, ${(192 + boatColor)/255})`
                 var boatX = pixel.toX(currentPixelIndicies[boatIndex]),
                     boatY = pixel.toY(currentPixelIndicies[boatIndex]),
                     targetX = pixel.toX(targetPixelIndicies[boatIndex]),
                     targetY = pixel.toY(targetPixelIndicies[boatIndex]);
                 mainCanvasCtx.beginPath();
                 mainCanvasCtx.moveTo(getXPos(boatX + .5), getYPos(boatY + .5));
-                for (;!pixel.canOwn(pixel.toIndex(boatX, boatY));) {
+                for (var dist = 0; !pixel.canOwn(pixel.toIndex(boatX, boatY)); dist++) {
                     Math.abs(targetX - boatX) >= Math.abs(targetY - boatY) ? targetX > boatX ? boatX++ : boatX-- : targetY > boatY ? boatY++ : boatY--;
                     mainCanvasCtx.lineTo(getXPos(boatX + .5), getYPos(boatY + .5));
                 }
                 mainCanvasCtx.stroke()
+                if (pixel.strongIsOwner(myID, pixel.toIndex(boatX, boatY)) && authorID != myID && isNotTeamate(myID, authorID) && dist == 30) {
+                    announcements.genericAnnouncement(authorID, 23)
+                }
             }
         }
     }
@@ -1604,8 +1606,8 @@ function drawDiagRect(canvas, startX, startY, padding, width, height, drawHorizO
 
 function Points1v1() {
     this.players = null;
-    this.init = function(playerInfo) {
-        this.players = playerInfo;
+    this.init = function(param_playerInfo) {
+        this.players = param_playerInfo;
         announcements.new1v1(this.players)
     };
     this.calculateElo = function(winner) {
@@ -1771,7 +1773,7 @@ function EndGame() {
                     announcements.resultBR(result);
                 }
             }
-            if (!singleplayer) dataEncoder.uploadResult(getTroopHash(), result);
+            if (!singleplayer && !(customJSON.isCustomJSON && customJSON.data.replay)) dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(didWeWin, false);
             announcements.checkAnnounceDeath(true);
             gameLeaderboard.drawCanvas(true);
@@ -1810,19 +1812,20 @@ function Spawn() {
     }
 }
 var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
-    entityCount = 512,
-    maxTroopsToLandRatio = 150,
+    entityCount = 512, maxTroopsToLandRatio = 150,
     singleplayer, neverJoinedGameBefore, clientStatus = 0,
-    currentLandPixelsCount, absMaxTroopCap, absMaxTroopsBeforeRedI, humanStartingTroops = 512,
-    neutralLandCost = 2,
-    myID, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
+    currentLandPixelsCount, absMaxTroopCap, absMaxTroopsBeforeRedI,
+    humanStartingTroops = 512, neutralLandCost = 2,
+    currentSeedSpawn, myID, playerInfo, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
-function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isContest) {
+function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode, param_isContest) {
+    currentSeedSpawn = param_seedSpawn
     neverJoinedGameBefore = isCanvasHidden = false;
     gamemode = param_gamemode;
     isContest = param_isContest;
+    playerInfo = param_playerInfo;
     teamGame = 7 > gamemode || 9 === gamemode;
-    playersIngame = playerCount = playerInfo.length;
+    playersIngame = playerCount = param_playerInfo.length;
     singleplayer = 1 === playersIngame;
     gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
     gamemode = 8 === gamemode && 2 !== playerCount ? 7 : gamemode;
@@ -1836,10 +1839,10 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     botCount = entityCount - playerCount;
     spectatorCount = 0;
     myID = param_myID;
-    fakeRandom.changeRandomNumber(param_Seed);
-    setupPlayerInfoArrays(playerInfo);
+    fakeRandom.changeRandomNumber(param_seedSpawn);
+    setupPlayerInfoArrays(param_playerInfo);
     zombieSettings.init();
-    teamColors.init(playerInfo);
+    teamColors.init(param_playerInfo);
     clientStatus = 1;
     absMaxTroopCap = 15E8;
     absMaxTroopsBeforeRedI = 1E9;
@@ -1849,7 +1852,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     mapUpdate.init();
     interest.init();
     receiveDonationsArrayInit();
-    pixel.init(playerInfo);
+    pixel.init(param_playerInfo);
     gradientEdge.init();
     teams.init();
     difficultyEngine.init();
@@ -1883,8 +1886,8 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     humanBots.init();
     diplomacyHandler.init();
     delayedAttack.init();
-    8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(playerInfo)) : points1v1 = null;
-    singleplayer ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
+    8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(param_playerInfo)) : points1v1 = null;
+    singleplayer || customJSON.isCustomJSON ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
     activateCameraRenderer();
     fadeIn.init();
     mainHandler.canvasDirty = true;
@@ -2674,6 +2677,10 @@ function Announcements() {
         } else if (18 === messageType) announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, false);
         else if (21 === messageType) announce(220, "You surrendered!", messageType, 0, "rgb(255,40,40)", blackMoreOpaque, -1, false);
         else if (22 === messageType) this.addLatestDeath(2, id, id);
+        else if (23 === messageType) {
+            announce(100, "A boat is about to land on your territory!", messageType, id, orangeRGB, blackMoreOpaque, -1, true);
+            removeExcessSameMessages(messageType, 2)
+        }
     };
     this.error = function(errorCode) {
         announce(200, "Error [" + errorCode + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, false);
@@ -2688,6 +2695,7 @@ function Announcements() {
     this.newEmojiMessage = function(authorID, targetID, emojiID) {
         if (authorID === myID) announce(175, " Message to " + nickname[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, true)
         else this.receivedEmojiMessage(authorID, emojiID)
+        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(9, authorID, targetID, emojiID, 0, 0)
     };
     this.receivedEmojiMessage = function(authorID, emojiID) {
         var aIndex, emoteCount = 0;
@@ -5315,7 +5323,7 @@ function processAttack(authorID, targetID, ratio) {
                 }
             }
         }
-        if (authorID == myID && typeof(modHandler) == "object" && modHandler.messiah) {
+        if (authorID == myID && typeof(modHandler) == "object" && modHandler.bot) {
             var paIndex = messiah.pending.findIndex(action => action.targetID == targetID && action.ratio == ratio);
             if (paIndex != -1) messiah.pending.splice(paIndex)
         }
@@ -7206,7 +7214,7 @@ function SingleSettings() {
     };
     this.getEntityCount = function() {
         var teamIndex;
-        if (customJSON.isCustomJSON) return customJSON.data.entityCount;
+        if (customJSON.isCustomJSON && !customJSON.data.replay) return customJSON.data.entityCount;
         var entities = 0;
         for (teamIndex = this.botSettings.length - 1; 0 <= teamIndex; teamIndex--) entities += this.botSettings[teamIndex].group;
         return entities
@@ -7855,7 +7863,7 @@ function Pixel() {
             [4, 4, 4, 13]
         ],
         innerR, innerG, innerB, alphaVariation, borderR, borderG, borderB, movingR, movingG, movingB;
-    this.init = function(playerInfo) {
+    this.init = function(param_playerInfo) {
         innerR = new Uint8Array(maxEntities);
         innerG = new Uint8Array(maxEntities);
         innerB = new Uint8Array(maxEntities);
@@ -7886,7 +7894,7 @@ function Pixel() {
                 }
             }
         }
-        else if (customJSON.isCustomJSON && customJSON.data.customColor) {
+        else if (customJSON.isCustomJSON && customJSON.data.customColor && !customJSON.data.replay) {
             var customColorValues = customJSON.data.customColor;
             for (idIndex = entityCount - 1; 0 <= idIndex; idIndex--) {
                 innerR[idIndex] = 4 * customColorValues[idIndex][0];
@@ -7901,9 +7909,9 @@ function Pixel() {
                 innerB[idIndex] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
             }
             for (idIndex = playerCount - 1; 0 <= idIndex; idIndex--) {
-                innerR[idIndex] = 4 * playerInfo[idIndex].color[0];
-                innerG[idIndex] = 4 * playerInfo[idIndex].color[1];
-                innerB[idIndex] = 4 * playerInfo[idIndex].color[2];
+                innerR[idIndex] = 4 * param_playerInfo[idIndex].color[0];
+                innerG[idIndex] = 4 * param_playerInfo[idIndex].color[1];
+                innerB[idIndex] = 4 * param_playerInfo[idIndex].color[2];
             }
         }
         for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
@@ -7936,6 +7944,9 @@ function Pixel() {
     this.setFontColor = function() {
         for (var idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) this.shading[idIndex] = 280 > innerR[idIndex] + innerG[idIndex] + innerB[idIndex] ? 0 : 1
     };
+    this.getInnerColors = function(id) {
+        return [innerR[id], innerG[id], innerB[id], alphaVariation[id]]
+    }
     this.toX = function(pIndex) {
         return divideFloor(pIndex, 4) % currentMapWidth
     };
@@ -8418,14 +8429,40 @@ function CustomJSON() {
         if (this.data.customColor && this.data.freeColor) {
             this.data.customColor[0] = mainSettings.buttons[2].buttonClass.getRGB64();
         }
-        gameInit(this.data.seedSpawn, 0, this.generatePlayerInfo(), this.data.gamemode, false)
+        gameInit(this.data.seedSpawn, this.data.myID, this.generatePlayerInfo(), this.data.gamemode, this.data.isContest)
     };
     this.generatePlayerInfo = function() {
-        return [{
-            name: this.data.freeNickname ? nameInput.getInput() : this.data.nicknames[0],
-            color: [0, 0, 0],
-            status: 0
-        }]
+        if (this.data.replay) {
+            var playerInfoArray = [];
+            for (let idIndex = 0; idIndex < this.data.entityCount; idIndex++) {
+                try {
+                    if (this.data.gamemode === 8) {
+                        playerInfoArray.push({
+                            name: this.data.nicknames[idIndex],
+                            color: this.data.customColor[idIndex],
+                            elo: this.data.elo[idIndex],
+                            status: this.data.status[idIndex]
+                        })
+                    } else {
+                        playerInfoArray.push({
+                            name: this.data.nicknames[idIndex],
+                            color: this.data.customColor[idIndex],
+                            status: this.data.status[idIndex]
+                        })
+                    }
+                } catch {
+                    this.data.entityCount = idIndex;
+                    break;
+                }
+            }
+            return playerInfoArray
+        } else {
+            return [{
+                name: this.data.freeNickname ? nameInput.getInput() : this.data.nicknames[0],
+                color: mainSettings.buttons[2].buttonClass.getRGB64(),
+                status: 0
+            }]
+        }
     };
     this.loadJSON = function(e) {
         var fileReader = new FileReader;
@@ -8435,7 +8472,7 @@ function CustomJSON() {
     this.parseCustomJSONData = function(result) {
         this.data = {};
         this.data.entityCount = clamp(result.numberPlayers, 1, 512);
-        this.data.customGamemodeID = clamp(result.modeID, 0, 1);
+        this.data.gamemode = clamp(result.modeID, 0, 10);
         this.data.mapID = clamp(result.mapID, 0, customMapID - 1);
         this.data.mapSeed = clamp(result.mapSeed, 0, 16383);
         this.data.seedSpawn = clamp(result.seedSpawn, 0, 16383);
@@ -8443,44 +8480,44 @@ function CustomJSON() {
         this.data.freeNickname = useIfBoolean(result.selectableName, false);
         this.data.freeColor = useIfBoolean(result.selectableColor, false);
         this.mapName = this.data.mapName = truncateString(result.mapName, 1, 25, "Custom Map");
-        var data = this.data;
+        if (typeof(result.replay) != 'undefined') {
+            this.data.replay = result.replay;
+            this.data.myID = clamp(0, result.myID, maxEntities)
+            if (this.data.gamemode == 8) this.data.elo = result.playerElo;
+            this.data.status = result.playerStatus;
+            this.data.isContest = result.isContest;
+            this.data.spawnLogs = result.spawnLogs;
+            this.data.tickLogs = result.tickLogs;
+        } else this.data.replay = false;
         var mapDescription = result.description;
-        var index;
         if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = [];
         else {
             var descriptionLength = mapDescription.length;
-            for (index = 0; index < descriptionLength; index++) mapDescription[index] = truncateString(mapDescription[index], 0, 100, "")
+            for (var charIndex = 0; charIndex < descriptionLength; charIndex++) mapDescription[charIndex] = truncateString(mapDescription[charIndex], 0, 100, "")
         }
-        data.description = mapDescription;
+        this.data.description = mapDescription;
         this.data.spawnX = createClampedArray(result.playerX, this.data.entityCount, 4096, 16);
         this.data.spawnY = createClampedArray(result.playerY, this.data.entityCount, 4096, 16);
         this.data.teamArray = createClampedArray(result.playerTeam, this.data.entityCount, 8, 8);
         this.data.difficulty = createClampedArray(result.playerStrength, this.data.entityCount, 5, 8);
-        data = this.data;
-        mapDescription = result.playerColor;
-        index = this.data.entityCount;
-        if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = null;
+        var playerColor = result.playerColor;
+        if (!Array.isArray(playerColor) || 1 > playerColor.length) playerColor = null;
         else {
-            var playerColors = Array(index),
-                colorLength = mapDescription.length;
-            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) playerColors[descriptionLength] = createClampedArray(mapDescription[descriptionLength % colorLength], 3, 63, 8);
-            mapDescription = playerColors
+            var customColor = Array(this.data.entityCount),
+                colorLength = playerColor.length;
+            for (var idIndex = 0; idIndex < this.data.entityCount; idIndex++) customColor[idIndex] = createClampedArray(playerColor[idIndex % colorLength], 3, 63, 8);
         }
-        data.customColor = mapDescription;
-        data = this.data;
-        mapDescription = result.playerName;
-        index = this.data.entityCount;
-        if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = null;
+        this.data.customColor = customColor;
+        var playerNames = result.playerName;
+        if (!Array.isArray(playerNames) || 1 > playerNames.length) playerNames = null;
         else {
-            var entityNicknames = Array(index),
-                namesLength = mapDescription.length;
-            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) entityNicknames[descriptionLength] = truncateString(mapDescription[descriptionLength % namesLength], 3, 26, "Bot");
-            mapDescription = entityNicknames
+            var entityNicknames = Array(this.data.entityCount),
+                namesLength = playerNames.length;
+            for (var idIndex = 0; idIndex < this.data.entityCount; idIndex++) entityNicknames[idIndex] = truncateString(playerNames[idIndex % namesLength], 3, 26, "Bot");
         }
-        data.nicknames = mapDescription;
+        this.data.nicknames = entityNicknames;
         this.data.mapBase64 = "string" === typeof result.mapBase64 ? result.mapBase64 : "";
         this.data.freeNickname = this.data.freeNickname || !this.data.nicknames;
-        this.data.gamemode = 0 === this.data.customGamemodeID ? 7 : 2 === this.data.customGamemodeID ? 9 : 6;
         this.data.spawnX = this.data.spawnY ? this.data.spawnX : null
     };
     this.checkChooseEmoji = function() {
@@ -9113,7 +9150,7 @@ function NickNames() {
     };
     this.generate = function() {
         var entityIndex, randomValue;
-        if (customJSON.isCustomJSON && customJSON.data.nicknames) {
+        if (customJSON.isCustomJSON && customJSON.data.nicknames && !customJSON.data.replay) {
             for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = customJSON.data.nicknames[entityIndex % entityCount]
         } else if (9 === gamemode) {
             randomValue = fakeRandom.random();
@@ -9199,7 +9236,7 @@ function DiplomacyHandler() {
 }
 var nickname, tempNickname, isAlive, xMin, yMin, xMax, yMax, land, tempLand, troops, potentialBorderAdvances, landBorderPixels, waterBorderPixels, mountainBorderPixels, playerStatus;
 
-function setupPlayerInfoArrays(playerInfo) {
+function setupPlayerInfoArrays(param_playerInfo) {
     var idIndex;
     tempNickname = nickname = Array(maxEntities);
     isAlive = new Uint8Array(maxEntities);
@@ -9215,9 +9252,9 @@ function setupPlayerInfoArrays(playerInfo) {
     waterBorderPixels = Array(maxEntities);
     mountainBorderPixels = Array(maxEntities);
     playerStatus = new Uint8Array(maxEntities);
-    for (idIndex = playerInfo.length - 1; 0 <= idIndex; idIndex--) {
-        nickname[idIndex] = playerInfo[idIndex].name;
-        playerStatus[idIndex] = playerInfo[idIndex].status;
+    for (idIndex = param_playerInfo.length - 1; 0 <= idIndex; idIndex--) {
+        nickname[idIndex] = param_playerInfo[idIndex].name;
+        playerStatus[idIndex] = param_playerInfo[idIndex].status;
     }
 }
 
@@ -11669,13 +11706,13 @@ function TeamColors() {
     ];
     this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     var clanTags, clanTagOfPlayerIDs; //stores the Clan Tag for each Player ID
-    this.init = function(playerInfo) {
+    this.init = function(param_playerInfo) {
         this.teamArray = new Uint8Array(maxEntities);
         this.setDefaultTeamIDs();
         if (teamGame) {
             if (customJSON.isCustomJSON && customJSON.data.teamArray) this.setCustomTeams()
             else if (9 === gamemode) this.setZombieTeams()
-            else this.update(playerInfo)
+            else this.update(param_playerInfo)
         }
     };
     this.setCustomTeams = function() {
@@ -11694,24 +11731,24 @@ function TeamColors() {
         this.teamIDs[1] = 7;
         this.teamIDs[2] = 8
     };
-    this.update = function(playerInfo) {
+    this.update = function(param_playerInfo) {
         var playersTeamColor = new Uint8Array(playerCount),
             players2ndTeamColor = new Uint8Array(playerCount),
             teamColorScore = new Uint16Array(8), //the teams with the highest scores based on players colors will be chosen
             playersPerTeam = new Uint16Array(this.teamIDs.length);
-        this.setPlayerTeamColor(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore);
+        this.setPlayerTeamColor(param_playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore);
         this.sortTeamColorsByScore(teamColorScore);
         if (!singleplayer) this.distributeClanPlayersToTeams(playersPerTeam, playersTeamColor, players2ndTeamColor);
         this.distributeOtherPlayersToTeams(playersTeamColor, players2ndTeamColor, playersPerTeam);
         if (singleplayer) this.distributeBotsSingle()
         else this.distributeBotsMulti()
     };
-    this.setPlayerTeamColor = function(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
+    this.setPlayerTeamColor = function(param_playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
         var playerIndex, teamIndex, teamsCount = this.teamIDs.length - 1,
             comparedColors = new Uint16Array(teamsCount); //the color assigned is the one with the lowest value
         for (playerIndex = playerCount - 1; 0 <= playerIndex; playerIndex--) {
             for (teamIndex = teamsCount; 1 <= teamIndex; teamIndex--) {
-                comparedColors[teamIndex - 1] = Math.abs(4 * playerInfo[playerIndex].color[0] - allTeamColors[teamIndex][0]) + Math.abs(4 * playerInfo[playerIndex].color[1] - allTeamColors[teamIndex][1]) + Math.abs(4 * playerInfo[playerIndex].color[2] - allTeamColors[teamIndex][2]);
+                comparedColors[teamIndex - 1] = Math.abs(4 * param_playerInfo[playerIndex].color[0] - allTeamColors[teamIndex][0]) + Math.abs(4 * param_playerInfo[playerIndex].color[1] - allTeamColors[teamIndex][1]) + Math.abs(4 * param_playerInfo[playerIndex].color[2] - allTeamColors[teamIndex][2]);
             }
             var lowestComparedValue = 768;
             for (teamIndex = teamsCount - 1; teamIndex >= 0; teamIndex--) {
@@ -12115,7 +12152,7 @@ function MainHandler() {
         this.multiplayerHandler.update()
     };
     this.getTicksElapsed = function() {
-        return singleplayer ? this.singleplayerHandler.tick : this.multiplayerHandler.tick
+        return singleplayer || customJSON.isCustomJSON && customJSON.data.replay ? this.singleplayerHandler.tick : this.multiplayerHandler.tick
     };
     this.getTickInterval = function() {
         return 56
@@ -12125,12 +12162,47 @@ function MainHandler() {
 function SingleplayerHandler() {
     this.time = mainHandler.time;
     this.updateInterval = 56;
-    this.tick = this.clientTick = 0;
+    this.bigTickInterval = 7;
+    this.tick = this.clientTick = this.spawnTick = 0;
     this.a6Z = false; //unused
     this.update = function() {
         canvasManager.update();
-        if (inSpawn) updatedPlayerLabels()
-        else {
+        if (inSpawn) {
+            updatedPlayerLabels();
+            if (customJSON.isCustomJSON && customJSON.data.replay) {
+                if (0 === this.clientTick) {
+                    if (mainHandler.time >= this.time) {
+                        this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
+                        if (2 !== clientStatus) {
+                            if (gameButtons.menuVisible) clientTick1()
+                            else if (0 == --this.bigTickInterval) {
+                                replayLogger.update();
+                                this.bigTickInterval = 7;
+                                gameStatistics.receivedSpawnActions(this.spawnTick);
+                                if (this.spawnTick === spawnTime) {
+                                    spawn.update();
+                                    this.tick = this.clientTick = this.spawnTick = 0;
+                                    this.time = mainHandler.time;
+                                } else {
+                                    this.spawnTick++;
+                                    infoRenderer.setPlayerLabels();
+                                    infoRenderer.drawCanvas();
+                                    mapUpdate.updateMapCanvas();
+                                }
+                            }
+                        }
+                        this.clientTick++
+                    }
+                } else {
+                    if (gameButtons.menuVisible) updatedPlayerLabels()
+                    else {
+                        mainHandler.canvasDirty = true;
+                        drawCanvases();
+                    }
+                    this.clientTick = 0;
+                }
+            }
+        } else {
             if (0 === this.clientTick) {
                 if (mainHandler.time >= this.time) {
                     this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
@@ -12426,17 +12498,21 @@ function DataDecoder() {
                                         if (2 !== messageLength) wsManager.closeByError(wsManager.remote, 3235);
                                         else {
                                             data = decoder(array, 9);
-                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(0, [data], true)) announcements.nonAggression(data, 1);
+                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(0, [data], true)) {
+                                                announcements.nonAggression(data, 1);
+                                                if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(8, data, 1, 0, 0, 0)
+                                            }
                                         }
                                     } else {
                                         if (3 !== messageLength) wsManager.closeByError(wsManager.remote, 3236);
                                         else {
                                             data = decoder(array, 9);
-                                            var requester = decoder(array, 9);
-                                            if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(1, [data], true)) {
+                                            var targetID = decoder(array, 9);
+                                            if (0 !== isAlive[data] && 0 !== isAlive[targetID] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(1, [data], true)) {
                                                 infoRenderer.showIcon(data, 3, 96);
-                                                infoRenderer.showIcon(requester, 4, 96);
-                                                announcements.requestedToAttack(data, requester);
+                                                infoRenderer.showIcon(targetID, 4, 96);
+                                                announcements.requestedToAttack(data, targetID);
+                                                if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(10, data, targetID, 0, 0, 0)
                                             }
                                         }
                                     }
@@ -12529,23 +12605,38 @@ function DataDecoder() {
                     var ratio = decoder(array, 10),
                         targetID = decoder(array, 9);
                     targetID = targetID === authorID ? maxEntities : targetID;
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(0, authorID, targetID, ratio, 0, 0)
                     processAction.pendingAttack(authorID, ratio, targetID)
                 } else if (1 === actionType) {
                     var ratio = decoder(array, 10),
                         xPos = decoder(array, 11),
                         yPos = decoder(array, 11);
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(1, authorID, 0, ratio, xPos, yPos)
                     processAction.pendingSetLocation(authorID, ratio, xPos, yPos)
                 } else if (2 === actionType) {
                     targetID = decoder(array, 9);
                     targetID = targetID === authorID ? maxEntities : targetID;
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(2, authorID, targetID, 0, 0, 0) 
                     processAction.pendingCancel(authorID, targetID);
-                } else if (3 === actionType) processAction.onLeave(authorID)
-                else if (4 === actionType) {
+                } else if (3 === actionType) {
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(3, authorID, 0, 0, 0, 0) 
+                    processAction.onLeave(authorID)
+                } else if (4 === actionType) {
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(4, authorID, actionType, 0, 0, 0, 0) 
                     actionType = decoder(array, 7);
                     infoRenderer.showIcon(authorID, 0, actionType);
-                } else if (5 === actionType) processAction.surrender(authorID)
-                else if (6 === actionType) processAction.pendingPeace(authorID, decoder(array, 1))
-                else if (7 === actionType) processAction.pendingCancelBoat(authorID, 1 + decoder(array, 11))
+                } else if (5 === actionType) {
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(5, authorID, 0, 0, 0, 0) 
+                    processAction.surrender(authorID)
+                } else if (6 === actionType) {
+                    var choice = decoder(array, 1)
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(6, authorID, choice, 0, 0, 0) 
+                    processAction.pendingPeace(authorID, choice) 
+                } else if (7 === actionType) {
+                    var boatID = 1 + decoder(array, 11)
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(7, authorID, boatID, 0, 0, 0)           
+                    processAction.pendingCancelBoat(authorID, boatID)
+                }
             }
     }
 }
@@ -12863,6 +12954,7 @@ function DataEncoder() {
         encoder(array, 2, 1);
         encoder(array, 9, friendID);
         wsManager.send(wsManager.remote, array)
+        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(8, friendID, 0, 0, 0, 0)
     };
     this.requestAttack = function(friends, targetID) {
         var friendIndex, friendsLength = friends.length,
@@ -12874,6 +12966,7 @@ function DataEncoder() {
         encoder(array, 9, targetID);
         for (friendIndex = 0; friendIndex < friendsLength; friendIndex++) encoder(array, 9, friends[friendIndex]);
         wsManager.send(wsManager.remote, array)
+        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(10, friends, targetID, 0, 0, 0) 
     };
     this.votePeace = function(choice) {
         var array = new Uint8Array(1);
