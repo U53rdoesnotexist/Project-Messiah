@@ -811,6 +811,7 @@ function clientTick1() {
     infoRenderer.update();
     gameStatistics.updateSpectatorCount();
     wsManager.update()
+    mapUpdate.updateFullMap();
 }
 
 function gameTick() {
@@ -2168,7 +2169,7 @@ function PlayerActions() {
         return 2
     };
     this.click = function(xPos, yPos) {
-        if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return false;
+        if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn || customJSON.isCustomJSON && customJSON.data.replay) return false;
         var pixelTolerance = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - lastClickX) > pixelTolerance || Math.abs(yPos - lastClickY) > pixelTolerance || (new Date).getTime() > lastClickTime + 425) return false;
         var xCoord = Math.floor((xPos + viewportX) / mainScaleFactor),
@@ -2384,7 +2385,7 @@ function GameButtons() {
                 this.toggleMenu();
                 return 2;
             } else if (2 === bIndex) {
-                if (this.canSurrender(myID)) {
+                if (!(customJSON.isCustomJSON && customJSON.data.replay) && this.canSurrender(myID)) {
                     if (singleplayer) processAction.surrender(myID)
                     else dataEncoder.surrender();
                     this.toggleMenu();
@@ -2738,7 +2739,7 @@ function Announcements() {
         announce(200, message, 0, 0, "rgb(40,255,200)", "rgba(10,60,40,0.9)", -1, false)
     };
     this.result1v1 = function(players, player1Elo, player2Elo, resultColors) {
-        if (1 === wsManager.getConnectedLobby()) {
+        if (1 === wsManager.getConnectedLobby() || customJSON.isCustomJSON && customJSON.data.replay) {
             announce(0, players[0].name + ": " + points1v1.formatElo(players[0].elo) + " -> " + player1Elo, 66, 0, whiteRGB2, resultColors[0], -1, false);
             announce(0, players[1].name + ": " + points1v1.formatElo(players[1].elo) + " -> " + player2Elo, 66, 1, whiteRGB2, resultColors[1], -1, false);
         }
@@ -3490,7 +3491,7 @@ function AttackBars() {
         return number.substring(0, numDigits - 3 * numCommas) + " " + currentGroup
     };
     this.mouseDown = function(xPos, yPos) {
-        if (2 === clientStatus || 0 === isAlive[myID] || neverJoinedGameBefore || !playerActions.isHuman(myID)) return false;
+        if (2 === clientStatus || 0 === isAlive[myID] || neverJoinedGameBefore || !playerActions.isHuman(myID) || customJSON.isCustomJSON && customJSON.data.replay) return false;
         var aIndex, buttonSize = isZoom ? barCanvasHeight : 0,
             zoomedYOffset = isZoom ? Math.floor(.15 * barCanvasHeight) : 0;
         for (aIndex = myAttacks.length - 1; 0 <= aIndex; aIndex--) {
@@ -3818,6 +3819,7 @@ function Peace() {
         }
     };
     this.mouseDown = function(xPos, yPos) {
+        if (customJSON.isCustomJSON && customJSON.data.replay) return false;
         if (xPos < mainCanvasWidth - this.width - canvasPadding) return false;
         var peaceBarYPos = getPeaceBarYPos();
         if (yPos < peaceBarYPos || yPos > peaceBarYPos + peaceBarHeight) return false;
@@ -3925,14 +3927,37 @@ function AttackRatioBar() {
         attackRatioBarCanvasCtx.fillRect(attackRatioBarWidth - buttonWidth, 0, 1, attackRatioBar.height);
         attackRatioBarCanvasCtx.fillRect(attackRatioBarWidth - 1, 0, 1, attackRatioBar.height);
         sliderRatio = 1 + Math.floor(.0625 * attackRatioBar.height);
+
         var symbolSize = 1 + Math.floor(.3 * attackRatioBar.height);
-        attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize, sliderRatio);
-        attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize - symbolSize % 2, sliderRatio);
-        attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + Math.floor((attackRatioBar.height - sliderRatio) / 2), symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);
-        sendAmount = Math.floor(troops[myID] * ratio);
-        percentage = attackRatioBar.getFlooredRatio()/10;
-        var label = attackBars.splitNumber(sendAmount) + " (" + percentage + "%)"
-        attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
+        if (customJSON.isCustomJSON && customJSON.data.replay) {
+            if (replayLogger.underReplay) {
+                attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + 1.2 * symbolSize, symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);    
+                attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + 1.8 * symbolSize, symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);        
+            } else {
+                attackRatioBarCanvasCtx.strokeStyle = whiteRGB2;
+                attackRatioBarCanvasCtx.beginPath();
+                var w = h = attackRatioBar.height;
+                attackRatioBarCanvasCtx.moveTo(w/2, h/4);
+                attackRatioBarCanvasCtx.lineTo(w/2, h-h/4);
+                attackRatioBarCanvasCtx.lineTo(w, h/2);
+                attackRatioBarCanvasCtx.lineTo(w/2, h/4);
+                attackRatioBarCanvasCtx.fill();
+            }
+            var sprite = sprites.getValueByID(21);
+            attackRatioBarCanvasCtx.drawImage(sprite, Math.floor(attackRatioBarWidth - .75 * buttonWidth), attackRatioBar.height / 8, .75 * attackRatioBar.height, .75 * attackRatioBar.height);
+            percentage = 10 ** ((attackRatioBar.getFlooredRatio() - 500)/500);
+            var label = "Playback Speed: " + Math.floor(percentage*10)/10 + "X"
+            attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
+            if (mainHandler.singleplayerHandler != null) mainHandler.singleplayerHandler.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1))
+        } else {
+            attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize, sliderRatio);
+            attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize - symbolSize % 2, sliderRatio);
+            attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + Math.floor((attackRatioBar.height - sliderRatio) / 2), symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);    
+            sendAmount = Math.floor(troops[myID] * ratio);
+            percentage = attackRatioBar.getFlooredRatio()/10;
+            var label = attackBars.splitNumber(sendAmount) + " (" + percentage + "%)"
+            attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
+        }
     }
 
     function multiplyRatio(multiplier) {
@@ -3960,7 +3985,7 @@ function AttackRatioBar() {
     }
     var attackRatioBarWidth, startingX, buttonWidth, attackRatioBarCanvas, attackRatioBarCanvasCtx, visibility, ratio, sendAmount, percentage, fontStyle, needsUpdate, buttonMultiplier = 11 / 12;
     this.init = function() {
-        visibility = !inSpawn;
+        visibility = customJSON.isCustomJSON && customJSON.data.replay || !inSpawn;
         needsUpdate = false;
         ratio = .5;
         sendAmount = 0;
@@ -4022,8 +4047,21 @@ function AttackRatioBar() {
     };
     this.clickedButton = function(xPos, yPos) {
         if (!this.visible()) return false;
-        if (xPos > startingX && xPos < startingX + buttonWidth && yPos > attackRatioBar.startingY) return multiplyRatio(buttonMultiplier);
-        if (xPos > startingX + attackRatioBarWidth - buttonWidth && xPos < startingX + attackRatioBarWidth && yPos > attackRatioBar.startingY) return multiplyRatio(1 / buttonMultiplier);
+        if (xPos > startingX && xPos < startingX + buttonWidth && yPos > attackRatioBar.startingY) {
+            if (customJSON.isCustomJSON && customJSON.data.replay) {
+                replayLogger.underReplay = !replayLogger.underReplay;
+                needsUpdate = true;
+                return true;
+            } else return multiplyRatio(buttonMultiplier);
+        }
+        if (xPos > startingX + attackRatioBarWidth - buttonWidth && xPos < startingX + attackRatioBarWidth && yPos > attackRatioBar.startingY) {
+            if (customJSON.isCustomJSON && customJSON.data.replay) {
+                replayLogger.underReplay = false;
+                customJSON.startCustomGame();
+                needsUpdate = true;
+                return true;
+            } else return multiplyRatio(1 / buttonMultiplier);
+        }
         this.isDragging = true;
         return slideRatio(xPos)
     };
@@ -4048,7 +4086,7 @@ function AttackRatioBar() {
         this.isDragging = false
     };
     this.update = function() {
-        if (this.visible() && Math.floor(troops[myID] * ratio) !== sendAmount) needsUpdate = true
+        if (this.visible() && (Math.floor(troops[myID] * ratio) !== sendAmount || customJSON.isCustomJSON && customJSON.data.replay)) needsUpdate = true
     };
     this.drawCanvasImage = function() {
         if (this.visible()) mainCanvasCtx.drawImage(attackRatioBarCanvas, startingX, this.startingY)
@@ -5182,7 +5220,7 @@ function GameResultBox() {
             gameEnded = true;
             this.setCanvasVariables();
             playerActions.end();
-            attackRatioBar.toggleVisibilityOff();
+            if (!(customJSON.isCustomJSON && customJSON.data.replay)) attackRatioBar.toggleVisibilityOff();
             lastUpdate = mainHandler.time;
             if (-1 === this.ticksElapsedWhenDeath) this.ticksElapsedWhenDeath = mainHandler.getTicksElapsed();
             if (didFadeIn) fadeAlpha = 1;
@@ -7780,7 +7818,7 @@ function Sprites() {
     var unloadedSprites, spriteCanvases, spriteNames, nullCanvas;
     this.init = function() {
         if (void 0 === spriteCanvases) {
-            unloadedSprites = 21;
+            unloadedSprites = 22;
             spriteCanvases = Array(unloadedSprites);
             spriteNames = Array(unloadedSprites);
             nullCanvas = document.createElement("canvas");
@@ -7808,6 +7846,7 @@ function Sprites() {
             loadSprite(18, "loading", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZEAAABGBAMAAAD/Q7RHAAAAGFBMVEUAAAAnKSZKTElucG2Fh4SoqqfLzcr///+y5yZlAAAEnUlEQVRo3u3aS3PaMBAAYGNsuHoy0+TKTJv6SjNNfeWSciVNJlydF7qGl/n7JTGSd1e7wgaFaWfMKfFD1qeXV5KD8cb8kuC//rWSVtJKWkkraSWtpJW0klbSSlpJK2klraSV/KuSbw9qe8HsfnCyfHVuZu95Kmb3iUdJ+KAvKf7gM119vDoUb8Bv9gLsu2PD97+n4O/tr1/+OzHXXiqTRjHyJukqkLcndKqnDw94yTYfty7JoyD5jtIYeZJ0FEr2Fp670EcnkgScYiRrXkJLI/EjyUjOhtzduSwpBrJEJ4YloSJJPHqRRDRnK3DSPHIpS8w5TjLnJJlVGIkPydjKWdVsw+pZDokueE5SMJKunULuQcIky5a/S7KQJbtiQZLUTmHlQcIkW13YYyqKkRQOycKWKNcjD5dwyebMYJA7JLscspLCknAJgLHxUEnEJbtkmAuXZC5LysqEEq4V1OkoeySm/bxenf22ujd41NolWTskCyoxxfNydXajrL55qCSDXe4LeaNHdl8wkiLofP2NxwNeUhBJiKKJiBbUwRKFBtIxbrVlha3wCzMGGYzROMxLPhIDkhjn/aOtFa93x0o6uHJ1Cb3Bce1NoZYMJabN5w7JEkv6uLSibQT+w0PcFZGhQyFYmZ18CnVY0q0hKbAks6JrL1F9j4S6Gar50jVK0csLSTR97pC85x9IprW7+CESU0B9psCTHroGS8ZgwJAkSyRRqAF7k/TJyIFkWhCjesOSC5CAJNk+GEjqvwobSVIS9sRwVO3vzoXo2TEXGhZOSQ4knUazq/qSDMXe1QgAbp3rBpFzkl4dyQpIurBnqibhilsyJo2WeU6us7U8WLIZ2JLgkyUhkFSNKoN5x5K4liSvJNEnSaZE0gG5ic1dfThFaSTRQ9vpJbBOqsE3hp20kUS/r9JPl0itKzGjwbrqPXlzia5jdXIJ7I+qCsrhFKVRjyeLD6DHJ54lrlEYVIQC789mkliSDD1LUhIEgTdjJEzXm0nw7Bq840eeJY5opSesBrHv+LUoyQTJ5BgJM113RJCpMNnGknSfJKYSGEH6l3BR/dS+4c2WwBidlaDmxUX1oR+JMNNa8MtHK0vSgUZekhIJnWl5kpDZb7fKGLM2iebuBZqp5bIk3rBTepN1TxJT8gO00jJhO3x5FZSYDYuJLKGdgaxI6P9BwxuZgyt4cI8kYxrOR4770kphJTm7VmhZSZCk+H68ShRcbjxJ4MrdNWxFY2mlMJaanSSJyAClwCN/Pmx8SaJ9zc46wUkWLglISl5NPV4irXCH7B1F0xVuvMXnWOH2IBF2HWLcLUE81mjXgWzRTODI7VvSdfafBZmBjRruBKHXp667jKvt5GiJsDuXkXBfmXbXaHeuPHGOJVzfHAXHS/gdU0W2Naam9BvtmJIdwIn0jnsKPEj4XWy6KlVFio12sXE5aElX2GY8VkJ2xx9hRSV2kByLW8WypEcilHNuI+l4Cf7a45ldLzZ5GVrfN4yC/ZKQhu6/ECTxJQnCKoK/s6cdqDfl5AscuIMjS/S/7Bc4z3SlR5DU+5VfRRWvp/sqKiy/iqr/IdZfF1HJgRmsN+0AAAAASUVORK5CYII=");
             loadSprite(19, "target", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAMFBMVEXUAADUISLWQkLMTQDZZmXAdwC0lADgiIioqQCWvgCE0QAA/wDnra1i6ADw0tL////afMd+AAAC6klEQVRIx42WTWgTURCApzFNY2lLBKEX0dy8iA0UxB8CKgUv0gaKBS2B3HOJnkUDQrENQi6KEITcgydR0l0CUYReJBZCi3YpaC+9FANS6GXZ5+6+eT+z+1adS/ImX97Mzs4f2ET2916vPV9/61At6Ifeq2UIZWXDSYK+IxLIlY4Z+ga6jL8xQbsFoFQrDtF7QqoThaxSDIKsE4HqYJAyhXZNDJxq6VCvZIQgq0NDSJCGgnqFJCiroB2lHTvjS06dWxJSHl0cjBjztm5JxXUBdaXqro8E4j2UD+gg1BamFpkQ75GgVjkkn/8SU+LVUHmaQx/wmB5pEHNzyh4oa08ZkU+oroZQhR8mKMO8PNdPBpBlvoixA67PBBC6lI4yzJVOgb3Nv1+OQawm3h9gJo19jUPHHLrhQ4UEazIKkzZYHJoRvxwuLAzE95voOWzyO5dQ/zkw/QQPfe65DfhwGO2T8JBCB39zqAM8l1Ij3QBMkSC0YFsP94nIB/4fj3vegLb+175IkCX94io0w8/zXJkX0IwezjLUNciTKZrWoSJCF4hLvlCookHHChppPhaB5+7c36BpvOm/oH+Y0x13VSFTx5vGEEzQOPGInyO5KPOUR3yVvrsDIFWBBVOFoR5hlwYczTfgPUmVj1y9SJKiBdhSMM3c0ItZzMwfWFMifeeYomZHpKb89MVWOCWr++hXpNCzfkmViFO6oEvTPtROaAWM/RRtDOx3QO0pyYveCjZ6HreH1saDhiGaeKxj9GUrBzl70iNj54FiCA3BeFVNtXsfEq2Odh/xrjPYxyuG9nuU00YC6DPqrKTcvD6nAshSNclbk3coR1BGDqCmpFJ3Hg++bN2OTNgQ6uojTh9kfP7g5KwnDcWiNl67CQy/SEzzhKvKZORvGqdwxqHLw47JWCOyYfSexaEHsYUmvj9cM6xG1jJlrjqmJcsiFu875nWt91I+4/yLxMXP3lu753PzK+tO8nYY3LbvS2SDtP8A+ntynBIvYeAAAAAASUVORK5CYII=")
             loadSprite(20, "sound", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAApBAMAAAC4kga8AAAAHlBMVEUAAAAjJSI5OjhTVVJpa2iHiYakp6PAwr/Y2tf///80ejApAAABF0lEQVQoz5XTMXOCQBAF4AUOtLRL7NIFO7oMXTpNmS52JAUTOrWzw4lFrkvU8Xj/NofDcQcu42SH6mPm9nG7EN2uty+WIyjWt7zfgXVf8r4A6wKtP+4dX1p/qRIno/URdk5G4+LVk2cno/FUUYpnm9F4jCzCiij81gXrAkdPnojGsKXo6Z0KVT89L840w8Os6nuKZIRsrBt3XbcUKCNkPfdRevJH6EBdJ3kgeQxQXvlJu/8P58+59P297qtzBlzOoe/SNzNFMq0mFOR5/tn6Yl2/WjYL4Dn3HzT33Iy09XtkoY7ZVGHnWE1iM0c9tdbDD5KK3Z/I2RMS0u6VPeayB8bjfWeft/w+11n5/6UY8HDAab65/c/+AYrN7UlrALeaAAAAAElFTkSuQmCC");
+            loadSprite(21, "replay", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAT2SURBVGhDzZpZqFVVGMfPvUWlTWBQRNKThQ0vIYRQZIRhQQYWaYSFL2WglTRwaQKxARpoooiMoIlAK6QMbCBKULgE4kN1kwaI8EGCbNA0Irj9fnuvbefsztrD2fvee37wZ62979lrrW+tb39r2Hfkw6e3dpqwZN1VJ5Cciy5Al6D5aC6ahU5EcgAdRnvRHrQL7UATHz3zwUHSgekxgMacTzKbQr9I78Tht/NIrkaL0QI0Bx2NqvIzmkA24GPq/MqbdckbcCPJvWhVzIhg5C1oGbKn28CR2YI21jVkNKQZs9E56FUauii5E+D6VHQ/2W3oNtRW48WyLHMbdWywruRuBfIGHB9SjXgxM4L0QpJN6GHUZsPzWPaDaFNWdxl5A3zxMjIjNpC+iy715jRhXW9Sty5dSN6A00KaoRH2yFT2egzrfAEj7kTR4JA3oG3+CRoUw/B6dHty1Ye8AaeEdBBs6DfoLfQAugldG2Tee/7N39QxKjEi5k5HwmgYpvfRlcmN6jhJWYgv+Thh0PgehXqMMAvRCrQUZZNdGYbalZS/Pb1M6TbAGdWLqi+rvfgJegztpOBarhI67CI0hi5HVSbBz9GK7k7Ku9BJIa2Co7XcHqnbePEZnyW7HOnnjmQZdu7NaTal2wAnse4wWsbFyNm4ERhxED1Cdg0qdL/ArYyeq4GEJlFIXzbMrQ7u0AiMeIPkblQ2EoZXlzIJ3QboPlVfqAx//zwaC+9QI4IRvlNlLrmM+lxM9hhwHDomzRZi4cqecsj3oWtQ3egV41lkcCjCUXAl3BOF9KvXkotO5w/k+v1X9Av6LehPtB/ZcP9+CP2F/P0h/Zm0MbTFdZANK/III9LSfBj1RZakYTSodnRpA9riO2Vn3pDc6I+d+J8BwwZG6CIuImMBws4daxKFpppx9F2a7YuGLRhaA3BfXWR3ehVl/jCPgLhnLmLusBvwU0hjzBqZnJxMJoQC9rUVHutS4UVOJrLPSnQZGlo04GTkzBbT6WimsG1F66wDGvB7mo9yRkhngjNDGuOwBnyf5qOcF2bGmcAjyyL2asCXaT6KJxMeG04rdJrLdc9bi9ijAV+jojXPWajSIVPLuG+27hi2eZcG7EQuiWPoPtdPpxuFutz0F9XpqniHBvyIytzITbcb8OnCujyxKMJZemI0TFLvJbfiZGczlQ9dB4U6XNZ7UlG2O9xq2x0B+RR54FSEm/i1aXZKuQM54kV4RuSpSLqlxBJD6TvmC9Af19FDpQeugxLKtvfL3rctoc09e+LXkZYV4bB6EtG6EaHMJ1GZ69jGjWm20zlq5RXpru2H8W/3z1t49gjZJcmNOMeixfx2FO3mub/T24Ohz1POPWQfRVXmm8fpfRd4Cd0jIFrmF5gy7CU/dmymAYtQ7RDrMz5LdjPyZK6s58WN/MtpNuV/e2IK9WuMFrqQq8JwHO52QyXXkbyCqhYuzozuYd0GGqPdjGQLRVeVLsyyz7HOsHVGzU5aQ+M9+OoheiqBEatJnkB1jMiTLVFqu1gXNn49jX8qvewl/w4cgQdeIvHlKjurLMKGN248ei656kPpuVBwJ62v+k60hT5/Xz+36SY6AhkU8DaJn4mqRKe2MNr4whY2XkoNEAryq/0qdBcqm+yaYNkPIb/C9ESbGLWPFnEpTzH8ajgU/2pQ24CMYMhw/bPHIGDIDP67TafzL/4glonXQTZtAAAAAElFTkSuQmCC")
         }
     };
     this.getValueByID = function(spriteID) {
@@ -12155,13 +12194,13 @@ function MainHandler() {
         return singleplayer || customJSON.isCustomJSON && customJSON.data.replay ? this.singleplayerHandler.tick : this.multiplayerHandler.tick
     };
     this.getTickInterval = function() {
-        return 56
+        return Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1))
     }
 }
 
 function SingleplayerHandler() {
     this.time = mainHandler.time;
-    this.updateInterval = 56;
+    this.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
     this.bigTickInterval = 7;
     this.tick = this.clientTick = this.spawnTick = 0;
     this.a6Z = false; //unused
@@ -12174,7 +12213,7 @@ function SingleplayerHandler() {
                     if (mainHandler.time >= this.time) {
                         this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
                         if (2 !== clientStatus) {
-                            if (gameButtons.menuVisible) clientTick1()
+                            if (gameButtons.menuVisible || !replayLogger.underReplay) clientTick1()
                             else if (0 == --this.bigTickInterval) {
                                 replayLogger.update();
                                 this.bigTickInterval = 7;
@@ -12194,7 +12233,7 @@ function SingleplayerHandler() {
                         this.clientTick++
                     }
                 } else {
-                    if (gameButtons.menuVisible) updatedPlayerLabels()
+                    if (gameButtons.menuVisible || !replayLogger.underReplay) updatedPlayerLabels()
                     else {
                         mainHandler.canvasDirty = true;
                         drawCanvases();
@@ -12207,7 +12246,7 @@ function SingleplayerHandler() {
                 if (mainHandler.time >= this.time) {
                     this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
                     if (2 !== clientStatus) {
-                        if (gameButtons.menuVisible) clientTick1()
+                        if (gameButtons.menuVisible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
                         else {
                             gameTick();
                             this.tick++;

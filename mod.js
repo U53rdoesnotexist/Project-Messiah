@@ -78,9 +78,11 @@ function LatencySimulator() {
 function ReplayLogger() {
     this.spawnLogs = [];
     this.tickLogs = [];
+    this.underReplay = false;
     this.init = function() {
         this.spawnLogs = [];
         this.tickLogs = [];
+        this.underReplay = false;
     }
     this.addLogs = function(actionType, authorID, targetID, ratio, xCoord, yCoord) {
         if (clientStatus == 2) return 0
@@ -143,7 +145,7 @@ function ReplayLogger() {
             else if (action.actionType == 9) announcements.newEmojiMessage(action.authorID, action.targetID, action.ratio);
             else if (action.actionType == 10) void(0)
         }
-    }
+    };
 }
 
 function SpawnHider() {
