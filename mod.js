@@ -1,7 +1,8 @@
-var modHandler, latencySimulator, spawnHider, messiah;
+var modHandler, latencySimulator, replayLogger, spawnHider, messiah;
 function modConstruct(){
     modHandler = new ModHandler;
     latencySimulator = new LatencySimulator;
+    replayLogger = new ReplayLogger;
     spawnHider = new SpawnHider;
     messiah = new Messiah;
 }
@@ -11,13 +12,16 @@ function ModHandler() {
     this.ticksLeft;
     this.font = true;
     this.latency = true;
+    this.logger = true;
     this.hideSpawn = true;
-    this.messiah = true;
+    this.bot = false;
+    this.boatLines = true;
     this.scriptGameInit = function() {
         this.cycle = this.nextInfoSend = 1;
         this.tick = 0;
         if (!singleplayer) spawnHider.init();
-        if (this.messiah) messiah.init();
+        if (this.bot) messiah.init();
+        if (customJSON.isCustomJSON && customJSON.data.replay) replayLogger.init()
     };
     this.scriptSpawnTick = function() {
         if (modHandler.hideSpawn) spawnHider.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
@@ -29,7 +33,7 @@ function ModHandler() {
             this.tick %= 100;
         }
         if (this.latency) latencySimulator.update();
-        if (this.messiah) messiah.update()
+        if (this.bot && land[myID] && playerStatus[myID] != 2) messiah.update()
     };
     this.density = function(id) {
         return troops[id] / land[id]
@@ -71,6 +75,79 @@ function LatencySimulator() {
             yCoord: yCoord
         })
     }
+}
+
+function ReplayLogger() {
+    this.spawnLogs = [];
+    this.tickLogs = [];
+    this.underReplay = false;
+    this.init = function() {
+        this.spawnLogs = [];
+        this.tickLogs = [];
+        this.underReplay = false;
+    }
+    this.addLogs = function(actionType, authorID, targetID, ratio, xCoord, yCoord) {
+        if (clientStatus == 2) return 0
+        var log = {
+            time: inSpawn ? mainHandler.multiplayerHandler.packetsReceived : mainHandler.getTicksElapsed() + 1,
+            actionType: actionType,
+            authorID: authorID,
+            targetID: targetID,
+            ratio: ratio,
+            xCoord: xCoord,
+            yCoord: yCoord
+        }
+        if (inSpawn) this.spawnLogs.push(log)
+        else this.tickLogs.push(log)
+    }
+    this.exportReplay = function() {
+        var replayFile = {
+                replay: true,
+                numberPlayers: playerCount,
+                myID: myID,
+                modeID: gamemode,
+                mapID: currentMapID,
+                isContest: isContest,
+                seedMap: currentMapSeed,
+                seedSpawn: currentSeedSpawn,
+                selectableSpawn: freeSpawn,
+                mapName: mapInfo.getMapName(),
+                description: customJSON.isCustomJSON ? ["Match Replay", ...customJSON.data.description] : ["Match Replay"],
+                playerColor: playerInfo.map(player => player.color),
+                playerName: playerInfo.map(player => player.name),
+                playerElo: gamemode == 8 ? playerInfo.map(player => player.elo) : [],
+                playerStatus: playerInfo.map(player => player.status),
+                spawnLogs: this.spawnLogs,
+                tickLogs: this.tickLogs,
+                mapBase64: customJSON.isCustomJSON ? customJSON.data.mapBase64 : "",
+            },
+            fileName = mapInfo.getMapName()+'Replay.json';
+        const a = document.createElement('a');
+        const type = fileName.split(".").pop();
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(replayFile)], {
+            type:`text/${type === "txt" ? "plain" : type}`
+        }));
+        a.download = fileName;
+        a.click();
+    }
+    this.update = function() {
+        var currentActions;
+        if (inSpawn) currentActions = customJSON.data.spawnLogs.filter(action => action.time == mainHandler.singleplayerHandler.spawnTick); //change to spawnTicks?
+        else currentActions = customJSON.data.tickLogs.filter(action => action.time == mainHandler.getTicksElapsed() + 1);
+        for (var action of currentActions) {
+            if (action.actionType == 0) processAction.pendingAttack(action.authorID, action.ratio, action.targetID);
+            else if (action.actionType == 1) processAction.pendingSetLocation(action.authorID, action.ratio, action.xCoord, action.yCoord);
+            else if (action.actionType == 2) processAction.pendingCancel(action.authorID, action.targetID);
+            else if (action.actionType == 3) processAction.onLeave(action.authorID);
+            else if (action.actionType == 4) infoRenderer.showIcon(action.authorID, 0, action.targetID);
+            else if (action.actionType == 5) processAction.surrender(action.authorID);
+            else if (action.actionType == 6) processAction.pendingPeace(action.authorID, action.targetID);
+            else if (action.actionType == 7) processAction.pendingCancelBoat(action.authorID, action.targetID);
+            else if (action.actionType == 8) void(0)
+            else if (action.actionType == 9) announcements.newEmojiMessage(action.authorID, action.targetID, action.ratio);
+            else if (action.actionType == 10) void(0)
+        }
+    };
 }
 
 function SpawnHider() {

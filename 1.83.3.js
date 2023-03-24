@@ -719,7 +719,7 @@ function DifficultyEngine() {
         this.difficulty = new Uint8Array(botCount);
         botTimingInterval = new Uint16Array(botCount);
         randomTimingInterval = new Uint16Array(botCount);
-        if (customJSON.isCustomJSON) {
+        if (customJSON.isCustomJSON && !customJSON.data.replay) {
             if (customJSON.data.difficulty) {
                 for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
                     this.difficulty[botIndex] = customJSON.data.difficulty[botIndex + 1];
@@ -811,9 +811,11 @@ function clientTick1() {
     infoRenderer.update();
     gameStatistics.updateSpectatorCount();
     wsManager.update()
+    mapUpdate.updateFullMap();
 }
 
 function gameTick() {
+    if (customJSON.isCustomJSON && customJSON.data.replay && typeof(replayLogger) == "object") replayLogger.update() 
     interest.update();
     antiFullSend.update();
     processAction.update();
@@ -1122,6 +1124,14 @@ function BoatSpeed() {
             targetPixelIndicies[boatIndex] = targetPixelIndicies[boatIndex + 1];
         }
     }
+
+    function getXPos(xCoord) {
+        return Math.floor(mainScaleFactor * xCoord - viewportX)
+    }
+    
+    function getYPos(yCoord) {
+        return Math.floor(mainScaleFactor * yCoord - viewportY)
+    }
     var currentBoatID, maxBoatID, currentBoatIndex, authorIDs, ticksUntilUpdate, boatIDs, currentPixelIndicies, targetPixelIndicies;
     this.init = function() {
         currentBoatID = 1;
@@ -1200,6 +1210,28 @@ function BoatSpeed() {
                             mainCanvasCtx.fillText(attackBars.splitNumber(authorID), boatX, boatY + Math.floor(.82 * fontSize));
                         }
                     }
+                }
+            }
+        }
+        if (0 !== currentBoatIndex && typeof(modHandler) == "object" && modHandler.boatLines) {
+            mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+            for (boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
+                authorID = authorIDs[boatIndex];
+                var boatColor = pixel.getInnerColors(authorID);
+                mainCanvasCtx.strokeStyle = `rgba(${boatColor[0]}, ${boatColor[1]}, ${boatColor[2]}, ${(192 + boatColor)/255})`
+                var boatX = pixel.toX(currentPixelIndicies[boatIndex]),
+                    boatY = pixel.toY(currentPixelIndicies[boatIndex]),
+                    targetX = pixel.toX(targetPixelIndicies[boatIndex]),
+                    targetY = pixel.toY(targetPixelIndicies[boatIndex]);
+                mainCanvasCtx.beginPath();
+                mainCanvasCtx.moveTo(getXPos(boatX + .5), getYPos(boatY + .5));
+                for (var dist = 0; !pixel.canOwn(pixel.toIndex(boatX, boatY)); dist++) {
+                    Math.abs(targetX - boatX) >= Math.abs(targetY - boatY) ? targetX > boatX ? boatX++ : boatX-- : targetY > boatY ? boatY++ : boatY--;
+                    mainCanvasCtx.lineTo(getXPos(boatX + .5), getYPos(boatY + .5));
+                }
+                mainCanvasCtx.stroke()
+                if (pixel.strongIsOwner(myID, pixel.toIndex(boatX, boatY)) && authorID != myID && isNotTeamate(myID, authorID) && dist == 30) {
+                    announcements.genericAnnouncement(authorID, 23)
                 }
             }
         }
@@ -1575,8 +1607,8 @@ function drawDiagRect(canvas, startX, startY, padding, width, height, drawHorizO
 
 function Points1v1() {
     this.players = null;
-    this.init = function(playerInfo) {
-        this.players = playerInfo;
+    this.init = function(param_playerInfo) {
+        this.players = param_playerInfo;
         announcements.new1v1(this.players)
     };
     this.calculateElo = function(winner) {
@@ -1742,7 +1774,7 @@ function EndGame() {
                     announcements.resultBR(result);
                 }
             }
-            if (!singleplayer) dataEncoder.uploadResult(getTroopHash(), result);
+            if (!singleplayer && !(customJSON.isCustomJSON && customJSON.data.replay)) dataEncoder.uploadResult(getTroopHash(), result);
             gameResultBox.show(didWeWin, false);
             announcements.checkAnnounceDeath(true);
             gameLeaderboard.drawCanvas(true);
@@ -1781,19 +1813,20 @@ function Spawn() {
     }
 }
 var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
-    entityCount = 512,
-    maxTroopsToLandRatio = 150,
+    entityCount = 512, maxTroopsToLandRatio = 150,
     singleplayer, neverJoinedGameBefore, clientStatus = 0,
-    currentLandPixelsCount, absMaxTroopCap, absMaxTroopsBeforeRedI, humanStartingTroops = 512,
-    neutralLandCost = 2,
-    myID, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
+    currentLandPixelsCount, absMaxTroopCap, absMaxTroopsBeforeRedI,
+    humanStartingTroops = 512, neutralLandCost = 2,
+    currentSeedSpawn, myID, playerInfo, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
-function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isContest) {
+function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode, param_isContest) {
+    currentSeedSpawn = param_seedSpawn
     neverJoinedGameBefore = isCanvasHidden = false;
     gamemode = param_gamemode;
     isContest = param_isContest;
+    playerInfo = param_playerInfo;
     teamGame = 7 > gamemode || 9 === gamemode;
-    playersIngame = playerCount = playerInfo.length;
+    playersIngame = playerCount = param_playerInfo.length;
     singleplayer = 1 === playersIngame;
     gamemode = 10 === gamemode && singleplayer ? 7 : gamemode;
     gamemode = 8 === gamemode && 2 !== playerCount ? 7 : gamemode;
@@ -1807,10 +1840,10 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     botCount = entityCount - playerCount;
     spectatorCount = 0;
     myID = param_myID;
-    fakeRandom.changeRandomNumber(param_Seed);
-    setupPlayerInfoArrays(playerInfo);
+    fakeRandom.changeRandomNumber(param_seedSpawn);
+    setupPlayerInfoArrays(param_playerInfo);
     zombieSettings.init();
-    teamColors.init(playerInfo);
+    teamColors.init(param_playerInfo);
     clientStatus = 1;
     absMaxTroopCap = 15E8;
     absMaxTroopsBeforeRedI = 1E9;
@@ -1820,7 +1853,7 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     mapUpdate.init();
     interest.init();
     receiveDonationsArrayInit();
-    pixel.init(playerInfo);
+    pixel.init(param_playerInfo);
     gradientEdge.init();
     teams.init();
     difficultyEngine.init();
@@ -1854,8 +1887,8 @@ function gameInit(param_Seed, param_myID, playerInfo, param_gamemode, param_isCo
     humanBots.init();
     diplomacyHandler.init();
     delayedAttack.init();
-    8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(playerInfo)) : points1v1 = null;
-    singleplayer ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
+    8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(param_playerInfo)) : points1v1 = null;
+    singleplayer || customJSON.isCustomJSON ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
     activateCameraRenderer();
     fadeIn.init();
     mainHandler.canvasDirty = true;
@@ -2136,7 +2169,7 @@ function PlayerActions() {
         return 2
     };
     this.click = function(xPos, yPos) {
-        if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn) return false;
+        if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn || customJSON.isCustomJSON && customJSON.data.replay) return false;
         var pixelTolerance = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - lastClickX) > pixelTolerance || Math.abs(yPos - lastClickY) > pixelTolerance || (new Date).getTime() > lastClickTime + 425) return false;
         var xCoord = Math.floor((xPos + viewportX) / mainScaleFactor),
@@ -2352,7 +2385,7 @@ function GameButtons() {
                 this.toggleMenu();
                 return 2;
             } else if (2 === bIndex) {
-                if (this.canSurrender(myID)) {
+                if (!(customJSON.isCustomJSON && customJSON.data.replay) && this.canSurrender(myID)) {
                     if (singleplayer) processAction.surrender(myID)
                     else dataEncoder.surrender();
                     this.toggleMenu();
@@ -2645,6 +2678,10 @@ function Announcements() {
         } else if (18 === messageType) announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, false);
         else if (21 === messageType) announce(220, "You surrendered!", messageType, 0, "rgb(255,40,40)", blackMoreOpaque, -1, false);
         else if (22 === messageType) this.addLatestDeath(2, id, id);
+        else if (23 === messageType) {
+            announce(100, "A boat is about to land on your territory!", messageType, id, orangeRGB, blackMoreOpaque, -1, true);
+            removeExcessSameMessages(messageType, 2)
+        }
     };
     this.error = function(errorCode) {
         announce(200, "Error [" + errorCode + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, false);
@@ -2659,6 +2696,7 @@ function Announcements() {
     this.newEmojiMessage = function(authorID, targetID, emojiID) {
         if (authorID === myID) announce(175, " Message to " + nickname[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, true)
         else this.receivedEmojiMessage(authorID, emojiID)
+        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(9, authorID, targetID, emojiID, 0, 0)
     };
     this.receivedEmojiMessage = function(authorID, emojiID) {
         var aIndex, emoteCount = 0;
@@ -2701,7 +2739,7 @@ function Announcements() {
         announce(200, message, 0, 0, "rgb(40,255,200)", "rgba(10,60,40,0.9)", -1, false)
     };
     this.result1v1 = function(players, player1Elo, player2Elo, resultColors) {
-        if (1 === wsManager.getConnectedLobby()) {
+        if (1 === wsManager.getConnectedLobby() || customJSON.isCustomJSON && customJSON.data.replay) {
             announce(0, players[0].name + ": " + points1v1.formatElo(players[0].elo) + " -> " + player1Elo, 66, 0, whiteRGB2, resultColors[0], -1, false);
             announce(0, players[1].name + ": " + points1v1.formatElo(players[1].elo) + " -> " + player2Elo, 66, 1, whiteRGB2, resultColors[1], -1, false);
         }
@@ -3453,7 +3491,7 @@ function AttackBars() {
         return number.substring(0, numDigits - 3 * numCommas) + " " + currentGroup
     };
     this.mouseDown = function(xPos, yPos) {
-        if (2 === clientStatus || 0 === isAlive[myID] || neverJoinedGameBefore || !playerActions.isHuman(myID)) return false;
+        if (2 === clientStatus || 0 === isAlive[myID] || neverJoinedGameBefore || !playerActions.isHuman(myID) || customJSON.isCustomJSON && customJSON.data.replay) return false;
         var aIndex, buttonSize = isZoom ? barCanvasHeight : 0,
             zoomedYOffset = isZoom ? Math.floor(.15 * barCanvasHeight) : 0;
         for (aIndex = myAttacks.length - 1; 0 <= aIndex; aIndex--) {
@@ -3781,6 +3819,7 @@ function Peace() {
         }
     };
     this.mouseDown = function(xPos, yPos) {
+        if (customJSON.isCustomJSON && customJSON.data.replay) return false;
         if (xPos < mainCanvasWidth - this.width - canvasPadding) return false;
         var peaceBarYPos = getPeaceBarYPos();
         if (yPos < peaceBarYPos || yPos > peaceBarYPos + peaceBarHeight) return false;
@@ -3888,14 +3927,37 @@ function AttackRatioBar() {
         attackRatioBarCanvasCtx.fillRect(attackRatioBarWidth - buttonWidth, 0, 1, attackRatioBar.height);
         attackRatioBarCanvasCtx.fillRect(attackRatioBarWidth - 1, 0, 1, attackRatioBar.height);
         sliderRatio = 1 + Math.floor(.0625 * attackRatioBar.height);
+
         var symbolSize = 1 + Math.floor(.3 * attackRatioBar.height);
-        attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize, sliderRatio);
-        attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize - symbolSize % 2, sliderRatio);
-        attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + Math.floor((attackRatioBar.height - sliderRatio) / 2), symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);
-        sendAmount = Math.floor(troops[myID] * ratio);
-        percentage = attackRatioBar.getFlooredRatio()/10;
-        var label = attackBars.splitNumber(sendAmount) + " (" + percentage + "%)"
-        attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
+        if (customJSON.isCustomJSON && customJSON.data.replay) {
+            if (replayLogger.underReplay) {
+                attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + 1.2 * symbolSize, symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);    
+                attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + 1.8 * symbolSize, symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);        
+            } else {
+                attackRatioBarCanvasCtx.strokeStyle = whiteRGB2;
+                attackRatioBarCanvasCtx.beginPath();
+                var w = h = attackRatioBar.height;
+                attackRatioBarCanvasCtx.moveTo(w/2, h/4);
+                attackRatioBarCanvasCtx.lineTo(w/2, h-h/4);
+                attackRatioBarCanvasCtx.lineTo(w, h/2);
+                attackRatioBarCanvasCtx.lineTo(w/2, h/4);
+                attackRatioBarCanvasCtx.fill();
+            }
+            var sprite = sprites.getValueByID(21);
+            attackRatioBarCanvasCtx.drawImage(sprite, Math.floor(attackRatioBarWidth - .75 * buttonWidth), attackRatioBar.height / 8, .75 * attackRatioBar.height, .75 * attackRatioBar.height);
+            percentage = 10 ** ((attackRatioBar.getFlooredRatio() - 500)/500);
+            var label = "Playback Speed: " + Math.floor(percentage*10)/10 + "X"
+            attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
+            if (mainHandler.singleplayerHandler != null) mainHandler.singleplayerHandler.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1))
+        } else {
+            attackRatioBarCanvasCtx.fillRect(Math.floor(.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize, sliderRatio);
+            attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize - symbolSize % 2, sliderRatio);
+            attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + Math.floor((attackRatioBar.height - sliderRatio) / 2), symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);    
+            sendAmount = Math.floor(troops[myID] * ratio);
+            percentage = attackRatioBar.getFlooredRatio()/10;
+            var label = attackBars.splitNumber(sendAmount) + " (" + percentage + "%)"
+            attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
+        }
     }
 
     function multiplyRatio(multiplier) {
@@ -3923,7 +3985,7 @@ function AttackRatioBar() {
     }
     var attackRatioBarWidth, startingX, buttonWidth, attackRatioBarCanvas, attackRatioBarCanvasCtx, visibility, ratio, sendAmount, percentage, fontStyle, needsUpdate, buttonMultiplier = 11 / 12;
     this.init = function() {
-        visibility = !inSpawn;
+        visibility = customJSON.isCustomJSON && customJSON.data.replay || !inSpawn;
         needsUpdate = false;
         ratio = .5;
         sendAmount = 0;
@@ -3985,8 +4047,21 @@ function AttackRatioBar() {
     };
     this.clickedButton = function(xPos, yPos) {
         if (!this.visible()) return false;
-        if (xPos > startingX && xPos < startingX + buttonWidth && yPos > attackRatioBar.startingY) return multiplyRatio(buttonMultiplier);
-        if (xPos > startingX + attackRatioBarWidth - buttonWidth && xPos < startingX + attackRatioBarWidth && yPos > attackRatioBar.startingY) return multiplyRatio(1 / buttonMultiplier);
+        if (xPos > startingX && xPos < startingX + buttonWidth && yPos > attackRatioBar.startingY) {
+            if (customJSON.isCustomJSON && customJSON.data.replay) {
+                replayLogger.underReplay = !replayLogger.underReplay;
+                needsUpdate = true;
+                return true;
+            } else return multiplyRatio(buttonMultiplier);
+        }
+        if (xPos > startingX + attackRatioBarWidth - buttonWidth && xPos < startingX + attackRatioBarWidth && yPos > attackRatioBar.startingY) {
+            if (customJSON.isCustomJSON && customJSON.data.replay) {
+                replayLogger.underReplay = false;
+                customJSON.startCustomGame();
+                needsUpdate = true;
+                return true;
+            } else return multiplyRatio(1 / buttonMultiplier);
+        }
         this.isDragging = true;
         return slideRatio(xPos)
     };
@@ -4011,7 +4086,7 @@ function AttackRatioBar() {
         this.isDragging = false
     };
     this.update = function() {
-        if (this.visible() && Math.floor(troops[myID] * ratio) !== sendAmount) needsUpdate = true
+        if (this.visible() && (Math.floor(troops[myID] * ratio) !== sendAmount || customJSON.isCustomJSON && customJSON.data.replay)) needsUpdate = true
     };
     this.drawCanvasImage = function() {
         if (this.visible()) mainCanvasCtx.drawImage(attackRatioBarCanvas, startingX, this.startingY)
@@ -5145,7 +5220,7 @@ function GameResultBox() {
             gameEnded = true;
             this.setCanvasVariables();
             playerActions.end();
-            attackRatioBar.toggleVisibilityOff();
+            if (!(customJSON.isCustomJSON && customJSON.data.replay)) attackRatioBar.toggleVisibilityOff();
             lastUpdate = mainHandler.time;
             if (-1 === this.ticksElapsedWhenDeath) this.ticksElapsedWhenDeath = mainHandler.getTicksElapsed();
             if (didFadeIn) fadeAlpha = 1;
@@ -5286,7 +5361,7 @@ function processAttack(authorID, targetID, ratio) {
                 }
             }
         }
-        if (authorID == myID && typeof(modHandler) == "object" && modHandler.messiah) {
+        if (authorID == myID && typeof(modHandler) == "object" && modHandler.bot) {
             var paIndex = messiah.pending.findIndex(action => action.targetID == targetID && action.ratio == ratio);
             if (paIndex != -1) messiah.pending.splice(paIndex)
         }
@@ -7177,7 +7252,7 @@ function SingleSettings() {
     };
     this.getEntityCount = function() {
         var teamIndex;
-        if (customJSON.isCustomJSON) return customJSON.data.entityCount;
+        if (customJSON.isCustomJSON && !customJSON.data.replay) return customJSON.data.entityCount;
         var entities = 0;
         for (teamIndex = this.botSettings.length - 1; 0 <= teamIndex; teamIndex--) entities += this.botSettings[teamIndex].group;
         return entities
@@ -7743,7 +7818,7 @@ function Sprites() {
     var unloadedSprites, spriteCanvases, spriteNames, nullCanvas;
     this.init = function() {
         if (void 0 === spriteCanvases) {
-            unloadedSprites = 21;
+            unloadedSprites = 22;
             spriteCanvases = Array(unloadedSprites);
             spriteNames = Array(unloadedSprites);
             nullCanvas = document.createElement("canvas");
@@ -7771,6 +7846,7 @@ function Sprites() {
             loadSprite(18, "loading", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZEAAABGBAMAAAD/Q7RHAAAAGFBMVEUAAAAnKSZKTElucG2Fh4SoqqfLzcr///+y5yZlAAAEnUlEQVRo3u3aS3PaMBAAYGNsuHoy0+TKTJv6SjNNfeWSciVNJlydF7qGl/n7JTGSd1e7wgaFaWfMKfFD1qeXV5KD8cb8kuC//rWSVtJKWkkraSWtpJW0klbSSlpJK2klraSV/KuSbw9qe8HsfnCyfHVuZu95Kmb3iUdJ+KAvKf7gM119vDoUb8Bv9gLsu2PD97+n4O/tr1/+OzHXXiqTRjHyJukqkLcndKqnDw94yTYfty7JoyD5jtIYeZJ0FEr2Fp670EcnkgScYiRrXkJLI/EjyUjOhtzduSwpBrJEJ4YloSJJPHqRRDRnK3DSPHIpS8w5TjLnJJlVGIkPydjKWdVsw+pZDokueE5SMJKunULuQcIky5a/S7KQJbtiQZLUTmHlQcIkW13YYyqKkRQOycKWKNcjD5dwyebMYJA7JLscspLCknAJgLHxUEnEJbtkmAuXZC5LysqEEq4V1OkoeySm/bxenf22ujd41NolWTskCyoxxfNydXajrL55qCSDXe4LeaNHdl8wkiLofP2NxwNeUhBJiKKJiBbUwRKFBtIxbrVlha3wCzMGGYzROMxLPhIDkhjn/aOtFa93x0o6uHJ1Cb3Bce1NoZYMJabN5w7JEkv6uLSibQT+w0PcFZGhQyFYmZ18CnVY0q0hKbAks6JrL1F9j4S6Gar50jVK0csLSTR97pC85x9IprW7+CESU0B9psCTHroGS8ZgwJAkSyRRqAF7k/TJyIFkWhCjesOSC5CAJNk+GEjqvwobSVIS9sRwVO3vzoXo2TEXGhZOSQ4knUazq/qSDMXe1QgAbp3rBpFzkl4dyQpIurBnqibhilsyJo2WeU6us7U8WLIZ2JLgkyUhkFSNKoN5x5K4liSvJNEnSaZE0gG5ic1dfThFaSTRQ9vpJbBOqsE3hp20kUS/r9JPl0itKzGjwbrqPXlzia5jdXIJ7I+qCsrhFKVRjyeLD6DHJ54lrlEYVIQC789mkliSDD1LUhIEgTdjJEzXm0nw7Bq840eeJY5opSesBrHv+LUoyQTJ5BgJM113RJCpMNnGknSfJKYSGEH6l3BR/dS+4c2WwBidlaDmxUX1oR+JMNNa8MtHK0vSgUZekhIJnWl5kpDZb7fKGLM2iebuBZqp5bIk3rBTepN1TxJT8gO00jJhO3x5FZSYDYuJLKGdgaxI6P9BwxuZgyt4cI8kYxrOR4770kphJTm7VmhZSZCk+H68ShRcbjxJ4MrdNWxFY2mlMJaanSSJyAClwCN/Pmx8SaJ9zc46wUkWLglISl5NPV4irXCH7B1F0xVuvMXnWOH2IBF2HWLcLUE81mjXgWzRTODI7VvSdfafBZmBjRruBKHXp667jKvt5GiJsDuXkXBfmXbXaHeuPHGOJVzfHAXHS/gdU0W2Naam9BvtmJIdwIn0jnsKPEj4XWy6KlVFio12sXE5aElX2GY8VkJ2xx9hRSV2kByLW8WypEcilHNuI+l4Cf7a45ldLzZ5GVrfN4yC/ZKQhu6/ECTxJQnCKoK/s6cdqDfl5AscuIMjS/S/7Bc4z3SlR5DU+5VfRRWvp/sqKiy/iqr/IdZfF1HJgRmsN+0AAAAASUVORK5CYII=");
             loadSprite(19, "target", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAMFBMVEXUAADUISLWQkLMTQDZZmXAdwC0lADgiIioqQCWvgCE0QAA/wDnra1i6ADw0tL////afMd+AAAC6klEQVRIx42WTWgTURCApzFNY2lLBKEX0dy8iA0UxB8CKgUv0gaKBS2B3HOJnkUDQrENQi6KEITcgydR0l0CUYReJBZCi3YpaC+9FANS6GXZ5+6+eT+z+1adS/ImX97Mzs4f2ET2916vPV9/61At6Ifeq2UIZWXDSYK+IxLIlY4Z+ga6jL8xQbsFoFQrDtF7QqoThaxSDIKsE4HqYJAyhXZNDJxq6VCvZIQgq0NDSJCGgnqFJCiroB2lHTvjS06dWxJSHl0cjBjztm5JxXUBdaXqro8E4j2UD+gg1BamFpkQ75GgVjkkn/8SU+LVUHmaQx/wmB5pEHNzyh4oa08ZkU+oroZQhR8mKMO8PNdPBpBlvoixA67PBBC6lI4yzJVOgb3Nv1+OQawm3h9gJo19jUPHHLrhQ4UEazIKkzZYHJoRvxwuLAzE95voOWzyO5dQ/zkw/QQPfe65DfhwGO2T8JBCB39zqAM8l1Ij3QBMkSC0YFsP94nIB/4fj3vegLb+175IkCX94io0w8/zXJkX0IwezjLUNciTKZrWoSJCF4hLvlCookHHChppPhaB5+7c36BpvOm/oH+Y0x13VSFTx5vGEEzQOPGInyO5KPOUR3yVvrsDIFWBBVOFoR5hlwYczTfgPUmVj1y9SJKiBdhSMM3c0ItZzMwfWFMifeeYomZHpKb89MVWOCWr++hXpNCzfkmViFO6oEvTPtROaAWM/RRtDOx3QO0pyYveCjZ6HreH1saDhiGaeKxj9GUrBzl70iNj54FiCA3BeFVNtXsfEq2Odh/xrjPYxyuG9nuU00YC6DPqrKTcvD6nAshSNclbk3coR1BGDqCmpFJ3Hg++bN2OTNgQ6uojTh9kfP7g5KwnDcWiNl67CQy/SEzzhKvKZORvGqdwxqHLw47JWCOyYfSexaEHsYUmvj9cM6xG1jJlrjqmJcsiFu875nWt91I+4/yLxMXP3lu753PzK+tO8nYY3LbvS2SDtP8A+ntynBIvYeAAAAAASUVORK5CYII=")
             loadSprite(20, "sound", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAApBAMAAAC4kga8AAAAHlBMVEUAAAAjJSI5OjhTVVJpa2iHiYakp6PAwr/Y2tf///80ejApAAABF0lEQVQoz5XTMXOCQBAF4AUOtLRL7NIFO7oMXTpNmS52JAUTOrWzw4lFrkvU8Xj/NofDcQcu42SH6mPm9nG7EN2uty+WIyjWt7zfgXVf8r4A6wKtP+4dX1p/qRIno/URdk5G4+LVk2cno/FUUYpnm9F4jCzCiij81gXrAkdPnojGsKXo6Z0KVT89L840w8Os6nuKZIRsrBt3XbcUKCNkPfdRevJH6EBdJ3kgeQxQXvlJu/8P58+59P297qtzBlzOoe/SNzNFMq0mFOR5/tn6Yl2/WjYL4Dn3HzT33Iy09XtkoY7ZVGHnWE1iM0c9tdbDD5KK3Z/I2RMS0u6VPeayB8bjfWeft/w+11n5/6UY8HDAab65/c/+AYrN7UlrALeaAAAAAElFTkSuQmCC");
+            loadSprite(21, "replay", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAT2SURBVGhDzZpZqFVVGMfPvUWlTWBQRNKThQ0vIYRQZIRhQQYWaYSFL2WglTRwaQKxARpoooiMoIlAK6QMbCBKULgE4kN1kwaI8EGCbNA0Irj9fnuvbefsztrD2fvee37wZ62979lrrW+tb39r2Hfkw6e3dpqwZN1VJ5Cciy5Al6D5aC6ahU5EcgAdRnvRHrQL7UATHz3zwUHSgekxgMacTzKbQr9I78Tht/NIrkaL0QI0Bx2NqvIzmkA24GPq/MqbdckbcCPJvWhVzIhg5C1oGbKn28CR2YI21jVkNKQZs9E56FUauii5E+D6VHQ/2W3oNtRW48WyLHMbdWywruRuBfIGHB9SjXgxM4L0QpJN6GHUZsPzWPaDaFNWdxl5A3zxMjIjNpC+iy715jRhXW9Sty5dSN6A00KaoRH2yFT2egzrfAEj7kTR4JA3oG3+CRoUw/B6dHty1Ye8AaeEdBBs6DfoLfQAugldG2Tee/7N39QxKjEi5k5HwmgYpvfRlcmN6jhJWYgv+Thh0PgehXqMMAvRCrQUZZNdGYbalZS/Pb1M6TbAGdWLqi+rvfgJegztpOBarhI67CI0hi5HVSbBz9GK7k7Ku9BJIa2Co7XcHqnbePEZnyW7HOnnjmQZdu7NaTal2wAnse4wWsbFyNm4ERhxED1Cdg0qdL/ArYyeq4GEJlFIXzbMrQ7u0AiMeIPkblQ2EoZXlzIJ3QboPlVfqAx//zwaC+9QI4IRvlNlLrmM+lxM9hhwHDomzRZi4cqecsj3oWtQ3egV41lkcCjCUXAl3BOF9KvXkotO5w/k+v1X9Av6LehPtB/ZcP9+CP2F/P0h/Zm0MbTFdZANK/III9LSfBj1RZakYTSodnRpA9riO2Vn3pDc6I+d+J8BwwZG6CIuImMBws4daxKFpppx9F2a7YuGLRhaA3BfXWR3ehVl/jCPgLhnLmLusBvwU0hjzBqZnJxMJoQC9rUVHutS4UVOJrLPSnQZGlo04GTkzBbT6WimsG1F66wDGvB7mo9yRkhngjNDGuOwBnyf5qOcF2bGmcAjyyL2asCXaT6KJxMeG04rdJrLdc9bi9ijAV+jojXPWajSIVPLuG+27hi2eZcG7EQuiWPoPtdPpxuFutz0F9XpqniHBvyIytzITbcb8OnCujyxKMJZemI0TFLvJbfiZGczlQ9dB4U6XNZ7UlG2O9xq2x0B+RR54FSEm/i1aXZKuQM54kV4RuSpSLqlxBJD6TvmC9Af19FDpQeugxLKtvfL3rctoc09e+LXkZYV4bB6EtG6EaHMJ1GZ69jGjWm20zlq5RXpru2H8W/3z1t49gjZJcmNOMeixfx2FO3mub/T24Ohz1POPWQfRVXmm8fpfRd4Cd0jIFrmF5gy7CU/dmymAYtQ7RDrMz5LdjPyZK6s58WN/MtpNuV/e2IK9WuMFrqQq8JwHO52QyXXkbyCqhYuzozuYd0GGqPdjGQLRVeVLsyyz7HOsHVGzU5aQ+M9+OoheiqBEatJnkB1jMiTLVFqu1gXNn49jX8qvewl/w4cgQdeIvHlKjurLMKGN248ei656kPpuVBwJ62v+k60hT5/Xz+36SY6AhkU8DaJn4mqRKe2MNr4whY2XkoNEAryq/0qdBcqm+yaYNkPIb/C9ESbGLWPFnEpTzH8ajgU/2pQ24CMYMhw/bPHIGDIDP67TafzL/4glonXQTZtAAAAAElFTkSuQmCC")
         }
     };
     this.getValueByID = function(spriteID) {
@@ -7826,7 +7902,7 @@ function Pixel() {
             [4, 4, 4, 13]
         ],
         innerR, innerG, innerB, alphaVariation, borderR, borderG, borderB, movingR, movingG, movingB;
-    this.init = function(playerInfo) {
+    this.init = function(param_playerInfo) {
         innerR = new Uint8Array(maxEntities);
         innerG = new Uint8Array(maxEntities);
         innerB = new Uint8Array(maxEntities);
@@ -7857,7 +7933,7 @@ function Pixel() {
                 }
             }
         }
-        else if (customJSON.isCustomJSON && customJSON.data.customColor) {
+        else if (customJSON.isCustomJSON && customJSON.data.customColor && !customJSON.data.replay) {
             var customColorValues = customJSON.data.customColor;
             for (idIndex = entityCount - 1; 0 <= idIndex; idIndex--) {
                 innerR[idIndex] = 4 * customColorValues[idIndex][0];
@@ -7872,9 +7948,9 @@ function Pixel() {
                 innerB[idIndex] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
             }
             for (idIndex = playerCount - 1; 0 <= idIndex; idIndex--) {
-                innerR[idIndex] = 4 * playerInfo[idIndex].color[0];
-                innerG[idIndex] = 4 * playerInfo[idIndex].color[1];
-                innerB[idIndex] = 4 * playerInfo[idIndex].color[2];
+                innerR[idIndex] = 4 * param_playerInfo[idIndex].color[0];
+                innerG[idIndex] = 4 * param_playerInfo[idIndex].color[1];
+                innerB[idIndex] = 4 * param_playerInfo[idIndex].color[2];
             }
         }
         for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
@@ -7907,6 +7983,9 @@ function Pixel() {
     this.setFontColor = function() {
         for (var idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) this.shading[idIndex] = 280 > innerR[idIndex] + innerG[idIndex] + innerB[idIndex] ? 0 : 1
     };
+    this.getInnerColors = function(id) {
+        return [innerR[id], innerG[id], innerB[id], alphaVariation[id]]
+    }
     this.toX = function(pIndex) {
         return divideFloor(pIndex, 4) % currentMapWidth
     };
@@ -8389,14 +8468,40 @@ function CustomJSON() {
         if (this.data.customColor && this.data.freeColor) {
             this.data.customColor[0] = mainSettings.buttons[2].buttonClass.getRGB64();
         }
-        gameInit(this.data.seedSpawn, 0, this.generatePlayerInfo(), this.data.gamemode, false)
+        gameInit(this.data.seedSpawn, this.data.myID, this.generatePlayerInfo(), this.data.gamemode, this.data.isContest)
     };
     this.generatePlayerInfo = function() {
-        return [{
-            name: this.data.freeNickname ? nameInput.getInput() : this.data.nicknames[0],
-            color: [0, 0, 0],
-            status: 0
-        }]
+        if (this.data.replay) {
+            var playerInfoArray = [];
+            for (let idIndex = 0; idIndex < this.data.entityCount; idIndex++) {
+                try {
+                    if (this.data.gamemode === 8) {
+                        playerInfoArray.push({
+                            name: this.data.nicknames[idIndex],
+                            color: this.data.customColor[idIndex],
+                            elo: this.data.elo[idIndex],
+                            status: this.data.status[idIndex]
+                        })
+                    } else {
+                        playerInfoArray.push({
+                            name: this.data.nicknames[idIndex],
+                            color: this.data.customColor[idIndex],
+                            status: this.data.status[idIndex]
+                        })
+                    }
+                } catch {
+                    this.data.entityCount = idIndex;
+                    break;
+                }
+            }
+            return playerInfoArray
+        } else {
+            return [{
+                name: this.data.freeNickname ? nameInput.getInput() : this.data.nicknames[0],
+                color: mainSettings.buttons[2].buttonClass.getRGB64(),
+                status: 0
+            }]
+        }
     };
     this.loadJSON = function(e) {
         var fileReader = new FileReader;
@@ -8406,7 +8511,7 @@ function CustomJSON() {
     this.parseCustomJSONData = function(result) {
         this.data = {};
         this.data.entityCount = clamp(result.numberPlayers, 1, 512);
-        this.data.customGamemodeID = clamp(result.modeID, 0, 1);
+        this.data.gamemode = clamp(result.modeID, 0, 10);
         this.data.mapID = clamp(result.mapID, 0, customMapID - 1);
         this.data.mapSeed = clamp(result.mapSeed, 0, 16383);
         this.data.seedSpawn = clamp(result.seedSpawn, 0, 16383);
@@ -8414,44 +8519,44 @@ function CustomJSON() {
         this.data.freeNickname = useIfBoolean(result.selectableName, false);
         this.data.freeColor = useIfBoolean(result.selectableColor, false);
         this.mapName = this.data.mapName = truncateString(result.mapName, 1, 25, "Custom Map");
-        var data = this.data;
+        if (typeof(result.replay) != 'undefined') {
+            this.data.replay = result.replay;
+            this.data.myID = clamp(0, result.myID, maxEntities)
+            if (this.data.gamemode == 8) this.data.elo = result.playerElo;
+            this.data.status = result.playerStatus;
+            this.data.isContest = result.isContest;
+            this.data.spawnLogs = result.spawnLogs;
+            this.data.tickLogs = result.tickLogs;
+        } else this.data.replay = false;
         var mapDescription = result.description;
-        var index;
         if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = [];
         else {
             var descriptionLength = mapDescription.length;
-            for (index = 0; index < descriptionLength; index++) mapDescription[index] = truncateString(mapDescription[index], 0, 100, "")
+            for (var charIndex = 0; charIndex < descriptionLength; charIndex++) mapDescription[charIndex] = truncateString(mapDescription[charIndex], 0, 100, "")
         }
-        data.description = mapDescription;
+        this.data.description = mapDescription;
         this.data.spawnX = createClampedArray(result.playerX, this.data.entityCount, 4096, 16);
         this.data.spawnY = createClampedArray(result.playerY, this.data.entityCount, 4096, 16);
         this.data.teamArray = createClampedArray(result.playerTeam, this.data.entityCount, 8, 8);
         this.data.difficulty = createClampedArray(result.playerStrength, this.data.entityCount, 5, 8);
-        data = this.data;
-        mapDescription = result.playerColor;
-        index = this.data.entityCount;
-        if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = null;
+        var playerColor = result.playerColor;
+        if (!Array.isArray(playerColor) || 1 > playerColor.length) playerColor = null;
         else {
-            var playerColors = Array(index),
-                colorLength = mapDescription.length;
-            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) playerColors[descriptionLength] = createClampedArray(mapDescription[descriptionLength % colorLength], 3, 63, 8);
-            mapDescription = playerColors
+            var customColor = Array(this.data.entityCount),
+                colorLength = playerColor.length;
+            for (var idIndex = 0; idIndex < this.data.entityCount; idIndex++) customColor[idIndex] = createClampedArray(playerColor[idIndex % colorLength], 3, 63, 8);
         }
-        data.customColor = mapDescription;
-        data = this.data;
-        mapDescription = result.playerName;
-        index = this.data.entityCount;
-        if (!Array.isArray(mapDescription) || 1 > mapDescription.length) mapDescription = null;
+        this.data.customColor = customColor;
+        var playerNames = result.playerName;
+        if (!Array.isArray(playerNames) || 1 > playerNames.length) playerNames = null;
         else {
-            var entityNicknames = Array(index),
-                namesLength = mapDescription.length;
-            for (descriptionLength = 0; descriptionLength < index; descriptionLength++) entityNicknames[descriptionLength] = truncateString(mapDescription[descriptionLength % namesLength], 3, 26, "Bot");
-            mapDescription = entityNicknames
+            var entityNicknames = Array(this.data.entityCount),
+                namesLength = playerNames.length;
+            for (var idIndex = 0; idIndex < this.data.entityCount; idIndex++) entityNicknames[idIndex] = truncateString(playerNames[idIndex % namesLength], 3, 26, "Bot");
         }
-        data.nicknames = mapDescription;
+        this.data.nicknames = entityNicknames;
         this.data.mapBase64 = "string" === typeof result.mapBase64 ? result.mapBase64 : "";
         this.data.freeNickname = this.data.freeNickname || !this.data.nicknames;
-        this.data.gamemode = 0 === this.data.customGamemodeID ? 7 : 2 === this.data.customGamemodeID ? 9 : 6;
         this.data.spawnX = this.data.spawnY ? this.data.spawnX : null
     };
     this.checkChooseEmoji = function() {
@@ -9084,7 +9189,7 @@ function NickNames() {
     };
     this.generate = function() {
         var entityIndex, randomValue;
-        if (customJSON.isCustomJSON && customJSON.data.nicknames) {
+        if (customJSON.isCustomJSON && customJSON.data.nicknames && !customJSON.data.replay) {
             for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = customJSON.data.nicknames[entityIndex % entityCount]
         } else if (9 === gamemode) {
             randomValue = fakeRandom.random();
@@ -9170,7 +9275,7 @@ function DiplomacyHandler() {
 }
 var nickname, tempNickname, isAlive, xMin, yMin, xMax, yMax, land, tempLand, troops, potentialBorderAdvances, landBorderPixels, waterBorderPixels, mountainBorderPixels, playerStatus;
 
-function setupPlayerInfoArrays(playerInfo) {
+function setupPlayerInfoArrays(param_playerInfo) {
     var idIndex;
     tempNickname = nickname = Array(maxEntities);
     isAlive = new Uint8Array(maxEntities);
@@ -9186,9 +9291,9 @@ function setupPlayerInfoArrays(playerInfo) {
     waterBorderPixels = Array(maxEntities);
     mountainBorderPixels = Array(maxEntities);
     playerStatus = new Uint8Array(maxEntities);
-    for (idIndex = playerInfo.length - 1; 0 <= idIndex; idIndex--) {
-        nickname[idIndex] = playerInfo[idIndex].name;
-        playerStatus[idIndex] = playerInfo[idIndex].status;
+    for (idIndex = param_playerInfo.length - 1; 0 <= idIndex; idIndex--) {
+        nickname[idIndex] = param_playerInfo[idIndex].name;
+        playerStatus[idIndex] = param_playerInfo[idIndex].status;
     }
 }
 
@@ -11640,13 +11745,13 @@ function TeamColors() {
     ];
     this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     var clanTags, clanTagOfPlayerIDs; //stores the Clan Tag for each Player ID
-    this.init = function(playerInfo) {
+    this.init = function(param_playerInfo) {
         this.teamArray = new Uint8Array(maxEntities);
         this.setDefaultTeamIDs();
         if (teamGame) {
             if (customJSON.isCustomJSON && customJSON.data.teamArray) this.setCustomTeams()
             else if (9 === gamemode) this.setZombieTeams()
-            else this.update(playerInfo)
+            else this.update(param_playerInfo)
         }
     };
     this.setCustomTeams = function() {
@@ -11665,24 +11770,24 @@ function TeamColors() {
         this.teamIDs[1] = 7;
         this.teamIDs[2] = 8
     };
-    this.update = function(playerInfo) {
+    this.update = function(param_playerInfo) {
         var playersTeamColor = new Uint8Array(playerCount),
             players2ndTeamColor = new Uint8Array(playerCount),
             teamColorScore = new Uint16Array(8), //the teams with the highest scores based on players colors will be chosen
             playersPerTeam = new Uint16Array(this.teamIDs.length);
-        this.setPlayerTeamColor(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore);
+        this.setPlayerTeamColor(param_playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore);
         this.sortTeamColorsByScore(teamColorScore);
         if (!singleplayer) this.distributeClanPlayersToTeams(playersPerTeam, playersTeamColor, players2ndTeamColor);
         this.distributeOtherPlayersToTeams(playersTeamColor, players2ndTeamColor, playersPerTeam);
         if (singleplayer) this.distributeBotsSingle()
         else this.distributeBotsMulti()
     };
-    this.setPlayerTeamColor = function(playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
+    this.setPlayerTeamColor = function(param_playerInfo, playersTeamColor, players2ndTeamColor, teamColorScore) {
         var playerIndex, teamIndex, teamsCount = this.teamIDs.length - 1,
             comparedColors = new Uint16Array(teamsCount); //the color assigned is the one with the lowest value
         for (playerIndex = playerCount - 1; 0 <= playerIndex; playerIndex--) {
             for (teamIndex = teamsCount; 1 <= teamIndex; teamIndex--) {
-                comparedColors[teamIndex - 1] = Math.abs(4 * playerInfo[playerIndex].color[0] - allTeamColors[teamIndex][0]) + Math.abs(4 * playerInfo[playerIndex].color[1] - allTeamColors[teamIndex][1]) + Math.abs(4 * playerInfo[playerIndex].color[2] - allTeamColors[teamIndex][2]);
+                comparedColors[teamIndex - 1] = Math.abs(4 * param_playerInfo[playerIndex].color[0] - allTeamColors[teamIndex][0]) + Math.abs(4 * param_playerInfo[playerIndex].color[1] - allTeamColors[teamIndex][1]) + Math.abs(4 * param_playerInfo[playerIndex].color[2] - allTeamColors[teamIndex][2]);
             }
             var lowestComparedValue = 768;
             for (teamIndex = teamsCount - 1; teamIndex >= 0; teamIndex--) {
@@ -12086,27 +12191,62 @@ function MainHandler() {
         this.multiplayerHandler.update()
     };
     this.getTicksElapsed = function() {
-        return singleplayer ? this.singleplayerHandler.tick : this.multiplayerHandler.tick
+        return singleplayer || customJSON.isCustomJSON && customJSON.data.replay ? this.singleplayerHandler.tick : this.multiplayerHandler.tick
     };
     this.getTickInterval = function() {
-        return 56
+        return Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1))
     }
 }
 
 function SingleplayerHandler() {
     this.time = mainHandler.time;
-    this.updateInterval = 56;
-    this.tick = this.clientTick = 0;
+    this.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
+    this.bigTickInterval = 7;
+    this.tick = this.clientTick = this.spawnTick = 0;
     this.a6Z = false; //unused
     this.update = function() {
         canvasManager.update();
-        if (inSpawn) updatedPlayerLabels()
-        else {
+        if (inSpawn) {
+            updatedPlayerLabels();
+            if (customJSON.isCustomJSON && customJSON.data.replay) {
+                if (0 === this.clientTick) {
+                    if (mainHandler.time >= this.time) {
+                        this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
+                        if (2 !== clientStatus) {
+                            if (gameButtons.menuVisible || !replayLogger.underReplay) clientTick1()
+                            else if (0 == --this.bigTickInterval) {
+                                replayLogger.update();
+                                this.bigTickInterval = 7;
+                                gameStatistics.receivedSpawnActions(this.spawnTick);
+                                if (this.spawnTick === spawnTime) {
+                                    spawn.update();
+                                    this.tick = this.clientTick = this.spawnTick = 0;
+                                    this.time = mainHandler.time;
+                                } else {
+                                    this.spawnTick++;
+                                    infoRenderer.setPlayerLabels();
+                                    infoRenderer.drawCanvas();
+                                    mapUpdate.updateMapCanvas();
+                                }
+                            }
+                        }
+                        this.clientTick++
+                    }
+                } else {
+                    if (gameButtons.menuVisible || !replayLogger.underReplay) updatedPlayerLabels()
+                    else {
+                        mainHandler.canvasDirty = true;
+                        drawCanvases();
+                    }
+                    this.clientTick = 0;
+                }
+            }
+        } else {
             if (0 === this.clientTick) {
                 if (mainHandler.time >= this.time) {
                     this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
                     if (2 !== clientStatus) {
-                        if (gameButtons.menuVisible) clientTick1()
+                        if (gameButtons.menuVisible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
                         else {
                             gameTick();
                             this.tick++;
@@ -12397,17 +12537,21 @@ function DataDecoder() {
                                         if (2 !== messageLength) wsManager.closeByError(wsManager.remote, 3235);
                                         else {
                                             data = decoder(array, 9);
-                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(0, [data], true)) announcements.nonAggression(data, 1);
+                                            if (0 !== isAlive[data] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(0, [data], true)) {
+                                                announcements.nonAggression(data, 1);
+                                                if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(8, data, 1, 0, 0, 0)
+                                            }
                                         }
                                     } else {
                                         if (3 !== messageLength) wsManager.closeByError(wsManager.remote, 3236);
                                         else {
                                             data = decoder(array, 9);
-                                            var requester = decoder(array, 9);
-                                            if (0 !== isAlive[data] && 0 !== isAlive[requester] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(1, [data], true)) {
+                                            var targetID = decoder(array, 9);
+                                            if (0 !== isAlive[data] && 0 !== isAlive[targetID] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(1, [data], true)) {
                                                 infoRenderer.showIcon(data, 3, 96);
-                                                infoRenderer.showIcon(requester, 4, 96);
-                                                announcements.requestedToAttack(data, requester);
+                                                infoRenderer.showIcon(targetID, 4, 96);
+                                                announcements.requestedToAttack(data, targetID);
+                                                if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(10, data, targetID, 0, 0, 0)
                                             }
                                         }
                                     }
@@ -12500,23 +12644,38 @@ function DataDecoder() {
                     var ratio = decoder(array, 10),
                         targetID = decoder(array, 9);
                     targetID = targetID === authorID ? maxEntities : targetID;
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(0, authorID, targetID, ratio, 0, 0)
                     processAction.pendingAttack(authorID, ratio, targetID)
                 } else if (1 === actionType) {
                     var ratio = decoder(array, 10),
                         xPos = decoder(array, 11),
                         yPos = decoder(array, 11);
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(1, authorID, 0, ratio, xPos, yPos)
                     processAction.pendingSetLocation(authorID, ratio, xPos, yPos)
                 } else if (2 === actionType) {
                     targetID = decoder(array, 9);
                     targetID = targetID === authorID ? maxEntities : targetID;
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(2, authorID, targetID, 0, 0, 0) 
                     processAction.pendingCancel(authorID, targetID);
-                } else if (3 === actionType) processAction.onLeave(authorID)
-                else if (4 === actionType) {
+                } else if (3 === actionType) {
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(3, authorID, 0, 0, 0, 0) 
+                    processAction.onLeave(authorID)
+                } else if (4 === actionType) {
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(4, authorID, actionType, 0, 0, 0, 0) 
                     actionType = decoder(array, 7);
                     infoRenderer.showIcon(authorID, 0, actionType);
-                } else if (5 === actionType) processAction.surrender(authorID)
-                else if (6 === actionType) processAction.pendingPeace(authorID, decoder(array, 1))
-                else if (7 === actionType) processAction.pendingCancelBoat(authorID, 1 + decoder(array, 11))
+                } else if (5 === actionType) {
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(5, authorID, 0, 0, 0, 0) 
+                    processAction.surrender(authorID)
+                } else if (6 === actionType) {
+                    var choice = decoder(array, 1)
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(6, authorID, choice, 0, 0, 0) 
+                    processAction.pendingPeace(authorID, choice) 
+                } else if (7 === actionType) {
+                    var boatID = 1 + decoder(array, 11)
+                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(7, authorID, boatID, 0, 0, 0)           
+                    processAction.pendingCancelBoat(authorID, boatID)
+                }
             }
     }
 }
@@ -12834,6 +12993,7 @@ function DataEncoder() {
         encoder(array, 2, 1);
         encoder(array, 9, friendID);
         wsManager.send(wsManager.remote, array)
+        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(8, friendID, 0, 0, 0, 0)
     };
     this.requestAttack = function(friends, targetID) {
         var friendIndex, friendsLength = friends.length,
@@ -12845,6 +13005,7 @@ function DataEncoder() {
         encoder(array, 9, targetID);
         for (friendIndex = 0; friendIndex < friendsLength; friendIndex++) encoder(array, 9, friends[friendIndex]);
         wsManager.send(wsManager.remote, array)
+        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(10, friends, targetID, 0, 0, 0) 
     };
     this.votePeace = function(choice) {
         var array = new Uint8Array(1);
