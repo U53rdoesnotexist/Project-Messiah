@@ -8,12 +8,13 @@ function modConstruct(){
 
 function ModHandler() {
     this.cycle, this.tick;
+    this.ticksLeft;
     this.font = true;
     this.latency = true;
     this.hideSpawn = true;
     this.messiah = true;
     this.scriptGameInit = function() {
-        this.cycle = 1;
+        this.cycle = this.nextInfoSend = 1;
         this.tick = 0;
         if (!singleplayer) spawnHider.init();
         if (this.messiah) messiah.init();
@@ -42,8 +43,9 @@ function ModHandler() {
 }
 
 function LatencySimulator() {
-    this.ping = 5; //5 ticks of latency
+    this.ping = 3; //5 ticks of latency
     this.pendingActions = [];
+    this.nextInfoSend;
     this.getNextUpdateTick = function(tick) {
         return Math.ceil(tick / 7) * 7 + 1;
     };
@@ -121,6 +123,9 @@ function Messiah() {
     function getBorderRatio(authorID, targetID) {
         return messiah.borderingLandPixels[authorID].filter(pIndex => targetID === maxEntities ? pixel.isNeutral(pIndex) : pixel.strongIsOwner(targetID, pIndex)).length / messiah.borderingLandPixels[authorID].length
     }
+    function borderLength(authorID, targetID) {
+        return messiah.borderingLandPixels[authorID].filter(pIndex => targetID === maxEntities ? pixel.isNeutral(pIndex) : pixel.strongIsOwner(targetID, pIndex)).length
+    }
     function alreadyAttacking(targetID, reinforcementThreshold) {
         return messiah.pending.findIndex(atk => atk.targetID == targetID) !== -1 || attacks.getRemainingTroopsFromTarget(myID, targetID) > reinforcementThreshold;
     }
@@ -145,6 +150,9 @@ function Messiah() {
         }
     }
     this.update = function() {
+        latencySimulator.nextInfoSend = latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed());
+        latencySimulator.nextInfoSend = latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100 >= 100 ? latencySimulator.nextInfoSend - (modHandler.cycle) * 100 : latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100;
+        modHandler.ticksLeft = 99 - latencySimulator.nextInfoSend;
         this.updateBorderInfo();
         for (var pendingAction of this.pending) {
             if (pendingAction.tick + 7 <= mainHandler.getTicksElapsed() + 1) this.pending = this.pending.filter(action => action != pendingAction)
@@ -233,7 +241,7 @@ function Messiah() {
     }
     this.micro = function() {
         const upperTimeLimit = [70, 80];
-        var targetID, amount = 0;
+        var ticksNeeded, updatesNeeded, borderBotLength, targetID, amount = 0;
         if (modHandler.tick >= 50) { //Attack Opening Encircled Bots
             for (var idIndex of this.borderingBots[myID]) {
                 if (getBorderRatio(idIndex, myID) >= 0.98 && !alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5)) {
@@ -249,10 +257,17 @@ function Messiah() {
                 //If conditions allow, search and attack all bots which will attack within 7 ticks and does not border free land
                 this.borderingBots[myID].sort((prev, next) => land[next] - land[prev]);
                 for (var idIndex of this.borderingBots[myID]) {
-                    if (!alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5) && this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1 && !attacks.check(idIndex, maxEntities)) {
+                    if (!alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5) && this.cantAttackFreeLand(idIndex)) {
                         if (modHandler.density(idIndex) <= 0.5 || difficultyEngine.botTiming[idIndex - playerCount] <= 7) {
+                            borderBotLength = Math.round(borderLength(idIndex, myID) / this.borderingLandPixels[idIndex].length) <= 15 ? Math.round(this.borderingLandPixels[idIndex].length * 0.15) : Math.round(borderLength(idIndex, myID) / this.borderingLandPixels[idIndex].length);
+                            updatesNeeded = Math.round(land[idIndex]/borderBotLength);
+                            ticksNeeded = Math.round(updatesNeeded/modHandler.getSpeed(myID));
+
                             targetID = idIndex;
-                            amount = 2.6 * land[idIndex];
+                            amount = 2.8 * land[idIndex];
+                            if (modHandler.ticksLeft / ticksNeeded >= 0.8 && modHandler.ticksLeft / ticksNeeded <= 1) amount = Math.round(amount / (modHandler.ticksLeft / ticksNeeded));
+                            //if (modHandler.ticksLeft / ticksNeeded < 0.8) amount = Math.round(amount * (modHandler.ticksLeft / ticksNeeded < 0.6 ? 0.6 : modHandler.ticksLeft / ticksNeeded));
+
                             break;
                         }
                     }
@@ -261,7 +276,20 @@ function Messiah() {
         }
         if (amount && amount < 0.5 * troops[myID]) {
             amount = getMin(amount, Math.floor(0.15 * troops[myID]));
-            doAttack(targetID, divideFloor(amount * 1E3, troops[myID]))
+            doAttack(targetID, divideFloor(amount * 1E3, troops[myID]));
         }
     }
+    this.cantAttackFreeLand = function(idIndex) {
+        if (this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1 && !attacks.check(idIndex, maxEntities)) return true
+        
+        for (let i = 0; i < maxEntities; i++) {
+            if (!(this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1) && attacks.check(idIndex, i)) return true
+        }
+        return false
+    }
+    /*offset = new Int32Array(4);
+    offset[0] = -4 * currentMapWidth;
+    offset[1] = 4;
+    offset[2] = -offset[0];
+    offset[3] = -offset[1];*/
 }
