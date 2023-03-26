@@ -17,6 +17,7 @@ function ModHandler() {
     this.bot = true;
     this.boatLines = true;
     this.quickSpawn = false;
+    this.gameSpeed = false;
     this.scriptGameInit = function() {
         this.cycle = this.nextInfoSend = 1;
         this.tick = 0;
@@ -223,22 +224,13 @@ function Messiah() {
         this.pending = [];
         this.borderingBots = new Array(playerCount);
         this.borderingLandPixels = new Array(maxEntities);
+        this.borderPixelsWithEntity = new Array(maxEntities);
         for (var idIndex = 0; idIndex < maxEntities; idIndex++) {
             this.borderingLandPixels[idIndex] = new Array();
             if (idIndex < playerCount) this.borderingBots[idIndex] = new Array();
         }
     }
     this.update = function() {
-        if (modHandler.cycle == 1 && modHandler.tick == 1) {
-            var startCoordinates = convertPointsToCoordinates(landBorderPixels[myID]);
-            var endCoordinates = convertPointsToCoordinates(landBorderPixels[1]);
-            var shortestDistance = [];
-            for (startingPoint of startCoordinates){
-                var distances = distance(...startingPoint, endCoordinates);
-                shortestDistance.push(distances);
-            }
-            console.log(Math.min(...shortestDistance));
-        }
         if (mainHandler.getTicksElapsed() == 1750) console.log(`1:37 Land: ${land[myID]} Troops: ${troops[myID]}`), gameStateManager.aK();
         if (mainHandler.getTicksElapsed() == 1250) console.log(`1:10 Land: ${land[myID]} Troops: ${troops[myID]}`);
         if (mainHandler.getTicksElapsed() == 1430) console.log(`1:20 Land: ${land[myID]} Troops: ${troops[myID]}`);
@@ -254,7 +246,19 @@ function Messiah() {
         if (modHandler.cycle <= 5) this.opening();
         else if (modHandler.cycle <= 9) this.continuousExpansion();
         if (modHandler.cycle >= 7) this.micro();
-        if (modHandler.cycle >= 11 && modHandler.tick == 70) doAttack(maxEntities, 10)
+        if (modHandler.cycle >= 11 && modHandler.tick == 70) doAttack(maxEntities, 10);
+        if (modHandler.tick == 1 && this.borderPixelsWithEntity[1]) {
+            var startCoordinates = [[4, 11], [4, 12], [4, 13], [4, 14], [4, 15], [4, 16], [4, 17], [4, 18], [4, 19], [4, 20]]; //convertPointsToCoordinates(this.borderPixelsWithEntity[1]);
+            var endCoordinates = [[6, 11], [6, 12], [6, 13], [6, 14], [6, 15], [6, 16], [6, 17], [6, 18], [6, 19], [6, 20]];//convertPointsToCoordinates(landBorderPixels[1]);
+            var shortestDistance = [];
+            for (startingPoint of startCoordinates){
+                var distances = distance(...startingPoint, endCoordinates);
+                shortestDistance.push({distance: distances, pixel: startingPoint});
+            }
+            var minDistance = Math.min(...shortestDistance.map((d) => d.distance));
+            var pixel = shortestDistance.find((d) => d.distance === minDistance).pixel;
+            console.log(`Shortest distance: ${minDistance} at pixel ${pixel}`);
+        }
 
     }
     this.updateBorderInfo = function() {
@@ -267,14 +271,16 @@ function Messiah() {
             for (var side1 = 3; side1 >= 0; side1--) {
                 var pIndex2 = pIndex1 + offset[side1];
                 if (!pixel.strongIsOwner(myID, pIndex2) && !this.borderingLandPixels[myID].includes(pIndex2)) this.borderingLandPixels[myID].push(pIndex2);
-                var owner = pixel.getOwner(pIndex2)
+                var owner = pixel.getOwner(pIndex2);
                 if (pixel.entityControlled(pIndex2) && owner >= playerCount && !this.borderingBots[myID].includes(owner)) {
                     this.borderingBots[myID].push(owner);
                     this.borderingLandPixels[owner] = new Array();
+                    this.borderPixelsWithEntity[owner] = new Array();
                     for (var pIndex3 of landBorderPixels[owner]) {
                         for (var side2 = 3; side2 >= 0; side2--) {
                             var pIndex4 = pIndex3 + offset[side2];
                             if (!pixel.strongIsOwner(owner, pIndex4) && !this.borderingLandPixels[owner].includes(pIndex4)) this.borderingLandPixels[owner].push(pIndex4);
+                            if (!pixel.strongIsOwner(owner, pIndex4) && pixel.strongIsOwner(myID, pIndex4) && !this.borderPixelsWithEntity[owner].includes(pIndex4)) this.borderPixelsWithEntity[owner].push(pIndex4);
                         }
                     }
                 }
@@ -401,6 +407,81 @@ function distance(x1, y1, endpoints) {
     return Math.max(...distances);
   }
 
+
+function updateArrayToPoint(initialArray, targetPoints) {
+    let updatedArray = [...initialArray]; // Copy the initial array to a new array
+    let updates = 0; // Initialize the number of updates to 0
+
+    while (!arePointsIncluded(updatedArray, targetPoints)) { // While the target points are not included in the array
+        let pointsToAdds = getPointsToAdd(updatedArray); // Get the points that need to be added to the array
+        updatedArray.push(...pointsToAdds); // Add the new points to the array
+        updates++; // Increment the number of updates performed
+    }
+
+    return updates;
+}
+
+function arePointsIncluded(array, points) {
+    let pointsIncluded = 0;
+    for (let i = 0; i < points.length; i++) {
+        for (let j = 0; j < array.length; j++) {
+            if (array[j][0] === points[i][0] && array[j][1] === points[i][1]) {
+                pointsIncluded++;
+            }
+        }
+    }
+    if (pointsIncluded == points.length) return true;
+    return false;
+}
+
+function isPointIncluded(array, point) {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i][0] === point[0] && array[i][1] === point[1]) {
+        return true;
+        }
+    }
+    return false;
+}
+
+function getPointsToAdd(array) {
+    let pointsToAdd = [];
+
+    for (let point of array) {
+        let borderPoints = getNeighbors(point);
+        for (let i of borderPoints) {
+            if (!isPointIncluded(array, i) && !isPointIncluded(pointsToAdd, i)) {
+                pointsToAdd.push(i);
+            }
+        }
+    }
+
+    return pointsToAdd;
+}
+
+function getNeighbors(point) {
+    let neighbors = [];
+    neighbors.push([point[0] - 1, point[1]]);
+    neighbors.push([point[0] + 1, point[1]]);
+    neighbors.push([point[0], point[1] - 1]);
+    neighbors.push([point[0], point[1] + 1]);
+    return neighbors;
+}
+const initialArray = [[0, 0], [0, 1], [1, 0]];
+const targetPoints = [[3, 3], [1, 2], [2, 1]];
+
+var updatesNeeded = updateArrayToPoint(initialArray, targetPoints);
+
+console.log(updatesNeeded);
+
+
+  
+  
+  
+
+  
+  
+    
+  
   
   
   
