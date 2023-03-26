@@ -1820,7 +1820,7 @@ var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
     currentSeedSpawn, myID, playerInfo, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
 function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode, param_isContest) {
-    currentSeedSpawn = param_seedSpawn
+    currentSeedSpawn = 7185;
     neverJoinedGameBefore = isCanvasHidden = false;
     gamemode = param_gamemode;
     isContest = param_isContest;
@@ -1840,7 +1840,7 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
     botCount = entityCount - playerCount;
     spectatorCount = 0;
     myID = param_myID;
-    fakeRandom.changeRandomNumber(param_seedSpawn);
+    fakeRandom.changeRandomNumber(7185);
     setupPlayerInfoArrays(param_playerInfo);
     zombieSettings.init();
     teamColors.init(param_playerInfo);
@@ -6374,7 +6374,15 @@ function GameStateManager() {
         nameInputBar.init();
         gameState = 0;
         cookiesPrompt.init();
-        nameInput.init()
+        nameInput.init();
+        if (this.quickSpawn){
+            setTimeout(() => {
+                handleMouseDown(980,610);
+            }, 1);
+            setTimeout(() => {
+                handleMouseDown(980,480);
+            }, 1);
+        }
     };
     this.setState = function(state) {
         gameState = state
@@ -6435,6 +6443,7 @@ function GameStateManager() {
             linkButtons.mouseDown(xPos, yPos, true) || mainSettings.mouseDown(xPos, yPos, true))) {
 
             playtime.mouseDown(xPos, yPos);
+
             if (0 === gameState) nameInput.mouseDown(xPos, yPos);
             else if (3 === gameState) showError.mouseDown(xPos, yPos);
             else if (5 === gameState) gameUpdatedPrompt.mouseDown(xPos, yPos);
@@ -12129,7 +12138,7 @@ function MainHandler() {
     function animate() {
         mainHandler.time = performance.now();
         mainHandler.updateHandler();
-        window.requestAnimationFrame(animate)
+        window.requestAnimationFrame(animate);
     }
 
     function checkIdle() {
@@ -12185,7 +12194,10 @@ function MainHandler() {
         }
     };
     this.singleplayerUpdateHandler = function() {
-        this.singleplayerHandler.update()
+        this.singleplayerHandler.update();
+        this.singleplayerHandler.update();
+        this.singleplayerHandler.update();
+        this.singleplayerHandler.update();
     };
     this.multiplayerUpdateHandler = function() {
         this.multiplayerHandler.update()
@@ -12200,7 +12212,7 @@ function MainHandler() {
 
 function SingleplayerHandler() {
     this.time = mainHandler.time;
-    this.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
+    this.updateInterval = Math.round(1 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
     this.bigTickInterval = 7;
     this.tick = this.clientTick = this.spawnTick = 0;
     this.a6Z = false; //unused

@@ -14,11 +14,13 @@ function ModHandler() {
     this.latency = true;
     this.logger = true;
     this.hideSpawn = true;
-    this.bot = false;
+    this.bot = true;
     this.boatLines = true;
+    this.quickSpawn = false;
     this.scriptGameInit = function() {
         this.cycle = this.nextInfoSend = 1;
         this.tick = 0;
+        if (singleplayer && inSpawn && this.quickSpawn) spawn.set(0, 605, 410), spawn.update();
         if (!singleplayer) spawnHider.init();
         if (this.bot) messiah.init();
         if (customJSON.isCustomJSON && customJSON.data.replay) replayLogger.init()
@@ -227,6 +229,19 @@ function Messiah() {
         }
     }
     this.update = function() {
+        if (modHandler.cycle == 1 && modHandler.tick == 1) {
+            var startCoordinates = convertPointsToCoordinates(landBorderPixels[myID]);
+            var endCoordinates = convertPointsToCoordinates(landBorderPixels[1]);
+            var shortestDistance = [];
+            for (startingPoint of startCoordinates){
+                var distances = distance(...startingPoint, endCoordinates);
+                shortestDistance.push(distances);
+            }
+            console.log(Math.min(...shortestDistance));
+        }
+        if (mainHandler.getTicksElapsed() == 1750) console.log(`1:37 Land: ${land[myID]} Troops: ${troops[myID]}`), gameStateManager.aK();
+        if (mainHandler.getTicksElapsed() == 1250) console.log(`1:10 Land: ${land[myID]} Troops: ${troops[myID]}`);
+        if (mainHandler.getTicksElapsed() == 1430) console.log(`1:20 Land: ${land[myID]} Troops: ${troops[myID]}`);
         latencySimulator.nextInfoSend = latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed());
         latencySimulator.nextInfoSend = latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100 >= 100 ? latencySimulator.nextInfoSend - (modHandler.cycle) * 100 : latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100;
         modHandler.ticksLeft = 99 - latencySimulator.nextInfoSend;
@@ -239,7 +254,7 @@ function Messiah() {
         if (modHandler.cycle <= 5) this.opening();
         else if (modHandler.cycle <= 9) this.continuousExpansion();
         if (modHandler.cycle >= 7) this.micro();
-        if (modHandler.cycle % 2 == 1 && modHandler.cycle >= 11 && modHandler.tick == 80) doAttack(maxEntities, 10)
+        if (modHandler.cycle >= 11 && modHandler.tick == 70) doAttack(maxEntities, 10)
 
     }
     this.updateBorderInfo = function() {
@@ -360,13 +375,40 @@ function Messiah() {
         if (this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1 && !attacks.check(idIndex, maxEntities)) return true
         
         for (let i = 0; i < maxEntities; i++) {
-            if (!(this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1) && attacks.check(idIndex, i)) return true
+            if (!(this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1) && attacks.check(idIndex, i) && !attacks.check(idIndex, maxEntities)) return true
         }
         return false
     }
-    /*offset = new Int32Array(4);
-    offset[0] = -4 * currentMapWidth;
-    offset[1] = 4;
-    offset[2] = -offset[0];
-    offset[3] = -offset[1];*/
+    
 }
+
+function convertPointsToCoordinates(points) {
+    return points.map(point => {
+      const x = point % (currentMapWidth * 4) / 4;
+      const y = Math.floor(point / (currentMapWidth * 4));
+      return [x, y];
+    });
+  }
+
+function distance(x1, y1, endpoints) {
+    var distances = [];
+    for (var i = 0; i < endpoints.length; i++) {
+      var x2 = endpoints[i][0];
+      var y2 = endpoints[i][1];
+      var dist = Math.abs(x2 - x1) + Math.abs(y2 - y1);
+      distances.push(dist);
+    }
+    return Math.max(...distances);
+  }
+
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
