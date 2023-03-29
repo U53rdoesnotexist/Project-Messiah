@@ -9496,7 +9496,7 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     const_2_s52 = 2;
-    versionHash = 6275;
+    versionHash = 2675;
     versionLabel = "1.83.4   29 March 2023";
     construct();
     botBorderingStuffInit();
