@@ -1,10 +1,11 @@
-var modHandler, latencySimulator, replayLogger, spawnHider, messiah;
+var modHandler, latencySimulator, replayLogger, spawnHider, messiah, distance;
 function modConstruct(){
     modHandler = new ModHandler;
     latencySimulator = new LatencySimulator;
     replayLogger = new ReplayLogger;
     spawnHider = new SpawnHider;
     messiah = new Messiah;
+    distance = new Distance;
 }
 
 function ModHandler() {
@@ -247,17 +248,20 @@ function Messiah() {
         else if (modHandler.cycle <= 9) this.continuousExpansion();
         if (modHandler.cycle >= 7) this.micro();
         if (modHandler.cycle >= 11 && modHandler.tick == 70) doAttack(maxEntities, 10);
-        if (modHandler.tick == 1 && this.borderPixelsWithEntity[1]) {
-            var startCoordinates = [[4, 11], [4, 12], [4, 13], [4, 14], [4, 15], [4, 16], [4, 17], [4, 18], [4, 19], [4, 20]]; //convertPointsToCoordinates(this.borderPixelsWithEntity[1]);
-            var endCoordinates = [[6, 11], [6, 12], [6, 13], [6, 14], [6, 15], [6, 16], [6, 17], [6, 18], [6, 19], [6, 20]];//convertPointsToCoordinates(landBorderPixels[1]);
-            var shortestDistance = [];
-            for (startingPoint of startCoordinates){
-                var distances = distance(...startingPoint, endCoordinates);
-                shortestDistance.push({distance: distances, pixel: startingPoint});
+
+        if (modHandler.tick == 1 && this.borderPixelsWithEntity[1] && landBorderPixels[1]) {
+            let botPixels = [];
+            for (let i = 0; i < currentMapHeight * currentMapWidth * 4; i += 4){
+                if (pixel.getOwner(i) == 1) botPixels.push(i);
             }
-            var minDistance = Math.min(...shortestDistance.map((d) => d.distance));
-            var pixel = shortestDistance.find((d) => d.distance === minDistance).pixel;
-            console.log(`Shortest distance: ${minDistance} at pixel ${pixel}`);
+            let botPixelsCoordinates = convertPointsToCoordinates(botPixels);
+            console.log(botPixelsCoordinates);
+
+            const initialArray = convertPointsToCoordinates(this.borderPixelsWithEntity[1]);
+            const targetPoints = botPixelsCoordinates;//convertPointsToCoordinates(landBorderPixels[1]);
+            var updatesNeeded = distance.updateArrayToPoint(initialArray, targetPoints);
+            if (updatesNeeded) console.log(`Total Updates needed: ${updatesNeeded[0]} Updates needed to take 50% of the pixels: ${updatesNeeded[1]}`);
+            //waterBorderPixels[lastTargetID].length + mountainBorderPixels[lastTargetID].length
         }
 
     }
@@ -396,7 +400,7 @@ function convertPointsToCoordinates(points) {
     });
   }
 
-function distance(x1, y1, endpoints) {
+function distanceM(x1, y1, endpoints) {
     var distances = [];
     for (var i = 0; i < endpoints.length; i++) {
       var x2 = endpoints[i][0];
@@ -407,124 +411,111 @@ function distance(x1, y1, endpoints) {
     return Math.max(...distances);
   }
 
-
-function updateArrayToPoint(initialArray, targetPoints) {
-    let updatedArray = [...initialArray]; // Copy the initial array to a new array
-    let updates = 0; // Initialize the number of updates to 0
-    let returnedUpdates = [];//to return updates and average updates
-    previousPoints = updatesWithNoPointsFound = 0;
-
-    while (!arePointsIncluded(updatedArray, targetPoints)) { // While the target points are not included in the array
-        if (updatesWithNoPointsFound >= 2) {
-            if (previousPoints == 0) {
-                console.log('You do not border this bot');
-                return updates
-            }
-            if (updatesWithNoPointsFound >= 2){
-                console.log('This bot is split');
-                let notSplitPoints = [];
-                for (i of targetPoints){
-                    if (isPointIncluded(updatedArray, i)) notSplitPoints.push(i);
-                }
-                returnedUpdates.push(updates);
-                returnedUpdates.push(updateArrayToHalf(initialArray, notSplitPoints));
-                return returnedUpdates
-            }
-        }
-        let pointsToAdds = getPointsToAdd(updatedArray); // Get the points that need to be added to the array
-        updatedArray.push(...pointsToAdds); // Add the new points to the array
-        updates++; // Increment the number of updates performed
-    }
-    returnedUpdates.push(updates);
-    returnedUpdates.push(updateArrayToHalf(initialArray, targetPoints));
-    return returnedUpdates;
-}
-
-function updateArrayToHalf(initialArray, targetPoints) {
-    let updatedArray = [...initialArray]; // Copy the initial array to a new array
-    let updates = 0; // Initialize the number of updates to 0
-
-    while (!areHalfOfPointsIncluded(updatedArray, targetPoints)) { // While the target points are not included in the array
-        let pointsToAdds = getPointsToAdd(updatedArray); // Get the points that need to be added to the array
-        updatedArray.push(...pointsToAdds); // Add the new points to the array
-        updates++; // Increment the number of updates performed
-    }
+function Distance(){
     
-    return updates;
-}
-function areHalfOfPointsIncluded(array, points) {
-    let pointsIncluded = 0;
-    for (let i = 0; i < points.length; i++) {
-        for (let j = 0; j < array.length; j++) {
-            if (array[j][0] === points[i][0] && array[j][1] === points[i][1]) {
-                pointsIncluded++;
+    this.previousPoints;
+    this.updatesWithNoPointsFound;
+
+    this.updateArrayToPoint = function(initialArray, targetPoints) {
+        let updatedArray = [...initialArray]; // Copy the initial array to a new array
+        let updates = 0; // Initialize the number of updates to 0
+        let returnedUpdates = [];//to return updates and average updates
+        this.previousPoints = this.updatesWithNoPointsFound = 0;
+
+        while (!this.arePointsIncluded(updatedArray, targetPoints, false)) { // While the target points are not included in the array
+            if (this.updatesWithNoPointsFound >= 2) {
+                if (this.previousPoints == 0) {
+                    console.log('You do not border this bot');
+                    returnedUpdates = [0, 0];
+                    return false
+                }
+                if (this.updatesWithNoPointsFound >= 2){
+                    console.log('This bot is split');
+                    let notSplitPoints = [];
+                    for (i of targetPoints){
+                        if (this.isPointIncluded(updatedArray, i)) notSplitPoints.push(i);
+                    }
+                    returnedUpdates.push(updates);
+                    returnedUpdates.push(this.updateArrayToHalf(initialArray, notSplitPoints));
+                    return returnedUpdates
+                }
+            }
+            let pointsToAdds = this.getPointsToAdd(updatedArray); // Get the points that need to be added to the array
+            updatedArray.push(...pointsToAdds); // Add the new points to the array
+            updates++; // Increment the number of updates performed
+        }
+        returnedUpdates.push(updates);
+        returnedUpdates.push(this.updateArrayToHalf(initialArray, targetPoints));
+        return returnedUpdates;
+    }
+
+    this.updateArrayToHalf = function (initialArray, targetPoints) {
+        let updatedArray = [...initialArray]; // Copy the initial array to a new array
+        let updates = 0; // Initialize the number of updates to 0
+
+        while (!this.arePointsIncluded(updatedArray, targetPoints, true)) { // While the target points are not included in the array
+            let pointsToAdds = this.getPointsToAdd(updatedArray); // Get the points that need to be added to the array
+            updatedArray.push(...pointsToAdds); // Add the new points to the array
+            updates++; // Increment the number of updates performed
+        }
+        return updates;
+    }
+
+    this.arePointsIncluded = function(array, points, half) {
+        let pointsIncluded = 0;
+        for (let i = 0; i < points.length; i++) {
+            for (let j = 0; j < array.length; j++) {
+                if (array[j][0] === points[i][0] && array[j][1] === points[i][1]) {
+                    pointsIncluded++;
+                }
             }
         }
+        if (half){
+            if (pointsIncluded >= points.length / 2) return true;
+        }
+        if (pointsIncluded == points.length) return true;
+        if (this.previousPoints == pointsIncluded) this.updatesWithNoPointsFound++;
+        else {
+            this.previousPoints = pointsIncluded;
+            this.updatesWithNoPointsFound = 0;
+        }
+        return false;
     }
-    if (pointsIncluded >= points.length / 2) return true;
-    return false;
-}
 
-function arePointsIncluded(array, points) {
-    let pointsIncluded = 0;
-    for (let i = 0; i < points.length; i++) {
-        for (let j = 0; j < array.length; j++) {
-            if (array[j][0] === points[i][0] && array[j][1] === points[i][1]) {
-                pointsIncluded++;
+    this.isPointIncluded = function(array, point) {
+        for (let i = 0; i < array.length; i++) {
+            if (array[i][0] === point[0] && array[i][1] === point[1]) {
+            return true;
             }
         }
+        return false;
     }
-    if (pointsIncluded == points.length) return true;
-    if (previousPoints == pointsIncluded) updatesWithNoPointsFound++;
-    else {
-        previousPoints = pointsIncluded;
-        updatesWithNoPointsFound = 0;
-    }
-    return false;
-}
 
-function isPointIncluded(array, point) {
-    for (let i = 0; i < array.length; i++) {
-        if (array[i][0] === point[0] && array[i][1] === point[1]) {
-        return true;
-        }
-    }
-    return false;
-}
-
-function getPointsToAdd(array) {
-    let pointsToAdd = [];
-
-    for (let point of array) {
-        let borderPoints = getNeighbors(point);
-        for (let i of borderPoints) {
-            if (!isPointIncluded(array, i) && !isPointIncluded(pointsToAdd, i)) {
-                pointsToAdd.push(i);
+    this.getPointsToAdd = function(array) {
+        let pointsToAdd = [];
+        for (let point of array) {
+            let borderPoints = this.getNeighborsPoints(point);
+            for (let i of borderPoints) {
+                if (!this.isPointIncluded(array, i) && !this.isPointIncluded(pointsToAdd, i)) {
+                    pointsToAdd.push(i);
+                }
             }
         }
+        return pointsToAdd;
     }
 
-    return pointsToAdd;
+    this.getNeighborsPoints = function(point) {
+        let neighbors = [];
+        neighbors.push([point[0] - 1, point[1]]);
+        neighbors.push([point[0] + 1, point[1]]);
+        neighbors.push([point[0], point[1] - 1]);
+        neighbors.push([point[0], point[1] + 1]);
+        return neighbors;
+    }
 }
-
-function getNeighbors(point) {
-    let neighbors = [];
-    neighbors.push([point[0] - 1, point[1]]);
-    neighbors.push([point[0] + 1, point[1]]);
-    neighbors.push([point[0], point[1] - 1]);
-    neighbors.push([point[0], point[1] + 1]);
-    return neighbors;
-}
-const initialArray = [[1, 0]];
-const targetPoints = [[3, 3], [2, 2], [1, 1], [2, 1]];
-var previousPoints, updatesWithNoPointsFound;
-var updatesNeeded = updateArrayToPoint(initialArray, targetPoints);
-
-console.log(`Total Updates needed: ${updatesNeeded[0]} Updates needed to take 50% of the pixels: ${updatesNeeded[1]}`);
-
 
   
-  
+
   
 
   
