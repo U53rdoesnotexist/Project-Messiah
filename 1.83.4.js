@@ -9360,7 +9360,7 @@ function WsManager() {
         this.originURLs[0] = "territorial.io";
         var x = fakeRandom.getMedian(0);
         fakeRandom.changeRandomNumber(0);
-        for (serverIndex = 1; serverIndex < this.serverCount; serverIndex++) this.originURLs[serverIndex] = strings.generateOriginURLs() + ".com";
+        for (serverIndex = 1; serverIndex < this.serverCount; serverIndex++) this.originURLs[serverIndex] = strings.generateOriginURLs() + ".territorial.io";
         fakeRandom.changeRandomNumber(x);
         websockets = Array(this.terriWsCount);
         websocketsInfo = Array(this.terriWsCount);
@@ -9487,8 +9487,8 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     const_2_s52 = 2;
-    versionHash = 2526;
-    versionLabel = "1.83.3   3 February 2023";
+    versionHash = 6275;
+    versionLabel = "1.83.4   29 March 2023";
     construct();
     botBorderingStuffInit();
     isMainCalled = true;
