@@ -9,15 +9,19 @@ function modConstruct(){
 
 function ModHandler() {
     this.cycle, this.tick;
-    this.font = false;
+    this.ticksLeft;
+    this.font = true;
     this.latency = true;
     this.logger = true;
     this.hideSpawn = true;
-    this.bot = false;
+    this.bot = true;
     this.boatLines = true;
+    this.quickSpawn = false;
+    this.gameSpeed = false;
     this.scriptGameInit = function() {
-        this.cycle = 1;
+        this.cycle = this.nextInfoSend = 1;
         this.tick = 0;
+        if (singleplayer && inSpawn && this.quickSpawn) spawn.set(0, 605, 410), spawn.update();
         if (!singleplayer) spawnHider.init();
         if (this.bot) messiah.init();
         if (customJSON.isCustomJSON && customJSON.data.replay) replayLogger.init()
@@ -46,8 +50,9 @@ function ModHandler() {
 }
 
 function LatencySimulator() {
-    this.ping = 5; //5 ticks of latency
+    this.ping = 3; //5 ticks of latency
     this.pendingActions = [];
+    this.nextInfoSend;
     this.getNextUpdateTick = function(tick) {
         return Math.ceil(tick / 7) * 7 + 1;
     };
@@ -198,6 +203,9 @@ function Messiah() {
     function getBorderRatio(authorID, targetID) {
         return messiah.borderingLandPixels[authorID].filter(pIndex => targetID === maxEntities ? pixel.isNeutral(pIndex) : pixel.strongIsOwner(targetID, pIndex)).length / messiah.borderingLandPixels[authorID].length
     }
+    function borderLength(authorID, targetID) {
+        return messiah.borderingLandPixels[authorID].filter(pIndex => targetID === maxEntities ? pixel.isNeutral(pIndex) : pixel.strongIsOwner(targetID, pIndex)).length
+    }
     function alreadyAttacking(targetID, reinforcementThreshold) {
         return messiah.pending.findIndex(atk => atk.targetID == targetID) !== -1 || attacks.getRemainingTroopsFromTarget(myID, targetID) > reinforcementThreshold;
     }
@@ -216,12 +224,19 @@ function Messiah() {
         this.pending = [];
         this.borderingBots = new Array(playerCount);
         this.borderingLandPixels = new Array(maxEntities);
+        this.borderPixelsWithEntity = new Array(maxEntities);
         for (var idIndex = 0; idIndex < maxEntities; idIndex++) {
             this.borderingLandPixels[idIndex] = new Array();
             if (idIndex < playerCount) this.borderingBots[idIndex] = new Array();
         }
     }
     this.update = function() {
+        if (mainHandler.getTicksElapsed() == 1750) console.log(`1:37 Land: ${land[myID]} Troops: ${troops[myID]}`), gameStateManager.aK();
+        if (mainHandler.getTicksElapsed() == 1250) console.log(`1:10 Land: ${land[myID]} Troops: ${troops[myID]}`);
+        if (mainHandler.getTicksElapsed() == 1430) console.log(`1:20 Land: ${land[myID]} Troops: ${troops[myID]}`);
+        latencySimulator.nextInfoSend = latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed());
+        latencySimulator.nextInfoSend = latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100 >= 100 ? latencySimulator.nextInfoSend - (modHandler.cycle) * 100 : latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100;
+        modHandler.ticksLeft = 99 - latencySimulator.nextInfoSend;
         this.updateBorderInfo();
         for (var pendingAction of this.pending) {
             if (pendingAction.tick + 7 <= mainHandler.getTicksElapsed() + 1) this.pending = this.pending.filter(action => action != pendingAction)
@@ -231,7 +246,19 @@ function Messiah() {
         if (modHandler.cycle <= 5) this.opening();
         else if (modHandler.cycle <= 9) this.continuousExpansion();
         if (modHandler.cycle >= 7) this.micro();
-        if (modHandler.cycle % 2 == 1 && modHandler.cycle >= 11 && modHandler.tick == 80) doAttack(maxEntities, 10)
+        if (modHandler.cycle >= 11 && modHandler.tick == 70) doAttack(maxEntities, 10);
+        if (modHandler.tick == 1 && this.borderPixelsWithEntity[1]) {
+            var startCoordinates = [[4, 11], [4, 12], [4, 13], [4, 14], [4, 15], [4, 16], [4, 17], [4, 18], [4, 19], [4, 20]]; //convertPointsToCoordinates(this.borderPixelsWithEntity[1]);
+            var endCoordinates = [[6, 11], [6, 12], [6, 13], [6, 14], [6, 15], [6, 16], [6, 17], [6, 18], [6, 19], [6, 20]];//convertPointsToCoordinates(landBorderPixels[1]);
+            var shortestDistance = [];
+            for (startingPoint of startCoordinates){
+                var distances = distance(...startingPoint, endCoordinates);
+                shortestDistance.push({distance: distances, pixel: startingPoint});
+            }
+            var minDistance = Math.min(...shortestDistance.map((d) => d.distance));
+            var pixel = shortestDistance.find((d) => d.distance === minDistance).pixel;
+            console.log(`Shortest distance: ${minDistance} at pixel ${pixel}`);
+        }
 
     }
     this.updateBorderInfo = function() {
@@ -244,14 +271,16 @@ function Messiah() {
             for (var side1 = 3; side1 >= 0; side1--) {
                 var pIndex2 = pIndex1 + offset[side1];
                 if (!pixel.strongIsOwner(myID, pIndex2) && !this.borderingLandPixels[myID].includes(pIndex2)) this.borderingLandPixels[myID].push(pIndex2);
-                var owner = pixel.getOwner(pIndex2)
+                var owner = pixel.getOwner(pIndex2);
                 if (pixel.entityControlled(pIndex2) && owner >= playerCount && !this.borderingBots[myID].includes(owner)) {
                     this.borderingBots[myID].push(owner);
                     this.borderingLandPixels[owner] = new Array();
+                    this.borderPixelsWithEntity[owner] = new Array();
                     for (var pIndex3 of landBorderPixels[owner]) {
                         for (var side2 = 3; side2 >= 0; side2--) {
                             var pIndex4 = pIndex3 + offset[side2];
                             if (!pixel.strongIsOwner(owner, pIndex4) && !this.borderingLandPixels[owner].includes(pIndex4)) this.borderingLandPixels[owner].push(pIndex4);
+                            if (!pixel.strongIsOwner(owner, pIndex4) && pixel.strongIsOwner(myID, pIndex4) && !this.borderPixelsWithEntity[owner].includes(pIndex4)) this.borderPixelsWithEntity[owner].push(pIndex4);
                         }
                     }
                 }
@@ -310,7 +339,7 @@ function Messiah() {
     }
     this.micro = function() {
         const upperTimeLimit = [70, 80];
-        var targetID, amount = 0;
+        var ticksNeeded, updatesNeeded, borderBotLength, targetID, amount = 0;
         if (modHandler.tick >= 50) { //Attack Opening Encircled Bots
             for (var idIndex of this.borderingBots[myID]) {
                 if (getBorderRatio(idIndex, myID) >= 0.98 && !alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5)) {
@@ -326,10 +355,17 @@ function Messiah() {
                 //If conditions allow, search and attack all bots which will attack within 7 ticks and does not border free land
                 this.borderingBots[myID].sort((prev, next) => land[next] - land[prev]);
                 for (var idIndex of this.borderingBots[myID]) {
-                    if (!alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5) && this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1 && !attacks.check(idIndex, maxEntities)) {
+                    if (!alreadyAttacking(idIndex, 5000 * modHandler.getSpeed(myID) ** 1.5) && this.cantAttackFreeLand(idIndex)) {
                         if (modHandler.density(idIndex) <= 0.5 || difficultyEngine.botTiming[idIndex - playerCount] <= 7) {
+                            borderBotLength = Math.round(borderLength(idIndex, myID) / this.borderingLandPixels[idIndex].length) <= 15 ? Math.round(this.borderingLandPixels[idIndex].length * 0.15) : Math.round(borderLength(idIndex, myID) / this.borderingLandPixels[idIndex].length);
+                            updatesNeeded = Math.round(land[idIndex]/borderBotLength);
+                            ticksNeeded = Math.round(updatesNeeded/modHandler.getSpeed(myID));
+
                             targetID = idIndex;
-                            amount = 2.6 * land[idIndex];
+                            amount = 2.8 * land[idIndex];
+                            if (modHandler.ticksLeft / ticksNeeded >= 0.8 && modHandler.ticksLeft / ticksNeeded <= 1) amount = Math.round(amount / (modHandler.ticksLeft / ticksNeeded));
+                            //if (modHandler.ticksLeft / ticksNeeded < 0.8) amount = Math.round(amount * (modHandler.ticksLeft / ticksNeeded < 0.6 ? 0.6 : modHandler.ticksLeft / ticksNeeded));
+
                             break;
                         }
                     }
@@ -338,7 +374,171 @@ function Messiah() {
         }
         if (amount && amount < 0.5 * troops[myID]) {
             amount = getMin(amount, Math.floor(0.15 * troops[myID]));
-            doAttack(targetID, divideFloor(amount * 1E3, troops[myID]))
+            doAttack(targetID, divideFloor(amount * 1E3, troops[myID]));
         }
     }
+    this.cantAttackFreeLand = function(idIndex) {
+        if (this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1 && !attacks.check(idIndex, maxEntities)) return true
+        
+        for (let i = 0; i < maxEntities; i++) {
+            if (!(this.borderingLandPixels[idIndex].findIndex(pIndex => pixel.isNeutral(pIndex)) === -1) && attacks.check(idIndex, i) && !attacks.check(idIndex, maxEntities)) return true
+        }
+        return false
+    }
+    
 }
+
+function convertPointsToCoordinates(points) {
+    return points.map(point => {
+      const x = point % (currentMapWidth * 4) / 4;
+      const y = Math.floor(point / (currentMapWidth * 4));
+      return [x, y];
+    });
+  }
+
+function distance(x1, y1, endpoints) {
+    var distances = [];
+    for (var i = 0; i < endpoints.length; i++) {
+      var x2 = endpoints[i][0];
+      var y2 = endpoints[i][1];
+      var dist = Math.abs(x2 - x1) + Math.abs(y2 - y1);
+      distances.push(dist);
+    }
+    return Math.max(...distances);
+  }
+
+
+function updateArrayToPoint(initialArray, targetPoints) {
+    let updatedArray = [...initialArray]; // Copy the initial array to a new array
+    let updates = 0; // Initialize the number of updates to 0
+    let returnedUpdates = [];//to return updates and average updates
+    previousPoints = updatesWithNoPointsFound = 0;
+
+    while (!arePointsIncluded(updatedArray, targetPoints)) { // While the target points are not included in the array
+        if (updatesWithNoPointsFound >= 2) {
+            if (previousPoints == 0) {
+                console.log('You do not border this bot');
+                return updates
+            }
+            if (updatesWithNoPointsFound >= 2){
+                console.log('This bot is split');
+                let notSplitPoints = [];
+                for (i of targetPoints){
+                    if (isPointIncluded(updatedArray, i)) notSplitPoints.push(i);
+                }
+                returnedUpdates.push(updates);
+                returnedUpdates.push(updateArrayToHalf(initialArray, notSplitPoints));
+                return returnedUpdates
+            }
+        }
+        let pointsToAdds = getPointsToAdd(updatedArray); // Get the points that need to be added to the array
+        updatedArray.push(...pointsToAdds); // Add the new points to the array
+        updates++; // Increment the number of updates performed
+    }
+    returnedUpdates.push(updates);
+    returnedUpdates.push(updateArrayToHalf(initialArray, targetPoints));
+    return returnedUpdates;
+}
+
+function updateArrayToHalf(initialArray, targetPoints) {
+    let updatedArray = [...initialArray]; // Copy the initial array to a new array
+    let updates = 0; // Initialize the number of updates to 0
+
+    while (!areHalfOfPointsIncluded(updatedArray, targetPoints)) { // While the target points are not included in the array
+        let pointsToAdds = getPointsToAdd(updatedArray); // Get the points that need to be added to the array
+        updatedArray.push(...pointsToAdds); // Add the new points to the array
+        updates++; // Increment the number of updates performed
+    }
+    
+    return updates;
+}
+function areHalfOfPointsIncluded(array, points) {
+    let pointsIncluded = 0;
+    for (let i = 0; i < points.length; i++) {
+        for (let j = 0; j < array.length; j++) {
+            if (array[j][0] === points[i][0] && array[j][1] === points[i][1]) {
+                pointsIncluded++;
+            }
+        }
+    }
+    if (pointsIncluded >= points.length / 2) return true;
+    return false;
+}
+
+function arePointsIncluded(array, points) {
+    let pointsIncluded = 0;
+    for (let i = 0; i < points.length; i++) {
+        for (let j = 0; j < array.length; j++) {
+            if (array[j][0] === points[i][0] && array[j][1] === points[i][1]) {
+                pointsIncluded++;
+            }
+        }
+    }
+    if (pointsIncluded == points.length) return true;
+    if (previousPoints == pointsIncluded) updatesWithNoPointsFound++;
+    else {
+        previousPoints = pointsIncluded;
+        updatesWithNoPointsFound = 0;
+    }
+    return false;
+}
+
+function isPointIncluded(array, point) {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i][0] === point[0] && array[i][1] === point[1]) {
+        return true;
+        }
+    }
+    return false;
+}
+
+function getPointsToAdd(array) {
+    let pointsToAdd = [];
+
+    for (let point of array) {
+        let borderPoints = getNeighbors(point);
+        for (let i of borderPoints) {
+            if (!isPointIncluded(array, i) && !isPointIncluded(pointsToAdd, i)) {
+                pointsToAdd.push(i);
+            }
+        }
+    }
+
+    return pointsToAdd;
+}
+
+function getNeighbors(point) {
+    let neighbors = [];
+    neighbors.push([point[0] - 1, point[1]]);
+    neighbors.push([point[0] + 1, point[1]]);
+    neighbors.push([point[0], point[1] - 1]);
+    neighbors.push([point[0], point[1] + 1]);
+    return neighbors;
+}
+const initialArray = [[1, 0]];
+const targetPoints = [[3, 3], [2, 2], [1, 1], [2, 1]];
+var previousPoints, updatesWithNoPointsFound;
+var updatesNeeded = updateArrayToPoint(initialArray, targetPoints);
+
+console.log(`Total Updates needed: ${updatesNeeded[0]} Updates needed to take 50% of the pixels: ${updatesNeeded[1]}`);
+
+
+  
+  
+  
+
+  
+  
+    
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
