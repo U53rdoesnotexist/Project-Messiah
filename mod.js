@@ -11,6 +11,7 @@ function modConstruct(){
 function ModHandler() {
     this.cycle, this.tick;
     this.ticksLeft;
+    this.updatesLeft;
     this.font = true;
     this.latency = true;
     this.logger = true;
@@ -18,7 +19,7 @@ function ModHandler() {
     this.bot = true;
     this.boatLines = true;
     this.quickSpawn = false;
-    this.gameSpeed = false;
+    this.gameSpeed = true;
     this.scriptGameInit = function() {
         this.cycle = this.nextInfoSend = 1;
         this.tick = 0;
@@ -235,9 +236,12 @@ function Messiah() {
         if (mainHandler.getTicksElapsed() == 1750) console.log(`1:37 Land: ${land[myID]} Troops: ${troops[myID]}`), gameStateManager.aK();
         if (mainHandler.getTicksElapsed() == 1250) console.log(`1:10 Land: ${land[myID]} Troops: ${troops[myID]}`);
         if (mainHandler.getTicksElapsed() == 1430) console.log(`1:20 Land: ${land[myID]} Troops: ${troops[myID]}`);
+
         latencySimulator.nextInfoSend = latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed());
         latencySimulator.nextInfoSend = latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100 >= 100 ? latencySimulator.nextInfoSend - (modHandler.cycle) * 100 : latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100;
         modHandler.ticksLeft = 99 - latencySimulator.nextInfoSend;
+        modHandler.updatesLeft = Math.round(modHandler.ticksLeft * modHandler.getSpeed(myID));
+
         this.updateBorderInfo();
         for (var pendingAction of this.pending) {
             if (pendingAction.tick + 7 <= mainHandler.getTicksElapsed() + 1) this.pending = this.pending.filter(action => action != pendingAction)
@@ -251,17 +255,19 @@ function Messiah() {
 
         if (modHandler.tick == 1 && this.borderPixelsWithEntity[1] && landBorderPixels[1]) {
             let botPixels = [];
+            
             for (let i = 0; i < currentMapHeight * currentMapWidth * 4; i += 4){
                 if (pixel.getOwner(i) == 1) botPixels.push(i);
-            }
+            }            
             let botPixelsCoordinates = convertPointsToCoordinates(botPixels);
-            console.log(botPixelsCoordinates);
 
             const initialArray = convertPointsToCoordinates(this.borderPixelsWithEntity[1]);
             const targetPoints = botPixelsCoordinates;//convertPointsToCoordinates(landBorderPixels[1]);
+            //console.time("loop-time");
             var updatesNeeded = distance.updateArrayToPoint(initialArray, targetPoints);
-            if (updatesNeeded) console.log(`Total Updates needed: ${updatesNeeded[0]} Updates needed to take 50% of the pixels: ${updatesNeeded[1]}`);
-            //waterBorderPixels[lastTargetID].length + mountainBorderPixels[lastTargetID].length
+            //console.timeEnd("loop-time");
+            //if (updatesNeeded) console.log(`Total Updates needed: ${updatesNeeded[0]} Land that can be taken until the end of the cycle: ${updatesNeeded[1]}`);
+
         }
 
     }
@@ -410,75 +416,55 @@ function distanceM(x1, y1, endpoints) {
     }
     return Math.max(...distances);
   }
-
+  
 function Distance(){
     
     this.previousPoints;
     this.updatesWithNoPointsFound;
+    this.pointsToAdd;
+    var a = 0;
 
     this.updateArrayToPoint = function(initialArray, targetPoints) {
         let updatedArray = [...initialArray]; // Copy the initial array to a new array
         let updates = 0; // Initialize the number of updates to 0
         let returnedUpdates = [];//to return updates and average updates
-        this.previousPoints = this.updatesWithNoPointsFound = 0;
-
-        while (!this.arePointsIncluded(updatedArray, targetPoints, false)) { // While the target points are not included in the array
+        this.updatesWithNoPointsFound = this.pointsToAdd = 0;
+        this.previousPoints = updatedArray.length;
+        
+        while (!this.arePointsIncluded(updatedArray.length, targetPoints.length)) { // While the target points are not included in the array
             if (this.updatesWithNoPointsFound >= 2) {
                 if (this.previousPoints == 0) {
                     console.log('You do not border this bot');
                     returnedUpdates = [0, 0];
                     return false
                 }
-                if (this.updatesWithNoPointsFound >= 2){
-                    console.log('This bot is split');
-                    let notSplitPoints = [];
-                    for (i of targetPoints){
-                        if (this.isPointIncluded(updatedArray, i)) notSplitPoints.push(i);
-                    }
-                    returnedUpdates.push(updates);
-                    returnedUpdates.push(this.updateArrayToHalf(initialArray, notSplitPoints));
-                    return returnedUpdates
-                }
+
+                console.log('This bot is split');
+                returnedUpdates[0] = updates;
+                if (!returnedUpdates[1]) returnedUpdates[1] = updatedArray.length;
+                return returnedUpdates
             }
-            let pointsToAdds = this.getPointsToAdd(updatedArray); // Get the points that need to be added to the array
-            updatedArray.push(...pointsToAdds); // Add the new points to the array
+            if (!this.pointsToAdd){
+                this.pointsToAdd = this.getPointsToAdd(updatedArray, updatedArray, targetPoints); // Get the points that need to be added to the array
+            }
+            else {
+                this.pointsToAdd = this.getPointsToAdd(this.pointsToAdd, updatedArray, targetPoints);
+            }
+            updatedArray.push(... this.pointsToAdd); // Add the new points to the array
             updates++; // Increment the number of updates performed
+            if (updates == modHandler.updatesLeft) returnedUpdates[1] = updatedArray.length; 
+            console.log(updatedArray, targetPoints);
         }
-        returnedUpdates.push(updates);
-        returnedUpdates.push(this.updateArrayToHalf(initialArray, targetPoints));
+        returnedUpdates[0] = updates;
+        if (!returnedUpdates[1]) returnedUpdates[1] = targetPoints.length;
         return returnedUpdates;
     }
 
-    this.updateArrayToHalf = function (initialArray, targetPoints) {
-        let updatedArray = [...initialArray]; // Copy the initial array to a new array
-        let updates = 0; // Initialize the number of updates to 0
-
-        while (!this.arePointsIncluded(updatedArray, targetPoints, true)) { // While the target points are not included in the array
-            let pointsToAdds = this.getPointsToAdd(updatedArray); // Get the points that need to be added to the array
-            updatedArray.push(...pointsToAdds); // Add the new points to the array
-            updates++; // Increment the number of updates performed
-        }
-        return updates;
-    }
-
-    this.arePointsIncluded = function(array, points, half) {
-        let pointsIncluded = 0;
-        for (let i = 0; i < points.length; i++) {
-            for (let j = 0; j < array.length; j++) {
-                if (array[j][0] === points[i][0] && array[j][1] === points[i][1]) {
-                    pointsIncluded++;
-                }
-            }
-        }
-        if (half){
-            if (pointsIncluded >= points.length / 2) return true;
-        }
-        if (pointsIncluded == points.length) return true;
-        if (this.previousPoints == pointsIncluded) this.updatesWithNoPointsFound++;
-        else {
-            this.previousPoints = pointsIncluded;
-            this.updatesWithNoPointsFound = 0;
-        }
+    this.arePointsIncluded = function(array, points) {
+        if (array == points) return true;
+        if (this.previousPoints == array) this.updatesWithNoPointsFound++;
+        else this.updatesWithNoPointsFound = 0;
+        this.previousPoints = array;
         return false;
     }
 
@@ -491,16 +477,21 @@ function Distance(){
         return false;
     }
 
-    this.getPointsToAdd = function(array) {
+    this.getPointsToAdd = function(array, updatedArray, targetPoints) {
+        console.time("loop-time");
         let pointsToAdd = [];
+        
         for (let point of array) {
             let borderPoints = this.getNeighborsPoints(point);
+            //console.time("loop-time");
             for (let i of borderPoints) {
-                if (!this.isPointIncluded(array, i) && !this.isPointIncluded(pointsToAdd, i)) {
+                if (this.isPointIncluded(targetPoints, i) && !this.isPointIncluded(updatedArray, i) && !this.isPointIncluded(pointsToAdd, i)) {
                     pointsToAdd.push(i);
                 }
             }
+            //console.timeEnd("loop-time");
         }
+        console.timeEnd("loop-time");
         return pointsToAdd;
     }
 
