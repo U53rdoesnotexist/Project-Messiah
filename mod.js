@@ -263,9 +263,9 @@ function Messiah() {
 
             const initialArray = convertPointsToCoordinates(this.borderPixelsWithEntity[1]);
             const targetPoints = botPixelsCoordinates;//convertPointsToCoordinates(landBorderPixels[1]);
-            //console.time("loop-time");
+            console.time("loop-time");
             var updatesNeeded = distance.updateArrayToPoint(initialArray, targetPoints);
-            //console.timeEnd("loop-time");
+            console.timeEnd("loop-time");
             //if (updatesNeeded) console.log(`Total Updates needed: ${updatesNeeded[0]} Land that can be taken until the end of the cycle: ${updatesNeeded[1]}`);
 
         }
@@ -425,7 +425,7 @@ function Distance(){
     var a = 0;
 
     this.updateArrayToPoint = function(initialArray, targetPoints) {
-        let updatedArray = [...initialArray]; // Copy the initial array to a new array
+        let updatedArray = []; // Copy the initial array to a new array
         let updates = 0; // Initialize the number of updates to 0
         let returnedUpdates = [];//to return updates and average updates
         this.updatesWithNoPointsFound = this.pointsToAdd = 0;
@@ -445,7 +445,7 @@ function Distance(){
                 return returnedUpdates
             }
             if (!this.pointsToAdd){
-                this.pointsToAdd = this.getPointsToAdd(updatedArray, updatedArray, targetPoints); // Get the points that need to be added to the array
+                this.pointsToAdd = this.getPointsToAdd(initialArray, updatedArray, targetPoints); // Get the points that need to be added to the array
             }
             else {
                 this.pointsToAdd = this.getPointsToAdd(this.pointsToAdd, updatedArray, targetPoints);
@@ -453,7 +453,6 @@ function Distance(){
             updatedArray.push(... this.pointsToAdd); // Add the new points to the array
             updates++; // Increment the number of updates performed
             if (updates == modHandler.updatesLeft) returnedUpdates[1] = updatedArray.length; 
-            console.log(updatedArray, targetPoints);
         }
         returnedUpdates[0] = updates;
         if (!returnedUpdates[1]) returnedUpdates[1] = targetPoints.length;
@@ -478,7 +477,7 @@ function Distance(){
     }
 
     this.getPointsToAdd = function(array, updatedArray, targetPoints) {
-        console.time("loop-time");
+        //console.time("loop-time");
         let pointsToAdd = [];
         
         for (let point of array) {
@@ -491,7 +490,7 @@ function Distance(){
             }
             //console.timeEnd("loop-time");
         }
-        console.timeEnd("loop-time");
+        //console.timeEnd("loop-time");
         return pointsToAdd;
     }
 
