@@ -16,7 +16,7 @@ function ModHandler() {
     this.bot = false;
     this.boatLines = true;
     this.scriptGameInit = function() {
-        this.cycle = this.nextInfoSend = 1;
+        this.cycle = 1;
         this.tick = 0;
         if (!singleplayer) spawnHider.init();
         if (this.bot) messiah.init();
@@ -46,9 +46,8 @@ function ModHandler() {
 }
 
 function LatencySimulator() {
-    this.ping = 3; //5 ticks of latency
+    this.ping = 5; //5 ticks of latency
     this.pendingActions = [];
-    this.nextInfoSend;
     this.getNextUpdateTick = function(tick) {
         return Math.ceil(tick / 7) * 7 + 1;
     };
