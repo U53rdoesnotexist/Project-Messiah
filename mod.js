@@ -233,7 +233,7 @@ function Messiah() {
         }
     }
     this.update = function() {
-        if (mainHandler.getTicksElapsed() == 1750) console.log(`1:37 Land: ${land[myID]} Troops: ${troops[myID]}`), gameStateManager.aK();
+        if (mainHandler.getTicksElapsed() == 1750) console.log(`1:37 Land: ${land[myID]} Troops: ${troops[myID]}`)/*, gameStateManager.aK()*/;
         if (mainHandler.getTicksElapsed() == 1250) console.log(`1:10 Land: ${land[myID]} Troops: ${troops[myID]}`);
         if (mainHandler.getTicksElapsed() == 1430) console.log(`1:20 Land: ${land[myID]} Troops: ${troops[myID]}`);
 
@@ -252,22 +252,24 @@ function Messiah() {
         else if (modHandler.cycle <= 9) this.continuousExpansion();
         if (modHandler.cycle >= 7) this.micro();
         if (modHandler.cycle >= 11 && modHandler.tick == 70) doAttack(maxEntities, 10);
-
-        if (modHandler.tick == 1 && this.borderPixelsWithEntity[1] && landBorderPixels[1]) {
-            let botPixels = [];
-            
-            for (let i = 0; i < currentMapHeight * currentMapWidth * 4; i += 4){
-                if (pixel.getOwner(i) == 1) botPixels.push(i);
-            }            
-            let botPixelsCoordinates = convertPointsToCoordinates(botPixels);
-
-            const initialArray = convertPointsToCoordinates(this.borderPixelsWithEntity[1]);
-            const targetPoints = botPixelsCoordinates;//convertPointsToCoordinates(landBorderPixels[1]);
+        if (modHandler.tick == 1 /*&& this.borderPixelsWithEntity[1] && landBorderPixels[1]*/) {
             console.time("loop-time");
-            var updatesNeeded = distance.updateArrayToPoint(initialArray, targetPoints);
-            console.timeEnd("loop-time");
-            //if (updatesNeeded) console.log(`Total Updates needed: ${updatesNeeded[0]} Land that can be taken until the end of the cycle: ${updatesNeeded[1]}`);
-
+            let botPixels = new Array(maxEntities);
+            for (i of this.borderingBots[myID]){
+                botPixels[i] = new Array();
+            }
+            for (let i = 0; i < currentMapHeight * currentMapWidth * 4; i += 4){
+                for (j of this.borderingBots[myID]){
+                if (pixel.getOwner(i) == j) botPixels[j].push(i);
+                }
+            } 
+            console.timeEnd("loop-time");           
+            for (i of this.borderingBots[myID]){
+                const initialArray = this.borderPixelsWithEntity[i];
+                const targetPoints = botPixels[i];
+                var updatesNeeded = distance.updateArrayToPoint(initialArray, targetPoints);
+                //if (updatesNeeded) console.log(`Total Updates needed: ${updatesNeeded[0]} Land that can be taken until the end of the cycle: ${updatesNeeded[1]}`);
+            }
         }
 
     }
@@ -425,13 +427,16 @@ function Distance(){
     var a = 0;
 
     this.updateArrayToPoint = function(initialArray, targetPoints) {
-        let updatedArray = []; // Copy the initial array to a new array
         let updates = 0; // Initialize the number of updates to 0
         let returnedUpdates = [];//to return updates and average updates
+        let updatedSet = new Set();
+        const targetPointsLength = targetPoints.length;
+        const initialPointsSet= new Set(initialArray);
+        const targetPointsSet = new Set(targetPoints);
         this.updatesWithNoPointsFound = this.pointsToAdd = 0;
-        this.previousPoints = updatedArray.length;
+        this.previousPoints = initialArray.length;
         
-        while (!this.arePointsIncluded(updatedArray.length, targetPoints.length)) { // While the target points are not included in the array
+        while (!this.arePointsIncluded(updatedSet.size, targetPointsLength)) { // While the target points are not included in the array
             if (this.updatesWithNoPointsFound >= 2) {
                 if (this.previousPoints == 0) {
                     console.log('You do not border this bot');
@@ -441,21 +446,30 @@ function Distance(){
 
                 console.log('This bot is split');
                 returnedUpdates[0] = updates;
-                if (!returnedUpdates[1]) returnedUpdates[1] = updatedArray.length;
+                if (!returnedUpdates[1]) returnedUpdates[1] = updatedSet.size;
                 return returnedUpdates
             }
             if (!this.pointsToAdd){
-                this.pointsToAdd = this.getPointsToAdd(initialArray, updatedArray, targetPoints); // Get the points that need to be added to the array
+                this.pointsToAdd = this.getPointsToAdd(initialPointsSet, updatedSet, targetPointsSet); // Get the points that need to be added to the array
             }
             else {
-                this.pointsToAdd = this.getPointsToAdd(this.pointsToAdd, updatedArray, targetPoints);
+                this.pointsToAdd = this.getPointsToAdd(this.pointsToAdd, updatedSet, targetPointsSet);
             }
-            updatedArray.push(... this.pointsToAdd); // Add the new points to the array
+            for (let i of this.pointsToAdd) {
+                updatedSet.add(i);
+            }
             updates++; // Increment the number of updates performed
-            if (updates == modHandler.updatesLeft) returnedUpdates[1] = updatedArray.length; 
+            if (updates == modHandler.updatesLeft) {
+                let i = updatedSet.size
+                returnedUpdates[1] = i; 
+                if (i < targetPointsLength * 0.6) {
+                    returnedUpdates[0] = "Bot is too big";
+                    return returnedUpdates;
+                }
+            }
         }
         returnedUpdates[0] = updates;
-        if (!returnedUpdates[1]) returnedUpdates[1] = targetPoints.length;
+        if (!returnedUpdates[1]) returnedUpdates[1] = targetPointsLength;
         return returnedUpdates;
     }
 
@@ -467,25 +481,20 @@ function Distance(){
         return false;
     }
 
-    this.isPointIncluded = function(array, point) {
-        for (let i = 0; i < array.length; i++) {
-            if (array[i][0] === point[0] && array[i][1] === point[1]) {
-            return true;
-            }
-        }
-        return false;
-    }
-
-    this.getPointsToAdd = function(array, updatedArray, targetPoints) {
+    this.getPointsToAdd = function(set, updatedSet, targetPointsSet) {
         //console.time("loop-time");
-        let pointsToAdd = [];
+        let pointsToAdd = new Set();
         
-        for (let point of array) {
+        for (let point of set) {
             let borderPoints = this.getNeighborsPoints(point);
             //console.time("loop-time");
             for (let i of borderPoints) {
-                if (this.isPointIncluded(targetPoints, i) && !this.isPointIncluded(updatedArray, i) && !this.isPointIncluded(pointsToAdd, i)) {
-                    pointsToAdd.push(i);
+                if (targetPointsSet.has(i)) { //Checking is a point is in a set is an O(1) operation, so the size of the set doesnt matter
+                    if (!updatedSet.has(i)) {
+                        if (!pointsToAdd.has(i)) {
+                            pointsToAdd.add(i);
+                        }
+                    }
                 }
             }
             //console.timeEnd("loop-time");
@@ -496,13 +505,26 @@ function Distance(){
 
     this.getNeighborsPoints = function(point) {
         let neighbors = [];
-        neighbors.push([point[0] - 1, point[1]]);
-        neighbors.push([point[0] + 1, point[1]]);
-        neighbors.push([point[0], point[1] - 1]);
-        neighbors.push([point[0], point[1] + 1]);
+        neighbors.push(point - 4);
+        neighbors.push(point + 4);
+        neighbors.push(point - currentMapWidth * 4);
+        neighbors.push(point + currentMapWidth * 4);
+
         return neighbors;
     }
 }
+
+
+
+
+
+
+  
+
+
+
+
+
 
   
 
