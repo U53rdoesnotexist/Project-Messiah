@@ -2322,8 +2322,9 @@ function GameButtons() {
         if (!gameButtons.menuVisible) return xPos <= buttonSize + canvasPadding && yPos >= attackRatioBar.startingY ? 0 : -1;
         if (xPos <= 4 * buttonSize + canvasPadding) {
             if (yPos >= attackRatioBar.startingY) return 0;
-            if (yPos >= attackRatioBar.startingY - buttonSize - buttonScalingFactor * canvasPadding) return 2;
-            if (yPos >= attackRatioBar.startingY - 2 * (buttonSize + buttonScalingFactor * canvasPadding)) return 3
+            for (let bIndex = 2; bIndex <= buttonLabels.length; bIndex++) {
+                if (yPos >= attackRatioBar.startingY - (bIndex - 1) * (buttonSize + buttonScalingFactor * canvasPadding)) return bIndex
+            }
         } else if (xPos <= 7 * buttonSize + canvasPadding && yPos >= attackRatioBar.startingY - buttonSize - buttonScalingFactor * canvasPadding) return 1;
         return -1
     }
@@ -2332,7 +2333,7 @@ function GameButtons() {
         mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, attackRatioBar.startingY - bIndex * buttonScalingFactor * canvasPadding - bIndex * buttonSize);
         mainCanvasCtx.fillStyle = blackSemiTransparent2;
         mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize);
-        if (selectedBIndex === bIndex + 1 && color === whiteRGB2) {
+        if (selectedBIndex === bIndex + 1 && color != gray128RGB) {
             mainCanvasCtx.fillStyle = whiteMore2Transparent;
             mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize);
         }
@@ -2343,7 +2344,7 @@ function GameButtons() {
         mainCanvasCtx.fillRect(0, buttonSize - 1, 4 * buttonSize, 1);
         mainCanvasCtx.fillText(buttonLabels[bIndex], 2 * buttonSize, .54 * buttonSize)
     }
-    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics"],
+    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics", "Toggle Font", "Toggle Boat Lines", "Export Replay"],
         selectedBIndex, buttonScalingFactor;
     this.init = function() {
         selectedBIndex = -1;
@@ -2391,9 +2392,23 @@ function GameButtons() {
                     this.toggleMenu();
                 }
                 return 2;
-            } else if (3 === bIndex && 2 <= statisticNumbers.currentDataPointIndex) {
-                statistics.toggleMenu();
-                mainHandler.canvasDirty = true;
+            } else if (3 === bIndex) {
+                if (2 <= statisticNumbers.currentDataPointIndex) {
+                    statistics.toggleMenu();
+                    mainHandler.canvasDirty = true;
+                }
+                return 2;
+            } else if (4 === bIndex) {
+                if (typeof(modHandler) == 'object') modHandler.font = !modHandler.font
+                this.toggleMenu();
+                return 2;
+            } else if (5 === bIndex) {
+                if (typeof(modHandler) == 'object') modHandler.boatLines = !modHandler.boatLines
+                this.toggleMenu();
+                return 2;
+            } else if (6 === bIndex) {
+                if (typeof(modHandler) == "object") replayLogger.exportReplay()
+                this.toggleMenu();
                 return 2;
             } else if (statistics.visible || singleplayer && !inSpawn) return 1
             else {
@@ -2439,7 +2454,10 @@ function GameButtons() {
             var menuSymbolSize = .4 * buttonSize;
             gameButtons.drawMenuSymbol(canvasPadding + 4 * buttonSize + (1.5 * buttonSize - menuSymbolSize) / 2, attackRatioBar.startingY + .3 * buttonSize, menuSymbolSize);
             drawGameButtons(1, gameButtons.canSurrender(myID) ? whiteRGB2 : gray128RGB);
-            if (2 <= statisticNumbers.currentDataPointIndex) drawGameButtons(2, whiteRGB2);
+            drawGameButtons(2, 2 <= statisticNumbers.currentDataPointIndex ? whiteRGB2 : gray128RGB);
+            drawGameButtons(3, typeof(modHandler) == 'object' && modHandler.font ? greenLightRGB : whiteRGB2);
+            drawGameButtons(4, typeof(modHandler) == 'object' && modHandler.boatLines ? greenLightRGB : whiteRGB2);
+            drawGameButtons(5, typeof(modHandler) == 'object' ? whiteRGB2 : gray128RGB);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(gameButtonsCanvas, canvasPadding, attackRatioBar.startingY)
     };
@@ -2696,7 +2714,7 @@ function Announcements() {
     this.newEmojiMessage = function(authorID, targetID, emojiID) {
         if (authorID === myID) announce(175, " Message to " + nickname[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, true)
         else this.receivedEmojiMessage(authorID, emojiID)
-        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(9, authorID, targetID, emojiID, 0, 0)
+        if (typeof(modHandler) == "object") replayLogger.addLogs(9, authorID, targetID, emojiID, 0, 0)
     };
     this.receivedEmojiMessage = function(authorID, emojiID) {
         var aIndex, emoteCount = 0;
@@ -12195,11 +12213,6 @@ function MainHandler() {
     };
     this.singleplayerUpdateHandler = function() {
         this.singleplayerHandler.update();
-        if (modHandler.gameSpeed){
-            this.singleplayerHandler.update();
-            this.singleplayerHandler.update();
-            this.singleplayerHandler.update();
-        }
     };
     this.multiplayerUpdateHandler = function() {
         this.multiplayerHandler.update()
@@ -12214,7 +12227,7 @@ function MainHandler() {
 
 function SingleplayerHandler() {
     this.time = mainHandler.time;
-    this.updateInterval = Math.round((modHandler.gameSpeed ? 1 : 56) / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
+    this.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
     this.bigTickInterval = 7;
     this.tick = this.clientTick = this.spawnTick = 0;
     this.a6Z = false; //unused
@@ -12553,7 +12566,7 @@ function DataDecoder() {
                                             data = decoder(array, 9);
                                             if (0 !== isAlive[data] && 0 !== isAlive[myID] && diplomacyHandler.addInboundDiplomacy(0, [data], true)) {
                                                 announcements.nonAggression(data, 1);
-                                                if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(8, data, 1, 0, 0, 0)
+                                                if (typeof(modHandler) == "object") replayLogger.addLogs(8, data, 1, 0, 0, 0)
                                             }
                                         }
                                     } else {
@@ -12565,7 +12578,7 @@ function DataDecoder() {
                                                 infoRenderer.showIcon(data, 3, 96);
                                                 infoRenderer.showIcon(targetID, 4, 96);
                                                 announcements.requestedToAttack(data, targetID);
-                                                if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(10, data, targetID, 0, 0, 0)
+                                                if (typeof(modHandler) == "object") replayLogger.addLogs(10, data, targetID, 0, 0, 0)
                                             }
                                         }
                                     }
@@ -12658,36 +12671,36 @@ function DataDecoder() {
                     var ratio = decoder(array, 10),
                         targetID = decoder(array, 9);
                     targetID = targetID === authorID ? maxEntities : targetID;
-                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(0, authorID, targetID, ratio, 0, 0)
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(0, authorID, targetID, ratio, 0, 0)
                     processAction.pendingAttack(authorID, ratio, targetID)
                 } else if (1 === actionType) {
                     var ratio = decoder(array, 10),
                         xPos = decoder(array, 11),
                         yPos = decoder(array, 11);
-                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(1, authorID, 0, ratio, xPos, yPos)
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(1, authorID, 0, ratio, xPos, yPos)
                     processAction.pendingSetLocation(authorID, ratio, xPos, yPos)
                 } else if (2 === actionType) {
                     targetID = decoder(array, 9);
                     targetID = targetID === authorID ? maxEntities : targetID;
-                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(2, authorID, targetID, 0, 0, 0) 
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(2, authorID, targetID, 0, 0, 0) 
                     processAction.pendingCancel(authorID, targetID);
                 } else if (3 === actionType) {
-                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(3, authorID, 0, 0, 0, 0) 
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(3, authorID, 0, 0, 0, 0) 
                     processAction.onLeave(authorID)
                 } else if (4 === actionType) {
-                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(4, authorID, actionType, 0, 0, 0, 0) 
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(4, authorID, actionType, 0, 0, 0, 0) 
                     actionType = decoder(array, 7);
                     infoRenderer.showIcon(authorID, 0, actionType);
                 } else if (5 === actionType) {
-                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(5, authorID, 0, 0, 0, 0) 
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(5, authorID, 0, 0, 0, 0) 
                     processAction.surrender(authorID)
                 } else if (6 === actionType) {
                     var choice = decoder(array, 1)
-                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(6, authorID, choice, 0, 0, 0) 
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(6, authorID, choice, 0, 0, 0) 
                     processAction.pendingPeace(authorID, choice) 
                 } else if (7 === actionType) {
                     var boatID = 1 + decoder(array, 11)
-                    if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(7, authorID, boatID, 0, 0, 0)           
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(7, authorID, boatID, 0, 0, 0)           
                     processAction.pendingCancelBoat(authorID, boatID)
                 }
             }
@@ -13007,7 +13020,7 @@ function DataEncoder() {
         encoder(array, 2, 1);
         encoder(array, 9, friendID);
         wsManager.send(wsManager.remote, array)
-        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(8, friendID, 0, 0, 0, 0)
+        if (typeof(modHandler) == "object") replayLogger.addLogs(8, friendID, 0, 0, 0, 0)
     };
     this.requestAttack = function(friends, targetID) {
         var friendIndex, friendsLength = friends.length,
@@ -13019,7 +13032,7 @@ function DataEncoder() {
         encoder(array, 9, targetID);
         for (friendIndex = 0; friendIndex < friendsLength; friendIndex++) encoder(array, 9, friends[friendIndex]);
         wsManager.send(wsManager.remote, array)
-        if (typeof(modHandler) == "object" && modHandler.logger) replayLogger.addLogs(10, friends, targetID, 0, 0, 0) 
+        if (typeof(modHandler) == "object") replayLogger.addLogs(10, friends, targetID, 0, 0, 0) 
     };
     this.votePeace = function(choice) {
         var array = new Uint8Array(1);
