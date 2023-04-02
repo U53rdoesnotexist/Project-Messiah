@@ -1820,7 +1820,7 @@ var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
     currentSeedSpawn, myID, playerInfo, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
 function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode, param_isContest) {
-    currentSeedSpawn = 7185;
+    currentSeedSpawn = param_seedSpawn;
     neverJoinedGameBefore = isCanvasHidden = false;
     gamemode = param_gamemode;
     isContest = param_isContest;
@@ -1840,7 +1840,7 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
     botCount = entityCount - playerCount;
     spectatorCount = 0;
     myID = param_myID;
-    fakeRandom.changeRandomNumber(7185);
+    fakeRandom.changeRandomNumber(param_seedSpawn);
     setupPlayerInfoArrays(param_playerInfo);
     zombieSettings.init();
     teamColors.init(param_playerInfo);
@@ -2331,7 +2331,7 @@ function GameButtons() {
 
     function drawGameButtons(bIndex, color) {
         mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, attackRatioBar.startingY - bIndex * buttonScalingFactor * canvasPadding - bIndex * buttonSize);
-        mainCanvasCtx.fillStyle = blackSemiTransparent2;
+        mainCanvasCtx.fillStyle = color != greenLightRGB ? blackSemiTransparent2 : greenBrightMoreTransparent;
         mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize);
         if (selectedBIndex === bIndex + 1 && color != gray128RGB) {
             mainCanvasCtx.fillStyle = whiteMore2Transparent;
@@ -2399,16 +2399,20 @@ function GameButtons() {
                 }
                 return 2;
             } else if (4 === bIndex) {
-                if (typeof(modHandler) == 'object') modHandler.font = !modHandler.font
-                this.toggleMenu();
+                if (typeof(modHandler) == 'object' && (singleplayer || !modHandler.public)) {
+                    modHandler.font = !modHandler.font
+                    this.toggleMenu();
+                }
                 return 2;
             } else if (5 === bIndex) {
                 if (typeof(modHandler) == 'object') modHandler.boatLines = !modHandler.boatLines
                 this.toggleMenu();
                 return 2;
             } else if (6 === bIndex) {
-                if (typeof(modHandler) == "object") replayLogger.exportReplay()
-                this.toggleMenu();
+                if (typeof(modHandler) == "object" && !(customJSON.isCustomJSON && customJSON.data.replay)) {
+                    replayLogger.exportReplay()
+                    this.toggleMenu();
+                }
                 return 2;
             } else if (statistics.visible || singleplayer && !inSpawn) return 1
             else {
@@ -2455,9 +2459,9 @@ function GameButtons() {
             gameButtons.drawMenuSymbol(canvasPadding + 4 * buttonSize + (1.5 * buttonSize - menuSymbolSize) / 2, attackRatioBar.startingY + .3 * buttonSize, menuSymbolSize);
             drawGameButtons(1, gameButtons.canSurrender(myID) ? whiteRGB2 : gray128RGB);
             drawGameButtons(2, 2 <= statisticNumbers.currentDataPointIndex ? whiteRGB2 : gray128RGB);
-            drawGameButtons(3, typeof(modHandler) == 'object' && modHandler.font ? greenLightRGB : whiteRGB2);
+            drawGameButtons(3, typeof(modHandler) == 'object' ? modHandler.font  ? greenLightRGB : (singleplayer || !modHandler.public) ? whiteRGB2 : gray128RGB : whiteRGB2);
             drawGameButtons(4, typeof(modHandler) == 'object' && modHandler.boatLines ? greenLightRGB : whiteRGB2);
-            drawGameButtons(5, typeof(modHandler) == 'object' ? whiteRGB2 : gray128RGB);
+            drawGameButtons(5, typeof(modHandler) == 'object' && !(customJSON.isCustomJSON && customJSON.data.replay) ? whiteRGB2 : gray128RGB);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(gameButtonsCanvas, canvasPadding, attackRatioBar.startingY)
     };
@@ -3964,7 +3968,7 @@ function AttackRatioBar() {
             var sprite = sprites.getValueByID(21);
             attackRatioBarCanvasCtx.drawImage(sprite, Math.floor(attackRatioBarWidth - .75 * buttonWidth), attackRatioBar.height / 8, .75 * attackRatioBar.height, .75 * attackRatioBar.height);
             percentage = 10 ** ((attackRatioBar.getFlooredRatio() - 500)/500);
-            var label = "Playback Speed: " + Math.floor(percentage*10)/10 + "X"
+            var label = "Playback Speed (Fake): " + Math.floor(percentage*10)/10 + "X"
             attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
             if (mainHandler.singleplayerHandler != null) mainHandler.singleplayerHandler.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1))
         } else {
@@ -12688,8 +12692,8 @@ function DataDecoder() {
                     if (typeof(modHandler) == "object") replayLogger.addLogs(3, authorID, 0, 0, 0, 0) 
                     processAction.onLeave(authorID)
                 } else if (4 === actionType) {
-                    if (typeof(modHandler) == "object") replayLogger.addLogs(4, authorID, actionType, 0, 0, 0, 0) 
                     actionType = decoder(array, 7);
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(4, authorID, actionType, 0, 0, 0, 0) 
                     infoRenderer.showIcon(authorID, 0, actionType);
                 } else if (5 === actionType) {
                     if (typeof(modHandler) == "object") replayLogger.addLogs(5, authorID, 0, 0, 0, 0) 

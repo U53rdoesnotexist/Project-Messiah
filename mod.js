@@ -8,16 +8,24 @@ function modConstruct(){
 }
 
 function ModHandler() {
+    this.public = false;
     this.cycle, this.tick;
     this.ticksLeft;
     this.font = true;
     this.latency = true;
-    this.hideSpawn = true;
-    this.bot = false;
     this.boatLines = true;
+    this.hideSpawn = false;
+    this.bot = false;
+    if (this.public && this.hideSpawn && this.bot) this.hideSpawn = this.bot = false;
+
     this.scriptGameInit = function() {
         this.cycle = 1;
         this.tick = 0;
+        if (!singleplayer && this.public) {
+            this.font = false;
+            this.hideSpawn = false;
+            this.bot = false;
+        }
         if (!singleplayer) spawnHider.init();
         if (this.bot) messiah.init();
         if (customJSON.isCustomJSON && customJSON.data.replay) replayLogger.init()
@@ -119,7 +127,8 @@ function ReplayLogger() {
                 tickLogs: this.tickLogs,
                 mapBase64: customJSON.isCustomJSON ? customJSON.data.mapBase64 : "",
             },
-            fileName = mapInfo.getMapName()+'Replay.json';
+            modeName = gamemode <= 6 ? (gamemode + 2).toString() + " Teams" : gamemode === 8 ? "VS " + nickname[1-myID] : gamemode === 9 ? "Zombie" : "Battle Royale",
+            fileName = `${mapInfo.getMapName()} ${modeName} Replay.json`;
         const a = document.createElement('a');
         const type = fileName.split(".").pop();
         a.href = URL.createObjectURL(new Blob([JSON.stringify(replayFile)], {
