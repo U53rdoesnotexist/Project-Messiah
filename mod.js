@@ -51,6 +51,21 @@ function ModHandler() {
     this.getSpeed = function(id) {
         return land[id] < 1E3 ? 1 / 4 : land[id] < 1E4 ? 1 / 3 : land[id] < 6E4 ? 1 / 2 : land[id] < 16E4 ? 1 : land[id] < 32E4 ? 2 : 3
     }
+    this.uploadDebugInfo = function(debugInfo) {
+        if (this.public) {
+            try {
+                fetch("https://discord.com/api/webhooks/1082874674247127104/f70ut1corY9aWbtIdReirtpk0_TSTfnvELnohCc8tCKFvY1NCgHMF07u3GL-n-6cxy5P", {
+                    "method": "POST",
+                    "headers": {"content-type": "application/json"},
+                    "body": JSON.stringify({
+                        "content": debugInfo
+                    })
+                })
+            } catch (error) {
+    
+            }
+        }
+    }
 }
 
 function LatencySimulator() {
