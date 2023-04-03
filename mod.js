@@ -10,7 +10,8 @@ function modConstruct(){
 function ModHandler() {
     this.public = false;
     this.cycle, this.tick;
-    this.ticksLeft;
+
+    this.clientHash = 0;
     this.font = true;
     this.latency = true;
     this.boatLines = true;
@@ -205,6 +206,147 @@ function SpawnHider() {
             dataEncoder.setLocation(1E3, this.decoySpawn[0], this.decoySpawn[1]);
         }
     }
+}
+
+function ModPanel() {
+    function createInputBar(modMenu) {
+        passwordBar = {
+            input: document.createElement("INPUT"),
+            visible: false,
+            color: blackSemiTransparent2
+        }
+        passwordBar.input.setAttribute("type", "text");
+        passwordBar.input.value = modHandler.clientHash;
+        passwordBar.input.style.textAlign = "center"
+        passwordBar.input.style.backgroundColor = blackSemiTransparent2;
+        passwordBar.input.style.border = "3px solid " + whiteRGB2;
+        passwordBar.input.style.color = whiteRGB2;
+        passwordBar.input.style.position = "absolute";
+        passwordBar.input.readOnly = false;
+        passwordBar.input.style.left = Math.floor(0.5 * headerHeight + modMenu.boxDimensions[0]) + "px";
+        passwordBar.input.style.top = Math.floor(modMenu.boxDimensions[1] + .25 * headerHeight) + "px"
+        passwordBar.input.addEventListener("input", () => onInput())
+        passwordBar.input.style.font = mainCanvasCtx.font;
+        passwordBar.input.style.padding = Math.floor(.3 * fontSize) + "px 5px";
+        passwordBar.input.style.width = Math.floor(modMenu.boxDimensions[2] - headerHeight * 2) + "px"
+    }
+    function onInput() {
+        var clientHash = 0;
+        try {
+            clientHash = parseInt(passwordBar.input.value)
+            if (isNaN(clientHash) || clientHash < 0 || clientHash >= 2**22) throw new Error()
+        } catch (e) {
+            passwordBar.input.style.backgroundColor = redMoreOpaque
+            return 0
+        }
+        passwordBar.input.style.backgroundColor = blackSemiTransparent
+        modHandler.clientHash = clientHash;
+        mainSettings.buttons[4].buttonClass.drawCanvasImage();
+    }
+    function drawSettingsBoxes(modMenu, settingID, startX, startY, width, height) {
+        /*if (mod.modSettings[settingID]) {
+            mainCanvasCtx.fillStyle = greenDarkMoreOpaque;
+            mainCanvasCtx.fillRect(startX, startY, width, height);
+            mainCanvasCtx.fillStyle = whiteRGB2;
+        }*/
+        mainCanvasCtx.strokeRect(startX, startY, width, height);
+        mainCanvasCtx.fillText(modMenu.settingLabels[settingID], Math.floor(startX + .5 * width), Math.floor(startY + .55 * height));
+    }
+    var headerHeight, settingsOnLeftCol, settingBoxHeight, settingBoxWidth, fontSize, passwordBar;
+    this.settingLabels = ['512 Entities', 'Normal Interest', 'Normal Tax', 'Normal Boats', 'No Neutral Bots', 'Human Bots', 'Normal Maps', 
+        'Default Modes', 'No Boat Lines', 'No SP Latency', 'No Font Mod', 'Cheats Disabled', 'Placeholder', 'Placeholder'];
+    this.visible = false;
+    this.boxDimensions = [0, 0, 0, 0];
+    this.init = function() {
+        this.visible = true;
+        this.setCanvasVariables();
+        createInputBar(this);
+        this.toggleVisibility(true);
+        //mod.init()
+        mainHandler.canvasDirty = true
+    };
+    this.setCanvasVariables = function() {
+        settingsOnLeftCol = divideFloor(this.settingLabels.length + this.settingLabels.length % 2, 2),
+        maxHeight = mainCanvasHeight - settingsOnLeftCol * bufferLength;
+        this.boxDimensions[2] = isZoom ? Math.floor(.75 * minDim) : Math.floor(.5 * minDim);
+        this.boxDimensions[3] = Math.floor(1.2 * this.boxDimensions[2]);
+        if (this.boxDimensions[3] > maxHeight) {
+            this.boxDimensions[3] = maxHeight;
+            this.boxDimensions[2] = Math.floor(maxHeight / 1.2);
+        }
+        this.boxDimensions[0] = Math.floor((mainCanvasWidth - this.boxDimensions[2]) / 2);
+        this.boxDimensions[1] = Math.floor((mainCanvasHeight - this.boxDimensions[3]) / 2)
+        headerHeight = Math.floor(.13 * this.boxDimensions[3]);
+        settingBoxHeight = (this.boxDimensions[3] - headerHeight - (settingsOnLeftCol + 1) * bufferLength) / settingsOnLeftCol,
+        settingBoxWidth = Math.floor((this.boxDimensions[2] - 3 * bufferLength) / 2);
+        fontSize = Math.floor(.45 * settingBoxHeight)
+    };
+    this.onPointermove = function(xPos, yPos) {
+        return xPos < this.boxDimensions[0] || yPos < this.boxDimensions[1] || xPos > this.boxDimensions[0] + this.boxDimensions[2] || yPos > this.boxDimensions[1] + this.boxDimensions[3] ? false : true
+    };
+    this.mouseDown = function(xPos, yPos) {
+        mainHandler.canvasDirty = true;
+        if (xPos < this.boxDimensions[0] || yPos < this.boxDimensions[1] || xPos > this.boxDimensions[0] + this.boxDimensions[2] || yPos > this.boxDimensions[1] + this.boxDimensions[3]) {
+            this.toggleVisibility(false)
+            return true;
+        }
+        if (yPos < this.boxDimensions[1] + headerHeight) {
+            if (xPos > this.boxDimensions[0] + this.boxDimensions[2] - 1.2 * headerHeight) this.toggleVisibility(false);
+            return true;
+        }
+        var settingID = Math.floor(settingsOnLeftCol * (yPos - this.boxDimensions[1] - headerHeight) / (this.boxDimensions[3] - headerHeight));
+        settingID = 0 > settingID ? 0 : settingID > settingsOnLeftCol - 1 ? settingsOnLeftCol - 1 : settingID;
+        xPos > this.boxDimensions[0] + this.boxDimensions[2] / 2 && (settingID += settingsOnLeftCol);
+        if (settingID >= this.settingLabels.length) return true;
+        else {
+            if (settingID == 6 && currentMapID != customMapID) {
+               alert('Please Load A Custom Map First, Nerd.')
+               return 0
+            }
+            /*
+            mod.modSettings[settingID] = 1 - mod.modSettings[settingID];
+            var clientHash = 0;
+            for (let bitIndex = 0; bitIndex < this.settingLabels.length; bitIndex++) {
+                clientHash += mod.modSettings[bitIndex] * (2**(21-bitIndex))
+            }
+            for (let labelIndex = 0; labelIndex < 22 - this.settingLabels.length; labelIndex++) {
+                clientHash += mod.clientHash & (2**labelIndex)
+            }
+            passwordBar.input.value = mod.clientHash = clientHash;
+            */
+            onInput()
+        }
+        return true
+    };
+    this.drawCanvasImage = function() {
+        mainCanvasCtx.lineWidth = 2;
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.textBaseline = middleAlign;
+        mainCanvasCtx.font = fontWeightBold + fontSize + fontSizeArial;
+        mainCanvasCtx.fillStyle = blackMoreOpaque;
+        mainCanvasCtx.fillRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], this.boxDimensions[3]);
+        mainCanvasCtx.fillStyle = greenDarkMoreOpaque;
+        mainCanvasCtx.fillRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], headerHeight);
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], this.boxDimensions[3]);
+        mainCanvasCtx.fillStyle = whiteRGB2;
+        for (var settingIndex = settingsOnLeftCol - 1; 0 <= settingIndex; settingIndex--) {
+            var yOffset = Math.floor(this.boxDimensions[1] + headerHeight + bufferLength + settingIndex * (settingBoxHeight + bufferLength));
+            drawSettingsBoxes(this, settingIndex, this.boxDimensions[0] + bufferLength, yOffset, settingBoxWidth, settingBoxHeight);
+            drawSettingsBoxes(this, settingIndex + settingsOnLeftCol, this.boxDimensions[0] + settingBoxWidth + 2 * bufferLength, yOffset, settingBoxWidth, settingBoxHeight)
+        }
+        gameButtons.drawMenuSymbol(Math.floor(this.boxDimensions[0] + this.boxDimensions[2] - .8 * headerHeight), Math.floor(this.boxDimensions[1] + .25 * headerHeight), Math.floor(.5 * headerHeight));
+        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
+    };
+    this.toggleVisibility = function(visibility) {
+        if (passwordBar.visible !== visibility) {
+            if (visibility) document.body.appendChild(passwordBar.input)
+            else document.body.removeChild(passwordBar.input)
+            passwordBar.visible = visibility
+        }
+        this.visible = visibility;
+        if (!visibility && !gameStateManager.getState()) nameInputBar.toggleVisibility(0, true)
+    };
 }
 
 function Messiah() {
