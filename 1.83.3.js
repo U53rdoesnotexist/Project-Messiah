@@ -1840,7 +1840,7 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
     botCount = entityCount - playerCount;
     spectatorCount = 0;
     myID = param_myID;
-    fakeRandom.changeRandomNumber(7185);
+    fakeRandom.changeRandomNumber(currentSeedSpawn);
     setupPlayerInfoArrays(param_playerInfo);
     zombieSettings.init();
     teamColors.init(param_playerInfo);
@@ -9369,7 +9369,7 @@ function WsManager() {
         this.originURLs[0] = "territorial.io";
         var x = fakeRandom.getMedian(0);
         fakeRandom.changeRandomNumber(0);
-        for (serverIndex = 1; serverIndex < this.serverCount; serverIndex++) this.originURLs[serverIndex] = strings.generateOriginURLs() + ".com";
+        for (serverIndex = 1; serverIndex < this.serverCount; serverIndex++) this.originURLs[serverIndex] = strings.generateOriginURLs() + ".territorial.io";
         fakeRandom.changeRandomNumber(x);
         websockets = Array(this.terriWsCount);
         websocketsInfo = Array(this.terriWsCount);
@@ -9496,7 +9496,7 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     const_2_s52 = 2;
-    versionHash = 2526;
+    versionHash = 2675;
     versionLabel = "1.83.3   3 February 2023";
     construct();
     botBorderingStuffInit();
