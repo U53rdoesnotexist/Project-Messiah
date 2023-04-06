@@ -12,9 +12,16 @@ function ModHandler() {
     this.cycle, this.tick;
 
     this.clientHash = 0;
-    this.font = true;
-    this.latency = true;
+    this.modInterest = false;
+    this.modTax = false;
+    this.boatSpeed = 2;
+    this.neutralBots = false;
+    this.humanBots = true;
+    this.customMap = false;
+    this.customGamemode = 11;
     this.boatLines = true;
+    this.latency = true;
+    this.font = true;
     this.hideSpawn = false;
     this.bot = false;
     if (this.public && this.hideSpawn && this.bot) this.hideSpawn = this.bot = false;
@@ -250,11 +257,28 @@ function ModPanel() {
             mainCanvasCtx.fillStyle = whiteRGB2;
         }*/
         mainCanvasCtx.strokeRect(startX, startY, width, height);
-        mainCanvasCtx.fillText(modMenu.settingLabels[settingID], Math.floor(startX + .5 * width), Math.floor(startY + .55 * height));
+        mainCanvasCtx.fillText(getSettingLabels(settingID), Math.floor(startX + .5 * width), Math.floor(startY + .55 * height));
+    }
+    function getSettingLabels(settingID) {
+        if (settingID == 0) return `${maxEntities} Entities`;
+        else if (settingID == 1) return `Mod Interest ${modHandler.modInterest ? "On" : "Off"}`;
+        else if (settingID == 2) return `Mod Tax ${modHandler.modTax ? "On" : "Off"}`;
+        else if (settingID == 3) return `${modHandler.boatSpeed == 2 ? "Normal" : modHandler.boatSpeed == 1 ? "Faster" : "Fastest"} Boats`;
+        else if (settingID == 4) return `Neutral Bots ${modHandler.neutralBots ? "On" : "Off"}`;
+        else if (settingID == 5) return `Human Bots ${modHandler.humanBots ? "On" : "Off"}`;
+        else if (settingID == 6) return `${modHandler.customMap ? "Custom" : "Normal"} MP Maps`;
+        else if (settingID == 7) return modHandler.customGamemode <= 6 ? `${modHandler.customGamemode + 2} Teams Only`: modHandler.customGamemode == 7 ? `BR Only`: modHandler.customGamemode == 9 ? `Zombie Only` : modHandler.customGamemode == 10 ? `NFS Only` : "Default MP Mode";
+        else if (settingID == 8) return `Boat Lines ${modHandler.boatLines ? "On" : "Off"}`;
+        else if (settingID == 9) return `SP Latency ${modHandler.latency ? "On" : "Off"}`;
+        else if (settingID == 10) return `Font Mod ${modHandler.font ? "On" : "Off"}`; //Change to 3 Stages future, Off, Enlarged, Red Font + Enlarged
+        else if (settingID == 11) return modHandler.public ? "Unavailable" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
+        else if (settingID == 12) return modHandler.public ? "Unavailable" : `Messiah ${modHandler.bot ? "On" : "Off"}`;
+        else if (settingID == 13) return "Placeholder";
     }
     var headerHeight, settingsOnLeftCol, settingBoxHeight, settingBoxWidth, fontSize, passwordBar;
-    this.settingLabels = ['512 Entities', 'Normal Interest', 'Normal Tax', 'Normal Boats', 'No Neutral Bots', 'Human Bots', 'Normal Maps', 
-        'Default Modes', 'No Boat Lines', 'No SP Latency', 'No Font Mod', 'Cheats Disabled', 'Placeholder', 'Placeholder'];
+    /*this.settingLabels = ['512 Entities', 'Normal Interest', 'Normal Tax', 'Normal Boats', 'No Neutral Bots', 'Human Bots', 'Normal Maps', 
+        'Default Modes', 'No Boat Lines', 'No SP Latency', 'No Font Mod', 'Cheats Disabled', 'Placeholder', 'Placeholder'];*/
+    this.settingCount = 14;
     this.visible = false;
     this.boxDimensions = [0, 0, 0, 0];
     this.init = function() {
@@ -266,7 +290,7 @@ function ModPanel() {
         mainHandler.canvasDirty = true
     };
     this.setCanvasVariables = function() {
-        settingsOnLeftCol = divideFloor(this.settingLabels.length + this.settingLabels.length % 2, 2),
+        settingsOnLeftCol = divideFloor(this.settingCount + this.settingCount % 2, 2),
         maxHeight = mainCanvasHeight - settingsOnLeftCol * bufferLength;
         this.boxDimensions[2] = isZoom ? Math.floor(.75 * minDim) : Math.floor(.5 * minDim);
         this.boxDimensions[3] = Math.floor(1.2 * this.boxDimensions[2]);
@@ -297,7 +321,7 @@ function ModPanel() {
         var settingID = Math.floor(settingsOnLeftCol * (yPos - this.boxDimensions[1] - headerHeight) / (this.boxDimensions[3] - headerHeight));
         settingID = 0 > settingID ? 0 : settingID > settingsOnLeftCol - 1 ? settingsOnLeftCol - 1 : settingID;
         xPos > this.boxDimensions[0] + this.boxDimensions[2] / 2 && (settingID += settingsOnLeftCol);
-        if (settingID >= this.settingLabels.length) return true;
+        if (settingID >= this.settingCount) return true;
         else {
             if (settingID == 6 && currentMapID != customMapID) {
                alert('Please Load A Custom Map First, Nerd.')
@@ -306,10 +330,10 @@ function ModPanel() {
             /*
             mod.modSettings[settingID] = 1 - mod.modSettings[settingID];
             var clientHash = 0;
-            for (let bitIndex = 0; bitIndex < this.settingLabels.length; bitIndex++) {
+            for (let bitIndex = 0; bitIndex < this.settingCount; bitIndex++) {
                 clientHash += mod.modSettings[bitIndex] * (2**(21-bitIndex))
             }
-            for (let labelIndex = 0; labelIndex < 22 - this.settingLabels.length; labelIndex++) {
+            for (let labelIndex = 0; labelIndex < 22 - this.settingCount; labelIndex++) {
                 clientHash += mod.clientHash & (2**labelIndex)
             }
             passwordBar.input.value = mod.clientHash = clientHash;
