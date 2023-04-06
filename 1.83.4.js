@@ -1120,7 +1120,7 @@ function BoatSpeed() {
             authorIDs[boatIndex] = authorIDs[boatIndex + 1];
             ticksUntilUpdate[boatIndex] = ticksUntilUpdate[boatIndex + 1];
             boatIDs[boatIndex] = boatIDs[boatIndex + 1];
-            currentPixelIndicies[boatIndex] = currentPixelIndicies[boatIndex + 1];
+            boatSpeed.currentPixelIndicies[boatIndex] = boatSpeed.currentPixelIndicies[boatIndex + 1];
             targetPixelIndicies[boatIndex] = targetPixelIndicies[boatIndex + 1];
         }
     }
@@ -1132,7 +1132,8 @@ function BoatSpeed() {
     function getYPos(yCoord) {
         return Math.floor(mainScaleFactor * yCoord - viewportY)
     }
-    var currentBoatID, maxBoatID, currentBoatIndex, authorIDs, ticksUntilUpdate, boatIDs, currentPixelIndicies, targetPixelIndicies;
+    var currentBoatID, maxBoatID, currentBoatIndex, authorIDs, ticksUntilUpdate, boatIDs, targetPixelIndicies;
+    this.currentPixelIndicies;
     this.init = function() {
         currentBoatID = 1;
         currentBoatIndex = 0;
@@ -1140,17 +1141,17 @@ function BoatSpeed() {
         authorIDs = new Uint16Array(maxBoatID);
         ticksUntilUpdate = new Uint8Array(maxBoatID);
         boatIDs = new Uint16Array(maxBoatID);
-        currentPixelIndicies = new Uint32Array(maxBoatID);
+        this.currentPixelIndicies = new Uint32Array(maxBoatID);
         targetPixelIndicies = new Uint32Array(maxBoatID)
     };
     this.setCurrentPixelIndex = function(boatIndex, pixelIndex) {
-        currentPixelIndicies[boatIndex] = pixelIndex
+        this.currentPixelIndicies[boatIndex] = pixelIndex
     };
     this.update = function() {
         for (var boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
             if (0 === ticksUntilUpdate[boatIndex]--) {
                 ticksUntilUpdate[boatIndex] = 2;
-                boatPathHandler.update(boatIndex, boatIDs[boatIndex], authorIDs[boatIndex], currentPixelIndicies[boatIndex], targetPixelIndicies[boatIndex]);
+                boatPathHandler.update(boatIndex, boatIDs[boatIndex], authorIDs[boatIndex], this.currentPixelIndicies[boatIndex], targetPixelIndicies[boatIndex]);
             }
         }
     };
@@ -1165,7 +1166,7 @@ function BoatSpeed() {
     this.checkBoatDeath = function(authorID) {
         for (var boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
             if (authorID === authorIDs[boatIndex]) {
-                boatPathHandler.moveBoatLocation(authorID, currentPixelIndicies[boatIndex]);
+                boatPathHandler.moveBoatLocation(authorID, this.currentPixelIndicies[boatIndex]);
                 shiftBoatArrays(boatIndex);
             }
         }
@@ -1175,7 +1176,7 @@ function BoatSpeed() {
         authorIDs[currentBoatIndex] = authorID;
         ticksUntilUpdate[currentBoatIndex] = 0;
         boatIDs[currentBoatIndex] = currentBoatID;
-        currentPixelIndicies[currentBoatIndex] = currentPixelIndex;
+        this.currentPixelIndicies[currentBoatIndex] = currentPixelIndex;
         targetPixelIndicies[currentBoatIndex] = targetPixelIndex;
         var tempBoatID = currentBoatID;
         currentBoatID++;
@@ -1192,8 +1193,8 @@ function BoatSpeed() {
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
             for (boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
-                var boatX = pixel.toX(currentPixelIndicies[boatIndex]);
-                var boatY = pixel.toY(currentPixelIndicies[boatIndex]);
+                var boatX = pixel.toX(this.currentPixelIndicies[boatIndex]);
+                var boatY = pixel.toY(this.currentPixelIndicies[boatIndex]);
                 var authorID = authorIDs[boatIndex];
                 if (boatX > leftXBound - 1 && boatX < rightXBound && boatY > topYBound - 1 && boatY < bottomYBound && 0 !== isAlive[authorID]) {
                     var fontSize = Math.floor(.94 * mainScaleFactor * infoRenderer.getEntityLabelScaleY(authorID));
@@ -1219,8 +1220,8 @@ function BoatSpeed() {
                 authorID = authorIDs[boatIndex];
                 var boatColor = pixel.getInnerColors(authorID);
                 mainCanvasCtx.strokeStyle = `rgba(${boatColor[0]}, ${boatColor[1]}, ${boatColor[2]}, ${(192 + boatColor)/255})`
-                var boatX = pixel.toX(currentPixelIndicies[boatIndex]),
-                    boatY = pixel.toY(currentPixelIndicies[boatIndex]),
+                var boatX = pixel.toX(this.currentPixelIndicies[boatIndex]),
+                    boatY = pixel.toY(this.currentPixelIndicies[boatIndex]),
                     targetX = pixel.toX(targetPixelIndicies[boatIndex]),
                     targetY = pixel.toY(targetPixelIndicies[boatIndex]);
                 mainCanvasCtx.beginPath();
@@ -3534,12 +3535,20 @@ function AttackBars() {
                         } else dataEncoder.cancelBoat(myAttacks[aIndex].id);
                     }
                     return true;
-                }
-                if (myAttacks[aIndex].id === 0 && xPos >= attackBarXPos + attackBarWidth - barCanvasHeight - buttonSize && xPos <= attackBarXPos + attackBarWidth + buttonSize) {
+                } else if (myAttacks[aIndex].id === 0 && xPos >= attackBarXPos + attackBarWidth - barCanvasHeight - buttonSize && xPos <= attackBarXPos + attackBarWidth + buttonSize) {
                     if (singleplayer) {
                         if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, attackRatioBar.getFlooredRatio(), myAttacks[aIndex].targetID, 0, 0)
                         else processAttack(myID, myAttacks[aIndex].targetID, attackRatioBar.getFlooredRatio());
                     } else dataEncoder.attack(attackRatioBar.getFlooredRatio(), myAttacks[aIndex].targetID === maxEntities ? myID : myAttacks[aIndex].targetID);
+                    return true;
+                } else if (xPos >= attackBarXPos + barCanvasHeight + buttonSize && xPos <= attackBarXPos + attackBarWidth - barCanvasHeight - buttonSize) {
+                    if (myAttacks[aIndex].id === 0 && myAttacks[aIndex].targetID != maxEntities && isAlive[myAttacks[aIndex].targetID]) autoCamera.hoverTo(myAttacks[aIndex].targetID, 800, false, 0);
+                    else if (myAttacks[aIndex].id != 0) {
+                        var currentPixelIndex = boatSpeed.currentPixelIndicies[myAttacks[aIndex].id - 1],
+                            boatX = pixel.toX(currentPixelIndex),
+                            boatY = pixel.toY(currentPixelIndex);
+                        autoCamera.fitCameraToMap(boatX - 20, boatY - 20, boatX + 20, boatY + 20)
+                    }
                     return true;
                 }
             }
