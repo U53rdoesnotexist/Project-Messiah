@@ -36,7 +36,7 @@ function ModHandler() {
         }
         if (!singleplayer) spawnHider.init();
         if (this.bot) messiah.init();
-        if (customJSON.isCustomJSON && customJSON.data.replay) replayLogger.init()
+        replayLogger.init()
     };
     this.scriptSpawnTick = function() {
         if (modHandler.hideSpawn) spawnHider.setSpawn(mainHandler.multiplayerHandler.packetsReceived)

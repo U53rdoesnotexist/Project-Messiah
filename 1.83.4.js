@@ -12254,7 +12254,7 @@ function MainHandler() {
         return singleplayer || customJSON.isCustomJSON && customJSON.data.replay ? this.singleplayerHandler.tick : this.multiplayerHandler.tick
     };
     this.getTickInterval = function() {
-        return Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1))
+        return 56;
     }
 }
 
