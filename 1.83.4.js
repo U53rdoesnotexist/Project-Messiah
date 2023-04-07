@@ -1219,7 +1219,7 @@ function BoatSpeed() {
             for (boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
                 authorID = authorIDs[boatIndex];
                 var boatColor = pixel.getInnerColors(authorID);
-                mainCanvasCtx.strokeStyle = `rgba(${boatColor[0]}, ${boatColor[1]}, ${boatColor[2]}, ${(192 + boatColor)/255})`
+                mainCanvasCtx.strokeStyle = `rgba(${boatColor[0]}, ${boatColor[1]}, ${boatColor[2]}, ${(192 + boatColor[3])/255})`
                 var boatX = pixel.toX(this.currentPixelIndicies[boatIndex]),
                     boatY = pixel.toY(this.currentPixelIndicies[boatIndex]),
                     targetX = pixel.toX(targetPixelIndicies[boatIndex]),
