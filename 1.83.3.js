@@ -12214,7 +12214,7 @@ function MainHandler() {
 
 function SingleplayerHandler() {
     this.time = mainHandler.time;
-    this.updateInterval = Math.round((modHandler.gameSpeed ? 1 : 56) / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
+    this.updateInterval = Math.round((modHandler.gameSpeed ? 56 : 56) / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
     this.bigTickInterval = 7;
     this.tick = this.clientTick = this.spawnTick = 0;
     this.a6Z = false; //unused
