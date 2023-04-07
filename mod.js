@@ -20,11 +20,12 @@ function ModHandler() {
     this.customMap = false;
     this.customGamemode = 11;
     this.boatLines = true;
-    this.latency = true;
-    this.font = true;
+    this.latency = 0;
+    this.font = 3;
     this.hideSpawn = false;
     this.bot = false;
     if (this.public && this.hideSpawn && this.bot) this.hideSpawn = this.bot = false;
+    this.lateral = false;
 
     this.scriptGameInit = function() {
         this.cycle = 1;
@@ -77,7 +78,6 @@ function ModHandler() {
 }
 
 function LatencySimulator() {
-    this.ping = 5; //5 ticks of latency
     this.pendingActions = [];
     this.getNextUpdateTick = function(tick) {
         return Math.ceil(tick / 7) * 7 + 1;
@@ -96,7 +96,7 @@ function LatencySimulator() {
     };
     this.addPendingAction = function(actionType, ratio, param, xCoord, yCoord) {
         this.pendingActions.push({
-            tick: this.getNextUpdateTick(mainHandler.getTicksElapsed() + this.ping),
+            tick: this.getNextUpdateTick(mainHandler.getTicksElapsed() + modHandler.latency),
             actionType: actionType,
             ratio: ratio,
             param: param,
@@ -230,12 +230,13 @@ function ModPanel() {
         passwordBar.input.style.color = whiteRGB2;
         passwordBar.input.style.position = "absolute";
         passwordBar.input.readOnly = false;
-        passwordBar.input.style.left = Math.floor(0.5 * headerHeight + modMenu.boxDimensions[0]) + "px";
+        passwordBar.input.style.left = Math.floor(.5 * modMenu.boxDimensions[2] + modMenu.boxDimensions[0]) + "px";
+        passwordBar.input.style.right = Math.floor(mainCanvasWidth - modMenu.boxDimensions[0] - modMenu.boxDimensions[2] + headerHeight) + "px";
         passwordBar.input.style.top = Math.floor(modMenu.boxDimensions[1] + .25 * headerHeight) + "px"
+        passwordBar.input.style.bottom = Math.floor(mainCanvasHeight - modMenu.boxDimensions[1] - .75 * headerHeight) + "px"
         passwordBar.input.addEventListener("input", () => onInput())
         passwordBar.input.style.font = mainCanvasCtx.font;
         passwordBar.input.style.padding = Math.floor(.3 * fontSize) + "px 5px";
-        passwordBar.input.style.width = Math.floor(modMenu.boxDimensions[2] - headerHeight * 2) + "px"
     }
     function onInput() {
         var clientHash = 0;
@@ -251,11 +252,11 @@ function ModPanel() {
         mainSettings.buttons[4].buttonClass.drawCanvasImage();
     }
     function drawSettingsBoxes(modMenu, settingID, startX, startY, width, height) {
-        /*if (mod.modSettings[settingID]) {
+        if (getButtonColor(settingID)) {
             mainCanvasCtx.fillStyle = greenDarkMoreOpaque;
             mainCanvasCtx.fillRect(startX, startY, width, height);
             mainCanvasCtx.fillStyle = whiteRGB2;
-        }*/
+        }
         mainCanvasCtx.strokeRect(startX, startY, width, height);
         mainCanvasCtx.fillText(getSettingLabels(settingID), Math.floor(startX + .5 * width), Math.floor(startY + .55 * height));
     }
@@ -263,21 +264,51 @@ function ModPanel() {
         if (settingID == 0) return `${maxEntities} Entities`;
         else if (settingID == 1) return `Mod Interest ${modHandler.modInterest ? "On" : "Off"}`;
         else if (settingID == 2) return `Mod Tax ${modHandler.modTax ? "On" : "Off"}`;
-        else if (settingID == 3) return `${modHandler.boatSpeed == 2 ? "Normal" : modHandler.boatSpeed == 1 ? "Faster" : "Fastest"} Boats`;
+        else if (settingID == 3) return `${modHandler.boatSpeed == 2 ? "Normal" : modHandler.boatSpeed == 1 ? "Faster" : "Very Fast"} Boats`;
         else if (settingID == 4) return `Neutral Bots ${modHandler.neutralBots ? "On" : "Off"}`;
         else if (settingID == 5) return `Human Bots ${modHandler.humanBots ? "On" : "Off"}`;
         else if (settingID == 6) return `${modHandler.customMap ? "Custom" : "Normal"} MP Maps`;
-        else if (settingID == 7) return modHandler.customGamemode <= 6 ? `${modHandler.customGamemode + 2} Teams Only`: modHandler.customGamemode == 7 ? `BR Only`: modHandler.customGamemode == 9 ? `Zombie Only` : modHandler.customGamemode == 10 ? `NFS Only` : "Default MP Mode";
+        else if (settingID == 7) return modHandler.customGamemode <= 6 ? `${modHandler.customGamemode + 2} Teams Only`: modHandler.customGamemode == 7 ? `BR Only`: modHandler.customGamemode == 9 ? `Zombie Only` : modHandler.customGamemode == 10 ? `NoFullSend Only` : "Default MP Mode";
         else if (settingID == 8) return `Boat Lines ${modHandler.boatLines ? "On" : "Off"}`;
-        else if (settingID == 9) return `SP Latency ${modHandler.latency ? "On" : "Off"}`;
-        else if (settingID == 10) return `Font Mod ${modHandler.font ? "On" : "Off"}`; //Change to 3 Stages future, Off, Enlarged, Red Font + Enlarged
+        else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: "+ modHandler.latency.toString() + " Ticks"}`;
+        else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : modHandler.font == 2 ? "Show Density" : "Red-Blue Font";
         else if (settingID == 11) return modHandler.public ? "Unavailable" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
         else if (settingID == 12) return modHandler.public ? "Unavailable" : `Messiah ${modHandler.bot ? "On" : "Off"}`;
-        else if (settingID == 13) return "Placeholder";
+        else if (settingID == 13) return `${modHandler.lateral ? "Uniform" : "Normal"} Hotkeys`;
+    }
+    function changeSettings(settingID) {
+        if (settingID == 0) maxEntities *= (maxEntities >= 4096 ? 1/8 : 2);
+        else if (settingID == 1) modHandler.modInterest = !modHandler.modInterest;
+        else if (settingID == 2) modHandler.modTax = !modHandler.modTax;
+        else if (settingID == 3) modHandler.boatSpeed -= (modHandler.boatSpeed > 0 ? 1 : -2);
+        else if (settingID == 4) modHandler.neutralBots = !modHandler.neutralBots;
+        else if (settingID == 5) modHandler.humanBots = !modHandler.humanBots;
+        else if (settingID == 6) modHandler.customMap = !modHandler.customMap;
+        else if (settingID == 7) modHandler.customGamemode += (modHandler.customGamemode == 7 ? 2 : modHandler.customGamemode >= 11 ? -11 : 1);
+        else if (settingID == 8) modHandler.boatLines = !modHandler.boatLines;
+        else if (settingID == 9) modHandler.latency += (modHandler.latency >= 10 ? -10 : 1);
+        else if (settingID == 10) modHandler.font += (modHandler.font >= 3 ? -3 : 1);
+        else if (settingID == 11 && !modHandler.public) modHandler.hideSpawn = !modHandler.hideSpawn;
+        else if (settingID == 12 && !modHandler.public) modHandler.bot = !modHandler.bot;
+        else if (settingID == 13) modHandler.lateral = !modHandler.lateral;
+    }
+    function getButtonColor(settingID) {
+        if (settingID == 0) return maxEntities != 512;
+        else if (settingID == 1) return modHandler.modInterest;
+        else if (settingID == 2) return modHandler.modTax;
+        else if (settingID == 3) return modHandler.boatSpeed != 2;
+        else if (settingID == 4) return modHandler.neutralBots;
+        else if (settingID == 5) return !modHandler.humanBots;
+        else if (settingID == 6) return modHandler.customMap;
+        else if (settingID == 7) return modHandler.customGamemode != 11;
+        else if (settingID == 8) return modHandler.boatLines;
+        else if (settingID == 9) return modHandler.latency;
+        else if (settingID == 10) return modHandler.font;
+        else if (settingID == 11) return modHandler.hideSpawn;
+        else if (settingID == 12) return modHandler.bot;
+        else if (settingID == 13) return modHandler.lateral;
     }
     var headerHeight, settingsOnLeftCol, settingBoxHeight, settingBoxWidth, fontSize, passwordBar;
-    /*this.settingLabels = ['512 Entities', 'Normal Interest', 'Normal Tax', 'Normal Boats', 'No Neutral Bots', 'Human Bots', 'Normal Maps', 
-        'Default Modes', 'No Boat Lines', 'No SP Latency', 'No Font Mod', 'Cheats Disabled', 'Placeholder', 'Placeholder'];*/
     this.settingCount = 14;
     this.visible = false;
     this.boxDimensions = [0, 0, 0, 0];
@@ -286,7 +317,7 @@ function ModPanel() {
         this.setCanvasVariables();
         createInputBar(this);
         this.toggleVisibility(true);
-        //mod.init()
+        this.drawCanvasImage();
         mainHandler.canvasDirty = true
     };
     this.setCanvasVariables = function() {
@@ -327,17 +358,7 @@ function ModPanel() {
                alert('Please Load A Custom Map First, Nerd.')
                return 0
             }
-            /*
-            mod.modSettings[settingID] = 1 - mod.modSettings[settingID];
-            var clientHash = 0;
-            for (let bitIndex = 0; bitIndex < this.settingCount; bitIndex++) {
-                clientHash += mod.modSettings[bitIndex] * (2**(21-bitIndex))
-            }
-            for (let labelIndex = 0; labelIndex < 22 - this.settingCount; labelIndex++) {
-                clientHash += mod.clientHash & (2**labelIndex)
-            }
-            passwordBar.input.value = mod.clientHash = clientHash;
-            */
+            changeSettings(settingID);
             onInput()
         }
         return true
@@ -346,7 +367,6 @@ function ModPanel() {
         mainCanvasCtx.lineWidth = 2;
         mainCanvasCtx.textAlign = centerAlign;
         mainCanvasCtx.textBaseline = middleAlign;
-        mainCanvasCtx.font = fontWeightBold + fontSize + fontSizeArial;
         mainCanvasCtx.fillStyle = blackMoreOpaque;
         mainCanvasCtx.fillRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], this.boxDimensions[3]);
         mainCanvasCtx.fillStyle = greenDarkMoreOpaque;
@@ -354,6 +374,9 @@ function ModPanel() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.strokeRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], this.boxDimensions[3]);
         mainCanvasCtx.fillStyle = whiteRGB2;
+        mainCanvasCtx.font = fontWeightBold + 1.6 *fontSize + fontSizeArial;
+        mainCanvasCtx.fillText("Mod Menu", this.boxDimensions[0] + this.boxDimensions[2] / 4, this.boxDimensions[1] + .53 * headerHeight)
+        mainCanvasCtx.font = fontWeightBold + fontSize + fontSizeArial;
         for (var settingIndex = settingsOnLeftCol - 1; 0 <= settingIndex; settingIndex--) {
             var yOffset = Math.floor(this.boxDimensions[1] + headerHeight + bufferLength + settingIndex * (settingBoxHeight + bufferLength));
             drawSettingsBoxes(this, settingIndex, this.boxDimensions[0] + bufferLength, yOffset, settingBoxWidth, settingBoxHeight);

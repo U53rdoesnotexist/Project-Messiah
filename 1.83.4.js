@@ -1579,6 +1579,7 @@ function drawCanvasImages() {
         playerActions.drawCanvasImage();
         statistics.drawCanvasImage();
         fadeIn.drawCanvasImage()
+        mainSettings.drawPanels()
     }
 }
 
@@ -2332,7 +2333,7 @@ function GameButtons() {
 
     function drawGameButtons(bIndex, color) {
         mainCanvasCtx.setTransform(1, 0, 0, 1, canvasPadding, attackRatioBar.startingY - bIndex * buttonScalingFactor * canvasPadding - bIndex * buttonSize);
-        mainCanvasCtx.fillStyle = color != greenLightRGB ? blackSemiTransparent2 : greenBrightMoreTransparent;
+        mainCanvasCtx.fillStyle = blackSemiTransparent2;
         mainCanvasCtx.fillRect(0, 0, 4 * buttonSize, buttonSize);
         if (selectedBIndex === bIndex + 1 && color != gray128RGB) {
             mainCanvasCtx.fillStyle = whiteMore2Transparent;
@@ -2345,7 +2346,7 @@ function GameButtons() {
         mainCanvasCtx.fillRect(0, buttonSize - 1, 4 * buttonSize, 1);
         mainCanvasCtx.fillText(buttonLabels[bIndex], 2 * buttonSize, .54 * buttonSize)
     }
-    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics", "Toggle Font", "Toggle Boat Lines", "Export Replay"],
+    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics", "Export Replay", "Show Mod Menu"],
         selectedBIndex, buttonScalingFactor;
     this.init = function() {
         selectedBIndex = -1;
@@ -2400,19 +2401,19 @@ function GameButtons() {
                 }
                 return 2;
             } else if (4 === bIndex) {
-                if (typeof(modHandler) == 'object' && (singleplayer || !modHandler.public)) {
-                    modHandler.font = !modHandler.font
+                if (typeof(modHandler) == "object" && !(customJSON.isCustomJSON && customJSON.data.replay)) {
+                    replayLogger.exportReplay()
                     this.toggleMenu();
                 }
                 return 2;
             } else if (5 === bIndex) {
-                if (typeof(modHandler) == 'object') modHandler.boatLines = !modHandler.boatLines
-                this.toggleMenu();
-                return 2;
-            } else if (6 === bIndex) {
-                if (typeof(modHandler) == "object" && !(customJSON.isCustomJSON && customJSON.data.replay)) {
-                    replayLogger.exportReplay()
+                if (typeof(ModPanel) != "undefined") {
                     this.toggleMenu();
+                    mainSettings.hideIfNotHidden();
+                    statistics.end();
+                    mainSettings.buttons[4].buttonClass.init();
+                    nameInput.hide();
+                    mainHandler.canvasDirty = true;
                 }
                 return 2;
             } else if (statistics.visible || singleplayer && !inSpawn) return 1
@@ -2460,9 +2461,8 @@ function GameButtons() {
             gameButtons.drawMenuSymbol(canvasPadding + 4 * buttonSize + (1.5 * buttonSize - menuSymbolSize) / 2, attackRatioBar.startingY + .3 * buttonSize, menuSymbolSize);
             drawGameButtons(1, gameButtons.canSurrender(myID) ? whiteRGB2 : gray128RGB);
             drawGameButtons(2, 2 <= statisticNumbers.currentDataPointIndex ? whiteRGB2 : gray128RGB);
-            drawGameButtons(3, typeof(modHandler) == 'object' ? modHandler.font  ? greenLightRGB : (singleplayer || !modHandler.public) ? whiteRGB2 : gray128RGB : whiteRGB2);
-            drawGameButtons(4, typeof(modHandler) == 'object' && modHandler.boatLines ? greenLightRGB : whiteRGB2);
-            drawGameButtons(5, typeof(modHandler) == 'object' && !(customJSON.isCustomJSON && customJSON.data.replay) ? whiteRGB2 : gray128RGB);
+            drawGameButtons(3, typeof(modHandler) == 'object' && !(customJSON.isCustomJSON && customJSON.data.replay) ? whiteRGB2 : gray128RGB);
+            drawGameButtons(4, typeof(modHandler) == 'object' ? whiteRGB2 : gray128RGB);
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(gameButtonsCanvas, canvasPadding, attackRatioBar.startingY)
     };
@@ -3296,7 +3296,7 @@ function onTouchstart(e) {
 }
 
 function handleMouseDown(xPos, yPos) {
-    if (0 === clientStatus) gameStateManager.mouseDown(xPos, yPos);
+    if (0 === clientStatus || mainSettings.buttons[4].buttonClass.visible) gameStateManager.mouseDown(xPos, yPos);
     else if (!statistics.mouseDown(xPos, yPos) && !playerActions.hasClickedIcon(xPos, yPos) && !gameResultBox.mouseDown(xPos, yPos) && !attackBars.mouseDown(xPos, yPos)) {
         var clickedResult = gameButtons.mouseDown(xPos, yPos);
         if (2 !== clickedResult && !gameLeaderboard.mouseDown(xPos, yPos)) {
@@ -4004,6 +4004,14 @@ function AttackRatioBar() {
         return true
     }
 
+    function addRatio(addend) {
+        if (0 > addend && 0 === ratio || 0 < addend && 1 === ratio) return false;
+        ratio += addend;
+        ratio = 1 < ratio ? 1 : 0 > ratio ? 0 : ratio;
+        redrawAttackRatioBar();
+        return true
+    }
+
     function slideRatio(xPos) {
         var oldRatio = ratio;
         ratio = (xPos - startingX - buttonWidth) / (attackRatioBarWidth - 2 * buttonWidth);
@@ -4014,7 +4022,7 @@ function AttackRatioBar() {
             return true;
         } else return false;
     }
-    var attackRatioBarWidth, startingX, buttonWidth, attackRatioBarCanvas, attackRatioBarCanvasCtx, visibility, ratio, sendAmount, percentage, fontStyle, needsUpdate, buttonMultiplier = 11 / 12;
+    var attackRatioBarWidth, startingX, buttonWidth, attackRatioBarCanvas, attackRatioBarCanvasCtx, visibility, ratio, sendAmount, percentage, fontStyle, needsUpdate, buttonMultiplier = 11/12;
     this.init = function() {
         visibility = customJSON.isCustomJSON && customJSON.data.replay || !inSpawn;
         needsUpdate = false;
@@ -4083,7 +4091,7 @@ function AttackRatioBar() {
                 replayLogger.underReplay = !replayLogger.underReplay;
                 needsUpdate = true;
                 return true;
-            } else return multiplyRatio(buttonMultiplier);
+            } else return typeof(modHandler) == "object" && modHandler.lateral ? addRatio(-.065) : multiplyRatio(buttonMultiplier);
         }
         if (xPos > startingX + attackRatioBarWidth - buttonWidth && xPos < startingX + attackRatioBarWidth && yPos > attackRatioBar.startingY) {
             if (customJSON.isCustomJSON && customJSON.data.replay) {
@@ -4091,13 +4099,16 @@ function AttackRatioBar() {
                 customJSON.startCustomGame();
                 needsUpdate = true;
                 return true;
-            } else return multiplyRatio(1 / buttonMultiplier);
+            } else return typeof(modHandler) == "object" && modHandler.lateral ? addRatio(.065) : multiplyRatio(1 / buttonMultiplier);
         }
         this.isDragging = true;
         return slideRatio(xPos)
     };
     this.checkAndMultiplyRatio = function(multiplier) {
         if (0 !== clientStatus && this.visible() && multiplyRatio(multiplier)) mainHandler.canvasDirty = true
+    };
+    this.checkAndAddRatio = function(addend) {
+        if (0 !== clientStatus && this.visible() && addRatio(addend)) mainHandler.canvasDirty = true
     };
     this.onWheel = function(deltaY) {
         if (0 === deltaY || !this.visible()) return false;
@@ -5841,7 +5852,7 @@ function OpenLinkBox() {
     this.init = function(param_link, isNewTab) {
         if (13 <= androidVersion) isNewTab ? link = param_link : link === param_link && androidObject.saveString(200, param_link);
         else if (isNewTab) {
-            (mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) && mainSettings.hideIfNotHidden();
+            (mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible || mainSettings.buttons[4].buttonClass.visible) && mainSettings.hideIfNotHidden();
             nameInput.hide();
             link = param_link;
             linkBoxCanvasSize = Math.floor((isZoom ? mainCanvasWidth > mainCanvasHeight ? .6 : .45 : .4) * minDim);
@@ -6406,14 +6417,6 @@ function GameStateManager() {
         gameState = 0;
         cookiesPrompt.init();
         nameInput.init();
-        if (this.quickSpawn){
-            setTimeout(() => {
-                handleMouseDown(980,610);
-            }, 1);
-            setTimeout(() => {
-                handleMouseDown(980,480);
-            }, 1);
-        }
     };
     this.setState = function(state) {
         gameState = state
@@ -6510,7 +6513,7 @@ function GameStateManager() {
         mainSettings.handleSave() || linkButtons.mouseDown(k, n, false) || mainSettings.mouseDown(k, n, false)
     };
     this.onWheel = function(xPos, yPos, deltaY) {
-        mainSettings.buttons[1].buttonClass.visible || 0 === gameState && playtime.onWheel(xPos, deltaY)
+        mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[4].buttonClass.visible || 0 === gameState && playtime.onWheel(xPos, deltaY)
     };
     this.vl = function() {
         mainButtons.setPosition();
@@ -7319,7 +7322,7 @@ function SingleSettings() {
         return false
     };
     this.mouseDown = function(xPos, yPos) {
-        if (mainLeaderboard.visible || mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible) return false;
+        if (mainLeaderboard.visible || mainSettings.buttons[1].buttonClass.visible || mainSettings.buttons[2].buttonClass.visible || mainSettings.buttons[4].buttonClass.visible) return false;
         if (mapMenu.visible && !customJSON.isCustomJSON) return mapMenu.mouseDown(xPos, yPos);
         var buttonIndex = this.getClickedButton(xPos, yPos);
         if (-1 === buttonIndex) return false;
@@ -9671,23 +9674,30 @@ function onKeydown(e) {
     } else if ("ArrowDown" === e.key) {
         keyboardCamera.checkAndMoveCamera(2);
     } else if ("a" === e.key) {
-        attackRatioBar.checkAndMultiplyRatio(.96875);
+        if (typeof(modHandler) == "object" && modHandler.lateral) attackRatioBar.checkAndAddRatio(-.008);
+        else attackRatioBar.checkAndMultiplyRatio(31/32);
     } else if ("d" === e.key) {
-        attackRatioBar.checkAndMultiplyRatio(32 / 31);
+        if (typeof(modHandler) == "object" && modHandler.lateral) attackRatioBar.checkAndAddRatio(.008);
+        else attackRatioBar.checkAndMultiplyRatio(32/31);
     } else if ("s" === e.key) {
-        attackRatioBar.checkAndMultiplyRatio(.875);
+        if (typeof(modHandler) == "object" && modHandler.lateral) attackRatioBar.checkAndAddRatio(-.03);
+        else attackRatioBar.checkAndMultiplyRatio(7/8);
     } else if ("w" === e.key) {
-        attackRatioBar.checkAndMultiplyRatio(8 / 7);
+        if (typeof(modHandler) == "object" && modHandler.lateral) attackRatioBar.checkAndAddRatio(.03);
+        else attackRatioBar.checkAndMultiplyRatio(8/7);
     } else if ("1" === e.key) {
-        attackRatioBar.checkAndMultiplyRatio(5 / 6);
+        if (typeof(modHandler) == "object" && modHandler.lateral) attackRatioBar.checkAndAddRatio(-.1);
+        else attackRatioBar.checkAndMultiplyRatio(5/6);
     } else if ("2" === e.key) {
-        attackRatioBar.checkAndMultiplyRatio(1.2);
+        if (typeof(modHandler) == "object" && modHandler.lateral) attackRatioBar.checkAndAddRatio(.1);
+        else attackRatioBar.checkAndMultiplyRatio(6/5);
     } else if (' ' === e.key) {
         1 === clientStatus && intelliAttack.checkIntelli();
     } else if ("c" === e.key && 0 !== clientStatus) {
         statistics.printCoords();
     }
 }
+
 
 function onVisibilitychange() {
     if ("hidden" === document.visibilityState) mainHandler.onVisibilityHidden()
@@ -11098,8 +11108,9 @@ function CanvasManager() {
                 infoRenderer.setCanvasVariables();
                 gameResultBox.setCanvasVariables();
                 teams.setCanvasVariables();
-                mouseCamera.restrictViewportToMap();        
-            } else {
+                mouseCamera.restrictViewportToMap();
+            } 
+            if (clientStatus == 0 || mainSettings.buttons[4].buttonClass.visible) {
                 if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, true)
                 else if (2 === gameStateManager.getState()) singleSettings.setCanvasVariables()
                 else if (3 === gameStateManager.getState()) showError.setCanvasVariables();
@@ -12208,7 +12219,7 @@ function MainHandler() {
         this.time = performance.now()
     };
     this.onVisibilityHidden = function() {
-        if (!(1 !== clientStatus || !singleplayer || gameButtons.menuVisible || inSpawn)) gameButtons.toggleMenu();
+        if (1 === clientStatus && singleplayer && !gameButtons.menuVisible && !inSpawn) gameButtons.toggleMenu();
         if (-1 === this.idleInterval) this.idleInterval = setInterval(checkIdle, 2E3)
     };
     this.onVisibilityVisible = function() {
@@ -12273,7 +12284,7 @@ function SingleplayerHandler() {
                     if (mainHandler.time >= this.time) {
                         this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
                         if (2 !== clientStatus) {
-                            if (gameButtons.menuVisible || !replayLogger.underReplay) clientTick1()
+                            if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || !replayLogger.underReplay) clientTick1()
                             else if (0 == --this.bigTickInterval) {
                                 replayLogger.update();
                                 this.bigTickInterval = 7;
@@ -12293,7 +12304,7 @@ function SingleplayerHandler() {
                         this.clientTick++
                     }
                 } else {
-                    if (gameButtons.menuVisible || !replayLogger.underReplay) updatedPlayerLabels()
+                    if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || !replayLogger.underReplay) updatedPlayerLabels()
                     else {
                         mainHandler.canvasDirty = true;
                         drawCanvases();
@@ -12306,7 +12317,7 @@ function SingleplayerHandler() {
                 if (mainHandler.time >= this.time) {
                     this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
                     if (2 !== clientStatus) {
-                        if (gameButtons.menuVisible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
+                        if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
                         else {
                             gameTick();
                             this.tick++;
@@ -12316,7 +12327,7 @@ function SingleplayerHandler() {
                     this.clientTick++
                 }
             } else {
-                if (gameButtons.menuVisible) updatedPlayerLabels()
+                if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible) updatedPlayerLabels()
                 else {
                     mainHandler.canvasDirty = true;
                     drawCanvases();
@@ -12823,6 +12834,7 @@ function MapMenu() {
         xPos > this.boxDimensions[0] + this.boxDimensions[2] / 2 && (mapID += mapsOnLeftCol);
         if (mapID >= customMapID) return true;
         loadMap(mapID, Math.floor(16384 * Math.random()));
+        if (typeof(modHandler) == "object" && modHandler.customMap) modHandler.customMap = false;
         return true
     };
     this.drawCanvasImage = function() {
