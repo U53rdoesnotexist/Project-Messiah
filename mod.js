@@ -19,8 +19,8 @@ function ModHandler() {
     this.humanBots = true;
     this.customMap = false;
     this.customGamemode = 11;
-    this.boatLines = true;
-    this.latency = 0;
+    this.boatTracker = true;
+    this.latency = 5;
     this.font = 3;
     this.hideSpawn = false;
     this.bot = false;
@@ -252,11 +252,22 @@ function ModPanel() {
         mainSettings.buttons[4].buttonClass.drawCanvasImage();
     }
     function drawSettingsBoxes(modMenu, settingID, startX, startY, width, height) {
-        if (getButtonColor(settingID)) {
+        if (clientStatus >= 1 && settingID <= 7 || [11,12].includes(settingID) && modHandler.public) {
+            if (getButtonColor(settingID)) {
+                mainCanvasCtx.fillStyle = greenDarkerMoreOpaque;
+                mainCanvasCtx.fillRect(startX, startY, width, height);
+                mainCanvasCtx.fillStyle = gray128RGB;
+            } else {
+                mainCanvasCtx.fillStyle = blackSemiTransparent2;
+                mainCanvasCtx.fillRect(startX, startY, width, height);
+                mainCanvasCtx.fillStyle = gray128RGB;
+            }
+        } else if (getButtonColor(settingID)) {
             mainCanvasCtx.fillStyle = greenDarkMoreOpaque;
             mainCanvasCtx.fillRect(startX, startY, width, height);
             mainCanvasCtx.fillStyle = whiteRGB2;
-        }
+        } else mainCanvasCtx.fillStyle = whiteRGB2;
+        
         mainCanvasCtx.strokeRect(startX, startY, width, height);
         mainCanvasCtx.fillText(getSettingLabels(settingID), Math.floor(startX + .5 * width), Math.floor(startY + .55 * height));
     }
@@ -269,7 +280,7 @@ function ModPanel() {
         else if (settingID == 5) return `Human Bots ${modHandler.humanBots ? "On" : "Off"}`;
         else if (settingID == 6) return `${modHandler.customMap ? "Custom" : "Normal"} MP Maps`;
         else if (settingID == 7) return modHandler.customGamemode <= 6 ? `${modHandler.customGamemode + 2} Teams Only`: modHandler.customGamemode == 7 ? `BR Only`: modHandler.customGamemode == 9 ? `Zombie Only` : modHandler.customGamemode == 10 ? `NoFullSend Only` : "Default MP Mode";
-        else if (settingID == 8) return `Boat Lines ${modHandler.boatLines ? "On" : "Off"}`;
+        else if (settingID == 8) return `Boat Tracker ${modHandler.boatTracker ? "On" : "Off"}`;
         else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: "+ modHandler.latency.toString() + " Ticks"}`;
         else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : modHandler.font == 2 ? "Show Density" : "Red-Blue Font";
         else if (settingID == 11) return modHandler.public ? "Unavailable" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
@@ -285,7 +296,7 @@ function ModPanel() {
         else if (settingID == 5) modHandler.humanBots = !modHandler.humanBots;
         else if (settingID == 6) modHandler.customMap = !modHandler.customMap;
         else if (settingID == 7) modHandler.customGamemode += (modHandler.customGamemode == 7 ? 2 : modHandler.customGamemode >= 11 ? -11 : 1);
-        else if (settingID == 8) modHandler.boatLines = !modHandler.boatLines;
+        else if (settingID == 8) modHandler.boatTracker = !modHandler.boatTracker;
         else if (settingID == 9) modHandler.latency += (modHandler.latency >= 10 ? -10 : 1);
         else if (settingID == 10) modHandler.font += (modHandler.font >= 3 ? -3 : 1);
         else if (settingID == 11 && !modHandler.public) modHandler.hideSpawn = !modHandler.hideSpawn;
@@ -301,7 +312,7 @@ function ModPanel() {
         else if (settingID == 5) return !modHandler.humanBots;
         else if (settingID == 6) return modHandler.customMap;
         else if (settingID == 7) return modHandler.customGamemode != 11;
-        else if (settingID == 8) return modHandler.boatLines;
+        else if (settingID == 8) return modHandler.boatTracker;
         else if (settingID == 9) return modHandler.latency;
         else if (settingID == 10) return modHandler.font;
         else if (settingID == 11) return modHandler.hideSpawn;
@@ -354,10 +365,11 @@ function ModPanel() {
         xPos > this.boxDimensions[0] + this.boxDimensions[2] / 2 && (settingID += settingsOnLeftCol);
         if (settingID >= this.settingCount) return true;
         else {
-            if (settingID == 6 && currentMapID != customMapID) {
-               alert('Please Load A Custom Map First, Nerd.')
-               return 0
-            }
+            if (clientStatus >= 1 && settingID <= 7) return true;
+            else if (settingID == 6 && currentMapID != customMapID) {
+                alert('Please Load A Custom Map First, Nerd.')
+                return true
+             }
             changeSettings(settingID);
             onInput()
         }

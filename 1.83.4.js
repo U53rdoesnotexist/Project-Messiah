@@ -1096,7 +1096,7 @@ function ProcessAction() {
         if (inSpawn) {
             managePlayerDeath(id);
             findShiftAliveEntitiesIndex();
-        } else humanBots.turnToBot(id)
+        } else if (!typeof(modHandler) == "object" || modHandler.humanBots) humanBots.turnToBot(id)
     };
     this.surrender = function(id) {
         if (0 !== isAlive[id] && 2 !== playerStatus[id] && gameButtons.canSurrender(id)) {
@@ -1150,7 +1150,7 @@ function BoatSpeed() {
     this.update = function() {
         for (var boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
             if (0 === ticksUntilUpdate[boatIndex]--) {
-                ticksUntilUpdate[boatIndex] = 2;
+                ticksUntilUpdate[boatIndex] = typeof(modHandler) == "object" ? modHandler.boatSpeed : 2;
                 boatPathHandler.update(boatIndex, boatIDs[boatIndex], authorIDs[boatIndex], this.currentPixelIndicies[boatIndex], targetPixelIndicies[boatIndex]);
             }
         }
@@ -1214,7 +1214,7 @@ function BoatSpeed() {
                 }
             }
         }
-        if (0 !== currentBoatIndex && typeof(modHandler) == "object" && modHandler.boatLines) {
+        if (0 !== currentBoatIndex && typeof(modHandler) == "object" && modHandler.boatTracker) {
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
             for (boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
                 authorID = authorIDs[boatIndex];
@@ -1822,6 +1822,9 @@ var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
     currentSeedSpawn, myID, playerInfo, isCanvasHidden, inSpawn, freeSpawn, teamGame, teamCount, gamemode, isContest, spawn, points1v1, spawnTime;
 
 function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode, param_isContest) {
+    if (typeof(modHandler) == "object") {
+        if (modHandler.customGamemode != 11) param_gamemode = modHandler.customGamemode
+    }
     currentSeedSpawn = param_seedSpawn;
     neverJoinedGameBefore = isCanvasHidden = false;
     gamemode = param_gamemode;
@@ -7060,9 +7063,9 @@ function Lobby() {
             var previewCanvas = getPreviewCanvas(param_lobbyGames[gameIndex].mapID, param_lobbyGames[gameIndex].mapSeed);
             lobbyGames.push({
                 gameID: param_lobbyGames[gameIndex].id,
-                gamemode: param_lobbyGames[gameIndex].gamemode,
+                gamemode: typeof(modHandler) == "object" && modHandler.customGamemode != 11 ? modHandler.customGamemode : param_lobbyGames[gameIndex].gamemode,
                 isContest: param_lobbyGames[gameIndex].isContest,
-                mapID: param_lobbyGames[gameIndex].mapID,
+                mapID: typeof(modHandler) == "object" && modHandler.customMap ? customMapID : param_lobbyGames[gameIndex].mapID,
                 mapSeed: param_lobbyGames[gameIndex].mapSeed,
                 joined: param_lobbyGames[gameIndex].joinCount,
                 timeLeft: param_lobbyGames[gameIndex].timeLeft,
@@ -7983,13 +7986,12 @@ function Pixel() {
             var teamID, teamColorVariation;
             for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
                 teamID = teamColors.teamIDs[teamColors.teamArray[idIndex]];
-                if (teamID != 0){//Pixel colors for normal teams
+                if (teamID != 0) { //Pixel colors for normal teams
                     teamColorVariation = divideFloor((teamColorVariations[teamID][3] + 1) * fakeRandom.random(), fakeRandom.value(100));
                     innerR[idIndex] = teamBaseColor[teamID][0] + teamColorVariation * teamColorVariations[teamID][0];
                     innerG[idIndex] = teamBaseColor[teamID][1] + teamColorVariation * teamColorVariations[teamID][1];
                     innerB[idIndex] = teamBaseColor[teamID][2] + teamColorVariation * teamColorVariations[teamID][2];
-                }
-                else{//added random colors for neutral bots
+                } else { //added random colors for neutral bots
                     innerR[idIndex] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
                     innerG[idIndex] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
                     innerB[idIndex] = 4 * divideFloor(64 * fakeRandom.random(), fakeRandom.value(100));
@@ -8021,14 +8023,14 @@ function Pixel() {
             innerR[idIndex] += allDivideFloor(innerBase - innerR[idIndex], 2);
             innerG[idIndex] += allDivideFloor(innerBase - innerG[idIndex], 2);
             innerB[idIndex] += allDivideFloor(innerBase - innerB[idIndex], 2);
-            innerR[idIndex] -= innerR[idIndex] % 4;
-            innerG[idIndex] -= innerG[idIndex] % 4;
-            innerB[idIndex] -= innerB[idIndex] % 4;
+            innerR[idIndex] -= innerR[idIndex] % (typeof(modHandler) == "object" && maxEntities > 512 ? 8 : 4);
+            innerG[idIndex] -= innerG[idIndex] % (typeof(modHandler) == "object" && maxEntities > 512 ? 8 : 4);
+            innerB[idIndex] -= innerB[idIndex] % (typeof(modHandler) == "object" && maxEntities > 512 ? 8 : 4);
         }
         for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
-            innerR[idIndex] += divideFloor(idIndex, 128);
-            innerG[idIndex] += divideFloor(idIndex % 128, 32);
-            innerB[idIndex] += divideFloor(idIndex % 32, 8);
+            innerR[idIndex] += divideFloor(idIndex, (typeof(modHandler) == "object" && maxEntities > 512 ? 512 : 128));
+            innerG[idIndex] += divideFloor(idIndex % (typeof(modHandler) == "object" && maxEntities > 512 ? 512 : 128), (typeof(modHandler) == "object" && maxEntities > 512 ? 64 : 32));
+            innerB[idIndex] += divideFloor(idIndex % (typeof(modHandler) == "object" && maxEntities > 512 ? 64 : 32), 8);
             alphaVariation[idIndex] = idIndex % 8;
         }
         this.setFontColor();
@@ -8038,9 +8040,10 @@ function Pixel() {
             borderB[idIndex] = 32 > innerB[idIndex] ? innerB[idIndex] + 32 : innerB[idIndex] - 32;
         }
         for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
-            movingR[idIndex] = 235 < innerR[idIndex] ? innerR[idIndex] - 20 : innerR[idIndex] + 20;
-            movingG[idIndex] = 235 < innerG[idIndex] ? innerG[idIndex] - 20 : innerG[idIndex] + 20;
-            movingB[idIndex] = 235 < innerB[idIndex] ? innerB[idIndex] - 20 : innerB[idIndex] + 20;
+            var movingOffset = (typeof(modHandler) == "object" && maxEntities > 512 ? 16 : 20)
+            movingR[idIndex] = 235 < innerR[idIndex] ? innerR[idIndex] - movingOffset : innerR[idIndex] + movingOffset;
+            movingG[idIndex] = 235 < innerG[idIndex] ? innerG[idIndex] - movingOffset : innerG[idIndex] + movingOffset;
+            movingB[idIndex] = 235 < innerB[idIndex] ? innerB[idIndex] - movingOffset : innerB[idIndex] + movingOffset;
         }
     };
     this.setFontColor = function() {
@@ -8106,7 +8109,8 @@ function Pixel() {
         return this.isNeutral(pIndex) || this.entityControlled(pIndex) && id !== this.getOwner(pIndex)
     };
     this.getOwner = function(pIndex) {
-        return pixelRGBA[pIndex] % 4 * 128 + pixelRGBA[pIndex + 1] % 4 * 32 + pixelRGBA[pIndex + 2] % 4 * 8 + pixelRGBA[pIndex + 3] % 8
+        if (typeof(modHandler) == "object" && maxEntities > 512) return pixelRGBA[pIndex] % 8 * 512 + pixelRGBA[pIndex + 1] % 8 * 64 + pixelRGBA[pIndex + 2] % 8 * 8 + pixelRGBA[pIndex + 3] % 8
+        else return pixelRGBA[pIndex] % 4 * 128 + pixelRGBA[pIndex + 1] % 4 * 32 + pixelRGBA[pIndex + 2] % 4 * 8 + pixelRGBA[pIndex + 3] % 8
     };
     this.revertToNeutralPixel = function(pIndex) {
         revertToDefaultPixel(pIndex, 1)
@@ -8850,27 +8854,29 @@ function InfoRenderer() {
 
         for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
             idIndex = aliveEntities[aliveIndex];
-            fontSize = Math.floor(fontScalarConst * mainScaleFactor * entityLabelScaleY[idIndex] * labelWidth[idIndex] * (playerCount <= 16 ? 1.5 : 1));
+            fontSize = Math.floor(fontScalarConst * mainScaleFactor * entityLabelScaleY[idIndex] * labelWidth[idIndex] * (typeof(modHandler) == "object" && modHandler.font >= 1 ? 1.5 : 1));
             if (fontSize >= minFontSize && fontSize < maxFontSize && labelXPos[idIndex] + labelWidth[idIndex] > camLeft && labelXPos[idIndex] < camRight && labelYPos[idIndex] + labelHeight[idIndex] > camTop && labelYPos[idIndex] < camBottom) {
                 landCenterX = Math.floor(prevClientWidth * (labelXPos[idIndex] + labelWidth[idIndex] / 2 - camLeft) / (camRight - camLeft));
                 landCenterY = Math.floor(prevClientHeight * (labelYPos[idIndex] + labelHeight[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
                 infoCanvasCtx.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
 
                 var fontColor = fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]],
-                    textLabel = playerCount <= 16 ? attackBars.splitNumber(troops[idIndex]): nickname[idIndex];
-                if (typeof(modHandler) == 'object' && modHandler.font) {
-                    if (modHandler.density(idIndex) <= 0.5 || idIndex < playerCount && modHandler.density(idIndex) <= (divideFloor(mainHandler.getTicksElapsed(), 100) >= 5 ? 1.5 : 4)) {
-                        fontColor = redBrightRGB;
-                    } else if (idIndex >= playerCount && difficultyEngine.botTiming[idIndex - playerCount] <= 20 && mainHandler.getTicksElapsed() % 100 <= 80) {
-                        fontColor = "rgb(0,0,200)";
+                    textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? attackBars.splitNumber(troops[idIndex]): nickname[idIndex];
+                if (typeof(modHandler) == 'object' && modHandler.font >= 1) {
+                    if (modHandler.font == 3) {
+                        if (modHandler.density(idIndex) <= 0.5 || idIndex < playerCount && modHandler.density(idIndex) <= (divideFloor(mainHandler.getTicksElapsed(), 100) >= 5 ? 1.5 : 4)) {
+                            fontColor = redBrightRGB;
+                        } else if (idIndex >= playerCount && difficultyEngine.botTiming[idIndex - playerCount] <= 20 && mainHandler.getTicksElapsed() % 100 <= 80) {
+                            fontColor = "rgb(0,0,200)";
+                        }
                     }
-                    if (playerCount > 16) textLabel += ` (${idIndex})`
+                    if (modHandler.font >= 2) textLabel += ` (${modHandler.density(idIndex).toFixed(2)})`
                 }
                 infoCanvasCtx.fillStyle = fontColor;
                 infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY);
                 needsDrawImage = true;
                 
-                fontSize *= (playerCount <= 16 ? 0.67 : 1)
+                fontSize *= (typeof(modHandler) == "object" && modHandler.font >= 1 ? 0.67 : 1)
                 if (0 < displayIconRemainingTime[idIndex]) {
                     if (0 === landIDOrder[idIndex])
                         if (emojis.isFlag(displayingEmojiID[idIndex])) {
@@ -8919,8 +8925,8 @@ function InfoRenderer() {
                 var getFontSize = Math.floor(fontScaleFactor * fontSize);
                 if (getFontSize >= minFontSize) {
                     infoCanvasCtx.font = fontWeightBold + getFontSize + fontSizeArial;
-                    textLabel = playerCount <= 16 ? nickname[idIndex] + (typeof(modHandler) == 'object' && modHandler.font ? ` (${idIndex})` : ""): attackBars.splitNumber(troops[idIndex])
-                    infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY + Math.floor(.78 * fontSize))
+                    textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? nickname[idIndex] + (typeof(modHandler) == 'object' && modHandler.font >= 2 ? ` (${idIndex})` : "") : attackBars.splitNumber(troops[idIndex]);
+                    infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY + Math.floor((typeof(modHandler) == "object" && modHandler.font >= 1 ? 1 : .78) * fontSize))
                 }
             }
         }
@@ -9005,6 +9011,23 @@ function InfoRenderer() {
     function checkXCoverage(id, xCoord, yCoord, xOffset) {
         return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord + xOffset - 1))
     }
+
+    function setLabelSize() {
+        if (gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1) {
+            var entityIndex;
+            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
+            var entityLabelScale = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000" + (typeof(modHandler) == "object" && modHandler.font >= 2 ? ` (${150.00})` : "")).width);
+            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale
+        } else {
+            infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
+            entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap) + (typeof(modHandler) == "object" && modHandler.font >= 2) ? ` (${maxEntities - 1})` : "").width);
+            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
+            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
+                entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nickname[entityIndex]).width);
+                entityLabelScaleY[entityIndex] = entityLabelScale < entityLabelScaleX[entityIndex] ? entityLabelScale : entityLabelScaleX[entityIndex];
+            }
+        }
+    }
     var entityBatchIndex, updateLabelCounters, labelXPos, labelYPos, labelWidth, labelHeight, entityLabelScaleY, entityLabelScaleX, maxFontSize, imposterFontColorThresholdSize, fontScaleFactor, labelYScalarFactor, minFontSize, fontScalarConst, renderOffsetX, renderOffsetY, canvasScale, needsDrawImage, infoCanvas, infoCanvasCtx, updateInterval, displayingEmojiID, displayIconRemainingTime, crownWidth, crownHeight;
     this.init = function() {
         needsDrawImage = false;
@@ -9013,7 +9036,7 @@ function InfoRenderer() {
         labelYScalarFactor = 1.8;
         maxFontSize = Math.floor(.5 * minDim);
         imposterFontColorThresholdSize = Math.floor(.2 * maxFontSize);
-        minFontSize = playerCount <= 16 ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
+        minFontSize = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
         updateLabelCounters = entityBatchIndex = 0;
         labelXPos = new Uint16Array(maxEntities);
         labelYPos = new Uint16Array(maxEntities);
@@ -9028,20 +9051,7 @@ function InfoRenderer() {
         renderOffsetY = renderOffsetX = 0;
         canvasScale = 1;
         updateInterval = 0;
-        if (playerCount <= 16) {
-            var entityIndex;
-            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
-            var entityLabelScale = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000").width);
-            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale
-        } else {
-            infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
-            entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap) + (typeof(modHandler) == "object") ? ` (${maxEntities - 1})` : "").width);
-            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
-            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
-                entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nickname[entityIndex]).width);
-                entityLabelScaleY[entityIndex] = entityLabelScale < entityLabelScaleX[entityIndex] ? entityLabelScale : entityLabelScaleX[entityIndex];
-            }
-        }
+        setLabelSize();
         for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
             if (12 > land[entityIndex]) {
                 labelXPos[entityIndex] = xMin[entityIndex] + 1;
@@ -9131,6 +9141,7 @@ function InfoRenderer() {
         return entityLabelScaleY[id]
     };
     this.update = function() {
+        setLabelSize();
         if (4 <= ++updateLabelCounters) {
             updateLabelCounters = 0;
             for (var iconRelativeIndex = 4; 1 <= iconRelativeIndex; iconRelativeIndex--) {
@@ -9790,7 +9801,7 @@ function ZombieSettings() {
 var currentMapWidth, currentMapHeight, mapBaseCanvas, mapBaseCanvasCtx, realMapBaseCanvasCtxImageData, mapBaseCanvasImageDataArray, currentMapID, currentMapSeed, mapLoaded, customMapID = 15, mapShading;
 
 function loadMap(mapID, newMapSeed) {
-    mapID %= customMapID;
+    if (mapID > customMapID) mapID %= customMapID;
     if (mapID !== currentMapID || isnotBAnorRealMap(currentMapID) && newMapSeed !== currentMapSeed) {
         var delta1 = performance.now();
         mapLoaded = false;
@@ -12006,10 +12017,9 @@ function TeamColors() {
         }
     };    
     this.distributeBotsMulti = function() {
-        var neutralBots = false; //Neutral Bots Togglable
         for (var botIndex = playerCount; botIndex < maxEntities; botIndex++){
-            if (!neutralBots) this.teamArray[botIndex] = 1 + botIndex % teamCount;
-            else this.teamArray[botIndex] = 0;
+            if (typeof(modHandler) == "object" && modHandler.neutralBots) this.teamArray[botIndex] = 0;
+            else this.teamArray[botIndex] = 1 + botIndex % teamCount;
         }
     };
     this.getClanTagWinningTeam = function(winningTeam) {
@@ -12659,7 +12669,7 @@ function DataDecoder() {
                 })
             };
             gameStateManager.enterInGameState();
-            loadMap(var_mapID, var_mapSeed);
+            if (!(typeof(modHandler) == "object" && modHandler.customMap)) loadMap(var_mapID, var_mapSeed);
             1 === var_playerInfo.length && singleSettings.setBotSettings(var_gamemode);
             gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
 
