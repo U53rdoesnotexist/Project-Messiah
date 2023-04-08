@@ -3238,11 +3238,11 @@ var blackRGB = "rgb(0,0,0)",
     googleplayLink = "https://play.google.com/store/apps/details?id=territorial.io",
     appstoreLink = "https://apps.apple.com/app/id1581110913",
     youtubeLink = "https://www.youtube.com/watch?v=toZTQ8aRdFc",
-    discordLink = "https://discord.gg/pthqvpTXmh",
+    discordLink = "https://discord.gg/3aF93G23rV",
     igLink = "https://www.instagram.com/davidtschacher/",
     cookiePolicyLink = "https://territorial.io/cookie_policy",
     privacyPolicyLink = "https://territorial.io/privacy_policy",
-    tutorialLink = "https://territorial.io/tutorial",
+    tutorialLink = "https://discord.gg/5mMydyk3SU",
     leaderboardLinks = ["https://territorial.io/players", "https://territorial.io/clans"],
     canvasPadding, gameLeaderboardMargin, bufferLength, mainSettingsMarginWidth, isTouch, clientXPos, clientYPos, mainSettings, 
     wsUrlStrings = ["wss://", "/s50/", "/s51/", "/s52/"];
@@ -6075,7 +6075,7 @@ function MainButtons() {
             startingY: 0,
             width: this.width,
             height: Math.floor(.3 * this.height),
-            displayLabel: "The game was updated!",
+            displayLabel: "Please wait for us to update the client!",
             font: this.mainButton[1].font,
             bgColor: "rgba(100,0,0,0.8)",
             fontRatio: this.mainButton[1].fontRatio
@@ -6085,7 +6085,7 @@ function MainButtons() {
             startingY: 0,
             width: this.mainButton[0].width,
             height: Math.floor(.8 * this.height),
-            displayLabel: "Reload",
+            displayLabel: "Play Vanilla Terri",
             font: this.mainButton[0].font,
             bgColor: "rgba(0,100,0,0.8)",
             fontRatio: this.mainButton[0].fontRatio
@@ -7226,7 +7226,7 @@ function GameUpdatedPrompt() {
     };
     this.mouseDown = function(xPos, yPos) {
         var buttonIndex = mainButtons.getClickedButton(xPos, yPos, 5, 2);
-        if (5 === buttonIndex) reloadClient()
+        if (5 === buttonIndex) window.open("https://www.territorial.io")
         else if (6 === buttonIndex) {
             nameInput.init();
             mainButtons.onPointermove(xPos, yPos, false);
@@ -12516,7 +12516,7 @@ function TouchInputHandler() {
 function DataDecoder() {
     function decodeNames(length, array) {
         for (var name = Array(length), nameIndex = 0; nameIndex < length; nameIndex++) name[nameIndex] = decoder(array, 10);
-        return strings.convertToString(name)
+        return typeof(modHandler) == "object" ? modHandler.changeDiscordLink(strings.convertToString(name)) : strings.convertToString(name)
     }
 
     function decoder(array, bitsToDecode) {

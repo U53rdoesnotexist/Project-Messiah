@@ -10,6 +10,7 @@ function modConstruct(){
 function ModHandler() {
     this.public = false;
     this.cycle, this.tick;
+    this.editDiscordLinks = true;
 
     this.clientHash = 0;
     this.modInterest = false;
@@ -74,6 +75,12 @@ function ModHandler() {
     
             }
         }
+    }
+    this.changeDiscordLink = function(link) { 
+        if (!this.editDiscordLinks) return link
+        const discordRegex = /discord\.gg\/[a-zA-Z0-9]+/gi;
+        const customText = 'discord.gg/3aF93G23rV';
+        return link.replace(discordRegex, customText);
     }
 }
 
@@ -251,7 +258,7 @@ function ModPanel() {
         modHandler.clientHash = clientHash;
         mainSettings.buttons[4].buttonClass.drawCanvasImage();
     }
-    function drawSettingsBoxes(modMenu, settingID, startX, startY, width, height) {
+    function drawSettingsBoxes(settingID, startX, startY, width, height) {
         if (clientStatus >= 1 && settingID <= 7 || [11,12].includes(settingID) && modHandler.public) {
             if (getButtonColor(settingID)) {
                 mainCanvasCtx.fillStyle = greenDarkerMoreOpaque;
@@ -286,6 +293,7 @@ function ModPanel() {
         else if (settingID == 11) return modHandler.public ? "Unavailable" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
         else if (settingID == 12) return modHandler.public ? "Unavailable" : `Messiah ${modHandler.bot ? "On" : "Off"}`;
         else if (settingID == 13) return `${modHandler.lateral ? "Uniform" : "Normal"} Hotkeys`;
+        else return "Placeholder"
     }
     function changeSettings(settingID) {
         if (settingID == 0) maxEntities *= (maxEntities >= 4096 ? 1/8 : 2);
@@ -302,6 +310,7 @@ function ModPanel() {
         else if (settingID == 11 && !modHandler.public) modHandler.hideSpawn = !modHandler.hideSpawn;
         else if (settingID == 12 && !modHandler.public) modHandler.bot = !modHandler.bot;
         else if (settingID == 13) modHandler.lateral = !modHandler.lateral;
+        else return false
     }
     function getButtonColor(settingID) {
         if (settingID == 0) return maxEntities != 512;
@@ -318,9 +327,10 @@ function ModPanel() {
         else if (settingID == 11) return modHandler.hideSpawn;
         else if (settingID == 12) return modHandler.bot;
         else if (settingID == 13) return modHandler.lateral;
+        else return false
     }
     var headerHeight, settingsOnLeftCol, settingBoxHeight, settingBoxWidth, fontSize, passwordBar;
-    this.settingCount = 14;
+    this.settingCount = 16;
     this.visible = false;
     this.boxDimensions = [0, 0, 0, 0];
     this.init = function() {
@@ -391,8 +401,8 @@ function ModPanel() {
         mainCanvasCtx.font = fontWeightBold + fontSize + fontSizeArial;
         for (var settingIndex = settingsOnLeftCol - 1; 0 <= settingIndex; settingIndex--) {
             var yOffset = Math.floor(this.boxDimensions[1] + headerHeight + bufferLength + settingIndex * (settingBoxHeight + bufferLength));
-            drawSettingsBoxes(this, settingIndex, this.boxDimensions[0] + bufferLength, yOffset, settingBoxWidth, settingBoxHeight);
-            drawSettingsBoxes(this, settingIndex + settingsOnLeftCol, this.boxDimensions[0] + settingBoxWidth + 2 * bufferLength, yOffset, settingBoxWidth, settingBoxHeight)
+            drawSettingsBoxes(settingIndex, this.boxDimensions[0] + bufferLength, yOffset, settingBoxWidth, settingBoxHeight);
+            drawSettingsBoxes(settingIndex + settingsOnLeftCol, this.boxDimensions[0] + settingBoxWidth + 2 * bufferLength, yOffset, settingBoxWidth, settingBoxHeight)
         }
         gameButtons.drawMenuSymbol(Math.floor(this.boxDimensions[0] + this.boxDimensions[2] - .8 * headerHeight), Math.floor(this.boxDimensions[1] + .25 * headerHeight), Math.floor(.5 * headerHeight));
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
