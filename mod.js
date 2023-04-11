@@ -45,6 +45,7 @@ function ModHandler() {
     };
     this.scriptSpawnTick = function() {
         if (modHandler.hideSpawn) spawnMod.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
+        if (modHandler.bot == 3) cheat.spawnTick()
     };
     this.scriptGameTick = function() {
         this.tick++;
@@ -547,7 +548,7 @@ function AI() {
         saveUsername(name);
         lastActiveTime = new Date().getTime();
         checkLastActiveTime();
-        newTeamGame();
+        setTimeout(() => newTeamGame(), 5000)
     }
     this.init = function() {
         allies = [];
@@ -561,8 +562,9 @@ function AI() {
             if (spawns.length >= allies.length) spawns.splice(allies.length, spawns.length - allies.length);
         }
         lastActiveTime = new Date().getTime()
-
-        if (land[myID] == 0 && inSpawn) {
+    }
+    this.spawnTick = function() {
+        if (land[myID] == 0 && inSpawn && 1 === mainHandler.multiplayerHandler.packetsReceived) {
             if (allyIndex < spawns.length) {
                 setTimeout(() => dataEncoder.setLocation(1E3, spawns[allyIndex].x, spawns[allyIndex].y), 1000)
             }
