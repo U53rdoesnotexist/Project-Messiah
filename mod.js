@@ -1,9 +1,10 @@
-var modHandler, latencySimulator, replayLogger, spawnMod, cheat;
+var modHandler, latencySimulator, replayLogger, spawnMod, cheat, extendedActions;
 function modConstruct(){
     modHandler = new ModHandler;
     latencySimulator = new LatencySimulator;
     replayLogger = new ReplayLogger;
     spawnMod = new SpawnMod;
+    extendedActions = new ExtendedActions;
     modHandler.updateCheatModules();
 }
 
@@ -24,7 +25,7 @@ function ModHandler() {
     this.latency = 5;
     this.font = 3;
     this.hideSpawn = false;
-    this.bot = 3;
+    this.bot = 0;
     if (this.public && (this.hideSpawn || this.bot)) this.hideSpawn = this.bot = false;
     this.lateral = false;
 
@@ -45,7 +46,7 @@ function ModHandler() {
     };
     this.scriptSpawnTick = function() {
         if (modHandler.hideSpawn) spawnMod.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
-        if (modHandler.bot == 3) cheat.spawnTick()
+        if (modHandler.bot >= 3) cheat.spawnTick()
     };
     this.scriptGameTick = function() {
         this.tick++;
@@ -92,9 +93,24 @@ function ModHandler() {
     this.updateCheatModules = function() {
         if (modHandler.bot == 0) cheat = null;
         else if (modHandler.bot == 1) cheat = new Messiah;
-        else if (modHandler.bot == 2) cheat = new Multiboxing;
-        else if (modHandler.bot == 3) cheat = new AI;
-        else if (modHandler.bot == 4) cheat = new OperationNeptune;
+        else if (modHandler.bot >= 2) cheat = new Multiboxing;
+    }
+}
+
+function ExtendedActions() {
+    var currentActionID = 1001;
+    this.init = function() {
+        /*It's modded
+        if (modHandler.modInterest || modHandler.modTax || modHandler.boatSpeed != 2 || modHandler.neutralBots || !modHandler.humanBots || modHandler.customMap || modHandler.customGamemode != 11) {
+            dataEncoder.setLocation()
+        }*/
+    }
+    this.changeActionID = function() {
+        currentActionID++;
+        if (currentActionID >= 1024) currentActionID = 1001;
+    }
+    this.getActionID = function() {
+        return currentActionID;
     }
 }
 
@@ -171,7 +187,7 @@ function ReplayLogger() {
                 tickLogs: this.tickLogs,
                 mapBase64: customJSON.isCustomJSON ? customJSON.data.mapBase64 : "",
             },
-            modeName = gamemode <= 6 ? (gamemode + 2).toString() + " Teams" : gamemode === 8 ? "VS " + nickname[1-myID] : gamemode === 9 ? "Zombie" : "Battle Royale",
+            modeName = gamemode <= 6 ? (gamemode + 2).toString() + " Teams" : gamemode === 8 ? "VS " + nicknames[1-myID] : gamemode === 9 ? "Zombie" : "Battle Royale",
             fileName = `${mapInfo.getMapName()} ${modeName} Replay.json`;
         const a = document.createElement('a');
         const type = fileName.split(".").pop();
@@ -510,11 +526,8 @@ function Messiah() {
 }
 
 function Multiboxing() {
-
-}
-
-function AI() {
     function newTeamGame() {
+        if (clientStatus >= 1) leaveGame();
         setTimeout(function () {
             nameInput.enterPreLobby();
             setTimeout(() => joinTeamGame(), 1000)
@@ -523,10 +536,10 @@ function AI() {
     function joinTeamGame() {
         const lobbyGames = lobby.getLobbyGames();
         if (lobbyGames == undefined) setTimeout(() => joinTeamGame(), 1000);
-        else if (lobbyGames.find(game => game.gameID == lobby.getGameSelected() && game.gamemode <= 6 && !game.isContest) != undefined) return 1;
+        else if (lobbyGames.find(game => game.gameID == lobby.getGameSelected() && game.gamemode <= 6 && (modHandler.bot == 4 || !game.isContest)) != undefined) return 1;
         else { 
             for (var game of lobbyGames) {
-                if (game.gamemode <= 6 && game.gameID != lobby.getGameSelected() && !game.isContest && game.timeLeft >= 2) {
+                if (game.gamemode <= 6 && game.gameID != lobby.getGameSelected() && (modHandler.bot == 4 || !game.isContest) && game.timeLeft >= 2) {
                     dataEncoder.joinGame(game.gameID);
                     lobby.setGameSelected(game.gameID);
                     return 1;
@@ -541,41 +554,62 @@ function AI() {
         }
         setTimeout(() => checkLastActiveTime() , 120E3);
     }
-    var allies, allyIndex, spawns, tag = "GΡT", lastActiveTime = new Date().getTime();
+    function centroid(id) {
+        return [(xMin[id] + xMax[id])/2, (yMin[id] + yMax[id])/2];
+    }
+    var allies, allyIndex, spawns, tag = ['', "GΡT", 'еz'][2], targetTag = "UNION", targets, targetID, lastActiveTime = new Date().getTime();
     this.main = function() {
-        const name = `Terri[${tag}]-${Math.floor(Math.random()*999)+1}`
+        const name = modHandler.bot == 2 ? `[${tag}] ${Math.floor(Math.random()*999)+1}` : modHandler.bot == 3 ? `Terri[${tag}]-${Math.floor(Math.random()*999)+1}` : modHandler.bot == 4 && `[${tag}] fk ${targetTag.toLowerCase()}`;
         nameInput.setInput(name);
         saveUsername(name);
-        lastActiveTime = new Date().getTime();
-        checkLastActiveTime();
-        setTimeout(() => newTeamGame(), 5000)
+        if (modHandler.bot >= 3) {
+            lastActiveTime = new Date().getTime();
+            checkLastActiveTime();
+            setTimeout(() => newTeamGame(), 5000)
+        }
+        
     }
     this.init = function() {
         allies = [];
-        spawns = [];
-        nickname.forEach(function (element, index) {
+        targets = [];
+        nicknames.forEach(function (element, index) {
             if (element.includes(tag)) allies.push(index);
             if (index == myID) allyIndex = allies.length -1;
+            if (modHandler.bot == 4) {
+                
+                const nickname = element.toUpperCase();
+                if (nickname.indexOf(`[${targetTag}]`) == nickname.indexOf('[') && nickname.indexOf('[') != -1) targets.push(index)
+            }
         });
-        if (freeSpawn) {
-            spawns = spawnMod.spawnGenerator();
-            if (spawns.length >= allies.length) spawns.splice(allies.length, spawns.length - allies.length);
+        if (modHandler.bot == 4) {
+            if (allyIndex >= 4 * targets.length) newTeamGame();
+            targetID = targets[Math.floor(allyIndex / 4)];
+
+        } else if ([2,3].includes(modHandler.bot)) {
+            spawns = [];
+            if (freeSpawn) {
+                spawns = spawnMod.spawnGenerator();
+                if (spawns.length >= allies.length) spawns.splice(allies.length, spawns.length - allies.length);
+            }
         }
         lastActiveTime = new Date().getTime()
     }
     this.spawnTick = function() {
-        if (land[myID] == 0 && inSpawn && 1 === mainHandler.multiplayerHandler.packetsReceived) {
+        if ([2,3].includes(modHandler.bot) && land[myID] == 0 && inSpawn && 1 === mainHandler.multiplayerHandler.packetsReceived) {
             if (allyIndex < spawns.length) {
                 setTimeout(() => dataEncoder.setLocation(1E3, spawns[allyIndex].x, spawns[allyIndex].y), 1000)
             }
+        } else if (modHandler.bot == 4 && inSpawn && spawnTime - 1 <= mainHandler.multiplayerHandler.packetsReceived) {
+            const direction = allyIndex % 4, offsets = [[1, 0], [3, 1], [2, 3], [0, 2]][direction];
+            dataEncoder.setLocation(1E3, xMin[targetID] + offsets[0], yMin[targetID] + offsets[1]);
         }
     }
     this.update = function() {
-        leaveGame();
-        newTeamGame();
+        if (modHandler.bot == 3) newTeamGame()
+        else if (modHandler.bot == 4) {
+            if (!isAlive[myID] || !isAlive[targetID] || modHandler.density(targetID) >= 150 || mainHandler.getTicksElapsed() >= 1000 || modHandler.getDistance(centroid(targetID)[0] - centroid(myID)[0], centroid(targetID)[1] - centroid(myID)[1]) >= 30) newTeamGame()
+            if (modHandler.cycle == 1 && modHandler.tick == 22) dataEncoder.attack(500, myID);
+            if (modHandler.tick % 20 == 0 && modHandler.density(myID) >= 1.5) dataEncoder.attack(800, targetID)
+        }
     }
-}
-
-function OperationNeptune() {
-
 }

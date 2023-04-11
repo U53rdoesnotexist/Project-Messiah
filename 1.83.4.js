@@ -1203,7 +1203,7 @@ function BoatSpeed() {
                         boatY = Math.floor(prevClientHeight * (boatY + .48 - topYBound) / (bottomYBound - topYBound));
                         mainCanvasCtx.font = fontWeightBold + fontSize + fontSizeArial;
                         mainCanvasCtx.fillStyle = blackRGB;
-                        mainCanvasCtx.fillText(nickname[authorID] + (typeof(modHandler) == "object" && modHandler.font >= 2 ? ` (${authorID})` : ""), boatX, boatY);
+                        mainCanvasCtx.fillText(nicknames[authorID] + (typeof(modHandler) == "object" && modHandler.font >= 2 ? ` (${authorID})` : ""), boatX, boatY);
                         var troopSize = Math.floor(.57 * fontSize);
                         if (6 <= troopSize) {
                             authorID = attacks.getRemainingTroopsFromIndex(authorID, attacks.findAttackIndexFromBoatID(authorID, boatIDs[boatIndex]));
@@ -2677,11 +2677,11 @@ function Announcements() {
         if (0 === messageType) {
             statisticNumbers.numbers[id < playerCount ? 4 : 3]++;
             gameMessages.set(id, 0);
-            announce(isZoom ? 100 : 160, "You conquered " + nickname[id] + ".", 0, id, "rgb(10,220,10)", blackMoreOpaque, -1, false);
+            announce(isZoom ? 100 : 160, "You conquered " + nicknames[id] + ".", 0, id, "rgb(10,220,10)", blackMoreOpaque, -1, false);
         } else if (1 === messageType) {
             removePendingAnnouncement(50, maxEntities);
             gameMessages.set(id, 1);
-            announce(360, "You were conquered by " + nickname[id] + ".", 0, id, "rgb(255,40,40)", blackMoreOpaque, -1, true);
+            announce(360, "You were conquered by " + nicknames[id] + ".", 0, id, "rgb(255,40,40)", blackMoreOpaque, -1, true);
             autoCamera.hoverTo(id, 2700, true, 0);
         } else if (2 === messageType) {
             gameMessages.set(id, 2);
@@ -2689,7 +2689,7 @@ function Announcements() {
             autoCamera.hoverTo(id, 2700, true, 0);
         } else if (3 === messageType) {
             gameMessages.set(id, 2);
-            announce(0, nickname[id] + " won the game.", 0, id, whiteRGB2, blackMoreOpaque, -1, true);
+            announce(0, nicknames[id] + " won the game.", 0, id, whiteRGB2, blackMoreOpaque, -1, true);
             autoCamera.hoverTo(id, 2700, true, 0);
         } else if (4 === messageType) {
             playersIngame--;
@@ -2698,8 +2698,8 @@ function Announcements() {
         } else if (5 === messageType) {
             if (2 !== playerStatus[id] && playerActions.isHuman(myID)) {
                 removeExcessSameMessages(1, 5);
-                if (infoRenderer.breakNonAggression(id)) announce(180, nickname[id] + " has broken the non-aggression pact and invades you!", 1, id, getColorRGB(255, 200, 180), blackMoreOpaque, -1, true);
-                else announce(180, nickname[id] + " is attacking you!", 1, id, "rgb(255,70,10)", blackMoreOpaque, -1, true);
+                if (infoRenderer.breakNonAggression(id)) announce(180, nicknames[id] + " has broken the non-aggression pact and invades you!", 1, id, getColorRGB(255, 200, 180), blackMoreOpaque, -1, true);
+                else announce(180, nicknames[id] + " is attacking you!", 1, id, "rgb(255,70,10)", blackMoreOpaque, -1, true);
             }
         } else if (18 === messageType) announce(255, "Choose your start position!", 18, 0, whiteRGB2, blackMoreOpaque, -1, false);
         else if (21 === messageType) announce(220, "You surrendered!", messageType, 0, "rgb(255,40,40)", blackMoreOpaque, -1, false);
@@ -2715,18 +2715,18 @@ function Announcements() {
     };
     this.resultBR = function(winnerID) {
         gameMessages.set(winnerID, 2);
-        if (100 > playerCount) announce(0, nickname[winnerID] + " won the game.", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, true)
-        else announce(0, nickname[winnerID] + " has been immortalized!", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, true);
+        if (100 > playerCount) announce(0, nicknames[winnerID] + " won the game.", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, true)
+        else announce(0, nicknames[winnerID] + " has been immortalized!", 3, winnerID, whiteRGB2, blackMoreOpaque, -1, true);
         autoCamera.hoverTo(winnerID, 2700, true, 0)
     };
     this.newEmojiMessage = function(authorID, targetID, emojiID) {
-        if (authorID === myID) announce(175, " Message to " + nickname[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, true)
+        if (authorID === myID) announce(175, " Message to " + nicknames[targetID] + ": ", 1E3 + emojiID, targetID, getColorRGB(200, 255, 210), blackMoreOpaque, -1, true)
         else this.receivedEmojiMessage(authorID, emojiID)
         if (typeof(modHandler) == "object") replayLogger.addLogs(9, authorID, targetID, emojiID, 0, 0)
     };
     this.receivedEmojiMessage = function(authorID, emojiID) {
         var aIndex, emoteCount = 0;
-        announce(175, nickname[authorID] + ": ", 1E3 + emojiID, authorID, whiteRGB2, "rgba(5,60,25,0.9)", -1, true);
+        announce(175, nicknames[authorID] + ": ", 1E3 + emojiID, authorID, whiteRGB2, "rgba(5,60,25,0.9)", -1, true);
         for (aIndex = 0; aIndex < pendingAnnouncements.length; aIndex++)
             if (1E3 <= pendingAnnouncements[aIndex].id && pendingAnnouncements[aIndex].player === authorID) {
                 emoteCount++;
@@ -2776,17 +2776,17 @@ function Announcements() {
     this.nonAggression = function(friendID, ratifier) {
         if (ratifier === 0) {
             if (removePendingAnnouncement(50, friendID)) {
-                announce(128, "You signed a non-aggression pact with " + nickname[friendID] + ".", 52, friendID, getColorRGB(180, 255, 180), blackMoreOpaque, -1, true);
+                announce(128, "You signed a non-aggression pact with " + nicknames[friendID] + ".", 52, friendID, getColorRGB(180, 255, 180), blackMoreOpaque, -1, true);
                 infoRenderer.showIcon(friendID, 2, 255);
             } else {
-                announce(384, "You asked " + nickname[friendID] + " to sign a non-aggression pact.", 51, friendID, getColorRGB(210, 210, 255), blackMoreOpaque, -1, true);
+                announce(384, "You asked " + nicknames[friendID] + " to sign a non-aggression pact.", 51, friendID, getColorRGB(210, 210, 255), blackMoreOpaque, -1, true);
             }
         } else {
             if (removePendingAnnouncement(51, friendID)) {
-                announce(128, nickname[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, true);
+                announce(128, nicknames[friendID] + " accepted the non-aggression pact.", 52, friendID, whiteRGB2, "rgba(60,120,10,0.9)", -1, true);
                 infoRenderer.showIcon(friendID, 2, 255);
             } else {
-                announce(384, nickname[friendID] + " requests a non-aggression pact.", 50, friendID, whiteRGB2, "rgba(90,90,90,0.9)", -1, true);
+                announce(384, nicknames[friendID] + " requests a non-aggression pact.", 50, friendID, whiteRGB2, "rgba(90,90,90,0.9)", -1, true);
                 infoRenderer.showIcon(friendID, 2, 96);
             }
         }
@@ -2807,12 +2807,12 @@ function Announcements() {
             message += "asked ";
             fIndex = getColorRGB(210, 255, 210)
         }
-        if (friends.length > 1) announce(230, message + friends.length + " players to attack " + nickname[targetID] + ".", 66, targetID, fIndex, blackMoreOpaque, -1, false);
-        else announce(230, message + nickname[friends[0]] + " to attack " + nickname[targetID] + ".", 66, friends[0], fIndex, blackMoreOpaque, targetID, true);
+        if (friends.length > 1) announce(230, message + friends.length + " players to attack " + nicknames[targetID] + ".", 66, targetID, fIndex, blackMoreOpaque, -1, false);
+        else announce(230, message + nicknames[friends[0]] + " to attack " + nicknames[targetID] + ".", 66, friends[0], fIndex, blackMoreOpaque, targetID, true);
     };    
     this.requestedToAttack = function(requesterID, targetID) {
-        if (land[requesterID] > 2 * land[myID]) announce(230, nickname[requesterID] + " orders you to attack " + nickname[targetID] + "!", 66, requesterID, whiteRGB2, "rgba(90,50,5,0.9)", targetID, true)
-        else announce(230, nickname[requesterID] + " asks you to attack " + nickname[targetID] + ".", 66, requesterID, whiteRGB2, "rgba(75,65,5,0.9)", targetID, true)
+        if (land[requesterID] > 2 * land[myID]) announce(230, nicknames[requesterID] + " orders you to attack " + nicknames[targetID] + "!", 66, requesterID, whiteRGB2, "rgba(90,50,5,0.9)", targetID, true)
+        else announce(230, nicknames[requesterID] + " asks you to attack " + nicknames[targetID] + ".", 66, requesterID, whiteRGB2, "rgba(75,65,5,0.9)", targetID, true)
     };
     this.removePendingAnnouncement = function(messageID, playerID) {
         removePendingAnnouncement(messageID, playerID)
@@ -2824,13 +2824,13 @@ function Announcements() {
         announce(80, "Boosting is disallowed in the first minute!", 9, 0, whiteRGB2, blackMoreOpaque, -1, false)
     };
     this.giveDonation = function(amount, targetID) {
-        if (2 !== playerStatus[myID]) announce(200, "You exported " + attackBars.splitNumber(amount) + " resource" + (1 === amount ? "" : "s") + " to " + nickname[targetID] + ".", 30, targetID, "rgb(190,255,190)", blackMoreOpaque, -1, true)
+        if (2 !== playerStatus[myID]) announce(200, "You exported " + attackBars.splitNumber(amount) + " resource" + (1 === amount ? "" : "s") + " to " + nicknames[targetID] + ".", 30, targetID, "rgb(190,255,190)", blackMoreOpaque, -1, true)
     };
     this.receiveDonation = function(amount, targetID) {
         if (2 !== playerStatus[myID]) {
             var isBot = 2 === playerStatus[targetID] || targetID >= playerCount;
             var announcementsCount = 200 - 20 * pendingAnnouncements.length;
-            announce(80 > announcementsCount ? 80 : announcementsCount, (isBot ? "A bot" : nickname[targetID]) + " supported you with " + attackBars.splitNumber(amount) + " resource" + (1 === amount ? "" : "s") + ".", 31, targetID, blackRGB, isBot ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, true);
+            announce(80 > announcementsCount ? 80 : announcementsCount, (isBot ? "A bot" : nicknames[targetID]) + " supported you with " + attackBars.splitNumber(amount) + " resource" + (1 === amount ? "" : "s") + ".", 31, targetID, blackRGB, isBot ? "rgba(205,205,205,0.9)" : "rgba(205,255,205,0.9)", -1, true);
             removeExcessSameMessages(31, isZoom ? 4 : 6)
         }
     };
@@ -2844,11 +2844,11 @@ function Announcements() {
         var authorID = latestDeaths[deathType];
         latestDeathCounts[deathType] = 0;
         if (1 === message) {
-            message = nickname[authorID] + monoLeaveLabels[deathType];
-            if (0 === deathType) message += nickname[latestKillers[deathType]] + "."
+            message = nicknames[authorID] + monoLeaveLabels[deathType];
+            if (0 === deathType) message += nicknames[latestKillers[deathType]] + "."
             announce(deathAnnouncementTime[deathType], message, 7, latestKillers[deathType], whiteRGB2, blackMoreOpaque, -1, true)
         } else if (2 <= message) {
-            message = nickname[authorID] + " and " + (message - 1) + " other player" + (2 === message ? "" : "s") + pluralLeaveLabels[deathType];
+            message = nicknames[authorID] + " and " + (message - 1) + " other player" + (2 === message ? "" : "s") + pluralLeaveLabels[deathType];
             announce(deathAnnouncementTime[deathType], message, 7, authorID, whiteRGB2, blackMoreOpaque, -1, false);
         }
     };
@@ -2874,7 +2874,7 @@ function Announcements() {
             if (128 <= tickCounter) {
                 for (var specialMessageQuota = 5, aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
                     if (1 === playerStatus[aliveEntities[aliveIndex]] && 0 < specialMessageQuota--) {
-                        announce(240, nickname[aliveEntities[aliveIndex]] + " joined the game.", 1, aliveEntities[aliveIndex], blackRGB, "rgba(255,255,255,0.75)", -1, true);
+                        announce(240, nicknames[aliveEntities[aliveIndex]] + " joined the game.", 1, aliveEntities[aliveIndex], blackRGB, "rgba(255,255,255,0.75)", -1, true);
                     }
                 }    
             }
@@ -3422,7 +3422,7 @@ function AttackBars() {
         myAttacks[aIndex].canvasCtx.fillStyle = 0 !== myAttacks[aIndex].id ? "rgba(33,33,120,0.83)" : myAttacks[aIndex].targetID === maxEntities ? "rgba(88,88,88,0.83)" : myAttacks[aIndex].targetID < playerCount ? "rgba(100,70,33,0.83)" : "rgba(33,100,80,0.83)";
         myAttacks[aIndex].canvasCtx.fillRect(0, 0, varBarCanvasWidth, barCanvasHeight);
         drawWhiteRectBorder(myAttacks[aIndex].canvasCtx, varBarCanvasWidth, barCanvasHeight);
-        if (varBarCanvasWidth > baseBarCanvasWidth + 2 * barCanvasHeight) myAttacks[aIndex].canvasCtx.fillRect(varBarCanvasWidth - baseBarCanvasWidth - barCanvasHeight, 0, 1, barCanvasHeight), myAttacks[aIndex].canvasCtx.fillText(nickname[myAttacks[aIndex].targetID], Math.floor((varBarCanvasWidth - baseBarCanvasWidth) / 2), Math.floor(.57 * barCanvasHeight));
+        if (varBarCanvasWidth > baseBarCanvasWidth + 2 * barCanvasHeight) myAttacks[aIndex].canvasCtx.fillRect(varBarCanvasWidth - baseBarCanvasWidth - barCanvasHeight, 0, 1, barCanvasHeight), myAttacks[aIndex].canvasCtx.fillText(nicknames[myAttacks[aIndex].targetID], Math.floor((varBarCanvasWidth - baseBarCanvasWidth) / 2), Math.floor(.57 * barCanvasHeight));
         var yPos = 0 !== myAttacks[aIndex].id ? 0 : barCanvasHeight;
         myAttacks[aIndex].canvasCtx.fillText(attackBars.splitNumber(myAttacks[aIndex].remaining), Math.floor(varBarCanvasWidth - baseBarCanvasWidth / 2 - yPos), Math.floor(.57 * barCanvasHeight));
         myAttacks[aIndex].canvasCtx.fillStyle = whiteMoreOpaque;
@@ -3465,7 +3465,7 @@ function AttackBars() {
         attackEntry.canvas = document.createElement("canvas");
         mapBaseCanvasCtx.font = fontStyle;
         var varBarCanvasWidth = baseBarCanvasWidth;
-        if (attackEntry.targetID < maxEntities && 0 === attackEntry.id) varBarCanvasWidth += Math.floor(mapBaseCanvasCtx.measureText(nickname[attackEntry.targetID] + "000").width);
+        if (attackEntry.targetID < maxEntities && 0 === attackEntry.id) varBarCanvasWidth += Math.floor(mapBaseCanvasCtx.measureText(nicknames[attackEntry.targetID] + "000").width);
         varBarCanvasWidth += barCanvasHeight;
         0 === attackEntry.id && (varBarCanvasWidth += barCanvasHeight);
         attackEntry.canvas.width = varBarCanvasWidth;
@@ -3728,7 +3728,7 @@ function GameMessages() {
         return Math.floor(mainCanvasCtx.measureText(text).width)
     };
     this.set = function(id, descriptionType) {
-        this.startGameMessage(nickname[id], descriptionType, 1, 0 === descriptionType ? 3 : 7)
+        this.startGameMessage(nicknames[id], descriptionType, 1, 0 === descriptionType ? 3 : 7)
     };
     this.startGameMessage = function(text, descriptionType, messageColor, fadeTime) {
         var messageWidth = this.measureText(text + "00", messageFontStyles[1]);
@@ -4779,7 +4779,7 @@ function GameLeaderboard() {
     function fillPlayerLabels(yPos, order, id) {
         leaderboard.fillText(orderLabels[order], rankXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow));
         if (1 === playerStatus[id]) leaderboard.font = fontStyleItalic + gameBoardFont
-        leaderboard.fillText(extendedIDs[id] === id ? nickname[id] : shorternedNames[extendedIDs[id] % maxEntities], nameXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow));
+        leaderboard.fillText(extendedIDs[id] === id ? nicknames[id] : shorternedNames[extendedIDs[id] % maxEntities], nameXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow));
         if (0 !== playerStatus[id]) leaderboard.font = gameBoardFont
     }
 
@@ -4827,10 +4827,10 @@ function GameLeaderboard() {
         for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
             orderLabels[idIndex] = idIndex + 1 + ".";
             extendedIDs[idIndex] = idIndex;
-            nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(nickname[idIndex]).width); 
+            nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(nicknames[idIndex]).width); 
             if (nicknameWidths[idIndex] > T) {
-                var extendedNickname = nickname[idIndex];
-                for (O = nickname[idIndex].length - 1; 1 <= O && !(extendedNickname = extendedNickname.substring(0, O), nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(extendedNickname + "...").width), nicknameWidths[idIndex] <= T); O--);
+                var extendedNickname = nicknames[idIndex];
+                for (O = nicknames[idIndex].length - 1; 1 <= O && !(extendedNickname = extendedNickname.substring(0, O), nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(extendedNickname + "...").width), nicknameWidths[idIndex] <= T); O--);
                 extendedNickname += "...";
                 shorternedNames.push(extendedNickname);
                 extendedIDs[idIndex] = maxEntities + extendedNameCount++
@@ -4864,7 +4864,7 @@ function GameLeaderboard() {
         if (!S) {
             leaderboard.font = gameBoardFont;
             for (var idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
-                nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(extendedIDs[idIndex] === idIndex ? nickname[idIndex] : shorternedNames[extendedIDs[idIndex] % maxEntities]).width);
+                nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(extendedIDs[idIndex] === idIndex ? nicknames[idIndex] : shorternedNames[extendedIDs[idIndex] % maxEntities]).width);
             }
             drawGameLeaderboard()
         }
@@ -8853,7 +8853,7 @@ function InfoRenderer() {
         infoCanvasCtx.textBaseline = middleAlign;
         infoCanvasCtx.imageSmoothingEnabled = true
     }
-
+    
     function renderEntityLabels() {
         needsDrawImage = false;
         canvasScale = 1;
@@ -8873,7 +8873,7 @@ function InfoRenderer() {
                 infoCanvasCtx.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
 
                 var fontColor = fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]],
-                    textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? attackBars.splitNumber(troops[idIndex]): nickname[idIndex];
+                    textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? attackBars.splitNumber(troops[idIndex]): nicknames[idIndex];
                 if (typeof(modHandler) == 'object' && modHandler.font >= 1) {
                     if (modHandler.font == 3) {
                         if (modHandler.density(idIndex) <= 0.5 || idIndex < playerCount && modHandler.density(idIndex) <= (divideFloor(mainHandler.getTicksElapsed(), 100) >= 5 ? 1.5 : 4)) {
@@ -8937,7 +8937,7 @@ function InfoRenderer() {
                 var getFontSize = Math.floor(fontScaleFactor * fontSize);
                 if (getFontSize >= minFontSize) {
                     infoCanvasCtx.font = fontWeightBold + getFontSize + fontSizeArial;
-                    textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? nickname[idIndex] + (typeof(modHandler) == 'object' && modHandler.font >= 2 ? ` (${idIndex})` : "") : attackBars.splitNumber(troops[idIndex]);
+                    textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? nicknames[idIndex] + (typeof(modHandler) == 'object' && modHandler.font >= 2 ? ` (${idIndex})` : "") : attackBars.splitNumber(troops[idIndex]);
                     infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY + Math.floor((typeof(modHandler) == "object" && modHandler.font >= 1 ? 1 : .78) * fontSize))
                 }
             }
@@ -9035,7 +9035,7 @@ function InfoRenderer() {
             entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap) + (typeof(modHandler) == "object" && modHandler.font >= 2) ? ` (${maxEntities - 1})` : "").width);
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
-                entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nickname[entityIndex]).width);
+                entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nicknames[entityIndex]).width);
                 entityLabelScaleY[entityIndex] = entityLabelScale < entityLabelScaleX[entityIndex] ? entityLabelScale : entityLabelScaleX[entityIndex];
             }
         }
@@ -9276,30 +9276,30 @@ function NickNames() {
     this.generate = function() {
         var entityIndex, randomValue;
         if (customJSON.isCustomJSON && customJSON.data.nicknames && !customJSON.data.replay) {
-            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = customJSON.data.nicknames[entityIndex % entityCount]
+            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nicknames[entityIndex] = customJSON.data.nicknames[entityIndex % entityCount]
         } else if (9 === gamemode) {
             randomValue = fakeRandom.random();
             var humanAlliesCount = playerCount + zombieSettings.helperBotCount;
-            for (entityIndex = humanAlliesCount - 1; entityIndex >= playerCount; entityIndex--) nickname[entityIndex] = "[Bot] " + humanNames[(entityIndex + randomValue) % humanNames.length];
-            for (entityIndex = humanAlliesCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = "[Zombie] " + humanNames[(entityIndex + randomValue) % humanNames.length]
+            for (entityIndex = humanAlliesCount - 1; entityIndex >= playerCount; entityIndex--) nicknames[entityIndex] = "[Bot] " + humanNames[(entityIndex + randomValue) % humanNames.length];
+            for (entityIndex = humanAlliesCount; entityIndex < maxEntities; entityIndex++) nicknames[entityIndex] = "[Zombie] " + humanNames[(entityIndex + randomValue) % humanNames.length]
         } else if (singleplayer) {
             randomValue = fakeRandom.random();
-            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = countryNames[(entityIndex + randomValue) % maxEntities];
+            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nicknames[entityIndex] = countryNames[(entityIndex + randomValue) % maxEntities];
         } else {
             randomValue = fakeRandom.random();
-            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nickname[entityIndex] = "[Bot] " + humanNames[(entityIndex + randomValue) % humanNames.length]
+            for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) nicknames[entityIndex] = "[Bot] " + humanNames[(entityIndex + randomValue) % humanNames.length]
         }
     };
     this.updateNicknames = function() {
         var entityIndex;
         if (moreSettings.highResolution && !singleplayer) {
-            tempNickname = Array(playerCount);
+            tempNicknames = Array(playerCount);
             var medianValue = fakeRandom.getMedian();
             for (entityIndex = 0; entityIndex < playerCount; entityIndex++) {
-                tempNickname[entityIndex] = nickname[entityIndex];
-                nickname[entityIndex] = humanNames[(entityIndex + medianValue) % humanNames.length];
+                tempNicknames[entityIndex] = nicknames[entityIndex];
+                nicknames[entityIndex] = humanNames[(entityIndex + medianValue) % humanNames.length];
             }
-            nickname[myID] = tempNickname[myID]
+            nicknames[myID] = tempNicknames[myID]
         }
     }
 }
@@ -9359,11 +9359,11 @@ function DiplomacyHandler() {
         return true
     }
 }
-var nickname, tempNickname, isAlive, xMin, yMin, xMax, yMax, land, tempLand, troops, potentialBorderAdvances, landBorderPixels, waterBorderPixels, mountainBorderPixels, playerStatus;
+var nicknames, tempNicknames, isAlive, xMin, yMin, xMax, yMax, land, tempLand, troops, potentialBorderAdvances, landBorderPixels, waterBorderPixels, mountainBorderPixels, playerStatus;
 
 function setupPlayerInfoArrays(param_playerInfo) {
     var idIndex;
-    tempNickname = nickname = Array(maxEntities);
+    tempNicknames = nicknames = Array(maxEntities);
     isAlive = new Uint8Array(maxEntities);
     xMin = new Uint16Array(maxEntities);
     yMin = new Uint16Array(maxEntities);
@@ -9378,7 +9378,7 @@ function setupPlayerInfoArrays(param_playerInfo) {
     mountainBorderPixels = Array(maxEntities);
     playerStatus = new Uint8Array(maxEntities);
     for (idIndex = param_playerInfo.length - 1; 0 <= idIndex; idIndex--) {
-        nickname[idIndex] = param_playerInfo[idIndex].name;
+        nicknames[idIndex] = param_playerInfo[idIndex].name;
         playerStatus[idIndex] = param_playerInfo[idIndex].status;
     }
 }
@@ -9433,7 +9433,7 @@ function WsManager() {
     function isCreatedAndConnectingOrOpen(l) {
         return websocketsInfo[l].wsCreated && websockets[l].isConnectingOrOpen()
     }
-    this.serverCount = 4;
+    this.serverCount = 5;
     this.gameServerCount = this.serverCount - 1;
     this.terriWsCount = this.serverCount + this.gameServerCount;
     var websockets;
@@ -9493,6 +9493,7 @@ function WsManager() {
         }
         else if (6 === firstAction) dataEncoder.uploadError(remote)
         else if (7 === firstAction) dataEncoder.discordVote(remote)
+        else if (8 === firstAction) extendedActions.confirmClient()
     };
     this.isOpen = function(l) {
         return websocketsInfo[l].wsCreated && websockets[l].isOpen()
@@ -10760,7 +10761,7 @@ function MoreSettings() {
                         if (1 === settingsArray[sIndex].id) {
                             if (wsManager.terriWsCount === moreSettings.selectedRemote + 1 ) moreSettings.selectedRemote = 1
                             else moreSettings.selectedRemote++;
-                            settingsArray[1].name = "Lobby " + (moreSettings.selectedRemote >= wsManager.serverCount ? `${moreSettings.selectedRemote} (${(moreSettings.selectedRemote - 1)% 3 + 1}B)` : moreSettings.selectedRemote);
+                            settingsArray[1].name = "Lobby " + (moreSettings.selectedRemote >= wsManager.serverCount ? `${moreSettings.selectedRemote} (${(moreSettings.selectedRemote - 1)% 4 + 1}B)` : moreSettings.selectedRemote);
                             mainHandler.canvasDirty = true;
                         } else if (2 === settingsArray[sIndex].id) {
                             moreSettings.highResolution = !moreSettings.highResolution;
@@ -11924,13 +11925,13 @@ function TeamColors() {
             playerID = playerCount - 1;
         loop: for (; 0 <= playerID; playerID--) {
             var tempPlayerID = playerID;
-            var bracketIndex = tempNickname[tempPlayerID].indexOf("[");
+            var bracketIndex = tempNicknames[tempPlayerID].indexOf("[");
 
             if (0 > bracketIndex) clanTag = null, bracketIndex = null;
             else {
-                var closeBracketIndex = tempNickname[tempPlayerID].indexOf("]");
+                var closeBracketIndex = tempNicknames[tempPlayerID].indexOf("]");
                 if (1 < closeBracketIndex - bracketIndex && 8 >= closeBracketIndex - bracketIndex) {
-                    var clanTag = tempNickname[tempPlayerID].substring(bracketIndex + 1, closeBracketIndex).toUpperCase().trim();
+                    var clanTag = tempNicknames[tempPlayerID].substring(bracketIndex + 1, closeBracketIndex).toUpperCase().trim();
                 } 
                 else 
                 clanTag = null;
