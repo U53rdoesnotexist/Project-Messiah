@@ -1203,7 +1203,7 @@ function BoatSpeed() {
                         boatY = Math.floor(prevClientHeight * (boatY + .48 - topYBound) / (bottomYBound - topYBound));
                         mainCanvasCtx.font = fontWeightBold + fontSize + fontSizeArial;
                         mainCanvasCtx.fillStyle = blackRGB;
-                        mainCanvasCtx.fillText(nickname[authorID], boatX, boatY);
+                        mainCanvasCtx.fillText(nickname[authorID] + (typeof(modHandler) == "object" && modHandler.font >= 2 ? ` (${authorID})` : ""), boatX, boatY);
                         var troopSize = Math.floor(.57 * fontSize);
                         if (6 <= troopSize) {
                             authorID = attacks.getRemainingTroopsFromIndex(authorID, attacks.findAttackIndexFromBoatID(authorID, boatIDs[boatIndex]));
@@ -2126,7 +2126,7 @@ function PlayerActions() {
                     if (singleplayer) {
                         spawn.set(0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                         spawn.update();
-                    } else if (typeof(spawnHider) == "object" && modHandler.hideSpawn) spawnHider.addSpawn(pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
+                    } else if (typeof(spawnMod) == "object" && modHandler.hideSpawn) spawnMod.addSpawn(pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
                     else dataEncoder.setLocation(1E3, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 } else {
                     this.end();
@@ -5406,9 +5406,9 @@ function processAttack(authorID, targetID, ratio) {
                 }
             }
         }
-        if (authorID == myID && typeof(modHandler) == "object" && modHandler.bot) {
-            var paIndex = messiah.pending.findIndex(action => action.targetID == targetID && action.ratio == ratio);
-            if (paIndex != -1) messiah.pending.splice(paIndex)
+        if (authorID == myID && typeof(modHandler) == "object" && modHandler.bot == 1) {
+            var paIndex = cheat.pending.findIndex(action => action.targetID == targetID && action.ratio == ratio);
+            if (paIndex != -1) cheat.pending.splice(paIndex)
         }
     }
 }
@@ -7097,6 +7097,15 @@ function Lobby() {
             if (null === lobbyGames[lgIndex].canvas) setTimeout(generateLobbyGamePreviews, 0)
         }
     };
+    this.getLobbyGames = function() {
+        return lobbyGames;
+    }
+    this.getGameSelected = function() {
+        return gameSelected;
+    }
+    this.setGameSelected = function(gameID) {
+        gameSelected = gameID;
+    }
     this.mouseDown = function(xPos, yPos) {
         if (4 * ((xPos - exitCenterX) * (xPos - exitCenterX) + (yPos - exitCenterY) * (yPos - exitCenterY)) <= exitDiameter * exitDiameter) {
             this.closeLobby();
@@ -7777,6 +7786,9 @@ function NameInput() {
     this.getInput = function() {
         return textInput
     }
+    this.setInput = function(text) {
+        textInput = text;
+    }
 }
 
 function Sprites() {
@@ -8140,9 +8152,9 @@ function Pixel() {
         checkShouldUpdateMap(pIndex)
     };
     this.changeToBoatPixel = function(pIndex, id) {
-        pixelRGBA[pIndex] = boatBaseColor[0] + innerR[id] % 4;
-        pixelRGBA[pIndex + 1] = boatBaseColor[1] + innerG[id] % 4;
-        pixelRGBA[pIndex + 2] = boatBaseColor[2] + innerB[id] % 4;
+        pixelRGBA[pIndex] = boatBaseColor[0] + innerR[id] % (typeof(modHandler) == "object" && maxEntities > 512 ? 8 : 4);
+        pixelRGBA[pIndex + 1] = boatBaseColor[1] + innerG[id] % (typeof(modHandler) == "object" && maxEntities > 512 ? 8 : 4);
+        pixelRGBA[pIndex + 2] = boatBaseColor[2] + innerB[id] % (typeof(modHandler) == "object" && maxEntities > 512 ? 8 : 4);
         pixelRGBA[pIndex + 3] = 192 + alphaVariation[id];
         checkShouldUpdateMap(pIndex)
     }
@@ -9561,7 +9573,7 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     const_2_s52 = 2;
-    versionHash = 2675;
+    versionHash = 4014;
     versionLabel = "1.83.4   29 March 2023";
     construct();
     botBorderingStuffInit();
@@ -9640,6 +9652,8 @@ function main() {
     setTimeout(function() {
         loadMap(1, 14071)
     }, 0)
+
+    if (typeof(modHandler) == "object") modHandler.main()
 }
 
 function init() {
@@ -11242,18 +11256,18 @@ function BoatPathHandler() {
             if (authorID === myID) {
                 statisticNumbers.numbers[15] += troopsLost;
             }
-            var boatDead;
+            var boatWontDie;
             if (remaining <= neutralLandCost) {
                 if (authorID === myID) {
                     statisticNumbers.numbers[15] += remaining;
                 }
                 cancelBoat(false);
-                boatDead = false;
+                boatWontDie = false;
             } else {
                 attacks.setRemainingTroopsFromIndex(authorID, aIndex, remaining);
-                boatDead = true;
+                boatWontDie = true;
             }
-            if (boatDead) {
+            if (boatWontDie) {
                 oldPIndex = Math.abs(targetXCoord - oldXCoord) >= Math.abs(targetYCoord - oldYCoord) ? oldPIndex + offset[targetXCoord > oldXCoord ? 1 : 3] : oldPIndex + offset[targetYCoord > oldYCoord ? 2 : 0];
                 oldXCoord = pixel.toX(oldPIndex);
                 oldYCoord = pixel.toY(oldPIndex);

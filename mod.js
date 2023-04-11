@@ -1,10 +1,10 @@
-var modHandler, latencySimulator, replayLogger, spawnHider, messiah;
+var modHandler, latencySimulator, replayLogger, spawnMod, cheat;
 function modConstruct(){
     modHandler = new ModHandler;
     latencySimulator = new LatencySimulator;
     replayLogger = new ReplayLogger;
-    spawnHider = new SpawnHider;
-    messiah = new Messiah;
+    spawnMod = new SpawnMod;
+    modHandler.updateCheatModules();
 }
 
 function ModHandler() {
@@ -24,24 +24,27 @@ function ModHandler() {
     this.latency = 5;
     this.font = 3;
     this.hideSpawn = false;
-    this.bot = false;
-    if (this.public && this.hideSpawn && this.bot) this.hideSpawn = this.bot = false;
+    this.bot = 3;
+    if (this.public && (this.hideSpawn || this.bot)) this.hideSpawn = this.bot = false;
     this.lateral = false;
 
+    this.main = function() {
+        if (this.bot >= 3) cheat.main();
+    }
     this.scriptGameInit = function() {
         this.cycle = 1;
         this.tick = 0;
         if (!singleplayer && this.public) {
             this.font = false;
             this.hideSpawn = false;
-            this.bot = false;
+            this.bot = 0;
         }
-        if (!singleplayer) spawnHider.init();
-        if (this.bot) messiah.init();
+        if (!singleplayer) spawnMod.init();
+        if (this.bot) cheat.init();
         replayLogger.init()
     };
     this.scriptSpawnTick = function() {
-        if (modHandler.hideSpawn) spawnHider.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
+        if (modHandler.hideSpawn) spawnMod.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
     };
     this.scriptGameTick = function() {
         this.tick++;
@@ -50,13 +53,16 @@ function ModHandler() {
             this.tick %= 100;
         }
         if (this.latency) latencySimulator.update();
-        if (this.bot && land[myID] && playerStatus[myID] != 2) messiah.update()
+        if (this.bot) cheat.update()
     };
     this.density = function(id) {
         return troops[id] / land[id]
     };
     this.getDistance = function(xOffset, yOffset) {
         return (xOffset**2 + yOffset**2) ** 0.5
+    };
+    this.getTravelDistance = function(xOffset, yOffset) {
+        return Math.abs(xOffset) + Math.abs(yOffset);
     };
     this.getSpeed = function(id) {
         return land[id] < 1E3 ? 1 / 4 : land[id] < 1E4 ? 1 / 3 : land[id] < 6E4 ? 1 / 2 : land[id] < 16E4 ? 1 : land[id] < 32E4 ? 2 : 3
@@ -81,6 +87,13 @@ function ModHandler() {
         const discordRegex = /discord\.gg\/[a-zA-Z0-9]+/gi;
         const customText = 'discord.gg/3aF93G23rV';
         return link.replace(discordRegex, customText);
+    }
+    this.updateCheatModules = function() {
+        if (modHandler.bot == 0) cheat = null;
+        else if (modHandler.bot == 1) cheat = new Messiah;
+        else if (modHandler.bot == 2) cheat = new Multiboxing;
+        else if (modHandler.bot == 3) cheat = new AI;
+        else if (modHandler.bot == 4) cheat = new OperationNeptune;
     }
 }
 
@@ -187,7 +200,21 @@ function ReplayLogger() {
     };
 }
 
-function SpawnHider() {
+function SpawnMod() {
+    function penalty(spawnX, spawnY) {
+        var pen = 0, range = (currentMapID == 1 ? 65 : currentMapID == 3 ? 50 : [4, 5, 6].includes(currentMapID) ? 70 : [8, 12, 14].includes(currentMapID) ? 55 : [10, 13].includes(currentMapID) ? 45 : Math.round((currentMapHeight * currentMapWidth / entityCount) ** 0.5));
+        for (let x = spawnX - range; x <= spawnX + range; x++) {
+            for (let y = spawnY - range; y <= spawnY + range; y++) {
+                if (!pixel.isNeutral(pixel.toIndex(x, y))) {
+                    let dist = modHandler.getDistance(x - spawnX, y - spawnY);
+                    pen += (dist >= range ? 0 : (range - dist) ** 0.67)
+                }
+            }
+        }
+        if ([1, 4, 13].includes(currentMapID)) pen *= (1 + (modHandler.getDistance(spawnX - currentMapWidth / 2, spawnY - currentMapHeight / 2) / modHandler.getDistance(currentMapWidth/2, currentMapHeight/2))**0.5)
+        return Math.round(pen);
+    }
+
     var revealTick = 3;
     this.init = function() {
         this.decoySpawn = new Uint16Array(2);
@@ -220,6 +247,59 @@ function SpawnHider() {
             dataEncoder.setLocation(1E3, this.decoySpawn[0], this.decoySpawn[1]);
         }
     }
+    this.spawnGenerator = function() {
+        var spawns = [];
+        for (let x = Math.round(currentMapWidth / 8); x < currentMapWidth; x += Math.round(currentMapWidth / 8)) {
+            for (let y = Math.round(currentMapHeight / 8); y < currentMapHeight; y += Math.round(currentMapHeight / 8)) {
+                if (pixel.canOwn(pixel.toIndex(x, y))) {
+                    let spawn = {
+                        x: x,
+                        y: y,
+                        penalty: 0,
+                        min: !1,
+                    }
+                    spawns.push(spawn)
+                }
+            }
+        }
+        for (let spawn of spawns) {
+            spawn.penalty = penalty(spawn.x, spawn.y);
+            while (!spawn.min) {
+                var up = penalty(spawn.x, spawn.y + 2), down = penalty(spawn.x, spawn.y - 2),
+                    left = penalty(spawn.x - 2, spawn.y), right = penalty(spawn.x + 2, spawn.y),
+                    penalties = [spawn.penalty, up, down, left, right],
+                    side = penalties.findIndex(penalty => penalty == Math.min(...penalties));
+                spawn.penalty = Math.min(...penalties);
+                switch (side) {
+                    case 0:
+                        spawn.min = !0
+                        break;
+                    case 1:
+                        spawn.y += 2
+                        break;
+                    case 2:
+                        spawn.y -= 2
+                        break;
+                    case 3:
+                        spawn.x -= 2
+                        break;
+                    case 4:
+                        spawn.x += 2
+                        break;
+                }
+            }
+        }   
+        for (let spawnA of spawns) {
+            for (let spawnB of spawns) {
+                if (modHandler.getDistance(spawnA.x - spawnB.x, spawnA.y - spawnB.y) <= 5 && spawnA !== spawnB) spawns = spawns.filter(spawn => spawn != spawnB)
+            }
+        }
+        spawns.sort(function (a, b) {
+            return (a.penalty > b.penalty) ? 1 : ((b.penalty > a.penalty) ? -1 : 0)
+        });
+        return spawns;
+    }
+
 }
 
 function ModPanel() {
@@ -259,7 +339,7 @@ function ModPanel() {
         mainSettings.buttons[4].buttonClass.drawCanvasImage();
     }
     function drawSettingsBoxes(settingID, startX, startY, width, height) {
-        if (clientStatus >= 1 && settingID <= 7 || [11,12].includes(settingID) && modHandler.public) {
+        if (clientStatus >= 1 && (settingID <= 7 || settingID == 15 && modHandler.bot > 1)) {
             if (getButtonColor(settingID)) {
                 mainCanvasCtx.fillStyle = greenDarkerMoreOpaque;
                 mainCanvasCtx.fillRect(startX, startY, width, height);
@@ -290,9 +370,9 @@ function ModPanel() {
         else if (settingID == 8) return `Boat Tracker ${modHandler.boatTracker ? "On" : "Off"}`;
         else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: "+ modHandler.latency.toString() + " Ticks"}`;
         else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : modHandler.font == 2 ? "Show Density" : "Red-Blue Font";
-        else if (settingID == 11) return modHandler.public ? "Unavailable" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
-        else if (settingID == 12) return modHandler.public ? "Unavailable" : `Messiah ${modHandler.bot ? "On" : "Off"}`;
-        else if (settingID == 13) return `${modHandler.lateral ? "Uniform" : "Normal"} Hotkeys`;
+        else if (settingID == 11) return `${modHandler.lateral ? "Uniform" : "Normal"} Hotkeys`;
+        else if (settingID == 14) return modHandler.public ? "Placeholder" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
+        else if (settingID == 15) return modHandler.public ? "Placeholder" : !modHandler.bot ? "Cheats Off" : modHandler.bot == 1 ? "Messiah Mode" : modHandler.bot == 2 ? "Smart Multiboxing" : modHandler.bot == 3 ? "AI Mode" : "Operation Neptune";
         else return "Placeholder"
     }
     function changeSettings(settingID) {
@@ -307,9 +387,15 @@ function ModPanel() {
         else if (settingID == 8) modHandler.boatTracker = !modHandler.boatTracker;
         else if (settingID == 9) modHandler.latency += (modHandler.latency >= 10 ? -10 : 1);
         else if (settingID == 10) modHandler.font += (modHandler.font >= 3 ? -3 : 1);
-        else if (settingID == 11 && !modHandler.public) modHandler.hideSpawn = !modHandler.hideSpawn;
-        else if (settingID == 12 && !modHandler.public) modHandler.bot = !modHandler.bot;
-        else if (settingID == 13) modHandler.lateral = !modHandler.lateral;
+        else if (settingID == 11) modHandler.lateral = !modHandler.lateral;
+        else if (settingID == 14 && !modHandler.public) {
+            modHandler.hideSpawn = !modHandler.hideSpawn;
+            if (modHandler.hideSpawn) hideSpawn.init()
+        } else if (settingID == 15 && !modHandler.public) {
+            if ([0,1].includes(modHandler.bot) && clientStatus >= 1) modHandler.bot = 1 - modHandler.bot
+            else modHandler.bot += (modHandler.bot >= 4 ? -4 : 1)
+            modHandler.updateCheatModules();
+        }
         else return false
     }
     function getButtonColor(settingID) {
@@ -324,9 +410,9 @@ function ModPanel() {
         else if (settingID == 8) return modHandler.boatTracker;
         else if (settingID == 9) return modHandler.latency;
         else if (settingID == 10) return modHandler.font;
-        else if (settingID == 11) return modHandler.hideSpawn;
-        else if (settingID == 12) return modHandler.bot;
-        else if (settingID == 13) return modHandler.lateral;
+        else if (settingID == 11) return modHandler.lateral;
+        else if (settingID == 14) return modHandler.hideSpawn;
+        else if (settingID == 15) return modHandler.bot;
         else return false
     }
     var headerHeight, settingsOnLeftCol, settingBoxHeight, settingBoxWidth, fontSize, passwordBar;
@@ -375,7 +461,7 @@ function ModPanel() {
         xPos > this.boxDimensions[0] + this.boxDimensions[2] / 2 && (settingID += settingsOnLeftCol);
         if (settingID >= this.settingCount) return true;
         else {
-            if (clientStatus >= 1 && settingID <= 7) return true;
+            if (clientStatus >= 1 && (settingID <= 7 || settingID == 15 && modHandler.bot > 1)) return true;
             else if (settingID == 6 && currentMapID != customMapID) {
                 alert('Please Load A Custom Map First, Nerd.')
                 return true
@@ -419,5 +505,75 @@ function ModPanel() {
 }
 
 function Messiah() {
+
+}
+
+function Multiboxing() {
+
+}
+
+function AI() {
+    function newTeamGame() {
+        setTimeout(function () {
+            nameInput.enterPreLobby();
+            setTimeout(() => joinTeamGame(), 1000)
+        }, 500);
+    }
+    function joinTeamGame() {
+        const lobbyGames = lobby.getLobbyGames();
+        if (lobbyGames == undefined) setTimeout(() => joinTeamGame(), 1000);
+        else if (lobbyGames.find(game => game.gameID == lobby.getGameSelected() && game.gamemode <= 6 && !game.isContest) != undefined) return 1;
+        else { 
+            for (var game of lobbyGames) {
+                if (game.gamemode <= 6 && game.gameID != lobby.getGameSelected() && !game.isContest && game.timeLeft >= 2) {
+                    dataEncoder.joinGame(game.gameID);
+                    lobby.setGameSelected(game.gameID);
+                    return 1;
+                }
+            }
+            setTimeout(() => joinTeamGame(), 1000);
+        }
+    }
+    function checkLastActiveTime() {
+        if (new Date().getTime() >= lastActiveTime + 90E3) {
+            location.reload();
+        }
+        setTimeout(() => checkLastActiveTime() , 120E3);
+    }
+    var allies, allyIndex, spawns, tag = "GΡT", lastActiveTime = new Date().getTime();
+    this.main = function() {
+        const name = `Terri[${tag}]-${Math.floor(Math.random()*999)+1}`
+        nameInput.setInput(name);
+        saveUsername(name);
+        lastActiveTime = new Date().getTime();
+        checkLastActiveTime();
+        newTeamGame();
+    }
+    this.init = function() {
+        allies = [];
+        spawns = [];
+        nickname.forEach(function (element, index) {
+            if (element.includes(tag)) allies.push(index);
+            if (index == myID) allyIndex = allies.length -1;
+        });
+        if (freeSpawn) {
+            spawns = spawnMod.spawnGenerator();
+            if (spawns.length >= allies.length) spawns.splice(allies.length, spawns.length - allies.length);
+        }
+        lastActiveTime = new Date().getTime()
+
+        if (land[myID] == 0 && inSpawn) {
+            if (allyIndex < spawns.length) {
+                setTimeout(() => dataEncoder.setLocation(1E3, spawns[allyIndex].x, spawns[allyIndex].y), 1000)
+            }
+        }
+    }
+    this.update = function() {
+        leaveGame();
+        newTeamGame();
+    }
+}
+
+function OperationNeptune() {
 
 }
