@@ -9568,14 +9568,14 @@ function getTroopHash() {
     return troopHash % 4096
 }
 var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainCanvasHeight, minDim, averageDim, prevClientWidth, prevClientHeight, pixelRatio, hostname, isIOS, iosObject, androidObject, androidVersion, isZoom, hasHadError = false,
-    isNotTopWindow, isNotClient, clientID, viewport, frameRate, mapUpdate, emojis, statisticNumbers, statistics, cookiesPrompt, mainHandler, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, const_2_s52, errorLineNo = 0,
+    isNotTopWindow, isNotClient, clientID, viewport, frameRate, mapUpdate, emojis, statisticNumbers, statistics, cookiesPrompt, mainHandler, teamColors, teams, mainLeaderboard, endGame, linkButtons, openLinkBox, mainLeaderboardIcon, timeHash, socketIndex, errorLineNo = 0,
     errorMessage = "",
     isMainCalled = false;
 
 function main() {
-    const_2_s52 = 2;
+    socketIndex = 2;
     versionHash = 4014;
-    versionLabel = "1.83.4   29 March 2023";
+    versionLabel = "1.83.5   10 Apr 2023";
     construct();
     botBorderingStuffInit();
     isMainCalled = true;
@@ -11449,7 +11449,7 @@ function TerriWS() {
         dataReader = new FileReader;
         dataReader.addEventListener("loadend", onLoadend);
         var url = wsUrlStrings[0];
-        url += remote < wsManager.serverCount ? (wsManager.originURLs[remote] + wsUrlStrings[1 + const_2_s52]) : (wsManager.originURLs[0] + "/i" + (1 + const_2_s52) + (remote - wsManager.gameServerCount) + "/");
+        url += remote < wsManager.serverCount ? (wsManager.originURLs[remote] + wsUrlStrings[1 + socketIndex]) : (wsManager.originURLs[0] + "/i" + (1 + socketIndex) + (remote - wsManager.gameServerCount) + "/");
         ws = new WebSocket(url);
         ws.onopen = onOpen;
         ws.onmessage = onMessage;
