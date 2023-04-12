@@ -385,8 +385,8 @@ function ModPanel() {
         else if (settingID == 6) return `${modHandler.customMap ? "Custom" : "Normal"} MP Maps`;
         else if (settingID == 7) return modHandler.customGamemode <= 6 ? `${modHandler.customGamemode + 2} Teams Only`: modHandler.customGamemode == 7 ? `BR Only`: modHandler.customGamemode == 9 ? `Zombie Only` : modHandler.customGamemode == 10 ? `NoFullSend Only` : "Default MP Mode";
         else if (settingID == 8) return `Boat Tracker ${modHandler.boatTracker ? "On" : "Off"}`;
-        else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: "+ modHandler.latency.toString() + " Ticks"}`;
-        else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : modHandler.font == 2 ? "Show Density" : "Red-Blue Font";
+        else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: " + modHandler.latency.toString() + " Ticks"}`;
+        else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : modHandler.font == 2 ? "Show Density" : "RGB fonts";
         else if (settingID == 11) return `${modHandler.lateral ? "Uniform" : "Normal"} Hotkeys`;
         else if (settingID == 14) return modHandler.public ? "Placeholder" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
         else if (settingID == 15) return modHandler.public ? "Placeholder" : !modHandler.bot ? "Cheats Off" : modHandler.bot == 1 ? "Messiah Mode" : modHandler.bot == 2 ? "Smart Multiboxing" : modHandler.bot == 3 ? "AI Mode" : "Operation Neptune";
