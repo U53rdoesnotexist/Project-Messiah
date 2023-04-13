@@ -5545,7 +5545,7 @@ function IntelliAttack() {
     };
     this.sortTargets = function(targetPenalties) {
         targetPenalties.sort(function(prev, next) {
-            return prev.peanlty - next.peanlty
+            return prev.penalty - next.penalty
         })
     };
     this.calcValue = function(targets) {
@@ -5587,7 +5587,7 @@ function IntelliAttack() {
                 timeLeft = (100 - (getTicksElapsed % 100) - (singleplayer ? 1 : 7 - (((divideFloor(getTicksElapsed, 100))*100 + (getTicksElapsed % 100) - 1) % 7)));
                 targetPenalties.push({
                     player: id,
-                    peanlty: 3 * predDensity - this.landWeighting(id) ** 1.8 - (mutualBorder.length/landBorderPixels[id].length) ** 0.5 + returnFactor,
+                    penalty: 3 * predDensity - this.landWeighting(id) ** 1.8 - (mutualBorder.length/landBorderPixels[id].length) ** 0.5 + returnFactor,
                     ratio: Math.round(Math.min((6 + 2 * predDensity) * mutualBorder.length * speed * (timeLeft <= 20 ? 20 : timeLeft), 2*(troops[id] + land[id])) / troops[myID] * 1E3),
                 })
             }
