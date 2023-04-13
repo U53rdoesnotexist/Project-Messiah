@@ -11524,12 +11524,15 @@ function StatisticNumbers() {
     this.recordedLandValues = new Uint32Array(this.maxDataPoints);
     this.recordedTroopValues = new Uint32Array(this.maxDataPoints);
     this.recordedInterestValues = new Uint16Array(this.maxDataPoints);
+    this.troopsAtTimings = new Uint32Array(6);
+    this.landAtTimings = new Uint32Array(6);
     this.currentDataPointIndex = 0;
     this.updateInterval = 1;
     this.updateCounter = 0;
     this.max = [0, 0, 0];
     this.numbers = 0;
     this.statisticNumbersLabels = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
+    this.microNumbersLabels = "Troops at 1:00;Troops at 1:10;Troops at 1:20;Troops at 1:37;Troops at 1:50;Troops at 2:00;Land at 1:00;Land at 1:10;Land at 1:20;Land at 1:37;Land at 1:50;Land at 2:00".split(";");
     this.init = function() {
         this.currentDataPointIndex = 0;
         this.updateInterval = 1;
@@ -11550,6 +11553,25 @@ function StatisticNumbers() {
             if (this.currentDataPointIndex === this.maxDataPoints) this.shiftData();
             this.updateCounter = this.updateInterval - 1;
             statistics.updateRenderObject();
+            if (mainHandler.getTicksElapsed() * .056 > 60 && this.troopsAtTimings[0] === 0) {
+                this.troopsAtTimings[0] = getMax(1, troops[myID]);
+                this.landAtTimings[0] = land[myID];
+            } else if (mainHandler.getTicksElapsed() * .056 > 70 && this.troopsAtTimings[1] === 0) {
+                this.troopsAtTimings[1] = getMax(1, troops[myID]);
+                this.landAtTimings[1] = land[myID];
+            } else if (mainHandler.getTicksElapsed() * .056 > 80 && this.troopsAtTimings[2] === 0) {
+                this.troopsAtTimings[2] = getMax(1, troops[myID]);
+                this.landAtTimings[2] = land[myID];
+            } else if (mainHandler.getTicksElapsed() * .056 > 97 && this.troopsAtTimings[3] === 0) {
+                this.troopsAtTimings[3] = getMax(1, troops[myID]);
+                this.landAtTimings[3] = land[myID];
+            } else if (mainHandler.getTicksElapsed() * .056 > 110 && this.troopsAtTimings[4] === 0) {
+                this.troopsAtTimings[4] = getMax(1, troops[myID]);
+                this.landAtTimings[4] = land[myID];
+            } else if (mainHandler.getTicksElapsed() * .056 > 120 && this.troopsAtTimings[5] === 0) {
+                this.troopsAtTimings[5] = getMax(1, troops[myID]);
+                this.landAtTimings[5] = land[myID];
+            } 
         }
     };
     this.shiftData = function() {
@@ -11571,16 +11593,16 @@ function StatisticNumbers() {
         this.numbers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     };
     this.updateMaxValues = function(dpIndex) {
-        this.max[0] = this.recordedLandValues[dpIndex] > this.max[0] ? this.recordedLandValues[dpIndex] : this.max[0];
-        this.max[1] = this.recordedTroopValues[dpIndex] > this.max[1] ? this.recordedTroopValues[dpIndex] : this.max[1];
-        this.max[2] = this.recordedInterestValues[dpIndex] > this.max[2] ? this.recordedInterestValues[dpIndex] : this.max[2]
+        this.max[0] = getMax(this.recordedLandValues[dpIndex], this.max[0]);
+        this.max[1] = getMax(this.recordedTroopValues[dpIndex], this.max[1]);
+        this.max[2] = getMax(this.recordedInterestValues[dpIndex], this.max[2]);
     }
 }
 
 function Statistics() {
     this.clickedButtonIndex = this.horizontalCanvasPadding = this.verticalCanvasPadding = this.fontPadding = this.availableHeight = this.buttonHeight = 
         this.contentPadding = this.availableWidth = this.textWidth = this.textPadding = this.buttonMargin = this.height = this.width = 0;
-    this.buttonLabels = ["Land", "Troops", "Interest", "Numbers"];
+    this.buttonLabels = ["Land", "Troops", "Interest", "Numbers", "Micro"];
     this.visible = false;
     this.activeSliderValue = -1;
     this.isDraggingSlider = false;
@@ -11691,6 +11713,7 @@ function Statistics() {
             this.drawAttackStatisticsNumbers(startX, startY);
             this.drawTroopStatisticsNumbers(startX, startY);
         }
+        else if (4 == this.clickedButtonIndex) this.drawMicroNumbers(startX, startY);
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
     this.drawPromptUI = function() {
@@ -11804,6 +11827,24 @@ function Statistics() {
         mainCanvasCtx.textAlign = rightAlign;
         return startX * Math.pow(interpolatedValue, startY) / this.availableHeight
     };
+    this.drawMicroNumbers = function(startX, startY) {
+        var leftIndex, rightIndex;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .34 * this.width, startY + 2 * this.contentPadding);
+        mainCanvasCtx.textAlign = rightAlign;
+        var lineHeight = this.height - 4 * this.contentPadding - this.buttonHeight;
+        for (leftIndex = 5; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.microNumbersLabels[leftIndex], 0, leftIndex * lineHeight / 5);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .39 * this.width, startY + 2 * this.contentPadding);
+        mainCanvasCtx.textAlign = leftAlign;
+        leftIndex = statisticNumbers.numbers[1];
+        for (leftIndex = 5; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.troopsAtTimings[leftIndex] != 0 ? statisticNumbers.troopsAtTimings[leftIndex] : "N/A", 0, leftIndex * lineHeight / 5);
+
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .74 * this.width, startY + 2 * this.contentPadding);
+        mainCanvasCtx.textAlign = rightAlign; 
+        var lineHeight = this.height - 4 * this.contentPadding - this.buttonHeight;
+        for (rightIndex = 5; 0 <= rightIndex; rightIndex--) mainCanvasCtx.fillText(statisticNumbers.microNumbersLabels[rightIndex + 6], 0, rightIndex * lineHeight / 5);
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .79 * this.width + mainCanvasCtx.measureText(1000).width, startY + 2 * this.contentPadding);
+        for (rightIndex = 5; 0 <= rightIndex; rightIndex--) mainCanvasCtx.fillText(statisticNumbers.troopsAtTimings[rightIndex] != 0 ? statisticNumbers.landAtTimings[rightIndex] : "N/A", 0, rightIndex * lineHeight / 5);
+    }
     this.drawGuides = function(startX, startY, endX, endY) {
         mainCanvasCtx.beginPath();
         mainCanvasCtx.moveTo(startX, startY);
