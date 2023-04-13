@@ -8875,14 +8875,14 @@ function InfoRenderer() {
                 var fontColor = fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]],
                     textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? attackBars.splitNumber(troops[idIndex]): nicknames[idIndex];
                 if (typeof(modHandler) == 'object' && modHandler.font >= 1) {
-                    if (modHandler.font == 3) {
+                    if (modHandler.font == 2) {
                         if (idIndex >= playerCount && difficultyEngine.botTiming[idIndex - playerCount] <= 17 && mainHandler.getTicksElapsed() % 100 <= 70) {
                             fontColor = "rgb(0,0,210)";
                         } else if (idIndex >= playerCount) {
                             fontColor = "rgb(" + getMin(modHandler.density(idIndex), 2.2) * 250 + "," + 125 * (2 - getMin(modHandler.density(idIndex), 2.2)) + ",0)";
                         }
                     }
-                    if (modHandler.font >= 2 && idIndex < playerCount) textLabel += ` (${modHandler.density(idIndex).toFixed(2)})`
+                    if (modHandler.font == 2 && idIndex < playerCount) textLabel += ` (${modHandler.density(idIndex).toFixed(2)})`
                 }
                 infoCanvasCtx.fillStyle = fontColor;
                 infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY);

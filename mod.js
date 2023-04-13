@@ -386,7 +386,7 @@ function ModPanel() {
         else if (settingID == 7) return modHandler.customGamemode <= 6 ? `${modHandler.customGamemode + 2} Teams Only`: modHandler.customGamemode == 7 ? `BR Only`: modHandler.customGamemode == 9 ? `Zombie Only` : modHandler.customGamemode == 10 ? `NoFullSend Only` : "Default MP Mode";
         else if (settingID == 8) return `Boat Tracker ${modHandler.boatTracker ? "On" : "Off"}`;
         else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: " + modHandler.latency.toString() + " Ticks"}`;
-        else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : modHandler.font == 2 ? "Show Density" : "RGB fonts";
+        else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : "RGB fonts";
         else if (settingID == 11) return `${modHandler.lateral ? "Uniform" : "Normal"} Hotkeys`;
         else if (settingID == 14) return modHandler.public ? "Placeholder" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
         else if (settingID == 15) return modHandler.public ? "Placeholder" : !modHandler.bot ? "Cheats Off" : modHandler.bot == 1 ? "Messiah Mode" : modHandler.bot == 2 ? "Smart Multiboxing" : modHandler.bot == 3 ? "AI Mode" : "Operation Neptune";
@@ -403,7 +403,7 @@ function ModPanel() {
         else if (settingID == 7) modHandler.customGamemode += (modHandler.customGamemode == 7 ? 2 : modHandler.customGamemode >= 11 ? -11 : 1);
         else if (settingID == 8) modHandler.boatTracker = !modHandler.boatTracker;
         else if (settingID == 9) modHandler.latency += (modHandler.latency >= 10 ? -10 : 1);
-        else if (settingID == 10) modHandler.font += (modHandler.font >= 3 ? -3 : 1);
+        else if (settingID == 10) modHandler.font += (modHandler.font >= 2 ? -2 : 1);
         else if (settingID == 11) modHandler.lateral = !modHandler.lateral;
         else if (settingID == 14 && !modHandler.public) {
             modHandler.hideSpawn = !modHandler.hideSpawn;
