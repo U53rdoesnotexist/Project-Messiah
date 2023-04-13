@@ -402,8 +402,8 @@ function ModPanel() {
         else if (settingID == 6) return (modHandler.customMap == -1 ? "Normal Maps" : modHandler.customMap < customMapID ? mapInfo.getValueByID(modHandler.customMap).name: "Custom Maps") + " Only";
         else if (settingID == 7) return modHandler.customGamemode <= 6 ? `${modHandler.customGamemode + 2} Teams Only`: modHandler.customGamemode == 7 ? `BR Only`: modHandler.customGamemode == 9 ? `Zombie Only` : modHandler.customGamemode == 10 ? `NoFullSend Only` : "Default MP Mode";
         else if (settingID == 8) return `Boat Tracker ${modHandler.boatTracker ? "On" : "Off"}`;
-        else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: "+ modHandler.latency.toString() + " Ticks"}`;
-        else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : modHandler.font == 2 ? "Show Density" : "Red-Blue Font";
+        else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: " + modHandler.latency.toString() + " Ticks"}`;
+        else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : "RGB fonts";
         else if (settingID == 11) return `${modHandler.lateral ? "Uniform" : "Normal"} Hotkeys`;
         else if (settingID == 12) return modHandler.public ? "Unavailable" : "IntelliAttack " + (modHandler.intelli ? "On" : "Off");
         else if (settingID == 13) return modHandler.public ? "Unavailable" : `Always Win ${modHandler.alwaysWin ? "On" : "Off"}`
@@ -422,7 +422,7 @@ function ModPanel() {
         else if (settingID == 7) modHandler.customGamemode += (modHandler.customGamemode == 7 ? 2 : modHandler.customGamemode >= 11 ? -11 : 1);
         else if (settingID == 8) modHandler.boatTracker = !modHandler.boatTracker;
         else if (settingID == 9) modHandler.latency += (modHandler.latency >= 7 ? -7 : 1);
-        else if (settingID == 10) modHandler.font += (modHandler.font >= (clientStatus >= 1 && !singleplayer && modHandler.public ? 2 : 3) ? -2 : 1);
+        else if (settingID == 10) modHandler.font = (modHandler.font >= (clientStatus >= 1 && !singleplayer && modHandler.public ? 1 : 2) ? 0 : modHandler.font + 1);
         else if (settingID == 11) modHandler.lateral = !modHandler.lateral;
         else if (settingID == 12 && !modHandler.public) modHandler.intelli = !modHandler.intelli;
         else if (settingID == 13 && !modHandler.public) modHandler.alwaysWin = !modHandler.alwaysWin;
