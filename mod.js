@@ -1,9 +1,9 @@
-var modHandler, latencySimulator, replayLogger, spawnMod, cheat, extendedActions;
+var modHandler, latencySimulator, replayLogger, spawnHelper, cheat, extendedActions;
 function modConstruct(){
     modHandler = new ModHandler;
     latencySimulator = new LatencySimulator;
     replayLogger = new ReplayLogger;
-    spawnMod = new SpawnMod;
+    spawnHelper = new SpawnHelper;
     extendedActions = new ExtendedActions;
     modHandler.updateCheatModules();
 }
@@ -19,15 +19,20 @@ function ModHandler() {
     this.boatSpeed = 2;
     this.neutralBots = false;
     this.humanBots = true;
-    this.customMap = false;
+    this.customMap = -1;
     this.customGamemode = 11;
     this.boatTracker = true;
     this.latency = 5;
     this.font = 3;
-    this.hideSpawn = false;
-    this.bot = 0;
-    if (this.public && (this.hideSpawn || this.bot)) this.hideSpawn = this.bot = false;
     this.lateral = false;
+    this.intelli = false;
+    this.alwaysWin = false;
+    this.spawnMod = 0;
+    this.bot = 0;
+    if (this.public) {
+        this.bot = this.alwaysWin = this.intelli = false;
+        this.spawnMod = this.font = 0;
+    }
 
     this.main = function() {
         if (this.bot >= 3) cheat.main();
@@ -36,16 +41,16 @@ function ModHandler() {
         this.cycle = 1;
         this.tick = 0;
         if (!singleplayer && this.public) {
-            this.font = false;
-            this.hideSpawn = false;
+            this.font = getMin(2, this.font);
+            this.spawnMod = 0;
             this.bot = 0;
         }
-        if (!singleplayer) spawnMod.init();
+        if (!singleplayer) spawnHelper.init();
         if (this.bot) cheat.init();
         replayLogger.init()
     };
     this.scriptSpawnTick = function() {
-        if (modHandler.hideSpawn) spawnMod.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
+        if (modHandler.spawnMod) spawnHelper.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
         if (modHandler.bot >= 3) cheat.spawnTick()
     };
     this.scriptGameTick = function() {
@@ -101,7 +106,7 @@ function ExtendedActions() {
     var currentActionID = 1001;
     this.init = function() {
         /*It's modded
-        if (modHandler.modInterest || modHandler.modTax || modHandler.boatSpeed != 2 || modHandler.neutralBots || !modHandler.humanBots || modHandler.customMap || modHandler.customGamemode != 11) {
+        if (modHandler.modInterest || modHandler.modTax || modHandler.boatSpeed != 2 || modHandler.neutralBots || !modHandler.humanBots || modHandler.customMap != -1 || modHandler.customGamemode != 11) {
             dataEncoder.setLocation()
         }*/
     }
@@ -217,7 +222,7 @@ function ReplayLogger() {
     };
 }
 
-function SpawnMod() {
+function SpawnHelper() {
     function penalty(spawnX, spawnY) {
         var pen = 0, range = (currentMapID == 1 ? 65 : currentMapID == 3 ? 50 : [4, 5, 6].includes(currentMapID) ? 70 : [8, 12, 14].includes(currentMapID) ? 55 : [10, 13].includes(currentMapID) ? 45 : Math.round((currentMapHeight * currentMapWidth / entityCount) ** 0.5));
         for (let x = spawnX - range; x <= spawnX + range; x++) {
@@ -232,9 +237,10 @@ function SpawnMod() {
         return Math.round(pen);
     }
 
-    var revealTick = 3;
+    var revealTick = 3,
+        bufferTick = 0;
     this.init = function() {
-        this.decoySpawn = new Uint16Array(2);
+        this.decoyOrBackup = new Uint16Array(2);
         this.chosenSpawn = new Uint16Array(2);
     }
     this.addSpawn = function(xCoord, yCoord) {
@@ -247,22 +253,33 @@ function SpawnMod() {
                 this.chosenSpawn[0] = xCoord;
                 this.chosenSpawn[1] = yCoord;
             } else {
-                this.decoySpawn[0] = this.chosenSpawn[0];
-                this.decoySpawn[1] = this.chosenSpawn[1];
+                this.decoyOrBackup[0] = this.chosenSpawn[0];
+                this.decoyOrBackup[1] = this.chosenSpawn[1];
                 this.chosenSpawn[0] = xCoord;
                 this.chosenSpawn[1] = yCoord;
             }
-            if (mainHandler.multiplayerHandler.packetsReceived >= spawnTime - revealTick && this.decoySpawn[0] != 0 && this.decoySpawn[1] != 0) {
-                dataEncoder.setLocation(1E3, this.decoySpawn[0], this.decoySpawn[1]);
+            if (modHandler.spawnMod == 1) {
+                if (mainHandler.multiplayerHandler.packetsReceived >= spawnTime - revealTick && this.decoyOrBackup[0] != 0 && this.decoyOrBackup[1] != 0) {
+                    dataEncoder.setLocation(1E3, this.decoyOrBackup[0], this.decoyOrBackup[1]);
+                }
             }
         }
     }
     this.setSpawn = function(spawnTick) {
-        if (spawnTick == spawnTime && this.chosenSpawn[0] != 0 && this.chosenSpawn[1] != 0) {
-            dataEncoder.setLocation(1E3, this.chosenSpawn[0], this.chosenSpawn[1]);
-        } else if (spawnTick == spawnTime - revealTick && this.decoySpawn[0] != 0 && this.decoySpawn[1] != 0) {
-            dataEncoder.setLocation(1E3, this.decoySpawn[0], this.decoySpawn[1]);
+        if (modHandler.spawnMod == 1) {
+            if (spawnTick == spawnTime - bufferTick && this.chosenSpawn[0] != 0 && this.chosenSpawn[1] != 0) {
+                dataEncoder.setLocation(1E3, this.chosenSpawn[0], this.chosenSpawn[1]);
+            } else if (spawnTick == spawnTime - revealTick && this.decoyOrBackup[0] != 0 && this.decoyOrBackup[1] != 0) {
+                dataEncoder.setLocation(1E3, this.decoyOrBackup[0], this.decoyOrBackup[1]);
+            }
+        } else if (modHandler.spawnMod == 2 && playerCount == 2 && spawnTick >= spawnTime - bufferTick) {
+            if (xMin[1 - myID]) {
+                if (modHandler.getTravelDistance(this.chosenSpawn[0] - xMin[1 - myID] - 1, this.chosenSpawn[1] - yMin[1 - myID] - 2) <= Math.sqrt(currentMapHeight*currentMapWidth)/20) {
+                    dataEncoder.setLocation(1E3, this.decoyOrBackup[0], this.decoyOrBackup[1]);
+                }
+            } else dataEncoder.setLocation(1E3, this.chosenSpawn[0], this.chosenSpawn[1]);
         }
+        
     }
     this.spawnGenerator = function() {
         var spawns = [];
@@ -382,15 +399,17 @@ function ModPanel() {
         else if (settingID == 3) return `${modHandler.boatSpeed == 2 ? "Normal" : modHandler.boatSpeed == 1 ? "Faster" : "Very Fast"} Boats`;
         else if (settingID == 4) return `Neutral Bots ${modHandler.neutralBots ? "On" : "Off"}`;
         else if (settingID == 5) return `Human Bots ${modHandler.humanBots ? "On" : "Off"}`;
-        else if (settingID == 6) return `${modHandler.customMap ? "Custom" : "Normal"} MP Maps`;
+        else if (settingID == 6) return (modHandler.customMap == -1 ? "Normal Maps" : modHandler.customMap < customMapID ? mapInfo.getValueByID(modHandler.customMap).name: "Custom Maps") + " Only";
         else if (settingID == 7) return modHandler.customGamemode <= 6 ? `${modHandler.customGamemode + 2} Teams Only`: modHandler.customGamemode == 7 ? `BR Only`: modHandler.customGamemode == 9 ? `Zombie Only` : modHandler.customGamemode == 10 ? `NoFullSend Only` : "Default MP Mode";
         else if (settingID == 8) return `Boat Tracker ${modHandler.boatTracker ? "On" : "Off"}`;
         else if (settingID == 9) return `${!modHandler.latency ? "SP Lag Sim Off" : "SP Lag: "+ modHandler.latency.toString() + " Ticks"}`;
         else if (settingID == 10) return !modHandler.font ? "Font Mod Off" : modHandler.font == 1 ? "Enlarged Font" : modHandler.font == 2 ? "Show Density" : "Red-Blue Font";
         else if (settingID == 11) return `${modHandler.lateral ? "Uniform" : "Normal"} Hotkeys`;
-        else if (settingID == 14) return modHandler.public ? "Placeholder" : `Spawn Hider ${modHandler.hideSpawn ? "On" : "Off"}`;
-        else if (settingID == 15) return modHandler.public ? "Placeholder" : !modHandler.bot ? "Cheats Off" : modHandler.bot == 1 ? "Messiah Mode" : modHandler.bot == 2 ? "Smart Multiboxing" : modHandler.bot == 3 ? "AI Mode" : "Operation Neptune";
-        else return "Placeholder"
+        else if (settingID == 12) return modHandler.public ? "Unavailable" : "IntelliAttack " + (modHandler.intelli ? "On" : "Off");
+        else if (settingID == 13) return modHandler.public ? "Unavailable" : `Always Win ${modHandler.alwaysWin ? "On" : "Off"}`
+        else if (settingID == 14) return modHandler.public ? "Unavailable" : modHandler.spawnMod == 0 ? "Spawn Mod Off" : modHandler.spawnMod == 1 ? "Decoy Spawn" : "B2B Evader";
+        else if (settingID == 15) return modHandler.public ? "Unavailable" : !modHandler.bot ? "Cheats Off" : modHandler.bot == 1 ? "Messiah Mode" : modHandler.bot == 2 ? "Smart Multiboxing" : modHandler.bot == 3 ? "AI Mode" : "Operation Neptune";
+        else return "Unavailable"
     }
     function changeSettings(settingID) {
         if (settingID == 0) maxEntities *= (maxEntities >= 4096 ? 1/8 : 2);
@@ -399,15 +418,17 @@ function ModPanel() {
         else if (settingID == 3) modHandler.boatSpeed -= (modHandler.boatSpeed > 0 ? 1 : -2);
         else if (settingID == 4) modHandler.neutralBots = !modHandler.neutralBots;
         else if (settingID == 5) modHandler.humanBots = !modHandler.humanBots;
-        else if (settingID == 6) modHandler.customMap = !modHandler.customMap;
+        else if (settingID == 6) modHandler.customMap = (modHandler.customMap == customMapID - 1 && currentMapID != customMapID || modHandler.customMap == customMapID ? -1 : modHandler.customMap + 1);
         else if (settingID == 7) modHandler.customGamemode += (modHandler.customGamemode == 7 ? 2 : modHandler.customGamemode >= 11 ? -11 : 1);
         else if (settingID == 8) modHandler.boatTracker = !modHandler.boatTracker;
-        else if (settingID == 9) modHandler.latency += (modHandler.latency >= 10 ? -10 : 1);
-        else if (settingID == 10) modHandler.font += (modHandler.font >= 3 ? -3 : 1);
+        else if (settingID == 9) modHandler.latency += (modHandler.latency >= 7 ? -7 : 1);
+        else if (settingID == 10) modHandler.font += (modHandler.font >= (clientStatus >= 1 && !singleplayer && modHandler.public ? 2 : 3) ? -2 : 1);
         else if (settingID == 11) modHandler.lateral = !modHandler.lateral;
+        else if (settingID == 12 && !modHandler.public) modHandler.intelli = !modHandler.intelli;
+        else if (settingID == 13 && !modHandler.public) modHandler.alwaysWin = !modHandler.alwaysWin;
         else if (settingID == 14 && !modHandler.public) {
-            modHandler.hideSpawn = !modHandler.hideSpawn;
-            if (modHandler.hideSpawn) hideSpawn.init()
+            modHandler.spawnMod += (modHandler.spawnMod == 2 ? -2 : 1)
+            if (modHandler.spawnMod) spawnHelper.init()
         } else if (settingID == 15 && !modHandler.public) {
             if ([0,1].includes(modHandler.bot) && clientStatus >= 1) modHandler.bot = 1 - modHandler.bot
             else modHandler.bot += (modHandler.bot >= 4 ? -4 : 1)
@@ -422,13 +443,15 @@ function ModPanel() {
         else if (settingID == 3) return modHandler.boatSpeed != 2;
         else if (settingID == 4) return modHandler.neutralBots;
         else if (settingID == 5) return !modHandler.humanBots;
-        else if (settingID == 6) return modHandler.customMap;
+        else if (settingID == 6) return modHandler.customMap != -1;
         else if (settingID == 7) return modHandler.customGamemode != 11;
         else if (settingID == 8) return modHandler.boatTracker;
         else if (settingID == 9) return modHandler.latency;
         else if (settingID == 10) return modHandler.font;
         else if (settingID == 11) return modHandler.lateral;
-        else if (settingID == 14) return modHandler.hideSpawn;
+        else if (settingID == 12) return modHandler.intelli;
+        else if (settingID == 13) return modHandler.alwaysWin;
+        else if (settingID == 14) return modHandler.spawnMod;
         else if (settingID == 15) return modHandler.bot;
         else return false
     }
@@ -479,10 +502,6 @@ function ModPanel() {
         if (settingID >= this.settingCount) return true;
         else {
             if (clientStatus >= 1 && (settingID <= 7 || settingID == 15 && modHandler.bot > 1)) return true;
-            else if (settingID == 6 && currentMapID != customMapID) {
-                alert('Please Load A Custom Map First, Nerd.')
-                return true
-             }
             changeSettings(settingID);
             onInput()
         }
@@ -588,7 +607,7 @@ function Multiboxing() {
         } else if ([2,3].includes(modHandler.bot)) {
             spawns = [];
             if (freeSpawn) {
-                spawns = spawnMod.spawnGenerator();
+                spawns = spawnHelper.spawnGenerator();
                 if (spawns.length >= allies.length) spawns.splice(allies.length, spawns.length - allies.length);
             }
         }

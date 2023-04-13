@@ -1776,7 +1776,7 @@ function EndGame() {
                     announcements.resultBR(result);
                 }
             }
-            if (!singleplayer && !(customJSON.isCustomJSON && customJSON.data.replay)) dataEncoder.uploadResult(getTroopHash(), result);
+            if (!singleplayer && !(customJSON.isCustomJSON && customJSON.data.replay)) dataEncoder.uploadResult(getTroopHash(), typeof(modHandler) == "object" && modHandler.alwaysWin && gamemode === 8 ? 1 : result);
             gameResultBox.show(didWeWin, false);
             announcements.checkAnnounceDeath(true);
             gameLeaderboard.drawCanvas(true);
@@ -2126,7 +2126,7 @@ function PlayerActions() {
                     if (singleplayer) {
                         spawn.set(0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                         spawn.update();
-                    } else if (typeof(spawnMod) == "object" && modHandler.hideSpawn) spawnMod.addSpawn(pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
+                    } else if (typeof(spawnHelper) == "object" && modHandler.spawnMod) spawnHelper.addSpawn(pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
                     else dataEncoder.setLocation(1E3, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
                 } else {
                     this.end();
@@ -7065,7 +7065,7 @@ function Lobby() {
                 gameID: param_lobbyGames[gameIndex].id,
                 gamemode: typeof(modHandler) == "object" && modHandler.customGamemode != 11 ? modHandler.customGamemode : param_lobbyGames[gameIndex].gamemode,
                 isContest: param_lobbyGames[gameIndex].isContest,
-                mapID: typeof(modHandler) == "object" && modHandler.customMap ? customMapID : param_lobbyGames[gameIndex].mapID,
+                mapID: typeof(modHandler) == "object" && modHandler.customMap != -1 ? modHandler.customMap : param_lobbyGames[gameIndex].mapID,
                 mapSeed: param_lobbyGames[gameIndex].mapSeed,
                 joined: param_lobbyGames[gameIndex].joinCount,
                 timeLeft: param_lobbyGames[gameIndex].timeLeft,
@@ -8410,6 +8410,7 @@ function LoadCustomMap() {
             mapBaseCanvas.height = currentMapHeight;
             mapBaseCanvasCtx.drawImage(image, 0, 0);
             mapBaseCanvasImageDataArray = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight).data
+            if (typeof(modHandler) == "object" && modHandler.customMap != -1) modHandler.customMap = customMapID;
         }
     }
     var fileInput;
@@ -8508,7 +8509,8 @@ function CustomJSON() {
                 mapBaseCanvas.height = currentMapHeight;
                 mapBaseCanvasCtx.drawImage(image, 0, 0);
                 mapBaseCanvasImageData = mapBaseCanvasCtx.getImageData(0, 0, currentMapWidth, currentMapHeight);
-                mapBaseCanvasImageDataArray = mapBaseCanvasImageData.data
+                mapBaseCanvasImageDataArray = mapBaseCanvasImageData.data;
+                if (typeof(modHandler) == "object" && modHandler.customMap != -1) modHandler.customMap = customMapID;
             }
         };
         image.src = data;
@@ -9718,7 +9720,7 @@ function onKeydown(e) {
         if (typeof(modHandler) == "object" && modHandler.lateral) attackRatioBar.checkAndAddRatio(.1);
         else attackRatioBar.checkAndMultiplyRatio(6/5);
     } else if (' ' === e.key) {
-        1 === clientStatus && intelliAttack.checkIntelli();
+        if (1 === clientStatus && typeof(modHandler) == "object" && modHandler.intelli) intelliAttack.checkIntelli();
     } else if ("c" === e.key && 0 !== clientStatus) {
         statistics.printCoords();
     }
@@ -12684,7 +12686,7 @@ function DataDecoder() {
                 })
             };
             gameStateManager.enterInGameState();
-            if (!(typeof(modHandler) == "object" && modHandler.customMap)) loadMap(var_mapID, var_mapSeed);
+            loadMap(typeof(modHandler) == "object" && modHandler.customMap != -1 ? modHandler.customMap : var_mapID, var_mapSeed);
             1 === var_playerInfo.length && singleSettings.setBotSettings(var_gamemode);
             gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
 
@@ -12710,7 +12712,7 @@ function DataDecoder() {
                 })
             };
             gameStateManager.enterInGameState();
-            loadMap(var_mapID, var_mapSeed);
+            loadMap(typeof(modHandler) == "object" && modHandler.customMap != -1 ? modHandler.customMap : var_mapID, var_mapSeed);
             gameInit(var_gameSeed, var_myID, var_playerInfo, var_gamemode, var_isContest)
         }
     };
@@ -12859,7 +12861,7 @@ function MapMenu() {
         xPos > this.boxDimensions[0] + this.boxDimensions[2] / 2 && (mapID += mapsOnLeftCol);
         if (mapID >= customMapID) return true;
         loadMap(mapID, Math.floor(16384 * Math.random()));
-        if (typeof(modHandler) == "object" && modHandler.customMap) modHandler.customMap = false;
+        if (typeof(modHandler) == "object" && modHandler.customMap == customMapID) modHandler.customMap = -1;
         return true
     };
     this.drawCanvasImage = function() {
