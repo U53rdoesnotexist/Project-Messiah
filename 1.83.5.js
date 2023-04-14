@@ -11553,19 +11553,19 @@ function StatisticNumbers() {
             this.updateCounter = this.updateInterval - 1;
             statistics.updateRenderObject();
             if (mainHandler.getTicksElapsed() * .056 > 45 && this.troopsAtTimings[0] === 0) {
-                this.troopsAtTimings[0] = getMax(1, troops[myID]);
+                this.troopsAtTimings[0] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
                 this.landAtTimings[0] = land[myID];
             } else if (mainHandler.getTicksElapsed() * .056 > 70 && this.troopsAtTimings[1] === 0) {
-                this.troopsAtTimings[1] = getMax(1, troops[myID]);
+                this.troopsAtTimings[1] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
                 this.landAtTimings[1] = land[myID];
             } else if (mainHandler.getTicksElapsed() * .056 > 80 && this.troopsAtTimings[2] === 0) {
-                this.troopsAtTimings[2] = getMax(1, troops[myID]);
+                this.troopsAtTimings[2] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
                 this.landAtTimings[2] = land[myID];
             } else if (mainHandler.getTicksElapsed() * .056 > 97 && this.troopsAtTimings[3] === 0) {
-                this.troopsAtTimings[3] = getMax(1, troops[myID]);
+                this.troopsAtTimings[3] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
                 this.landAtTimings[3] = land[myID];
             } else if (mainHandler.getTicksElapsed() * .056 > 120 && this.troopsAtTimings[4] === 0) {
-                this.troopsAtTimings[4] = getMax(1, troops[myID]);
+                this.troopsAtTimings[4] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
                 this.landAtTimings[4] = land[myID];
             }
         }
