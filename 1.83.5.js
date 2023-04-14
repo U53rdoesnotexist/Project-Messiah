@@ -1231,7 +1231,7 @@ function BoatSpeed() {
                     mainCanvasCtx.lineTo(getXPos(boatX + .5), getYPos(boatY + .5));
                 }
                 mainCanvasCtx.stroke()
-                if (pixel.strongIsOwner(myID, pixel.toIndex(boatX, boatY)) && authorID != myID && isNotTeamate(myID, authorID) && dist == 30) {
+                if (pixel.strongIsOwner(myID, pixel.toIndex(boatX, boatY)) && authorID != myID && isNotTeamate(myID, authorID) && dist == 30 && playerStatus[authorID] == 0) {
                     announcements.genericAnnouncement(authorID, 23)
                 }
             }
@@ -3934,14 +3934,14 @@ function AttackRatioBar() {
     function getBarColor() {
         if (ratio < 1 / 3) {
             var colorValue = Math.floor(540 * ratio);
-            return "rgba(" + colorValue + ",180,0,0.75)"
+            return `rgba(${colorValue},180,0,0.75)`
         }
         if (ratio < 2 / 3) {
             colorValue = Math.floor(540 * (ratio - 1 / 3));
-            return  "rgba(180," + (180 - colorValue) + ",0,0.75)";
+            return  `rgba(180,${180 - colorValue},0,0.75)`;
         }
         colorValue = Math.floor(540 * (ratio - 2 / 3));
-        return "rgba(180,0," + colorValue + ",0.75)"
+        return `rgba(180,0,${colorValue},0.75)`
     }
 
     function redrawAttackRatioBar() {
@@ -3979,8 +3979,8 @@ function AttackRatioBar() {
             }
             var sprite = sprites.getValueByID(21);
             attackRatioBarCanvasCtx.drawImage(sprite, Math.floor(attackRatioBarWidth - .75 * buttonWidth), attackRatioBar.height / 8, .75 * attackRatioBar.height, .75 * attackRatioBar.height);
-            percentage = 10 ** ((attackRatioBar.getFlooredRatio() - 500)/500);
-            var label = "Playback Speed (Fake): " + Math.floor(percentage*10)/10 + "X"
+            percentage = 10 ** ((attackRatioBar.getFlooredRatio() - 500) / 500);
+            var label = `Playback Speed (Fake): ${Math.floor(percentage * 10) / 10}X`
             attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
             if (mainHandler.singleplayerHandler != null) mainHandler.singleplayerHandler.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1))
         } else {
@@ -3988,8 +3988,8 @@ function AttackRatioBar() {
             attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + symbolSize, Math.floor((attackRatioBar.height - sliderRatio) / 2), attackRatioBar.height - 2 * symbolSize - symbolSize % 2, sliderRatio);
             attackRatioBarCanvasCtx.fillRect(Math.floor(attackRatioBarWidth - 1.25 * attackRatioBar.height) + Math.floor((attackRatioBar.height - sliderRatio) / 2), symbolSize, sliderRatio, attackRatioBar.height - 2 * symbolSize - symbolSize % 2);    
             sendAmount = Math.floor(troops[myID] * ratio);
-            percentage = attackRatioBar.getFlooredRatio()/10;
-            var label = attackBars.splitNumber(sendAmount) + " (" + percentage + "%)"
+            percentage = attackRatioBar.getFlooredRatio() / 10;
+            var label = `${attackBars.splitNumber(sendAmount)} (${percentage}%)`
             attackRatioBarCanvasCtx.fillText(label, Math.floor(attackRatioBarWidth / 2), Math.floor(.55 * attackRatioBar.height))
         }
     }
@@ -4002,7 +4002,7 @@ function AttackRatioBar() {
         }
         if (1 < multiplier && 1 === ratio || 0 === ratio) return false;
         ratio *= multiplier;
-        ratio = 1 < ratio ? 1 : 0 > ratio ? 0 : ratio;
+        ratio = rangeClamp(0, ratio, 1);
         redrawAttackRatioBar();
         return true
     }
@@ -4010,7 +4010,7 @@ function AttackRatioBar() {
     function addRatio(addend) {
         if (0 > addend && 0 === ratio || 0 < addend && 1 === ratio) return false;
         ratio += addend;
-        ratio = 1 < ratio ? 1 : 0 > ratio ? 0 : ratio;
+        ratio = rangeClamp(0, ratio, 1);
         redrawAttackRatioBar();
         return true
     }
@@ -4018,8 +4018,7 @@ function AttackRatioBar() {
     function slideRatio(xPos) {
         var oldRatio = ratio;
         ratio = (xPos - startingX - buttonWidth) / (attackRatioBarWidth - 2 * buttonWidth);
-        ratio = 0 > ratio ? 0 : ratio;
-        ratio = 1 < ratio ? 1 : ratio;
+        ratio = rangeClamp(0, ratio, 1);
         if (oldRatio !== ratio) {
             redrawAttackRatioBar();
             return true;
@@ -4082,7 +4081,7 @@ function AttackRatioBar() {
     };
     this.getFlooredRatio = function() {
         var flooredRatio = Math.floor(1E3 * ratio);
-        return 0 >= flooredRatio ? 1 : 1E3 < flooredRatio ? 1E3 : flooredRatio
+        return rangeClamp(1, flooredRatio, 1E3)
     };
     this.getClickedButton = function(xPos, yPos) {
         return this.visible() && xPos > startingX && xPos < startingX + attackRatioBarWidth && yPos > this.startingY
@@ -8877,8 +8876,8 @@ function InfoRenderer() {
                 var fontColor = fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]],
                     textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? attackBars.splitNumber(troops[idIndex]): nicknames[idIndex];
                 if (typeof(modHandler) == 'object' && modHandler.font >= 1) {
-                    if (modHandler.font == 2) {
-                        if (idIndex >= playerCount && difficultyEngine.botTiming[idIndex - playerCount] <= 17 && mainHandler.getTicksElapsed() % 100 <= 70) {
+                    if (modHandler.font == 2 && isNotTeamate(myID, idIndex)) {
+                        if (idIndex >= playerCount && difficultyEngine.botTiming[idIndex - playerCount] <= 17 && mainHandler.getTicksElapsed() % 100 <= 70 && !bordersNeutral(idIndex)) {
                             fontColor = "rgb(0,0,210)";
                         } else if (idIndex >= playerCount) {
                             fontColor = "rgb(" + getMin(modHandler.density(idIndex), 2.2) * 250 + "," + 125 * (2 - getMin(modHandler.density(idIndex), 2.2)) + ",0)";
@@ -11524,15 +11523,15 @@ function StatisticNumbers() {
     this.recordedLandValues = new Uint32Array(this.maxDataPoints);
     this.recordedTroopValues = new Uint32Array(this.maxDataPoints);
     this.recordedInterestValues = new Uint16Array(this.maxDataPoints);
-    this.troopsAtTimings = new Uint32Array(6);
-    this.landAtTimings = new Uint32Array(6);
+    this.troopsAtTimings = new Uint32Array(5);
+    this.landAtTimings = new Uint32Array(5);
     this.currentDataPointIndex = 0;
     this.updateInterval = 1;
     this.updateCounter = 0;
     this.max = [0, 0, 0];
     this.numbers = 0;
     this.statisticNumbersLabels = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
-    this.microNumbersLabels = "Troops at 1:00;Troops at 1:10;Troops at 1:20;Troops at 1:37;Troops at 1:50;Troops at 2:00;Land at 1:00;Land at 1:10;Land at 1:20;Land at 1:37;Land at 1:50;Land at 2:00".split(";");
+    this.microNumbersLabels = "Opening;1:10;1:20;1:37;2:00;Land;Troops;Efficiency;Score".split(";");
     this.init = function() {
         this.currentDataPointIndex = 0;
         this.updateInterval = 1;
@@ -11553,7 +11552,7 @@ function StatisticNumbers() {
             if (this.currentDataPointIndex === this.maxDataPoints) this.shiftData();
             this.updateCounter = this.updateInterval - 1;
             statistics.updateRenderObject();
-            if (mainHandler.getTicksElapsed() * .056 > 60 && this.troopsAtTimings[0] === 0) {
+            if (mainHandler.getTicksElapsed() * .056 > 45 && this.troopsAtTimings[0] === 0) {
                 this.troopsAtTimings[0] = getMax(1, troops[myID]);
                 this.landAtTimings[0] = land[myID];
             } else if (mainHandler.getTicksElapsed() * .056 > 70 && this.troopsAtTimings[1] === 0) {
@@ -11565,13 +11564,10 @@ function StatisticNumbers() {
             } else if (mainHandler.getTicksElapsed() * .056 > 97 && this.troopsAtTimings[3] === 0) {
                 this.troopsAtTimings[3] = getMax(1, troops[myID]);
                 this.landAtTimings[3] = land[myID];
-            } else if (mainHandler.getTicksElapsed() * .056 > 110 && this.troopsAtTimings[4] === 0) {
+            } else if (mainHandler.getTicksElapsed() * .056 > 120 && this.troopsAtTimings[4] === 0) {
                 this.troopsAtTimings[4] = getMax(1, troops[myID]);
                 this.landAtTimings[4] = land[myID];
-            } else if (mainHandler.getTicksElapsed() * .056 > 120 && this.troopsAtTimings[5] === 0) {
-                this.troopsAtTimings[5] = getMax(1, troops[myID]);
-                this.landAtTimings[5] = land[myID];
-            } 
+            }
         }
     };
     this.shiftData = function() {
@@ -11828,22 +11824,17 @@ function Statistics() {
         return startX * Math.pow(interpolatedValue, startY) / this.availableHeight
     };
     this.drawMicroNumbers = function(startX, startY) {
-        var leftIndex, rightIndex;
-        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .34 * this.width, startY + 2 * this.contentPadding);
-        mainCanvasCtx.textAlign = rightAlign;
-        var lineHeight = this.height - 4 * this.contentPadding - this.buttonHeight;
-        for (leftIndex = 5; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.microNumbersLabels[leftIndex], 0, leftIndex * lineHeight / 5);
-        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .39 * this.width, startY + 2 * this.contentPadding);
-        mainCanvasCtx.textAlign = leftAlign;
-        leftIndex = statisticNumbers.numbers[1];
-        for (leftIndex = 5; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.troopsAtTimings[leftIndex] != 0 ? statisticNumbers.troopsAtTimings[leftIndex] : "N/A", 0, leftIndex * lineHeight / 5);
-
-        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .74 * this.width, startY + 2 * this.contentPadding);
-        mainCanvasCtx.textAlign = rightAlign; 
-        var lineHeight = this.height - 4 * this.contentPadding - this.buttonHeight;
-        for (rightIndex = 5; 0 <= rightIndex; rightIndex--) mainCanvasCtx.fillText(statisticNumbers.microNumbersLabels[rightIndex + 6], 0, rightIndex * lineHeight / 5);
-        mainCanvasCtx.setTransform(1, 0, 0, 1, startX + .79 * this.width + mainCanvasCtx.measureText(1000).width, startY + 2 * this.contentPadding);
-        for (rightIndex = 5; 0 <= rightIndex; rightIndex--) mainCanvasCtx.fillText(statisticNumbers.troopsAtTimings[rightIndex] != 0 ? statisticNumbers.landAtTimings[rightIndex] : "N/A", 0, rightIndex * lineHeight / 5);
+        var leftIndex, cellHeight = (this.height - this.buttonHeight) / 6, cellWidth = this.width / 5;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, startX, startY);
+        mainCanvasCtx.textAlign = centerAlign;
+        mainCanvasCtx.fillStyle = redBrightRGB;
+        for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.microNumbersLabels[leftIndex], cellWidth * .5, cellHeight * (leftIndex + 1.5));
+        for (leftIndex = 3; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(statisticNumbers.microNumbersLabels[5 + leftIndex], cellWidth * (1.5 + leftIndex), cellHeight * .5);
+        mainCanvasCtx.fillStyle = greenRGB;
+        for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(0 != statisticNumbers.troopsAtTimings[leftIndex] ? statisticNumbers.landAtTimings[leftIndex] : "N/A", cellWidth * 1.5, cellHeight * (leftIndex + 1.5))
+        for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(0 != statisticNumbers.troopsAtTimings[leftIndex] ? statisticNumbers.troopsAtTimings[leftIndex] : "N/A", cellWidth * 2.5, cellHeight * (leftIndex + 1.5))
+        for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText("N/A", cellWidth * 3.5, cellHeight * (leftIndex + 1.5))
+        for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(0 != statisticNumbers.troopsAtTimings[leftIndex] ? Math.floor(statisticNumbers.troopsAtTimings[leftIndex] + 2.5 * statisticNumbers.landAtTimings[leftIndex]) : "N/A", cellWidth * 4.5, cellHeight * (leftIndex + 1.5));
     }
     this.drawGuides = function(startX, startY, endX, endY) {
         mainCanvasCtx.beginPath();
@@ -12099,10 +12090,10 @@ function updateAuthorXYMinMax() {
     for (var xCoord, yCoord, bIndex = lastBorderLength - 1; 0 <= bIndex; bIndex--) {
         xCoord = divideFloor(lastBorderLand[bIndex], 4) % currentMapWidth;
         yCoord = divideFloor(lastBorderLand[bIndex], 4 * currentMapWidth);
-        xMin[lastAuthorID] = xMin[lastAuthorID] > xCoord ? xCoord : xMin[lastAuthorID];
-        yMin[lastAuthorID] = yMin[lastAuthorID] > yCoord ? yCoord : yMin[lastAuthorID];
-        xMax[lastAuthorID] = xMax[lastAuthorID] < xCoord ? xCoord : xMax[lastAuthorID];
-        yMax[lastAuthorID] = yMax[lastAuthorID] < yCoord ? yCoord : yMax[lastAuthorID]
+        xMin[lastAuthorID] = getMin(xMin[lastAuthorID], xCoord);
+        yMin[lastAuthorID] = getMin(yMin[lastAuthorID], yCoord);
+        xMax[lastAuthorID] = getMax(xMax[lastAuthorID], xCoord);
+        yMax[lastAuthorID] = getMax(yMax[lastAuthorID], yCoord);
     }
 }
 
@@ -12525,14 +12516,13 @@ function SpecialGames() {
         if (this.isScheduled) {
             if (55 <= seconds && -1 === mainHandler.idleInterval) {
                 this.isScheduled = false;
-                seconds = now.getUTCMinutes();
-                if (4 === seconds % 5) {
-                    now = now.getUTCHours();
-                    if (59 === seconds && 15 <= now && 21 >= now) sendAnnouncement("Upcoming Game of the Day", 0)
-                    else if (14 === seconds % 30) sendAnnouncement("Upcoming Alliance Contest", 0)
-                    else if (29 === seconds % 30) sendAnnouncement("Upcoming Battle Royale Contest", 0)
+                minutes = now.getUTCMinutes();
+                if (4 === minutes % 5) {
+                    hours = now.getUTCHours();
+                    if (14 === minutes % 30 || 59 == minutes) sendAnnouncement("Upcoming Alliance Contest", 0)
+                    else if (29 === minutes % 30) sendAnnouncement("Upcoming Battle Royale Contest", 0)
                     else sendAnnouncement("Upcoming One-vs-One Game", 8)
-                } else if (2 === seconds % 5) sendAnnouncement("Upcoming Zombie Game", 9)
+                } else if (2 === minutes % 5) sendAnnouncement("Upcoming Zombie Game", 9)
             }
         } else if (55 > seconds) this.isScheduled = true
     }

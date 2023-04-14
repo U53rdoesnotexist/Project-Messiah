@@ -1,0 +1,46 @@
+gameStates
+    0: Main Page
+    2: Singleplayer Settings
+    3: Errored
+    5: Game Updated/Incorrect Version Hash
+    6: Entering Lobby
+    7: Lobby
+    8: In Game
+    10: Loading Game
+
+playerStatus:
+    0: normal player
+    1: cursive player
+    2: spectator/human bot
+
+clientStatus:
+    0: Not in game
+    1: alive in game
+    2: dead in game
+
+actionType:
+    0: attack
+    1: setlocation
+    2: cancel
+    3: onLeave
+    4: selfemoji
+    5: surrender
+    6: peace
+    7: boatCancel
+    8: nonaggression
+    Below are custom (by me)
+    9: emoji
+    10: requestToAttack 
+
+Game modes:
+    0: 2 team
+    1: 3 team
+    2: 4 team
+    3: 5 team
+    4: 6 team
+    5: 7 team
+    6: 8 team
+    7: br
+    8: 1v1
+    9: zombie
+    10: non-fullsend br
