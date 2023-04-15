@@ -2349,7 +2349,7 @@ function GameButtons() {
         mainCanvasCtx.fillRect(0, buttonSize - 1, 4 * buttonSize, 1);
         mainCanvasCtx.fillText(buttonLabels[bIndex], 2 * buttonSize, .54 * buttonSize)
     }
-    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics", "Export Replay", "Show Mod Menu"],
+    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics", "Export Replay", "Mod Menu", "Retry Map"],
         selectedBIndex, buttonScalingFactor;
     this.init = function() {
         selectedBIndex = -1;
@@ -2419,6 +2419,12 @@ function GameButtons() {
                     mainHandler.canvasDirty = true;
                 }
                 return 2;
+            } else if (6 === bIndex) {
+                if (singleplayer) {
+                    this.toggleMenu();
+                    gameInit(currentSeedSpawn, myID, playerInfo, gamemode, isContest)
+                }
+                return 2;
             } else if (statistics.visible || singleplayer && !inSpawn) return 1
             else {
                 this.toggleMenu();
@@ -2466,6 +2472,7 @@ function GameButtons() {
             drawGameButtons(2, 2 <= statisticNumbers.currentDataPointIndex ? whiteRGB2 : gray128RGB);
             drawGameButtons(3, typeof(modHandler) == 'object' && !(customJSON.isCustomJSON && customJSON.data.replay) ? whiteRGB2 : gray128RGB);
             drawGameButtons(4, typeof(modHandler) == 'object' ? whiteRGB2 : gray128RGB);
+            drawGameButtons(5, singleplayer ? whiteRGB2 : gray128RGB)
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(gameButtonsCanvas, canvasPadding, attackRatioBar.startingY)
     };
@@ -11597,7 +11604,10 @@ function StatisticNumbers() {
         this.max[0] = this.max[1] = this.max[2] = 0
     };
     this.initNumberValues = function() {
-        this.numbers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        this.numbers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this.troopsAtTimings = new Uint32Array(5);
+        this.landAtTimings = new Uint32Array(5);
+        this.efficiencyAtTimings = ["", "", "", "", ""];
     };
     this.updateMaxValues = function(dpIndex) {
         this.max[0] = getMax(this.recordedLandValues[dpIndex], this.max[0]);
