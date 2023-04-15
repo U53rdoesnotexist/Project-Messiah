@@ -23,7 +23,7 @@ function ModHandler() {
     this.customGamemode = 11;
     this.boatTracker = true;
     this.latency = 5;
-    this.font = 2;
+    this.font = 3;
     this.lateral = false;
     this.intelli = false;
     this.alwaysWin = false;
