@@ -9356,7 +9356,7 @@ function WsManager() {
     function isCreatedAndConnectingOrOpen(l) {
         return websocketsInfo[l].wsCreated && websockets[l].isConnectingOrOpen()
     }
-    this.serverCount = 4;
+    this.serverCount = 5;
     this.gameServerCount = this.serverCount - 1;
     this.terriWsCount = this.serverCount + this.gameServerCount;
     var websockets;
@@ -9496,8 +9496,8 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     const_2_s52 = 2;
-    versionHash = 2675;
-    versionLabel = "1.83.3   3 February 2023";
+    versionHash = 4014;
+    versionLabel = "1.83.5   10 Apr 2023";
     construct();
     botBorderingStuffInit();
     isMainCalled = true;
