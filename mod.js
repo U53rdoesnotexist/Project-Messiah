@@ -114,7 +114,7 @@ function DiscordWeb() {
             } else if (type == 3) {
                 text = `${nicknames[param]} played a singleplayer match in ${mapInfo.getMapName()}!`
             } else if (type == 4) {
-                text = param
+                text = replay
             }
             formData.append("content", text)
             if (type !== 4) formData.append("file", replay[0], replay[1]);
