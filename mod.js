@@ -41,7 +41,7 @@ function ModHandler() {
         this.cycle = 1;
         this.tick = 0;
         if (!singleplayer && this.public) {
-            this.font = getMin(2, this.font);
+            this.font = getMin(1, this.font);
             this.spawnMod = 0;
             this.bot = 0;
         }
