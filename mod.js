@@ -104,7 +104,14 @@ function DiscordWeb() {
     this.hasExported = false;
     this.postWebhook = function(type, replay, param) {
         try {
-            if (type == 4 || type != 4 && !discordWeb.hasExported) return
+            if (discordWeb.hasExported) return
+            else {
+                for (var idIndex of landOrder) {
+                    if (extendedActions.clientUsers.findIndex(element => element.id == idIndex && idIndex != myID) != -1) {
+                        return
+                    }
+                }
+            }
             var formData = new FormData();
             var text = '';
             if (type == 0) {
