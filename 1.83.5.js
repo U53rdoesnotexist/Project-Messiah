@@ -1919,7 +1919,7 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
     diplomacyHandler.init();
     delayedAttack.init();
     8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(param_playerInfo)) : points1v1 = null;
-    singleplayer || customJSON.isCustomJSON && playerCount == 1 ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
+    singleplayer || customJSON.isCustomJSON ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
     activateCameraRenderer();
     fadeIn.init();
     mainHandler.canvasDirty = true;
@@ -5966,7 +5966,7 @@ function LinkButtons() {
         buttonYPos = [0, 0, 0, 0, 0],
         buttonScales = [1, 1, 1, 1, 1],
         isVisible = [true, true, true, true, true];
-    this.shouldHideLinks = [true, true, true, true, true];
+    this.displayLinks = [true, true, true, true, true];
     var spriteList = null,
         links;
     this.setupLinkVariables = function(param_spriteList, param_isVisible) {
@@ -6012,7 +6012,7 @@ function LinkButtons() {
         if (!spriteList || !this.visible()) return false;
         var bIndex;
         for (bIndex = isVisible.length - 1; 0 <= bIndex; bIndex--) {
-            if (isVisible[bIndex] && this.shouldHideLinks[bIndex] && xPos > buttonXPos[bIndex] && yPos > buttonYPos[bIndex] && xPos < buttonXPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].width && yPos < buttonYPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].height) {
+            if (isVisible[bIndex] && this.displayLinks[bIndex] && xPos > buttonXPos[bIndex] && yPos > buttonYPos[bIndex] && xPos < buttonXPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].width && yPos < buttonYPos[bIndex] + buttonScales[bIndex] * spriteList[bIndex].height) {
                 openLinkBox.init(links[bIndex], isNewTab);
                 return true;
             }
@@ -6024,7 +6024,7 @@ function LinkButtons() {
             mainCanvasCtx.imageSmoothingEnabled = true;
             var bIndex;
             for (bIndex = 0; 5 > bIndex; bIndex++) {
-                if (isVisible[bIndex] && this.shouldHideLinks[bIndex]) {
+                if (isVisible[bIndex] && this.displayLinks[bIndex]) {
                     mainCanvasCtx.setTransform(buttonScales[bIndex], 0, 0, buttonScales[bIndex], buttonXPos[bIndex], buttonYPos[bIndex]);
                     mainCanvasCtx.drawImage(spriteList[bIndex], 0, 0);
                 }
@@ -10645,7 +10645,7 @@ function rectEqualOrInside(x1, y1, w1, h1, x2, y2, w2, h2) {
 
 function MoreSettings() {
     function setSettings() {
-        linkButtons.shouldHideLinks[2] = linkButtons.shouldHideLinks[3] = linkButtons.shouldHideLinks[4] = !moreSettings.hideLinks;
+        linkButtons.displayLinks[2] = linkButtons.displayLinks[3] = linkButtons.displayLinks[4] = !moreSettings.hideLinks;
         var highResolution = moreSettings.highResolution ? 1 : 0,
             hideLinks = moreSettings.hideLinks ? 1 : 0,
             hideUsernames = moreSettings.hideUsernames ? 1 : 0;
@@ -12398,7 +12398,7 @@ function SingleplayerHandler() {
         if (inSpawn) {
             updatedPlayerLabels();
             if (customJSON.isCustomJSON && customJSON.data.replay) {
-                if (replayLogger.underReplay) spawn.update()
+                if (replayLogger.underReplay && playerCount == 1) spawn.update()
                 if (0 === this.clientTick) {
                     if (mainHandler.time >= this.time) {
                         this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
