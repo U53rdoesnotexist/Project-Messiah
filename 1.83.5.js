@@ -8926,10 +8926,10 @@ function InfoRenderer() {
                             infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
                             var emojiHorizontalPos = Math.floor(landCenterX - .5 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
                             infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
-                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[0]], 0, 0);
+                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
                             emojiHorizontalPos = Math.floor(landCenterX + .7 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
                             infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
-                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[0]], 0, 0);
+                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
                             infoCanvasCtx.globalAlpha = 1;
                             infoCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                             renderIcon(landCenterX, landCenterY, fontSize, 0, 0)
@@ -9059,14 +9059,14 @@ function InfoRenderer() {
             var entityIndex;
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             var entityLabelScale = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000" + (typeof(modHandler) == "object" && modHandler.font >= 2 ? ` (${150.00})` : "")).width);
-            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale
+            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale / 1.5
         } else {
             infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
             entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap) + (typeof(modHandler) == "object" && modHandler.font >= 2) ? ` (${maxEntities - 1})` : "").width);
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
                 entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nicknames[entityIndex]).width);
-                entityLabelScaleY[entityIndex] = entityLabelScale < entityLabelScaleX[entityIndex] ? entityLabelScale : entityLabelScaleX[entityIndex];
+                entityLabelScaleY[entityIndex] = getMin(entityLabelScale, entityLabelScaleX[entityIndex]);
             }
         }
     }
@@ -9139,7 +9139,7 @@ function InfoRenderer() {
                 if (displayingEmojiID[authorID] === emojiID && 0 < displayIconRemainingTime[authorID]) displayIconRemainingTime[authorID] = 0
                 else {
                     displayingEmojiID[authorID] = emojiID;
-                    displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 540 : 270 // Regular emoji stays there for 270 ticks, flags stay twice as long
+                    displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 255 : 254
                 }
             } else if (1 === iconID) {
                 displayIconRemainingTime[authorID] = 64;
