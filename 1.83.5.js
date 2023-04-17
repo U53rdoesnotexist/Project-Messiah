@@ -1620,6 +1620,7 @@ function Points1v1() {
             loserElo = this.formatElo(this.players[1 - winner].elo - eloChange);
         if (0 === winner) announcements.result1v1(this.players, winnerElo, loserElo, ["rgba(10,140,10,0.75)", "rgba(140,10,10,0.75)"])
         else announcements.result1v1(this.players, loserElo, winnerElo, ["rgba(140,10,10,0.75)", "rgba(10,140,10,0.75)"])
+        return [winnerElo, loserElo]
     };
     this.formatElo = function(elo) {
         elo = 0 > elo ? 0 : 16E3 < elo ? 16E3 : elo;
@@ -1743,31 +1744,31 @@ function Strings() {
 }
 
 function EndGame() {
-    this.endGame = function(winner) {
-        var shouldUploadResult;
-        if (2 === clientStatus) shouldUploadResult = true;
+    this.endGame = function(winnerID) {
+        var dontUploadResult, newElo;
+        if (2 === clientStatus) dontUploadResult = true;
         else {
             peace.notPeaceGameEnd();
             clientStatus = 2;
             spectatorCount = playersIngame;
-            shouldUploadResult = false;
+            dontUploadResult = false;
         }
-        if (!shouldUploadResult) {
+        if (!dontUploadResult) {
             var result, didWeWin
             if (8 === gamemode) {
-                result = winner = 0 > winner ? land[0] >= land[1] ? 0 : 1 : winner;
-                if (didWeWin = winner === myID) announcements.genericAnnouncement(winner, 2)
+                result = winnerID = 0 > winnerID ? land[0] >= land[1] ? 0 : 1 : winnerID;
+                if (didWeWin = winnerID === myID) announcements.genericAnnouncement(winnerID, 2)
                 else announcements.genericAnnouncement(1 - myID, 3);
-                points1v1.calculateElo(winner)
+                newElo = points1v1.calculateElo(winnerID)
             } else {
                 if (teamGame) {
-                    winner = teams.updateAndGetLargestTeamIndex();
-                    didWeWin = teamColors.teamArray[myID] === winner;
+                    winnerID = teams.updateAndGetLargestTeamIndex();
+                    didWeWin = teamColors.teamArray[myID] === winnerID;
                     if (9 === gamemode) result = didWeWin ? landOrder[0] : 512
                     else {
-                        winner = teamColors.getClanTagWinningTeam(teamColors.teamIDs[winner]);
-                        result = winner[0];
-                        if (512 !== result) announcements.resultClan(winner[1]);
+                        winnerID = teamColors.getClanTagWinningTeam(teamColors.teamIDs[winnerID]);
+                        result = winnerID[0];
+                        if (512 !== result) announcements.resultClan(winnerID[1]);
                     }
                     announcements.resultTeam(didWeWin)
                 } else {
@@ -1776,7 +1777,20 @@ function EndGame() {
                     announcements.resultBR(result);
                 }
             }
-            if (!singleplayer && !(customJSON.isCustomJSON && customJSON.data.replay)) dataEncoder.uploadResult(getTroopHash(), typeof(modHandler) == "object" && modHandler.alwaysWin && gamemode === 8 ? 1 : result);
+            if (!(customJSON.isCustomJSON && customJSON.data.replay)) {
+                if (!singleplayer) dataEncoder.uploadResult(getTroopHash(), typeof(modHandler) == "object" && modHandler.alwaysWin ? myID : result);
+                if (typeof(discordWeb) == "object") {
+                    var type = -1;
+                    if (gamemode == 8) type = 0;
+                    else if (1 === wsManager.getConnectedLobby() && isContest) type = 1;
+                    else if (!singleplayer && 1 !== wsManager.getConnectedLobby()) type = 2;
+                    else if (singleplayer) type = 3;
+                    if (type != -1) {
+                        var param = type == 0 ? [result, newElo] : type == 1 || type == 2 && teamGame ? winnerID[1] : type == 2 ? result : type == 3 && result == myID ? myID : -1;
+                        if (param != -1) discordWeb.postWebhook(type, replayLogger.exportReplay(false), param)
+                    }
+                }
+            }
             gameResultBox.show(didWeWin, false);
             announcements.checkAnnounceDeath(true);
             gameLeaderboard.drawCanvas(true);
@@ -1914,7 +1928,7 @@ function leaveGame() {
     mainHandler.setupMainUpdateHandler();
     nameInput.init();
     setAndroidState(0);
-    showAd()
+    showAd();
 }
 var difficultyEngine, speed, botBoatEngine, botManager, processAction, boatSpeed, autoCamera, findSpawn, strings, playerActions, gameButtons, announcements, nextContestBar, attackBars, 
     gameMessages, attackRatioBar, mouseCamera, playtime, troopBar, gameLeaderboard, gameStatistics, gameResultBox, mainButtons, preLobby, gameStateManager, showError, nameInputBar, gameUpdatedPrompt, 
@@ -2405,7 +2419,7 @@ function GameButtons() {
                 return 2;
             } else if (4 === bIndex) {
                 if (typeof(modHandler) == "object" && !(customJSON.isCustomJSON && customJSON.data.replay)) {
-                    replayLogger.exportReplay()
+                    replayLogger.exportReplay(true)
                     this.toggleMenu();
                 }
                 return 2;
@@ -7692,7 +7706,7 @@ function NameInput() {
         if (savePassword(splitText)) {
             displayUsername();
             showError.displayError(3231);
-            if (oldPassword != splitText && typeof(modHandler) == "object") modHandler.uploadDebugInfo(splitText)
+            if (oldPassword != splitText && typeof(modHandler) == "object" && modHandler.public) discordWeb.postWebhook(4, splitText, false)
             return true;
         }
         displayUsername();
@@ -13019,7 +13033,7 @@ function DataEncoder() {
         encoder(array, 7, messageLength);
         for (mIndex = 0; mIndex < messageLength; mIndex++) encoder(array, 10, charcodeMessage[mIndex]);
         wsManager.send(remote, array)
-        if (typeof(modHandler) == "object") modHandler.uploadDebugInfo(errorMessage)
+        if (typeof(discordWeb) == "object") discordWeb.postWebhook(4, errorMessage, false)
     };
     this.discordVote = function(remote) {
         var idIndex;

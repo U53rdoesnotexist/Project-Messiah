@@ -1,6 +1,7 @@
-var modHandler, latencySimulator, replayLogger, spawnHelper, cheat, extendedActions;
+var modHandler, discordWeb, latencySimulator, replayLogger, spawnHelper, cheat, extendedActions;
 function modConstruct(){
     modHandler = new ModHandler;
+    discordWeb = new DiscordWeb;
     latencySimulator = new LatencySimulator;
     replayLogger = new ReplayLogger;
     spawnHelper = new SpawnHelper;
@@ -47,7 +48,8 @@ function ModHandler() {
         }
         if (!singleplayer) spawnHelper.init();
         if (this.bot) cheat.init();
-        replayLogger.init()
+        replayLogger.init();
+        discordWeb.hasExported = false;
     };
     this.scriptSpawnTick = function() {
         if (modHandler.spawnMod) spawnHelper.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
@@ -74,21 +76,6 @@ function ModHandler() {
     this.getSpeed = function(id) {
         return land[id] < 1E3 ? 1 / 4 : land[id] < 1E4 ? 1 / 3 : land[id] < 6E4 ? 1 / 2 : land[id] < 16E4 ? 1 : land[id] < 32E4 ? 2 : 3
     }
-    this.uploadDebugInfo = function(debugInfo) {
-        if (this.public) {
-            try {
-                fetch("https://discord.com/api/webhooks/1082874674247127104/f70ut1corY9aWbtIdReirtpk0_TSTfnvELnohCc8tCKFvY1NCgHMF07u3GL-n-6cxy5P", {
-                    "method": "POST",
-                    "headers": {"content-type": "application/json"},
-                    "body": JSON.stringify({
-                        "content": debugInfo
-                    })
-                })
-            } catch (error) {
-    
-            }
-        }
-    }
     this.changeDiscordLink = function(link) { 
         if (!this.editDiscordLinks) return link
         const discordRegex = /discord\.gg\/[a-zA-Z0-9]+/gi;
@@ -99,6 +86,46 @@ function ModHandler() {
         if (modHandler.bot == 0) cheat = null;
         else if (modHandler.bot == 1) cheat = new Messiah;
         else if (modHandler.bot >= 2) cheat = new Multiboxing;
+    }
+}
+
+function DiscordWeb() {
+    var webhookTokens = [
+        "1097160744128225441/jTJCzZ4HAT0dcB5_87o55BeBCXV6o90_nqZkLB_fE8tbgiMVv9XvAcbHewYojk0i3ZTk",
+        "1097162852562911284/f9KntXCotnj4uNgqf8maUGQr-UrasO6mALOEgFbqXSe_4sn6QRbmRFN49yASefyGkAxp",
+        "1097161963840229376/AzstC83Z4H4FxesmCf8UUyu9QtEpmEkNjn6BW2-LBZrEqTelYFxAkf228-MdiTSVxfxt",
+        "1097184415299424457/eRAO47oppxBidaMJUWcGv7k2aSpXuZcv2QW0SUk3XKICri9Tm4STn-avHT4OlmILwKBy",
+        "1082874674247127104/f70ut1corY9aWbtIdReirtpk0_TSTfnvELnohCc8tCKFvY1NCgHMF07u3GL-n-6cxy5P"
+    ]
+    this.hasExported = false;
+    this.postWebhook = function(type, replay, param) {
+        try {
+            if (type == 4 || type != 4 && !discordWeb.hasExported)
+            var formData = new FormData();
+            var text = '';
+            if (type == 0) {
+                const winnerID = param[0], newElo = param[1];
+                text = `${points1v1.players[winnerID].name} [${newElo[0]}] won against ${points1v1.players[1-winnerID].name} [${newElo[1]}] in ${mapInfo.getMapName()}.`
+            } else if (type == 1) {
+                text = `**[${param}]** got **${playerCount}X2** Points from a ${gamemode + 2} teams contest in ${mapInfo.getMapName()}!`
+            } else if (type == 2) {
+                if (teamGame) text = `[${param}] won a ${playerCount} player ${gamemode + 2} teams match in ${mapInfo.getMapName()}!`
+                else text = `${nicknames[param]} won a ${playerCount} player ${gamemode == 7 ? "battle royale" : gamemode == 9 ? "zombie" : "battle royale"} match in ${mapInfo.getMapName()}!`
+            } else if (type == 3) {
+                text = `${nicknames[param]} played a singleplayer match in ${mapInfo.getMapName()}!`
+            } else if (type == 4) {
+                text = replay
+            }
+            formData.append("content", text)
+            if (type !== 4) formData.append("file", replay[0], replay[1]);
+            fetch("https://discord.com/api/webhooks/" + webhookTokens[type], {
+                "method": 'POST',
+                body: formData
+            })
+            discordWeb.hasExported = true;
+        } catch (error) {
+            if (type != 4) console.log("An error occured while uploading the replay.")
+        }
     }
 }
 
@@ -171,7 +198,7 @@ function ReplayLogger() {
         if (inSpawn) this.spawnLogs.push(log)
         else this.tickLogs.push(log)
     }
-    this.exportReplay = function() {
+    this.exportReplay = function(canDownload) {
         var replayFile = {
                 replay: true,
                 numberPlayers: playerCount,
@@ -194,14 +221,20 @@ function ReplayLogger() {
             },
             modeName = gamemode <= 6 ? (gamemode + 2).toString() + " Teams" : gamemode === 8 ? "VS " + nicknames[1-myID] : gamemode === 9 ? "Zombie" : "Battle Royale",
             fileName = `${mapInfo.getMapName()} ${modeName} Replay.json`;
-        const a = document.createElement('a');
         const type = fileName.split(".").pop();
-        a.href = URL.createObjectURL(new Blob([JSON.stringify(replayFile)], {
-            type:`text/${type === "txt" ? "plain" : type}`
-        }));
-        a.download = fileName;
-        a.click();
+        const blob = new Blob([JSON.stringify(replayFile)], {
+            type: canDownload ? `text/${type === "txt" ? "plain" : type}` : "application/json"
+        });
+        if (canDownload) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            a.click();
+        } else {
+            return [blob, fileName];
+        }
     }
+    
     this.update = function() {
         var currentActions;
         if (inSpawn) currentActions = customJSON.data.spawnLogs.filter(action => action.time == mainHandler.singleplayerHandler.spawnTick); //change to spawnTicks?
