@@ -210,8 +210,7 @@ function ExtendedActions() {
             for (let playerIndex = 0; playerIndex < playerCount; playerIndex++) {
                 if (isAlive[playerIndex] && this.clientUsers.findIndex(element => element.id == playerIndex && element.clientHash == modHandler.clientHash) == -1) {
                     //MF doesn't have same clientHash as us, kill
-                    managePlayerDeath(playerIndex);
-                    findShiftAliveEntitiesIndex();
+                    if (isCustomGame()) processAction.onLeave(playerIndex)
                 }
             }
         }
