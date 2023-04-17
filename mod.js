@@ -104,7 +104,14 @@ function DiscordWeb() {
     this.hasExported = false;
     this.postWebhook = function(type, replay, param) {
         try {
-            if (type == 4 || type != 4 && !discordWeb.hasExported) return
+            if (discordWeb.hasExported) return
+            else {
+                for (var idIndex of landOrder) {
+                    if (extendedActions.clientUsers.findIndex(element => element.id == idIndex && idIndex != myID) != -1) {
+                        return
+                    }
+                }
+            }
             var formData = new FormData();
             var text = '';
             if (type == 0) {
@@ -143,7 +150,7 @@ function ExtendedActions() {
     this.init = function() {
         this.clientUsers = [];
         //Declare you are a client user
-        dataEncoder.setLocation(currentActionID, modHandler.clientHash >> 11, modHandler.clientHash % 0x7FF);
+        dataEncoder.setLocation(currentActionID, modHandler.clientHash >> 11, modHandler.clientHash & 0x7FF);
         this.changeActionID();
     }
     this.changeActionID = function() {
@@ -168,7 +175,7 @@ function ExtendedActions() {
         if (!(ratio || xCoord || yCoord)) { //Extended Cancel
             dataEncoder.setLocation(currentActionID, divideFloor(targetID, 8), targetID % 8);
         } else if (!targetID) { //Extended Setlocation
-            dataEncoder.setLocation(currentActionID, ratio, ((xCoord % 8) << 8) + yCoord % 8);
+            dataEncoder.setLocation(currentActionID, ratio, ((xCoord % 8) * (2**8)) + yCoord % 8);
             dataEncoder.setLocation(currentActionID, divideFloor(xCoord, 8), divideFloor(yCoord, 8))
         } else { //Extended Attack
             dataEncoder.setLocation(currentActionID, ratio, 8);
@@ -195,7 +202,8 @@ function ExtendedActions() {
             if (inSpawn) {
                 if (mainHandler.multiplayerHandler.packetsReceived <= 5) {
                     //Confirm Client
-                    const clientHash = secondAction.param3 << 11 + secondAction.param4;
+                    const clientHash = secondAction.param3 * (2**11) + secondAction.param4;
+                    console.log(clientHash, secondAction)
                     if (clientHash == modHandler.clientHash) this.clientUsers.push({
                         id: secondAction.authorID,
                         clientHash: clientHash

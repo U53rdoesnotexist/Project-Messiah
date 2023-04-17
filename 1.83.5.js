@@ -1101,7 +1101,8 @@ function ProcessAction() {
             if (8 === gamemode) endGame.endGame(1 - id)
             else this.leave(id)
         }
-        announcements.genericAnnouncement(id, 4)
+        announcements.genericAnnouncement(id, 4);
+        if (typeof(extendedActions) == "object") extendedActions.clientUsers = extendedActions.clientUsers.filter(e => e.id != id)
     };
     this.leave = function(id) {
         if (inSpawn) {
@@ -1789,19 +1790,8 @@ function EndGame() {
                     announcements.resultBR(result);
                 }
             }
-            if (!(customJSON.isCustomJSON && customJSON.data.replay)) {
-                if (!singleplayer) dataEncoder.uploadResult(getTroopHash(), typeof(modHandler) == "object" && modHandler.alwaysWin ? myID : result);
-                if (typeof(discordWeb) == "object") {
-                    var type = -1;
-                    if (gamemode == 8) type = 0;
-                    else if (1 === wsManager.getConnectedLobby() && isContest) type = 1;
-                    else if (!singleplayer && 1 !== wsManager.getConnectedLobby()) type = 2;
-                    else if (singleplayer) type = 3;
-                    if (type != -1) {
-                        var param = type == 0 ? [result, newElo] : type == 1 || type == 2 && teamGame ? winnerID[1] : type == 2 ? result : type == 3 && result == myID ? myID : -1;
-                        if (param != -1) discordWeb.postWebhook(type, replayLogger.exportReplay(false), param)
-                    }
-                }
+            if (!(customJSON.isCustomJSON && customJSON.data.replay) && !singleplayer) {
+                dataEncoder.uploadResult(getTroopHash(), typeof(modHandler) == "object" && modHandler.alwaysWin ? myID : result);
             }
             gameResultBox.show(didWeWin, false);
             announcements.checkAnnounceDeath(true);
@@ -1810,6 +1800,17 @@ function EndGame() {
             mainHandler.canvasDirty = true;
             mapUpdate.updatePartialMap();
             setAndroidState(0)
+        }
+        if (!(customJSON.isCustomJSON && customJSON.data.replay) && typeof(discordWeb) == "object") {
+            var type = -1;
+            if (gamemode == 8) type = 0;
+            else if (1 === wsManager.getConnectedLobby() && isContest) type = 1;
+            else if (!singleplayer && 1 !== wsManager.getConnectedLobby()) type = 2;
+            else if (singleplayer) type = 3;
+            if (type != -1) {
+                var param = type == 0 ? [result, newElo] : type == 1 || type == 2 && teamGame ? winnerID[1] : type == 2 ? result : type == 3 && result == myID ? myID : -1;
+                if (param != -1) discordWeb.postWebhook(type, replayLogger.exportReplay(false), param)
+            }
         }
     }
 }
