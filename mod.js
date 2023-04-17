@@ -183,7 +183,7 @@ function ExtendedActions() {
                         var yPos = secondAction.param4 * 8 + (firstAction.param4 % 8),
                             xPos = secondAction.param3 * 8 + (firstAction.param4 >> 8);
                         if (inSpawn) spawn.set(firstAction.authorID, xPos, yPos)
-                        else processSendBoat(firstAction.authorID, firstAction.param3, xPos, yPos);
+                        else processAction.processSendBoat(firstAction.authorID, firstAction.param3, xPos, yPos);
                     }
                     pendingActionChains = pendingActionChains.filter(action => ![secondAction, firstAction].includes(action))
                     continue loop;
@@ -201,10 +201,9 @@ function ExtendedActions() {
                 }
             } else {
                 //Extended Cancel
-                processAction.pendingCancel(secondAction.authorID, (secondAction.param2 << 3) + secondAction.param3);
+                processAction.pendingCancel(secondAction.authorID, (secondAction.param3 << 3) + secondAction.param4);
                 pendingActionChains = pendingActionChains.filter(action => action != secondAction)
             }
-            
         }
         if (inSpawn && mainHandler.multiplayerHandler.packetsReceived == 5) {
             for (let playerIndex = 0; playerIndex < playerCount; playerIndex++) {
