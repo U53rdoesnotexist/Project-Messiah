@@ -3049,10 +3049,12 @@ function NextContestBar() {
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.lineWidth = 1 + Math.floor(barHeight / 15);
-        mainCanvasCtx.translate((prevClientWidth - barWidth) / 2, 0);
+        mainCanvasCtx.translate(prevClientWidth - barHeight, Math.floor(.5 * (prevClientHeight + barWidth)));
+        mainCanvasCtx.rotate(-Math.PI / 2);
         mainCanvasCtx.fillStyle = whiteRGB2;
         mainCanvasCtx.fillRect(0, 0, barWidth, barHeight);
         mainCanvasCtx.strokeStyle = blackRGB;
+        mainCanvasCtx.strokeRect(0, 0, barWidth, barHeight + 10);
         mainCanvasCtx.fillStyle = blackRGB;
         mainCanvasCtx.font = fontStyle;
         mainCanvasCtx.textBaseline = middleAlign;
