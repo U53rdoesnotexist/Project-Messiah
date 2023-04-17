@@ -13229,5 +13229,4 @@ function DataEncoder() {
     }
 }
 
-aiCommand746(0)
 setTimeout(init, 1E4);
