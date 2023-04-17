@@ -5986,11 +5986,15 @@ function LinkButtons() {
             buttonScales[1] = appStoreButtonScale / spriteList[1].width;
             buttonScales[2] = 1.75 * buttonScale / spriteList[2].height;
             buttonXPos[0] = prevClientWidth - padding - buttonScales[0] * spriteList[0].width;
-            buttonXPos[1] = buttonXPos[0] - padding - buttonScales[1] * spriteList[1].width;
-            buttonXPos[2] = buttonXPos[1] - padding - buttonScales[2] * spriteList[2].width;
-            buttonYPos[0] = prevClientHeight - padding - buttonScales[0] * spriteList[0].height;
-            buttonYPos[1] = prevClientHeight - padding - buttonScales[1] * spriteList[1].height;
-            buttonYPos[2] = prevClientHeight - padding - buttonScales[2] * spriteList[2].height;
+            buttonXPos[1] = prevClientWidth - padding - buttonScales[1] * spriteList[1].width;
+            buttonXPos[2] = prevClientWidth - padding - buttonScales[2] * spriteList[2].width;
+            buttonXPos[3] = prevClientWidth - padding - buttonScales[3] * spriteList[3].width;
+            buttonXPos[4] = prevClientWidth - 2 * padding - 2 * buttonScales[3] * spriteList[3].width;
+            buttonYPos[0] = padding;
+            buttonYPos[1] = buttonYPos[0] + padding + buttonScales[0] * spriteList[0].height;
+            buttonYPos[2] = buttonYPos[1] + padding + buttonScales[1] * spriteList[1].height;
+            buttonYPos[3] = buttonYPos[2] + padding + buttonScales[2] * spriteList[2].height;
+            buttonYPos[4] = buttonYPos[3];
             if (!isVisible[0]) {
                 for (var bIndex = 0; 5 > bIndex; bIndex++) buttonYPos[bIndex] -= buttonScales[0] * spriteList[0].height + padding;
             }
