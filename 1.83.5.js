@@ -430,7 +430,7 @@ function MainLeaderboardIcon() {
         } else return false;
     };
     this.toY = function() {
-        return Math.floor(prevClientHeight - renderScale * sprites.getValueByID(13).height - 2 * bufferLength + (isZoom ? 20 : 10))
+        return Math.floor(prevClientHeight - mainSettings.width - renderScale * sprites.getValueByID(13).height - 2 * bufferLength)
     };
     this.drawCanvasImage = function() {
         if (sprites.areAllSpritesLoaded()) {
@@ -7581,7 +7581,7 @@ function MainSettings() {
         this.width = Math.floor((isZoom ? .063 : .04) * averageDim);
         this.width += 4 - this.width % 4;
         this.buttons[0].startingX = bufferLength;
-        this.buttons[0].startingY = bufferLength;
+        this.buttons[0].startingY = prevClientHeight - this.width - bufferLength;
         for (var butIndex = 1; butIndex < this.count; butIndex++) {
             this.buttons[butIndex].startingX = this.buttons[butIndex - 1].startingX + Math.floor(isZoom ? 1.5 * bufferLength : 1.36 * bufferLength) + this.width;
             this.buttons[butIndex].startingY = this.buttons[0].startingY
@@ -10663,15 +10663,15 @@ function MoreSettings() {
     }
 
     function isCursorInButton(xPos, yPos, buttonDims, row) {
-        if (0 === row) return xPos >= buttonDims.moreButX && xPos <= buttonDims.moreButX + (isZoom ? 210 : 130) && yPos >= buttonDims.yBuffer && yPos <= buttonDims.yBuffer + buttonDims.contentPadding;
+        if (0 === row) return xPos >= buttonDims.moreButX && xPos <= buttonDims.moreButX + 130 && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding;
         yPos -= row * (buttonDims.contentPadding - 2);
-        return xPos >= buttonDims.xBoundary && xPos <= buttonDims.moreButX + (isZoom ? 315 : 195) && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding
+        return xPos >= buttonDims.xBoundary && xPos <= buttonDims.moreButX + 195 && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding
     }
 
     function calcButtonDims() {
         var buttonMargin = Math.floor((isZoom ? .145 : .09) * averageDim),
             textPadding = Math.floor(1.5 * buttonMargin),
-            contentPadding = Math.floor(.8 * (isZoom ? .6 : .36) * averageDim);
+            contentPadding = Math.floor(.015 * (isZoom ? .53 : .36) * averageDim);
         return {
             moreButX: contentPadding,
             yBuffer: bufferLength,
