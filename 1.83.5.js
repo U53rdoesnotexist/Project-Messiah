@@ -10799,7 +10799,7 @@ function MoreSettings() {
     };
     this.mouseDown = function(xPos, yPos) {
         var sIndex;
-        if (7 > gameStateManager.getState()) {
+        if (8 > gameStateManager.getState()) {
             var buttonDims = calcButtonDims();
             if (menuOpen) {
                 for (sIndex = 1; sIndex < settingsArray.length; sIndex++) {
@@ -10856,7 +10856,7 @@ function MoreSettings() {
         }
     };
     this.onPointermove = function(xPos, yPos) {
-        if (7 > gameStateManager.getState()) {
+        if (8 > gameStateManager.getState()) {
             var buttonDims = calcButtonDims();
             var oldHoveringButtonIndex = hoveringButtonIndex;
             var settingsCount = menuOpen ? settingsArray.length - 1 : 1;
@@ -10871,7 +10871,7 @@ function MoreSettings() {
         }
     };
     this.drawCanvasImage = function() {
-        if (7 > gameStateManager.getState()) {
+        if (8 > gameStateManager.getState()) {
             var buttonDims = calcButtonDims();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
