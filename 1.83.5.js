@@ -4335,7 +4335,6 @@ function Playtime() {
     }
 
     function drawPlaytimeRect(playtimeIndex) {
-        if (typeof(modHandler) == 'object' && modHandler.removePlaytime) return;
         var U = Math.floor(playtimeDuration * Math.pow(playTimes[playtimeIndex], playtimeExponent));
         mainCanvasCtx.fillRect(playtimeCanvasPosition + prevClientWidth - (playtimeIndex + 1) * playtimeCanvasWidth, prevClientHeight - U, playtimeBarWidth, U)
     }
@@ -4604,7 +4603,6 @@ function Playtime() {
         -1 !== hoveringPlaytimeIndex && (this.isDraggingPlaytime = false)
     };
     this.drawCanvasImage = function() {
-        if (typeof(modHandler) == 'object' && modHandler.removePlaytime) return;
         mainCanvasCtx.fillStyle = whiteMoreTransparent;
         for (var ptIndex = playtimeEndIndex; ptIndex >= playtimeStartIndex; ptIndex--) drawPlaytimeRect(ptIndex);
         if (isLoadInfoRequested && 0 === playtimeStartIndex) {
@@ -5988,15 +5986,15 @@ function LinkButtons() {
             buttonScales[3] = buttonScale / spriteList[3].height;
             buttonScales[4] = buttonScale / spriteList[4].height;
             buttonScales[3] *= 1.07;
-            buttonXPos[0] = prevClientWidth - padding - buttonScales[0] * spriteList[0].width;
-            buttonXPos[1] = prevClientWidth - padding - buttonScales[1] * spriteList[1].width;
-            buttonXPos[2] = prevClientWidth - padding - buttonScales[2] * spriteList[2].width;
-            buttonXPos[3] = prevClientWidth - padding - buttonScales[3] * spriteList[3].width;
-            buttonXPos[4] = prevClientWidth - 2 * padding - 2 * buttonScales[3] * spriteList[3].width;
-            buttonYPos[0] = prevClientHeight - padding - buttonScales[0] * spriteList[0].height;
-            buttonYPos[1] = buttonYPos[0] - padding - buttonScales[1] * spriteList[1].height;
-            buttonYPos[2] = buttonYPos[1] - padding - buttonScales[2] * spriteList[2].height;
-            buttonYPos[3] = buttonYPos[2] - padding - buttonScales[3] * spriteList[3].height;
+            buttonXPos[0] = padding;
+            buttonXPos[1] = padding;
+            buttonXPos[2] = padding;
+            buttonXPos[3] = padding;
+            buttonXPos[4] = Math.floor(2 * padding + buttonScales[3] * spriteList[3].width);
+            buttonYPos[0] = padding;
+            buttonYPos[1] = buttonYPos[0] + padding + buttonScales[0] * spriteList[0].height;
+            buttonYPos[2] = buttonYPos[1] + padding + buttonScales[1] * spriteList[1].height;
+            buttonYPos[3] = buttonYPos[2] + padding + buttonScales[2] * spriteList[2].height;
             buttonYPos[4] = buttonYPos[3];
             if (!isVisible[0]) {
                 for (var bIndex = 0; 5 > bIndex; bIndex++) buttonYPos[bIndex] -= buttonScales[0] * spriteList[0].height + padding;
@@ -9160,7 +9158,7 @@ function InfoRenderer() {
                     displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 255 : 254
                 }
             } else if (1 === iconID) {
-                displayIconRemainingTime[authorID] = 254;
+                displayIconRemainingTime[authorID] = 270;
                 displayingEmojiID[authorID] = emojiID;
             } else displayIconRemainingTime[authorID] = emojiID;
         }
@@ -10663,21 +10661,21 @@ function MoreSettings() {
     }
 
     function isCursorInButton(xPos, yPos, buttonDims, row) {
-        if (0 === row) return xPos >= buttonDims.moreButX && xPos <= buttonDims.moreButX + 130 && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding;
+        if (0 === row) return xPos >= buttonDims.moreButX && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding;
         yPos -= row * (buttonDims.contentPadding - 2);
-        return xPos >= buttonDims.xBoundary && xPos <= buttonDims.moreButX + 195 && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding
+        return xPos >= buttonDims.xBoundary && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding
     }
 
     function calcButtonDims() {
         var buttonMargin = Math.floor((isZoom ? .145 : .09) * averageDim),
             textPadding = Math.floor(1.5 * buttonMargin),
-            contentPadding = Math.floor(.015 * (isZoom ? .53 : .36) * averageDim);
+            contentPadding = Math.floor(.065 * (isZoom ? .53 : .36) * averageDim);
         return {
-            moreButX: contentPadding,
+            moreButX: mainCanvasWidth - buttonMargin - contentPadding,
             yBuffer: bufferLength,
             buttonMargin: buttonMargin,
             contentPadding: Math.floor(.35 * buttonMargin),
-            xBoundary: contentPadding,
+            xBoundary: mainCanvasWidth - textPadding - contentPadding,
             textPadding: textPadding
         }
     }

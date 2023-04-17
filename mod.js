@@ -13,7 +13,6 @@ function ModHandler() {
     this.public = false;
     this.cycle, this.tick;
     this.editDiscordLinks = true;
-    this.removePlaytime = true;
 
     this.clientHash = 0;
     this.modInterest = false;
@@ -576,7 +575,7 @@ function ModPanel() {
     this.init = function() {
         this.visible = true;
         this.setCanvasVariables();
-       createInputBar(this);
+        createInputBar(this);
         this.toggleVisibility(true);
         this.drawCanvasImage();
         mainHandler.canvasDirty = true
@@ -632,7 +631,7 @@ function ModPanel() {
         mainCanvasCtx.strokeStyle = whiteRGB2;
         mainCanvasCtx.strokeRect(this.boxDimensions[0], this.boxDimensions[1], this.boxDimensions[2], this.boxDimensions[3]);
         mainCanvasCtx.fillStyle = whiteRGB2;
-        mainCanvasCtx.font = fontWeightBold + 1.6 * fontSize + fontSizeArial;
+        mainCanvasCtx.font = fontWeightBold + 1.6 *fontSize + fontSizeArial;
         mainCanvasCtx.fillText("Mod Menu", this.boxDimensions[0] + this.boxDimensions[2] / 4, this.boxDimensions[1] + .53 * headerHeight)
         mainCanvasCtx.font = fontWeightBold + fontSize + fontSizeArial;
         for (var settingIndex = settingsOnLeftCol - 1; 0 <= settingIndex; settingIndex--) {
