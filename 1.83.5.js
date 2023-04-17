@@ -418,8 +418,8 @@ function MainLeaderboardIcon() {
         return Math.floor(renderScale * sprites.getValueByID(13).height)
     };
     this.mouseDown = function(xPos, yPos) {
-        if (!sprites.areAllSpritesLoaded() || xPos < bufferLength || yPos < prevClientHeight - mainSettings.width - renderScale * sprites.getValueByID(13).height - 2 * bufferLength || 
-            yPos > prevClientHeight - mainSettings.width - 2 * bufferLength) return false;
+        if (!sprites.areAllSpritesLoaded() || xPos < bufferLength || yPos < prevClientHeight - renderScale * sprites.getValueByID(13).height - 2 * bufferLength + (isZoom ? 20 : 10) || 
+            yPos > prevClientHeight - 2 * bufferLength + (isZoom ? 20 : 10)) return false;
         else if (xPos < bufferLength + renderScale * sprites.getValueByID(13).width) {
             mainLeaderboard.toggleVisibility(0);
             return true;
