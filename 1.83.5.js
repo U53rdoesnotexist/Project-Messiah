@@ -3048,12 +3048,10 @@ function NextContestBar() {
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.lineWidth = 1 + Math.floor(barHeight / 15);
-        mainCanvasCtx.translate(prevClientWidth - barHeight, Math.floor(.5 * (prevClientHeight + barWidth)));
-        mainCanvasCtx.rotate(-Math.PI / 2);
+        mainCanvasCtx.translate((prevClientWidth - barWidth) / 2, 0);
         mainCanvasCtx.fillStyle = whiteRGB2;
         mainCanvasCtx.fillRect(0, 0, barWidth, barHeight);
         mainCanvasCtx.strokeStyle = blackRGB;
-        mainCanvasCtx.strokeRect(0, 0, barWidth, barHeight + 10);
         mainCanvasCtx.fillStyle = blackRGB;
         mainCanvasCtx.font = fontStyle;
         mainCanvasCtx.textBaseline = middleAlign;
@@ -4336,6 +4334,7 @@ function Playtime() {
     }
 
     function drawPlaytimeRect(playtimeIndex) {
+        if (typeof(modHandler) == 'object' && modHandler.removePlaytime) return;
         var U = Math.floor(playtimeDuration * Math.pow(playTimes[playtimeIndex], playtimeExponent));
         mainCanvasCtx.fillRect(playtimeCanvasPosition + prevClientWidth - (playtimeIndex + 1) * playtimeCanvasWidth, prevClientHeight - U, playtimeBarWidth, U)
     }
@@ -4604,6 +4603,7 @@ function Playtime() {
         -1 !== hoveringPlaytimeIndex && (this.isDraggingPlaytime = false)
     };
     this.drawCanvasImage = function() {
+        if (typeof(modHandler) == 'object' && modHandler.removePlaytime) return;
         mainCanvasCtx.fillStyle = whiteMoreTransparent;
         for (var ptIndex = playtimeEndIndex; ptIndex >= playtimeStartIndex; ptIndex--) drawPlaytimeRect(ptIndex);
         if (isLoadInfoRequested && 0 === playtimeStartIndex) {
@@ -5987,11 +5987,11 @@ function LinkButtons() {
             buttonScales[3] = buttonScale / spriteList[3].height;
             buttonScales[4] = buttonScale / spriteList[4].height;
             buttonScales[3] *= 1.07;
-            buttonXPos[0] = padding;
-            buttonXPos[1] = padding;
-            buttonXPos[2] = padding;
-            buttonXPos[3] = padding;
-            buttonXPos[4] = Math.floor(2 * padding + buttonScales[3] * spriteList[3].width);
+            buttonXPos[0] = prevClientWidth - padding - buttonScales[0] * spriteList[0].width;
+            buttonXPos[1] = prevClientWidth - padding - buttonScales[1] * spriteList[1].width;
+            buttonXPos[2] = prevClientWidth - padding - buttonScales[2] * spriteList[2].width;
+            buttonXPos[3] = prevClientWidth - padding - buttonScales[3] * spriteList[3].width;
+            buttonXPos[4] = prevClientWidth - 2 * padding - 2 * buttonScales[3] * spriteList[3].width;
             buttonYPos[0] = padding;
             buttonYPos[1] = buttonYPos[0] + padding + buttonScales[0] * spriteList[0].height;
             buttonYPos[2] = buttonYPos[1] + padding + buttonScales[1] * spriteList[1].height;
@@ -8943,10 +8943,10 @@ function InfoRenderer() {
                             infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
                             var emojiHorizontalPos = Math.floor(landCenterX - .5 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
                             infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
-                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[0]], 0, 0);
+                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
                             emojiHorizontalPos = Math.floor(landCenterX + .7 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
                             infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
-                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[0]], 0, 0);
+                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
                             infoCanvasCtx.globalAlpha = 1;
                             infoCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                             renderIcon(landCenterX, landCenterY, fontSize, 0, 0)
@@ -9076,14 +9076,14 @@ function InfoRenderer() {
             var entityIndex;
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             var entityLabelScale = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000" + (typeof(modHandler) == "object" && modHandler.font >= 2 ? ` (${150.00})` : "")).width);
-            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale
+            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale / 1.5
         } else {
             infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
             entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap) + (typeof(modHandler) == "object" && modHandler.font >= 2) ? ` (${maxEntities - 1})` : "").width);
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
                 entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nicknames[entityIndex]).width);
-                entityLabelScaleY[entityIndex] = entityLabelScale < entityLabelScaleX[entityIndex] ? entityLabelScale : entityLabelScaleX[entityIndex];
+                entityLabelScaleY[entityIndex] = getMin(entityLabelScale, entityLabelScaleX[entityIndex]);
             }
         }
     }
@@ -9156,10 +9156,10 @@ function InfoRenderer() {
                 if (displayingEmojiID[authorID] === emojiID && 0 < displayIconRemainingTime[authorID]) displayIconRemainingTime[authorID] = 0
                 else {
                     displayingEmojiID[authorID] = emojiID;
-                    displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 540 : 270 // Regular emoji stays there for 270 ticks, flags stay twice as long
+                    displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 255 : 254
                 }
             } else if (1 === iconID) {
-                displayIconRemainingTime[authorID] = 270;
+                displayIconRemainingTime[authorID] = 254;
                 displayingEmojiID[authorID] = emojiID;
             } else displayIconRemainingTime[authorID] = emojiID;
         }
@@ -10662,21 +10662,21 @@ function MoreSettings() {
     }
 
     function isCursorInButton(xPos, yPos, buttonDims, row) {
-        if (0 === row) return xPos >= buttonDims.moreButX && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding;
+        if (0 === row) return xPos >= buttonDims.moreButX && xPos <= buttonDims.moreButX + 130 && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding;
         yPos -= row * (buttonDims.contentPadding - 2);
-        return xPos >= buttonDims.xBoundary && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding
+        return xPos >= buttonDims.xBoundary && xPos <= buttonDims.moreButX + 195 && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding
     }
 
     function calcButtonDims() {
         var buttonMargin = Math.floor((isZoom ? .145 : .09) * averageDim),
             textPadding = Math.floor(1.5 * buttonMargin),
-            contentPadding = Math.floor(.065 * (isZoom ? .53 : .36) * averageDim);
+            contentPadding = Math.floor(.015 * (isZoom ? .53 : .36) * averageDim);
         return {
-            moreButX: mainCanvasWidth - buttonMargin - contentPadding,
+            moreButX: contentPadding,
             yBuffer: bufferLength,
             buttonMargin: buttonMargin,
             contentPadding: Math.floor(.35 * buttonMargin),
-            xBoundary: mainCanvasWidth - textPadding - contentPadding,
+            xBoundary: contentPadding,
             textPadding: textPadding
         }
     }
