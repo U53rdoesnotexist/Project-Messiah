@@ -103,14 +103,7 @@ function DiscordWeb() {
     this.hasExported = false;
     this.postWebhook = function(type, replay, param) {
         try {
-            if (discordWeb.hasExported) return
-            else {
-                for (var idIndex of landOrder) {
-                    if (extendedActions.clientUsers.findIndex(element => element.id == idIndex && idIndex != myID) != -1) {
-                        return
-                    }
-                }
-            }
+            if (discordWeb.hasExported || extendedActions.clientUsers.length > 1 && extendedActions.clientUsers.reduce((p, n) => land[p.id] > land[n.id] ? p : n).id !== myID) return;
             var formData = new FormData();
             var text = '';
             if (type == 0) {
@@ -203,7 +196,7 @@ function ExtendedActions() {
                     //Confirm Client
                     const clientHash = secondAction.param3 * (2**11) + secondAction.param4;
                     console.log(clientHash, secondAction)
-                    if (clientHash == modHandler.clientHash) this.clientUsers.push({
+                    if (!isCustomGame() || isCustomGame() && clientHash == modHandler.clientHash) this.clientUsers.push({
                         id: secondAction.authorID,
                         clientHash: clientHash
                     })
@@ -217,7 +210,7 @@ function ExtendedActions() {
         }
         if (inSpawn && mainHandler.multiplayerHandler.packetsReceived == 5) {
             for (let playerIndex = 0; playerIndex < playerCount; playerIndex++) {
-                if (isAlive[playerIndex] && this.clientUsers.findIndex(element => element.id == playerIndex && element.clientHash == modHandler.clientHash) == -1) {
+                if (isAlive[playerIndex] && this.clientUsers.findIndex(element => element.id == playerIndex && (!isCustomGame() || element.clientHash == modHandler.clientHash)) == -1) {
                     //MF doesn't have same clientHash as us, kill
                     if (isCustomGame()) processAction.leave(playerIndex)
                 }
