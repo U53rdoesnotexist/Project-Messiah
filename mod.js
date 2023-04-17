@@ -130,12 +130,17 @@ function DiscordWeb() {
 }
 
 function ExtendedActions() {
+    function isCustomGame () {
+        return maxEntities > 512 || modHandler.modInterest || modHandler.modTax || modHandler.boatSpeed != 2 || modHandler.neutralBots || !modHandler.humanBots || modHandler.customMap != -1 || modHandler.customGamemode != 11
+    }
     var currentActionID = 1001;
+    this.clientUsers = [];
+    var pendingActionChains = [];
     this.init = function() {
-        /*It's modded
-        if (modHandler.modInterest || modHandler.modTax || modHandler.boatSpeed != 2 || modHandler.neutralBots || !modHandler.humanBots || modHandler.customMap != -1 || modHandler.customGamemode != 11) {
-            dataEncoder.setLocation()
-        }*/
+        this.clientUsers = [];
+        //Declare you are a client user
+        dataEncoder.setLocation(currentActionID, modHandler.clientHash >> 11, modHandler.clientHash % 0x7FF);
+        this.changeActionID();
     }
     this.changeActionID = function() {
         currentActionID++;
@@ -143,6 +148,71 @@ function ExtendedActions() {
     }
     this.getActionID = function() {
         return currentActionID;
+    }
+    this.processModdedAction = function(authorID, actionType, actionID, param2, param3, param4) {
+        var newAction = {
+            authorID: authorID,
+            actionType: actionType,
+            actionID: actionID,
+            param2: param2,
+            param3: param3,
+            param4: param4
+        };
+        if (pendingActionChains.findIndex(action => action == newAction) === -1) pendingActionChains.push(newAction)
+    }
+    this.submitExtendedAction = function(ratio, targetID, xCoord, yCoord) {
+        if (!(ratio || xCoord || yCoord)) { //Extended Cancel
+            dataEncoder.setLocation(currentActionID, divideFloor(targetID, 8), targetID % 8);
+        } else if (!targetID) { //Extended Setlocation
+            dataEncoder.setLocation(currentActionID, ratio, ((xCoord % 8) << 8) + yCoord % 8);
+            dataEncoder.setLocation(currentActionID, divideFloor(xCoord, 8), divideFloor(yCoord, 8))
+        } else { //Extended Attack
+            dataEncoder.setLocation(currentActionID, ratio, 8);
+            dataEncoder.setLocation(currentActionID, divideFloor(targetID, 8), targetID % 8)
+        }
+        this.changeActionID();
+    }
+    this.update = function() {
+        loop: for (var secondAction of pendingActionChains) {
+            for (var firstAction of pendingActionChains) {
+                if (secondAction != firstAction && secondAction.authorID == firstAction.authorID && secondAction.actionID == firstAction.actionID) {
+                    console.log(firstAction, secondAction)
+                    if (firstAction.param4 === 8) { //Extended Attack
+                        processAttack(firstAction.authorID, secondAction.param3 * 8 + secondAction.param4, firstAction.param3);
+                    } else { //Extended Setlocation
+                        var yPos = secondAction.param4 * 8 + (firstAction.param4 % 8),
+                            xPos = secondAction.param3 * 8 + (firstAction.param4 >> 8);
+                        if (inSpawn) spawn.set(firstAction.authorID, xPos, yPos)
+                        else processAction.processSendBoat(firstAction.authorID, firstAction.param3, xPos, yPos);
+                    }
+                    pendingActionChains = pendingActionChains.filter(action => ![secondAction, firstAction].includes(action))
+                    continue loop;
+                }
+            }
+            if (inSpawn) {
+                if (mainHandler.multiplayerHandler.packetsReceived <= 5) {
+                    //Confirm Client
+                    const clientHash = secondAction.param3 << 11 + secondAction.param4;
+                    if (clientHash == modHandler.clientHash) this.clientUsers.push({
+                        id: secondAction.authorID,
+                        clientHash: clientHash
+                    })
+                    pendingActionChains = pendingActionChains.filter(action => action != secondAction)
+                }
+            } else {
+                //Extended Cancel
+                processAction.pendingCancel(secondAction.authorID, (secondAction.param3 << 3) + secondAction.param4);
+                pendingActionChains = pendingActionChains.filter(action => action != secondAction)
+            }
+        }
+        if (inSpawn && mainHandler.multiplayerHandler.packetsReceived == 5) {
+            for (let playerIndex = 0; playerIndex < playerCount; playerIndex++) {
+                if (isAlive[playerIndex] && this.clientUsers.findIndex(element => element.id == playerIndex && element.clientHash == modHandler.clientHash) == -1) {
+                    //MF doesn't have same clientHash as us, kill
+                    if (isCustomGame()) processAction.onLeave(playerIndex)
+                }
+            }
+        }
     }
 }
 
@@ -451,7 +521,7 @@ function ModPanel() {
         else if (settingID == 3) modHandler.boatSpeed -= (modHandler.boatSpeed > 0 ? 1 : -2);
         else if (settingID == 4) modHandler.neutralBots = !modHandler.neutralBots;
         else if (settingID == 5) modHandler.humanBots = !modHandler.humanBots;
-        else if (settingID == 6) modHandler.customMap = (modHandler.customMap == customMapID - 1 && currentMapID != customMapID || modHandler.customMap == customMapID ? -1 : modHandler.customMap + 1);
+        else if (settingID == 6) modHandler.customMap = (modHandler.customMap == customMapID - 1 && currentMapID != customMapID || modHandler.customMap == customMapID ? -1 : modHandler.customMap != currentMapID && currentMapID == customMapID ? customMapID : modHandler.customMap + 1);
         else if (settingID == 7) modHandler.customGamemode += (modHandler.customGamemode == 7 ? 2 : modHandler.customGamemode >= 11 ? -11 : 1);
         else if (settingID == 8) modHandler.boatTracker = !modHandler.boatTracker;
         else if (settingID == 9) modHandler.latency += (modHandler.latency >= 7 ? -7 : 1);
@@ -460,7 +530,7 @@ function ModPanel() {
         else if (settingID == 12 && !modHandler.public) modHandler.intelli = !modHandler.intelli;
         else if (settingID == 13 && !modHandler.public) modHandler.alwaysWin = !modHandler.alwaysWin;
         else if (settingID == 14 && !modHandler.public) {
-            modHandler.spawnMod += (modHandler.spawnMod == 2 ? -2 : 1)
+            modHandler.spawnMod += (modHandler.spawnMod == 2 ? -2 : 1) 
             if (modHandler.spawnMod) spawnHelper.init()
         } else if (settingID == 15 && !modHandler.public) {
             if ([0,1].includes(modHandler.bot) && clientStatus >= 1) modHandler.bot = 1 - modHandler.bot
