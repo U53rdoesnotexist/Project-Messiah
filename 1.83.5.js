@@ -9142,7 +9142,7 @@ function InfoRenderer() {
                     displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 540 : 270 // Regular emoji stays there for 270 ticks, flags stay twice as long
                 }
             } else if (1 === iconID) {
-                displayIconRemainingTime[authorID] = 64;
+                displayIconRemainingTime[authorID] = 270;
                 displayingEmojiID[authorID] = emojiID;
             } else displayIconRemainingTime[authorID] = emojiID;
         }
