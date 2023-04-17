@@ -1231,7 +1231,7 @@ function BoatSpeed() {
                     mainCanvasCtx.lineTo(getXPos(boatX + .5), getYPos(boatY + .5));
                 }
                 mainCanvasCtx.stroke()
-                if (pixel.strongIsOwner(myID, pixel.toIndex(boatX, boatY)) && authorID != myID && isNotTeamate(myID, authorID) && dist == 30 && playerStatus[authorID] == 0) {
+                if (pixel.strongIsOwner(myID, pixel.toIndex(boatX, boatY)) && authorID != myID && isNotTeamate(myID, authorID) && dist == 30 && authorID < playerCount && playerStatus[authorID] != 2) {
                     announcements.genericAnnouncement(authorID, 23)
                 }
             }
