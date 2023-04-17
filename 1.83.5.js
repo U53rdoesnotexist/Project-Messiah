@@ -1005,10 +1005,12 @@ function BotManager() {
 }
 
 function ProcessAction() {
-    function addPendingAction(authorID, actionType, ratio, param, xCoord, yCoord) {
-        if (0 < ratio && 1E3 >= ratio) {
+    function addPendingAction(authorID, actionType, param1, param2, param3, param4) {
+        if (0 < param1 && 1E3 >= param1) {
             authors.push(authorID), actionsType.push(actionType), 
-            actionsRatio.push(ratio), actionsParam.push(param), actionsXCoord.push(xCoord), actionsYCoord.push(yCoord);
+            actionsRatio.push(param1), actionsParam.push(param2), actionsXCoord.push(param3), actionsYCoord.push(param4);
+        } else if (param1 > 1E3 && typeof(extendedActions) == "object") {
+            extendedActions.processModdedAction(authorID, actionType, param1, param2, param3, param4)
         }
     }
     var authors, actionsType, actionsRatio, actionsParam, actionsXCoord, actionsYCoord;
@@ -1032,6 +1034,7 @@ function ProcessAction() {
             } else 7 === actionsType[actionIndex] && this.processCancelBoat(authors[actionIndex], actionsParam[actionIndex]);
         }
         0 < authorsCount && this.init()
+        if (typeof(extendedActions) == "object") extendedActions.update()
     };
     this.processSendBoat = function(authorID, ratio, toX, yCoord) {
         if (0 !== isAlive[authorID] && 2 !== playerStatus[authors] && boatPathChecker.check(authorID, pixel.toIndex(toX, yCoord))) {
@@ -1072,7 +1075,7 @@ function ProcessAction() {
     };
     this.pendingSetLocation = function(authorID, ratio, xCoord, yCoord) {
         if (1 === clientStatus) {
-            if (inSpawn) spawn.set(authorID, xCoord, yCoord)
+            if (inSpawn && ratio <= 1E3) spawn.set(authorID, xCoord, yCoord)
             else addPendingAction(authorID, 1, ratio, 0, xCoord, yCoord)
         }
     };
@@ -12482,7 +12485,8 @@ function MultiplayerHandler() {
             infoRenderer.drawCanvas();
             mapUpdate.updateMapCanvas();
             if (typeof(modHandler) == 'object') modHandler.scriptSpawnTick()
-        }
+        };
+        if (typeof(extendedActions) == "object") extendedActions.update();
     };
     this.update = function() {
         canvasManager.update();
@@ -12794,7 +12798,11 @@ function DataDecoder() {
         var check1v1 = decoder(array, 2),
             remote = decoder(array, 10);
         wsManager.lobby > wsManager.gameServerCount && (remote += wsManager.gameServerCount);
-        if (wsManager.lobby === remote) return wsManager.remote = remote, false;
+        if (wsManager.lobby === remote) {
+            wsManager.remote = remote;
+            if (typeof(extendedActions) == "object") extendedActions.init() 
+            return false;
+        }
         wsManager.close(wsManager.lobby, 3247);
         wsManager.remote = remote;
         setGameOrigin.gameHash = decoder(array, 10);
@@ -13084,8 +13092,13 @@ function DataEncoder() {
         encoder(array, 10, timeHash);
         encoder(array, 14, versionHash);
         wsManager.send(wsManager.remote, array)
+        if (typeof(extendedActions) == "object") extendedActions.init() 
     };
     this.attack = function(ratio, targetID) {
+        if (targetID >= 512 && typeof(extendedActions) == "object") {
+            extendedActions.submitExtendedAction(ratio, targetID, 0, 0);
+            return
+        }
         var array = new Uint8Array(3);
         arrayIndex = 0;
         encoder(array, 1, 1);
@@ -13095,6 +13108,10 @@ function DataEncoder() {
         wsManager.send(wsManager.remote, array)
     };
     this.setLocation = function(ratio, xCoord, yCoord) {
+        if ((xCoord >= 2048 || yCoord >= 2048) && typeof(extendedActions) == "object") {
+            extendedActions.submitExtendedAction(ratio, 0, xCoord, yCoord);
+            return
+        }
         var array = new Uint8Array(5);
         arrayIndex = 0;
         encoder(array, 1, 1);
@@ -13105,6 +13122,10 @@ function DataEncoder() {
         wsManager.send(wsManager.remote, array)
     };
     this.cancel = function(targetID) {
+        if (targetID >= 512 && typeof(extendedActions) == "object") {
+            extendedActions.submitExtendedAction(0, targetID, 0, 0);
+            return
+        }
         var array = new Uint8Array(2);
         arrayIndex = 0;
         encoder(array, 1, 1);
