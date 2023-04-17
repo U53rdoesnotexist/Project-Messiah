@@ -2363,7 +2363,7 @@ function GameButtons() {
         mainCanvasCtx.fillRect(0, buttonSize - 1, 4 * buttonSize, 1);
         mainCanvasCtx.fillText(buttonLabels[bIndex], 2 * buttonSize, .54 * buttonSize)
     }
-    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics", "Export Replay", "Mod Menu", "Retry Map"],
+    var buttonSize, gameButtonsCanvas, fontStyle, buttonLabels = ["Quit Game", "Surrender", "Statistics", "Export Replay", "Mod Menu", "Retry Map", "New Map"],
         selectedBIndex, buttonScalingFactor;
     this.init = function() {
         selectedBIndex = -1;
@@ -2436,7 +2436,13 @@ function GameButtons() {
             } else if (6 === bIndex) {
                 if (singleplayer) {
                     this.toggleMenu();
-                    gameInit(currentSeedSpawn, myID, playerInfo, gamemode, isContest)
+                    gameInit(currentSeedSpawn, myID, playerInfo, gamemode, isContest);
+                }
+                return 2;
+            } else if (7 === bIndex) {
+                if (singleplayer) {
+                    this.toggleMenu();
+                    gameInit(Math.floor(Math.random() * 32768), myID, playerInfo, gamemode, isContest);
                 }
                 return 2;
             } else if (statistics.visible || singleplayer && !inSpawn) return 1
@@ -2487,6 +2493,7 @@ function GameButtons() {
             drawGameButtons(3, typeof(modHandler) == 'object' && !(customJSON.isCustomJSON && customJSON.data.replay) ? whiteRGB2 : gray128RGB);
             drawGameButtons(4, typeof(modHandler) == 'object' ? whiteRGB2 : gray128RGB);
             drawGameButtons(5, singleplayer ? whiteRGB2 : gray128RGB)
+            drawGameButtons(6, singleplayer ? whiteRGB2 : gray128RGB)
             mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
         } else mainCanvasCtx.drawImage(gameButtonsCanvas, canvasPadding, attackRatioBar.startingY)
     };
