@@ -3053,7 +3053,7 @@ function Emojis() {
     this.flagCount = this.emoteCount = 50;
     this.directionCount = 8;
     this.totalEmojisCount = this.emoteCount + this.flagCount;
-    this.totalDistinctEmojisCount = this.emoteCount + this.flagCount + this.directionCount; //Arrow emoji gives choices for 8 directions
+    this.totalDistinctEmojisCount = this.emoteCount + this.flagCount + this.directionCount; // Arrow emoji gives choices for 8 directions
     this.width = 72;
     this.emojiCanvasRow = this.emojiCanvasColumn = 0;
     this.emojiCanvasList = Array(this.totalDistinctEmojisCount);
@@ -3150,8 +3150,8 @@ function Emojis() {
         if (1 > this.selectedEmojiCount) return false;
         this.openedDirectionEmojiTime = mainHandler.time;
         var emojiColumnCount = Math.floor(prevClientWidth / this.emojiCanvasRow);
-        emojiColumnCount = 3 > emojiColumnCount ? 3 : emojiColumnCount > this.maxEmojiColumnCount ? this.maxEmojiColumnCount : emojiColumnCount;
-        emojiColumnCount = this.selectedEmojiCount > emojiColumnCount ? emojiColumnCount : this.selectedEmojiCount;
+        emojiColumnCount = rangeClamp(3, emojiColumnCount, this.maxEmojiColumnCount);
+        emojiColumnCount = getMin(emojiColumnCount, this.selectedEmojiCount);
         var emojiRowCount = 1 + divideFloor(this.selectedEmojiCount - 1, emojiColumnCount),
             totalWidth = Math.floor(emojiColumnCount * this.emojiCanvasRow),
             xLeftBound = Math.floor(xPos - totalWidth / 2);
@@ -3160,7 +3160,7 @@ function Emojis() {
         var yTopBound = Math.floor(yPos - this.emojiCanvasRow / 2);
         emojiRowCount = Math.floor(emojiRowCount * this.emojiCanvasRow);
         yTopBound = yTopBound + emojiRowCount > prevClientHeight ? prevClientHeight - emojiRowCount : yTopBound;
-        yTopBound = 0 > yTopBound ? 0 : yTopBound;
+        yTopBound = getMax(0, yTopBound);
         this.xBoundary = xLeftBound + totalWidth;
         this.yBoundary = yTopBound + emojiRowCount;
         for (totalWidth = 0; totalWidth < this.selectedEmojiCount; totalWidth++) {
@@ -3205,7 +3205,7 @@ function Emojis() {
         mainCanvasCtx.imageSmoothingEnabled = false;
         mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0)
     };
-    this.oC = function(g, k, n) { //unused
+    this.oC = function(g, k, n) { // unused
         mainCanvasCtx.imageSmoothingEnabled = true;
         mainCanvasCtx.setTransform(this.zoom, 0, 0, this.zoom, g, k);
         mainCanvasCtx.drawImage(this.emojiCanvasList[n], 0, 0);
@@ -8925,10 +8925,11 @@ function InfoRenderer() {
                                 emojiVerticalPos = Math.floor(landCenterY - .5 * emojiSizeMultiplier * emojis.width - .05 * fontSize);
                             infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
                             var emojiHorizontalPos = Math.floor(landCenterX - .5 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
-                            for (var index = 0; 2 > index; index++) {
-                                infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
-                                infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
-                            }
+                            infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
+                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[0]], 0, 0);
+                            emojiHorizontalPos = Math.floor(landCenterX + .7 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
+                            infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
+                            infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[0]], 0, 0);
                             infoCanvasCtx.globalAlpha = 1;
                             infoCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                             renderIcon(landCenterX, landCenterY, fontSize, 0, 0)
@@ -9138,7 +9139,7 @@ function InfoRenderer() {
                 if (displayingEmojiID[authorID] === emojiID && 0 < displayIconRemainingTime[authorID]) displayIconRemainingTime[authorID] = 0
                 else {
                     displayingEmojiID[authorID] = emojiID;
-                    displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 255 : 64
+                    displayIconRemainingTime[authorID] = emojis.isFlag(emojiID) ? 540 : 270 // Regular emoji stays there for 270 ticks, flags stay twice as long
                 }
             } else if (1 === iconID) {
                 displayIconRemainingTime[authorID] = 64;
