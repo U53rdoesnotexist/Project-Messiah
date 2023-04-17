@@ -50,6 +50,9 @@ function ModHandler() {
         if (this.bot) cheat.init();
         replayLogger.init();
         discordWeb.hasExported = false;
+        if (customJSON.isCustomJSON && customJSON.data.replay && playerCount == 1) {
+            spawn.set(myID, customJSON.data.spawnLogs[0].xCoord, customJSON.data.spawnLogs[0].yCoord)
+        }
     };
     this.scriptSpawnTick = function() {
         if (modHandler.spawnMod) spawnHelper.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
@@ -100,7 +103,7 @@ function DiscordWeb() {
     this.hasExported = false;
     this.postWebhook = function(type, replay, param) {
         try {
-            if (type == 4 || type != 4 && !discordWeb.hasExported)
+            if (type == 4 || type != 4 && !discordWeb.hasExported) return
             var formData = new FormData();
             var text = '';
             if (type == 0) {
@@ -176,7 +179,6 @@ function ExtendedActions() {
         loop: for (var secondAction of pendingActionChains) {
             for (var firstAction of pendingActionChains) {
                 if (secondAction != firstAction && secondAction.authorID == firstAction.authorID && secondAction.actionID == firstAction.actionID) {
-                    console.log(firstAction, secondAction)
                     if (firstAction.param4 === 8) { //Extended Attack
                         processAttack(firstAction.authorID, secondAction.param3 * 8 + secondAction.param4, firstAction.param3);
                     } else { //Extended Setlocation
@@ -209,7 +211,7 @@ function ExtendedActions() {
             for (let playerIndex = 0; playerIndex < playerCount; playerIndex++) {
                 if (isAlive[playerIndex] && this.clientUsers.findIndex(element => element.id == playerIndex && element.clientHash == modHandler.clientHash) == -1) {
                     //MF doesn't have same clientHash as us, kill
-                    if (isCustomGame()) processAction.onLeave(playerIndex)
+                    if (isCustomGame()) processAction.leave(playerIndex)
                 }
             }
         }
@@ -255,9 +257,9 @@ function ReplayLogger() {
         this.underReplay = false;
     }
     this.addLogs = function(actionType, authorID, targetID, ratio, xCoord, yCoord) {
-        if (clientStatus == 2) return 0
+        if (clientStatus == 2 || customJSON.isCustomJSON && customJSON.data.replay) return 0
         var log = {
-            time: inSpawn ? mainHandler.multiplayerHandler.packetsReceived : mainHandler.getTicksElapsed() + 1,
+            time: inSpawn ? playerCount == 1 ? 0 : mainHandler.multiplayerHandler.packetsReceived : mainHandler.getTicksElapsed() + (modHandler.latency ? 1 : 0),
             actionType: actionType,
             authorID: authorID,
             targetID: targetID,
@@ -308,7 +310,7 @@ function ReplayLogger() {
     this.update = function() {
         var currentActions;
         if (inSpawn) currentActions = customJSON.data.spawnLogs.filter(action => action.time == mainHandler.singleplayerHandler.spawnTick); //change to spawnTicks?
-        else currentActions = customJSON.data.tickLogs.filter(action => action.time == mainHandler.getTicksElapsed() + 1);
+        else currentActions = customJSON.data.tickLogs.filter(action => action.time == mainHandler.getTicksElapsed() + (playerCount == 1 ? 0 : 1));
         for (var action of currentActions) {
             if (action.actionType == 0) processAction.pendingAttack(action.authorID, action.ratio, action.targetID);
             else if (action.actionType == 1) processAction.pendingSetLocation(action.authorID, action.ratio, action.xCoord, action.yCoord);

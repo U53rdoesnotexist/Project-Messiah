@@ -1037,6 +1037,7 @@ function ProcessAction() {
         if (typeof(extendedActions) == "object") extendedActions.update()
     };
     this.processSendBoat = function(authorID, ratio, toX, yCoord) {
+        if (singleplayer && typeof(modHandler) == "object" && !modHandler.latency) replayLogger.addLogs(1, myID, 0, attackRatioBar.getFlooredRatio(), toX, yCoord)
         if (0 !== isAlive[authorID] && 2 !== playerStatus[authors] && boatPathChecker.check(authorID, pixel.toIndex(toX, yCoord))) {
             var boatSuccessful = processSendBoat(authorID, boatPathChecker.getClosestWaterPixel(), pixel.toIndex(toX, yCoord), divideFloor(ratio * troops[authorID], 1E3));
             if (boatSuccessful && authorID === myID) {
@@ -1047,6 +1048,7 @@ function ProcessAction() {
         }
     };
     this.processCancel = function(authorID, targetID) {
+        if (singleplayer && typeof(modHandler) == "object" && !modHandler.latency) replayLogger.addLogs(2, myID, targetID, 0, 0, 0)
         if (0 !== isAlive[authorID] && 2 !== playerStatus[authors] && attacks.check(authorID, targetID)) {
             var returnedTroops = attacks.getRemainingTroopsFromTarget(authorID, targetID);
             attacks.setRemainingTroopsFromTarget(authorID, targetID, 0);
@@ -1060,6 +1062,7 @@ function ProcessAction() {
         }
     };
     this.processCancelBoat = function(authorID, targetID) {
+        if (singleplayer && typeof(modHandler) == "object" && !modHandler.latency) replayLogger.addLogs(7, myID, targetID, 0, 0, 0)
         if (0 !== isAlive[authorID] && 2 !== playerStatus[authors]) {
             var B = attacks.findAttackIndexFromBoatID(authorID, targetID);
             if (-1 !== B) {
@@ -1071,21 +1074,26 @@ function ProcessAction() {
         }
     };
     this.pendingAttack = function(authorID, ratio, targetID) {
+        if (typeof(modHandler) == "object") replayLogger.addLogs(0, authorID, targetID, ratio, 0, 0)
         1 === clientStatus && addPendingAction(authorID, 0, ratio, targetID, 0, 0)
     };
     this.pendingSetLocation = function(authorID, ratio, xCoord, yCoord) {
+        if (typeof(modHandler) == "object") replayLogger.addLogs(1, authorID, 0, ratio, xCoord, yCoord)
         if (1 === clientStatus) {
             if (inSpawn && ratio <= 1E3) spawn.set(authorID, xCoord, yCoord)
             else addPendingAction(authorID, 1, ratio, 0, xCoord, yCoord)
         }
     };
     this.pendingCancel = function(authorID, targetID) {
+        if (typeof(modHandler) == "object") replayLogger.addLogs(2, authorID, targetID, 0, 0, 0) 
         1 === clientStatus && addPendingAction(authorID, 2, 1, targetID, 0, 0)
     };
     this.pendingCancelBoat = function(authorID, boatID) {
+        if (typeof(modHandler) == "object") replayLogger.addLogs(7, authorID, boatID, 0, 0, 0)           
         1 === clientStatus && addPendingAction(authorID, 7, 1, boatID, 0, 0)
     };
     this.pendingPeace = function(id, choice) {
+        if (typeof(modHandler) == "object") replayLogger.addLogs(6, id, choice, 0, 0, 0);
         1 === clientStatus && addPendingAction(id, 6, 1, choice, 0, 0)
     };
     this.onLeave = function(id) {
@@ -1102,6 +1110,7 @@ function ProcessAction() {
         } else if (!typeof(modHandler) == "object" || modHandler.humanBots) humanBots.turnToBot(id)
     };
     this.surrender = function(id) {
+        if (typeof(modHandler) == "object") replayLogger.addLogs(5, id, 0, 0, 0, 0) 
         if (0 !== isAlive[id] && 2 !== playerStatus[id] && gameButtons.canSurrender(id)) {
             if (1 === aliveCount) endGame.endGame(id)
             else {
@@ -1910,7 +1919,7 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
     diplomacyHandler.init();
     delayedAttack.init();
     8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(param_playerInfo)) : points1v1 = null;
-    singleplayer || customJSON.isCustomJSON ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
+    singleplayer || customJSON.isCustomJSON && playerCount == 1 ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
     activateCameraRenderer();
     fadeIn.init();
     mainHandler.canvasDirty = true;
@@ -2142,6 +2151,7 @@ function PlayerActions() {
                     this.end();
                     if (singleplayer) {
                         spawn.set(0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
+                        replayLogger.addLogs(1, 0, 0, 0, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
                         spawn.update();
                     } else if (typeof(spawnHelper) == "object" && modHandler.spawnMod) spawnHelper.addSpawn(pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex))
                     else dataEncoder.setLocation(1E3, pixel.toX(targetPixelIndex), pixel.toY(targetPixelIndex));
@@ -2150,7 +2160,9 @@ function PlayerActions() {
                     announcements.lowBalance();
                     if (singleplayer) {
                         if (typeof(modHandler) == "object" && modHandler.latency) latencySimulator.addPendingAction(0, attackRatioBar.getFlooredRatio(), targetID, 0, 0)
-                        else processAttack(myID, targetID, attackRatioBar.getFlooredRatio());
+                        else {
+                            processAttack(myID, targetID, attackRatioBar.getFlooredRatio());
+                        }
                     } else if (!freeSpawn || 300 < gameStatistics.getUnformattedTime()) dataEncoder.attack(attackRatioBar.getFlooredRatio(), targetID === maxEntities ? myID : targetID);
                 }
             } else if (iconActive[8]) {
@@ -3943,6 +3955,7 @@ function Peace() {
         this.visible && peaceProgress[0] < peaceRequirement[0] && resetCurrentPeace()
     };
     this.processVotePeace = function(id, choice) {
+        if (singleplayer && typeof(modHandler) == "object" && !modHandler.latency) replayLogger.addLogs(6, 0, choice, 0, 0, 0)
         if (this.visible) {
             for (var vIndex = voterList.length - 1; 0 <= vIndex; vIndex--)
                 if (voterList[vIndex] === id) return;
@@ -5410,6 +5423,7 @@ function PlayerAura() {
 }
 
 function processAttack(authorID, targetID, ratio) {
+    if (singleplayer && typeof(modHandler) == "object" && !modHandler.latency) replayLogger.addLogs(0, myID, targetID, attackRatioBar.getFlooredRatio(), 0, 0)
     if (!(0 === isAlive[authorID] || 0 > ratio || 1E3 < ratio || 2 === playerStatus[authorID])) {
         var amount = divideFloor(ratio * troops[authorID], 1E3);
         if (10 === gamemode && targetID < playerCount && 2 !== playerStatus[targetID]) amount = antiFullSend.reduceAmount(authorID, amount)
@@ -12384,6 +12398,7 @@ function SingleplayerHandler() {
         if (inSpawn) {
             updatedPlayerLabels();
             if (customJSON.isCustomJSON && customJSON.data.replay) {
+                if (replayLogger.underReplay) spawn.update()
                 if (0 === this.clientTick) {
                     if (mainHandler.time >= this.time) {
                         this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
@@ -12823,36 +12838,30 @@ function DataDecoder() {
                     var ratio = decoder(array, 10),
                         targetID = decoder(array, 9);
                     targetID = targetID === authorID ? maxEntities : targetID;
-                    if (typeof(modHandler) == "object") replayLogger.addLogs(0, authorID, targetID, ratio, 0, 0)
                     processAction.pendingAttack(authorID, ratio, targetID)
                 } else if (1 === actionType) {
                     var ratio = decoder(array, 10),
                         xPos = decoder(array, 11),
                         yPos = decoder(array, 11);
-                    if (typeof(modHandler) == "object") replayLogger.addLogs(1, authorID, 0, ratio, xPos, yPos)
                     processAction.pendingSetLocation(authorID, ratio, xPos, yPos)
                 } else if (2 === actionType) {
                     targetID = decoder(array, 9);
                     targetID = targetID === authorID ? maxEntities : targetID;
-                    if (typeof(modHandler) == "object") replayLogger.addLogs(2, authorID, targetID, 0, 0, 0) 
                     processAction.pendingCancel(authorID, targetID);
                 } else if (3 === actionType) {
                     if (typeof(modHandler) == "object") replayLogger.addLogs(3, authorID, 0, 0, 0, 0) 
                     processAction.onLeave(authorID)
                 } else if (4 === actionType) {
                     actionType = decoder(array, 7);
-                    if (typeof(modHandler) == "object") replayLogger.addLogs(4, authorID, actionType, 0, 0, 0, 0) 
+                    if (typeof(modHandler) == "object") replayLogger.addLogs(4, authorID, actionType, 0, 0, 0, 0)
                     infoRenderer.showIcon(authorID, 0, actionType);
                 } else if (5 === actionType) {
-                    if (typeof(modHandler) == "object") replayLogger.addLogs(5, authorID, 0, 0, 0, 0) 
                     processAction.surrender(authorID)
                 } else if (6 === actionType) {
                     var choice = decoder(array, 1)
-                    if (typeof(modHandler) == "object") replayLogger.addLogs(6, authorID, choice, 0, 0, 0) 
                     processAction.pendingPeace(authorID, choice) 
                 } else if (7 === actionType) {
                     var boatID = 1 + decoder(array, 11)
-                    if (typeof(modHandler) == "object") replayLogger.addLogs(7, authorID, boatID, 0, 0, 0)           
                     processAction.pendingCancelBoat(authorID, boatID)
                 }
             }
