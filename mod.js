@@ -23,7 +23,7 @@ function ModHandler() {
     this.customMap = -1;
     this.customGamemode = 11;
     this.boatTracker = true;
-    this.latency = 5;
+    this.latency = 2;
     this.font = 2;
     this.lateral = false;
     this.intelli = false;
@@ -140,6 +140,7 @@ function ExtendedActions() {
     this.clientUsers = [];
     var pendingActionChains = [];
     this.init = function() {
+        currentActionID = 1001;
         this.clientUsers = [];
         //Declare you are a client user
         dataEncoder.setLocation(currentActionID, modHandler.clientHash >> 11, modHandler.clientHash & 0x7FF);

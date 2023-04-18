@@ -8639,7 +8639,7 @@ function CustomJSON() {
         this.data.entityCount = clamp(result.numberPlayers, 1, 512);
         this.data.gamemode = clamp(result.modeID, 0, 10);
         this.data.mapID = clamp(result.mapID, 0, customMapID - 1);
-        this.data.mapSeed = clamp(result.mapSeed, 0, 16383);
+        this.data.mapSeed = clamp(result.seedMap, 0, 16383);
         this.data.seedSpawn = clamp(result.seedSpawn, 0, 16383);
         this.data.freeSpawn = useIfBoolean(result.selectableSpawn, false);
         this.data.freeNickname = useIfBoolean(result.selectableName, false);
@@ -12400,6 +12400,7 @@ function SingleplayerHandler() {
             updatedPlayerLabels();
             if (customJSON.isCustomJSON && customJSON.data.replay) {
                 if (replayLogger.underReplay && playerCount == 1) spawn.update()
+                gameStatistics.receivedSpawnActions(-1)
                 if (0 === this.clientTick) {
                     if (mainHandler.time >= this.time) {
                         this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
