@@ -7801,17 +7801,15 @@ function NameInput() {
             setAndroidState(10);
             if (void 0 !== textInput && strings.isValidName(textInput) && 40 === textInput.charCodeAt(0) && 41 === textInput.charCodeAt(2)) {
                 preLobby.setRemote((Math.abs(textInput.charCodeAt(1)) + 7) % wsManager.terriWsCount)
-            } else {
-                preLobby.setRemote(moreSettings.selectedRemote - 1);
-                if (setBarColor()) {
-                    if (sprites.areAllSpritesLoaded()) {
-                        this.hide();
-                        saveUsername(textInput);
-                        customJSON.reset();
-                        preLobby.init()
-                    } else showError.displayError(3228) 
-                } else showError.displayError(4214)
-            }
+            } else preLobby.setRemote(moreSettings.selectedRemote - 1);
+            if (setBarColor()) {
+                if (sprites.areAllSpritesLoaded()) {
+                    this.hide();
+                    saveUsername(textInput);
+                    customJSON.reset();
+                    preLobby.init()
+                } else showError.displayError(3228) 
+            } else showError.displayError(4214)
         }
     }
     this.isInMainMenu = function() {
