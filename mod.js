@@ -31,7 +31,7 @@ function ModHandler() {
     this.intelli = false;
     this.alwaysWin = false;
     this.spawnMod = 0;
-    this.bot = 0;
+    this.bot = 1;
     if (this.public) {
         this.bot = this.alwaysWin = this.intelli = false;
         this.spawnMod = this.font = 0;
@@ -226,6 +226,7 @@ function ExtendedActions() {
 
 function LatencySimulator() {
     this.pendingActions = [];
+    this.nextInfoSend;
     this.getNextUpdateTick = function(tick) {
         return Math.ceil(tick / 7) * 7 + 1;
     };
@@ -764,6 +765,7 @@ function Messiah() {
             this.borderingLandPixels[idIndex] = new Array();
             if (idIndex < playerCount) this.borderingBots[idIndex] = new Array();
         }
+        if (singleplayer && inSpawn) spawn.set(0, 315, 595), spawn.update();
     }
 
     function getBorderRatio(authorID, targetID) {
@@ -815,6 +817,7 @@ function Messiah() {
     }
 
     this.update = function() {
+
         if (mainHandler.getTicksElapsed() + 1 == 1750 && singleplayer) gameStateManager.onEscape();
         latencySimulator.nextInfoSend = latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed() + 1);
         latencySimulator.nextInfoSend = latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100 >= 100 ? latencySimulator.nextInfoSend - (modHandler.cycle) * 100 : latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100;
@@ -1113,11 +1116,11 @@ function Distance(){
             if (updates == modHandler.updatesLeft) {
                 let i = updatedSet.size
                 returnedUpdates[1] = i; 
-                if (i < targetPointsLength * 0.6) {
+                /*if (i < targetPointsLength * 0.6) {
                     returnedUpdates[0] = false;
                     //console.log("The bot is too big");
                     return returnedUpdates;
-                }
+                }*/
             }
         }
         returnedUpdates[0] = updates;
