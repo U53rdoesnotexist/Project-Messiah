@@ -9878,7 +9878,7 @@ function loadMap(mapID, newMapSeed) {
             currentMapHeight = mapInfoObj.height;
             fakeRandom.changeRandomNumber(mapInfoObj.mapStyleSeed);
             generateHeightmap.generate([currentMapWidth, currentMapHeight, mapInfoObj.maxDelta, mapInfoObj.deltaChange]);
-            a2c();
+            checkGenerateOcean();
             configFakeMap.renderBaseMap();
             generateHeightmap.resetGridValues();
             calculateFrameRate(delta1)
@@ -10020,50 +10020,57 @@ function MapShading() {
     }
 }
 
-function a2c() {
-    if (2 === currentMapID) a36([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0])
-    else if (7 === currentMapID) a36([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0])
-    else if (8 === currentMapID) a36([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0])
-    else if (9 === currentMapID) a36([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
+function checkGenerateOcean() {
+    // 2 is island, 7 is cliffs, 8 is pond and 9 is halo
+    if (2 === currentMapID) generateOcean([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0])
+    else if (7 === currentMapID) generateOcean([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0])
+    else if (8 === currentMapID) generateOcean([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0])
+    else if (9 === currentMapID) generateOcean([512], [512], [0, 70, 180, 200, 290, 420, 512], [500, 500, 0, 0, 500, 500, 0], [0, 0, 0, 0, 0, 0, 0])
 }
 
-function a36(g, k, n, l, x) {
-    var t, z, y, A = g.length - 1,
-        B = currentMapWidth + currentMapHeight;
-    B *= B;
-    var C = n.length;
-    for (t = C - 1; 0 <= t; t--) n[t] *= n[t];
-    var E = Array(C),
-        F = Array(C),
-        G = Array(C),
-        N = generateHeightmap.getGridValues();
-    if (void 0 === x)
-        for (x = Array(C), t = C - 1; 0 <= t; t--) x[t] = 0;
-    for (t = 1; t < C; t++) E[t] = n[t] - n[t - 1], F[t] = l[t] - l[t - 1], G[t] = x[t] - x[t - 1];
-    for (z = currentMapWidth - 1; 0 <= z; z--)
-        for (y = currentMapHeight - 1; 0 <= y; y--) {
-            var I = B;
-            for (t = A; 0 <= t; t--) {
-                var D = (z - g[t]) * (z - g[t]) + (y - k[t]) * (y - k[t]);
-                I = D < I ? D : I
+function generateOcean(oceanCenterX, oceanCenterY, oceanPointDepth, oceanSurfacePointHeight, oceanHalos) {
+    var opIndex, xCoord, yCoord,
+        mapArea = (currentMapWidth + currentMapHeight) ** 2;
+    for (opIndex = oceanPointDepth.length - 1; 0 <= opIndex; opIndex--) oceanPointDepth[opIndex] **= 2;
+    var deltaDepths = Array(oceanPointDepth.length),
+        deltaHeights = Array(oceanPointDepth.length),
+        deltaHalos = Array(oceanPointDepth.length),
+        heightMap = generateHeightmap.getGridValues();
+    if (void 0 === oceanHalos) {
+        oceanHalos = Array(oceanPointDepth.length);
+        for (opIndex = oceanPointDepth.length - 1; 0 <= opIndex; opIndex--) oceanHalos[opIndex] = 0;
+    }
+    for (opIndex = 1; opIndex < oceanPointDepth.length; opIndex++) {
+        deltaDepths[opIndex] = oceanPointDepth[opIndex] - oceanPointDepth[opIndex - 1];
+        deltaHeights[opIndex] = oceanSurfacePointHeight[opIndex] - oceanSurfacePointHeight[opIndex - 1];
+        deltaHalos[opIndex] = oceanHalos[opIndex] - oceanHalos[opIndex - 1];
+    }
+    for (xCoord = currentMapWidth - 1; 0 <= xCoord; xCoord--) {
+        for (yCoord = currentMapHeight - 1; 0 <= yCoord; yCoord--) {
+            var minDistSquared = mapArea;
+            for (opIndex = oceanCenterX.length - 1; 0 <= opIndex; opIndex--) {
+                var oceanSurfaceHeight = (xCoord - oceanCenterX[opIndex]) * (xCoord - oceanCenterX[opIndex]) + (yCoord - oceanCenterY[opIndex]) * (yCoord - oceanCenterY[opIndex]);
+                minDistSquared = oceanSurfaceHeight < minDistSquared ? oceanSurfaceHeight : minDistSquared
             }
-            D = l[C - 1];
-            var K = x[C - 1];
-            for (t = 1; t < C; t++) {
-                if (I < n[t]) {
-                    D = l[t - 1] + allDivideFloor((I - n[t - 1]) * F[t], E[t]);
-                    K = x[t - 1] + allDivideFloor((I - n[t - 1]) * G[t],
-                        E[t]);
+            oceanSurfaceHeight = oceanSurfacePointHeight[oceanPointDepth.length - 1];
+            var oceanHaloValue = oceanHalos[oceanPointDepth.length - 1];
+            for (opIndex = 1; opIndex < oceanPointDepth.length; opIndex++) {
+                if (minDistSquared < oceanPointDepth[opIndex]) {
+                    //allDivideFloor is dividefloor but for both +-ve values
+                    oceanSurfaceHeight = oceanSurfacePointHeight[opIndex - 1] + allDivideFloor((minDistSquared - oceanPointDepth[opIndex - 1]) * deltaHeights[opIndex], deltaDepths[opIndex]);
+                    oceanHaloValue = oceanHalos[opIndex - 1] + allDivideFloor((minDistSquared - oceanPointDepth[opIndex - 1]) * deltaHalos[opIndex], deltaDepths[opIndex]);
                     break
                 }
             }
-            a3K(currentMapWidth * y + z, D, K, N)
+            adjustPixelHeight(currentMapWidth * yCoord + xCoord, oceanSurfaceHeight, oceanHaloValue, heightMap)
+        }
     }
 }
 
-function a3K(g, k, n, l) {
-    500 > k ? l[g] = divideFloor(l[g] * k * 2, 1E3) : 500 < k && (l[g] += divideFloor(2 * (1E4 - l[g]) * (k - 500), 1E3));
-    l[g] += divideFloor(n * (10 * k - l[g]), 1E3)
+function adjustPixelHeight(pIndex, oceanSurfaceHeight, oceanHaloValue, heightMap) {
+    if (500 > oceanSurfaceHeight) heightMap[pIndex] = divideFloor(heightMap[pIndex] * oceanSurfaceHeight * 2, 1E3)
+    else if (500 < oceanSurfaceHeight) heightMap[pIndex] += divideFloor(2 * (1E4 - heightMap[pIndex]) * (oceanSurfaceHeight - 500), 1E3);
+    heightMap[pIndex] += divideFloor(oceanHaloValue * (10 * oceanSurfaceHeight - heightMap[pIndex]), 1E3)
 }
 
 function ConfigFakeMap() {
