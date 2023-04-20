@@ -900,7 +900,7 @@ function Messiah() {
         let q3 = sortedLand[q3Index];
 
         // Calculate 30% of the sample
-        let thirtyPercentIndex = Math.floor(sortedLand.length * 0.2);
+        let thirtyPercentIndex = Math.floor(sortedLand.length * 0.1);
         let thirtyPercent = sortedLand[thirtyPercentIndex];
         let stats = [thirtyPercent, median, q1, q3, avgLand];
 
@@ -931,7 +931,7 @@ function Messiah() {
                                     } 
                                 }
                             }
-                            amount = 2.7 * land[idIndex];
+                            amount = 2.8 * land[idIndex];
                             console.log(amount + "delayed");
                             break;
                         }
@@ -981,9 +981,9 @@ function Messiah() {
                                 continue outerLoop;
                             }
                             targetID = idIndex;
-                            if (updatesNeeded[1] == land[idIndex]) amount = 2.7 * land[idIndex];//if attack finishes before cycle end send 2.7
-                            else if (updatesNeeded[0] - modHandler.updatesLeft < 15 * modHandler.getSpeed(myID)) amount = 3 * land[idIndex];//else send 2.9
-                            else amount = 2.8 * updatesNeeded[1];
+                            if (updatesNeeded[1] == land[idIndex]) amount = 2.8 * land[idIndex];//if attack finishes before cycle end send 2.7
+                            else if (updatesNeeded[0] - modHandler.updatesLeft < 20 * modHandler.getSpeed(myID)) amount = 3.1 * land[idIndex];//else send 2.9
+                            else amount = 2.9 * updatesNeeded[1];
                             console.log(amount + "predicted");
                         } 
                         //Bot is too big, we might want to just send a bit
@@ -1013,9 +1013,9 @@ function Messiah() {
                                 continue outerLoop;
                             }
                             targetID = idIndex;
-                            if (updatesNeeded[1] == land[idIndex]) amount = 2.7 * land[idIndex];//if attack finishes before cycle end send 2.7
-                            else if (updatesNeeded[0] - modHandler.updatesLeft < 15 * modHandler.getSpeed(myID)) amount = 3 * land[idIndex];//else send 2.9
-                            else amount = 2.8 * updatesNeeded[1];
+                            if (updatesNeeded[1] == land[idIndex]) amount = 2.8 * land[idIndex];//if attack finishes before cycle end send 2.7
+                            else if (updatesNeeded[0] - modHandler.updatesLeft < 20 * modHandler.getSpeed(myID)) amount = 3.1 * land[idIndex];//else send 2.9
+                            else amount = 2.9 * updatesNeeded[1];
                             if (targetID == 289 || targetID == 272) console.log(amount + "low density", targetID);
                         } 
                         //Bot is too big, we might want to just send a bit
@@ -1070,7 +1070,6 @@ function Distance(){
     this.previousPoints;
     this.updatesWithNoPointsFound;
     this.pointsToAdd;
-    var a = 0;
 
     this.getDistance = function(xOffset, yOffset) {
         return (xOffset**2 + yOffset**2) ** 0.5
@@ -1135,12 +1134,12 @@ function Distance(){
     }
 
     this.getPointsToAdd = function(set, updatedSet, targetPointsSet) {
-        //console.time("loop-time");
+        
         let pointsToAdd = new Set();
         
         for (let point of set) {
             let borderPoints = getNeighboursPoints(point);
-            //console.time("loop-time");
+            
             for (let i of borderPoints) {
                 if (targetPointsSet.has(i)) { //Checking is a point is in a set is an O(1) operation, so the size of the set doesnt matter
                     if (!updatedSet.has(i)) {
@@ -1150,9 +1149,8 @@ function Distance(){
                     }
                 }
             }
-            //console.timeEnd("loop-time");
+            
         }
-        //console.timeEnd("loop-time");
         return pointsToAdd;
     }
 }
