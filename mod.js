@@ -1,4 +1,4 @@
-var modHandler, discordWeb, latencySimulator, replayLogger, spawnHelper, cheat, extendedActions;
+var modHandler, discordWeb, latencySimulator, replayLogger, spawnHelper, cheat, extendedActions, distance;
 function modConstruct(){
     modHandler = new ModHandler;
     discordWeb = new DiscordWeb;
@@ -7,6 +7,7 @@ function modConstruct(){
     spawnHelper = new SpawnHelper;
     extendedActions = new ExtendedActions;
     modHandler.updateCheatModules();
+    distance = new Distance;
 }
 
 function ModHandler() {
@@ -29,11 +30,15 @@ function ModHandler() {
     this.intelli = false;
     this.alwaysWin = false;
     this.spawnMod = 0;
-    this.bot = 0;
+    this.bot = 1;
     if (this.public) {
         this.bot = this.alwaysWin = this.intelli = false;
         this.spawnMod = this.font = 0;
     }
+
+    this.ticksLeft;
+    this.updatesLeft;
+    this.gameSpeed = 1;
 
     this.main = function() {
         if (this.bot >= 3) cheat.main();
@@ -46,13 +51,14 @@ function ModHandler() {
             this.spawnMod = 0;
             this.bot = 0;
         }
+        if (customJSON.isCustomJSON && customJSON.data.replay) {
+            if (playerCount == 1) spawn.set(myID, customJSON.data.spawnLogs[0].xCoord, customJSON.data.spawnLogs[0].yCoord)
+            if (this.bot) this.bot = 0;
+        }
         if (!singleplayer) spawnHelper.init();
         if (this.bot) cheat.init();
         replayLogger.init();
         discordWeb.hasExported = false;
-        if (customJSON.isCustomJSON && customJSON.data.replay && playerCount == 1) {
-            spawn.set(myID, customJSON.data.spawnLogs[0].xCoord, customJSON.data.spawnLogs[0].yCoord)
-        }
     };
     this.scriptSpawnTick = function() {
         if (modHandler.spawnMod) spawnHelper.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
@@ -63,7 +69,7 @@ function ModHandler() {
         if (this.tick >= 100) {
             this.cycle++;
             this.tick %= 100;
-        }
+        }     
         if (this.latency) latencySimulator.update();
         if (this.bot) cheat.update()
     };
@@ -645,10 +651,6 @@ function ModPanel() {
         this.visible = visibility;
         if (!visibility && !gameStateManager.getState()) nameInputBar.toggleVisibility(0, true)
     };
-}
-
-function Messiah() {
-
 }
 
 function Multiboxing() {

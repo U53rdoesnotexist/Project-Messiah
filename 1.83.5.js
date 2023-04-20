@@ -12438,8 +12438,11 @@ function SingleplayerHandler() {
                     if (2 !== clientStatus) {
                         if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
                         else {
-                            gameTick();
-                            this.tick++;
+                            for (var times = 0; times < (typeof(modHandler) == "object" ? modHandler.gameSpeed : 1); times++) {
+                                gameTick();
+                                this.tick++;
+                            }
+                            
                             mapUpdate.updateMapCanvas();
                         }
                     }
