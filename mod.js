@@ -200,7 +200,6 @@ function ExtendedActions() {
                 if (mainHandler.multiplayerHandler.packetsReceived <= 5) {
                     //Confirm Client
                     const clientHash = secondAction.param3 * (2**11) + secondAction.param4;
-                    console.log(clientHash, secondAction)
                     if (!isCustomGame() || isCustomGame() && clientHash == modHandler.clientHash) this.clientUsers.push({
                         id: secondAction.authorID,
                         clientHash: clientHash
@@ -815,7 +814,6 @@ function Messiah() {
     }
 
     this.update = function() {
-        if (mainHandler.getTicksElapsed() + 1 == 1750 && singleplayer) gameStateManager.onEscape();
         latencySimulator.nextInfoSend = latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed() + 1);
         latencySimulator.nextInfoSend = latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100 >= 100 ? latencySimulator.nextInfoSend - (modHandler.cycle) * 100 : latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100;
         modHandler.ticksLeft = 99 - latencySimulator.nextInfoSend;
