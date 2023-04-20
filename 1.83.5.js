@@ -4107,7 +4107,7 @@ function AttackRatioBar() {
         this.startingY = prevClientHeight - this.height - (isZoom ? 2 : 1) * canvasPadding;
     };
     this.drawCanvas = function() {
-        if (needsUpdate) {
+        if (needsUpdate || customJSON.isCustomJSON && customJSON.data.replay) {
             needsUpdate = false;
             redrawAttackRatioBar();
         }
@@ -9762,8 +9762,9 @@ function onKeydown(e) {
     } else if ("2" === e.key) {
         if (typeof(modHandler) == "object" && modHandler.lateral) attackRatioBar.checkAndAddRatio(.1);
         else attackRatioBar.checkAndMultiplyRatio(6/5);
-    } else if (' ' === e.key) {
-        if (1 === clientStatus && typeof(modHandler) == "object" && modHandler.intelli) intelliAttack.checkIntelli();
+    } else if (" " === e.key) {
+        if (customJSON.isCustomJSON && customJSON.data.replay && typeof(replayLogger) == "object") replayLogger.underReplay = !replayLogger.underReplay;
+        else if (1 === clientStatus && typeof(modHandler) == "object" && modHandler.intelli) intelliAttack.checkIntelli();
     } else if ("c" === e.key && 0 !== clientStatus) {
         statistics.printCoords();
     }
@@ -11567,16 +11568,17 @@ function StatisticNumbers() {
     this.recordedLandValues = new Uint32Array(this.maxDataPoints);
     this.recordedTroopValues = new Uint32Array(this.maxDataPoints);
     this.recordedInterestValues = new Uint16Array(this.maxDataPoints);
-    this.troopsAtTimings = new Uint32Array(5);
-    this.landAtTimings = new Uint32Array(5);
-    this.efficiencyAtTimings = ["", "", "", "", ""];
+    this.troopsAtTimings = 0;
+    this.landAtTimings= 0;
+    this.efficiencyAtTimings = 0;
+    this.incomeAtTimings = 0;
     this.currentDataPointIndex = 0;
     this.updateInterval = 1;
     this.updateCounter = 0;
     this.max = [0, 0, 0];
     this.numbers = 0;
     this.statisticNumbersLabels = "Avg. Attack Strength;Number Attacks;Ships sent;Bots conquered;Humans conquered;Attacked by Bots;Attacked by Humans;Territorial Loss;Territorial Income;Interest Income;Received Support;Overall Income;Commanding Costs;Attack Losses;Defense Losses;Shipping Losses;Transmitted Support;Overall Expenses".split(";");
-    this.microNumbersLabels = "Opening;1:10;1:20;1:37;2:00;Land;Troops;Efficiency;Score".split(";");
+    this.microNumbersLabels = "Opening;1:10;1:20;1:37;2:00;Land;Troops;Effi(NoTax/All);Overall Income".split(";");
     this.init = function() {
         this.currentDataPointIndex = 0;
         this.updateInterval = 1;
@@ -11597,31 +11599,15 @@ function StatisticNumbers() {
             if (this.currentDataPointIndex === this.maxDataPoints) this.shiftData();
             this.updateCounter = this.updateInterval - 1;
             statistics.updateRenderObject();
-            if (mainHandler.getTicksElapsed() * .056 > 45 && this.troopsAtTimings[0] === 0) {
-                this.troopsAtTimings[0] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
-                this.landAtTimings[0] = land[myID];
-                overallExpenses = statisticNumbers.numbers[12] + statisticNumbers.numbers[13] + statisticNumbers.numbers[14] + statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
-                this.efficiencyAtTimings[0] = Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(0, 2) + "." + Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(2, 4) + "%";
-            } else if (mainHandler.getTicksElapsed() * .056 > 70 && this.troopsAtTimings[1] === 0) {
-                this.troopsAtTimings[1] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
-                this.landAtTimings[1] = land[myID];
-                overallExpenses = statisticNumbers.numbers[12] + statisticNumbers.numbers[13] + statisticNumbers.numbers[14] + statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
-                this.efficiencyAtTimings[1] = Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(0, 2) + "." + Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(2, 4) + "%";
-            } else if (mainHandler.getTicksElapsed() * .056 > 80 && this.troopsAtTimings[2] === 0) {
-                this.troopsAtTimings[2] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
-                this.landAtTimings[2] = land[myID];
-                overallExpenses = statisticNumbers.numbers[12] + statisticNumbers.numbers[13] + statisticNumbers.numbers[14] + statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
-                this.efficiencyAtTimings[2] = Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(0, 2) + "." + Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(2, 4) + "%";
-            } else if (mainHandler.getTicksElapsed() * .056 > 97 && this.troopsAtTimings[3] === 0) {
-                this.troopsAtTimings[3] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
-                this.landAtTimings[3] = land[myID];
-                overallExpenses = statisticNumbers.numbers[12] + statisticNumbers.numbers[13] + statisticNumbers.numbers[14] + statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
-                this.efficiencyAtTimings[3] = Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(0, 2) + "." + Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(2, 4) + "%";
-            } else if (mainHandler.getTicksElapsed() * .056 > 120 && this.troopsAtTimings[4] === 0) {
-                this.troopsAtTimings[4] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
-                this.landAtTimings[4] = land[myID];
-                overallExpenses = statisticNumbers.numbers[12] + statisticNumbers.numbers[13] + statisticNumbers.numbers[14] + statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
-                this.efficiencyAtTimings[4] = Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(0, 2) + "." + Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(2, 4) + "%";
+            for (let index = 0; index < 5; index++) {
+                if (this.troopsAtTimings[index] === 0 && Math.floor((mainHandler.getTicksElapsed()+1)*mainHandler.getTickInterval()/1E3) > [45.5, 70.5, 80.5, 97.5, 120.5][index]) {
+                    if (typeof(modHandler) == "object" && modHandler.bot == 1 && singleplayer && index == 3) gameStateManager.onEscape() 
+                    this.troopsAtTimings[index] = getMax(1, troops[myID] + attacks.getTotalTroopsSentAway(myID));
+                    this.landAtTimings[index] = land[myID];
+                    const overallExpenses = statisticNumbers.numbers[12] + statisticNumbers.numbers[13] + statisticNumbers.numbers[14] + statisticNumbers.numbers[15] + statisticNumbers.numbers[16] + statisticNumbers.numbers[17];
+                    this.incomeAtTimings[index] = statisticNumbers.numbers[8] + statisticNumbers.numbers[9] + statisticNumbers.numbers[10] + statisticNumbers.numbers[11];
+                    this.efficiencyAtTimings[index] = true ? `${((statisticNumbers.numbers[13]/this.landAtTimings[index]).toFixed(2))}/${(overallExpenses / this.landAtTimings[index]).toFixed(2)}` : Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(0, 2) + "." + Math.round((100 * getMin(100, 100 * neutralLandCost * land[myID] / overallExpenses))).toString().padStart(4, "0").substring(2, 4) + "%";
+                }
             }
         }
     };
@@ -11644,7 +11630,8 @@ function StatisticNumbers() {
         this.numbers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.troopsAtTimings = new Uint32Array(5);
         this.landAtTimings = new Uint32Array(5);
-        this.efficiencyAtTimings = ["", "", "", "", ""];
+        this.efficiencyAtTimings = new Array(5);
+        this.incomeAtTimings = new Uint32Array(5);
     };
     this.updateMaxValues = function(dpIndex) {
         this.max[0] = getMax(this.recordedLandValues[dpIndex], this.max[0]);
@@ -11892,7 +11879,7 @@ function Statistics() {
         for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(0 != statisticNumbers.troopsAtTimings[leftIndex] ? statisticNumbers.landAtTimings[leftIndex] : "N/A", cellWidth * 1.5, cellHeight * (leftIndex + 1.5))
         for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(0 != statisticNumbers.troopsAtTimings[leftIndex] ? statisticNumbers.troopsAtTimings[leftIndex] : "N/A", cellWidth * 2.5, cellHeight * (leftIndex + 1.5))
         for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(0 != statisticNumbers.troopsAtTimings[leftIndex] ? statisticNumbers.efficiencyAtTimings[leftIndex] : "N/A", cellWidth * 3.5, cellHeight * (leftIndex + 1.5))
-        for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(0 != statisticNumbers.troopsAtTimings[leftIndex] ? Math.floor(statisticNumbers.troopsAtTimings[leftIndex] + 2.5 * statisticNumbers.landAtTimings[leftIndex]) : "N/A", cellWidth * 4.5, cellHeight * (leftIndex + 1.5));
+        for (leftIndex = 4; 0 <= leftIndex; leftIndex--) mainCanvasCtx.fillText(0 != statisticNumbers.troopsAtTimings[leftIndex] ? statisticNumbers.incomeAtTimings[leftIndex] : "N/A", cellWidth * 4.5, cellHeight * (leftIndex + 1.5));
     }
     this.drawGuides = function(startX, startY, endX, endY) {
         mainCanvasCtx.beginPath();
