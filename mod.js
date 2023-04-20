@@ -36,6 +36,7 @@ function ModHandler() {
         this.bot = this.alwaysWin = this.intelli = false;
         this.spawnMod = this.font = 0;
     }
+    if (this.bot) this.uploadReplay = false
 
     this.ticksLeft;
     this.updatesLeft;
