@@ -1872,8 +1872,8 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
     botCount = entityCount - playerCount;
     spectatorCount = 0;
     myID = param_myID;
-    //fakeRandom.changeRandomNumber(param_seedSpawn);
-    fakeRandom.changeRandomNumber(3328);
+    fakeRandom.changeRandomNumber(param_seedSpawn);
+    //fakeRandom.changeRandomNumber(3328);
     setupPlayerInfoArrays(param_playerInfo);
     zombieSettings.init();
     teamColors.init(param_playerInfo);
@@ -12427,7 +12427,7 @@ function SingleplayerHandler() {
                         if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
                         else {
                             for (var times = 0; times < (typeof(modHandler) == "object" ? modHandler.gameSpeed : 1); times++) {
-                                if (modHandler.cycle < 19) {
+                                /*if (modHandler.cycle < 19) {
                                     gameTick();
                                     this.tick++;
                                     gameTick();
@@ -12444,7 +12444,7 @@ function SingleplayerHandler() {
                                     this.tick++;
                                     gameTick();
                                     this.tick++;
-                                }
+                                }*/
                                 gameTick();
                                 this.tick++;
                             }

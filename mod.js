@@ -764,7 +764,7 @@ function Messiah() {
             this.borderingLandPixels[idIndex] = new Array();
             if (idIndex < playerCount) this.borderingBots[idIndex] = new Array();
         }
-        if (singleplayer && inSpawn) spawn.set(0, 315, 595), spawn.update();
+        //if (singleplayer && inSpawn) spawn.set(0, 315, 595), spawn.update();
     }
 
     function getBorderRatio(authorID, targetID) {
@@ -817,7 +817,7 @@ function Messiah() {
 
     this.update = function() {
 
-        if (mainHandler.getTicksElapsed() + 1 == 1750 && singleplayer) gameStateManager.onEscape();
+        if (mainHandler.getTicksElapsed() + 1 == 1759 && singleplayer) gameStateManager.onEscape();
         latencySimulator.nextInfoSend = latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed() + 1);
         latencySimulator.nextInfoSend = latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100 >= 100 ? latencySimulator.nextInfoSend - (modHandler.cycle) * 100 : latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100;
         modHandler.ticksLeft = 99 - latencySimulator.nextInfoSend;
