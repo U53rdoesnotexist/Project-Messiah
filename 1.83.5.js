@@ -12195,11 +12195,6 @@ function MainHandler() {
     };
     this.singleplayerUpdateHandler = function() {
         this.singleplayerHandler.update();
-        if (modHandler.gameSpeed){
-            this.singleplayerHandler.update();
-            this.singleplayerHandler.update();
-            this.singleplayerHandler.update();
-        }
     };
     this.multiplayerUpdateHandler = function() {
         this.multiplayerHandler.update()
@@ -12214,7 +12209,7 @@ function MainHandler() {
 
 function SingleplayerHandler() {
     this.time = mainHandler.time;
-    this.updateInterval = Math.round((modHandler.gameSpeed ? 56 : 56) / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
+    this.updateInterval = Math.round((modHandler.gameSpeed ? 1 : 56) / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
     this.bigTickInterval = 7;
     this.tick = this.clientTick = this.spawnTick = 0;
     this.a6Z = false; //unused
@@ -12262,6 +12257,12 @@ function SingleplayerHandler() {
                     if (2 !== clientStatus) {
                         if (gameButtons.menuVisible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
                         else {
+                            gameTick();
+                            this.tick++;
+                            gameTick();
+                            this.tick++;
+                            gameTick();
+                            this.tick++;
                             gameTick();
                             this.tick++;
                             mapUpdate.updateMapCanvas();
