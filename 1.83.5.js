@@ -176,7 +176,7 @@ function setAndroidHTMLHeader() {
 }
 self.aiCommand746 = function(option) {
     if (0 === option) init()
-    else if (1 === option && 14 <= androidVersion) gameStateManager.aK()
+    else if (1 === option && 14 <= androidVersion) gameStateManager.onEscape()
 };
 var lastAttackIndex, lastAuthorID, lastRemaining, lastRemainingPerPixel, lastTargetID, lastBorderLength, lastArrayMaxLength, lastBorderLand, lastLandGained, lastInnerPixels, offset, editingMatrix, lastBorderTaken;
 
@@ -6505,7 +6505,7 @@ function GameStateManager() {
             return true;
         } else return false
     };
-    this.aK = function() {
+    this.onEscape = function() {
         mainHandler.canvasDirty = true;
         if (8 === gameState) {
             if (isCanvasHidden) isCanvasHidden = !isCanvasHidden
@@ -9778,7 +9778,7 @@ function onVisibilitychange() {
 function onKeyup(e) {
     if (400 <= mainHandler.time) {
         if (8 !== gameStateManager.getState() && gameStateManager.hideIfNotHidden(e)) mainHandler.canvasDirty = true 
-        else if ("Escape" === e.key) gameStateManager.aK()
+        else if ("Escape" === e.key) gameStateManager.onEscape()
         else if ("ArrowLeft" === e.key) keyboardCamera.checkCameraStop(3)
         else if ("ArrowUp" === e.key) keyboardCamera.checkCameraStop(0)
         else if ("ArrowRight" === e.key) keyboardCamera.checkCameraStop(1)
