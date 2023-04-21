@@ -12,6 +12,7 @@
     "request": "latest",
     "ws": "latest",
     "https-proxy-agent": "latest",
-    "ip": "latest"
+    "ip": "latest",
+    "http": "latest"
   }
 }
