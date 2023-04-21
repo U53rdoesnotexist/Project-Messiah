@@ -9913,21 +9913,25 @@ function mapIsSurroundedByWater(mapID) {
 }
 
 function MapShading() {
-    function g() {
+    function callUpdate() {
         mapShading.update()
     }
 
-    function k(l, x) {
-        0 < x && (mapBaseCanvasImageDataArray[l] += x, mapBaseCanvasImageDataArray[l + 1] += x, mapBaseCanvasImageDataArray[l + 2] += x)
+    function applyShading(colorIndex, intensity) {
+        if (0 < intensity) {
+            mapBaseCanvasImageDataArray[colorIndex] += intensity;
+            mapBaseCanvasImageDataArray[colorIndex + 1] += intensity;
+            mapBaseCanvasImageDataArray[colorIndex + 2] += intensity;
+        }
     }
 
-    function n(l) {
-        return mapBaseCanvasImageDataArray[l + 2] > mapBaseCanvasImageDataArray[l] && mapBaseCanvasImageDataArray[l + 2] > mapBaseCanvasImageDataArray[l + 1]
+    function isPixelLikeOcean(pIndex) {
+        return mapBaseCanvasImageDataArray[pIndex + 2] > mapBaseCanvasImageDataArray[pIndex] && mapBaseCanvasImageDataArray[pIndex + 2] > mapBaseCanvasImageDataArray[pIndex + 1]
     }
     this.updateTimeout = -1;
     this.shadingStartIndex = this.heightMapGenerationCount = 0;
     this.neutralShadingIntensity = 8;
-    this.waterShadingIntensity = 32;
+    this.shadingRange = 32;
     this.neutralShadingOffset = 8;
     this.waterShadingOffset = 32;
     this.shadingColors = [0, 0];
@@ -9949,79 +9953,76 @@ function MapShading() {
             this.shadingColors = [mapInfo.getValueByID(currentMapID).neutralColor[0], mapInfo.getValueByID(currentMapID).waterColor[0]];
             this.shading = [mapInfo.getValueByID(currentMapID).shadingValues[3], mapInfo.getValueByID(currentMapID).shadingValues[4], mapInfo.getValueByID(currentMapID).shadingValues[5], mapInfo.getValueByID(currentMapID).shadingValues[6]];
             this.neutralShadingIntensity = mapInfo.getValueByID(currentMapID).shadingValues[7];
-            this.waterShadingIntensity = mapInfo.getValueByID(currentMapID).shadingValues[8];
+            this.shadingRange = mapInfo.getValueByID(currentMapID).shadingValues[8];
             this.neutralShadingOffset = mapInfo.getValueByID(currentMapID).shadingValues[9];
             this.waterShadingOffset = mapInfo.getValueByID(currentMapID).shadingValues[10];
-            this.useTimeoutForUpdate ? this.updateTimeout = setTimeout(g, 16) : this.update()
+            this.useTimeoutForUpdate ? this.updateTimeout = setTimeout(callUpdate, 16) : this.update()
         }
     };
     this.update = function() {
-        if (8 === gameStateManager.getState() && autoCamera.getIsCameraActive()) this.updateTimeout = setTimeout(g, 16);
+        if (8 === gameStateManager.getState() && autoCamera.getIsCameraActive()) this.updateTimeout = setTimeout(callUpdate, 16);
         else {
             if (0 === this.heightMapGenerationCount) {
-                var l = fakeRandom.getMedian();
+                var prevRandNo = fakeRandom.getMedian();
                 fakeRandom.changeRandomNumber(mapInfo.getValueByID(currentMapID).shadingValues[2]);
                 generateHeightmap.generate([currentMapWidth, currentMapHeight, mapInfo.getValueByID(currentMapID).shadingValues[0], mapInfo.getValueByID(currentMapID).shadingValues[1]]);
-                fakeRandom.changeRandomNumber(l);
+                fakeRandom.changeRandomNumber(prevRandNo);
                 this.heightMap = generateHeightmap.getGridValues();
                 this.heightMapGenerationCount++;
                 if (this.useTimeoutForUpdate) {
-                    this.updateTimeout = setTimeout(g, 16);
+                    this.updateTimeout = setTimeout(callUpdate, 16);
                     return
                 }
             }
-            l = this.useTimeoutForUpdate ? 10 : 1E6;
-            l = currentMapHeight - this.shadingStartIndex - 1 < l ? currentMapHeight - this.shadingStartIndex - 1 : l;
-            l = this.shadingStartIndex + l;
-            for (var x, t, z = this.shadingStartIndex; z < l; z++) {
-                for (var y = 1; y < currentMapWidth - 1; y++) {
-                    if (t = y + z * currentMapWidth, x = 4 * t, n(x)) this.updatePixelShading(x, t, 1);
+            prevRandNo = getMin(currentMapHeight - this.shadingStartIndex - 1, this.useTimeoutForUpdate ? 10 : 1E6) + this.shadingStartIndex;
+            for (var pIndex, coordIndex, yCoord = this.shadingStartIndex; yCoord < prevRandNo; yCoord++) {
+                for (var xCoord = 1; xCoord < currentMapWidth - 1; xCoord++) {
+                    coordIndex = xCoord + yCoord * currentMapWidth;
+                    pIndex = 4 * coordIndex;
+                    if (isPixelLikeOcean(pIndex)) this.updatePixelShading(pIndex, coordIndex, 1);
                     else {
-                        this.updatePixelShading(x, t, 0);
-                        t = y;
-                        var A = z;
-                        if (1 < t && n(x - 4) || t < currentMapWidth - 2 && n(x + 4) || 1 < A && n(x - 4 * currentMapWidth) || A < currentMapHeight - 2 && n(x + 4 * currentMapWidth)) this.updateNeighbourShading(y, z)
+                        this.updatePixelShading(pIndex, coordIndex, 0);
+                        if (1 < xCoord && isPixelLikeOcean(pIndex - 4) || xCoord < currentMapWidth - 2 && isPixelLikeOcean(pIndex + 4) || 1 < yCoord && isPixelLikeOcean(pIndex - 4 * currentMapWidth) || yCoord < currentMapHeight - 2 && isPixelLikeOcean(pIndex + 4 * currentMapWidth)) this.updateNeighbourShading(xCoord, yCoord)
                     }
                 }
             }
-            this.shadingStartIndex = l;
+            this.shadingStartIndex = prevRandNo;
             if (this.shadingStartIndex >= currentMapHeight - 1) {
                 mapBaseCanvasCtx.putImageData(realMapBaseCanvasCtxImageData, 0, 0, 1, 1, currentMapWidth - 2, currentMapHeight - 2);
                 mainHandler.canvasDirty = true;
                 this.resetShading();
-            } else if (this.useTimeoutForUpdate) this.updateTimeout = setTimeout(g, 16);
+            } else if (this.useTimeoutForUpdate) this.updateTimeout = setTimeout(callUpdate, 16);
         }
     };
-    this.updatePixelShading = function(l, x, t) {
-        k(l, Math.floor(this.shadingColors[t] + this.shading[t] * this.heightMap[x] / 1E4) - mapBaseCanvasImageDataArray[l])
+    this.updatePixelShading = function(pIndex, coordIndex, oceanColorIndex) {
+        applyShading(pIndex, Math.floor(this.shadingColors[oceanColorIndex] + this.shading[oceanColorIndex] * this.heightMap[coordIndex] / 1E4) - mapBaseCanvasImageDataArray[pIndex])
     };
-    this.updateLineShading = function(l, x, t, z, y) {
-        k(l, Math.floor(this.shadingColors[z] + (1 - x / t) * y) - mapBaseCanvasImageDataArray[l])
+    this.updateLineShading = function(pIndex, shadingDistance, shadingIntensity, oceanColorIndex, shadingColorIntensity) {
+        applyShading(pIndex, Math.floor(this.shadingColors[oceanColorIndex] + (1 - shadingDistance / shadingIntensity) * shadingColorIntensity) - mapBaseCanvasImageDataArray[pIndex])
     };
-    this.updateNeighbourShading = function(l, x) {
-        var t = l - this.waterShadingIntensity;
-        var z = x - this.waterShadingIntensity;
-        var y = l + this.waterShadingIntensity,
-            A = x + this.waterShadingIntensity;
-        t = 1 > t ? 1 : t;
-        y = y > currentMapWidth - 2 ? currentMapWidth - 2 : y;
-        A = A > currentMapHeight - 2 ? currentMapHeight - 2 : A;
-        for (var B = 1 > z ? 1 : z; B <= A; B++) {
-            for (var C = t; C <= y; C++) {
-                if (z = 4 * (C + B * currentMapWidth), n(z)) {
-                    var E = this.neutralShadingIntensity + (this.waterShadingIntensity - this.neutralShadingIntensity) * this.heightMap[C + currentMapWidth * B] / 1E4;
-                    if (!(Math.abs(l - C) > E || Math.abs(x - B) > E)) {
-                        var F = Math.sqrt((l - C) * (l - C) + (x - B) * (x - B));
-                        F >= E || this.updateLineShading(z, F, E, 1, this.shading[3])
+    this.updateNeighbourShading = function(shadingX, shadingY) {
+        for (var yCoord = getMax(1, shadingY - this.shadingRange); yCoord <= getMin(shadingY + this.shadingRange, currentMapHeight - 2); yCoord++) {
+            for (var xCoord = getMax(1, shadingX - this.shadingRange); xCoord <= getMin(shadingX + this.shadingRange, currentMapWidth - 2); xCoord++) {
+                var pIndex = 4 * (xCoord + yCoord * currentMapWidth);
+                if (isPixelLikeOcean(pIndex)) {
+                    var pixelShadingIntensity = this.neutralShadingIntensity + (this.shadingRange - this.neutralShadingIntensity) * this.heightMap[xCoord + currentMapWidth * yCoord] / 1E4;
+                    if (Math.abs(shadingX - xCoord) <= pixelShadingIntensity && Math.abs(shadingY - yCoord) <= pixelShadingIntensity) {
+                        var shadingDistance = Math.sqrt((shadingX - xCoord) * (shadingX - xCoord) + (shadingY - yCoord) * (shadingY - yCoord));
+                        if (shadingDistance < pixelShadingIntensity) this.updateLineShading(pIndex, shadingDistance, pixelShadingIntensity, 1, this.shading[3])
                     }
-                } else E = this.neutralShadingOffset + (this.waterShadingOffset - this.neutralShadingOffset) * this.heightMap[C + currentMapWidth * B] / 1E4, Math.abs(l - C) > E || Math.abs(x - B) > E || (F = Math.sqrt((l - C) * (l - C) + (x - B) * (x - B)), F >= E || this.updateLineShading(z, F, E, 0, this.shading[2]))
+                } else {
+                    pixelShadingIntensity = this.neutralShadingOffset + (this.waterShadingOffset - this.neutralShadingOffset) * this.heightMap[xCoord + currentMapWidth * yCoord] / 1E4;
+                    if (Math.abs(shadingX - xCoord) <= pixelShadingIntensity && Math.abs(shadingY - yCoord) <= pixelShadingIntensity) {
+                        shadingDistance = Math.sqrt((shadingX - xCoord) * (shadingX - xCoord) + (shadingY - yCoord) * (shadingY - yCoord));
+                        if (shadingDistance < pixelShadingIntensity) this.updateLineShading(pIndex, shadingDistance, pixelShadingIntensity, 0, this.shading[2])
+                    }
+                }
             }
         }
     }
 }
 
 function checkGenerateOcean() {
-    // 2 is island, 7 is cliffs, 8 is pond and 9 is halo
     if (2 === currentMapID) generateOcean([256], [256], [0, 205, 256], [500, 500, 0], [0, 0, 0])
     else if (7 === currentMapID) generateOcean([512], [512], [0, 380, 512], [500, 500, 0], [0, 0, 0])
     else if (8 === currentMapID) generateOcean([410], [410], [0, 120, 210], [0, 80, 640], [0, 0, 0])
