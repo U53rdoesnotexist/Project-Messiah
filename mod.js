@@ -31,7 +31,7 @@ function ModHandler() {
     this.intelli = false;
     this.alwaysWin = false;
     this.spawnMod = 0;
-    this.bot = 1;
+    this.bot = 0;
     if (this.public) {
         this.bot = this.alwaysWin = this.intelli = false;
         this.spawnMod = this.font = 0;
