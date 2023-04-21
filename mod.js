@@ -383,13 +383,10 @@ function SpawnHelper() {
                 dataEncoder.setLocation(1E3, this.decoyOrBackup[0], this.decoyOrBackup[1]);
             }
         } else if (modHandler.spawnMod == 2 && playerCount == 2 && spawnTick >= spawnTime - bufferTick) {
-            if (xMin[1 - myID]) {
-                if (distance.getTravelDistance(this.chosenSpawn[0] - xMin[1 - myID] - 1, this.chosenSpawn[1] - yMin[1 - myID] - 2) <= Math.sqrt(currentMapHeight*currentMapWidth)/20) {
-                    dataEncoder.setLocation(1E3, this.decoyOrBackup[0], this.decoyOrBackup[1]);
-                }
+            if (xMin[1 - myID] && distance.getTravelDistance(this.chosenSpawn[0] - xMin[1 - myID] - 1, this.chosenSpawn[1] - yMin[1 - myID] - 2) <= Math.sqrt(currentMapHeight*currentMapWidth)/20) {
+                dataEncoder.setLocation(1E3, this.decoyOrBackup[0], this.decoyOrBackup[1]);
             } else dataEncoder.setLocation(1E3, this.chosenSpawn[0], this.chosenSpawn[1]);
         }
-        
     }
     this.spawnGenerator = function() {
         var spawns = [];
