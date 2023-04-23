@@ -10178,7 +10178,7 @@ function ConfigFakeMap() {
             }
         }
         mapBaseCanvasCtx.putImageData(fakeMapBaseCanvasImageData, 0, 0);
-        if (mapInfo.isBA() && sprites.areAllSpritesLoaded()) {
+        if (mapInfo.hasWatermark() && sprites.areAllSpritesLoaded()) {
             widthValues = sprites.getValueByName("arena");
             mapBaseCanvasCtx.save();
             mapBaseCanvasCtx.globalAlpha = 1 === currentMapID ? .1 : 1;
@@ -10414,7 +10414,7 @@ function MapInfo() {
             per: 1
         }
     };
-    this.isBA = function() {
+    this.hasWatermark = function() {
         return 1 === currentMapID
     };
     this.getValueByID = function(mapID) {
@@ -10440,13 +10440,13 @@ function setMapCanvas() {
 function GenerateHeightmap() {
     function updateValues(J, L, H) {
         valuesArray[0] = J;
-        for (J = 1; J < H; J++) {
-            valuesArray[J] = valuesArray[J - 1] + L;
-            if (1E4 <= valuesArray[J]) {
-                valuesArray[J] = 9999;
+        for (var valueIndex = 1; valueIndex < H; valueIndex++) {
+            valuesArray[valueIndex] = valuesArray[valueIndex - 1] + L;
+            if (1E4 <= valuesArray[valueIndex]) {
+                valuesArray[valueIndex] = 9999;
                 L = -L;
-            } else if (0 > valuesArray[J]) {
-                valuesArray[J] = 0;
+            } else if (0 > valuesArray[valueIndex]) {
+                valuesArray[valueIndex] = 0;
                 L = -L;
             } else {
                 L += 16384 <= fakeRandom.random() ? deltaChange : -deltaChange;
@@ -10470,7 +10470,7 @@ function GenerateHeightmap() {
             M = 0 > H ? -M : M;
             valuesArray[L - 1] = J;
             var Q = L - 1 - divideFloor(Math.abs(H), Math.abs(M));
-            Q = 1 > Q ? 1 : Q > L - 2 ? L - 2 : Q;
+            Q = rangeClamp(1, Q, L - 2)
             for (var R = L - 2; R >= Q; R--) valuesArray[R] += H - (L - 1 - R) * M;
             if (0 > H) {
                 for (H = L - 2; 1 <= H; H--) 0 > valuesArray[H] && (valuesArray[H] = -valuesArray[H] - 1);
@@ -10485,11 +10485,11 @@ function GenerateHeightmap() {
         J[J.length - 1] = J[J.length - 3];
     }
     var gridValues, numRows, numCols, maxDim, maxDelta, deltaChange, valuesArray, E, F, G, rowsVisited, colsVisited, tempRow, tempCol;
-    this.generate = function(J) {
-        numRows = J[0];
-        numCols = J[1];
-        maxDelta = J[2];
-        deltaChange = J[3];
+    this.generate = function(heightMapInfo) {
+        numRows = heightMapInfo[0];
+        numCols = heightMapInfo[1];
+        maxDelta = heightMapInfo[2];
+        deltaChange = heightMapInfo[3];
         gridValues = new Int16Array(numRows * numCols);
         maxDim = numRows > numCols ? numRows : numCols;
         valuesArray = new Int16Array(maxDim);
@@ -10498,27 +10498,15 @@ function GenerateHeightmap() {
         G = [];
         rowsVisited = Array(numRows);
         colsVisited = Array(numCols);
-        for (J = numRows - 1; 0 <= J; J--) rowsVisited[J] = false;
-        for (J = numCols - 1; 0 <= J; J--) colsVisited[J] = false;
+        for (var rowIndex = numRows - 1; 0 <= rowIndex; rowIndex--) rowsVisited[rowIndex] = false;
+        for (var colIndex = numCols - 1; 0 <= colIndex; colIndex--) colsVisited[colIndex] = false;
         tempRow = new Int16Array(numRows);
         tempCol = new Int16Array(numCols);
-        J = maxDim;
-        var L = fakeRandom.random() % 1E4,
-            H = fakeRandom.random() % (2 * maxDelta + 1) - maxDelta;
-        updateValues(L, H, J);
-        J = tempCol;
-        L = valuesArray;
-        H = numCols;
-        for (var M = 0; M < H; M++) J[M] = L[M];
+        updateValues(fakeRandom.random() % 1E4, fakeRandom.random() % (2 * maxDelta + 1) - maxDelta, maxDim);
+        for (var colIndex = 0; colIndex < numCols; colIndex++) tempCol[colIndex] = valuesArray[colIndex];
         copyValuesToGrid(0, 0, true, numRows);
-        J = gridValues[0];
-        L = maxDim;
-        H = fakeRandom.random() % (2 * maxDelta + 1) - maxDelta;
-        updateValues(J, H, L);
-        J = tempRow;
-        L = valuesArray;
-        H = numRows;
-        for (M = 0; M < H; M++) J[M] = L[M];
+        updateValues(gridValues[0], fakeRandom.random() % (2 * maxDelta + 1) - maxDelta, maxDim);
+        for (rowIndex = 0; rowIndex < numRows; rowIndex++) tempRow[rowIndex] = valuesArray[rowIndex];
         copyValuesToGrid(0, 0, false, numCols);
         calcDiff(tempRow);
         calcDiff(tempCol);
@@ -10529,29 +10517,31 @@ function GenerateHeightmap() {
         copyValuesToGrid(0, numCols - 1, true, numRows);
         rowsVisited[numRows - 1] = rowsVisited[0] = true;
         colsVisited[numCols - 1] = colsVisited[0] = true;
-        J = numRows;
         E.push(0);
-        F.push(J);
+        F.push(numRows);
         G.push(true);
-        J = numCols;
         E.push(0);
-        F.push(J);
+        F.push(numCols);
         G.push(false);
         loop: for (;;) {
-            J = E.length - 1;
-            for (L = J - 1; 0 <= L; L--) F[L] > F[J] && (J = L);
+            var J = E.length - 1;
+            for (var L = J - 1; 0 <= L; L--) {
+                if (F[L] > F[J]) J = L;
+            }
             if (5 > F[J]) break loop;
             L = E[J] + divideFloor(F[J], 2);
             if (G[J]) {
-                H = void 0;
+                var H = void 0;
                 var Q;
-                M = L;
+                var M = L;
                 for (var R = 0, P = 0; P < numCols - 1;) {
-                    for (Q = R + 1; Q < numCols; Q++)
+                    for (Q = R + 1; Q < numCols; Q++) {
                         if (colsVisited[Q]) {
                             P = Q;
                             break
-                        } Q = P - R + 1;
+                        }
+                    }
+                    Q = P - R + 1;
                     updateValues(gridValues[M + numRows * R], 0 === R ? tempRow[M] : valuesArray[H - 1] - valuesArray[H - 2], Q);
                     updateValuesFromArray(gridValues[P * numRows + M], Q);
                     copyValuesToGrid(M, R, false, Q);
@@ -10583,21 +10573,21 @@ function GenerateHeightmap() {
             G.push(M);
             F[J] = L - E[J] + 1
         }
-        for (J = 0; J < numRows; J++) {
-            if (!rowsVisited[J]) {
-                for (L = 0; L < numCols; L++) {
-                    if (!colsVisited[L]) {
-                        H = gridValues[L * numRows + J - 1] + gridValues[(L - 1) * numRows + J];
+        for (var rowIndex = 0; rowIndex < numRows; rowIndex++) {
+            if (!rowsVisited[rowIndex]) {
+                for (colIndex = 0; colIndex < numCols; colIndex++) {
+                    if (!colsVisited[colIndex]) {
+                        H = gridValues[colIndex * numRows + rowIndex - 1] + gridValues[(colIndex - 1) * numRows + rowIndex];
                         M = 2;
-                        if (rowsVisited[J + 1]) {
+                        if (rowsVisited[rowIndex + 1]) {
                             M++;
-                            H += gridValues[L * numRows + J + 1];
+                            H += gridValues[colIndex * numRows + rowIndex + 1];
                         }
-                        if (colsVisited[L + 1]) {
+                        if (colsVisited[colIndex + 1]) {
                             M++;
-                            H += gridValues[(L + 1) * numRows + J];
+                            H += gridValues[(colIndex + 1) * numRows + rowIndex];
                         }
-                        gridValues[L * numRows + J] = divideFloor(H, M);
+                        gridValues[colIndex * numRows + rowIndex] = divideFloor(H, M);
                     }
                 }
             }
