@@ -738,9 +738,9 @@ function DifficultyEngine() {
                 }
             }
         } else {
-            var y = 8 === gamemode ? 1 : 0;
+            var defaultBotDifficulty = 8 === gamemode ? 1 : 0;
             for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
-                this.difficulty[botIndex] = y;
+                this.difficulty[botIndex] = typeof(modHandler) == "object" && modHandler.customDifficulty != -1 ? modHandler.customDifficulty : defaultBotDifficulty;
             }
         }        
         for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
@@ -782,12 +782,18 @@ function DifficultyEngine() {
     this.setZombieDifficulty = function() {
         var bIndex, dIndex;
         var helperBotCount = zombieSettings.helperBotCount;
-        for (bIndex = helperBotCount - 1; 0 <= bIndex; bIndex--) this.difficulty[bIndex] = 5;
-        for (dIndex = 0; 6 > dIndex; dIndex++)
-            if (0 < zombieSettings.difficultyArray[dIndex]) {
-                for (bIndex = helperBotCount + zombieSettings.difficultyArray[dIndex] - 1; bIndex >= helperBotCount; bIndex--) this.difficulty[bIndex] = dIndex;
-                helperBotCount += zombieSettings.difficultyArray[dIndex]
+        if (typeof(modHandler) == "object" && modHandler.customDifficulty != -1) {
+            for (bIndex = maxEntities; bIndex >= playerCount; bIndex--) this.difficulty[bIndex] = modHandler.customDifficulty;
+        } else {
+            for (bIndex = helperBotCount - 1; 0 <= bIndex; bIndex--) this.difficulty[bIndex] = 5;
+            for (dIndex = 0; 6 > dIndex; dIndex++) {
+                if (0 < zombieSettings.difficultyArray[dIndex]) {
+                    for (bIndex = helperBotCount + zombieSettings.difficultyArray[dIndex] - 1; bIndex >= helperBotCount; bIndex--) this.difficulty[bIndex] = dIndex;
+                    helperBotCount += zombieSettings.difficultyArray[dIndex]
+                }
             }
+        }
+        
     };
     this.setTiming = function(botIndex, timing) {
         0 <= botIndex && (this.botTiming[botIndex] = timing)
