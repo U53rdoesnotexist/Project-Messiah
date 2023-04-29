@@ -1856,7 +1856,7 @@ var playerCount, playersIngame, botCount, spectatorCount, maxEntities = 512,
 
 function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode, param_isContest) {
     if (typeof(modHandler) == "object") {
-        if (modHandler.customGamemode != 11) param_gamemode = modHandler.customGamemode
+        if (modHandler.customGamemode != 11 && param_gamemode != 8) param_gamemode = modHandler.customGamemode
     }
     currentSeedSpawn = param_seedSpawn;
     neverJoinedGameBefore = isCanvasHidden = false;
@@ -7115,7 +7115,7 @@ function Lobby() {
             var previewCanvas = getPreviewCanvas(param_lobbyGames[gameIndex].mapID, param_lobbyGames[gameIndex].mapSeed);
             lobbyGames.push({
                 gameID: param_lobbyGames[gameIndex].id,
-                gamemode: typeof(modHandler) == "object" && modHandler.customGamemode != 11 ? modHandler.customGamemode : param_lobbyGames[gameIndex].gamemode,
+                gamemode: param_lobbyGames[gameIndex].gamemode != 8 && typeof(modHandler) == "object" && modHandler.customGamemode != 11 ? modHandler.customGamemode : param_lobbyGames[gameIndex].gamemode,
                 isContest: param_lobbyGames[gameIndex].isContest,
                 mapID: typeof(modHandler) == "object" && modHandler.customMap != -1 ? modHandler.customMap : param_lobbyGames[gameIndex].mapID,
                 mapSeed: param_lobbyGames[gameIndex].mapSeed,
