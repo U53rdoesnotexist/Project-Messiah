@@ -19,7 +19,7 @@ class ModMenu {
         this.menu.style.border = "1px solid black";
         this.menu.style.padding = "0";
         this.menu.style.zIndex = z;
-        this.menu.addEventListener("mousedown", this.onMouseDown.bind(this));
+        document.addEventListener("mousedown", this.onMouseDown.bind(this));
         document.addEventListener("mousemove", this.onMouseMove.bind(this));
         document.addEventListener("mouseup", this.onMouseUp.bind(this));
         document.body.appendChild(this.menu);
@@ -27,6 +27,7 @@ class ModMenu {
     
         // Create title bar
         this.titleBar = document.createElement('div');
+        this.titleBar.classList.add('titleBar');
         this.titleBar.style.backgroundColor = '#999';
         this.titleBar.style.color = '#fff';
         this.titleBar.style.height = '20px';
@@ -113,10 +114,13 @@ class ModMenu {
     }
 
     onMouseDown(e) {
-        this.isDragging = true;
-        this.dragStartX = e.clientX;
-        this.dragStartY = e.clientY;
+        if (e.target.classList.contains("titleBar") || e.target.closest(".titleBar")) {
+            this.isDragging = true;
+            this.dragStartX = e.clientX;
+            this.dragStartY = e.clientY;
+        }
     }
+    
   
     onMouseMove(e) {
         if (this.isDragging) {
@@ -132,8 +136,11 @@ class ModMenu {
     }
   
     onMouseUp(e) {
-        this.isDragging = false;
+        if (this.isDragging) {
+            this.isDragging = false;
+        }
     }
+    
   
     setSize(width, height) {
         this.width = width;
@@ -147,6 +154,51 @@ class ModMenu {
         this.y = y;
         this.menu.style.left = this.x + "px";
         this.menu.style.top = this.y + "px";
+    }
+
+    // Resize functions
+    onResizeMouseDown(e) {
+        this.isResizing = true;
+        this.resizeStartX = e.clientX;
+        this.resizeStartY = e.clientY;
+        this.resizeStartWidth = this.width;
+        this.resizeStartHeight = this.height;
+        this.resizeDirection = e.target.dataset.resize;
+    }
+    
+    onResizeMouseMove(e) {
+        if (this.isResizing) {
+            const deltaX = e.clientX - this.resizeStartX;
+            const deltaY = e.clientY - this.resizeStartY;
+        
+            if (this.resizeDirection.includes("right")) {
+                this.width = this.resizeStartWidth + deltaX;
+                this.menu.style.width = this.width + "px";
+            }
+        
+            if (this.resizeDirection.includes("left")) {
+                this.width = this.resizeStartWidth - deltaX;
+                this.x = this.x + deltaX;
+                this.menu.style.width = this.width + "px";
+                this.menu.style.left = this.x + "px";
+            }
+        
+            if (this.resizeDirection.includes("bottom")) {
+                this.height = this.resizeStartHeight + deltaY;
+                this.menu.style.height = this.height + "px";
+            }
+        
+            if (this.resizeDirection.includes("top")) {
+                this.height = this.resizeStartHeight - deltaY;
+                this.y = this.y + deltaY;
+                this.menu.style.height = this.height + "px";
+                this.menu.style.top = this.y + "px";
+            }
+        }
+    }
+    
+    onResizeMouseUp() {
+        this.isResizing = false;
     }
 
 }
