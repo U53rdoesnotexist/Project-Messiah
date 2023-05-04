@@ -5,13 +5,13 @@ class ModMenu {
         this.height = height;
         this.x = x;
         this.y = y;
-        this.zIndex = z;
         this.isDragging = false;
         this.dragStartX = 0;
         this.dragStartY = 0;
         this.isResizing = false;
         this.resizeStartX = 0;
         this.resizeStartY = 0;
+        this.docked = false;
 
         this.menu = document.createElement("div");
         this.menu.style.position = "absolute";
@@ -116,23 +116,43 @@ class ModMenu {
             this.dragStartY = e.clientY;
         }
     }
-    
   
     onMouseMove(e) {
         if (this.isResizing) {
-            const newWidth = e.clientX - this.x;
+            const newWidth = this.docked ? this.width : e.clientX - this.x;
             const newHeight = e.clientY - this.y;
             this.setSize(newWidth, newHeight);
             
         } else if (this.isDragging) {
-            const deltaX = e.clientX - this.dragStartX;
             const deltaY = e.clientY - this.dragStartY;
-            this.x += deltaX;
+            this.x += e.clientX - this.dragStartX;
             this.y += deltaY;
+            if (this.y >= window.innerHeight - this.height || this.y <= 0) {
+                this.y -= deltaY;
+            }
             this.menu.style.left = this.x + "px";
             this.menu.style.top = this.y + "px";
             this.dragStartX = e.clientX;
             this.dragStartY = e.clientY;
+
+            // Docking
+            const canvasA = document.getElementById('canvasA');
+            if (this.x <= window.innerWidth / 100) {
+                this.docked = true;
+                this.x = 0;
+                this.menu.style.left = this.x + "px";
+                canvasA.style.paddingLeft = this.width + 'px';
+                canvasA.style.width = (window.innerWidth - this.width) + 'px';
+            } else if (window.innerWidth - (this.x + this.width) <= window.innerWidth / 100) {
+                this.docked = true;
+                this.x = window.innerWidth - this.width;
+                this.menu.style.left = this.x + "px";
+                canvasA.style.width = (window.innerWidth - this.width) + 'px';
+            } else {
+                this.docked = false;
+                canvasA.style.paddingLeft = '0';
+                canvasA.style.width = '100%';
+            }
         }
     }
   
@@ -143,7 +163,6 @@ class ModMenu {
             this.isDragging = false;
         }
     }
-    
   
     setSize(width, height) {
         this.width = getMax(width, 150);
@@ -158,7 +177,6 @@ class ModMenu {
         this.menu.style.left = this.x + "px";
         this.menu.style.top = this.y + "px";
     }
-
 }
 
 const modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
