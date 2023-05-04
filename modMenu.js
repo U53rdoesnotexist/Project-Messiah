@@ -9,6 +9,10 @@ class ModMenu {
         this.isDragging = false;
         this.dragStartX = 0;
         this.dragStartY = 0;
+        this.isResizing = false;
+        this.resizeStartX = 0;
+        this.resizeStartY = 0;
+
         this.menu = document.createElement("div");
         this.menu.style.position = "absolute";
         this.menu.style.width = this.width + "px";
@@ -19,9 +23,9 @@ class ModMenu {
         this.menu.style.border = "1px solid black";
         this.menu.style.padding = "0";
         this.menu.style.zIndex = z;
-        document.addEventListener("mousedown", this.onMouseDown.bind(this));
-        document.addEventListener("mousemove", this.onMouseMove.bind(this));
-        document.addEventListener("mouseup", this.onMouseUp.bind(this));
+        this.menu.addEventListener("mousedown", this.onMouseDown.bind(this));
+        this.menu.addEventListener("mousemove", this.onMouseMove.bind(this));
+        this.menu.addEventListener("mouseup", this.onMouseUp.bind(this));
         document.body.appendChild(this.menu);
         this.visible = true;
     
@@ -87,8 +91,10 @@ class ModMenu {
         const newButton = document.createElement('button');
         newButton.classList.add('menu-button');
         newButton.innerHTML = '&#10542;';
-        newButton.addEventListener('click', () => {
-            //start Resizing shit
+        newButton.addEventListener('mousedown', (e) => {
+            this.isResizing = true;
+            this.resizeStartX = e.clientX;
+            this.resizeStartY = e.clientY;
         });
 
         // Add new button to title bar
@@ -98,13 +104,13 @@ class ModMenu {
         document.body.appendChild(this.menu);
 
         // Add event listeners for dragging
-        this.menu.addEventListener("mousedown", (e) => this.onMouseDown(e));
+        document.addEventListener("mousedown", (e) => this.onMouseDown(e));
         document.addEventListener("mousemove", (e) => this.onMouseMove(e));
         document.addEventListener("mouseup", (e) => this.onMouseUp(e));
     }
 
     onMouseDown(e) {
-        if (e.target.classList.contains("titleBar") || e.target.closest(".titleBar")) {
+        if (!this.isResizing && (e.target.classList.contains("titleBar") || e.target.closest(".titleBar"))) {
             this.isDragging = true;
             this.dragStartX = e.clientX;
             this.dragStartY = e.clientY;
@@ -113,7 +119,12 @@ class ModMenu {
     
   
     onMouseMove(e) {
-        if (this.isDragging) {
+        if (this.isResizing) {
+            const newWidth = e.clientX - this.x;
+            const newHeight = e.clientY - this.y;
+            this.setSize(newWidth, newHeight);
+            
+        } else if (this.isDragging) {
             const deltaX = e.clientX - this.dragStartX;
             const deltaY = e.clientY - this.dragStartY;
             this.x += deltaX;
@@ -126,15 +137,17 @@ class ModMenu {
     }
   
     onMouseUp(e) {
-        if (this.isDragging) {
+        if (this.isResizing) {
+            this.isResizing = false;
+        } else if (this.isDragging) {
             this.isDragging = false;
         }
     }
     
   
     setSize(width, height) {
-        this.width = width;
-        this.height = height;
+        this.width = getMax(width, 150);
+        this.height = getMax(height, 50);
         this.menu.style.width = this.width + "px";
         this.menu.style.height = this.height + "px";
     }
