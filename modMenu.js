@@ -37,11 +37,8 @@ class ModMenu {
         this.titleBar.style.justifyContent = 'space-between';
         this.titleBar.innerHTML = `
             <span style="margin: 0 auto;">${this.title}</span>
-            <span id="dockButton" class="menu-button">
-                <span class="menu-button-triangle"></span>
-                <div class="menu-button-line"></div>
-            </span>
-            <button class="menu-button">X</button>
+            <button class="menu-button">&#10234;</button>
+            <button class="menu-button">&#10006;</button>
         `;
 
         // Add title bar to menu
@@ -55,16 +52,12 @@ class ModMenu {
         }
 
         // Add event listener to close button
-        const closeButton = this.titleBar.querySelector('button');
+        const closeButton = this.titleBar.querySelector('button:nth-child(3)');
         closeButton.addEventListener('click', () => {
             this.menu.remove();
         });
 
         const css = `
-            #dockButton {
-                position: relative;
-                left: 25px;
-            }
             .menu-button {
                 width: 25px;
                 height: 25px;
@@ -76,21 +69,14 @@ class ModMenu {
                 cursor: pointer;
                 background-color: transparent;
                 position: relative;
+                font-size: 20px;
             }
-            .menu-button-triangle {
-                width: 0;
-                height: 0;
-                border-top: 8px solid transparent;
-                border-bottom: 8px solid transparent;
-                border-left: 7px solid #fff;
-                left: 25px;
+            .menu-button:nth-child(2) {
             }
-            .menu-button-line {
-                height: 16px;
-                width: 4px;
-                background-color: #fff;
-                margin-left: 2px;
-                margin-right: 0px;
+            .menu-button:nth-child(3) {
+                position: absolute;
+                bottom: 0;
+                right: 0;
             }
         `;
         const style = document.createElement('style');
@@ -100,9 +86,9 @@ class ModMenu {
         // Create new button element
         const newButton = document.createElement('button');
         newButton.classList.add('menu-button');
+        newButton.innerHTML = '&#10542;';
         newButton.addEventListener('click', () => {
-            // Call Test function
-            Test();
+            //start Resizing shit
         });
 
         // Add new button to title bar
@@ -111,6 +97,10 @@ class ModMenu {
         // Add menu to DOM
         document.body.appendChild(this.menu);
 
+        // Add event listeners for dragging
+        this.menu.addEventListener("mousedown", (e) => this.onMouseDown(e));
+        document.addEventListener("mousemove", (e) => this.onMouseMove(e));
+        document.addEventListener("mouseup", (e) => this.onMouseUp(e));
     }
 
     onMouseDown(e) {
@@ -156,58 +146,8 @@ class ModMenu {
         this.menu.style.top = this.y + "px";
     }
 
-    // Resize functions
-    onResizeMouseDown(e) {
-        this.isResizing = true;
-        this.resizeStartX = e.clientX;
-        this.resizeStartY = e.clientY;
-        this.resizeStartWidth = this.width;
-        this.resizeStartHeight = this.height;
-        this.resizeDirection = e.target.dataset.resize;
-    }
-    
-    onResizeMouseMove(e) {
-        if (this.isResizing) {
-            const deltaX = e.clientX - this.resizeStartX;
-            const deltaY = e.clientY - this.resizeStartY;
-        
-            if (this.resizeDirection.includes("right")) {
-                this.width = this.resizeStartWidth + deltaX;
-                this.menu.style.width = this.width + "px";
-            }
-        
-            if (this.resizeDirection.includes("left")) {
-                this.width = this.resizeStartWidth - deltaX;
-                this.x = this.x + deltaX;
-                this.menu.style.width = this.width + "px";
-                this.menu.style.left = this.x + "px";
-            }
-        
-            if (this.resizeDirection.includes("bottom")) {
-                this.height = this.resizeStartHeight + deltaY;
-                this.menu.style.height = this.height + "px";
-            }
-        
-            if (this.resizeDirection.includes("top")) {
-                this.height = this.resizeStartHeight - deltaY;
-                this.y = this.y + deltaY;
-                this.menu.style.height = this.height + "px";
-                this.menu.style.top = this.y + "px";
-            }
-        }
-    }
-    
-    onResizeMouseUp() {
-        this.isResizing = false;
-    }
-
 }
 
 const modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
 modMenu.setSize(300, 300);
 modMenu.setPosition(200, 200);
-
-
-function Test (){
-    console.log("Test");
-}
