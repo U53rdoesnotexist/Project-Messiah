@@ -35,8 +35,12 @@ class ModMenu {
         this.titleBar.style.alignItems = 'center';
         this.titleBar.style.justifyContent = 'space-between';
         this.titleBar.innerHTML = `
-        <span style="margin: 0 auto;">${this.title}</span>
-            <button>X</button>
+            <span style="margin: 0 auto;">${this.title}</span>
+            <span id="dockButton" class="menu-button">
+                <span class="menu-button-triangle"></span>
+                <div class="menu-button-line"></div>
+            </span>
+            <button class="menu-button">X</button>
         `;
 
         // Add title bar to menu
@@ -49,16 +53,63 @@ class ModMenu {
             this.menu.style.width = this.width + 'px';
         }
 
-        this.menu.appendChild(this.titleBar);
-    
         // Add event listener to close button
         const closeButton = this.titleBar.querySelector('button');
         closeButton.addEventListener('click', () => {
             this.menu.remove();
         });
 
+        const css = `
+            #dockButton {
+                position: relative;
+                left: 25px;
+            }
+            .menu-button {
+                width: 25px;
+                height: 25px;
+                border: none;
+                outline: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                background-color: transparent;
+                position: relative;
+            }
+            .menu-button-triangle {
+                width: 0;
+                height: 0;
+                border-top: 8px solid transparent;
+                border-bottom: 8px solid transparent;
+                border-left: 7px solid #fff;
+                left: 25px;
+            }
+            .menu-button-line {
+                height: 16px;
+                width: 4px;
+                background-color: #fff;
+                margin-left: 2px;
+                margin-right: 0px;
+            }
+        `;
+        const style = document.createElement('style');
+        style.innerHTML = css;
+        document.head.appendChild(style);
+
+        // Create new button element
+        const newButton = document.createElement('button');
+        newButton.classList.add('menu-button');
+        newButton.addEventListener('click', () => {
+            // Call Test function
+            Test();
+        });
+
+        // Add new button to title bar
+        this.titleBar.insertBefore(newButton, closeButton);
+
         // Add menu to DOM
         document.body.appendChild(this.menu);
+
     }
 
     onMouseDown(e) {
@@ -97,8 +148,14 @@ class ModMenu {
         this.menu.style.left = this.x + "px";
         this.menu.style.top = this.y + "px";
     }
+
 }
 
 const modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
 modMenu.setSize(300, 300);
 modMenu.setPosition(200, 200);
+
+
+function Test (){
+    console.log("Test");
+}
