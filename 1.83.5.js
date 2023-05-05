@@ -3334,7 +3334,7 @@ function onMousedown(e) {
     e.preventDefault();
     if (!isTouch) {
         wsManager.setHumanLastAction(wsManager.remote);
-        handleMouseDown(Math.floor(pixelRatio * e.clientX), Math.floor(pixelRatio * e.clientY))
+        handleMouseDown(Math.floor(pixelRatio * e.clientX - getLeftDockWidth()), Math.floor(pixelRatio * e.clientY))
     }
 }
 
@@ -3366,7 +3366,7 @@ function handleMouseDown(xPos, yPos) {
 function onMousemove(e) {
     isTouch = false;
     e.preventDefault();
-    onPointermove(Math.floor(pixelRatio * e.clientX), Math.floor(pixelRatio * e.clientY))
+    onPointermove(Math.floor(pixelRatio * e.clientX - getLeftDockWidth()), Math.floor(pixelRatio * e.clientY))
 }
 
 function onTouchmove(e) {
@@ -3407,11 +3407,11 @@ function onMouseleave(e) {
 
 function onMouseup(e) {
     e.preventDefault();
-    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX), Math.floor(pixelRatio * e.clientY))
+    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getLeftDockWidth()), Math.floor(pixelRatio * e.clientY))
 }
 
 function onClick(g) {
-    2 === gameStateManager.getState() && singleSettings.click(g.clientX, g.clientY)
+    2 === gameStateManager.getState() && singleSettings.click(g.clientX - getLeftDockWidth(), g.clientY)
 }
 
 function onTouchend(g) {
@@ -3446,7 +3446,7 @@ function onPointerUp(xPos, yPos) {
 function onWheel(e) {
     e.preventDefault();
     wsManager.setHumanLastAction(wsManager.remote);
-    var xPos = Math.floor(pixelRatio * e.clientX),
+    var xPos = Math.floor(pixelRatio * e.clientX - getLeftDockWidth()),
         yPos = Math.floor(pixelRatio * e.clientY),
         deltaY = e.deltaY;
     if (1 === e.deltaMode) deltaY *= 20;
@@ -6817,7 +6817,7 @@ function NameInputBar() {
         inputBars.push({
             input: document.createElement("INPUT"),
             hidden: false,
-            color: normalBGColor
+            color: normalBGColor,
         });
         var index = inputBars.length - 1;
         inputBars[index].input.setAttribute("type", "text");
@@ -6842,16 +6842,16 @@ function NameInputBar() {
         this.setCanvasVariables()
     };
     this.setCanvasVariables = function() {
-        var x = Math.floor(.22 * mainButtons.height / pixelRatio);
-        inputBars[0].input.style.font = fontWeightBold + x + fontSizeArial;
-        inputBars[0].input.style.padding = Math.floor(.3 * x) + "px 5px";
+        var fontSize = Math.floor(.22 * mainButtons.height / pixelRatio);
+        inputBars[0].input.style.font = fontWeightBold + fontSize + fontSizeArial;
+        inputBars[0].input.style.padding = Math.floor(.3 * fontSize) + "px 5px";
         inputBars[0].input.style.width = Math.floor(mainButtons.width / pixelRatio - 13) + "px"
     };
     this.getValueByID = function(index) {
         return inputBars[index]
     };
     this.setPosition = function(index) {
-        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (mainButtons.width / pixelRatio - 3) - 7) / 2) + "px";
+        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (mainButtons.width / pixelRatio - 3) - 7) / 2 + getLeftDockWidth()) + "px";
         if (0 === index) inputBars[index].input.style.bottom = Math.floor((prevClientHeight - mainButtons.startingY + mainButtons.margins) / pixelRatio) + "px"
     };
     this.toggleVisibility = function(index, option) {
@@ -11280,6 +11280,10 @@ function CanvasManager() {
         forceCanvasUpdate = true;
         500 <= updateFreq && updateCanvas()
     }
+    this.dockUpdateCanvas = function() {
+        forceCanvasUpdate = true;
+        updateCanvas();
+    }
 }
 
 function BoatPathHandler() {
@@ -12443,24 +12447,6 @@ function SingleplayerHandler() {
                         if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
                         else {
                             for (var times = 0; times < (typeof(modHandler) == "object" ? modHandler.gameSpeed : 1); times++) {
-                                /*if (modHandler.cycle < 19) {
-                                    gameTick();
-                                    this.tick++;
-                                    gameTick();
-                                    this.tick++;
-                                    gameTick();
-                                    this.tick++;
-                                    gameTick();
-                                    this.tick++;
-                                    gameTick();
-                                    this.tick++;
-                                    gameTick();
-                                    this.tick++;
-                                    gameTick();
-                                    this.tick++;
-                                    gameTick();
-                                    this.tick++;
-                                }*/
                                 gameTick();
                                 this.tick++;
                             }

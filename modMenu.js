@@ -57,9 +57,11 @@ class ModMenu {
 
         // Add event listener to close button
         const closeButton = this.titleBar.querySelector('button:nth-child(3)');
-        closeButton.addEventListener('click', () => {
+        closeButton.addEventListener('click', (e) => {
             this.menu.remove();
-            canvasManager.forceUpdateCanvas();
+            modMenus = modMenus.filter((menu) => menu !== this);
+            this.onDock(e);
+            canvasManager.dockUpdateCanvas();
         });
 
         const css = `
@@ -142,7 +144,7 @@ class ModMenu {
         }
     }
   
-    onMouseUp(e) {
+    onMouseUp() {
         if (this.isResizing) {
             this.isResizing = false;
         } else if (this.isDragging) {
@@ -154,51 +156,51 @@ class ModMenu {
         //First check how many available docks there are, and what their original widths are
         var docks = [];
         for (let dockStatus = 1; dockStatus <= 2; dockStatus++) {
-            docks.push({
-                exists: modMenus.findIndex(menu => menu.dockStatus === dockStatus) != -1,
-                width: Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width))
-            });
+            docks.push(Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width)));
         };
-        //Now we will dock the menu to the left or right side if it is close enough
-        console.log(this.x, docks)
-        if (e.clientX <= docks[0].width + window.innerWidth / 75) { //Docked to left side
-            this.dockStatus = 1;
-            this.x = 0;
-        } else if (e.clientX + this.width >= window.innerWidth * 74/75 - docks[1].width) { //Docked to right side
-            this.dockStatus = 2;
-            this.x = window.innerWidth - this.width;
-        } else this.dockStatus = 0; //Docked to neither side
+        //Now we will dock the menu to the left or right side if it is close enough to the edge
+        if (this.dockStatus === 0) { //Easier snapping to dock
+            if (this.x <= docks[0]) { //Docked to left side
+                this.dockStatus = 1;
+                this.x = 0;
+            } else if (this.x + this.width >= window.innerWidth - docks[1]) { //Docked to right side
+                this.dockStatus = 2;
+                this.x = window.innerWidth - this.width;
+            } else this.dockStatus = 0; //Docked to neither side
+        } else { //Easier snapping to undock
+            if (e.clientX > docks[0] + window.innerWidth / 100 && e.clientX + this.width < window.innerWidth * .99 - docks[1]) { //Undocked
+                this.dockStatus = 0;
+            }
+        }
 
         //Now we need to recalculate the maximum width of each dock and refit every menu that is docked into its new dock width
-        var oldDockWidths = [docks[0].width, docks[1].width];
+        const oldDockWidths = [docks[0], docks[1]];
+
         for (let dockStatus = 1; dockStatus <= 2; dockStatus++) {
-            if (docks[dockStatus - 1].exists) {
-                docks[dockStatus - 1].width = Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width));
-                modMenus.filter(menu => menu.dockStatus === dockStatus).forEach(menu => {
-                    menu.setSize(docks[dockStatus - 1].width, menu.height);
-                    menu.x = dockStatus == 1 ? 0 : window.innerWidth - menu.width;
-                });
-            }
+            docks[dockStatus - 1] = Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width));
+            modMenus.filter(menu => menu.dockStatus === dockStatus).forEach(menu => {
+                menu.setSize(docks[dockStatus - 1], menu.height);
+                menu.x = dockStatus == 1 ? 0 : window.innerWidth - menu.width;
+            });
         }
         
         //If a dock is empty, reset the mainCanvas back to normal.
-        if (!docks[0].exists && !docks[1].exists) { //Docked to neither side
+        if (!docks[0] && !docks[1]) { //Docked to neither side
             mainCanvas.style.paddingLeft = '0';
             mainCanvas.style.width = '100%';
-        } else if (!docks[0].exists && docks[1].exists) { //Docked to right side
+        } else if (!docks[0] && docks[1]) { //Docked to right side
             mainCanvas.style.paddingLeft = '0';
-            mainCanvas.style.width = (window.innerWidth - docks[1].width) + 'px';
-        } else if (!docks[1].exists && docks[0].exists) { //Docked to left side
-            mainCanvas.style.paddingLeft = docks[0].width + 'px';
-            mainCanvas.style.width = (window.innerWidth - docks[0].width) + 'px';
+            mainCanvas.style.width = (window.innerWidth - docks[1]) + 'px';
+        } else if (!docks[1] && docks[0]) { //Docked to left side
+            mainCanvas.style.paddingLeft = docks[0] + 'px';
+            mainCanvas.style.width = (window.innerWidth - docks[0]) + 'px';
         } else { //Docked to both sides
-            mainCanvas.style.paddingLeft = docks[0].width + 'px';
-            mainCanvas.style.width = (window.innerWidth - docks[0].width - docks[1].width) + 'px';
+            mainCanvas.style.paddingLeft = docks[0] + 'px';
+            mainCanvas.style.width = (window.innerWidth - docks[0] - docks[1]) + 'px';
         }
 
-        //If there is a change in dock Width, update the canvas.
-        if (oldDockWidths[0] != docks[0].width || oldDockWidths[1] != docks[1].width) canvasManager.forceUpdateCanvas();
-        //if (oldDockStatus != this.dockStatus) canvasManager.forceUpdateCanvas();
+        //If there is a change in dock Width or a change in the number of panels, update the canvas.
+        if (oldDockWidths[0] != docks[0] || oldDockWidths[1] != docks[1]) canvasManager.dockUpdateCanvas();
     }
 
     setSize(width, height) {
@@ -222,3 +224,7 @@ var modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
 modMenu.setSize(300, 300);
 modMenu.setPosition(200, 200);
 modMenus.push(modMenu);
+
+function getLeftDockWidth() {
+    return Math.max(0, ...modMenus.filter(menu => menu.dockStatus === 1).map(menu => menu.width));
+}
