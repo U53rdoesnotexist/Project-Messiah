@@ -19,8 +19,8 @@ class ModMenu {
         this.menu.style.height = this.height + "px";
         this.menu.style.left = this.x + "px";
         this.menu.style.top = this.y + "px";
-        this.menu.style.backgroundColor = "white";
-        this.menu.style.border = "1px solid black";
+        this.menu.style.backgroundColor = "black";
+        this.menu.style.border = "1px solid gray";
         this.menu.style.padding = "0";
         this.menu.style.zIndex = z;
         this.menu.addEventListener("mousedown", this.onMouseDown.bind(this));
@@ -111,8 +111,41 @@ class ModMenu {
         document.addEventListener("mousemove", (e) => this.onMouseMove(e));
         document.addEventListener("mouseup", (e) => this.onMouseUp(e));
 
-        
+        this.drawPanel(0)
     }
+
+    drawPanel(panelIndex) {
+        if (panelIndex == 0) {
+            this.drawLogo();
+        }
+    }
+
+    drawLogo() {
+        if (sprites.areAllSpritesLoaded()) {
+            const sprite = sprites.getValueByName("territorio");
+            const canvas = document.createElement("canvas");
+            canvas.width = sprite.width;
+            canvas.height = sprite.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(sprite, 0, 0);
+        
+            const img = new Image();
+            img.src = canvas.toDataURL();
+        
+            img.style.display = "block";
+            img.style.margin = "auto";
+            img.style.width = "80%";
+            img.style.marginTop = "15px";
+        
+            this.menu.appendChild(img);
+        } else setTimeout(() => this.drawLogo(), 100);
+    }
+    
+    /*const buttonLabels = [
+        "About", "Account & Privacy", "Custom Matches", "Label & Display",
+        "Chat", "Replay Logger", "Audio", "Hotkeys", "Singleplayer", "Miscellaneous",
+        "Presets", "Placeholder"
+    ];*/
 
     onMouseDown(e) {
         if (!this.isResizing && (e.target.classList.contains("titleBar") || e.target.closest(".titleBar"))) {
@@ -219,12 +252,14 @@ class ModMenu {
 }
 
 var modMenus = [];
+function modMenuInit() {
 
-var modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
-modMenu.setSize(300, 300);
-modMenu.setPosition(200, 200);
-modMenus.push(modMenu);
+    var modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
+    modMenu.setSize(300, 300);
+    modMenu.setPosition(200, 200);
+    modMenus.push(modMenu);
+}
 
-function getLeftDockWidth() {
-    return Math.max(0, ...modMenus.filter(menu => menu.dockStatus === 1).map(menu => menu.width));
+function getDockWidth(dockStatus = 1) {
+    return Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width));
 }

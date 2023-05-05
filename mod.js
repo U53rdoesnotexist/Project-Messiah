@@ -8,6 +8,8 @@ function modConstruct(){
     extendedActions = new ExtendedActions;
     modHandler.updateCheatModules();
     distance = new Distance;
+
+    modMenuInit();
 }
 
 function ModHandler() {

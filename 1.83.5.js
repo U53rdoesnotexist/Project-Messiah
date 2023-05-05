@@ -3334,7 +3334,7 @@ function onMousedown(e) {
     e.preventDefault();
     if (!isTouch) {
         wsManager.setHumanLastAction(wsManager.remote);
-        handleMouseDown(Math.floor(pixelRatio * e.clientX - getLeftDockWidth()), Math.floor(pixelRatio * e.clientY))
+        handleMouseDown(Math.floor(pixelRatio * e.clientX - getDockWidth()), Math.floor(pixelRatio * e.clientY))
     }
 }
 
@@ -3366,7 +3366,7 @@ function handleMouseDown(xPos, yPos) {
 function onMousemove(e) {
     isTouch = false;
     e.preventDefault();
-    onPointermove(Math.floor(pixelRatio * e.clientX - getLeftDockWidth()), Math.floor(pixelRatio * e.clientY))
+    onPointermove(Math.floor(pixelRatio * e.clientX - getDockWidth()), Math.floor(pixelRatio * e.clientY))
 }
 
 function onTouchmove(e) {
@@ -3407,11 +3407,11 @@ function onMouseleave(e) {
 
 function onMouseup(e) {
     e.preventDefault();
-    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getLeftDockWidth()), Math.floor(pixelRatio * e.clientY))
+    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getDockWidth()), Math.floor(pixelRatio * e.clientY))
 }
 
 function onClick(g) {
-    2 === gameStateManager.getState() && singleSettings.click(g.clientX - getLeftDockWidth(), g.clientY)
+    2 === gameStateManager.getState() && singleSettings.click(g.clientX - getDockWidth(), g.clientY)
 }
 
 function onTouchend(g) {
@@ -3446,7 +3446,7 @@ function onPointerUp(xPos, yPos) {
 function onWheel(e) {
     e.preventDefault();
     wsManager.setHumanLastAction(wsManager.remote);
-    var xPos = Math.floor(pixelRatio * e.clientX - getLeftDockWidth()),
+    var xPos = Math.floor(pixelRatio * e.clientX - getDockWidth()),
         yPos = Math.floor(pixelRatio * e.clientY),
         deltaY = e.deltaY;
     if (1 === e.deltaMode) deltaY *= 20;
@@ -6851,7 +6851,7 @@ function NameInputBar() {
         return inputBars[index]
     };
     this.setPosition = function(index) {
-        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (mainButtons.width / pixelRatio - 3) - 7) / 2 + getLeftDockWidth()) + "px";
+        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (mainButtons.width / pixelRatio - 3) - 7) / 2 + getDockWidth()) + "px";
         if (0 === index) inputBars[index].input.style.bottom = Math.floor((prevClientHeight - mainButtons.startingY + mainButtons.margins) / pixelRatio) + "px"
     };
     this.toggleVisibility = function(index, option) {
@@ -11232,7 +11232,7 @@ function CanvasManager() {
             } else return false;
         }
         moreSettings.hideUsernames ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
-        maxClientWidth = limitToMinimum(document.documentElement.clientWidth - getDockWidths());
+        maxClientWidth = limitToMinimum(document.documentElement.clientWidth - getDockWidth() - getDockWidth(2));
         maxClientHeight = limitToMinimum(document.documentElement.clientHeight);
         varClientWidth = Math.floor(.5 + pixelRatio * maxClientWidth);
         varClientHeight = Math.floor(.5 + pixelRatio * maxClientHeight);
@@ -11246,15 +11246,6 @@ function CanvasManager() {
         mainCanvas.style.width = maxClientWidth + "px";
         mainCanvas.style.height = maxClientHeight + "px";
         return true
-    }
-
-    function getDockWidths() {
-        var dockWidth = [0, 0];
-        for (let menu of modMenus) {
-            if (!menu.dockStatus) continue
-            dockWidth[menu.dockStatus -1] = getMax(menu.width, dockWidth[menu.dockStatus -1])
-        }
-        return dockWidth.reduce((a, b) => a + b);
     }
 
     var forceCanvasUpdate = false,
