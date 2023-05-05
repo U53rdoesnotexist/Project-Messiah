@@ -11,7 +11,7 @@ class ModMenu {
         this.isResizing = false;
         this.resizeStartX = 0;
         this.resizeStartY = 0;
-        this.docked = false;
+        this.dockStatus = 0;
 
         this.menu = document.createElement("div");
         this.menu.style.position = "absolute";
@@ -59,6 +59,7 @@ class ModMenu {
         const closeButton = this.titleBar.querySelector('button:nth-child(3)');
         closeButton.addEventListener('click', () => {
             this.menu.remove();
+            canvasManager.forceUpdateCanvas();
         });
 
         const css = `
@@ -107,6 +108,8 @@ class ModMenu {
         document.addEventListener("mousedown", (e) => this.onMouseDown(e));
         document.addEventListener("mousemove", (e) => this.onMouseMove(e));
         document.addEventListener("mouseup", (e) => this.onMouseUp(e));
+
+        
     }
 
     onMouseDown(e) {
@@ -119,7 +122,7 @@ class ModMenu {
   
     onMouseMove(e) {
         if (this.isResizing) {
-            const newWidth = this.docked ? this.width : e.clientX - this.x;
+            const newWidth = this.dockStatus ? this.width : e.clientX - this.x;
             const newHeight = e.clientY - this.y;
             this.setSize(newWidth, newHeight);
             
@@ -135,24 +138,7 @@ class ModMenu {
             this.dragStartX = e.clientX;
             this.dragStartY = e.clientY;
 
-            // Docking
-            const canvasA = document.getElementById('canvasA');
-            if (this.x <= window.innerWidth / 100) {
-                this.docked = true;
-                this.x = 0;
-                this.menu.style.left = this.x + "px";
-                canvasA.style.paddingLeft = this.width + 'px';
-                canvasA.style.width = (window.innerWidth - this.width) + 'px';
-            } else if (window.innerWidth - (this.x + this.width) <= window.innerWidth / 100) {
-                this.docked = true;
-                this.x = window.innerWidth - this.width;
-                this.menu.style.left = this.x + "px";
-                canvasA.style.width = (window.innerWidth - this.width) + 'px';
-            } else {
-                this.docked = false;
-                canvasA.style.paddingLeft = '0';
-                canvasA.style.width = '100%';
-            }
+            this.onDock(e);
         }
     }
   
@@ -163,7 +149,58 @@ class ModMenu {
             this.isDragging = false;
         }
     }
-  
+
+    onDock(e) {
+        //First check how many available docks there are, and what their original widths are
+        var docks = [];
+        for (let dockStatus = 1; dockStatus <= 2; dockStatus++) {
+            docks.push({
+                exists: modMenus.findIndex(menu => menu.dockStatus === dockStatus) != -1,
+                width: Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width))
+            });
+        };
+        //Now we will dock the menu to the left or right side if it is close enough
+        console.log(this.x, docks)
+        if (e.clientX <= docks[0].width + window.innerWidth / 75) { //Docked to left side
+            this.dockStatus = 1;
+            this.x = 0;
+        } else if (e.clientX + this.width >= window.innerWidth * 74/75 - docks[1].width) { //Docked to right side
+            this.dockStatus = 2;
+            this.x = window.innerWidth - this.width;
+        } else this.dockStatus = 0; //Docked to neither side
+
+        //Now we need to recalculate the maximum width of each dock and refit every menu that is docked into its new dock width
+        var oldDockWidths = [docks[0].width, docks[1].width];
+        for (let dockStatus = 1; dockStatus <= 2; dockStatus++) {
+            if (docks[dockStatus - 1].exists) {
+                docks[dockStatus - 1].width = Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width));
+                modMenus.filter(menu => menu.dockStatus === dockStatus).forEach(menu => {
+                    menu.setSize(docks[dockStatus - 1].width, menu.height);
+                    menu.x = dockStatus == 1 ? 0 : window.innerWidth - menu.width;
+                });
+            }
+        }
+        
+        //If a dock is empty, reset the mainCanvas back to normal.
+        if (!docks[0].exists && !docks[1].exists) { //Docked to neither side
+            mainCanvas.style.paddingLeft = '0';
+            mainCanvas.style.width = '100%';
+        } else if (!docks[0].exists && docks[1].exists) { //Docked to right side
+            mainCanvas.style.paddingLeft = '0';
+            mainCanvas.style.width = (window.innerWidth - docks[1].width) + 'px';
+        } else if (!docks[1].exists && docks[0].exists) { //Docked to left side
+            mainCanvas.style.paddingLeft = docks[0].width + 'px';
+            mainCanvas.style.width = (window.innerWidth - docks[0].width) + 'px';
+        } else { //Docked to both sides
+            mainCanvas.style.paddingLeft = docks[0].width + 'px';
+            mainCanvas.style.width = (window.innerWidth - docks[0].width - docks[1].width) + 'px';
+        }
+
+        //If there is a change in dock Width, update the canvas.
+        if (oldDockWidths[0] != docks[0].width || oldDockWidths[1] != docks[1].width) canvasManager.forceUpdateCanvas();
+        //if (oldDockStatus != this.dockStatus) canvasManager.forceUpdateCanvas();
+    }
+
     setSize(width, height) {
         this.width = getMax(width, 150);
         this.height = getMax(height, 50);
@@ -179,6 +216,9 @@ class ModMenu {
     }
 }
 
-const modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
+var modMenus = [];
+
+var modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
 modMenu.setSize(300, 300);
 modMenu.setPosition(200, 200);
+modMenus.push(modMenu);

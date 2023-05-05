@@ -6241,6 +6241,7 @@ function ColorsPanel() {
         return [divideFloor(this.colors[0][0], 4), divideFloor(this.colors[0][1], 4), divideFloor(this.colors[0][2], 4)]
     };
     this.mouseDown = function(xPos, yPos) {
+        console.log(xPos, yPos)
         this.isSaveRequired = 0;
         xPos -= (prevClientWidth - this.width) / 2;
         yPos -= (prevClientHeight - this.height) / 2;
@@ -11227,10 +11228,11 @@ function CanvasManager() {
                 mainCanvas.style.width = varClientWidth + "px";
                 mainCanvas.style.height = varClientHeight + "px";
                 return true;
+                //IDK anything about mobile shit
             } else return false;
         }
         moreSettings.hideUsernames ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
-        maxClientWidth = limitToMinimum(document.documentElement.clientWidth);
+        maxClientWidth = limitToMinimum(document.documentElement.clientWidth - getDockWidths());
         maxClientHeight = limitToMinimum(document.documentElement.clientHeight);
         varClientWidth = Math.floor(.5 + pixelRatio * maxClientWidth);
         varClientHeight = Math.floor(.5 + pixelRatio * maxClientHeight);
@@ -11245,6 +11247,16 @@ function CanvasManager() {
         mainCanvas.style.height = maxClientHeight + "px";
         return true
     }
+
+    function getDockWidths() {
+        var dockWidth = [0, 0];
+        for (let menu of modMenus) {
+            if (!menu.dockStatus) continue
+            dockWidth[menu.dockStatus -1] = getMax(menu.width, dockWidth[menu.dockStatus -1])
+        }
+        return dockWidth.reduce((a, b) => a + b);
+    }
+
     var forceCanvasUpdate = false,
         ticksElapsed, updateFreq;
     this.init = function() {
