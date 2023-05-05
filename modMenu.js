@@ -84,6 +84,7 @@ class ModMenu {
                 position: absolute;
                 bottom: 0;
                 right: 0;
+                color: white;
             }
         `;
         const style = document.createElement('style');
@@ -111,41 +112,76 @@ class ModMenu {
         document.addEventListener("mousemove", (e) => this.onMouseMove(e));
         document.addEventListener("mouseup", (e) => this.onMouseUp(e));
 
-        this.drawPanel(0)
+        this.drawPanels(0)
     }
 
-    drawPanel(panelIndex) {
+    drawPanels(panelIndex) {
         if (panelIndex == 0) {
-            this.drawLogo();
+            this.drawLogoPanel();
         }
     }
 
-    drawLogo() {
-        if (sprites.areAllSpritesLoaded()) {
-            const sprite = sprites.getValueByName("territorio");
-            const canvas = document.createElement("canvas");
-            canvas.width = sprite.width;
-            canvas.height = sprite.height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(sprite, 0, 0);
+    drawLogoPanel() {
+        if (!sprites.areAllSpritesLoaded()) {
+            setTimeout(() => this.drawLogoPanel(), 100);
+            return;
+        }
         
-            const img = new Image();
-            img.src = canvas.toDataURL();
-        
-            img.style.display = "block";
-            img.style.margin = "auto";
-            img.style.width = "80%";
-            img.style.marginTop = "15px";
-        
-            this.menu.appendChild(img);
-        } else setTimeout(() => this.drawLogo(), 100);
-    }
+        const sprite = sprites.getValueByName("territorio");
+        const canvas = document.createElement("canvas");
+        canvas.width = sprite.width;
+        canvas.height = sprite.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(sprite, 0, 0);
     
-    /*const buttonLabels = [
-        "About", "Account & Privacy", "Custom Matches", "Label & Display",
-        "Chat", "Replay Logger", "Audio", "Hotkeys", "Singleplayer", "Miscellaneous",
-        "Presets", "Placeholder"
-    ];*/
+        const img = new Image();
+        img.src = canvas.toDataURL();
+        img.style.display = "block";
+        img.style.margin = "auto";
+        img.style.width = "80%";
+        img.style.marginTop = "10px";
+        this.menu.appendChild(img);
+        
+        const buttonLabels = [
+            "About", "Account", "Custom", "Display",
+            "Chat", "Logs", "Audio", "Hotkeys", "SP", "Misc",
+            "Presets", "Others"
+        ];
+        const table = document.createElement("div");
+        table.style.display = "table";
+        table.style.alignContent = "center";
+        table.style.paddingTop = "15px";
+        const column1 = document.createElement("div");
+        column1.style.display = "table-cell";
+        table.appendChild(column1);
+        const column2 = document.createElement("div");
+        column2.style.display = "table-cell";
+        table.appendChild(column2);
+        const column3 = document.createElement("div");
+        column3.style.display = "table-cell";
+        table.appendChild(column3);
+        const column4 = document.createElement("div");
+        column4.style.display = "table-cell";
+        table.appendChild(column4);
+
+        for (let butIndex = 0; butIndex < buttonLabels.length; butIndex++) {
+            var button = document.createElement("button");
+            button.innerHTML = buttonLabels[butIndex];
+            button.style.backgroundColor = "transparent";
+            button.style.font = "15px Pacifico";
+            button.style.color = getColor(butIndex);
+            button.style.border = "none";
+            button.style.width = "100%";
+            button.style.textAlign = "left";
+            [column1, column2, column3, column4][butIndex % 4].appendChild(button);
+        }
+        
+        table.style.width = "80%";
+        table.style.height = "auto";
+        table.style.margin = "0 auto";
+
+        this.menu.appendChild(table);
+    }
 
     onMouseDown(e) {
         if (!this.isResizing && (e.target.classList.contains("titleBar") || e.target.closest(".titleBar"))) {
@@ -237,8 +273,8 @@ class ModMenu {
     }
 
     setSize(width, height) {
-        this.width = getMax(width, 150);
-        this.height = getMax(height, 50);
+        this.width = getMax(width, 250);
+        this.height = getMax(height, 150);
         this.menu.style.width = this.width + "px";
         this.menu.style.height = this.height + "px";
     }
@@ -263,3 +299,48 @@ function modMenuInit() {
 function getDockWidth(dockStatus = 1) {
     return Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width));
 }
+
+function getColor(index) {
+    const hue = index * 30; // 30 degrees per step
+    const saturation = 100;
+    const lightness = 50;
+    const rgb = hslToRgb(hue, saturation, lightness);
+    const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+    return hex;
+}
+  
+// Helper function to convert HSL to RGB
+function hslToRgb(h, s, l) {
+    h /= 360;
+    s /= 100;
+    l /= 100;
+    let r, g, b;
+    if (s === 0) {
+        r = g = b = l; // achromatic
+    } else {
+        const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1 / 3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1 / 3);
+    }
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255),
+    };
+}
+  
+// Helper function to convert RGB to hex
+function rgbToHex(r, g, b) {
+    return ("#" + [r, g, b] .map((c) => c.toString(16).padStart(2, "0")).join(""));
+}
+  
