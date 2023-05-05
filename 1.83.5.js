@@ -5934,7 +5934,7 @@ function OpenLinkBox() {
             linkBoxCanvas.style.padding = "0px";
             linkBoxCanvas.style.margin = "0px";
             linkBoxCanvas.style.top = Math.floor((topMargin + 2 * bottomPadding + boxCanvasWidth) / pixelRatio) + "px";
-            linkBoxCanvas.style.left = Math.floor((leftMargin + (boxWidth - textWidth) / 2) / pixelRatio) + "px";
+            linkBoxCanvas.style.left = Math.floor((leftMargin + (boxWidth - textWidth) / 2) / pixelRatio) + getDockWidth() + "px";
             document.body.appendChild(linkBoxCanvas);
             this.visible = true;
             mainHandler.canvasDirty = true
