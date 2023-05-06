@@ -1,8 +1,8 @@
 class ModMenu {
     static buttonLabels = [
-        "Menu", "Account", "Custom", "Display",
-        "Chat", "Logs", "Audio", "Hotkeys",
-        "Single", "Misc", "Presets", "Others"
+        "Menu", "Account", "Custom", "Display", "Chat",
+        "Logs", "Audio", "Hotkeys", "Single",
+        "Misc", "Presets", "Credits"
     ];
     constructor(panelTypes, width, height, x, y, z) {
         this.panelTypes = panelTypes;
@@ -53,9 +53,11 @@ class ModMenu {
 
     drawPanel(panelType, firstPanelType) {
         if (panelType == firstPanelType) this.drawTitleBar();
-        if (panelType == 0) this.drawLogoPanel();
-        else if (panelType == 1) void(0)//this.drawAccountPanel(); Does not exist yet lmfao
+        if (panelType == 0) this.drawMenuPanel();
+        else if (panelType == 1) void(0) //this.drawAccountPanel(); Does not exist yet lmfao
         else if (panelType == 2) this.drawCustomPanel();
+        else if (panelType == 3) this.drawDisplayPanel();
+        else if (panelType == 11) this.drawAboutPanel();
     }
 
     drawTitleBar() {
@@ -119,12 +121,8 @@ class ModMenu {
         document.body.appendChild(this.menu);
     }
 
-    drawLogoPanel() {
-        if (!sprites.areAllSpritesLoaded()) {
-            setTimeout(() => this.drawLogoPanel(), 100);
-            return;
-        }
-
+    drawMenuPanel() {
+        // Create menu panel
         const table = document.createElement("div");
         table.style.display = "table";
         table.style.alignContent = "center";
@@ -143,19 +141,29 @@ class ModMenu {
             button.innerHTML = ModMenu.buttonLabels[butIndex];
             button.style.backgroundColor = "transparent";
             button.style.font = `italic calc(${this.width}px / 20)` + " Pacifico"; // calculate font size based on menu width
-            button.style.color = getColor(butIndex);
+            button.style.color = this.getColor(butIndex);
             button.style.border = "none";
             button.style.width = "100%";
             button.style.textAlign = "center";
-            if (modMenus.find((menu) => menu.panelTypes.includes(butIndex))) {
+            if (modMenus.findIndex((menu) => menu.panelTypes.includes(butIndex)) !== -1 || this.panelTypes.includes(butIndex)) {
                 button.style.border = "2px solid white";
                 button.style.borderRadius = "5px";
             }
             button.addEventListener("click", (e) => {
                 if (modMenus.find((menu) => menu.panelTypes.includes(butIndex))) { //This panel exist dumdum
-                    modMenus.find((menu) => menu.panelTypes.includes(butIndex)).menu.remove();
-                    modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
-                } else { // This panel does not exist, append it to the existing one.
+                    const reqMenu = modMenus.find((menu) => menu.panelTypes.includes(butIndex));
+                    //If the "Menu" category is removed, we just remove this panel.
+                    if (butIndex == 0) {
+                        this.menu.remove();
+                        modMenus = modMenus.filter((menu) => menu !== this);
+                    } else if (reqMenu.panelTypes.length == 1) { //If that menu doesnt have any panels We remove it.
+                        reqMenu.menu.remove();
+                        modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
+                    } else { //We remove the panel from the menu which contains the panel.
+                        reqMenu.panelTypes = reqMenu.panelTypes.filter((panelType) => panelType !== butIndex);
+                        reqMenu.drawWindow();
+                    }
+                } else { // This panel does not exist, append it to the current one.
                     this.panelTypes.push(butIndex);
                     this.drawWindow();
                 }
@@ -167,10 +175,86 @@ class ModMenu {
         table.style.height = "auto";
         table.style.margin = "0 auto";
         this.menu.appendChild(table);
+    }
 
-        // Add a divider
-        this.drawDivider();
+    drawCustomPanel() {
+        //2. Custom Games and Private Matches (Custom interest formula and taxes? Boat speeds? Set gamemodes? More entities and custom maps?)
+        const title = document.createElement("h1");
+        title.innerHTML = "Custom Matches";
+        title.style.textAlign = "center";
+        title.style.color = "#fff";
+        title.style.marginTop = "10px";
+        this.menu.appendChild(title);
+
+        //Add a "Customization" Subcategory label
+        const customizationLabel = document.createElement("h3");
+        customizationLabel.innerHTML = "Game Mechanics";
+        customizationLabel.style.color = "#fff";
+        customizationLabel.style.paddingLeft = "20px";
+        this.menu.appendChild(customizationLabel);
         
+        // Customize Entity Count, from 0-4096, we want to add Label: "Entity Count" and a box to type in the number.
+        const entityCountContainer = document.createElement("div");
+        entityCountContainer.style.display = "flex";
+        entityCountContainer.style.flexDirection = "row";
+        entityCountContainer.style.justifyContent = "space-between";
+        entityCountContainer.style.paddingLeft = "20px";
+
+        const entityCountLabel = document.createElement("h5");
+        entityCountLabel.innerHTML = "Entity Count";
+        entityCountLabel.style.color = "#fff";
+        entityCountContainer.appendChild(entityCountLabel);
+
+        const entityCountBox = document.createElement("input");
+        entityCountBox.type = "number";
+        entityCountBox.min = 1;
+        entityCountBox.max = 4096;
+        entityCountBox.value = 512;
+        entityCountBox.style.textAlign = "center";
+        entityCountBox.addEventListener("change", (e) => {
+            maxEntities = entityCountBox.value;
+        });
+
+        entityCountContainer.appendChild(entityCountBox);
+        this.menu.appendChild(entityCountContainer);
+
+
+        //Customize Taxes, with rates from 0-100% for each tax type (attack, boat, donations)
+        //Customize Interest Formula will be too difficult to make for now.
+        //Customize Boat Speeds, from 0-5, also an option to vary boat speed according to land size.
+        //Customize Gamemodes, with a list of gamemodes to choose from. If the chosen gamemode is teams, then we can customize the team sizes.
+        //Customize Maps, with a list of maps to choose from. If a custom map is loaded, then we can select that map.
+
+        //Bots Subcategory
+        //Customize Bot Difficulty, from 0-5 with labels from difficultyEngine.difficultyLabel
+        //Neutral Bots Toggle
+        //Human Bots Toggle
+        
+        //Add a button to revert back to vanilla settings
+        const vanillaButton = document.createElement("button");
+        vanillaButton.innerHTML = "Revert to Vanilla Settings";
+        vanillaButton.style.backgroundColor = "transparent";
+        vanillaButton.style.font = `italic calc(${this.width}px / 20)` + " Pacifico"; // calculate font size based on menu width
+        vanillaButton.style.color = "#fff";
+        vanillaButton.style.border = "none";
+        vanillaButton.style.width = "100%";
+        vanillaButton.style.textAlign = "center";
+        vanillaButton.addEventListener("click", (e) => {
+            //Revert to vanilla settings here kek
+            console.log("Reverting to vanilla settings")
+        })
+        this.menu.appendChild(vanillaButton);
+    }
+
+    drawDisplayPanel() {
+        // Dan write your stuff here like rgb etc.
+    }
+
+    drawAboutPanel() {
+        if (!sprites.areAllSpritesLoaded()) {
+            setTimeout(() => this.drawAboutPanel(), 100);
+            return;
+        }
         const sprite = sprites.getValueByName("territorio");
         const canvas = document.createElement("canvas");
         canvas.width = sprite.width;
@@ -200,27 +284,11 @@ class ModMenu {
         this.menu.appendChild(aboutSection);
     }
 
-    drawCustomPanel() {
-        //2. Custom Games and Private Matches (Custom interest formula and taxes? Boat speeds? Set gamemodes? More entities and custom maps?)
-        //We first have to tell people what kind of panel this is.
-        const title = document.createElement("h1");
-        title.innerHTML = "Custom Match Settings";
-        title.style.textAlign = "center";
-        title.style.color = "#fff";
-        title.style.fontSize = "20px";
-        title.style.marginTop = "10px";
-        this.menu.appendChild(title);
-    }
-
-    drawDisplayPanel() {
-        // Dan write your stuff here like rgb etc.
-    }
-
     drawResizeButton() {
         // Create new button element
         const resizeButton = document.createElement('button');
         //assign id to button
-        resizeButton.id = `resizeButton${this.panelTypes[0]}`;
+        resizeButton.id = `resizeButton${modMenus.findIndex((menu) => menu === this)}`;
         resizeButton.classList.add('menu-button');
         resizeButton.innerHTML = '&#10542;';
         resizeButton.style.position = 'fixed';
@@ -237,7 +305,7 @@ class ModMenu {
     }
 
     updateResizeButtonPos() {
-        const resizeButton = document.getElementById(`resizeButton${this.panelTypes[0]}`);
+        const resizeButton = document.getElementById(`resizeButton${modMenus.findIndex((menu) => menu === this)}`);
         resizeButton.style.bottom = window.innerHeight - this.height - this.y + 'px';
         resizeButton.style.right = window.innerWidth - this.width - this.x + this.menu.offsetWidth - this.menu.clientWidth + 'px';
     }
@@ -362,60 +430,58 @@ class ModMenu {
         this.menu.style.left = this.x + "px";
         this.menu.style.top = this.y + "px";
     }
+    
+    getColor(index) {
+        const hue = index * 30; // 30 degrees per step
+        const saturation = 100;
+        const lightness = 50;
+        const rgb = this.hslToRgb(hue, saturation, lightness);
+        const hex = this.rgbToHex(rgb.r, rgb.g, rgb.b);
+        return hex;
+    }
+      
+    // Helper function to convert HSL to RGB
+    hslToRgb(h, s, l) {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+        let r, g, b;
+        if (s === 0) {
+            r = g = b = l; // achromatic
+        } else {
+            const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+            };
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+        }
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255),
+        };
+    }
+      
+    // Helper function to convert RGB to hex
+    rgbToHex(r, g, b) {
+        return ("#" + [r, g, b] .map((c) => c.toString(16).padStart(2, "0")).join(""));
+    }    
 }
 
 var modMenus = [];
 function modMenuInit() {
-
-    var modMenu = new ModMenu([0], 300, 300, 200, 200, 100);
+    var modMenu = new ModMenu([0, 11], 300, 300, 200, 200, 100);
     modMenus.push(modMenu);
 }
 
-function getDockWidth(dockStatus = 1) {
+function getDockWidth(dockStatus) {
     return Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width));
 }
-
-function getColor(index) {
-    const hue = index * 30; // 30 degrees per step
-    const saturation = 100;
-    const lightness = 50;
-    const rgb = hslToRgb(hue, saturation, lightness);
-    const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
-    return hex;
-}
-  
-// Helper function to convert HSL to RGB
-function hslToRgb(h, s, l) {
-    h /= 360;
-    s /= 100;
-    l /= 100;
-    let r, g, b;
-    if (s === 0) {
-        r = g = b = l; // achromatic
-    } else {
-        const hue2rgb = (p, q, t) => {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1 / 6) return p + (q - p) * 6 * t;
-        if (t < 1 / 2) return q;
-        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-        return p;
-        };
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        const p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1 / 3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1 / 3);
-    }
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255),
-    };
-}
-  
-// Helper function to convert RGB to hex
-function rgbToHex(r, g, b) {
-    return ("#" + [r, g, b] .map((c) => c.toString(16).padStart(2, "0")).join(""));
-}
-  

@@ -3334,7 +3334,7 @@ function onMousedown(e) {
     e.preventDefault();
     if (!isTouch) {
         wsManager.setHumanLastAction(wsManager.remote);
-        handleMouseDown(Math.floor(pixelRatio * e.clientX - getDockWidth()), Math.floor(pixelRatio * e.clientY))
+        handleMouseDown(Math.floor(pixelRatio * e.clientX - getDockWidth(1)), Math.floor(pixelRatio * e.clientY))
     }
 }
 
@@ -3366,7 +3366,7 @@ function handleMouseDown(xPos, yPos) {
 function onMousemove(e) {
     isTouch = false;
     e.preventDefault();
-    onPointermove(Math.floor(pixelRatio * e.clientX - getDockWidth()), Math.floor(pixelRatio * e.clientY))
+    onPointermove(Math.floor(pixelRatio * e.clientX - getDockWidth(1)), Math.floor(pixelRatio * e.clientY))
 }
 
 function onTouchmove(e) {
@@ -3407,11 +3407,11 @@ function onMouseleave(e) {
 
 function onMouseup(e) {
     e.preventDefault();
-    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getDockWidth()), Math.floor(pixelRatio * e.clientY))
+    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getDockWidth(1)), Math.floor(pixelRatio * e.clientY))
 }
 
 function onClick(g) {
-    2 === gameStateManager.getState() && singleSettings.click(g.clientX - getDockWidth(), g.clientY)
+    2 === gameStateManager.getState() && singleSettings.click(g.clientX - getDockWidth(1), g.clientY)
 }
 
 function onTouchend(g) {
@@ -3446,7 +3446,7 @@ function onPointerUp(xPos, yPos) {
 function onWheel(e) {
     e.preventDefault();
     wsManager.setHumanLastAction(wsManager.remote);
-    var xPos = Math.floor(pixelRatio * e.clientX - getDockWidth()),
+    var xPos = Math.floor(pixelRatio * e.clientX - getDockWidth(1)),
         yPos = Math.floor(pixelRatio * e.clientY),
         deltaY = e.deltaY;
     if (1 === e.deltaMode) deltaY *= 20;
@@ -5934,7 +5934,7 @@ function OpenLinkBox() {
             linkBoxCanvas.style.padding = "0px";
             linkBoxCanvas.style.margin = "0px";
             linkBoxCanvas.style.top = Math.floor((topMargin + 2 * bottomPadding + boxCanvasWidth) / pixelRatio) + "px";
-            linkBoxCanvas.style.left = Math.floor((leftMargin + (boxWidth - textWidth) / 2) / pixelRatio) + getDockWidth() + "px";
+            linkBoxCanvas.style.left = Math.floor((leftMargin + (boxWidth - textWidth) / 2) / pixelRatio) + getDockWidth(1) + "px";
             document.body.appendChild(linkBoxCanvas);
             this.visible = true;
             mainHandler.canvasDirty = true
@@ -6850,7 +6850,7 @@ function NameInputBar() {
         return inputBars[index]
     };
     this.setPosition = function(index) {
-        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (mainButtons.width / pixelRatio - 3) - 7) / 2 + getDockWidth()) + "px";
+        inputBars[index].input.style.left = Math.floor((prevClientWidth / pixelRatio - (mainButtons.width / pixelRatio - 3) - 7) / 2 + getDockWidth(1)) + "px";
         if (0 === index) inputBars[index].input.style.bottom = Math.floor((prevClientHeight - mainButtons.startingY + mainButtons.margins) / pixelRatio) + "px"
     };
     this.toggleVisibility = function(index, option) {
@@ -11231,7 +11231,7 @@ function CanvasManager() {
             } else return false;
         }
         moreSettings.hideUsernames ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
-        maxClientWidth = limitToMinimum(document.documentElement.clientWidth - getDockWidth() - getDockWidth(2));
+        maxClientWidth = limitToMinimum(document.documentElement.clientWidth - getDockWidth(1) - getDockWidth(2));
         maxClientHeight = limitToMinimum(document.documentElement.clientHeight);
         varClientWidth = Math.floor(.5 + pixelRatio * maxClientWidth);
         varClientHeight = Math.floor(.5 + pixelRatio * maxClientHeight);
