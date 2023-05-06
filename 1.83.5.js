@@ -6241,7 +6241,6 @@ function ColorsPanel() {
         return [divideFloor(this.colors[0][0], 4), divideFloor(this.colors[0][1], 4), divideFloor(this.colors[0][2], 4)]
     };
     this.mouseDown = function(xPos, yPos) {
-        console.log(xPos, yPos)
         this.isSaveRequired = 0;
         xPos -= (prevClientWidth - this.width) / 2;
         yPos -= (prevClientHeight - this.height) / 2;

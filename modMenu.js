@@ -1,12 +1,12 @@
 class ModMenu {
     static buttonLabels = [
-        "About", "Account", "Custom", "Display",
+        "Menu", "Account", "Custom", "Display",
         "Chat", "Logs", "Audio", "Hotkeys",
         "Single", "Misc", "Presets", "Others"
     ];
-    constructor(panelType, width, height, x, y, z) {
-        this.panelType = panelType;
-        this.title = ModMenu.buttonLabels[panelType];
+    constructor(panelTypes, width, height, x, y, z) {
+        this.panelTypes = panelTypes;
+        this.title = ModMenu.buttonLabels[panelTypes[0]];
         this.width = width;
         this.height = height;
         this.x = x;
@@ -29,9 +29,10 @@ class ModMenu {
         this.menu.style.border = "1px solid gray";
         this.menu.style.padding = "0";
         this.menu.style.zIndex = z;
-        this.menu.style.overflow = "auto";
+        this.menu.style.overflowX = "hidden";
+        this.menu.style.overflowY = "auto";
         this.visible = true;
-        this.drawWindow(panelType);
+        this.drawWindow();
         document.body.appendChild(this.menu);
     
         // Add event listeners for dragging
@@ -41,13 +42,22 @@ class ModMenu {
 
     }
 
-    drawWindow(panelType) {
-        this.drawTitleBar();
-        if (panelType == 0) {
-            this.drawLogoPanel();
+    drawWindow() {
+        this.menu.innerHTML = "";
+        for (var panelType of this.panelTypes) {
+            this.drawPanel(panelType, this.panelTypes[0]);
+            if (this.panelTypes[this.panelTypes.length -1] !== panelType) this.drawDivider();
         }
         this.drawResizeButton();
     }
+
+    drawPanel(panelType, firstPanelType) {
+        if (panelType == firstPanelType) this.drawTitleBar();
+        if (panelType == 0) this.drawLogoPanel();
+        else if (panelType == 1) void(0)//this.drawAccountPanel(); Does not exist yet lmfao
+        else if (panelType == 2) this.drawCustomPanel();
+    }
+
     drawTitleBar() {
         // Create title bar
         this.titleBar = document.createElement('div');
@@ -114,22 +124,7 @@ class ModMenu {
             setTimeout(() => this.drawLogoPanel(), 100);
             return;
         }
-        
-        const sprite = sprites.getValueByName("territorio");
-        const canvas = document.createElement("canvas");
-        canvas.width = sprite.width;
-        canvas.height = sprite.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(sprite, 0, 0);
-    
-        const img = new Image();
-        img.src = canvas.toDataURL();
-        img.style.display = "block";
-        img.style.margin = "auto";
-        img.style.width = "80%";
-        img.style.marginTop = "10px";
-        this.menu.appendChild(img);
-        
+
         const table = document.createElement("div");
         table.style.display = "table";
         table.style.alignContent = "center";
@@ -152,58 +147,114 @@ class ModMenu {
             button.style.border = "none";
             button.style.width = "100%";
             button.style.textAlign = "center";
-            if (modMenus.find((menu) => menu.panelType === butIndex)) {
+            if (modMenus.find((menu) => menu.panelTypes.includes(butIndex))) {
                 button.style.border = "2px solid white";
                 button.style.borderRadius = "5px";
             }
+            button.addEventListener("click", (e) => {
+                if (modMenus.find((menu) => menu.panelTypes.includes(butIndex))) { //This panel exist dumdum
+                    modMenus.find((menu) => menu.panelTypes.includes(butIndex)).menu.remove();
+                    modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
+                } else { // This panel does not exist, append it to the existing one.
+                    this.panelTypes.push(butIndex);
+                    this.drawWindow();
+                }
+            });
             tableColumns[butIndex % 4].appendChild(button);
         }
         
         table.style.width = "80%";
         table.style.height = "auto";
         table.style.margin = "0 auto";
-        
         this.menu.appendChild(table);
+
+        // Add a divider
+        this.drawDivider();
+        
+        const sprite = sprites.getValueByName("territorio");
+        const canvas = document.createElement("canvas");
+        canvas.width = sprite.width;
+        canvas.height = sprite.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(sprite, 0, 0);
+    
+        const img = new Image();
+        img.src = canvas.toDataURL();
+        img.style.display = "block";
+        img.style.margin = "auto";
+        img.style.width = "80%";
+        img.style.marginTop = "10px";
+        this.menu.appendChild(img);
 
         // Add about section
         const aboutSection = document.createElement('div');
-        aboutSection.style.paddingTop = '15px';
         aboutSection.style.marginLeft = '20px';
         const fontSize = getMin(this.width/20, 20);
         aboutSection.style.fontSize = `${fontSize}px`;
         aboutSection.style.color = '#fff';
         aboutSection.innerHTML = `
             <p>Territorio Sigma Build &#128526 (Compatible with Game Version 1.83.5)</p>
-            <p>Brought to you by Vkij, Oi and DanTheMan</p>
-            <p>Discord Server: <a href="https://discord.gg/3aF93G23rV" target="_blank">discord.gg/3aF93G23rV</a></p>
+            <p>Brought to you by Vkij, oi and DanTheMan</p>
+            <p>Discord Server: <a href="https://discord.gg/3aF93G23rV" target="_blank">Click Me!</a></p>
         `;
         this.menu.appendChild(aboutSection);
+    }
 
+    drawCustomPanel() {
+        //2. Custom Games and Private Matches (Custom interest formula and taxes? Boat speeds? Set gamemodes? More entities and custom maps?)
+        //We first have to tell people what kind of panel this is.
+        const title = document.createElement("h1");
+        title.innerHTML = "Custom Match Settings";
+        title.style.textAlign = "center";
+        title.style.color = "#fff";
+        title.style.fontSize = "20px";
+        title.style.marginTop = "10px";
+        this.menu.appendChild(title);
+    }
+
+    drawDisplayPanel() {
+        // Dan write your stuff here like rgb etc.
     }
 
     drawResizeButton() {
         // Create new button element
         const resizeButton = document.createElement('button');
+        //assign id to button
+        resizeButton.id = `resizeButton${this.panelTypes[0]}`;
         resizeButton.classList.add('menu-button');
         resizeButton.innerHTML = '&#10542;';
-        resizeButton.style.position = 'absolute';
-        resizeButton.style.bottom = '0';
-        resizeButton.style.right = '0';
+        resizeButton.style.position = 'fixed';
         resizeButton.style.color = '#fff';
         resizeButton.addEventListener('mousedown', (e) => {
-          this.isResizing = true;
-          this.resizeStartX = e.clientX;
-          this.resizeStartY = e.clientY;
+            this.isResizing = true;
+            this.resizeStartX = e.clientX;
+            this.resizeStartY = e.clientY;
         });
       
         // Add new button to menu
         this.menu.appendChild(resizeButton);
+        this.updateResizeButtonPos();
+    }
+
+    updateResizeButtonPos() {
+        const resizeButton = document.getElementById(`resizeButton${this.panelTypes[0]}`);
+        resizeButton.style.bottom = window.innerHeight - this.height - this.y + 'px';
+        resizeButton.style.right = window.innerWidth - this.width - this.x + this.menu.offsetWidth - this.menu.clientWidth + 'px';
+    }
+
+    drawDivider() {
+        const divider = document.createElement('div');
+        divider.style.width = '100%';
+        divider.style.height = '1px';
+        divider.style.backgroundColor = '#888';
+        divider.style.marginTop = '10px';
+        this.menu.appendChild(divider);
     }
 
     onMouseDown(e) {
         if (!this.isResizing && (e.target.classList.contains("titleBar") || e.target.closest(".titleBar"))) {
             this.isDragging = true;
-            this.dragStartX = e.clientX;
+            this.dragStartX = e.clientX;    
             this.dragStartY = e.clientY;
         }
     }
@@ -218,7 +269,7 @@ class ModMenu {
             const newHeight = e.clientY - this.y;
             this.setSize(newWidth, newHeight);
             if (oldDims.width != newWidth || oldDims.height != newHeight) {
-                this.onPanelResize();
+                this.drawWindow(); // redraw window if size changed
             }
             
         } else if (this.isDragging) {
@@ -233,6 +284,8 @@ class ModMenu {
             this.dragStartX = e.clientX;
             this.dragStartY = e.clientY;
 
+            this.updateResizeButtonPos();
+
             this.onDock(e);
         }
     }
@@ -243,12 +296,6 @@ class ModMenu {
         } else if (this.isDragging) {
             this.isDragging = false;
         }
-    }
-
-    onPanelResize() {
-        //Wipe panel and redraw
-        this.menu.innerHTML = "";
-        this.drawWindow(this.panelType);
     }
 
     onDock(e) {
@@ -320,9 +367,7 @@ class ModMenu {
 var modMenus = [];
 function modMenuInit() {
 
-    var modMenu = new ModMenu(0, 200, 200, 100, 100, 100);
-    modMenu.setSize(300, 300);
-    modMenu.setPosition(200, 200);
+    var modMenu = new ModMenu([0], 300, 300, 200, 200, 100);
     modMenus.push(modMenu);
 }
 
