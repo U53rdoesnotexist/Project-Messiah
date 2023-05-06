@@ -1,6 +1,12 @@
 class ModMenu {
-    constructor(title, width, height, x, y, z) {
-        this.title = title;
+    static buttonLabels = [
+        "About", "Account", "Custom", "Display",
+        "Chat", "Logs", "Audio", "Hotkeys",
+        "Single", "Misc", "Presets", "Others"
+    ];
+    constructor(panelType, width, height, x, y, z) {
+        this.panelType = panelType;
+        this.title = ModMenu.buttonLabels[panelType];
         this.width = width;
         this.height = height;
         this.x = x;
@@ -23,12 +29,26 @@ class ModMenu {
         this.menu.style.border = "1px solid gray";
         this.menu.style.padding = "0";
         this.menu.style.zIndex = z;
-        this.menu.addEventListener("mousedown", this.onMouseDown.bind(this));
-        this.menu.addEventListener("mousemove", this.onMouseMove.bind(this));
-        this.menu.addEventListener("mouseup", this.onMouseUp.bind(this));
-        document.body.appendChild(this.menu);
+        this.menu.style.overflow = "auto";
         this.visible = true;
+        this.drawWindow(panelType);
+        document.body.appendChild(this.menu);
     
+        // Add event listeners for dragging
+        document.addEventListener("mousedown", (e) => this.onMouseDown(e));
+        document.addEventListener("mousemove", (e) => this.onMouseMove(e));
+        document.addEventListener("mouseup", (e) => this.onMouseUp(e));
+
+    }
+
+    drawWindow(panelType) {
+        this.drawTitleBar();
+        if (panelType == 0) {
+            this.drawLogoPanel();
+        }
+        this.drawResizeButton();
+    }
+    drawTitleBar() {
         // Create title bar
         this.titleBar = document.createElement('div');
         this.titleBar.classList.add('titleBar');
@@ -39,6 +59,8 @@ class ModMenu {
         this.titleBar.style.display = 'flex';
         this.titleBar.style.alignItems = 'center';
         this.titleBar.style.justifyContent = 'space-between';
+        this.titleBar.style.position = 'sticky';
+        this.titleBar.style.top = '0';
         this.titleBar.innerHTML = `
             <span style="margin: 0 auto;">${this.title}</span>
             <button class="menu-button">&#10234;</button>
@@ -78,47 +100,13 @@ class ModMenu {
                 position: relative;
                 font-size: 20px;
             }
-            .menu-button:nth-child(2) {
-            }
-            .menu-button:nth-child(3) {
-                position: absolute;
-                bottom: 0;
-                right: 0;
-                color: white;
-            }
         `;
         const style = document.createElement('style');
         style.innerHTML = css;
         document.head.appendChild(style);
 
-        // Create new button element
-        const newButton = document.createElement('button');
-        newButton.classList.add('menu-button');
-        newButton.innerHTML = '&#10542;';
-        newButton.addEventListener('mousedown', (e) => {
-            this.isResizing = true;
-            this.resizeStartX = e.clientX;
-            this.resizeStartY = e.clientY;
-        });
-
-        // Add new button to title bar
-        this.titleBar.insertBefore(newButton, closeButton);
-
         // Add menu to DOM
         document.body.appendChild(this.menu);
-
-        // Add event listeners for dragging
-        document.addEventListener("mousedown", (e) => this.onMouseDown(e));
-        document.addEventListener("mousemove", (e) => this.onMouseMove(e));
-        document.addEventListener("mouseup", (e) => this.onMouseUp(e));
-
-        this.drawPanels(0)
-    }
-
-    drawPanels(panelIndex) {
-        if (panelIndex == 0) {
-            this.drawLogoPanel();
-        }
     }
 
     drawLogoPanel() {
@@ -142,45 +130,74 @@ class ModMenu {
         img.style.marginTop = "10px";
         this.menu.appendChild(img);
         
-        const buttonLabels = [
-            "About", "Account", "Custom", "Display",
-            "Chat", "Logs", "Audio", "Hotkeys", "SP", "Misc",
-            "Presets", "Others"
-        ];
         const table = document.createElement("div");
         table.style.display = "table";
         table.style.alignContent = "center";
+        table.style.marginLeft = "auto";
+        table.style.marginRight = "auto";
         table.style.paddingTop = "15px";
-        const column1 = document.createElement("div");
-        column1.style.display = "table-cell";
-        table.appendChild(column1);
-        const column2 = document.createElement("div");
-        column2.style.display = "table-cell";
-        table.appendChild(column2);
-        const column3 = document.createElement("div");
-        column3.style.display = "table-cell";
-        table.appendChild(column3);
-        const column4 = document.createElement("div");
-        column4.style.display = "table-cell";
-        table.appendChild(column4);
-
-        for (let butIndex = 0; butIndex < buttonLabels.length; butIndex++) {
+        var tableColumns = Array(4);
+        for (let colIndex = 0; colIndex < tableColumns.length; colIndex++) {
+            tableColumns[colIndex] = document.createElement("div");
+            tableColumns[colIndex].style.display = "table-cell";
+            table.appendChild(tableColumns[colIndex]);
+        }
+        
+        for (let butIndex = 0; butIndex < ModMenu.buttonLabels.length; butIndex++) {
             var button = document.createElement("button");
-            button.innerHTML = buttonLabels[butIndex];
+            button.innerHTML = ModMenu.buttonLabels[butIndex];
             button.style.backgroundColor = "transparent";
-            button.style.font = "15px Pacifico";
+            button.style.font = `italic calc(${this.width}px / 20)` + " Pacifico"; // calculate font size based on menu width
             button.style.color = getColor(butIndex);
             button.style.border = "none";
             button.style.width = "100%";
-            button.style.textAlign = "left";
-            [column1, column2, column3, column4][butIndex % 4].appendChild(button);
+            button.style.textAlign = "center";
+            if (modMenus.find((menu) => menu.panelType === butIndex)) {
+                button.style.border = "2px solid white";
+                button.style.borderRadius = "5px";
+            }
+            tableColumns[butIndex % 4].appendChild(button);
         }
         
         table.style.width = "80%";
         table.style.height = "auto";
         table.style.margin = "0 auto";
-
+        
         this.menu.appendChild(table);
+
+        // Add about section
+        const aboutSection = document.createElement('div');
+        aboutSection.style.paddingTop = '15px';
+        aboutSection.style.marginLeft = '20px';
+        const fontSize = getMin(this.width/20, 20);
+        aboutSection.style.fontSize = `${fontSize}px`;
+        aboutSection.style.color = '#fff';
+        aboutSection.innerHTML = `
+            <p>Territorio Sigma Build &#128526 (Compatible with Game Version 1.83.5)</p>
+            <p>Brought to you by Vkij, Oi and DanTheMan</p>
+            <p>Discord Server: <a href="https://discord.gg/3aF93G23rV" target="_blank">discord.gg/3aF93G23rV</a></p>
+        `;
+        this.menu.appendChild(aboutSection);
+
+    }
+
+    drawResizeButton() {
+        // Create new button element
+        const resizeButton = document.createElement('button');
+        resizeButton.classList.add('menu-button');
+        resizeButton.innerHTML = '&#10542;';
+        resizeButton.style.position = 'absolute';
+        resizeButton.style.bottom = '0';
+        resizeButton.style.right = '0';
+        resizeButton.style.color = '#fff';
+        resizeButton.addEventListener('mousedown', (e) => {
+          this.isResizing = true;
+          this.resizeStartX = e.clientX;
+          this.resizeStartY = e.clientY;
+        });
+      
+        // Add new button to menu
+        this.menu.appendChild(resizeButton);
     }
 
     onMouseDown(e) {
@@ -193,9 +210,16 @@ class ModMenu {
   
     onMouseMove(e) {
         if (this.isResizing) {
+            const oldDims = {
+                width: this.width,
+                height: this.height
+            };
             const newWidth = this.dockStatus ? this.width : e.clientX - this.x;
             const newHeight = e.clientY - this.y;
             this.setSize(newWidth, newHeight);
+            if (oldDims.width != newWidth || oldDims.height != newHeight) {
+                this.onPanelResize();
+            }
             
         } else if (this.isDragging) {
             const deltaY = e.clientY - this.dragStartY;
@@ -219,6 +243,12 @@ class ModMenu {
         } else if (this.isDragging) {
             this.isDragging = false;
         }
+    }
+
+    onPanelResize() {
+        //Wipe panel and redraw
+        this.menu.innerHTML = "";
+        this.drawWindow(this.panelType);
     }
 
     onDock(e) {
@@ -290,7 +320,7 @@ class ModMenu {
 var modMenus = [];
 function modMenuInit() {
 
-    var modMenu = new ModMenu("Mod Menu", 200, 200, 100, 100, 100);
+    var modMenu = new ModMenu(0, 200, 200, 100, 100, 100);
     modMenu.setSize(300, 300);
     modMenu.setPosition(200, 200);
     modMenus.push(modMenu);
