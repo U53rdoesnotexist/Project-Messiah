@@ -62,6 +62,7 @@ class ModMenu {
         document.addEventListener("mousedown", (e) => this.onMouseDown(e));
         document.addEventListener("mousemove", (e) => this.onMouseMove(e));
         document.addEventListener("mouseup", (e) => this.onMouseUp(e));
+        document.addEventListener("resize", (e) => this.onResize(e));
 
     }
 
@@ -439,6 +440,11 @@ class ModMenu {
         }
     }
 
+    onResize(e) {
+        this.onDock();
+        this.updateResizeButtonPos();
+    }
+
     onDock(e) {
         //First check how many available docks there are, and what their original widths are
         var docks = [];
@@ -489,9 +495,7 @@ class ModMenu {
         }
 
         //If there is a change in dock Width or a change in the number of panels, update the canvas.
-        console.log(oldDockWidths, docks)
         if (oldDockWidths[0] != docks[0] || oldDockWidths[1] != docks[1]) {
-            console.log('e')
             canvasManager.dockUpdateCanvas();
             this.updateResizeButtonPos();
         }
