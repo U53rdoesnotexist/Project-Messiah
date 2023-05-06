@@ -34,6 +34,29 @@ class ModMenu {
         this.visible = true;
         this.drawWindow();
         document.body.appendChild(this.menu);
+        
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .menu-button {
+                width: 25px;
+                height: 25px;
+                border: none;
+                outline: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                background-color: transparent;
+                position: relative;
+                font-size: 20px;
+            }
+            .custom-menu-label {
+                color: #fff;
+                padding-left: 20px;
+                margin-bottom: -10px;
+            }
+        `;
+        document.head.appendChild(style);
     
         // Add event listeners for dragging
         document.addEventListener("mousedown", (e) => this.onMouseDown(e));
@@ -92,30 +115,11 @@ class ModMenu {
         // Add event listener to close button
         const closeButton = this.titleBar.querySelector('button:nth-child(3)');
         closeButton.addEventListener('click', (e) => {
-            this.menu.remove();
             modMenus = modMenus.filter((menu) => menu !== this);
+            this.menu.remove();
             this.onDock(e);
             canvasManager.dockUpdateCanvas();
         });
-
-        const css = `
-            .menu-button {
-                width: 25px;
-                height: 25px;
-                border: none;
-                outline: none;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                background-color: transparent;
-                position: relative;
-                font-size: 20px;
-            }
-        `;
-        const style = document.createElement('style');
-        style.innerHTML = css;
-        document.head.appendChild(style);
 
         // Add menu to DOM
         document.body.appendChild(this.menu);
@@ -154,11 +158,11 @@ class ModMenu {
                     const reqMenu = modMenus.find((menu) => menu.panelTypes.includes(butIndex));
                     //If the "Menu" category is removed, we just remove this panel.
                     if (butIndex == 0) {
-                        this.menu.remove();
                         modMenus = modMenus.filter((menu) => menu !== this);
+                        this.menu.remove();
                     } else if (reqMenu.panelTypes.length == 1) { //If that menu doesnt have any panels We remove it.
-                        reqMenu.menu.remove();
                         modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
+                        reqMenu.menu.remove();
                     } else { //We remove the panel from the menu which contains the panel.
                         reqMenu.panelTypes = reqMenu.panelTypes.filter((panelType) => panelType !== butIndex);
                         reqMenu.drawWindow();
@@ -181,45 +185,47 @@ class ModMenu {
         //2. Custom Games and Private Matches (Custom interest formula and taxes? Boat speeds? Set gamemodes? More entities and custom maps?)
         const title = document.createElement("h1");
         title.innerHTML = "Custom Matches";
-        title.style.textAlign = "center";
         title.style.color = "#fff";
-        title.style.marginTop = "10px";
+        title.style.textAlign = "center";
         this.menu.appendChild(title);
 
         //Add a "Customization" Subcategory label
-        const customizationLabel = document.createElement("h3");
+        const customizationLabel = document.createElement("h2");
         customizationLabel.innerHTML = "Game Mechanics";
-        customizationLabel.style.color = "#fff";
-        customizationLabel.style.paddingLeft = "20px";
+        customizationLabel.classList.add("custom-menu-label");
         this.menu.appendChild(customizationLabel);
         
-        // Customize Entity Count, from 0-4096, we want to add Label: "Entity Count" and a box to type in the number.
-        const entityCountContainer = document.createElement("div");
-        entityCountContainer.style.display = "flex";
-        entityCountContainer.style.flexDirection = "row";
-        entityCountContainer.style.justifyContent = "space-between";
-        entityCountContainer.style.paddingLeft = "20px";
-
-        const entityCountLabel = document.createElement("h5");
-        entityCountLabel.innerHTML = "Entity Count";
-        entityCountLabel.style.color = "#fff";
-        entityCountContainer.appendChild(entityCountLabel);
-
-        const entityCountBox = document.createElement("input");
-        entityCountBox.type = "number";
-        entityCountBox.min = 1;
-        entityCountBox.max = 4096;
-        entityCountBox.value = 512;
-        entityCountBox.style.textAlign = "center";
-        entityCountBox.addEventListener("change", (e) => {
-            maxEntities = entityCountBox.value;
+        const entityCountContainer = this.createSettingContainer("Max Entities (1-4096):", "number", 1, 4096, 512, (e) => {
+            if (entityCountContainer.children[1].value > 4096 || entityCountContainer.children[1].value < 1) return;
+            maxEntities = entityCountContainer.children[1].value;
         });
-
-        entityCountContainer.appendChild(entityCountBox);
         this.menu.appendChild(entityCountContainer);
 
-
         //Customize Taxes, with rates from 0-100% for each tax type (attack, boat, donations)
+        //Add a "Taxes" Category label
+        const taxesLabel = document.createElement("h4");
+        taxesLabel.innerHTML = "Taxes (0-100%)";
+        taxesLabel.classList.add("custom-menu-label");
+        this.menu.appendChild(taxesLabel);
+
+        const attackTaxContainer = this.createSettingContainer("Attack Tax Rate:", "number", 0, 100, modHandler.modTax.attack * 100 / 256, (e) => {
+            if (attackTaxContainer.children[1].value > 100 || attackTaxContainer.children[1].value < 0) return;
+            modHandler.modTax.attack = attackTaxContainer.children[1].value * 256 / 100;
+        });
+        this.menu.appendChild(attackTaxContainer);
+          
+        const boatTaxContainer = this.createSettingContainer("Boat Tax Rate:", "number", 0, 100, modHandler.modTax.boat * 100 / 256, (e) => {
+            if (boatTaxContainer.children[1].value > 100 || boatTaxContainer.children[1].value < 0) return;
+            modHandler.modTax.boat = boatTaxContainer.children[1].value * 256 / 100;
+        });
+        this.menu.appendChild(boatTaxContainer);
+          
+        const donationTaxContainer = this.createSettingContainer("Donation Tax Rate:",  "number", 0, 100, modHandler.modTax.support * 100 / 256, (e) => {
+            if (donationTaxContainer.children[1].value > 100 || donationTaxContainer.children[1].value < 0) return;
+            modHandler.modTax.donation = donationTaxContainer.children[1].value * 256 / 100;
+        });
+        this.menu.appendChild(donationTaxContainer);
+
         //Customize Interest Formula will be too difficult to make for now.
         //Customize Boat Speeds, from 0-5, also an option to vary boat speed according to land size.
         //Customize Gamemodes, with a list of gamemodes to choose from. If the chosen gamemode is teams, then we can customize the team sizes.
@@ -240,8 +246,8 @@ class ModMenu {
         vanillaButton.style.width = "100%";
         vanillaButton.style.textAlign = "center";
         vanillaButton.addEventListener("click", (e) => {
-            //Revert to vanilla settings here kek
-            console.log("Reverting to vanilla settings")
+            maxEntities = 512;
+            entityCountBox.value = 512;
         })
         this.menu.appendChild(vanillaButton);
     }
@@ -284,11 +290,39 @@ class ModMenu {
         this.menu.appendChild(aboutSection);
     }
 
+    createSettingContainer(labelText, boxType, boxMin, boxMax, boxValue, boxOnChange) {
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.alignItems = "center";
+        container.style.padding = "5px 0";
+        container.style.marginTop = "-10px";
+        container.style.marginBottom = "-10px";
+      
+        const label = document.createElement("p");
+        label.innerHTML = labelText;
+        label.style.color = "#fff";
+        label.style.marginLeft = "20px";
+        label.style.marginRight = "10px";
+      
+        const box = document.createElement("input");
+        box.type = boxType;
+        box.min = boxMin;
+        box.max = boxMax;
+        box.value = boxValue;
+        box.style.textAlign = "center";
+        box.addEventListener("change", boxOnChange);
+      
+        container.appendChild(label);
+        container.appendChild(box);
+      
+        return container;
+    }
+    
     drawResizeButton() {
         // Create new button element
         const resizeButton = document.createElement('button');
         //assign id to button
-        resizeButton.id = `resizeButton${modMenus.findIndex((menu) => menu === this)}`;
+        resizeButton.id = `resizeButton${getMax(modMenus.findIndex((menu) => menu === this), 0)}`;
         resizeButton.classList.add('menu-button');
         resizeButton.innerHTML = '&#10542;';
         resizeButton.style.position = 'fixed';
@@ -305,7 +339,7 @@ class ModMenu {
     }
 
     updateResizeButtonPos() {
-        const resizeButton = document.getElementById(`resizeButton${modMenus.findIndex((menu) => menu === this)}`);
+        const resizeButton = document.getElementById(`resizeButton${getMax(modMenus.findIndex((menu) => menu === this), 0)}`);
         resizeButton.style.bottom = window.innerHeight - this.height - this.y + 'px';
         resizeButton.style.right = window.innerWidth - this.width - this.x + this.menu.offsetWidth - this.menu.clientWidth + 'px';
     }
@@ -478,7 +512,7 @@ class ModMenu {
 
 var modMenus = [];
 function modMenuInit() {
-    var modMenu = new ModMenu([0, 11], 300, 300, 200, 200, 100);
+    var modMenu = new ModMenu([0, 2, 11], 300, 300, 200, 200, 100);
     modMenus.push(modMenu);
 }
 

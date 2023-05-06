@@ -19,7 +19,11 @@ function ModHandler() {
     this.uploadReplay = true;
 
     this.clientHash = 0;
-    this.modEconomy = false;
+    this.modTax = {
+        attack: 3,
+        support: 16,
+        boat: 6
+    };
     this.customDifficulty = -1;
     this.boatSpeed = 2;
     this.neutralBots = false;
@@ -140,7 +144,7 @@ function DiscordWeb() {
 
 function ExtendedActions() {
     function isCustomGame () {
-        return maxEntities > 512 || modHandler.modEconomy || modHandler.customDifficulty != -1 || modHandler.boatSpeed != 2 || modHandler.neutralBots || !modHandler.humanBots || modHandler.customMap != -1 || modHandler.customGamemode != 11
+        return maxEntities > 512 || modHandler.modTax.attack != 3 || modHandler.modTax.boat != 6 || modHandler.modTax.support != 16 || modHandler.customDifficulty != -1 || modHandler.boatSpeed != 2 || modHandler.neutralBots || !modHandler.humanBots || modHandler.customMap != -1 || modHandler.customGamemode != 11
     }
     var currentActionID = 1001;
     this.clientUsers = [];
@@ -504,7 +508,7 @@ function ModPanel() {
     }
     function getSettingLabels(settingID) {
         if (settingID == 0) return `${maxEntities} Entities`;
-        else if (settingID == 1) return `Mod Economy ${modHandler.modEconomy ? "On" : "Off"}`;
+        else if (settingID == 1) return `Mod Economy ${modHandler.modTax ? "On" : "Off"}`;
         else if (settingID == 2) return `Difficulty: ${modHandler.customDifficulty != -1 ? difficultyEngine.difficultyLabel[modHandler.customDifficulty] : "Default"}`;
         else if (settingID == 3) return `${modHandler.boatSpeed == 2 ? "Normal" : modHandler.boatSpeed == 1 ? "Faster" : "Very Fast"} Boats`;
         else if (settingID == 4) return `Neutral Bots ${modHandler.neutralBots ? "On" : "Off"}`;
@@ -523,7 +527,7 @@ function ModPanel() {
     }
     function changeSettings(settingID) {
         if (settingID == 0) maxEntities *= (maxEntities >= 4096 ? 1/8 : 2);
-        else if (settingID == 1) modHandler.modEconomy = !modHandler.modEconomy;
+        else if (settingID == 1) modHandler.modTax = !modHandler.modTax;
         else if (settingID == 2) modHandler.customDifficulty += (modHandler.customDifficulty == 5 ? -6 : 1);
         else if (settingID == 3) modHandler.boatSpeed -= (modHandler.boatSpeed > 0 ? 1 : -2);
         else if (settingID == 4) modHandler.neutralBots = !modHandler.neutralBots;
@@ -548,7 +552,7 @@ function ModPanel() {
     }
     function getButtonColor(settingID) {
         if (settingID == 0) return maxEntities != 512;
-        else if (settingID == 1) return modHandler.modEconomy;
+        else if (settingID == 1) return modHandler.modTax;
         else if (settingID == 2) return modHandler.customDifficulty != -1;
         else if (settingID == 3) return modHandler.boatSpeed != 2;
         else if (settingID == 4) return modHandler.neutralBots;

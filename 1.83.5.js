@@ -5438,7 +5438,7 @@ function processAttack(authorID, targetID, ratio) {
         if (teamGame && targetID < maxEntities && !isNotTeamate(authorID, targetID)) processDonation(authorID, targetID, amount);
         else {
             if (targetID < maxEntities && 0 === isAlive[targetID]) targetID = maxEntities
-            var tax = divideFloor(3 * troops[authorID], 256);
+            var tax = divideFloor(modHandler.modEconomy.attack * troops[authorID], 256);
             amount -= 500 <= ratio ? tax : 0;
             if (!(amount <= neutralLandCost) && attacks.isUnderAttackCap(authorID)) {
                 var oldPotentialAdvancesLength = potentialBorderAdvances[authorID].length;
@@ -5465,13 +5465,15 @@ function processAttack(authorID, targetID, ratio) {
     }
 }
 
+//Note that I've changed the base of divideFloor of boat and donation tax from 16/128 to 256, so if it desyncs we might need to revert it back!
+
 function processSendBoat(id, closestPIndex, targetPIndex, amount) {
     var boatID, tax;
     if (10 === gamemode && id < playerCount) amount = antiFullSend.reduceAmount(id, amount)
     if (amount <= neutralLandCost || !attacks.isUnderAttackCap(id)) return false;
     boatID = boatSpeed.addEntry(id, closestPIndex, targetPIndex);
     if (0 === boatID) return false;
-    tax = divideFloor(3 * troops[id], 128);
+    tax = divideFloor(modHandler.modEconomy.boat * troops[id], 256);
     amount >= divideFloor(troops[id], 2) && (amount -= tax);
     id === myID && (statisticNumbers.numbers[12] += tax);
     attacks.addBoat(id, amount, boatID);
@@ -5483,7 +5485,7 @@ function processDonation(authorID, targetID, amount) {
     if (!(!teamGame || 0 === isAlive[authorID] || 0 === isAlive[targetID] || 0 > amount || amount > troops[authorID] || authorID === targetID || 
         isNotTeamate(authorID, targetID) || authorID < playerCount && targetID < playerCount && 7 > gamemode && 1071 > mainHandler.getTicksElapsed())) {
         
-        var tax = divideFloor(troops[authorID], 16);
+        var tax = divideFloor(modHandler.modEconomy.support * troops[authorID], 256);
         amount -= amount >= divideFloor(troops[authorID], 2) ? tax : 0;
         var maxReceivableAmount = land[targetID] * maxTroopsToLandRatio - troops[targetID];
         if (0 < maxReceivableAmount) {
