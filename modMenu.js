@@ -98,8 +98,8 @@ class ModMenu {
         this.titleBar.style.top = '0';
         this.titleBar.innerHTML = `
             <span style="margin: 0 auto;">${this.title}</span>
-            <button class="menu-button">&#10234;</button>
-            <button class="menu-button">&#10006;</button>
+            <button class="menu-button" id="forceDock">&#10234;</button>
+            <button class="menu-button" id="close">&#10006;</button>
         `;
 
         // Add title bar to menu
@@ -112,8 +112,11 @@ class ModMenu {
             this.menu.style.width = this.width + 'px';
         }
 
+        // Add menu to DOM
+        document.body.appendChild(this.menu);
+
         // Add event listener to close button
-        const closeButton = this.titleBar.querySelector('button:nth-child(3)');
+        const closeButton = document.getElementById('close');
         closeButton.addEventListener('click', (e) => {
             modMenus = modMenus.filter((menu) => menu !== this);
             this.menu.remove();
@@ -121,8 +124,35 @@ class ModMenu {
             canvasManager.dockUpdateCanvas();
         });
 
-        // Add menu to DOM
-        document.body.appendChild(this.menu);
+        // Add event listener to dock button
+        const dockButton = document.getElementById('forceDock');
+        dockButton.addEventListener('click', (e) => {
+            if (this.dockStatus == 0) {
+                var docks = [getDockWidth(1), getDockWidth(2)];
+                if (docks[0] == 0 && docks[1] == 0 || docks[0] > 0 && docks[1] > 0) {
+                    //Dock to closest side
+                    const xCenter = this.x + this.width / 2;
+                    if (xCenter - docks[0] < window.innerWidth - docks[1] - xCenter) this.dockStatus = 1;
+                    else this.dockStatus = 2;
+                } else {
+                    //dock to the existing side
+                    if (docks[0] > 0) this.dockStatus = 1;
+                    else this.dockStatus = 2;
+                }
+                if (this.dockStatus == 1) {
+                    this.x = 0;
+                } else {
+                    this.x = window.innerWidth - (docks[1] > 0 ? docks[1] : this.width);
+                }
+                this.dockStatus = 0;
+                this.menu.style.left = this.x + "px";
+            } else {
+                this.x += (this.dockStatus == 1 ? 1 : -1) * this.width;
+                this.menu.style.left = this.x + "px";
+            }
+            this.onDock(e);
+            canvasManager.dockUpdateCanvas();
+        });
     }
 
     drawMenuPanel() {
@@ -413,7 +443,7 @@ class ModMenu {
         //First check how many available docks there are, and what their original widths are
         var docks = [];
         for (let dockStatus = 1; dockStatus <= 2; dockStatus++) {
-            docks.push(Math.max(0, ...modMenus.filter(menu => menu.dockStatus === dockStatus).map(menu => menu.width)));
+            docks.push(getDockWidth(dockStatus));
         };
         //Now we will dock the menu to the left or right side if it is close enough to the edge
         if (this.dockStatus === 0) { //Easier snapping to dock
@@ -426,6 +456,8 @@ class ModMenu {
             } else this.dockStatus = 0; //Docked to neither side
         } else { //Easier snapping to undock
             if (e.clientX > docks[0] + window.innerWidth / 100 && e.clientX + this.width < window.innerWidth * .99 - docks[1]) { //Undocked
+                this.dockStatus = 0;
+            } else if (e.type === "click") {
                 this.dockStatus = 0;
             }
         }
@@ -457,7 +489,12 @@ class ModMenu {
         }
 
         //If there is a change in dock Width or a change in the number of panels, update the canvas.
-        if (oldDockWidths[0] != docks[0] || oldDockWidths[1] != docks[1]) canvasManager.dockUpdateCanvas();
+        console.log(oldDockWidths, docks)
+        if (oldDockWidths[0] != docks[0] || oldDockWidths[1] != docks[1]) {
+            console.log('e')
+            canvasManager.dockUpdateCanvas();
+            this.updateResizeButtonPos();
+        }
     }
 
     setSize(width, height) {
