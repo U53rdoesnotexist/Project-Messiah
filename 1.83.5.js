@@ -1169,7 +1169,7 @@ function BoatSpeed() {
     this.update = function() {
         for (var boatIndex = currentBoatIndex - 1; 0 <= boatIndex; boatIndex--) {
             if (0 === ticksUntilUpdate[boatIndex]--) {
-                ticksUntilUpdate[boatIndex] = typeof(modHandler) == "object" ? modHandler.boatSpeed : 2;
+                ticksUntilUpdate[boatIndex] = modHandler.boatSpeed != -1 ? modHandler.boatSpeed : 3 - Math.floor(modHandler.getSpeed(authorIDs[boatIndex]));
                 boatPathHandler.update(boatIndex, boatIDs[boatIndex], authorIDs[boatIndex], this.currentPixelIndicies[boatIndex], targetPixelIndicies[boatIndex]);
             }
         }
