@@ -239,6 +239,7 @@ class ModMenu {
         //Add a button to revert back to vanilla settings
         const vanillaButton = document.createElement("button");
         vanillaButton.innerHTML = "Revert to Vanilla Settings";
+        vanillaButton.style.marginTop = "10px";
         vanillaButton.style.backgroundColor = "transparent";
         vanillaButton.style.font = `italic calc(${this.width}px / 20)` + " Pacifico"; // calculate font size based on menu width
         vanillaButton.style.color = "#fff";
@@ -247,7 +248,13 @@ class ModMenu {
         vanillaButton.style.textAlign = "center";
         vanillaButton.addEventListener("click", (e) => {
             maxEntities = 512;
-            entityCountBox.value = 512;
+            entityCountContainer.children[1].value = 512;
+            modHandler.modTax.attack = 3;
+            attackTaxContainer.children[1].value = 1.171875;
+            modHandler.modTax.boat = 6;
+            boatTaxContainer.children[1].value = 2.34375;
+            modHandler.modTax.donation = 16;
+            donationTaxContainer.children[1].value = 6.25;
         })
         this.menu.appendChild(vanillaButton);
     }
@@ -295,8 +302,8 @@ class ModMenu {
         container.style.display = "flex";
         container.style.alignItems = "center";
         container.style.padding = "5px 0";
-        container.style.marginTop = "-10px";
-        container.style.marginBottom = "-10px";
+        container.style.paddingTop = "-10px";
+        container.style.marginBottom = "-20px";
       
         const label = document.createElement("p");
         label.innerHTML = labelText;
@@ -309,6 +316,8 @@ class ModMenu {
         box.min = boxMin;
         box.max = boxMax;
         box.value = boxValue;
+        if (labelText.includes("Tax")) box.step = "any";
+        else box.step = "1";
         box.style.textAlign = "center";
         box.addEventListener("change", boxOnChange);
       
