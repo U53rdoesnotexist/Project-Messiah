@@ -323,7 +323,7 @@ class ModMenu {
         aboutSection.innerHTML = `
             <p>Territorio Sigma Build &#128526 (Compatible with Game Version 1.83.5)</p>
             <p>Brought to you by Vkij, oi and DanTheMan</p>
-            <p>Discord Server: <a href="https://discord.gg/3aF93G23rV" target="_blank">Click Me!</a></p>
+            <p>Discord Server: <a href="${discordLink}" target="_blank">Click Me!</a></p>
         `;
         this.menu.appendChild(aboutSection);
     }
