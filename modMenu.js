@@ -54,12 +54,14 @@ class ModMenu {
                 color: #fff;
                 padding-left: 20px;
                 margin-bottom: 0px;
+                text-indent: 20px;
             }
             .custom-menu-label {
                 color: #fff;
                 padding-left: 20px;
                 margin-bottom: 10px;
                 margin-right: 10px;
+                white-space: pre-wrap;
             }
         `;
         document.head.appendChild(style);
@@ -233,6 +235,20 @@ class ModMenu {
         warning.style.paddingLeft = "10px"
         this.menu.appendChild(warning);
 
+        //Custom Lobby Settings + Client Hash + Remove Players if incorrect code in vanilla games
+        const lobbyLabel = document.createElement("h2");
+        lobbyLabel.innerHTML = "Lobby Settings";
+        lobbyLabel.classList.add("custom-menu-label");
+        this.menu.appendChild(lobbyLabel);
+
+        const clientHashInput = this.createLabelledInput("Client Hash:", "lobbyHash", "number", 0, 2**22 - 1, modHandler.clientHash, (e) => {
+            if (clientHashInput.value > 2**22 - 1 || clientHashInput.value < 0 || clientHashInput.value % 1 != 0) return;
+            modHandler.clientHash = clientHashInput.value;
+        });
+        const killIfConflictInput = this.createLabelledInput("Kill Wrong Hash Players in Vanilla:", "lobbyKill", "checkbox", 0, 1, false, (e) => {
+            //Will add later...
+        });
+
         const customizationLabel = document.createElement("h2");
         customizationLabel.innerHTML = "Game Mechanics";
         customizationLabel.classList.add("custom-menu-label");
@@ -245,33 +261,33 @@ class ModMenu {
         this.menu.appendChild(taxesLabel);
 
         const attackTaxInput = this.createLabelledInput("Attack Tax Rate:", "aTax", "number", 0, 100, modHandler.modTax.attack * 100 / 256, (e) => {
-            if (attackTaxInput[1].value > 100 || attackTaxInput[1].value < 0) return;
-            modHandler.modTax.attack = attackTaxInput[1].value * 256 / 100;
-        });   
+            if (attackTaxInput.value > 100 || attackTaxInput.value < 0) return;
+            modHandler.modTax.attack = attackTaxInput.value * 256 / 100;
+        });
         const boatTaxInput = this.createLabelledInput("Boat Tax Rate:", "bTax", "number", 0, 100, modHandler.modTax.boat * 100 / 256, (e) => {
-            if (boatTaxInput[1].value > 100 || boatTaxInput[1].value < 0) return;
-            modHandler.modTax.boat = boatTaxInput[1].value * 256 / 100;
+            if (boatTaxInput.value > 100 || boatTaxInput.value < 0) return;
+            modHandler.modTax.boat = boatTaxInput.value * 256 / 100;
         });
         const supportTaxInput = this.createLabelledInput("Support Tax Rate:", "dTax", "number", 0, 100, modHandler.modTax.support * 100 / 256, (e) => {
-            if (supportTaxInput[1].value > 100 || supportTaxInput[1].value < 0) return;
-            modHandler.modTax.donation = supportTaxInput[1].value * 256 / 100;
+            if (supportTaxInput.value > 100 || supportTaxInput.value < 0) return;
+            modHandler.modTax.donation = supportTaxInput.value * 256 / 100;
         });
 
         //Customize Interest Formula will be too difficult to make for now.
 
         //Customize Boat Speeds, with rates from 0-5 (0 being the Fastest, 5 being the Slowest)
         const boatSpeedLabel = document.createElement("h4");
-        boatSpeedLabel.innerHTML = "Boat Speeds";
+        boatSpeedLabel.innerHTML = "Speeds";
         boatSpeedLabel.classList.add("custom-menu-category");
         this.menu.appendChild(boatSpeedLabel);
 
         const boatSpeedInput = this.createLabelledInput("Boat Speed (Ticks Per Update):", "bSpeed", "number", 1, 6, modHandler.boatSpeed + 1, (e) => {
-            if (boatSpeedInput[1].value > 5 || boatSpeedInput[1].value < 0) return;
-            modHandler.boatSpeed = boatSpeedInput[1].value - 1;
+            if (boatSpeedInput.value > 5 || boatSpeedInput.value < 0) return;
+            modHandler.boatSpeed = boatSpeedInput.value - 1;
         });
         const boatSpeedVariationInput = this.createLabelledInput("Vary With Land Size:", "bSpeedVar", "checkbox", 0, 0, modHandler.boatSpeed == -1, (e) => {
-            modHandler.boatSpeed = boatSpeedVariationInput[1].checked ? -1 : boatSpeedInput[1].value - 1;
-            boatSpeedInput[1].disabled = boatSpeedVariationInput[1].checked;
+            modHandler.boatSpeed = boatSpeedVariationInput.checked ? -1 : boatSpeedInput.value - 1;
+            boatSpeedInput.disabled = boatSpeedVariationInput.checked;
         });
 
         //Customize Gamemodes, with a list of gamemodes to choose from. If the chosen gamemode is teams, then we can customize the team sizes.
@@ -283,15 +299,21 @@ class ModMenu {
         const options = ["Teams", "Battle Royale", "Zombies", "No Full Send", "Default"],
             defaultOption = modHandler.customGamemode <= 6 ? 0 : modHandler.customGamemode == 7 ? 1 : modHandler.customGamemode == 9 ? 2 : modHandler.customGamemode == 10 ? 3 : 4;
         const gameModeInput = this.createLabelledInput("Game Mode:", "gMode", "select", options, 0, defaultOption, (e) => {
-            modHandler.customGamemode = gameModeInput.value == 0 ? teamSizeInput.value - 2: gameModeInput.value == 1 ? 7: gameModeInput.value == 2 ? 9: gameModeInput.value == 3 ? 10: gameModeInput.value == 4 ? 11: modHandler.customGamemode;
+            modHandler.customGamemode = gameModeInput.value == 0 ? teamSizeInput.value - 2: gameModeInput.value == 1 ? 7: gameModeInput.value == 2 ? 9: gameModeInput.value == 3 ? 10 : 11;
             teamSizeInput.disabled = gameModeInput.value != 0;
+            teamBoostInput.disabled = [7, 8, 10].includes(modHandler.customGamemode);
         });
         const teamSizeInput = this.createLabelledInput("Team Count (2-8):", "tSize", "number", 2, 8, rangeClamp(2, modHandler.customGamemode + 2, 8), (e) => {
             if (teamSizeInput.value > 8 || teamSizeInput.value < 2 || teamSizeInput.value % 1 != 0) return;
             modHandler.customGamemode = teamSizeInput.value - 2;
         });
         teamSizeInput.disabled = gameModeInput.value != 0;
-
+        //Apply NFS algorithm to limit boosting behavior in team games
+        const teamBoostInput = this.createLabelledInput("Limit Boosting:", "tBoost", "checkbox", 0, 0, false, (e) => {
+            // Again i will make this later
+        });
+        teamBoostInput.disabled = [7, 8, 10].includes(modHandler.customGamemode);
+        
         //Customize Maps, with a list of maps to choose from. If a custom map is loaded, then we can select that map.
         const mapLabel = document.createElement("h4");
         mapLabel.innerHTML = "Maps";
@@ -316,7 +338,7 @@ class ModMenu {
 
         //Bots Subcategory
         const botsLabel = document.createElement("h2");
-        botsLabel.innerHTML = "Bots";
+        botsLabel.innerHTML = "Bot Settings";
         botsLabel.classList.add("custom-menu-label");
         this.menu.appendChild(botsLabel);
 
@@ -325,9 +347,31 @@ class ModMenu {
             maxEntities = maxEInput.value;
         });
 
-        //Customize Bot Difficulty, from 0-5 with labels from difficultyEngine.difficultyLabel
+        var difficultyLabels = difficultyEngine.difficultyLabel;
+        difficultyLabels.push("Default");
+        //Customize Bot Difficulty, from 0-5 with labels from difficultyEngine.difficultyLabel + 6 for default
+        const botDifficultyInput = this.createLabelledInput("Bot Difficulty:", "bDiff", "select", difficultyEngine.difficultyLabel, 0, modHandler.customDifficulty == -1 ? 6 : modHandler.customDifficulty, (e) => {
+            if (botDifficultyInput.value > 6 || botDifficultyInput.value < 0 || botDifficultyInput.value % 1 != 0) return;
+            modHandler.botDifficulty = botDifficultyInput.value == 6 ? -1 : botDifficultyInput.value;
+        });
+        //Also allow a checkmark to use custom difficulty distributions as indicated in singleSettings
+        const difficultyDistribution = this.createLabelledInput("Use SP Difficulty Distribution:", "dDiff", "checkbox", 0, 0, false, (e) => {
+            modHandler.difficultyDistribution = difficultyDistribution.checked;
+            //I will add the function to port over the settings in the future.
+            //This will disable the bot difficulty input if the user wants to use the singleplayer settings.
+            botDifficultyInput.disabled = difficultyDistribution.checked;
+        });
+        botDifficultyInput.disabled = difficultyDistribution.checked;
+        
         //Neutral Bots Toggle
+        const neutralBotsInput = this.createLabelledInput("Neutral Bots in Teams:", "nBots", "checkbox", 0, 0, modHandler.neutralBots, (e) => {
+            modHandler.neutralBots = neutralBotsInput.checked;
+        });
+
         //Human Bots Toggle
+        const humanBotsInput = this.createLabelledInput("Human Bots After Leave:", "hBots", "checkbox", 0, 0, modHandler.humanBots, (e) => {
+            modHandler.humanBots = humanBotsInput.checked;
+        });
         
         //Add a button to revert back to vanilla settings
         const vanillaButton = document.createElement("button");
@@ -340,20 +384,39 @@ class ModMenu {
         vanillaButton.style.width = "100%";
         vanillaButton.style.textAlign = "center";
         vanillaButton.addEventListener("click", (e) => {
-            maxEntities = maxEInput.value = 512;
+
+            modHandler.clientHash = clientHashInput.value = 0;
+            killIfConflictInput.checked = false;
+
             modHandler.modTax.attack = 3;
             attackTaxInput.value = 1.171875;
             modHandler.modTax.boat = 6;
             boatTaxInput.value = 2.34375;
             modHandler.modTax.donation = 16;
             supportTaxInput.value = 6.25;
+
             modHandler.boatSpeed = 2;
             boatSpeedInput.value = 3;
             boatSpeedVariationInput.checked = false;
             boatSpeedInput.disabled = false;
-            modHandler.customGamemode = -1;
+
+            modHandler.customGamemode = 11;
             gameModeInput.value = 4;
-            teamSizeInput.value = 2;
+            teamSizeInput.disabled = true;
+
+            modHandler.customMap = -1;
+            mapInput.value = mapNames.length - 1;
+
+            maxEntities = maxEInput.value = 512;
+
+            modHandler.customDifficulty = -1;
+            botDifficultyInput.value = 6;
+            difficultyDistribution.checked = false;
+            difficultyDistribution.disabled = false;
+
+            modHandler.neutralBots = neutralBotsInput.checked = false;
+            modHandler.humanBots = humanBotsInput.checked = true;
+
         })
         this.menu.appendChild(vanillaButton);
     }
@@ -433,7 +496,7 @@ class ModMenu {
                 input.value = defaultValue;
                 if (labelText.includes("Tax")) input.step = "any";
             } else if (inputType == "checkbox") {
-                input.value = defaultValue;
+                input.checked = defaultValue;
             }
         }
             
