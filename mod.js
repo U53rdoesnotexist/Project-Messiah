@@ -8,8 +8,6 @@ function modConstruct(){
     extendedActions = new ExtendedActions;
     modHandler.updateCheatModules();
     distance = new Distance;
-
-    modMenuInit();
 }
 
 function ModHandler() {
@@ -49,6 +47,7 @@ function ModHandler() {
     this.gameSpeed = 1;
 
     this.main = function() {
+        modMenuInit();
         if (this.bot >= 3) cheat.main();
     }
     this.scriptGameInit = function() {

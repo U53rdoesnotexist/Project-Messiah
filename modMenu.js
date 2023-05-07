@@ -50,6 +50,11 @@ class ModMenu {
                 position: relative;
                 font-size: 20px;
             }
+            .custom-menu-category {
+                color: #fff;
+                padding-left: 20px;
+                margin-bottom: 0px;
+            }
             .custom-menu-label {
                 color: #fff;
                 padding-left: 20px;
@@ -236,7 +241,7 @@ class ModMenu {
         //Customize Taxes, with rates from 0-100% for each tax type (attack, boat, donations)
         const taxesLabel = document.createElement("h4");
         taxesLabel.innerHTML = "Taxes (0-100%)";
-        taxesLabel.classList.add("custom-menu-label");
+        taxesLabel.classList.add("custom-menu-category");
         this.menu.appendChild(taxesLabel);
 
         const attackTaxInput = this.createLabelledInput("Attack Tax Rate:", "aTax", "number", 0, 100, modHandler.modTax.attack * 100 / 256, (e) => {
@@ -257,7 +262,7 @@ class ModMenu {
         //Customize Boat Speeds, with rates from 0-5 (0 being the Fastest, 5 being the Slowest)
         const boatSpeedLabel = document.createElement("h4");
         boatSpeedLabel.innerHTML = "Boat Speeds";
-        boatSpeedLabel.classList.add("custom-menu-label");
+        boatSpeedLabel.classList.add("custom-menu-category");
         this.menu.appendChild(boatSpeedLabel);
 
         const boatSpeedInput = this.createLabelledInput("Boat Speed (Ticks Per Update):", "bSpeed", "number", 1, 6, modHandler.boatSpeed + 1, (e) => {
@@ -270,44 +275,44 @@ class ModMenu {
         });
 
         //Customize Gamemodes, with a list of gamemodes to choose from. If the chosen gamemode is teams, then we can customize the team sizes.
-        //Available gamemodes: Teams (2-8), Battle Royale, Zombies, No Full Send
-        //Add new gamemodes? Capture the Flag, King of the Hill, etc.
-
         const gameModeLabel = document.createElement("h4");
         gameModeLabel.innerHTML = "Game Modes";
-        gameModeLabel.classList.add("custom-menu-label");
+        gameModeLabel.classList.add("custom-menu-category");
         this.menu.appendChild(gameModeLabel);
-
-        /*
-        const defaultOption = modHandler.customGamemode <= 6 ? 0 : modHandler.customGamemode == 7 ? 1 : modHandler.customGamemode == 9 ? 2 : modHandler.customGamemode == 10 ? 3 : 4;
-        const gameModeContainer = this.createSettingContainer("Game Mode:", "select", 0, 0, defaultOption, (e) => {
-            if (gameModeContainer.children[1].value == "Teams") {
-                teamSizeContainer.style.display = "block";
-            } else {
-                teamSizeContainer.style.display = "none";
-            }
-        });
-        this.menu.appendChild(gameModeContainer);
-
-        const teamSizeContainer = this.createSettingContainer("Team Count (2-8):", "number", 2, 8, rangeClamp(2, modHandler.customGamemode + 2, 8), (e) => {
-            if (teamSizeContainer.children[1].value > 8 || teamSizeContainer.children[1].value < 2) return;
-            modHandler.customGamemode = teamSizeContainer.children[1].value - 2;
-        });
-        this.menu.appendChild(teamSizeContainer);
-        */
 
         const options = ["Teams", "Battle Royale", "Zombies", "No Full Send", "Default"],
             defaultOption = modHandler.customGamemode <= 6 ? 0 : modHandler.customGamemode == 7 ? 1 : modHandler.customGamemode == 9 ? 2 : modHandler.customGamemode == 10 ? 3 : 4;
         const gameModeInput = this.createLabelledInput("Game Mode:", "gMode", "select", options, 0, defaultOption, (e) => {
-            //Need to add sth here
+            modHandler.customGamemode = gameModeInput.value == 0 ? teamSizeInput.value - 2: gameModeInput.value == 1 ? 7: gameModeInput.value == 2 ? 9: gameModeInput.value == 3 ? 10: gameModeInput.value == 4 ? 11: modHandler.customGamemode;
             teamSizeInput.disabled = gameModeInput.value != 0;
         });
         const teamSizeInput = this.createLabelledInput("Team Count (2-8):", "tSize", "number", 2, 8, rangeClamp(2, modHandler.customGamemode + 2, 8), (e) => {
-            if (teamSizeInput.value > 8 || teamSizeInput.value < 2) return;
+            if (teamSizeInput.value > 8 || teamSizeInput.value < 2 || teamSizeInput.value % 1 != 0) return;
             modHandler.customGamemode = teamSizeInput.value - 2;
         });
+        teamSizeInput.disabled = gameModeInput.value != 0;
 
         //Customize Maps, with a list of maps to choose from. If a custom map is loaded, then we can select that map.
+        const mapLabel = document.createElement("h4");
+        mapLabel.innerHTML = "Maps";
+        mapLabel.classList.add("custom-menu-category");
+        this.menu.appendChild(mapLabel);
+
+        var mapNames = [];
+        for (let mapIndex = 0; mapIndex < customMapID; mapIndex++) {
+            mapNames.push(mapInfo.getValueByID(mapIndex).name);
+        }
+        mapNames.push("Custom");
+        mapNames.push("Default");
+        const mapInput = this.createLabelledInput("Map:", "map", "select", mapNames, 0, modHandler.customMap == -1 ? mapNames.length - 1 : modHandler.customMap, (e) => {
+            //If the user didn't load any custom maps, then we can't select a custom map, alert the user and set the map to default.
+            if (mapInput.value == mapNames.length - 2 && mapInput.value == customMapID) {
+                alert("Load a custom map first!");
+                mapInput.value = mapNames.length - 1;
+                return;
+            } else modHandler.customMap = mapInput.value == mapNames.length - 1 ? -1 : mapInput.value;
+            //We also have to revert this setting if the user changed the current map loaded back to a default one in the map selection menu.
+        });
 
         //Bots Subcategory
         const botsLabel = document.createElement("h2");
@@ -315,31 +320,10 @@ class ModMenu {
         botsLabel.classList.add("custom-menu-label");
         this.menu.appendChild(botsLabel);
 
-        /*
-        const entityCountContainer = this.createSettingContainer("Max Entities (1-4096):", "number", 1, 4096, 512, (e) => {
-            if (entityCountContainer.children[1].value > 4096 || entityCountContainer.children[1].value < 1) return;
-            maxEntities = entityCountContainer.children[1].value;
-        });
-        this.menu.appendChild(entityCountContainer);
-        */
-
-        const maxELabel = document.createElement("label");
-        maxELabel.innerHTML = "Max Entities (1-4096):";
-        maxELabel.for = "maxE-input";
-        maxELabel.classList.add("custom-menu-label");
-        this.menu.appendChild(maxELabel);
-
-        const maxEInput = document.createElement("input");
-        maxEInput.type = "number";
-        maxEInput.id = "maxE-input";
-        maxEInput.min = 1;
-        maxEInput.max = 4096;
-        maxEInput.value = 512;
-        maxEInput.addEventListener("change", (e) => {
-            if (maxEInput.value > 4096 || maxEInput.value < 1) return;
+        const maxEInput = this.createLabelledInput("Max Entities (1-4096):", "maxE", "number", 1, 4096, 512, (e) => {
+            if (maxEInput.value > 4096 || maxEInput.value < 1 || maxEInput.value % 1 != 0) return;
             maxEntities = maxEInput.value;
         });
-        this.menu.appendChild(maxEInput);
 
         //Customize Bot Difficulty, from 0-5 with labels from difficultyEngine.difficultyLabel
         //Neutral Bots Toggle
@@ -358,15 +342,18 @@ class ModMenu {
         vanillaButton.addEventListener("click", (e) => {
             maxEntities = maxEInput.value = 512;
             modHandler.modTax.attack = 3;
-            attackTaxInput.children[1].value = 1.171875;
+            attackTaxInput.value = 1.171875;
             modHandler.modTax.boat = 6;
-            boatTaxInput.children[1].value = 2.34375;
+            boatTaxInput.value = 2.34375;
             modHandler.modTax.donation = 16;
-            supportTaxInput.children[1].value = 6.25;
+            supportTaxInput.value = 6.25;
             modHandler.boatSpeed = 2;
-            boatSpeedContainer.children[1].value = 3;
-            boatSpeedVariationContainer.children[1].checked = false;
-            boatSpeedContainer.children[1].disabled = false;
+            boatSpeedInput.value = 3;
+            boatSpeedVariationInput.checked = false;
+            boatSpeedInput.disabled = false;
+            modHandler.customGamemode = -1;
+            gameModeInput.value = 4;
+            teamSizeInput.value = 2;
         })
         this.menu.appendChild(vanillaButton);
     }
@@ -409,54 +396,6 @@ class ModMenu {
         this.menu.appendChild(aboutSection);
     }
 
-    createSettingContainer(labelText, boxType, param1, param2, boxValue, boxOnChange) {
-        //If boxType is number, then param1 is min and param2 is max
-        //If boxType is checkbox, then only boxValue is used as a parameter
-        //If boxType is select, then only boxValue is the default option
-        const container = document.createElement("div");
-        container.style.display = "flex";
-        container.style.alignItems = "center";
-        container.style.padding = "5px 0";
-        container.style.paddingTop = "0px";
-        container.style.marginBottom = "0px";
-      
-        const label = document.createElement("label");
-        label.innerHTML = labelText;
-        label.style.color = "#fff";
-        label.style.marginLeft = "20px";
-        label.style.marginRight = "10px";
-      
-        const box = document.createElement("input");
-        box.type = boxType;
-        if (boxType == "number") {
-            box.min = param1;
-            box.max = param2;
-            box.value = boxValue;
-            if (labelText.includes("Tax")) box.step = "any";
-            else box.step = "1";
-        } else if (boxType == "checkbox") {
-            box.value = boxValue;
-        } else if (boxType == "select") {
-            const description = ["Teams", "Battle Royale", "Zombies", "No Full Send", "Default"]
-            //Set default option
-            box.value = description[boxValue];
-            box.innerHTML = `
-                <option value="0">Teams</option>
-                <option value="1">Battle Royale</option>
-                <option value="2">Zombies</option>
-                <option value="3">No Full Send</option>
-                <option value="4">Default</option>
-            `;
-        }
-        box.style.textAlign = "center";
-        box.addEventListener("change", boxOnChange);
-      
-        container.appendChild(label);
-        container.appendChild(box);
-      
-        return container;
-    }
-
     createLabelledInput(labelText, inputID, inputType, param1, param2, defaultValue, boxOnChange) {
         //If boxType is number, then param1 is min and param2 is max
         //If boxType is checkbox, then only boxValue is used as a parameter
@@ -466,16 +405,22 @@ class ModMenu {
         label.innerHTML = labelText;
         label.for = inputID;
         label.classList.add("custom-menu-label");
+
+        // Check if there is already an input with the same inputID
+        const existingInput = document.getElementById(inputID);
+
+        // If this is the first input for a new category, add a line break
+        if (!existingInput || existingInput.parentElement.previousElementSibling.textContent !== labelText) {
+            this.menu.appendChild(document.createElement("br"));
+        }
         this.menu.appendChild(label);
 
         var input;
         if (inputType == "select") {
             input = document.createElement("select");
-            const description = ["Teams", "Battle Royale", "Zombies", "No Full Send", "Default"]
-            input.value = description[defaultValue];
             var options = "";
-            for (var i = 0; i < description.length; i++) {
-                options += `<option value="${i}">${description[i]}</option>`;
+            for (var i = 0; i < param1.length; i++) {
+                options += `<option value="${i}"${i == defaultValue ? " selected" : ""}>${param1[i]}</option>`;
             }
             input.innerHTML = options;
         } else {
