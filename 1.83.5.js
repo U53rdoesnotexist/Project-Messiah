@@ -3071,6 +3071,86 @@ function NextContestBar() {
     }
 }
 
+function EmojisPanel() {
+    this.height = this.width = 0;
+    this.visible = false;
+    this.numEmojisPerRow  = 10;
+    this.emojiMarginRatio = .12;
+    this.isDragging = this.isToggled = this.isSaveRequired = false;
+    this.init = function() {
+        this.width = mainCanvasWidth < 1 * mainCanvasHeight ? Math.floor((isZoom ? .94 : .6) * mainCanvasWidth) : Math.floor((isZoom ? .94 : .6) * mainCanvasHeight);
+        this.width -= this.width % this.numEmojisPerRow ;
+        this.height = 1 * this.width;
+        this.visible = true;
+        this.isSaveRequired = false
+    };
+    this.mouseDown = function(xPos, yPos, buttonIndex) {
+        var emojiRowHeight = (prevClientHeight - this.height) / 2;
+        xPos -= (prevClientWidth - this.width) / 2;
+        yPos -= emojiRowHeight;
+        if (0 > xPos || 0 > yPos || xPos >= this.width - 1 || yPos >= this.height - 1) {
+            if (0 === buttonIndex) {
+                this.visible = false;
+                if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, true);
+                mainHandler.canvasDirty = true;
+            }
+            return false;
+        }
+        var emojisPerRow = Math.floor(this.width / this.numEmojisPerRow );
+        xPos = divideFloor(xPos, emojisPerRow) + this.numEmojisPerRow  * divideFloor(yPos, emojisPerRow);
+        xPos = 0 > xPos ? 0 : xPos >= emojis.totalEmojisCount ? emojis.totalEmojisCount - 1 : xPos;
+        if (0 === buttonIndex || 1 === buttonIndex && !emojis.emojiSelection[xPos] || 2 === buttonIndex && emojis.emojiSelection[xPos]) {
+            this.isToggled = !emojis.emojiSelection[xPos];
+            this.isDragging = this.isSaveRequired = true;
+            emojis.emojiSelection[xPos] = !emojis.emojiSelection[xPos];
+            emojis.updateEmojiSelection();
+            mainHandler.canvasDirty = true;
+        }
+        return true
+    };
+    this.onPointermove = function(xPos, yPos) {
+        if (this.isSaveRequired) this.mouseDown(xPos, yPos, this.isToggled ? 1 : 2)
+    };
+    this.handleSave = function() {
+        if (this.isDragging) {
+            saveEmojis();
+            this.isDragging = false;
+        }
+        this.isSaveRequired = this.isDragging = false
+    };
+    this.drawCanvasImage = function() {
+        mainCanvasCtx.imageSmoothingEnabled = true;
+        var emojiPanelX = (prevClientWidth - this.width) / 2,
+            emojiPanelY = (prevClientHeight - this.height) / 2;
+        mainCanvasCtx.setTransform(1, 0, 0, 1, emojiPanelX, emojiPanelY);
+        mainCanvasCtx.fillStyle = blackMoreOpaque;
+        mainCanvasCtx.fillRect(0, 0, this.width, this.height);
+        mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
+        mainCanvasCtx.strokeStyle = whiteRGB2;
+        mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.height + 2);
+        var sideLength = Math.floor(this.width / this.numEmojisPerRow), 
+            scaleFactor = (sideLength - 2 * this.emojiMarginRatio * sideLength) / emojis.width,
+            emojiIndex;
+        mainCanvasCtx.fillStyle = 'rgba(132, 204, 202, 1)';
+        mainCanvasCtx.fillRect(this.width - sideLength * 2, -sideLength * 0.65 - 10, sideLength * 2, sideLength*0.65);
+        mainCanvasCtx.strokeRect(this.width - sideLength * 2 - 1, -sideLength * 0.65 - 11, sideLength * 2, sideLength*0.65);
+        var img = new Image();
+        img.src = 'data:image/png;base64,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';
+        mainCanvasCtx.drawImage(img, this.width - sideLength * 2 + sideLength - 15, -sideLength * 0.65 - 22 + (sideLength*0.65 - 10)/2, 35, 35);
+
+
+        for (emojiIndex = emojis.totalEmojisCount - 1; 0 <= emojiIndex; emojiIndex--) {
+            mainCanvasCtx.setTransform(1, 0, 0, 1, Math.floor(emojiPanelX + emojiIndex % this.numEmojisPerRow * sideLength), Math.floor(emojiPanelY + divideFloor(emojiIndex, this.numEmojisPerRow ) * sideLength));
+            if (emojis.emojiSelection[emojiIndex]) {
+                mainCanvasCtx.fillStyle = greenBrightSemiTransparent;
+                mainCanvasCtx.fillRect(0, 0, sideLength, sideLength);
+            }
+            mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor(emojiPanelX + emojiIndex % this.numEmojisPerRow * sideLength + this.emojiMarginRatio * sideLength), Math.floor(emojiPanelY + divideFloor(emojiIndex, this.numEmojisPerRow ) * sideLength + this.emojiMarginRatio * sideLength));
+            mainCanvasCtx.drawImage(emojis.emojiCanvasList[emojiIndex], 0, 0);
+        }
+    }
+}
+
 function Emojis() {
     this.numEmojisPerRow  = 10;
     this.flagCount = this.emoteCount = 50;
@@ -6622,79 +6702,7 @@ function GameStateManager() {
     }
 }
 
-function EmojisPanel() {
-    this.height = this.width = 0;
-    this.visible = false;
-    this.numEmojisPerRow  = 10;
-    this.emojiMarginRatio = .12;
-    this.isDragging = this.isToggled = this.isSaveRequired = false;
-    this.init = function() {
-        this.width = mainCanvasWidth < 1 * mainCanvasHeight ? Math.floor((isZoom ? .94 : .6) * mainCanvasWidth) : Math.floor((isZoom ? .94 : .6) * mainCanvasHeight);
-        this.width -= this.width % this.numEmojisPerRow ;
-        this.height = 1 * this.width;
-        this.visible = true;
-        this.isSaveRequired = false
-    };
-    this.mouseDown = function(xPos, yPos, buttonIndex) {
-        var emojiRowHeight = (prevClientHeight - this.height) / 2;
-        xPos -= (prevClientWidth - this.width) / 2;
-        yPos -= emojiRowHeight;
-        if (0 > xPos || 0 > yPos || xPos >= this.width - 1 || yPos >= this.height - 1) {
-            if (0 === buttonIndex) {
-                this.visible = false;
-                if (0 === gameStateManager.getState()) nameInputBar.toggleVisibility(0, true);
-                mainHandler.canvasDirty = true;
-            }
-            return false;
-        }
-        var emojisPerRow = Math.floor(this.width / this.numEmojisPerRow );
-        xPos = divideFloor(xPos, emojisPerRow) + this.numEmojisPerRow  * divideFloor(yPos, emojisPerRow);
-        xPos = 0 > xPos ? 0 : xPos >= emojis.totalEmojisCount ? emojis.totalEmojisCount - 1 : xPos;
-        if (0 === buttonIndex || 1 === buttonIndex && !emojis.emojiSelection[xPos] || 2 === buttonIndex && emojis.emojiSelection[xPos]) {
-            this.isToggled = !emojis.emojiSelection[xPos];
-            this.isDragging = this.isSaveRequired = true;
-            emojis.emojiSelection[xPos] = !emojis.emojiSelection[xPos];
-            emojis.updateEmojiSelection();
-            mainHandler.canvasDirty = true;
-        }
-        return true
-    };
-    this.onPointermove = function(xPos, yPos) {
-        if (this.isSaveRequired) this.mouseDown(xPos, yPos, this.isToggled ? 1 : 2)
-    };
-    this.handleSave = function() {
-        if (this.isDragging) {
-            saveEmojis();
-            this.isDragging = false;
-        }
-        this.isSaveRequired = this.isDragging = false
-    };
-    this.drawCanvasImage = function() {
-        mainCanvasCtx.imageSmoothingEnabled = true;
-        var emojiPanelX = (prevClientWidth - this.width) / 2,
-            emojiPanelY = (prevClientHeight - this.height) / 2;
-        mainCanvasCtx.setTransform(1, 0, 0, 1, emojiPanelX, emojiPanelY);
-        mainCanvasCtx.fillStyle = blackMoreOpaque;
-        mainCanvasCtx.fillRect(0, 0, this.width, this.height);
-        mainCanvasCtx.lineWidth = mainSettingsMarginWidth;
-        mainCanvasCtx.strokeStyle = whiteRGB2;
-        mainCanvasCtx.strokeRect(-1, -1, this.width + 2, this.height + 2);
-        var sideLength = Math.floor(this.width / this.numEmojisPerRow), 
-            scaleFactor = (sideLength - 2 * this.emojiMarginRatio * sideLength) / emojis.width,
-            emojiIndex;
-        for (emojiIndex = emojis.totalEmojisCount - 1; 0 <= emojiIndex; emojiIndex--) {
-            mainCanvasCtx.setTransform(1, 0, 0, 1, Math.floor(emojiPanelX + emojiIndex % this.numEmojisPerRow * sideLength), Math.floor(emojiPanelY + divideFloor(emojiIndex, this.numEmojisPerRow ) * sideLength));
-            if (emojis.emojiSelection[emojiIndex]) {
-                mainCanvasCtx.fillStyle = greenBrightSemiTransparent;
-                mainCanvasCtx.fillRect(0, 0, sideLength, sideLength);
-            }
-            mainCanvasCtx.setTransform(scaleFactor, 0, 0, scaleFactor, Math.floor(emojiPanelX + emojiIndex % this.numEmojisPerRow * sideLength + this.emojiMarginRatio * sideLength), Math.floor(emojiPanelY + divideFloor(emojiIndex, this.numEmojisPerRow ) * sideLength + this.emojiMarginRatio * sideLength));
-            mainCanvasCtx.drawImage(emojis.emojiCanvasList[emojiIndex], 0, 0);
-        }
-        mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
-        mainCanvasCtx.imageSmoothingEnabled = false
-    }
-}
+//emojis panel function was here
 
 function ShowError() {
     function showErrorBox() {
