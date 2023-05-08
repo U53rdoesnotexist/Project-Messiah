@@ -211,10 +211,11 @@ class ModMenu {
             button.addEventListener("click", (e) => {
                 if (modMenus.find((menu) => menu.panelTypes.includes(butIndex))) { //This panel exist dumdum
                     const reqMenu = modMenus.find((menu) => menu.panelTypes.includes(butIndex));
-                    //If the "Menu" category is removed, we just remove this panel.
+                    //If the "Menu" category is removed, and there are no more panels with the "Menu" category, we remove the menu.
                     if (butIndex == 0) {
-                        modMenus = modMenus.filter((menu) => menu !== this);
-                        this.menu.remove();
+                        modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
+                        reqMenu.menu.remove();
+                        this.onResize(e);
                     } else if (reqMenu.panelTypes.length == 1) { //If that menu doesnt have any panels We remove it.
                         modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
                         reqMenu.menu.remove();
@@ -467,7 +468,6 @@ class ModMenu {
 
             modHandler.neutralBots = neutralBotsInput.checked = false;
             modHandler.humanBots = humanBotsInput.checked = true;
-
         })
         this.menu.appendChild(vanillaButton);
     }
@@ -521,27 +521,7 @@ class ModMenu {
         label.for = inputID;
         label.classList.add("custom-menu-label");
     
-        if (hoverMessage !== "") {
-            label.onmouseover = () => {
-                const tooltip = document.createElement("div");
-                tooltip.innerHTML = hoverMessage;
-                tooltip.classList.add("tooltip");
-                document.body.appendChild(tooltip);
-              
-                setTimeout(() => {
-                  tooltip.classList.add("show");
-                }, 200);
-              
-                const { top, left } = label.getBoundingClientRect();
-                tooltip.style.top = `${top - tooltip.offsetHeight - 10}px`;
-                tooltip.style.left = `${left + label.offsetWidth / 2 - tooltip.offsetWidth / 2}px`;
-            };  
-            label.onmouseout = () => {
-                const tooltip = document.querySelector(".tooltip");
-                if (tooltip) tooltip.remove();
-            };
-              
-        }
+        if (hoverMessage !== "") this.addHoverMessage(label, hoverMessage);
     
         // Check if there is already an input with the same inputID
         const existingInput = document.getElementById(inputID);
@@ -580,7 +560,6 @@ class ModMenu {
         return input;
     }
     
-    
     drawResizeButton() {
         // Create new button element
         const resizeButton = document.createElement('button');
@@ -603,6 +582,7 @@ class ModMenu {
 
     updateResizeButtonPos() {
         const resizeButton = document.getElementById(`resizeButton${getMax(modMenus.findIndex((menu) => menu === this), 0)}`);
+        if (!resizeButton) return;
         resizeButton.style.bottom = window.innerHeight - this.height - this.y + 'px';
         resizeButton.style.right = window.innerWidth - this.width - this.x + this.menu.offsetWidth - this.menu.clientWidth + 'px';
     }
@@ -614,6 +594,36 @@ class ModMenu {
         divider.style.backgroundColor = '#888';
         divider.style.marginTop = '10px';
         this.menu.appendChild(divider);
+    }
+
+    addHoverMessage(element, message) {
+        element.onmouseover = () => {
+            const tooltip = document.createElement("div");
+            tooltip.innerHTML = message;
+            tooltip.classList.add("tooltip");
+            document.body.appendChild(tooltip);
+          
+            setTimeout(() => {
+              tooltip.classList.add("show");
+            }, 200);
+          
+            const { top, left } = element.getBoundingClientRect();
+            tooltip.style.top = `${top - tooltip.offsetHeight - 10}px`;
+            tooltip.style.left = `${left + element.offsetWidth / 2 - tooltip.offsetWidth / 2}px`;
+
+            // if tooltip is outside, adjust its position
+            const { top: tooltipTop, left: tooltipLeft } = tooltip.getBoundingClientRect();
+            if (tooltipLeft < 0 || tooltipLeft + tooltip.offsetWidth > window.innerWidth) {
+                tooltip.style.left = `${Math.max(0, Math.min(window.innerWidth - tooltip.offsetWidth, tooltipLeft))}px`;
+            }
+            if (tooltipTop < 0 || tooltipTop + tooltip.offsetHeight > window.innerHeight) {
+                tooltip.style.top = `${Math.max(0, Math.min(window.innerHeight - tooltip.offsetHeight, tooltipTop))}px`;
+            }
+        };  
+        element.onmouseout = () => {
+            const tooltip = document.querySelector(".tooltip");
+            if (tooltip) tooltip.remove();
+        };
     }
 
     onMouseDown(e) {
@@ -664,8 +674,9 @@ class ModMenu {
     }
 
     onResize(e) {
-        this.onDock();
+        this.onDock(e);
         this.updateResizeButtonPos();
+        canvasManager.dockUpdateCanvas();
     }
 
     onDock(e) {
@@ -683,6 +694,11 @@ class ModMenu {
                 this.dockStatus = 2;
                 this.x = window.innerWidth - this.width;
             } else this.dockStatus = 0; //Docked to neither side
+            if (this.dockStatus && modMenus.filter(menu => menu.dockStatus === this.dockStatus).length <= 1) {
+                this.y = 0;
+                this.menu.style.top = "0px";
+                this.setSize(this.width, window.innerHeight);
+            }
         } else { //Easier snapping to undock
             if (e.clientX > docks[0] + window.innerWidth / 100 && e.clientX + this.width < window.innerWidth * .99 - docks[1]) { //Undocked
                 this.dockStatus = 0;
@@ -785,7 +801,7 @@ class ModMenu {
 
 var modMenus = [];
 function modMenuInit() {
-    var modMenu = new ModMenu([0, 2, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
+    var modMenu = new ModMenu([0, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
     modMenus.push(modMenu);
 }
 
