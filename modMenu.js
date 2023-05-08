@@ -37,6 +37,22 @@ class ModMenu {
         
         const style = document.createElement('style');
         style.innerHTML = `
+            .tooltip {
+                position: absolute;
+                z-index: 999;
+                background-color: #f2f2f2;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 5px;
+                font-size: 12px;
+                visibility: hidden;
+                opacity: 0;
+                transition: visibility 0s, opacity 0.2s linear;
+            }
+            .tooltip.show {
+                visibility: visible;
+                opacity: 1;
+            }
             .menu-button {
                 width: 25px;
                 height: 25px;
@@ -222,14 +238,16 @@ class ModMenu {
 
     drawCustomPanel() {
         //2. Custom Games and Private Matches (Custom interest formula and taxes? Boat speeds? Set gamemodes? More entities and custom maps?)
+        //We should add a function which prevents changing the custom game settings while ingame/clientStatus >= 1.
+
         const title = document.createElement("h1");
-        title.innerHTML = "Custom Matches";
+        title.innerHTML = "Custom Games";
         title.style.color = this.getColor(2);
         title.style.textAlign = "center";
         this.menu.appendChild(title);
 
         const warning = document.createElement("p");
-        warning.innerHTML = "Warning: Changing these settings may cause a desync if you play in a vanilla game.";
+        warning.innerHTML = "Warning: Changing these settings may cause severe desyncs if you play in a vanilla game.";
         warning.style.color = "red";
         warning.style.textAlign = "left";
         warning.style.paddingLeft = "10px"
@@ -242,12 +260,12 @@ class ModMenu {
         this.menu.appendChild(lobbyLabel);
 
         const clientHashInput = this.createLabelledInput("Client Hash:", "lobbyHash", "number", 0, 2**22 - 1, modHandler.clientHash, (e) => {
-            if (clientHashInput.value > 2**22 - 1 || clientHashInput.value < 0 || clientHashInput.value % 1 != 0) return;
+            if (parseInt(clientHashInput.value) > 2**22 - 1 || parseInt(clientHashInput.value < 0) || parseInt(clientHashInput.value) % 1 != 0) return;
             modHandler.clientHash = clientHashInput.value;
-        });
-        const killIfConflictInput = this.createLabelledInput("Kill Wrong Hash Players in Vanilla:", "lobbyKill", "checkbox", 0, 1, false, (e) => {
-            //Will add later...
-        });
+        }, "This is the hash that will be used to generate the lobby code. It is recommended to use a random number between 0 and 2**22 -1 (aka 4194303).");
+        const killIfConflictInput = this.createLabelledInput("Kill Players With Wrong Client Hash:", "lobbyKill", "checkbox", 0, 1, modHandler.killIfConflict, (e) => {
+            modHandler.killIfConflict = killIfConflictInput.checked;
+        }, "If this is enabled, players with the wrong hash will be kicked from the game. This is useful for preventing players from interfering with your game if you are playing with a custom hash.");
 
         const customizationLabel = document.createElement("h2");
         customizationLabel.innerHTML = "Game Mechanics";
@@ -256,39 +274,39 @@ class ModMenu {
 
         //Customize Taxes, with rates from 0-100% for each tax type (attack, boat, donations)
         const taxesLabel = document.createElement("h4");
-        taxesLabel.innerHTML = "Taxes (0-100%)";
+        taxesLabel.innerHTML = "Custom Tax Rates (0-100%)";
         taxesLabel.classList.add("custom-menu-category");
         this.menu.appendChild(taxesLabel);
 
-        const attackTaxInput = this.createLabelledInput("Attack Tax Rate:", "aTax", "number", 0, 100, modHandler.modTax.attack * 100 / 256, (e) => {
-            if (attackTaxInput.value > 100 || attackTaxInput.value < 0) return;
-            modHandler.modTax.attack = attackTaxInput.value * 256 / 100;
-        });
-        const boatTaxInput = this.createLabelledInput("Boat Tax Rate:", "bTax", "number", 0, 100, modHandler.modTax.boat * 100 / 256, (e) => {
-            if (boatTaxInput.value > 100 || boatTaxInput.value < 0) return;
-            modHandler.modTax.boat = boatTaxInput.value * 256 / 100;
-        });
-        const supportTaxInput = this.createLabelledInput("Support Tax Rate:", "dTax", "number", 0, 100, modHandler.modTax.support * 100 / 256, (e) => {
-            if (supportTaxInput.value > 100 || supportTaxInput.value < 0) return;
-            modHandler.modTax.donation = supportTaxInput.value * 256 / 100;
-        });
+        const attackTaxInput = this.createLabelledInput("Attack:", "aTax", "number", 0, 100, modHandler.modTax.attack * 100 / 256, (e) => {
+            if (parseInt(attackTaxInput.value) > 100 || parseInt(attackTaxInput.value) < 0) return;
+            modHandler.modTax.attack = parseInt(attackTaxInput.value) * 256 / 100;
+        }, "This is the tax rate for attacking other entities.");
+        const boatTaxInput = this.createLabelledInput("Boat:", "bTax", "number", 0, 100, modHandler.modTax.boat * 100 / 256, (e) => {
+            if (parseInt(boatTaxInput.value) > 100 || parseInt(boatTaxInput.value) < 0) return;
+            modHandler.modTax.boat = parseInt(boatTaxInput.value) * 256 / 100;
+        }, "This is the tax rate for sending boats.");
+        const supportTaxInput = this.createLabelledInput("Support:", "dTax", "number", 0, 100, modHandler.modTax.support * 100 / 256, (e) => {
+            if (parseInt(supportTaxInput.value) > 100 || parseInt(supportTaxInput.value) < 0) return;
+            modHandler.modTax.donation = parseInt(supportTaxInput.value) * 256 / 100;
+        }, "This is the tax rate for sending donations.");
 
-        //Customize Interest Formula will be too difficult to make for now.
+        //Customize Interest Formula will be too difficult to make for now. Oi, maybe you can implement this lol
 
         //Customize Boat Speeds, with rates from 0-5 (0 being the Fastest, 5 being the Slowest)
         const boatSpeedLabel = document.createElement("h4");
-        boatSpeedLabel.innerHTML = "Speeds";
+        boatSpeedLabel.innerHTML = "Attack Speeds";
         boatSpeedLabel.classList.add("custom-menu-category");
         this.menu.appendChild(boatSpeedLabel);
 
-        const boatSpeedInput = this.createLabelledInput("Boat Speed (Ticks Per Update):", "bSpeed", "number", 1, 6, modHandler.boatSpeed + 1, (e) => {
-            if (boatSpeedInput.value > 5 || boatSpeedInput.value < 0) return;
-            modHandler.boatSpeed = boatSpeedInput.value - 1;
-        });
+        const boatSpeedInput = this.createLabelledInput("Boat Speeds:", "bSpeed", "number", 1, 6, modHandler.boatSpeed + 1, (e) => {
+            if (parseInt(boatSpeedInput.value) > 5 || parseInt(boatSpeedInput.value) < 0) return;
+            modHandler.boatSpeed = parseInt(boatSpeedInput.value) - 1;
+        }, "This is the speed of boats measured in ticks per position update. 1 is the fastest, 5 is the slowest. 3 is the default value.");
         const boatSpeedVariationInput = this.createLabelledInput("Vary With Land Size:", "bSpeedVar", "checkbox", 0, 0, modHandler.boatSpeed == -1, (e) => {
-            modHandler.boatSpeed = boatSpeedVariationInput.checked ? -1 : boatSpeedInput.value - 1;
+            modHandler.boatSpeed = boatSpeedVariationInput.checked ? -1 : parseInt(boatSpeedInput.value) - 1;
             boatSpeedInput.disabled = boatSpeedVariationInput.checked;
-        });
+        }, "If this is enabled, the boat speed will vary with the size of the land. The larger the land, the slower the boats. This is useful for making the game more balanced on larger maps.");
 
         //Customize Gamemodes, with a list of gamemodes to choose from. If the chosen gamemode is teams, then we can customize the team sizes.
         const gameModeLabel = document.createElement("h4");
@@ -299,19 +317,19 @@ class ModMenu {
         const options = ["Teams", "Battle Royale", "Zombies", "No Full Send", "Default"],
             defaultOption = modHandler.customGamemode <= 6 ? 0 : modHandler.customGamemode == 7 ? 1 : modHandler.customGamemode == 9 ? 2 : modHandler.customGamemode == 10 ? 3 : 4;
         const gameModeInput = this.createLabelledInput("Game Mode:", "gMode", "select", options, 0, defaultOption, (e) => {
-            modHandler.customGamemode = gameModeInput.value == 0 ? teamSizeInput.value - 2: gameModeInput.value == 1 ? 7: gameModeInput.value == 2 ? 9: gameModeInput.value == 3 ? 10 : 11;
-            teamSizeInput.disabled = gameModeInput.value != 0;
+            modHandler.customGamemode = parseInt(gameModeInput.value) == 0 ? parseInt(teamSizeInput.value) - 2: parseInt(gameModeInput.value) == 1 ? 7: parseInt(gameModeInput.value) == 2 ? 9: parseInt(gameModeInput.value) == 3 ? 10 : 11;
+            teamSizeInput.disabled = parseInt(gameModeInput.value) != 0;
             teamBoostInput.disabled = [7, 8, 10].includes(modHandler.customGamemode);
-        });
+        }, "You can customize the gamemode of all games in the lobby.");
         const teamSizeInput = this.createLabelledInput("Team Count (2-8):", "tSize", "number", 2, 8, rangeClamp(2, modHandler.customGamemode + 2, 8), (e) => {
-            if (teamSizeInput.value > 8 || teamSizeInput.value < 2 || teamSizeInput.value % 1 != 0) return;
-            modHandler.customGamemode = teamSizeInput.value - 2;
-        });
-        teamSizeInput.disabled = gameModeInput.value != 0;
+            if (parseInt(teamSizeInput.value) > 8 || parseInt(teamSizeInput.value) < 2 || parseInt(teamSizeInput.value) % 1 != 0) return;
+            modHandler.customGamemode = parseInt(teamSizeInput.value) - 2;
+        }, "If you select teams, you can customize the number of teams in the game.");
+        teamSizeInput.disabled = parseInt(gameModeInput.value) != 0;
         //Apply NFS algorithm to limit boosting behavior in team games
         const teamBoostInput = this.createLabelledInput("Limit Boosting:", "tBoost", "checkbox", 0, 0, false, (e) => {
-            // Again i will make this later
-        });
+            //I will make this later
+        }, "If this is enabled, boosting behavior will be limited in team games by altering the 'No Full Send' Algorithm. This is useful for making team games more balanced.");
         teamBoostInput.disabled = [7, 8, 10].includes(modHandler.customGamemode);
         
         //Customize Maps, with a list of maps to choose from. If a custom map is loaded, then we can select that map.
@@ -320,21 +338,55 @@ class ModMenu {
         mapLabel.classList.add("custom-menu-category");
         this.menu.appendChild(mapLabel);
 
+        const updateMapSizeInputDisabled = () => {
+            const selectedMap = parseInt(mapInput.value);
+            const isNotResizable = isRealMap(selectedMap) && selectedMap != mapNames.length - 1;
+            mapSizeInput.disabled = isNotResizable;
+        }
+
         var mapNames = [];
         for (let mapIndex = 0; mapIndex < customMapID; mapIndex++) {
             mapNames.push(mapInfo.getValueByID(mapIndex).name);
         }
         mapNames.push("Custom");
         mapNames.push("Default");
+        //How to Enable/Disable mapSizeInput? When modHandler.customMapSize is <10 then its false. When its between 10 and 4096 its true.
         const mapInput = this.createLabelledInput("Map:", "map", "select", mapNames, 0, modHandler.customMap == -1 ? mapNames.length - 1 : modHandler.customMap, (e) => {
             //If the user didn't load any custom maps, then we can't select a custom map, alert the user and set the map to default.
-            if (mapInput.value == mapNames.length - 2 && mapInput.value == customMapID) {
+            if (parseInt(mapInput.value) == mapNames.length - 2 && parseInt(mapInput.value) == customMapID) {
                 alert("Load a custom map first!");
                 mapInput.value = mapNames.length - 1;
                 return;
-            } else modHandler.customMap = mapInput.value == mapNames.length - 1 ? -1 : mapInput.value;
+            } else modHandler.customMap = parseInt(mapInput.value) == mapNames.length - 1 ? -1 : parseInt(mapInput.value);
+            updateMapSizeInputDisabled();
             //We also have to revert this setting if the user changed the current map loaded back to a default one in the map selection menu.
-        });
+        }, "You can set the map to always appear in the game lobby. Load a custom map first if you want to play with it in multiplayer.");
+        const mapSizeInput = this.createLabelledInput("Map Size (10-4096, Default: 0):", "mapSize", "number", 0, 4096, modHandler.customMapSize, (e) => {
+            if (parseInt(mapSizeInput.value) > 4096 || parseInt(mapSizeInput.value) < 10 && parseInt(mapSizeInput.value) != 0 ||parseInt( mapSizeInput.value) % 1 != 0) return;
+            modHandler.customMapSize = parseInt(mapSizeInput.value);
+            mapInfo.init()
+        }, "Map size is only customizable for generated maps.");
+        updateMapSizeInputDisabled();
+        const reloadMapButton = document.createElement("button");
+        reloadMapButton.innerHTML = "Reload Map";
+        reloadMapButton.style.marginLeft = "20px"
+        reloadMapButton.style.marginBottom = "10px"
+        reloadMapButton.onclick = () => {
+            loadMap(modHandler.customMap != -1 ? modHandler.customMap : currentMapID, currentMapSeed);
+        };
+        this.menu.appendChild(reloadMapButton);
+
+        //Custom spawn and Map Seed + reload Map button (only enabled if currentMapSeed != mapseed selected)
+        const mapSeedInput = this.createLabelledInput("Map Seed (0-16383):", "mapSeed", "number", 0, 16383, 14071, (e) => {
+            if (parseInt(mapSeedInput.value) > 16383 || parseInt(mapSeedInput.value) < 0 || parseInt(mapSeedInput.value) % 1 != 0) return;
+            currentMapSeed = parseInt(mapSeedInput.value);
+        }, "Map seed is used to determine the layout of the map. Not all maps have a unique layout which varies with this seed.");
+        const spawnSeedInput = this.createLabelledInput("Spawn Seed (0-16383):", "spawnSeed", "number", 0, 16383, 0, (e) => {
+            if (parseInt(spawnSeedInput.value) > 16383 || parseInt(spawnSeedInput.value) < 0 || parseInt(spawnSeedInput.value) % 1 != 0) return;
+            currentSeedSpawn = parseInt(spawnSeedInput.value);
+            //I think this will still get overwritten when they call gameInit, but I'll leave it for now.
+        }, "Spawn seed is used to determine the locations bots spawn on the map.");
+
 
         //Bots Subcategory
         const botsLabel = document.createElement("h2");
@@ -343,35 +395,31 @@ class ModMenu {
         this.menu.appendChild(botsLabel);
 
         const maxEInput = this.createLabelledInput("Max Entities (1-4096):", "maxE", "number", 1, 4096, 512, (e) => {
-            if (maxEInput.value > 4096 || maxEInput.value < 1 || maxEInput.value % 1 != 0) return;
-            maxEntities = maxEInput.value;
-        });
+            if (parseInt(maxEInput.value) > 4096 || parseInt(maxEInput.value) < 1 || parseInt(maxEInput.value) % 1 != 0) return;
+            maxEntities = parseInt(maxEInput.value);
+        }, "Max Entities is the maximum number of entities that can be on the map at once. This includes players and bots.");
 
         var difficultyLabels = difficultyEngine.difficultyLabel;
         difficultyLabels.push("Default");
         //Customize Bot Difficulty, from 0-5 with labels from difficultyEngine.difficultyLabel + 6 for default
         const botDifficultyInput = this.createLabelledInput("Bot Difficulty:", "bDiff", "select", difficultyEngine.difficultyLabel, 0, modHandler.customDifficulty == -1 ? 6 : modHandler.customDifficulty, (e) => {
-            if (botDifficultyInput.value > 6 || botDifficultyInput.value < 0 || botDifficultyInput.value % 1 != 0) return;
-            modHandler.botDifficulty = botDifficultyInput.value == 6 ? -1 : botDifficultyInput.value;
-        });
+            if (parseInt(botDifficultyInput.value) > 6 || parseInt(botDifficultyInput.value) < 0 || parseInt(botDifficultyInput.value) % 1 != 0) return;
+            modHandler.botDifficulty = parseInt(botDifficultyInput.value) == 6 ? -1 : parseInt(botDifficultyInput.value);
+        }, "Bot Difficulty is used to determine how difficult the bots are to play against. This is only used if the bot is not using a custom difficulty distribution.");
         //Also allow a checkmark to use custom difficulty distributions as indicated in singleSettings
-        const difficultyDistribution = this.createLabelledInput("Use SP Difficulty Distribution:", "dDiff", "checkbox", 0, 0, false, (e) => {
-            modHandler.difficultyDistribution = difficultyDistribution.checked;
-            //I will add the function to port over the settings in the future.
-            //This will disable the bot difficulty input if the user wants to use the singleplayer settings.
+        const difficultyDistribution = this.createLabelledInput("Use SP Difficulty Distribution:", "dDiff", "checkbox", 0, 0, modHandler.customDiffiDist, (e) => {
+            modHandler.customDiffiDist = difficultyDistribution.checked;
             botDifficultyInput.disabled = difficultyDistribution.checked;
-        });
+        }, "If checked, the bot will use the difficulty distribution selected by users for singleplayer. If unchecked, the bot will use the difficulty selected above.");
         botDifficultyInput.disabled = difficultyDistribution.checked;
         
-        //Neutral Bots Toggle
+        //Neutral/Human Bots Toggle
         const neutralBotsInput = this.createLabelledInput("Neutral Bots in Teams:", "nBots", "checkbox", 0, 0, modHandler.neutralBots, (e) => {
             modHandler.neutralBots = neutralBotsInput.checked;
-        });
-
-        //Human Bots Toggle
+        }, "If checked, bots will not be allocated into teams with players.");
         const humanBotsInput = this.createLabelledInput("Human Bots After Leave:", "hBots", "checkbox", 0, 0, modHandler.humanBots, (e) => {
             modHandler.humanBots = humanBotsInput.checked;
-        });
+        }, "If unchecked, players will not automatically turn into bots after they leave.");
         
         //Add a button to revert back to vanilla settings
         const vanillaButton = document.createElement("button");
@@ -379,7 +427,7 @@ class ModMenu {
         vanillaButton.style.marginTop = "10px";
         vanillaButton.style.backgroundColor = "transparent";
         vanillaButton.style.font = `italic calc(${this.width}px / 20)` + " Pacifico"; // calculate font size based on menu width
-        vanillaButton.style.color = "#fff";
+        vanillaButton.style.color = this.getColor(2);
         vanillaButton.style.border = "none";
         vanillaButton.style.width = "100%";
         vanillaButton.style.textAlign = "center";
@@ -403,9 +451,12 @@ class ModMenu {
             modHandler.customGamemode = 11;
             gameModeInput.value = 4;
             teamSizeInput.disabled = true;
+            teamBoostInput.checked = false;
 
             modHandler.customMap = -1;
             mapInput.value = mapNames.length - 1;
+            modHandler.customMapSize = 0;
+            updateMapSizeInputDisabled();
 
             maxEntities = maxEInput.value = 512;
 
@@ -430,7 +481,7 @@ class ModMenu {
             setTimeout(() => this.drawAboutPanel(), 100);
             return;
         }
-        const sprite = sprites.getValueByName("territorio");
+        const sprite = sprites.getValueByName("teritorio");
         const canvas = document.createElement("canvas");
         canvas.width = sprite.width;
         canvas.height = sprite.height;
@@ -452,14 +503,15 @@ class ModMenu {
         aboutSection.style.fontSize = `${fontSize}px`;
         aboutSection.style.color = '#fff';
         aboutSection.innerHTML = `
-            <p>Territorio Sigma Build &#128526 (Compatible with Game Version 1.83.5)</p>
+            <p>Teritorio Sigma Build &#128526 (Compatible with Game Version 1.83.5)</p>
+            <p>Unlocking Infinite Possibilities</p>
             <p>Brought to you by Vkij, oi and DanTheMan</p>
             <p>Discord Server: <a href="${discordLink}" target="_blank">Click Me!</a></p>
         `;
         this.menu.appendChild(aboutSection);
     }
 
-    createLabelledInput(labelText, inputID, inputType, param1, param2, defaultValue, boxOnChange) {
+    createLabelledInput(labelText, inputID, inputType, param1, param2, defaultValue, boxOnChange, hoverMessage = "") {
         //If boxType is number, then param1 is min and param2 is max
         //If boxType is checkbox, then only boxValue is used as a parameter
         //If boxType is select, then param 1 are the options and boxValue is the default option
@@ -468,16 +520,38 @@ class ModMenu {
         label.innerHTML = labelText;
         label.for = inputID;
         label.classList.add("custom-menu-label");
-
+    
+        if (hoverMessage !== "") {
+            label.onmouseover = () => {
+                const tooltip = document.createElement("div");
+                tooltip.innerHTML = hoverMessage;
+                tooltip.classList.add("tooltip");
+                document.body.appendChild(tooltip);
+              
+                setTimeout(() => {
+                  tooltip.classList.add("show");
+                }, 200);
+              
+                const { top, left } = label.getBoundingClientRect();
+                tooltip.style.top = `${top - tooltip.offsetHeight - 10}px`;
+                tooltip.style.left = `${left + label.offsetWidth / 2 - tooltip.offsetWidth / 2}px`;
+            };  
+            label.onmouseout = () => {
+                const tooltip = document.querySelector(".tooltip");
+                if (tooltip) tooltip.remove();
+            };
+              
+        }
+    
         // Check if there is already an input with the same inputID
         const existingInput = document.getElementById(inputID);
-
+    
         // If this is the first input for a new category, add a line break
         if (!existingInput || existingInput.parentElement.previousElementSibling.textContent !== labelText) {
             this.menu.appendChild(document.createElement("br"));
         }
         this.menu.appendChild(label);
-
+    
         var input;
         if (inputType == "select") {
             input = document.createElement("select");
@@ -502,9 +576,10 @@ class ModMenu {
             
         input.addEventListener("change", boxOnChange);
         this.menu.appendChild(input);
-
+    
         return input;
     }
+    
     
     drawResizeButton() {
         // Create new button element
@@ -710,7 +785,7 @@ class ModMenu {
 
 var modMenus = [];
 function modMenuInit() {
-    var modMenu = new ModMenu([0, 2, 11], 300, 300, 200, 200, 100);
+    var modMenu = new ModMenu([0, 2, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
     modMenus.push(modMenu);
 }
 

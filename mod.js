@@ -23,11 +23,15 @@ function ModHandler() {
         boat: 6
     };
     this.customDifficulty = -1;
+    this.customDiffiDist = false;
     this.boatSpeed = 2;
     this.neutralBots = false;
     this.humanBots = true;
     this.customMap = -1;
     this.customGamemode = 11;
+    this.customMapSize = 0;
+
+    this.killIfConflict = false;
     this.boatTracker = true;
     this.latency = 2;
     this.font = 2;
@@ -205,7 +209,7 @@ function ExtendedActions() {
                 if (mainHandler.multiplayerHandler.packetsReceived <= 5) {
                     //Confirm Client
                     const clientHash = secondAction.param3 * (2**11) + secondAction.param4;
-                    if (!isCustomGame() || isCustomGame() && clientHash == modHandler.clientHash) this.clientUsers.push({
+                    this.clientUsers.push({
                         id: secondAction.authorID,
                         clientHash: clientHash
                     })
@@ -221,7 +225,7 @@ function ExtendedActions() {
             for (let playerIndex = 0; playerIndex < playerCount; playerIndex++) {
                 if (isAlive[playerIndex] && this.clientUsers.findIndex(element => element.id == playerIndex && (!isCustomGame() || element.clientHash == modHandler.clientHash)) == -1) {
                     //MF doesn't have same clientHash as us, kill
-                    if (isCustomGame()) processAction.leave(playerIndex)
+                    if (modHandler.killIfConflict) processAction.leave(playerIndex)
                 }
             }
         }
