@@ -19,7 +19,14 @@ class ModMenu {
         this.resizeStartY = 0;
         this.dockStatus = 0;
 
+        // Create menu container
+        this.menuContainer = document.createElement("div");
+        document.body.appendChild(this.menuContainer);
+        this.menuContainer.classList.add("menu-container");
+        modMenus.push(this);
+
         this.menu = document.createElement("div");
+        this.menuContainer.appendChild(this.menu);
         this.menu.style.position = "absolute";
         this.menu.style.width = this.width + "px";
         this.menu.style.height = this.height + "px";
@@ -33,61 +40,12 @@ class ModMenu {
         this.menu.style.overflowY = "auto";
         this.visible = true;
         this.drawWindow();
-        document.body.appendChild(this.menu);
-        
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .tooltip {
-                position: absolute;
-                z-index: 999;
-                background-color: #f2f2f2;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                padding: 5px;
-                font-size: 12px;
-                visibility: hidden;
-                opacity: 0;
-                transition: visibility 0s, opacity 0.2s linear;
-            }
-            .tooltip.show {
-                visibility: visible;
-                opacity: 1;
-            }
-            .menu-button {
-                width: 25px;
-                height: 25px;
-                border: none;
-                outline: none;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                background-color: transparent;
-                position: relative;
-                font-size: 20px;
-            }
-            .custom-menu-category {
-                color: #fff;
-                padding-left: 20px;
-                margin-bottom: 0px;
-                text-indent: 20px;
-            }
-            .custom-menu-label {
-                color: #fff;
-                padding-left: 20px;
-                margin-bottom: 10px;
-                margin-right: 10px;
-                white-space: pre-wrap;
-            }
-        `;
-        document.head.appendChild(style);
     
-        // Add event listeners for dragging
-        document.addEventListener("mousedown", (e) => this.onMouseDown(e));
-        document.addEventListener("mousemove", (e) => this.onMouseMove(e));
-        document.addEventListener("mouseup", (e) => this.onMouseUp(e));
-        document.addEventListener("resize", (e) => this.onResize(e));
-
+        // Add event listeners for dragging and resizing to menu container
+        this.menuContainer.addEventListener("mousedown", (e) => this.onMouseDown(e));
+        this.menuContainer.addEventListener("mousemove", (e) => this.onMouseMove(e));
+        this.menuContainer.addEventListener("mouseup", (e) => this.onMouseUp(e));
+        this.menuContainer.addEventListener("resize", (e) => this.onResize(e));
     }
 
     drawWindow() {
@@ -123,8 +81,8 @@ class ModMenu {
         this.titleBar.style.top = '0';
         this.titleBar.innerHTML = `
             <span style="margin: 0 auto;">${this.title}</span>
-            <button class="menu-button" id="forceDock">&#10234;</button>
-            <button class="menu-button" id="close">&#10006;</button>
+            <button class="menu-button" id="forceDock${this.getPanelIndex()}">&#10234;</button>
+            <button class="menu-button" id="close${this.getPanelIndex()}">&#10006;</button>
         `;
 
         // Add title bar to menu
@@ -138,10 +96,10 @@ class ModMenu {
         }
 
         // Add menu to DOM
-        document.body.appendChild(this.menu);
+        this.menuContainer.appendChild(this.menu);
 
         // Add event listener to close button
-        const closeButton = document.getElementById('close');
+        const closeButton = document.getElementById(`close${this.getPanelIndex()}`);
         closeButton.addEventListener('click', (e) => {
             modMenus = modMenus.filter((menu) => menu !== this);
             this.menu.remove();
@@ -150,7 +108,7 @@ class ModMenu {
         });
 
         // Add event listener to dock button
-        const dockButton = document.getElementById('forceDock');
+        const dockButton = document.getElementById(`forceDock${this.getPanelIndex()}`);
         dockButton.addEventListener('click', (e) => {
             if (this.dockStatus == 0) {
                 var docks = [getDockWidth(1), getDockWidth(2)];
@@ -204,10 +162,12 @@ class ModMenu {
             button.style.border = "none";
             button.style.width = "100%";
             button.style.textAlign = "center";
+            button.setAttribute("draggable", "true");
             if (modMenus.findIndex((menu) => menu.panelTypes.includes(butIndex)) !== -1 || this.panelTypes.includes(butIndex)) {
                 button.style.border = "2px solid white";
                 button.style.borderRadius = "5px";
             }
+
             button.addEventListener("click", (e) => {
                 if (modMenus.find((menu) => menu.panelTypes.includes(butIndex))) { //This panel exist dumdum
                     const reqMenu = modMenus.find((menu) => menu.panelTypes.includes(butIndex));
@@ -223,11 +183,30 @@ class ModMenu {
                         reqMenu.panelTypes = reqMenu.panelTypes.filter((panelType) => panelType !== butIndex);
                         reqMenu.drawWindow();
                     }
+                    this.findAndUpdateMenu();
+                    this.onDock(e);
                 } else { // This panel does not exist, append it to the current one.
                     this.panelTypes.push(butIndex);
                     this.drawWindow();
                 }
             });
+            button.addEventListener("dragend", (e) => {
+                //Find any pre-existing panels which contain the menu corresponding to the button.
+                var reqMenu = modMenus.find((menu) => menu.panelTypes.includes(butIndex));
+                if (reqMenu) {
+                    reqMenu.panelTypes = reqMenu.panelTypes.filter((panelType) => panelType !== butIndex);
+                    if (reqMenu.panelTypes.length == 0) { //If that menu doesnt have any panels We remove it.
+                        modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
+                        reqMenu.menu.remove();
+                    } else reqMenu.drawWindow();
+                }
+                //Generate new panel containing that menu
+                const newMenu = new ModMenu([butIndex], this.width, getMin(this.height, window.innerHeight/2), e.clientX, e.clientY, this.zIndex + 1);
+                modMenus.push(newMenu);
+
+                this.findAndUpdateMenu();
+            });
+
             tableColumns[butIndex % 4].appendChild(button);
         }
         
@@ -564,7 +543,7 @@ class ModMenu {
         // Create new button element
         const resizeButton = document.createElement('button');
         //assign id to button
-        resizeButton.id = `resizeButton${getMax(modMenus.findIndex((menu) => menu === this), 0)}`;
+        resizeButton.id = `resizeButton${this.getPanelIndex()}`;
         resizeButton.classList.add('menu-button');
         resizeButton.innerHTML = '&#10542;';
         resizeButton.style.position = 'fixed';
@@ -581,9 +560,9 @@ class ModMenu {
     }
 
     updateResizeButtonPos() {
-        const resizeButton = document.getElementById(`resizeButton${getMax(modMenus.findIndex((menu) => menu === this), 0)}`);
+        const resizeButton = document.getElementById(`resizeButton${this.getPanelIndex()}`);
         if (!resizeButton) return;
-        resizeButton.style.bottom = window.innerHeight - this.height - this.y + 'px';
+        resizeButton.style.bottom = getMax(0, window.innerHeight - this.height - this.y) + 'px';
         resizeButton.style.right = window.innerWidth - this.width - this.x + this.menu.offsetWidth - this.menu.clientWidth + 'px';
     }
 
@@ -601,10 +580,16 @@ class ModMenu {
             const tooltip = document.createElement("div");
             tooltip.innerHTML = message;
             tooltip.classList.add("tooltip");
-            document.body.appendChild(tooltip);
+            this.menuContainer.appendChild(tooltip);
           
             setTimeout(() => {
-              tooltip.classList.add("show");
+                tooltip.classList.add("show");
+                setTimeout(() => {
+                    //If tooltip is already removed return
+                    if (!tooltip.parentElement) return;
+                    tooltip.classList.remove("show");
+                    this.menuContainer.removeChild(tooltip);
+                }, 5000);
             }, 200);
           
             const { top, left } = element.getBoundingClientRect();
@@ -624,6 +609,12 @@ class ModMenu {
             const tooltip = document.querySelector(".tooltip");
             if (tooltip) tooltip.remove();
         };
+    }
+
+    findAndUpdateMenu() {
+        //Redraw the panel with the menu buttons
+        const reqMenu = modMenus.find((menu) => menu.panelTypes.includes(0));
+        if (reqMenu) reqMenu.drawWindow();
     }
 
     onMouseDown(e) {
@@ -660,7 +651,6 @@ class ModMenu {
             this.dragStartY = e.clientY;
 
             this.updateResizeButtonPos();
-
             this.onDock(e);
         }
     }
@@ -740,6 +730,10 @@ class ModMenu {
         }
     }
 
+    getPanelIndex() {
+        return modMenus.findIndex((menu) => menu === this);
+    }
+
     setSize(width, height) {
         this.width = getMax(width, 250);
         this.height = getMax(height, 150);
@@ -801,8 +795,7 @@ class ModMenu {
 
 var modMenus = [];
 function modMenuInit() {
-    var modMenu = new ModMenu([0, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
-    modMenus.push(modMenu);
+    new ModMenu([0, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
 }
 
 function getDockWidth(dockStatus) {
