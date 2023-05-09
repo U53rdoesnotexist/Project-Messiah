@@ -19,14 +19,10 @@ class ModMenu {
         this.resizeStartY = 0;
         this.dockStatus = 0;
 
-        // Create menu container
-        this.menuContainer = document.createElement("div");
-        document.body.appendChild(this.menuContainer);
-        this.menuContainer.classList.add("menu-container");
         modMenus.push(this);
 
         this.menu = document.createElement("div");
-        this.menuContainer.appendChild(this.menu);
+        document.body.appendChild(this.menu);
         this.menu.style.position = "absolute";
         this.menu.style.width = this.width + "px";
         this.menu.style.height = this.height + "px";
@@ -42,10 +38,10 @@ class ModMenu {
         this.drawWindow();
     
         // Add event listeners for dragging and resizing to menu container
-        this.menuContainer.addEventListener("mousedown", (e) => this.onMouseDown(e));
-        this.menuContainer.addEventListener("mousemove", (e) => this.onMouseMove(e));
-        this.menuContainer.addEventListener("mouseup", (e) => this.onMouseUp(e));
-        this.menuContainer.addEventListener("resize", (e) => this.onResize(e));
+        document.body.addEventListener("mousedown", (e) => this.onMouseDown(e));
+        document.body.addEventListener("mousemove", (e) => this.onMouseMove(e));
+        document.body.addEventListener("mouseup", (e) => this.onMouseUp(e));
+        document.body.addEventListener("resize", (e) => this.onResize(e));
     }
 
     drawWindow() {
@@ -63,6 +59,7 @@ class ModMenu {
         else if (panelType == 1) void(0) //this.drawAccountPanel(); Does not exist yet lmfao
         else if (panelType == 2) this.drawCustomPanel();
         else if (panelType == 3) this.drawDisplayPanel();
+        else if (panelType == 8) this.drawSinglePanel();
         else if (panelType == 11) this.drawAboutPanel();
     }
 
@@ -96,7 +93,7 @@ class ModMenu {
         }
 
         // Add menu to DOM
-        this.menuContainer.appendChild(this.menu);
+        document.body.appendChild(this.menu);
 
         // Add event listener to close button
         const closeButton = document.getElementById(`close${this.getPanelIndex()}`);
@@ -242,7 +239,7 @@ class ModMenu {
         const clientHashInput = this.createLabelledInput("Client Hash:", "lobbyHash", "number", 0, 2**22 - 1, modHandler.clientHash, (e) => {
             if (parseInt(clientHashInput.value) > 2**22 - 1 || parseInt(clientHashInput.value < 0) || parseInt(clientHashInput.value) % 1 != 0) return;
             modHandler.clientHash = clientHashInput.value;
-        }, "This is the hash that will be used to generate the lobby code. It is recommended to use a random number between 0 and 2**22 -1 (aka 4194303).");
+        }, "This is the hash that will be used to generate the lobby code. It is recommended to use a random number between 0 and 2**22 -1 (or 4194303).");
         const killIfConflictInput = this.createLabelledInput("Kill Players With Wrong Client Hash:", "lobbyKill", "checkbox", 0, 1, modHandler.killIfConflict, (e) => {
             modHandler.killIfConflict = killIfConflictInput.checked;
         }, "If this is enabled, players with the wrong hash will be kicked from the game. This is useful for preventing players from interfering with your game if you are playing with a custom hash.");
@@ -251,6 +248,29 @@ class ModMenu {
         customizationLabel.innerHTML = "Game Mechanics";
         customizationLabel.classList.add("custom-menu-label");
         this.menu.appendChild(customizationLabel);
+
+        const pixelEconomyLabel = document.createElement("h4");
+        pixelEconomyLabel.innerHTML = "Pixel Economics";
+        pixelEconomyLabel.classList.add("custom-menu-category");
+        this.menu.appendChild(pixelEconomyLabel);
+
+        //Neutral land grab cost
+        const neutCostInput = this.createLabelledInput("Minimum Pixel Cost:", "neutCost", "number", -2147483647, 10, neutralLandCost, (e) => {
+            if (parseInt(neutCostInput.value) > 10 || parseInt(neutCostInput.value) < -2147483647 || parseInt(neutCostInput.value) % 1 != 0) return;
+            neutralLandCost = parseInt(neutCostInput.value);
+        }, "This is the minimum amount of troops needed to capture a pixel.");
+        
+        //RedI threshold
+        const redIThresInput = this.createLabelledInput("Red Interest Threshold:", "redI", "number", 0, 1000, modHandler.redIThreshold, (e) => {
+            if (parseInt(redIThresInput.value) > 1000 || parseInt(redIThresInput.value < 0) || parseInt(redIThresInput.value) % 1 != 0 || parseInt(redIThresInput.value) <= maxTroopsToLandRatio) return;
+            modHandler.redIThreshold = parseInt(redIThresInput.value);
+        }, "This is the amount of troops per pixel needed for red interest to kick in. This must be lower than the maximum amount of troops per pixel.");
+
+        //Max troops per pixel
+        const maxTroopsPixelInput = this.createLabelledInput("Maximum Troops Per Pixel:", "maxTroopsPixel", "number", 0, 1000, maxTroopsToLandRatio, (e) => {
+            if (parseInt(maxTroopsPixelInput.value) > 1000 || parseInt(maxTroopsPixelInput.value < 0) || parseInt(maxTroopsPixelInput.value) % 1 != 0) return;
+            maxTroopsToLandRatio = parseInt(maxTroopsPixelInput.value);
+        }, "This is the maximum amount of troops that can be on a pixel.");
 
         //Customize Taxes, with rates from 0-100% for each tax type (attack, boat, donations)
         const taxesLabel = document.createElement("h4");
@@ -287,6 +307,11 @@ class ModMenu {
             modHandler.boatSpeed = boatSpeedVariationInput.checked ? -1 : parseInt(boatSpeedInput.value) - 1;
             boatSpeedInput.disabled = boatSpeedVariationInput.checked;
         }, "If this is enabled, the boat speed will vary with the size of the land. The larger the land, the slower the boats. This is useful for making the game more balanced on larger maps.");
+
+        const gameSettingLabel = document.createElement("h2");
+        gameSettingLabel.innerHTML = "Game Settings";
+        gameSettingLabel.classList.add("custom-menu-label");
+        this.menu.appendChild(gameSettingLabel);
 
         //Customize Gamemodes, with a list of gamemodes to choose from. If the chosen gamemode is teams, then we can customize the team sizes.
         const gameModeLabel = document.createElement("h4");
@@ -397,7 +422,7 @@ class ModMenu {
         const neutralBotsInput = this.createLabelledInput("Neutral Bots in Teams:", "nBots", "checkbox", 0, 0, modHandler.neutralBots, (e) => {
             modHandler.neutralBots = neutralBotsInput.checked;
         }, "If checked, bots will not be allocated into teams with players.");
-        const humanBotsInput = this.createLabelledInput("Human Bots After Leave:", "hBots", "checkbox", 0, 0, modHandler.humanBots, (e) => {
+        const humanBotsInput = this.createLabelledInput("Human Bots on Leave:", "hBots", "checkbox", 0, 0, modHandler.humanBots, (e) => {
             modHandler.humanBots = humanBotsInput.checked;
         }, "If unchecked, players will not automatically turn into bots after they leave.");
         
@@ -415,6 +440,10 @@ class ModMenu {
 
             modHandler.clientHash = clientHashInput.value = 0;
             killIfConflictInput.checked = false;
+
+            neutCostInput.value = neutralLandCost = 2;
+            modHandler.redIThreshold = redIThresInput.value = 100;
+            maxTroopsToLandRatio = maxTroopsPixelInput.value = 150;
 
             modHandler.modTax.attack = 3;
             attackTaxInput.value = 1.171875;
@@ -453,6 +482,24 @@ class ModMenu {
 
     drawDisplayPanel() {
         // Dan write your stuff here like rgb etc.
+    }
+    
+    drawSinglePanel() {
+        //8. Latency Simulator, Game Speeds for now... Maybe scenarios + cheats as well?
+
+        const title = document.createElement("h1");
+        title.innerHTML = "Singleplayer Settings";
+        title.style.color = this.getColor(8);
+        title.style.textAlign = "center";
+        this.menu.appendChild(title);
+
+        const latencyInput = this.createLabelledInput("SP Lag Ticks:", "latency", "number", 0, 14, modHandler.latency, (e) => {
+            modHandler.latency = parseInt(latencyInput.value);
+        }, "Latency Simulator is used to simulate latency in singleplayer. This is useful for testing how the game will feel with high latency.");
+
+        const gameSpeedInput = this.createLabelledInput("Game Speed Multiplier:", "gameSpeed", "number", 0, 10, modHandler.gameSpeed, (e) => {
+            modHandler.gameSpeed = parseInt(gameSpeedInput.value);
+        }, "Game Speed is used to speed up the game. This is useful for completing games faster in real life time.");
     }
 
     drawAboutPanel() {
@@ -580,7 +627,7 @@ class ModMenu {
             const tooltip = document.createElement("div");
             tooltip.innerHTML = message;
             tooltip.classList.add("tooltip");
-            this.menuContainer.appendChild(tooltip);
+            document.body.appendChild(tooltip);
           
             setTimeout(() => {
                 tooltip.classList.add("show");
@@ -588,7 +635,7 @@ class ModMenu {
                     //If tooltip is already removed return
                     if (!tooltip.parentElement) return;
                     tooltip.classList.remove("show");
-                    this.menuContainer.removeChild(tooltip);
+                    document.body.removeChild(tooltip);
                 }, 5000);
             }, 200);
           

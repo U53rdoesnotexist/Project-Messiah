@@ -22,6 +22,8 @@ function ModHandler() {
         support: 16,
         boat: 6
     };
+    this.redIThreshold = 100;
+    
     this.customDifficulty = -1;
     this.customDiffiDist = false;
     this.boatSpeed = 2;

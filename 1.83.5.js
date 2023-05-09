@@ -8896,7 +8896,7 @@ function Interest() {
         return 0 > landIRate ? 0 : 700 < landIRate ? 700 : landIRate
     };
     this.getMaxBeforeRedI = function(id) {
-        var maxTroops = 100 * land[id];
+        var maxTroops = modHandler.redIThreshold * land[id];
         return maxTroops > absMaxTroopsBeforeRedI ? absMaxTroopsBeforeRedI : maxTroops
     };
     this.limitTroops = function(id) {
