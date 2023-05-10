@@ -9458,8 +9458,8 @@ function HumanBots() {
         this.players.push(id);
         spectatorCount++;
         playerStatus[id] = 2;
-        tempNicknames[id] = "Bot";
-        if (moreSettings.hideUsernames) nicknames[id] = "Bot";
+        tempNicknames[id] = "Human Bot";
+        if (moreSettings.hideUsernames) nicknames[id] = "Human Bot";
         pixel.shading[id] = (pixel.shading[id] + 2) % 4;
         if(id === myID) {
             gameResultBox.show(false, false);

@@ -516,20 +516,23 @@ class ModMenu {
             return;
         }
 
+        //Select menu for filtering clans, bots, and players maybe?
+
         //If teams, enable option to sort by prioritising Clan or by Team Color
         if (gamemode <= 6) {
             const sortTeamsInput = this.createLabelledInput("Show Clan Players First:", "showClans", "checkbox", 0, 0, replayLogger.showClans, (e) => {
-                replayLogger.showClans
+                replayLogger.showClans = sortTeamsInput.checked;
                 this.drawWindow();
             }, "If checked, players with clans will be shown first. If unchecked, players will be sorted by team color.");
         }
 
-        const playersLabel = this.createLabel("Players: " + playerCount, "h2")
+        const playerLabel = this.createLabel(`Players: ${playerCount} (${playersIngame} Alive)`, "h2");
 
         if (replayLogger.showClans) {
             //First show every clan and list all their players in the game. Sorted by more players in the game first.
             //Then show all players without clans, sorted by team color.
             //Finally show all bots, sorted by team color.
+            //Also want to sort by land count for each subcategory but will do that later.
 
             var clanTagInfo = teamColors.getClanTagInfo(),
                 clans = clanTagInfo[0].map((tag, index) => {
@@ -544,8 +547,13 @@ class ModMenu {
                 return b.players.length - a.players.length;
             });
 
+            const clanLabel = this.createLabel("Players With Clans: " + clans.reduce((acc, cur) => acc + cur.players.length, 0), "h3");
+
             clans.forEach((clan) => {
-                const color = teamColors.auraColors[teamColors.teamArray[clan.players[0]]].filter((elemeent, index) => index != 3).join(", ");
+                var color = teamColors.auraColors[teamColors.teamIDs[teamColors.teamArray[clan.players[0]]]].filter((e, index) => index != 3).join(", ");
+                //Avoid black not showing by turning them to grey. Same thing for white if light mode.
+                if (color == "0, 0, 0") color = "128, 128, 128";
+                //Feature: If logo of that clan is found, show logo in front of clan name.
                 const clanLabel = this.createLabel(`[${clan.tag}]: ${clan.players.length} Players (${clan.players.filter(e => isAlive[e]).length} Alive,
                     Total Occupation: ${(clan.players.reduce((acc, cur) => acc + land[cur], 0)/configFakeMap.landPixelsCount * 100).toFixed(2)}%)`,
                     "h3", `color: rgb(${color}); padding-left: 20px; margin-bottom: 5px;`);
@@ -553,9 +561,32 @@ class ModMenu {
                     const playerLabel = this.createLabel(nicknames[playerID], "p")
                     if (!isAlive[playerID]) playerLabel.style.textDecoration = "line-through";
                 });
+                //HoverTo and show log buttons will be made later
             });
-            
-            const noClanLabel = this.createLabel("Other Players:", "h3", "margin-bottom: 5px;");
+
+            const noClanLabel = this.createLabel("Other Players:", "h3");
+
+            //Get players without clans, 0-playerCount without appearing in clans array
+            const playersWithoutClans = Array.from(Array(playerCount).keys()).filter(e => !clans.some(clan => clan.players.includes(e)));
+
+            //Sort players without clans by teamID
+            playersWithoutClans.sort((a, b) => {
+                return teamColors.teamArray[a] - teamColors.teamArray[b];
+            });
+
+            playersWithoutClans.forEach((playerID) => {
+                const playerLabel = this.createLabel(nicknames[playerID], "p")
+                if (!isAlive[playerID]) playerLabel.style.textDecoration = "line-through";
+            });
+
+        } else {
+
+        }
+
+        const botsLabel = this.createLabel("Bots:", "h2");
+        for (let idIndex = playerCount; idIndex < maxEntities; idIndex++) {
+            const botLabel = this.createLabel(nicknames[idIndex], "p")
+            if (!isAlive[idIndex]) botLabel.style.textDecoration = "line-through";
         }
 
         const creditLabel = this.createLabel("With Reference To BetterTT", "p")
