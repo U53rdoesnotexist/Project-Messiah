@@ -573,7 +573,7 @@ class ModMenu {
 
         // Add about section
         const aboutSection = this.createLabel(`
-            <p>Teritorio Sigma Build &#128526 (Compatible with Game Version 1.83.5)</p>
+            <p>Teritorio Sigma Build &#128526 (Compatible with Game Version 1.83.6)</p>
             <p>Unlocking Infinite Possibilities</p>
             <p>Brought to you by Vkij, oi, DanTheMan and ChatGPT</p>
             <p>Discord Server: <a href="${discordLink}" target="_blank">Click Me!</a></p>

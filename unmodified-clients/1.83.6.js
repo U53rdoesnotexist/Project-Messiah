@@ -7244,8 +7244,7 @@ function km() {
         for (g = k.length - 1; 0 <= g; g--) {
             var t = k[g];
             if (ae.dD(t)) {
-                var l =
-                    Math.max(Math.min(100, ax[t]), as(12 * ax[t], 100));
+                var l = Math.max(Math.min(100, ax[t]), as(12 * ax[t], 100));
                 100 > l || (0 === bM[t].length ? !dE.dF(t, 2) && dA && dI(t, l, 0, 0) : dA ? dT(t, l) : db(t, l))
             }
         }

@@ -9486,7 +9486,7 @@ function HumanBots() {
         for (var hbIndex = this.players.length - 1; 0 <= hbIndex; hbIndex--) {
             var id = this.players[hbIndex];
             if (attacks.isUnderAttackCap(id)) {
-                var amount = divideFloor(20 * troops[id], 100);
+                var amount = Math.max(Math.min(100, troops[id]), divideFloor(12 * troops[id], 100));
                 if (100 <= amount) {
                     if (0 === landBorderPixels[id].length) {
                         if (!botBoatEngine.update(id, 2) && teamGame) botProcessDonation(id, amount, 0, 0)
@@ -9643,7 +9643,7 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 function main() {
     socketIndex = 2;
     versionHash = 4019;
-    versionLabel = "1.83.5   10 Apr 2023";
+    versionLabel = "1.83.5-6   11 May 2023";
     construct();
     botBorderingStuffInit();
     isMainCalled = true;
