@@ -506,7 +506,7 @@ class ModMenu {
     }
 
     drawLogsPanel() {
-        
+
     }
     
     drawSinglePanel() {

