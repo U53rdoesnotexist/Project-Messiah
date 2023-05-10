@@ -59,6 +59,7 @@ class ModMenu {
         else if (panelType == 1) this.drawAccountPanel();
         else if (panelType == 2) this.drawCustomPanel();
         else if (panelType == 3) this.drawDisplayPanel();
+        else if (panelType == 5) this.drawLogsPanel();
         else if (panelType == 8) this.drawSinglePanel();
         else if (panelType == 11) this.drawAboutPanel();
     }
@@ -188,6 +189,9 @@ class ModMenu {
                 }
             });
             button.addEventListener("dragend", (e) => {
+                //If the button is still within the menu, we do nothing.
+                if (e.clientX > this.x && e.clientX < this.x + this.width && e.clientY > this.y && e.clientY < this.y + this.height) return;
+
                 //Find any pre-existing panels which contain the menu corresponding to the button.
                 var reqMenu = modMenus.find((menu) => menu.panelTypes.includes(butIndex));
                 if (reqMenu) {
@@ -216,21 +220,11 @@ class ModMenu {
     drawAccountPanel() {
         //1. Account (Related to BR and private lb shit? Wins stats? breakdowns?) & Privacy (Allow Uploading of Replays? Anonymize uploader?)
         
-        const title = document.createElement("h1");
-        title.innerHTML = "Accounts And Privacy";
-        title.style.color = this.getColor(1);
-        title.style.textAlign = "center";
-        this.menu.appendChild(title);
+        const title = this.createLabel("Accounts And Privacy", "h1", `color: ${this.getColor(1)}; text-align: center;`)
 
-        const accountLabel = document.createElement("h2");
-        accountLabel.innerHTML = "Account Settings";
-        accountLabel.classList.add('custom-menu-label');
-        this.menu.appendChild(accountLabel);
+        const accountLabel = this.createLabel("Account Settings", "h2")
 
-        const acc1v1Label = document.createElement("h4");
-        acc1v1Label.innerHTML = "1v1 Accounts";
-        acc1v1Label.classList.add("custom-menu-category");
-        this.menu.appendChild(acc1v1Label);
+        const acc1v1Label = this.createLabel("1v1 Accounts", "h4")
 
         //Change and view your password here kek
         const passwordInput = this.createLabelledInput("1v1 Password:", "pw1v1", "password", 0, 0, loadPassword(), void(0), "View or change your 1v1 Password here.")
@@ -249,34 +243,17 @@ class ModMenu {
         };
         this.menu.appendChild(savePwButton);
 
-        const terriHubLabel = document.createElement("h4");
-        terriHubLabel.innerHTML = "TerriHub Accounts";
-        terriHubLabel.classList.add("custom-menu-category");
-        this.menu.appendChild(terriHubLabel);
+        const terriHubLabel = this.createLabel("Terrihub Accounts", "h4");
 
-        const tbcLabel = document.createElement("p");
-        tbcLabel.innerHTML = "Terrihub accounts are not yet implemented as of now. We will notify you in our Discord Server when it rolls out.";
-        tbcLabel.style.color = "red";
-        tbcLabel.style.textAlign = "left";
-        tbcLabel.style.paddingLeft = "10px"
-        this.menu.appendChild(tbcLabel);
+        const tbcLabel = this.createLabel("Terrihub accounts are not yet implemented as of now. We will notify you in our Discord Server when it rolls out.", "p", 
+            `color: red; text-align: left; padding-left: 10px;`);
 
-        const privacyLabel = document.createElement("h2");
-        privacyLabel.innerHTML = "Privacy Settings";
-        privacyLabel.classList.add('custom-menu-label');
-        this.menu.appendChild(privacyLabel);
+        const privacyLabel = this.createLabel("Privacy Settings", "h2");
 
-        const privacyPolicyLabel = document.createElement("p");
-        privacyPolicyLabel.innerHTML = "Privacy and cookie policies of territorial.io also stands for Teritorio, with the inclusion of Terrihub and its services.";
-        privacyPolicyLabel.style.color = "white";
-        privacyPolicyLabel.style.textAlign = "left";
-        privacyPolicyLabel.style.paddingLeft = "10px"
-        this.menu.appendChild(privacyPolicyLabel);
-
-        const replaysLabel = document.createElement("h4");
-        replaysLabel.innerHTML = "Public Replay Uploads";
-        replaysLabel.classList.add("custom-menu-category");
-        this.menu.appendChild(replaysLabel);
+        const privacyPolicyLabel = this.createLabel("Privacy and cookie policies of territorial.io also stands for Teritorio, with the inclusion of Terrihub and its services.", "p",
+            `color: white; text-align: left; padding-left: 10px;`);
+        
+        const replaysLabel = this.createLabel("Public Replay Uploads", "h4");
 
         const uploadReplaysInput = this.createLabelledInput("Upload Replays:", "uploadReplays", "checkbox", 0, 0, modHandler.uploadReplay, (e) => {
             modHandler.uploadReplay = uploadReplaysInput.checked;
@@ -288,38 +265,20 @@ class ModMenu {
         anonReplayInput.disabled = !uploadReplaysInput.checked;
         anonReplayInput.style.marginBottom = "20px";
 
-        /*
-        const cookiesLabel = document.createElement("h4");
-        cookiesLabel.innerHTML = "Cookies";
-        cookiesLabel.classList.add("custom-menu-category");
-        this.menu.appendChild(cookiesLabel);
-        */
-
-        
+        //const cookiesLabel = this.createLabel("Cookies", "h4");
     }
 
     drawCustomPanel() {
         //2. Custom Games and Private Matches (Custom interest formula and taxes? Boat speeds? Set gamemodes? More entities and custom maps?)
-        //We should add a function which prevents changing the custom game settings while ingame/clientStatus >= 1.
+        //We should add a function which prevents changing the custom game settings while ingame/clientStatus >= 1 later...
 
-        const title = document.createElement("h1");
-        title.innerHTML = "Custom Games";
-        title.style.color = this.getColor(2);
-        title.style.textAlign = "center";
-        this.menu.appendChild(title);
+        const title = this.createLabel("Custom Games", "h1", `color: ${this.getColor(2)}; text-align: center;`)
 
-        const warning = document.createElement("p");
-        warning.innerHTML = "Warning: Changing these settings may cause severe desyncs if you play in a vanilla game.";
-        warning.style.color = "red";
-        warning.style.textAlign = "left";
-        warning.style.paddingLeft = "10px"
-        this.menu.appendChild(warning);
+        const warning = this.createLabel("Warning: Changing these settings may cause severe desyncs if you play in a vanilla game.", "p",
+            `color: red; text-align: left; padding-left: 10px;`);
 
         //Custom Lobby Settings + Client Hash + Remove Players if incorrect code in vanilla games
-        const lobbyLabel = document.createElement("h2");
-        lobbyLabel.innerHTML = "Lobby Settings";
-        lobbyLabel.classList.add("custom-menu-label");
-        this.menu.appendChild(lobbyLabel);
+        const lobbyLabel = this.createLabel("Lobby Settings", "h2");
 
         const clientHashInput = this.createLabelledInput("Client Hash:", "lobbyHash", "number", 0, 2**22 - 1, modHandler.clientHash, (e) => {
             if (parseInt(clientHashInput.value) > 2**22 - 1 || parseInt(clientHashInput.value < 0) || parseInt(clientHashInput.value) % 1 != 0) return;
@@ -329,19 +288,13 @@ class ModMenu {
             modHandler.killIfConflict = killIfConflictInput.checked;
         }, "If this is enabled, players with the wrong hash will be kicked from the game. This is useful for preventing players from interfering with your game if you are playing with a custom hash.");
 
-        const customizationLabel = document.createElement("h2");
-        customizationLabel.innerHTML = "Game Mechanics";
-        customizationLabel.classList.add("custom-menu-label");
-        this.menu.appendChild(customizationLabel);
+        const customizationLabel = this.createLabel("Game Mechanics", "h2");
 
-        const pixelEconomyLabel = document.createElement("h4");
-        pixelEconomyLabel.innerHTML = "Pixel Economics";
-        pixelEconomyLabel.classList.add("custom-menu-category");
-        this.menu.appendChild(pixelEconomyLabel);
+        const pixelEconomyLabel = this.createLabel("Pixel Economics", "h4")
 
         //Neutral land grab cost
-        const neutCostInput = this.createLabelledInput("Minimum Pixel Cost:", "neutCost", "number", -2147483647, 10, neutralLandCost, (e) => {
-            if (parseInt(neutCostInput.value) > 10 || parseInt(neutCostInput.value) < -2147483647 || parseInt(neutCostInput.value) % 1 != 0) return;
+        const neutCostInput = this.createLabelledInput("Minimum Pixel Cost:", "neutCost", "number", -2147483, 2147483, neutralLandCost, (e) => {
+            if (parseInt(neutCostInput.value) % 1 != 0) return;
             neutralLandCost = parseInt(neutCostInput.value);
         }, "This is the minimum amount of troops needed to capture a pixel.");
         
@@ -358,10 +311,7 @@ class ModMenu {
         }, "This is the maximum amount of troops that can be on a pixel.");
 
         //Customize Taxes, with rates from 0-100% for each tax type (attack, boat, donations)
-        const taxesLabel = document.createElement("h4");
-        taxesLabel.innerHTML = "Custom Tax Rates (0-100%)";
-        taxesLabel.classList.add("custom-menu-category");
-        this.menu.appendChild(taxesLabel);
+        const taxesLabel = this.createLabel("Custom Tax Rates (0-100%)", "h4");
 
         const attackTaxInput = this.createLabelledInput("Attack:", "aTax", "number", 0, 100, modHandler.modTax.attack * 100 / 256, (e) => {
             if (parseInt(attackTaxInput.value) > 100 || parseInt(attackTaxInput.value) < 0) return;
@@ -379,10 +329,7 @@ class ModMenu {
         //Customize Interest Formula will be too difficult to make for now. Oi, maybe you can implement this lol
 
         //Customize Boat Speeds, with rates from 0-5 (0 being the Fastest, 5 being the Slowest)
-        const boatSpeedLabel = document.createElement("h4");
-        boatSpeedLabel.innerHTML = "Attack Speeds";
-        boatSpeedLabel.classList.add("custom-menu-category");
-        this.menu.appendChild(boatSpeedLabel);
+        const boatSpeedLabel = this.createLabel("Attack Speeds", "h4");
 
         const boatSpeedInput = this.createLabelledInput("Boat Speeds:", "bSpeed", "number", 1, 6, modHandler.boatSpeed + 1, (e) => {
             if (parseInt(boatSpeedInput.value) > 5 || parseInt(boatSpeedInput.value) < 0) return;
@@ -393,16 +340,10 @@ class ModMenu {
             boatSpeedInput.disabled = boatSpeedVariationInput.checked;
         }, "If this is enabled, the boat speed will vary with the size of the land. The larger the land, the slower the boats. This is useful for making the game more balanced on larger maps.");
 
-        const gameSettingLabel = document.createElement("h2");
-        gameSettingLabel.innerHTML = "Game Settings";
-        gameSettingLabel.classList.add("custom-menu-label");
-        this.menu.appendChild(gameSettingLabel);
+        const gameSettingLabel = this.createLabel("Game Settings", "h2");
 
         //Customize Gamemodes, with a list of gamemodes to choose from. If the chosen gamemode is teams, then we can customize the team sizes.
-        const gameModeLabel = document.createElement("h4");
-        gameModeLabel.innerHTML = "Game Modes";
-        gameModeLabel.classList.add("custom-menu-category");
-        this.menu.appendChild(gameModeLabel);
+        const gameModeLabel = this.createLabel("Game Modes", "h4");
 
         const options = ["Teams", "Battle Royale", "Zombies", "No Full Send", "Default"],
             defaultOption = modHandler.customGamemode <= 6 ? 0 : modHandler.customGamemode == 7 ? 1 : modHandler.customGamemode == 9 ? 2 : modHandler.customGamemode == 10 ? 3 : 4;
@@ -423,10 +364,7 @@ class ModMenu {
         teamBoostInput.disabled = [7, 8, 10].includes(modHandler.customGamemode);
         
         //Customize Maps, with a list of maps to choose from. If a custom map is loaded, then we can select that map.
-        const mapLabel = document.createElement("h4");
-        mapLabel.innerHTML = "Maps";
-        mapLabel.classList.add("custom-menu-category");
-        this.menu.appendChild(mapLabel);
+        const mapLabel = this.createLabel("Maps", "h4");
 
         const updateMapSizeInputDisabled = () => {
             const selectedMap = parseInt(mapInput.value);
@@ -479,10 +417,7 @@ class ModMenu {
 
 
         //Bots Subcategory
-        const botsLabel = document.createElement("h2");
-        botsLabel.innerHTML = "Bot Settings";
-        botsLabel.classList.add("custom-menu-label");
-        this.menu.appendChild(botsLabel);
+        const botsLabel = this.createLabel("Bots", "h2");
 
         const maxEInput = this.createLabelledInput("Max Entities (1-4096):", "maxE", "number", 1, 4096, 512, (e) => {
             if (parseInt(maxEInput.value) > 4096 || parseInt(maxEInput.value) < 1 || parseInt(maxEInput.value) % 1 != 0) return;
@@ -516,7 +451,7 @@ class ModMenu {
         vanillaButton.innerHTML = "Revert to Vanilla Settings";
         vanillaButton.style.marginTop = "10px";
         vanillaButton.style.backgroundColor = "transparent";
-        vanillaButton.style.font = `italic calc(${this.width}px / 20)` + " Pacifico"; // calculate font size based on menu width
+        vanillaButton.style.font = `italic calc(${this.width}px / 20)`; // calculate font size based on menu width
         vanillaButton.style.color = this.getColor(2);
         vanillaButton.style.border = "none";
         vanillaButton.style.width = "100%";
@@ -569,20 +504,18 @@ class ModMenu {
     drawDisplayPanel() {
         // Dan write your stuff here like rgb etc.
     }
+
+    drawLogsPanel() {
+        
+    }
     
     drawSinglePanel() {
         //8. Latency Simulator, Game Speeds for now... Maybe scenarios + cheats as well?
 
-        const title = document.createElement("h1");
-        title.innerHTML = modHandler.public ? "Singleplayer Settings" : "Singleplayer/Cheats";
-        title.style.color = this.getColor(8);
-        title.style.textAlign = "center";
-        this.menu.appendChild(title);
+        const title = this.createLabel(modHandler.public ? "Singleplayer Settings" : "Singleplayer/Cheats", "h1",
+            `color: ${this.getColor(8)}; text-align: center;`);
 
-        const performanceLabel = document.createElement("h2");
-        performanceLabel.innerHTML = "Performance Settings";
-        performanceLabel.classList.add("custom-menu-label");
-        this.menu.appendChild(performanceLabel);
+        const performanceLabel = this.createLabel("Performance Settings", "h2",);
 
         const latencyInput = this.createLabelledInput("SP Lag Ticks:", "latency", "number", 0, 14, modHandler.latency, (e) => {
             modHandler.latency = parseInt(latencyInput.value);
@@ -594,17 +527,10 @@ class ModMenu {
 
         if (!modHandler.public) {
 
-            const cheatsLabel = document.createElement("h2");
-            cheatsLabel.innerHTML = "Cheats";
-            cheatsLabel.classList.add("custom-menu-label");
-            this.menu.appendChild(cheatsLabel);
+            const cheatsLabel = this.createLabel("Cheats", "h2");
 
-            const warning = document.createElement("p");
-            warning.innerHTML = "Warning: Teritorio is not responsible for any bans or punishments that may occur from using these cheats.";
-            warning.style.color = "red";
-            warning.style.textAlign = "left";
-            warning.style.paddingLeft = "10px"
-            this.menu.appendChild(warning);
+            const warning = this.createLabel("Warning: Teritorio is not responsible for any bans or punishments that may occur from using these cheats.", "p", 
+                `color: red; text-align: left;, padding-left: 10px;`);
             
             const cheatTypeInput = this.createLabelledInput("Cheat Type:", "cheatType", "select", ["Off", "Messiah", "Smart Multiboxing"], 0, modHandler.bot, (e) => {
                 modHandler.bot = parseInt(cheatTypeInput.value);
@@ -646,18 +572,24 @@ class ModMenu {
         this.menu.appendChild(img);
 
         // Add about section
-        const aboutSection = document.createElement('div');
-        aboutSection.style.marginLeft = '20px';
-        const fontSize = getMin(this.width/20, 20);
-        aboutSection.style.fontSize = `${fontSize}px`;
-        aboutSection.style.color = '#fff';
-        aboutSection.innerHTML = `
+        const aboutSection = this.createLabel(`
             <p>Teritorio Sigma Build &#128526 (Compatible with Game Version 1.83.5)</p>
             <p>Unlocking Infinite Possibilities</p>
             <p>Brought to you by Vkij, oi, DanTheMan and ChatGPT</p>
             <p>Discord Server: <a href="${discordLink}" target="_blank">Click Me!</a></p>
-        `;
-        this.menu.appendChild(aboutSection);
+        `, "div", `color: white; margin-left: 20px; font-size: ${getMin(this.width/20, 20)}px;`);
+    }
+
+    createLabel(text, type, style = "custom-menu-label") {
+        const div = document.createElement(type);
+        div.innerHTML = text;
+        if (style == 'custom-menu-label') {
+            div.classList.add(style);
+        } else {
+            div.setAttribute('style', style)
+        }
+        this.menu.appendChild(div);
+        return div
     }
 
     createLabelledInput(labelText, inputID, inputType, param1, param2, defaultValue, boxOnChange, hoverMessage = "") {
@@ -694,12 +626,16 @@ class ModMenu {
             input.type = inputType;
             input.id = inputID;
             if (inputType == "number") {
-                input.min = param1;
-                input.max = param2;
+                if (param1 != param2)  {
+                    input.min = param1;
+                    input.max = param2;
+                }
                 input.value = defaultValue;
                 if (labelText.includes("Tax")) input.step = "any";
             } else if (inputType == "checkbox") {
                 input.checked = defaultValue;
+            } else {
+                input.value = defaultValue;
             }
         }
             
