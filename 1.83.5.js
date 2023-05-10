@@ -7755,7 +7755,7 @@ function NameInput() {
         displayUsername();
         if (5 <= androidVersion) showError.displayError(3232)
         else {
-            showError.displayError(3265);
+            console.log('hahahaha')
             cookiesPrompt.visible = true;
             cookiesPrompt.clickedButtonIndex = -1
         }

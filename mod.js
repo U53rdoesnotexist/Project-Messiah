@@ -15,6 +15,7 @@ function ModHandler() {
     this.cycle, this.tick;
     this.editDiscordLinks = true;
     this.uploadReplay = true;
+    this.anonReplays = false;
 
     this.clientHash = 0;
     this.modTax = {

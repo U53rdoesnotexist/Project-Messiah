@@ -56,7 +56,7 @@ class ModMenu {
     drawPanel(panelType, firstPanelType) {
         if (panelType == firstPanelType) this.drawTitleBar();
         if (panelType == 0) this.drawMenuPanel();
-        else if (panelType == 1) void(0) //this.drawAccountPanel(); Does not exist yet lmfao
+        else if (panelType == 1) this.drawAccountPanel();
         else if (panelType == 2) this.drawCustomPanel();
         else if (panelType == 3) this.drawDisplayPanel();
         else if (panelType == 8) this.drawSinglePanel();
@@ -211,6 +211,91 @@ class ModMenu {
         table.style.height = "auto";
         table.style.margin = "0 auto";
         this.menu.appendChild(table);
+    }
+
+    drawAccountPanel() {
+        //1. Account (Related to BR and private lb shit? Wins stats? breakdowns?) & Privacy (Allow Uploading of Replays? Anonymize uploader?)
+        
+        const title = document.createElement("h1");
+        title.innerHTML = "Accounts And Privacy";
+        title.style.color = this.getColor(1);
+        title.style.textAlign = "center";
+        this.menu.appendChild(title);
+
+        const accountLabel = document.createElement("h2");
+        accountLabel.innerHTML = "Account Settings";
+        accountLabel.classList.add('custom-menu-label');
+        this.menu.appendChild(accountLabel);
+
+        const acc1v1Label = document.createElement("h4");
+        acc1v1Label.innerHTML = "1v1 Accounts";
+        acc1v1Label.classList.add("custom-menu-category");
+        this.menu.appendChild(acc1v1Label);
+
+        //Change and view your password here kek
+        const passwordInput = this.createLabelledInput("1v1 Password:", "pw1v1", "password", 0, 0, loadPassword(), void(0), "View or change your 1v1 Password here.")
+        const savePwButton = document.createElement("button");
+        savePwButton.innerHTML = "Save Password";
+        savePwButton.style.marginLeft = "20px"
+        savePwButton.style.marginBottom = "10px"
+        savePwButton.onclick = () => {
+            var passwordMaxCap = Math.floor(Math.pow(2, 48));
+            var numericPW = parseInt(strings.convertToNumeric(passwordInput.value));
+            if (0 >= numericPW || numericPW >= passwordMaxCap) {
+                alert("Invalid password.");
+                return false;
+            }
+            savePassword(numericPW);
+        };
+        this.menu.appendChild(savePwButton);
+
+        const terriHubLabel = document.createElement("h4");
+        terriHubLabel.innerHTML = "TerriHub Accounts";
+        terriHubLabel.classList.add("custom-menu-category");
+        this.menu.appendChild(terriHubLabel);
+
+        const tbcLabel = document.createElement("p");
+        tbcLabel.innerHTML = "Terrihub accounts are not yet implemented as of now. We will notify you in our Discord Server when it rolls out.";
+        tbcLabel.style.color = "red";
+        tbcLabel.style.textAlign = "left";
+        tbcLabel.style.paddingLeft = "10px"
+        this.menu.appendChild(tbcLabel);
+
+        const privacyLabel = document.createElement("h2");
+        privacyLabel.innerHTML = "Privacy Settings";
+        privacyLabel.classList.add('custom-menu-label');
+        this.menu.appendChild(privacyLabel);
+
+        const privacyPolicyLabel = document.createElement("p");
+        privacyPolicyLabel.innerHTML = "Privacy and cookie policies of territorial.io also stands for Teritorio, with the inclusion of Terrihub and its services.";
+        privacyPolicyLabel.style.color = "white";
+        privacyPolicyLabel.style.textAlign = "left";
+        privacyPolicyLabel.style.paddingLeft = "10px"
+        this.menu.appendChild(privacyPolicyLabel);
+
+        const replaysLabel = document.createElement("h4");
+        replaysLabel.innerHTML = "Public Replay Uploads";
+        replaysLabel.classList.add("custom-menu-category");
+        this.menu.appendChild(replaysLabel);
+
+        const uploadReplaysInput = this.createLabelledInput("Upload Replays:", "uploadReplays", "checkbox", 0, 0, modHandler.uploadReplay, (e) => {
+            modHandler.uploadReplay = uploadReplaysInput.checked;
+            anonReplayInput.disabled = !uploadReplaysInput.checked;
+        }, "Allow uploading of your replays to our discord server. This will help us improve our statistics, tutorials and leaderboards.")
+        const anonReplayInput = this.createLabelledInput("Anonymize Replays:", "anonReplays", "checkbox", 0, 0, modHandler.anonReplays, (e) => {
+            modHandler.anonReplays = anonReplayInput.checked;
+        }, "Anonymize your replays when uploading them to our discord server. This will prevent users from knowing who you are in the match.")
+        anonReplayInput.disabled = !uploadReplaysInput.checked;
+        anonReplayInput.style.marginBottom = "20px";
+
+        /*
+        const cookiesLabel = document.createElement("h4");
+        cookiesLabel.innerHTML = "Cookies";
+        cookiesLabel.classList.add("custom-menu-category");
+        this.menu.appendChild(cookiesLabel);
+        */
+
+        
     }
 
     drawCustomPanel() {
@@ -477,6 +562,7 @@ class ModMenu {
             modHandler.neutralBots = neutralBotsInput.checked = false;
             modHandler.humanBots = humanBotsInput.checked = true;
         })
+        vanillaButton.style.marginBottom = "20px";
         this.menu.appendChild(vanillaButton);
     }
 
@@ -501,7 +587,7 @@ class ModMenu {
         const latencyInput = this.createLabelledInput("SP Lag Ticks:", "latency", "number", 0, 14, modHandler.latency, (e) => {
             modHandler.latency = parseInt(latencyInput.value);
         }, "Latency Simulator is used to simulate latency in singleplayer. This is useful for testing how the game will feel with high latency.");
-        
+
         const gameSpeedInput = this.createLabelledInput("Game Speed Multiplier:", "gameSpeed", "number", 0, 10, modHandler.gameSpeed, (e) => {
             modHandler.gameSpeed = parseInt(gameSpeedInput.value);
         }, "Game Speed is used to speed up the game. This is useful for completing games faster in real life time.");
@@ -535,6 +621,7 @@ class ModMenu {
             const spawnModInput = this.createLabelledInput("Spawn Mod:", "spawnMod", "select", ["Off", "Decoy Spawn", "Avoid Opponent"], 0, modHandler.spawnMod, (e) => {
                 modHandler.spawnMod = parseInt(spawnModInput.value);
             }, "Spawn Mod is a tool that allows you to choose spawns effectively.");
+            spawnModInput.style.marginBottom = "20px";
         }
     }
 
@@ -567,7 +654,7 @@ class ModMenu {
         aboutSection.innerHTML = `
             <p>Teritorio Sigma Build &#128526 (Compatible with Game Version 1.83.5)</p>
             <p>Unlocking Infinite Possibilities</p>
-            <p>Brought to you by Vkij, oi and DanTheMan</p>
+            <p>Brought to you by Vkij, oi, DanTheMan and ChatGPT</p>
             <p>Discord Server: <a href="${discordLink}" target="_blank">Click Me!</a></p>
         `;
         this.menu.appendChild(aboutSection);
