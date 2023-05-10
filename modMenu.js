@@ -1,8 +1,8 @@
 class ModMenu {
     static buttonLabels = [
-        "Menu", "Account", "Custom", "Display", "Chat",
-        "Logs", "Audio", "Hotkeys", "Single",
-        "Misc", "Presets", "About"
+        "Menu", "Account", "Custom", "Display",
+        "Players", "Logs", "Audio", "Hotkeys",
+        "Single", "Misc", "Presets", "About"
     ];
     constructor(panelTypes, width, height, x, y, z) {
         this.panelTypes = panelTypes;
@@ -59,6 +59,7 @@ class ModMenu {
         else if (panelType == 1) this.drawAccountPanel();
         else if (panelType == 2) this.drawCustomPanel();
         else if (panelType == 3) this.drawDisplayPanel();
+        else if (panelType == 4) this.drawPlayersPanel();
         else if (panelType == 5) this.drawLogsPanel();
         else if (panelType == 8) this.drawSinglePanel();
         else if (panelType == 11) this.drawAboutPanel();
@@ -505,8 +506,63 @@ class ModMenu {
         // Dan write your stuff here like rgb etc.
     }
 
-    drawLogsPanel() {
+    drawPlayersPanel() {
+        //Shows information of all players in the game.
 
+        const title = this.createLabel("Players Logger", "h1", `color: ${this.getColor(4)}; text-align: center;`)
+
+        if (typeof gamemode == "undefined") {
+            const playGameFirstLabel = this.createLabel("There is nothing here. Play a game first!", "h4")
+            return;
+        }
+
+        //If teams, enable option to sort by prioritising Clan or by Team Color
+        if (gamemode <= 6) {
+            const sortTeamsInput = this.createLabelledInput("Show Clan Players First:", "showClans", "checkbox", 0, 0, replayLogger.showClans, (e) => {
+                replayLogger.showClans
+                this.drawWindow();
+            }, "If checked, players with clans will be shown first. If unchecked, players will be sorted by team color.");
+        }
+
+        const playersLabel = this.createLabel("Players: " + playerCount, "h2")
+
+        if (replayLogger.showClans) {
+            //First show every clan and list all their players in the game. Sorted by more players in the game first.
+            //Then show all players without clans, sorted by team color.
+            //Finally show all bots, sorted by team color.
+
+            var clanTagInfo = teamColors.getClanTagInfo(),
+                clans = clanTagInfo[0].map((tag, index) => {
+                    return {
+                        tag: tag,
+                        players: clanTagInfo[1][index]
+                    }
+                });
+
+            //Now sort clans by number of players in the game
+            clans.sort((a, b) => {
+                return b.players.length - a.players.length;
+            });
+
+            clans.forEach((clan) => {
+                const color = teamColors.auraColors[teamColors.teamArray[clan.players[0]]].filter((elemeent, index) => index != 3).join(", ");
+                const clanLabel = this.createLabel(`[${clan.tag}]: ${clan.players.length} Players (${clan.players.filter(e => isAlive[e]).length} Alive,
+                    Total Occupation: ${(clan.players.reduce((acc, cur) => acc + land[cur], 0)/configFakeMap.landPixelsCount * 100).toFixed(2)}%)`,
+                    "h3", `color: rgb(${color}); padding-left: 20px; margin-bottom: 5px;`);
+                clan.players.forEach((playerID) => {
+                    const playerLabel = this.createLabel(nicknames[playerID], "p")
+                    if (!isAlive[playerID]) playerLabel.style.textDecoration = "line-through";
+                });
+            });
+            
+            const noClanLabel = this.createLabel("Other Players:", "h3", "margin-bottom: 5px;");
+        }
+
+        const creditLabel = this.createLabel("With Reference To BetterTT", "p")
+    }
+
+    drawLogsPanel() {
+        //Integrated Replay-Logger. 
     }
     
     drawSinglePanel() {
@@ -530,7 +586,7 @@ class ModMenu {
             const cheatsLabel = this.createLabel("Cheats", "h2");
 
             const warning = this.createLabel("Warning: Teritorio is not responsible for any bans or punishments that may occur from using these cheats.", "p", 
-                `color: red; text-align: left;, padding-left: 10px;`);
+                `color: red; text-align: left; padding-left: 20px`);
             
             const cheatTypeInput = this.createLabelledInput("Cheat Type:", "cheatType", "select", ["Off", "Messiah", "Smart Multiboxing"], 0, modHandler.bot, (e) => {
                 modHandler.bot = parseInt(cheatTypeInput.value);

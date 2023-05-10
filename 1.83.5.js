@@ -11964,6 +11964,9 @@ function TeamColors() {
             else this.update(param_playerInfo)
         }
     };
+    this.getClanTagInfo = function() {
+        return [clanTags, clanTagOfPlayerIDs];
+    };
     this.setCustomTeams = function() {
         this.teamIDs = [0, 1, 2, 3, 4, 5, 6, 7, 8];
         for (var entityIndex = 0; entityIndex < entityCount; entityIndex++) this.teamArray[entityIndex] = customJSON.data.teamArray[entityIndex]

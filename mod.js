@@ -269,10 +269,12 @@ function ReplayLogger() {
     this.spawnLogs = [];
     this.tickLogs = [];
     this.underReplay = false;
+    this.showClans = true;
     this.init = function() {
         this.spawnLogs = [];
         this.tickLogs = [];
         this.underReplay = false;
+        this.showClans = gamemode <= 6 ? this.showClans : false;
     }
     this.addLogs = function(actionType, authorID, targetID, ratio, xCoord, yCoord) {
         if (clientStatus == 2 || customJSON.isCustomJSON && customJSON.data.replay) return 0
