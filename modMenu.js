@@ -488,18 +488,54 @@ class ModMenu {
         //8. Latency Simulator, Game Speeds for now... Maybe scenarios + cheats as well?
 
         const title = document.createElement("h1");
-        title.innerHTML = "Singleplayer Settings";
+        title.innerHTML = modHandler.public ? "Singleplayer Settings" : "Singleplayer/Cheats";
         title.style.color = this.getColor(8);
         title.style.textAlign = "center";
         this.menu.appendChild(title);
 
+        const performanceLabel = document.createElement("h2");
+        performanceLabel.innerHTML = "Performance Settings";
+        performanceLabel.classList.add("custom-menu-label");
+        this.menu.appendChild(performanceLabel);
+
         const latencyInput = this.createLabelledInput("SP Lag Ticks:", "latency", "number", 0, 14, modHandler.latency, (e) => {
             modHandler.latency = parseInt(latencyInput.value);
         }, "Latency Simulator is used to simulate latency in singleplayer. This is useful for testing how the game will feel with high latency.");
-
+        
         const gameSpeedInput = this.createLabelledInput("Game Speed Multiplier:", "gameSpeed", "number", 0, 10, modHandler.gameSpeed, (e) => {
             modHandler.gameSpeed = parseInt(gameSpeedInput.value);
         }, "Game Speed is used to speed up the game. This is useful for completing games faster in real life time.");
+
+        if (!modHandler.public) {
+
+            const cheatsLabel = document.createElement("h2");
+            cheatsLabel.innerHTML = "Cheats";
+            cheatsLabel.classList.add("custom-menu-label");
+            this.menu.appendChild(cheatsLabel);
+
+            const warning = document.createElement("p");
+            warning.innerHTML = "Warning: Teritorio is not responsible for any bans or punishments that may occur from using these cheats.";
+            warning.style.color = "red";
+            warning.style.textAlign = "left";
+            warning.style.paddingLeft = "10px"
+            this.menu.appendChild(warning);
+            
+            const cheatTypeInput = this.createLabelledInput("Cheat Type:", "cheatType", "select", ["Off", "Messiah", "Smart Multiboxing"], 0, modHandler.bot, (e) => {
+                modHandler.bot = parseInt(cheatTypeInput.value);
+            }, "Messiah is a cheat that allows automatically attacks the best bots with perfect amounts. Smart Multiboxing is a cheat that automatically joins 3 bots to boost you in team games.");
+
+            const intelliInput = this.createLabelledInput("Intelliattack:", "intelli", "checkbox", 0, 0, modHandler.intelli, (e) => {
+                modHandler.intelli = intelliInput.checked;
+            }, "Intelliattack is a cheat that attacks the best bots with perfect amount when a key is pressed by the player.");
+
+            const alwaysWinInput = this.createLabelledInput("Always Win:", "alwaysWin", "checkbox", 0, 0, modHandler.alwaysWin, (e) => {
+                modHandler.alwaysWin = alwaysWinInput.checked;
+            }, "Always Win is a cheat that uploads a fake win result for you to the game servers. Beware that the game may detect this and nuke your account if you abuse this feature in 1v1.");
+
+            const spawnModInput = this.createLabelledInput("Spawn Mod:", "spawnMod", "select", ["Off", "Decoy Spawn", "Avoid Opponent"], 0, modHandler.spawnMod, (e) => {
+                modHandler.spawnMod = parseInt(spawnModInput.value);
+            }, "Spawn Mod is a tool that allows you to choose spawns effectively.");
+        }
     }
 
     drawAboutPanel() {
