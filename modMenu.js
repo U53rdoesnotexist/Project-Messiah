@@ -31,6 +31,7 @@ class ModMenu {
         this.menu.style.backgroundColor = "black";
         this.menu.style.border = "1px solid gray";
         this.menu.style.padding = "0";
+        this.menu.style.userSelect = "text";
         this.menu.style.zIndex = z;
         this.menu.style.overflowX = "hidden";
         this.menu.style.overflowY = "auto";
@@ -156,7 +157,7 @@ class ModMenu {
             var button = document.createElement("button");
             button.innerHTML = ModMenu.buttonLabels[butIndex];
             button.style.backgroundColor = "transparent";
-            button.style.font = `italic calc(${this.width}px / 20)` + " Pacifico"; // calculate font size based on menu width
+            button.style.font = `italic calc(${this.width}px / 20)` + " Pacifico"; //calculate font size based on menu width
             button.style.color = this.getColor(butIndex);
             button.style.border = "none";
             button.style.width = "100%";
@@ -175,15 +176,16 @@ class ModMenu {
                         modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
                         reqMenu.menu.remove();
                         this.onResize(e);
+                        this.onDock(e);
                     } else if (reqMenu.panelTypes.length == 1) { //If that menu doesnt have any panels We remove it.
                         modMenus = modMenus.filter((menu) => !menu.panelTypes.includes(butIndex));
                         reqMenu.menu.remove();
+                        this.onDock(e);
                     } else { //We remove the panel from the menu which contains the panel.
                         reqMenu.panelTypes = reqMenu.panelTypes.filter((panelType) => panelType !== butIndex);
                         reqMenu.drawWindow();
                     }
                     this.findAndUpdateMenu();
-                    this.onDock(e);
                 } else { // This panel does not exist, append it to the current one.
                     this.panelTypes.push(butIndex);
                     this.drawWindow();
@@ -511,12 +513,27 @@ class ModMenu {
 
         const title = this.createLabel("Players Logger", "h1", `color: ${this.getColor(4)}; text-align: center;`)
 
+        //Redraw the window when a reload button is clicked, since the land may fluctuate.
+        const reloadButton = document.createElement("button");
+        reloadButton.innerHTML = "Reload Panel";
+        reloadButton.style.float = "right";
+        reloadButton.style.backgroundColor = "transparent";
+        reloadButton.style.border = "none";
+        reloadButton.style.color = this.getColor(4);
+        reloadButton.style.fontStyle = fontStyleItalic ; // calculate font size based on menu width
+        reloadButton.style.textAlign = "left";
+        reloadButton.style.paddingTop = "0"
+        reloadButton.style.marginRight = "20px";
+        reloadButton.addEventListener("click", (e) => {
+            this.drawWindow();
+        })
+        this.menu.appendChild(reloadButton);
+        this.menu.appendChild(document.createElement("br"));
+
         if (typeof gamemode == "undefined") {
             const playGameFirstLabel = this.createLabel("There is nothing here. Play a game first!", "h4")
             return;
         }
-
-        //Select menu for filtering clans, bots, and players maybe?
 
         //If teams, enable option to sort by prioritising Clan or by Team Color
         if (gamemode <= 6) {
@@ -526,15 +543,9 @@ class ModMenu {
             }, "If checked, players with clans will be shown first. If unchecked, players will be sorted by team color.");
         }
 
-        const playerLabel = this.createLabel(`Players: ${playerCount} (${playersIngame} Alive)`, "h2");
-
-        if (replayLogger.showClans) {
-            //First show every clan and list all their players in the game. Sorted by more players in the game first.
-            //Then show all players without clans, sorted by team color.
-            //Finally show all bots, sorted by team color.
-            //Also want to sort by land count for each subcategory but will do that later.
-
-            var clanTagInfo = teamColors.getClanTagInfo(),
+        //Select menu for filtering clans, bots, and players maybe?
+        //We will add filter for every clan and every team color (if it's a team game)
+        var clanTagInfo = teamColors.getClanTagInfo(),
                 clans = clanTagInfo[0].map((tag, index) => {
                     return {
                         tag: tag,
@@ -547,18 +558,46 @@ class ModMenu {
                 return b.players.length - a.players.length;
             });
 
+        var filterOptions = ["All", "Clans", "Teams", "Players"];
+        if (gamemode <= 6) {
+            //Add all clans to the filter options
+            for (var i = 0; i < clans.length; i++) {
+                filterOptions.push(clans[i].tag);
+            }
+            for (var i = 0; i < teamColors.length; i++) {
+                filterOptions.push(teamColors[i]);
+            }
+        }
+        const filterInput = this.createLabelledInput("Filter By:", "filterTeam", "select", filterOptions, 0, 0, (e) => {
+            this.drawWindow();
+        }, "Select a filter to apply to the players list.");
+
+        //Download button for downloading the player list as a txt/json file, will do later...
+
+
+        const playerLabel = this.createLabel(`Players: ${playerCount} (${playersIngame - spectatorCount} Alive)`, "h2");
+
+        if (replayLogger.showClans) {
+            //First show every clan and list all their players in the game. Sorted by more players in the game first.
+            //Then show all players without clans, sorted by team color.
+            //Finally show all bots, sorted by team color.
+            //Also want to sort by land count for each subcategory but will do that later.
             const clanLabel = this.createLabel("Players With Clans: " + clans.reduce((acc, cur) => acc + cur.players.length, 0), "h3");
 
             clans.forEach((clan) => {
+                //Now sort by land count
+                clan.players.sort((a, b) => {
+                    return land[b] - land[a];
+                });
                 var color = teamColors.auraColors[teamColors.teamIDs[teamColors.teamArray[clan.players[0]]]].filter((e, index) => index != 3).join(", ");
                 //Avoid black not showing by turning them to grey. Same thing for white if light mode.
                 if (color == "0, 0, 0") color = "128, 128, 128";
                 //Feature: If logo of that clan is found, show logo in front of clan name.
                 const clanLabel = this.createLabel(`[${clan.tag}]: ${clan.players.length} Players (${clan.players.filter(e => isAlive[e]).length} Alive,
                     Total Occupation: ${(clan.players.reduce((acc, cur) => acc + land[cur], 0)/configFakeMap.landPixelsCount * 100).toFixed(2)}%)`,
-                    "h3", `color: rgb(${color}); padding-left: 20px; margin-bottom: 5px;`);
+                    "h4", `color: rgb(${color}); padding-left: 20px; margin-top: 5px; margin-bottom: 5px;`);
                 clan.players.forEach((playerID) => {
-                    const playerLabel = this.createLabel(nicknames[playerID], "p")
+                    const playerLabel = this.createLabel(`${nicknames[playerID]} (Land: ${land[playerID]})`, "p")
                     if (!isAlive[playerID]) playerLabel.style.textDecoration = "line-through";
                 });
                 //HoverTo and show log buttons will be made later
@@ -573,23 +612,48 @@ class ModMenu {
             playersWithoutClans.sort((a, b) => {
                 return teamColors.teamArray[a] - teamColors.teamArray[b];
             });
+            
+            //Allocate by team color and sort by land count
+            const playersWithoutClansByTeam = [];
+            for (let i = 0; i <= 8; i++) {
+                playersWithoutClansByTeam.push(playersWithoutClans.filter(e => teamColors.teamArray[e] == i));
+            }
+            playersWithoutClansByTeam.forEach((team) => {
+                team.sort((a, b) => {
+                    return land[b] - land[a];
+                });
+            });
 
-            playersWithoutClans.forEach((playerID) => {
-                const playerLabel = this.createLabel(nicknames[playerID], "p")
-                if (!isAlive[playerID]) playerLabel.style.textDecoration = "line-through";
+            playersWithoutClansByTeam.forEach((team, index) => {
+                if (team.length == 0) return;
+                var color = teamColors.auraColors[teamColors.teamIDs[teamColors.teamArray[team[0]]]].filter((e, i) => i != 3).join(", ");
+                //Avoid black not showing by turning them to grey. Same thing for white if light mode.
+                if (color == "0, 0, 0") color = "128, 128, 128";
+                const teamLabel = this.createLabel(`${teamColors.colorLabels[teamColors.teamIDs[index]]} Team: ${team.length} Players (${team.filter(e => isAlive[e]).length} Alive,
+                    Total Occupation: ${(teams.getTeamLand(index)/configFakeMap.landPixelsCount * 100).toFixed(2)}%)`,
+                    "h3", `color: rgb(${color}); padding-left: 20px; margin-top: 5px; margin-bottom: 5px;`);
+                team.forEach((playerID) => {
+                    const playerLabel = this.createLabel(`${nicknames[playerID]} (Land: ${land[playerID]})`, "p")
+                    if (!isAlive[playerID]) playerLabel.style.textDecoration = "line-through";
+                });
             });
 
         } else {
-
+            //Just show all players sorted by land count
+            landOrder.forEach((playerID) => {
+                if (playerID >= playerCount) return;
+                const playerLabel = this.createLabel(`${nicknames[playerID]} (Land: ${land[playerID]})`, "p")
+                if (!isAlive[playerID]) playerLabel.style.textDecoration = "line-through";
+            });
         }
 
-        const botsLabel = this.createLabel("Bots:", "h2");
+        const botsLabel = this.createLabel(`Bots: ${botCount} (${aliveCount - playersIngame + spectatorCount} Alive)`, "h2");
         for (let idIndex = playerCount; idIndex < maxEntities; idIndex++) {
             const botLabel = this.createLabel(nicknames[idIndex], "p")
             if (!isAlive[idIndex]) botLabel.style.textDecoration = "line-through";
         }
 
-        const creditLabel = this.createLabel("With Reference To BetterTT", "p")
+        const creditLabel = this.createLabel("Implemented with Reference To BetterTT", "p")
     }
 
     drawLogsPanel() {
@@ -703,7 +767,7 @@ class ModMenu {
         var input;
         if (inputType == "select") {
             input = document.createElement("select");
-            var options = "";
+            var options = "";this.menu.appendChild(document.createElement("br"));
             for (var i = 0; i < param1.length; i++) {
                 options += `<option value="${i}"${i == defaultValue ? " selected" : ""}>${param1[i]}</option>`;
             }
@@ -988,7 +1052,7 @@ class ModMenu {
 
 var modMenus = [];
 function modMenuInit() {
-    new ModMenu([0, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
+    new ModMenu([0, 4], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
 }
 
 function getDockWidth(dockStatus) {

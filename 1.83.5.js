@@ -11142,6 +11142,9 @@ function Teams() {
     this.drawCanvasImage = function() {
         teamGame && mainCanvasCtx.drawImage(pieChartCanvas, canvasPadding, gameBoardHeight + 2 * canvasPadding)
     }
+    this.getTeamLand = function(teamIndex) {
+        return teamLand[teamIndex]
+    }
 }
 
 function FakeRandom() {
