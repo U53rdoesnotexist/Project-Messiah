@@ -4969,8 +4969,29 @@ function GameLeaderboard() {
             }
             drawGameLeaderboard()
         }
-            
+ 
     };
+    this.updateHumanBotName = function(id) {
+        var charIndex, maxLBTextWidth = Math.floor(gameBoardWidth - nameXPos - rankXPos - maxWidthBeforeShorterned);
+        nicknames[id] = "Bot [" + nicknames[id] + "]";
+        leaderboard.font = gameBoardFont;
+        nicknameWidths[id] = Math.floor(leaderboard.measureText(nicknames[id]).width);
+        if (nicknameWidths[id] <= maxLBTextWidth) return nicknames[id];
+        var lbDisplayNickname = nicknames[id];
+        for (charIndex = nicknames[id].length - 2; 1 <= charIndex; charIndex--) {
+            lbDisplayNickname = lbDisplayNickname.substring(0, charIndex);
+            nicknameWidths[id] = Math.floor(B.measureText(lbDisplayNickname + "...]").width);
+            if (nicknameWidths[id] <= maxLBTextWidth) {
+                break;
+            }
+        }
+        lbDisplayNickname += "...]";
+        if (extendedIDs[id] === id) {
+            extendedIDs[id] = maxEntities + shorternedNames.length;
+            shorternedNames.push(lbDisplayNickname);
+        } else shorternedNames[extendedIDs[id] % b8] = lbDisplayNickname;
+        return lbDisplayNickname
+    }
     this.setCanvasVariables = function(S) {
         isZoom ? (gameBoardWidth = Math.floor(.335 * averageDim), gameBoardHeight = Math.floor(visibleLandCount * gameBoardWidth / 8)) : (gameBoardWidth = Math.floor(.27 * averageDim), gameBoardHeight = Math.floor(visibleLandCount * gameBoardWidth / 10));
         gameBoardWidth = Math.floor(.97 * gameBoardWidth);
@@ -9151,6 +9172,19 @@ function InfoRenderer() {
         setupInfoCanvas();
         renderEntityLabels()
     };
+    this.setHumanBotLabelPositions = function(id) {
+        infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
+        var humanBotLabelWidth = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap)).width);
+        infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
+        entityLabelScaleX[id] = 100 / Math.floor(infoCanvasCtx.measureText(nicknames[id]).width);
+        entityLabelScaleY[id] = Math.min(humanBotLabelWidth, entityLabelScaleX[id]);
+        if (modHandler.font >= 1) { //flip labels moreSettings.gJ.gK
+            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
+            humanBotLabelWidth = 100 / Math.floor(infoCanvasCtx.measureText("900 000").width);
+            entityLabelScaleY[id] = Math.min(humanBotLabelWidth, 2 * entityLabelScaleX[id]);
+            entityLabelScaleX[id] = humanBotLabelWidth;
+        }
+    };
     this.setPlayerLabels = function() {
         for (var playerIndex = updateInterval = 0; playerIndex < playerCount; playerIndex++) {
             if (3 !== xMax[playerIndex] - xMin[playerIndex] || 3 !== yMax[playerIndex] - yMin[playerIndex]) {
@@ -9458,8 +9492,8 @@ function HumanBots() {
         this.players.push(id);
         spectatorCount++;
         playerStatus[id] = 2;
-        tempNicknames[id] = "Human Bot";
-        if (moreSettings.hideUsernames) nicknames[id] = "Human Bot";
+        nicknames[id] = gameLeaderboard.updateHumanBotName(id);
+        infoRenderer.setHumanBotLabelPositions(id);
         pixel.shading[id] = (pixel.shading[id] + 2) % 4;
         if(id === myID) {
             gameResultBox.show(false, false);
@@ -9478,7 +9512,7 @@ function HumanBots() {
     };
     this.update = function() {
         if (!singleplayer) {
-            if (30 === this.botAttackInterval) this.humanBotProcessStrategy();
+            if (30 === this.botAttackInterval && 2140 <= mainHandler.getTicksElapsed()) this.humanBotProcessStrategy();
             this.botAttackInterval = (this.botAttackInterval + 1) % 60;
         }
     };
