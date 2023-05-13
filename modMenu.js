@@ -597,7 +597,8 @@ class ModMenu {
                     Total Occupation: ${(clan.players.reduce((acc, cur) => acc + land[cur], 0)/configFakeMap.landPixelsCount * 100).toFixed(2)}%)`,
                     "h4", `color: rgb(${color}); padding-left: 20px; margin-top: 5px; margin-bottom: 5px;`);
                 clan.players.forEach((playerID) => {
-                    const playerLabel = this.createLabel(`${nicknames[playerID]} (Land: ${land[playerID]})`, "p")
+                    const playerLabel = this.createLabel(`${nicknames[playerID]} (Land: ${land[playerID]})`, "p");
+                    playerLabel.style.color = color;
                     if (!isAlive[playerID]) playerLabel.style.textDecoration = "line-through";
                 });
                 //HoverTo and show log buttons will be made later
@@ -734,6 +735,13 @@ class ModMenu {
     createLabel(text, type, style = "custom-menu-label") {
         const div = document.createElement(type);
         div.innerHTML = text;
+        if (type == "button") {
+            div.onclick = () => {
+                const hoverID = 0;
+                //Get ID of the target and hover To it if in game and not dead
+                if (clientStatus >= 1 && !isAlive[hoverID]) autoCamera.hoverTo(hoverID, 800, true, 0)
+            }
+        }
         if (style == 'custom-menu-label') {
             div.classList.add(style);
         } else {
@@ -747,7 +755,13 @@ class ModMenu {
         //If boxType is number, then param1 is min and param2 is max
         //If boxType is checkbox, then only boxValue is used as a parameter
         //If boxType is select, then param 1 are the options and boxValue is the default option
-        
+
+        // Check if there is already an input with the same inputID, If this is the first input for a new category, add a line break
+        const existingInput = document.getElementById(inputID);
+        if (!existingInput || existingInput.parentElement.previousElementSibling.textContent !== labelText) {
+            this.menu.appendChild(document.createElement("br"));
+        }
+
         const label = document.createElement("label");
         label.innerHTML = labelText;
         label.for = inputID;
@@ -755,19 +769,13 @@ class ModMenu {
     
         if (hoverMessage !== "") this.addHoverMessage(label, hoverMessage);
     
-        // Check if there is already an input with the same inputID
-        const existingInput = document.getElementById(inputID);
-    
-        // If this is the first input for a new category, add a line break
-        if (!existingInput || existingInput.parentElement.previousElementSibling.textContent !== labelText) {
-            this.menu.appendChild(document.createElement("br"));
-        }
         this.menu.appendChild(label);
     
         var input;
         if (inputType == "select") {
             input = document.createElement("select");
-            var options = "";this.menu.appendChild(document.createElement("br"));
+            input.id = inputID;
+            var options = "";
             for (var i = 0; i < param1.length; i++) {
                 options += `<option value="${i}"${i == defaultValue ? " selected" : ""}>${param1[i]}</option>`;
             }

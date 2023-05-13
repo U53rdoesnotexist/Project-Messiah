@@ -9642,8 +9642,8 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     socketIndex = 2;
-    versionHash = 4019;
-    versionLabel = "1.83.5-6   11 May 2023";
+    versionHash = 4029;
+    versionLabel = "1.83.5-6-7   11 May 2023";
     construct();
     botBorderingStuffInit();
     isMainCalled = true;
