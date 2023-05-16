@@ -104,7 +104,8 @@ function ModHandler() {
         else if (modHandler.bot == 1) {
             cheat = new Messiah;
             if (clientStatus == 1) cheat.init()
-        } else if (modHandler.bot >= 2) cheat = new Multiboxing;
+        } else if (modHandler.bot == 2) cheat = new SmartMultiboxing;
+        else if (modHandler.bot >= 3) cheat = new WindowMultiboxing;
     }
 }
 
@@ -662,7 +663,7 @@ function ModPanel() {
     };
 }
 
-function Multiboxing() {
+function WindowMultiboxing() {
     function newTeamGame() {
         if (clientStatus >= 1) leaveGame();
         setTimeout(function () {
@@ -1164,4 +1165,40 @@ function Distance(){
         }
         return pointsToAdd;
     }
+}
+
+function SmartMultiboxing() {
+    var multiWSs = [];
+    this.onJoin = function() {
+        // When the main instance joined a lobby or when this is toggled in lobby, we will create 3 websockets, 2 with the proxy and 1 with the main server (or reversed if they are already connected to the proxy)
+        if (multiWSs.length == 0) {
+            //Create 3 websockets
+            multiWSs.push(new WebSocket(wsManager.originURLs[wsManager.lobby - wsManager.gameServerCount] + wsUrlStrings[1 + socketIndex]));
+            multiWSs.push(new WebSocket(wsManager.originURLs[0] + "/i" + (1 + socketIndex) + (wsManager.lobby - wsManager.gameServerCount) + "/"));
+            if (wsManager.lobby > wsManager.gameServerCount) {
+                multiWSs.push(new WebSocket(wsManager.originURLs[wsManager.lobby - wsManager.gameServerCount] + wsUrlStrings[1 + socketIndex]));
+            } else {
+                multiWSs.push(new WebSocket(wsManager.originURLs[0] + "/i" + (1 + socketIndex) + (wsManager.lobby - wsManager.gameServerCount) + "/"));
+            }
+        }
+    }
+}
+
+function MultiWS(url) {
+    const _this = this;
+    this.lobbyWS = new WebSocket(url);
+    this.lobbyWS.onmessage = function(m) {
+        /*
+        if (_this.lastActive + 15E3 < new Date().getTime()) {
+            heartBeat(this);
+            _this.lastActive = new Date().getTime();
+            this.send(message)
+        }
+        m.data.arrayBuffer().then(function (buffer) {
+            const array = new Uint8Array(buffer);
+            multi_loading(array) && _this.wsGameInit(array);
+        });
+        */
+    }
+    this.gameWS = null;
 }
