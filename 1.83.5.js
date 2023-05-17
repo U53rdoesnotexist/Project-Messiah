@@ -13098,6 +13098,7 @@ function DataEncoder() {
         for (var nameIndex = 0; nameIndex < nameLength; nameIndex++) encoder(array, 10, nameCharcode[nameIndex]);
         wsManager.lobby = lobbyID;
         wsManager.send(lobbyID, array)
+        if (modHandler.bot == 2) cheat.onJoin();
     };
     this.loadLeaderboard = function(remote, boardType) {
         var array = new Uint8Array(5);
@@ -13154,6 +13155,7 @@ function DataEncoder() {
         encoder(array, 3, 2);
         encoder(array, 4, gameID);
         wsManager.send(wsManager.lobby, array)
+        if (modHandler.bot == 2) cheat.joinGame(gameID);
     };
     this.authenticateGameConnection = function() {
         var array = new Uint8Array(7);

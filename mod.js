@@ -104,8 +104,10 @@ function ModHandler() {
         else if (modHandler.bot == 1) {
             cheat = new Messiah;
             if (clientStatus == 1) cheat.init()
-        } else if (modHandler.bot == 2) cheat = new SmartMultiboxing;
-        else if (modHandler.bot >= 3) cheat = new WindowMultiboxing;
+        } else if (modHandler.bot == 2) {
+            cheat = new SmartMultiboxing;
+            if (gameStateManager.getState() == 7) cheat.onJoin()
+        } else if (modHandler.bot >= 3) cheat = new WindowMultiboxing;
     }
 }
 
@@ -1168,37 +1170,183 @@ function Distance(){
 }
 
 function SmartMultiboxing() {
-    var multiWSs = [];
+    var instanceNames = nameInput.getInput().slice(0, getMax(18, nameInput.getInput().length));
+    this.multiWSs = [];
     this.onJoin = function() {
         // When the main instance joined a lobby or when this is toggled in lobby, we will create 3 websockets, 2 with the proxy and 1 with the main server (or reversed if they are already connected to the proxy)
-        if (multiWSs.length == 0) {
+        if (this.multiWSs.length == 0) {
             //Create 3 websockets
-            multiWSs.push(new WebSocket(wsManager.originURLs[wsManager.lobby - wsManager.gameServerCount] + wsUrlStrings[1 + socketIndex]));
-            multiWSs.push(new WebSocket(wsManager.originURLs[0] + "/i" + (1 + socketIndex) + (wsManager.lobby - wsManager.gameServerCount) + "/"));
-            if (wsManager.lobby > wsManager.gameServerCount) {
-                multiWSs.push(new WebSocket(wsManager.originURLs[wsManager.lobby - wsManager.gameServerCount] + wsUrlStrings[1 + socketIndex]));
-            } else {
-                multiWSs.push(new WebSocket(wsManager.originURLs[0] + "/i" + (1 + socketIndex) + (wsManager.lobby - wsManager.gameServerCount) + "/"));
-            }
+            this.multiWSs.push(new MultiWS(false, instanceNames + " 1"));
+            this.multiWSs.push(new MultiWS(true, instanceNames + " 2"));
+            this.multiWSs.push(new MultiWS(wsManager.lobby <= wsManager.gameServerCount, instanceNames + " 3"));
+        } else {
+            this.disconnect();
+            this.onJoin();
         }
+    }
+    this.disconnect = function() {
+        this.multiWSs.forEach(ws => ws.close());
+        this.multiWSs = [];
+    }
+    this.joinGame = function(gameID) {
+        // When the main instance joined a game, we will join the other 2 websockets to the same game
+        this.multiWSs.forEach(ws => ws.joinGame(gameID));
+    }
+    this.init = this.update = function() {
+        //Do nothing
     }
 }
 
-function MultiWS(url) {
-    const _this = this;
-    this.lobbyWS = new WebSocket(url);
+function MultiWS(proxy, instanceName) {
+    function getEquivalentServer(server) {
+        return server <= wsManager.gameServerCount ? server : server - wsManager.gameServerCount;
+    }
+    function getConnectedURL(server) {
+        return proxy ? wsUrlStrings[0] + wsManager.originURLs[0] + "/i" + (1 + socketIndex) + getEquivalentServer(server) + "/" : wsUrlStrings[0] + wsManager.originURLs[getEquivalentServer(server)] + wsUrlStrings[1 + socketIndex]
+    }
+
+    var _this = this;
+    this.lobbyWS = new WebSocket(getConnectedURL(wsManager.lobby));
+    this.gameWS = null;
+
+    var wsTimeHash = Math.floor(Math.random() * (1024));
+    var wsRGB64 = mainSettings.buttons[2].buttonClass.getRGB64().map((e) => {
+        return e + (-1)**(Math.round(Math.random())) * Math.floor(Math.random() * 8);
+    });
+
+    this.lobbyWS.onopen = function() {
+        joinLobby();
+        this.send(message);
+        this.lastActive = new Date().getTime();
+    }
     this.lobbyWS.onmessage = function(m) {
-        /*
-        if (_this.lastActive + 15E3 < new Date().getTime()) {
-            heartBeat(this);
-            _this.lastActive = new Date().getTime();
+        if (this.lastActive + 15E3 < new Date().getTime()) {
+            heartBeat();
+            this.lastActive = new Date().getTime();
             this.send(message)
         }
         m.data.arrayBuffer().then(function (buffer) {
             const array = new Uint8Array(buffer);
-            multi_loading(array) && _this.wsGameInit(array);
+            if (gameInited(array)) checkReconnect(array);
         });
-        */
     }
-    this.gameWS = null;
+
+    var mIndex, message;
+    function decoder(array, bitsToDecode) {
+        for (var data = 0, byteIndex, bitIndex, currentBit = mIndex; currentBit < mIndex + bitsToDecode; currentBit++) {
+            byteIndex = divideFloor(currentBit, 8);
+            bitIndex = 7 - currentBit % 8;
+            data |= (array[byteIndex] >> bitIndex & 1) << mIndex + bitsToDecode - currentBit - 1;
+        }
+        mIndex += bitsToDecode;
+        return data
+    }
+    function gameInited(data) {
+        mIndex = 0;
+        if (data.length == 0) return false
+        if (!decoder(data, 1) && [2,3].includes(decoder(data, 2))) return true
+        return false
+    }
+
+    function encodePassword(array, random) {
+        var password = random ? Math.floor(Math.random() * (2**48)) : loadPassword(),
+            passwordHash = Math.floor(password / 16777216);
+        encoder(array, 24, passwordHash);
+        encoder(array, 24, password - 16777216 * passwordHash)
+    }
+    function encodeClientInfo(array) {
+        encoder(array, 14, versionHash);
+        encoder(array, 4, isIOS ? 2 : 12 <= androidVersion ? 1 : 0 < androidVersion ? 3 : 0);
+        encoder(array, 1, isNotClient ? 1 : 0);
+        encoder(array, 1, isNotTopWindow ? 1 : 0);
+        encoder(array, 5, (new Date).getHours() % 24)
+    }
+    function getArraySize(dataLength) {
+        return divideFloor(dataLength, 8) + (0 < dataLength % 8 ? 1 : 0)
+    }
+    function encoder(array, bitsCount, data) {
+        for (var byteIndex, bitIndex, currentBit = mIndex; currentBit < mIndex + bitsCount; currentBit++) {
+            byteIndex = divideFloor(currentBit, 8);
+            bitIndex = 7 - currentBit % 8;
+            array[byteIndex] |= (data >> bitsCount - (currentBit - mIndex + 1) & 1) << bitIndex;
+        }
+        mIndex += bitsCount
+    }
+    function checkReconnect (array) {
+        mIndex = 1;
+        var isNot1v1 = decoder(array, 2);
+        var remote = decoder(array, 10);
+        if (proxy) remote += wsManager.gameServerCount;
+        if (wsManager.lobby == remote) {
+            _this.gameWS = _this.lobbyWS;
+            _this.lobbyWS = null;
+            return;
+        } else {
+            _this.gameWS = new WebSocket(getConnectedURL(remote));
+            _this.lobbyWS.close(3247);
+            _this.lobbyWS = null;
+        }
+        _this.switchHash = decoder(array, 10);
+        _this.myID = decoder(array, 2 == isNot1v1 ? 9 : 1);
+        _this.gameWS.onopen = function() {
+            authenticateServer(wsManager.lobby)
+            console.log(this)
+            this.send(message);
+            this.lastActive = new Date().getTime();
+        }
+        _this.gameWS.onmessage = function() {
+            if (this.lastActive + 15E3 < new Date().getTime()) {
+                heartBeat();
+                this.lastActive = new Date().getTime();
+                this.send(message)
+            }
+        }
+    }
+    function joinLobby() {
+        var nameCharcode = strings.convertToCharcode(instanceName),
+            nameLength = nameCharcode.length;
+        message = new Uint8Array(getArraySize(105 + 10 * nameLength));
+        mIndex = 0;
+        encoder(message, 1, 0);
+        encoder(message, 3, 1);
+        encoder(message, 10, wsTimeHash);
+        encoder(message, 6, wsRGB64[0]);
+        encoder(message, 6, wsRGB64[1]);
+        encoder(message, 6, wsRGB64[2]);
+        encodePassword(message);
+        encodeClientInfo(message);
+        for (var nameIndex = 0; nameIndex < nameLength; nameIndex++) encoder(message, 10, nameCharcode[nameIndex]);
+    };
+    function authenticateServer(lobby) {
+        message = new Uint8Array(7);
+        mIndex = 0;
+        encoder(message, 1, 0);
+        encoder(message, 3, 6);
+        encoder(message, 8, lobby);
+        encoder(message, 10, this.switchHash);
+        encoder(message, 9, this.myID);
+        encoder(message, 10, wsTimeHash);
+        encoder(message, 14, versionHash);
+    }
+    function heartBeat() {
+        mIndex = 0;
+        message = new Uint8Array(1);
+        encoder(message, 1, 0);
+        encoder(message, 3, 5);
+        encoder(message, 1, false);
+    }
+
+    this.joinGame = function(gameID) {
+        //If it's still connecting to the lobby, wait for it to connect
+        if (this.lobbyWS.readyState != WebSocket.OPEN) {
+            setTimeout(() => this.joinGame(gameID), 100);
+            return;
+        }
+        message = new Uint8Array(1);
+        mIndex = 0;
+        encoder(message, 1, 0);
+        encoder(message, 3, 2);
+        encoder(message, 4, gameID);
+        this.lobbyWS.send(message);
+    }
 }
