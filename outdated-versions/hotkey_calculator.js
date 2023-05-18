@@ -22,4 +22,4 @@ hotkeys(500,282);
 hotkeys(282,345);
 hotkeys(345,321);
 hotkeys(321,307);
-hotkeys(307,320);
+hotkeys(307,432);
