@@ -2212,7 +2212,7 @@ function PlayerActions() {
         return 2
     };
     this.click = function(xPos, yPos, isRightClick) {
-        if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn || customJSON.isCustomJSON && customJSON.data.replay) return false;
+        if (!isRightClick && (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn || customJSON.isCustomJSON && customJSON.data.replay)) return false;
         var pixelTolerance = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - lastClickX) > pixelTolerance || Math.abs(yPos - lastClickY) > pixelTolerance || (new Date).getTime() > lastClickTime + 425) return false;
         var xCoord = Math.floor((xPos + viewportX) / mainScaleFactor),
@@ -5005,7 +5005,7 @@ function GameLeaderboard() {
         var lbDisplayNickname = nicknames[id];
         for (charIndex = nicknames[id].length - 2; 1 <= charIndex; charIndex--) {
             lbDisplayNickname = lbDisplayNickname.substring(0, charIndex);
-            nicknameWidths[id] = Math.floor(B.measureText(lbDisplayNickname + "...]").width);
+            nicknameWidths[id] = Math.floor(leaderboard.measureText(lbDisplayNickname + "...]").width);
             if (nicknameWidths[id] <= maxLBTextWidth) {
                 break;
             }
