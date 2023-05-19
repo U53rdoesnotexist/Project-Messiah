@@ -2211,7 +2211,7 @@ function PlayerActions() {
         this.end();
         return 2
     };
-    this.click = function(xPos, yPos) {
+    this.click = function(xPos, yPos, isRightClick) {
         if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn || customJSON.isCustomJSON && customJSON.data.replay) return false;
         var pixelTolerance = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - lastClickX) > pixelTolerance || Math.abs(yPos - lastClickY) > pixelTolerance || (new Date).getTime() > lastClickTime + 425) return false;
@@ -2219,6 +2219,10 @@ function PlayerActions() {
             yCoord = Math.floor((yPos + viewportY) / mainScaleFactor);
         if (1 > xCoord || 1 > yCoord || xCoord >= currentMapWidth - 1 || yCoord >= currentMapHeight - 1) return false;
         targetPixelIndex = pixel.toIndex(xCoord, yCoord);
+        if (isRightClick) {
+            announcements.genericAnnouncement(targetPixelIndex, 55)
+            return false;
+        }
         if (!pixel.canOwn(targetPixelIndex)) return false;
         if (2 === clientStatus) {
             if (1 <= emojis.selectedEmojiCount && (targetID = pixel.getOwner(targetPixelIndex), this.isHuman(targetID))) {
@@ -2619,6 +2623,11 @@ function Announcements() {
         }
         return removeSuccessful
     }
+
+    function useUnfilteredNick(id, noFilter) {
+        return singleplayer || id >= playerCount || noFilter || moreSettings.settingsCategory.hideUsernames ? nicknames[id] : tempNicknames[id]
+    }
+
     var pendingAnnouncements, announcementHeight, marginWidth, acceptButtonWidth, maxAnnouncementsCount, tickCounter, acceptButCanvas;
     this.init = function() {
         tickCounter = 0;
@@ -2759,7 +2768,13 @@ function Announcements() {
         else if (23 === messageType) {
             announce(100, "A boat is about to land on your territory!", messageType, id, orangeRGB, blackMoreOpaque, -1, true);
             removeExcessSameMessages(messageType, 2)
-        }
+        } else if (55 == messageType) {
+            var pIndex = id,
+                id = pixel.getOwner(id),
+                name = pixel.isNeutral(pIndex) ? "Neutral Land" : pixel.isWater(pIndex) ? "Water" : pixel.isMountain(pIndex) ? "Mountains" : nicknames[id];
+            announce(0, `(${pixel.toX(pIndex)}, ${pixel.toY(pIndex)}) : ${name} ${pixel.entityControlled(pIndex) ? "(" + id + ")" : ""}`, messageType, pixel.entityControlled(pIndex) ? id : 0, whiteRGB2, blackMoreOpaque, -1, pixel.entityControlled(pIndex));
+            removeExcessSameMessages(messageType, 2)
+        } 
     };
     this.error = function(errorCode) {
         announce(200, "Error [" + errorCode + "]", 94, 0, whiteRGB2, redDarkMoreOpaque, -1, false);
@@ -2896,11 +2911,11 @@ function Announcements() {
         var authorID = latestDeaths[deathType];
         latestDeathCounts[deathType] = 0;
         if (1 === message) {
-            message = nicknames[authorID] + monoLeaveLabels[deathType];
-            if (0 === deathType) message += nicknames[latestKillers[deathType]] + "."
+            message = useUnfilteredNick(authorID, 0 === deathType) + monoLeaveLabels[deathType];
+            if (0 === deathType) message += useUnfilteredNick(authorID, true) + "."
             announce(deathAnnouncementTime[deathType], message, 7, latestKillers[deathType], whiteRGB2, blackMoreOpaque, -1, true)
         } else if (2 <= message) {
-            message = nicknames[authorID] + " and " + (message - 1) + " other player" + (2 === message ? "" : "s") + pluralLeaveLabels[deathType];
+            message = useUnfilteredNick(authorID, 0 === deathType) + " and " + (message - 1) + " other player" + (2 === message ? "" : "s") + pluralLeaveLabels[deathType];
             announce(deathAnnouncementTime[deathType], message, 7, authorID, whiteRGB2, blackMoreOpaque, -1, false);
         }
     };
@@ -3488,7 +3503,7 @@ function onMouseleave(e) {
 
 function onMouseup(e) {
     e.preventDefault();
-    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getDockWidth(1)), Math.floor(pixelRatio * e.clientY))
+    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getDockWidth(1)), Math.floor(pixelRatio * e.clientY), 2 === e.button)
 }
 
 function onClick(g) {
@@ -3497,12 +3512,12 @@ function onClick(g) {
 
 function onTouchend(g) {
     g.preventDefault();
-    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? mouseCamera.isPanning = false : onPointerUp(clientXPos, clientYPos)
+    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? mouseCamera.isPanning = false : onPointerUp(clientXPos, clientYPos, false)
 }
 
 function onTouchcancel(g) {
     g.preventDefault();
-    onPointerUp(clientXPos, clientYPos)
+    onPointerUp(clientXPos, clientYPos, false)
 }
 
 function onDragover(g) {
@@ -3513,14 +3528,14 @@ function onDrop(g) {
     loadCustomMap.handleDrop(g)
 }
 
-function onPointerUp(xPos, yPos) {
+function onPointerUp(xPos, yPos, isRightClick) {
     if (0 === clientStatus) gameStateManager.click(xPos, yPos)
     else {
         gameLeaderboard.onDragEnd(xPos, yPos);
         statistics.onDragEnd();
         attackRatioBar.stopDragging();
         mouseCamera.isPanning = false;
-        if (playerActions.click(xPos, yPos)) mainHandler.canvasDirty = true
+        if (playerActions.click(xPos, yPos, isRightClick)) mainHandler.canvasDirty = true
     }
 }
 
@@ -3734,6 +3749,14 @@ function AttackBars() {
                     myAttacks[aIndex].largestAmount = remainingTroops > myAttacks[aIndex].largestAmount ? remainingTroops : myAttacks[aIndex].largestAmount;
                     myAttacks[aIndex].updated = true
                 }
+            }
+        }
+    };
+    this.clearAttacksArray = function(id) {
+        for (var aIndex = 0; aIndex < Math.min(myAttacks.length, attacks.getCurrentAttackCount(myID)); aIndex++) {
+            if (myAttacks[aIndex].targetID === id) {
+                myAttacks = [];
+                break
             }
         }
     };
@@ -4322,7 +4345,7 @@ function MouseCamera() {
         viewportY = mainScaleFactor * yPos - prevViewportCenterY
     };
     this.mouseDown = function(xPos, yPos) {
-        if (Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + canvasSize / 2), 2) < canvasSize * canvasSize / 4 || Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + 2 * canvasSize), 2) < canvasSize * canvasSize / 4) {
+        if ((Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + canvasSize / 2), 2) < canvasSize * canvasSize / 4 || Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + 2 * canvasSize), 2) < canvasSize * canvasSize / 4) && moreSettings.settingsCategory.hideGameZoomButtons) {
             if (yPos < canvasYPos + 1.25 * canvasSize) return this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200)
             else return this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
         }
@@ -4383,8 +4406,10 @@ function MouseCamera() {
         canvasYPos = Math.floor(prevClientHeight / 2 - 1.25 * canvasSize)
     };
     this.drawCanvasImage = function() {
-        mainCanvasCtx.drawImage(canvases[0], canvasXPos, canvasYPos);
-        mainCanvasCtx.drawImage(canvases[1], canvasXPos, Math.floor(canvasYPos + 3 * canvasSize / 2))
+        if (!moreSettings.settingsCategory.hideGameZoomButtons) {
+            mainCanvasCtx.drawImage(canvases[0], canvasXPos, canvasYPos);
+            mainCanvasCtx.drawImage(canvases[1], canvasXPos, Math.floor(canvasYPos + 3 * canvasSize / 2))
+        }
     }
 }
 
@@ -5025,12 +5050,10 @@ function GameLeaderboard() {
     this.getGameBoardWidth = function() {
         return gameBoardWidth
     };
-    this.drawCanvas = function(ignoreFramerate) {
-        if (shouldUpdate) {
-            if (ignoreFramerate || 14 >= frameRate && 0 === mainHandler.getTicksElapsed() % 6 || 14 < frameRate) {
-                shouldUpdate = false;
-                drawGameLeaderboard();
-            }
+    this.drawCanvas = function(forceUpdate) {
+        if (shouldUpdate && (forceUpdate || 0 === mainHandler.getTicksElapsed() % moreSettings.settingPresets[moreSettings.settingsCategory.leaderboardRefreshRate])) {
+            shouldUpdate = false;
+            drawGameLeaderboard();
         }
     };
     this.update = function() {
@@ -5465,16 +5488,14 @@ function PlayerAura() {
         var teamIndex;
         auraImages = [];
         visible = false;
-        if (inSpawn) {
-            getTicksElapsed = 0;
-            diameter = 63;
-            visible = true;
-            if (teamGame) {
-                for (teamIndex = 0; teamIndex <= teamCount; teamIndex++) auraImages.push(this.setAuraCanvas(teamColors.auraColors[teamColors.teamIDs[teamIndex]], diameter));
-            } else {
-                auraImages.push(this.setAuraCanvas(teamColors.auraColors[0], diameter));
-                auraImages.push(this.setAuraCanvas(teamColors.auraColors[4], diameter));
-            }
+        getTicksElapsed = 0;
+        diameter = 63;
+        visible = true;
+        if (teamGame) {
+            for (teamIndex = 0; teamIndex <= teamCount; teamIndex++) auraImages.push(this.setAuraCanvas(teamColors.auraColors[teamColors.teamIDs[teamIndex]], diameter));
+        } else {
+            auraImages.push(this.setAuraCanvas(teamColors.auraColors[0], diameter));
+            auraImages.push(this.setAuraCanvas(teamColors.auraColors[4], diameter));
         }
     };
     this.update = function() {
@@ -6393,7 +6414,7 @@ function ColorsPanel() {
             if (10 > colorValue64) colorString += "0";
             colorString += colorValue64.toString();
         }
-        saveColors(colorString)
+        return colorString;
     };
     this.onPointermove = function(xPos) {
         if (0 !== this.isSaveRequired) {
@@ -6406,7 +6427,7 @@ function ColorsPanel() {
         if (0 < this.isSaveRequired) {
             this.isSaveRequired = 0;
             this.setNormalColorValue();
-            this.formatColorString();
+            moreSettings.setColorCookie();
             mainHandler.canvasDirty = true;
         }
     };
@@ -9252,7 +9273,7 @@ function InfoRenderer() {
         renderOffsetY = (renderOffsetY + newY) * scaleFactorChangeRatio - newY
     };
     this.drawCanvas = function(forceRender) {
-        if (forceRender && 0 === ++updateInterval % moreSettings.sx[moreSettings.settingsCategory.labelRefreshRate] || 0 === mainHandler.getTicksElapsed() % moreSettings.sx[moreSettings.settingsCategory.labelRefreshRate]) {
+        if (forceRender && 0 === ++updateInterval % moreSettings.settingPresets[moreSettings.settingsCategory.labelRefreshRate] || 0 === mainHandler.getTicksElapsed() % moreSettings.settingPresets[moreSettings.settingsCategory.labelRefreshRate]) {
             updateInterval = 0;
             renderEntityLabels();
             return true;
@@ -9505,6 +9526,7 @@ function HumanBots() {
         playerStatus[id] = 2;
         nicknames[id] = gameLeaderboard.updateHumanBotName(id);
         infoRenderer.setHumanBotLabelPositions(id);
+        attackBars.clearAttacksArray(id);
         pixel.shading[id] = (pixel.shading[id] + 2) % 4;
         if(id === myID) {
             gameResultBox.show(false, false);
@@ -10756,14 +10778,14 @@ function MoreSettings() {
         settingsArray = [],
         categoryIndex = 0;
     this.settingsCategory = null;
-    this.sx = new Uint8Array(4);
+    this.settingPresets = new Uint8Array(4);
     this.init = function() {
         this.initSettings();
         settingsArray = [Array(5), Array(11), Array(5)];
-        this.sx[0] = 10;
-        this.sx[1] = 5;
-        this.sx[2] = 2;
-        this.sx[3] = 1;
+        this.settingPresets[0] = 10;
+        this.settingPresets[1] = 5;
+        this.settingPresets[2] = 2;
+        this.settingPresets[3] = 1;
         settingsArray[0][0] = {
             name: "More",
             id: 0,
@@ -10923,9 +10945,9 @@ function MoreSettings() {
             hideGameZoomButtons: 0,
             reverseLabels: 1,
             resolution: 2,
-            minFontSize: 4,
-            leaderboardRefreshRate: 2,
-            labelRefreshRate: 2
+            minFontSize: 0,
+            leaderboardRefreshRate: 3,
+            labelRefreshRate: 3
         }
     };
     this.setSettingsDisplay = function() {
@@ -10954,7 +10976,7 @@ function MoreSettings() {
         }
     };
     this.setColorCookie = function() {
-        var colorCookie = mainSettings.buttons[2].buttonClass.getRGB64();
+        var colorCookie = mainSettings.buttons[2].buttonClass.formatColorString();
         colorCookie += ~~this.settingsCategory.hideUsernames;
         colorCookie += ~~this.settingsCategory.hideLinks;
         colorCookie += ~~this.settingsCategory.hideGameZoomButtons;
@@ -10968,8 +10990,8 @@ function MoreSettings() {
     this.getSettingLabel = function(labelIndex) {
         if (5 === labelIndex) settingsArray[1][labelIndex].name = "Resolution: " + gameStatistics.getPercentage(100 * canvasManager.getResolution(), 1)
         else if (6 === labelIndex) settingsArray[1][labelIndex].name = "Country Minimum Font Size: " + (4 > this.settingsCategory.minFontSize ? 1 + this.settingsCategory.minFontSize : 2 * (this.settingsCategory.minFontSize - 1))
-        else if (7 === labelIndex) settingsArray[1][labelIndex].name = "Leaderboard Refresh Rate: " + gameStatistics.getPercentage(100 / this.sx[this.settingsCategory.leaderboardRefreshRate], 1)
-        else if (8 === labelIndex) settingsArray[1][labelIndex].name = "Country Title Refresh Rate: " + gameStatistics.getPercentage(100 / this.sx[this.settingsCategory.labelRefreshRate], 1)
+        else if (7 === labelIndex) settingsArray[1][labelIndex].name = "Leaderboard Refresh Rate: " + gameStatistics.getPercentage(100 / this.settingPresets[this.settingsCategory.leaderboardRefreshRate], 1)
+        else if (8 === labelIndex) settingsArray[1][labelIndex].name = "Country Title Refresh Rate: " + gameStatistics.getPercentage(100 / this.settingPresets[this.settingsCategory.labelRefreshRate], 1)
     };
     this.mouseDown = function(xPos, yPos) {
         var sIndex;
