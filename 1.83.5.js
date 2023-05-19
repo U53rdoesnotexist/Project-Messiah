@@ -9133,7 +9133,7 @@ function InfoRenderer() {
         labelYScalarFactor = 1.8;
         maxFontSize = Math.floor(.5 * minDim);
         imposterFontColorThresholdSize = Math.floor(.2 * maxFontSize);
-        minFontSize = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? moreSettings.hideUsernames ? 6 : 4 : moreSettings.hideUsernames ? 10 : 7;
+        minFontSize = gamemode === 8 || moreSettings.settingsCategory.reverseLabels ? moreSettings.settingsCategory.hideUsernames ? 6 : 4 : moreSettings.settingsCategory.hideUsernames ? 10 : 7;
         updateLabelCounters = entityBatchIndex = 0;
         labelXPos = new Uint16Array(maxEntities);
         labelYPos = new Uint16Array(maxEntities);
@@ -9178,7 +9178,7 @@ function InfoRenderer() {
         infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
         entityLabelScaleX[id] = 100 / Math.floor(infoCanvasCtx.measureText(nicknames[id]).width);
         entityLabelScaleY[id] = Math.min(humanBotLabelWidth, entityLabelScaleX[id]);
-        if (modHandler.font >= 1) { //flip labels moreSettings.gJ.gK
+        if (moreSettings.settingsCategory.reverseLabels) {
             infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
             humanBotLabelWidth = 100 / Math.floor(infoCanvasCtx.measureText("900 000").width);
             entityLabelScaleY[id] = Math.min(humanBotLabelWidth, 2 * entityLabelScaleX[id]);
@@ -9390,14 +9390,15 @@ function NickNames() {
     };
     this.updateNicknames = function() {
         var entityIndex;
-        if (moreSettings.highResolution && !singleplayer) {
+        if (!singleplayer) {
             tempNicknames = Array(playerCount);
-            var medianValue = fakeRandom.getMedian();
-            for (entityIndex = 0; entityIndex < playerCount; entityIndex++) {
-                tempNicknames[entityIndex] = nicknames[entityIndex];
-                nicknames[entityIndex] = humanNames[(entityIndex + medianValue) % humanNames.length];
+            for (entityIndex = 0; entityIndex < playerCount; entityIndex++) tempNicknames[entityIndex] = nicknames[entityIndex];
+            if (moreSettings.settingsCategory.hideUsernames) {
+                for (entityIndex = playerCount; entityIndex < maxEntities; entityIndex++) {
+                    nicknames[entityIndex] = humanNames[(entityIndex + fakeRandom.getMedian()) % humanNames.length];
+                    nicknames[myID] = tempNicknames[myID]
+                }
             }
-            nicknames[myID] = tempNicknames[myID]
         }
     }
 }
@@ -9702,8 +9703,10 @@ function main() {
     }
     timeHash = (new Date).getTime() % 1024;
     isNotTopWindow = checkNotTopWindow();
-    canvasManager.init();
     userSettings.init();
+    linkButtons = new LinkButtons;
+    moreSettings.init();
+    canvasManager.init();
     setClientID();
     setZoom();
     setAndroidHTMLHeader();
@@ -9735,7 +9738,6 @@ function main() {
     mainLeaderboard = new MainLeaderboard;
     mainLeaderboard.init();
     endGame = new EndGame;
-    linkButtons = new LinkButtons;
     openLinkBox = new OpenLinkBox;
     setupMainCanvas();
     fakeRandom.init();
@@ -9744,7 +9746,6 @@ function main() {
     configFakeMap.init();
     gameStateManager.init();
     loadCustomMap.init();
-    moreSettings.init();
     wsManager.init();
     playtime.init();
     nickNames.init();
@@ -10706,23 +10707,6 @@ function rectEqualOrInside(x1, y1, w1, h1, x2, y2, w2, h2) {
 }
 
 function MoreSettings() {
-    function setSettings() {
-        linkButtons.displayLinks[2] = linkButtons.displayLinks[3] = linkButtons.displayLinks[4] = !moreSettings.hideLinks;
-        var highResolution = moreSettings.highResolution ? 1 : 0,
-            hideLinks = moreSettings.hideLinks ? 1 : 0,
-            hideUsernames = moreSettings.hideUsernames ? 1 : 0;
-        if (isIOS) {
-            window.webkit.messageHandlers.iosCommandA.postMessage("freeSpawn " + highResolution);
-            window.webkit.messageHandlers.iosCommandA.postMessage("unlimitedTime " + hideLinks);
-        } else if (5 <= androidVersion) {
-            androidObject.saveNumber(25, highResolution);
-            androidObject.saveNumber(26, hideLinks);
-        } else {
-            userSettings.setSettings(6, 4 * hideUsernames + 2 * hideLinks + highResolution);
-            userSettings.formatSettings();
-        }
-    }
-
     function isCursorInButton(xPos, yPos, buttonDims, row) {
         if (0 === row) return xPos >= buttonDims.moreButX && (0 === row || yPos >= buttonDims.yBuffer) && yPos <= buttonDims.yBuffer + buttonDims.contentPadding;
         yPos -= row * (buttonDims.contentPadding - 2);
@@ -10731,7 +10715,7 @@ function MoreSettings() {
 
     function calcButtonDims() {
         var buttonMargin = Math.floor((isZoom ? .145 : .09) * averageDim),
-            textPadding = Math.floor(1.5 * buttonMargin),
+            textPadding = Math.floor(2 * buttonMargin),
             contentPadding = Math.floor(.065 * (isZoom ? .53 : .36) * averageDim);
         return {
             moreButX: mainCanvasWidth - buttonMargin - contentPadding,
@@ -10757,151 +10741,322 @@ function MoreSettings() {
         mainCanvasCtx.fillText(text, Math.floor(xPos + buttonWidth / 2), Math.floor(yPos + buttonheight / 2 + .1 * textSize))
     }
     this.selectedRemote = 1;
-    this.hideUsernames = this.hideLinks = this.highResolution = false;
     var hoveringButtonIndex = -1,
         menuOpen = false,
-        settingsArray = [];
+        settingsArray = [],
+        categoryIndex = 0;
+    this.settingsCategory = null;
+    this.sx = new Uint8Array(4);
     this.init = function() {
-        settingsArray = [];
-        settingsArray.push({
+        this.initSettings();
+        settingsArray = [Array(5), Array(11), Array(5)];
+        this.sx[0] = 10;
+        this.sx[1] = 5;
+        this.sx[2] = 2;
+        this.sx[3] = 1;
+        settingsArray[0][0] = {
             name: "More",
             id: 0,
             red: 140,
             green: 120,
             blue: 0
-        });
-        settingsArray.push({
+        };
+        settingsArray[0][1] = {
             name: "Lobby 1",
             id: 1,
             red: 0,
             green: 0,
             blue: 0
-        });
-        settingsArray.push({
-            name: "Hide Usernames",
+        };
+        settingsArray[0][2] = {
+            name: "Settings",
             id: 2,
             red: 0,
             green: 0,
             blue: 0
-        });
-        settingsArray.push({
-            name: "Hide Links",
+        };
+        settingsArray[0][3] = {
+            name: "More Information",
             id: 3,
             red: 0,
             green: 0,
             blue: 0
-        });
-        !isIOS && 5 > androidVersion && settingsArray.push({
-            name: "High Resolution",
+        };
+        settingsArray[0][4] = {
+            name: versionLabel,
+            id: 4,
+            red: 90,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][0] = settingsArray[0][0];
+        settingsArray[1][1] = {
+            name: "Hide Usernames",
+            id: 1,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][2] = {
+            name: "Hide Links",
+            id: 2,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][3] = {
+            name: "Hide Zoom Buttons",
+            id: 3,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][4] = {
+            name: "Reverse Name/Balance",
             id: 4,
             red: 0,
             green: 0,
             blue: 0
-        });
-        settingsArray.push({
+        };
+        settingsArray[1][5] = {
+            name: "Resolution",
+            id: 5,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][6] = {
+            name: "Country Minimum Font Size",
+            id: 6,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][7] = {
+            name: "Leaderboard Refresh Rate",
+            id: 7,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][8] = {
+            name: "Name&Balance Refresh Rate",
+            id: 8,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][9] = {
+            name: "Reset Settings",
+            id: 9,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[1][10] = {
+            name: "Back",
+            id: 10,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[2][0] = settingsArray[0][0];
+        settingsArray[2][1] = {
             name: "Tutorial",
+            id: 1,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[2][2] = {
+            name: "Player List",
+            id: 2,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[2][3] = {
+            name: "Clan List",
+            id: 3,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        settingsArray[2][4] = {
+            name: "Privacy Policy",
+            id: 4,
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+        !isIOS && 5 > androidVersion && settingsArray.push({
+            name: "Cookie Policy",
             id: 5,
             red: 0,
             green: 0,
             blue: 0
         });
-        settingsArray.push({
-            name: "Player List",
+        settingsArray[2].push({
+            name: "Back",
             id: 6,
             red: 0,
             green: 0,
             blue: 0
         });
-        settingsArray.push({
-            name: "Clan List",
-            id: 7,
-            red: 0,
-            green: 0,
-            blue: 0
-        });
-        settingsArray.push({
-            name: "Privacy Policy",
-            id: 8,
-            red: 0,
-            green: 0,
-            blue: 0
-        });
-        !isIOS && 5 > androidVersion && settingsArray.push({
-            name: "Cookie Policy",
-            id: 9,
-            red: 0,
-            green: 0,
-            blue: 0
-        });
-        settingsArray.push({
-            name: versionLabel,
-            id: 10,
-            red: 90,
-            green: 0,
-            blue: 0
-        });
-        if (isIOS) {
-            this.highResolution = iosObject.freeSpawn;
-            this.hideLinks = iosObject.unlimitedTime;
-            this.hideUsernames = false;
-        } else if (5 <= androidVersion) {
-            this.highResolution = 1 === androidObject.loadNumber(25);
-            this.hideLinks = 1 === androidObject.loadNumber(26);
-            this.hideUsernames = false;
-        } else {
-            var binarySetting = userSettings.getSettings(6);
-            this.highResolution = 1 === (binarySetting & 1);
-            this.hideLinks = 2 === (binarySetting & 2);
-            this.hideUsernames = 4 === (binarySetting & 4)
+        this.loadSettingsFromCookies();
+        this.setSettingsDisplay();
+    };
+    this.initSettings = function() {
+        this.settingsCategory = {
+            hideUsernames: 0,
+            hideLinks: 0,
+            hideGameZoomButtons: 0,
+            reverseLabels: 1,
+            resolution: 2,
+            minFontSize: 4,
+            leaderboardRefreshRate: 2,
+            labelRefreshRate: 2
         }
-        settingsArray[2].green = this.highResolution ? 130 : 0;
-        settingsArray[3].green = this.hideLinks ? 130 : 0;
-        if (!isIOS && 5 > androidVersion) settingsArray[4].green = this.hideUsernames ? 130 : 0;
-        if (this.hideLinks) linkButtons.shouldHideLinks[2] = linkButtons.shouldHideLinks[3] = linkButtons.shouldHideLinks[4] = false;
+    };
+    this.setSettingsDisplay = function() {
+        linkButtons.displayLinks[2] = linkButtons.displayLinks[3] = linkButtons.displayLinks[4] = !this.settingsCategory.hideLinks;
+        settingsArray[1][1].green = this.settingsCategory.hideUsernames ? 130 : 0;
+        settingsArray[1][2].green = this.settingsCategory.hideLinks ? 130 : 0;
+        settingsArray[1][3].green = this.settingsCategory.hideGameZoomButtons ? 130 : 0;
+        settingsArray[1][4].green = this.settingsCategory.reverseLabels ? 130 : 0;
+        this.getSettingLabel(5);
+        this.getSettingLabel(6);
+        this.getSettingLabel(7);
+        this.getSettingLabel(8)
+    };
+    this.loadSettingsFromCookies = function() {
+        var colors = loadColors().split("");
+        if (14 > colors.length) this.initSettings()
+        else {
+            this.settingsCategory.hideUsernames = parseInt(colors[6]);
+            this.settingsCategory.hideLinks = parseInt(colors[7]);
+            this.settingsCategory.hideGameZoomButtons = parseInt(colors[8]);
+            this.settingsCategory.reverseLabels = parseInt(colors[9]);
+            this.settingsCategory.resolution = parseInt(colors[10]);
+            this.settingsCategory.minFontSize = parseInt(colors[11]);
+            this.settingsCategory.leaderboardRefreshRate = parseInt(colors[12]);
+            this.settingsCategory.labelRefreshRate = parseInt(colors[13]);
+        }
+    };
+    this.setColorCookie = function() {
+        var colorCookie = mainSettings.buttons[2].buttonClass.getRGB64();
+        colorCookie += ~~this.settingsCategory.hideUsernames;
+        colorCookie += ~~this.settingsCategory.hideLinks;
+        colorCookie += ~~this.settingsCategory.hideGameZoomButtons;
+        colorCookie += ~~this.settingsCategory.reverseLabels;
+        colorCookie += ~~this.settingsCategory.resolution;
+        colorCookie += ~~this.settingsCategory.minFontSize;
+        colorCookie += ~~this.settingsCategory.leaderboardRefreshRate;
+        colorCookie += ~~this.settingsCategory.labelRefreshRate;
+        saveColors(colorCookie)
+    };
+    this.getSettingLabel = function(labelIndex) {
+        if (5 === labelIndex) settingsArray[1][labelIndex].name = "Resolution: " + gameStatistics.getPercentage(100 * canvasManager.getResolution(), 1)
+        else if (6 === labelIndex) settingsArray[1][labelIndex].name = "Country Minimum Font Size: " + (4 > this.settingsCategory.minFontSize ? 1 + this.settingsCategory.minFontSize : 2 * (this.settingsCategory.minFontSize - 1))
+        else if (7 === labelIndex) settingsArray[1][labelIndex].name = "Leaderboard Refresh Rate: " + gameStatistics.getPercentage(100 / this.sx[this.settingsCategory.leaderboardRefreshRate], 1)
+        else if (8 === labelIndex) settingsArray[1][labelIndex].name = "Country Title Refresh Rate: " + gameStatistics.getPercentage(100 / this.sx[this.settingsCategory.labelRefreshRate], 1)
     };
     this.mouseDown = function(xPos, yPos) {
         var sIndex;
         if (7 > gameStateManager.getState()) {
             var buttonDims = calcButtonDims();
             if (menuOpen) {
-                for (sIndex = 1; sIndex < settingsArray.length; sIndex++) {
+                for (sIndex = 1; sIndex < settingsArray[categoryIndex].length; sIndex++) {
                     if (isCursorInButton(xPos, yPos, buttonDims, sIndex)) {
-                        if (1 === settingsArray[sIndex].id) {
-                            if (wsManager.terriWsCount === moreSettings.selectedRemote + 1 ) moreSettings.selectedRemote = 1
-                            else moreSettings.selectedRemote++;
-                            settingsArray[1].name = "Lobby " + (moreSettings.selectedRemote >= wsManager.serverCount ? `${moreSettings.selectedRemote} (${(moreSettings.selectedRemote - 1)% 4 + 1}B)` : moreSettings.selectedRemote);
-                            mainHandler.canvasDirty = true;
-                        } else if (2 === settingsArray[sIndex].id) {
-                            moreSettings.highResolution = !moreSettings.highResolution;
-                            settingsArray[sIndex].green = moreSettings.highResolution ? 130 : 0;
-                            setSettings();
-                            mainHandler.canvasDirty = true;
-                        } else if (3 === settingsArray[sIndex].id) {
-                            moreSettings.hideLinks = !moreSettings.hideLinks;
-                            settingsArray[sIndex].green = moreSettings.hideLinks ? 130 : 0;
-                            setSettings();
-                            mainHandler.canvasDirty = true;
-                        } else if (4 === settingsArray[sIndex].id) {
-                            moreSettings.hideUsernames = !moreSettings.hideUsernames;
-                            settingsArray[sIndex].green = moreSettings.hideUsernames ? 130 : 0;
-                            setSettings();
-                            canvasManager.forceUpdateCanvas();
-                            mainHandler.canvasDirty = true;
-                        } else if (5 === settingsArray[sIndex].id) {
+                        sIndex = settingsArray[categoryIndex][sIndex];
+                        if (0 === categoryIndex) {
+                            if (1 === sIndex.id) {
+                                if (wsManager.terriWsCount === moreSettings.selectedRemote + 1 ) moreSettings.selectedRemote = 1
+                                else moreSettings.selectedRemote++;
+                                settingsArray[categoryIndex][1].name = "Lobby " + (moreSettings.selectedRemote >= wsManager.serverCount ? `${moreSettings.selectedRemote} (${(moreSettings.selectedRemote - 1)% 4 + 1}B)` : moreSettings.selectedRemote);
+                                mainHandler.canvasDirty = true;    
+                            } else if (2 === sIndex.id) {
+                                categoryIndex = 1;
+                                mainHandler.canvasDirty = true;
+                            } else if (3 === sIndex.id) {
+                                categoryIndex = 2;
+                                mainHandler.canvasDirty = true;
+                            }
+                        } else if (1 === categoryIndex) {
+                            if (1 === sIndex.id) {
+                                moreSettings.settingsCategory.hideUsernames = !moreSettings.settingsCategory.hideUsernames;
+                                sIndex.green = moreSettings.settingsCategory.hideUsernames ? 130 : 0;
+                                moreSettings.setColorCookie();
+                                mainHandler.canvasDirty = true;
+                            } else if (2 === sIndex.id) {
+                                moreSettings.settingsCategory.hideLinks = !moreSettings.settingsCategory.hideLinks;
+                                moreSettings.setSettingsDisplay();
+                                moreSettings.setColorCookie();
+                                mainHandler.canvasDirty = true;
+                            } else if (3 === sIndex.id) {
+                                moreSettings.settingsCategory.hideGameZoomButtons = !moreSettings.settingsCategory.hideGameZoomButtons;
+                                sIndex.green = moreSettings.settingsCategory.hideGameZoomButtons ? 130 : 0;
+                                moreSettings.setColorCookie();
+                                mainHandler.canvasDirty = true;
+                            } else if (4 === sIndex.id) {
+                                moreSettings.settingsCategory.reverseLabels = !moreSettings.settingsCategory.reverseLabels;
+                                sIndex.green = moreSettings.settingsCategory.reverseLabels ? 130 : 0;
+                                moreSettings.setColorCookie();
+                                mainHandler.canvasDirty = true;
+                            } else if (5 === sIndex.id) {
+                                moreSettings.settingsCategory.resolution++;
+                                moreSettings.settingsCategory.resolution %= 8;
+                                moreSettings.getSettingLabel(sIndex.id);
+                                moreSettings.setColorCookie();
+                                canvasManager.forceUpdateCanvas();
+                                mainHandler.canvasDirty = true;
+                            } else if (6 === sIndex.id) {
+                                moreSettings.settingsCategory.minFontSize++;
+                                moreSettings.settingsCategory.minFontSize %= 10;
+                                moreSettings.getSettingLabel(sIndex.id);
+                                moreSettings.setColorCookie();
+                                mainHandler.canvasDirty = true;
+                            } else if (7 === sIndex.id) {
+                                moreSettings.settingsCategory.leaderboardRefreshRate++;
+                                moreSettings.settingsCategory.leaderboardRefreshRate %= 4;
+                                moreSettings.getSettingLabel(sIndex.id);
+                                moreSettings.setColorCookie();
+                                mainHandler.canvasDirty = true;
+                            } else if (8 === sIndex.id) {
+                                moreSettings.settingsCategory.labelRefreshRate++;
+                                moreSettings.settingsCategory.labelRefreshRate %= 4;
+                                moreSettings.getSettingLabel(sIndex.id);
+                                moreSettings.setColorCookie();
+                                mainHandler.canvasDirty = true;
+                            } else if (9 === sIndex.id) {
+                                moreSettings.initSettings();
+                                moreSettings.setSettingsDisplay();
+                                moreSettings.setColorCookie();
+                                canvasManager.forceUpdateCanvas();
+                                mainHandler.canvasDirty = true;
+                            } else if (10 === sIndex.id) {
+                                categoryIndex = 0;
+                                mainHandler.canvasDirty = true;
+                            }
+                        } else if (1 === sIndex.id) {
                             openLinkBox.init(tutorialLink, true);
                             openLinkBox.init(tutorialLink, false);
-                        } else if (6 === settingsArray[sIndex].id) {
+                        } else if (2 === sIndex.id) {
                             openLinkBox.init(leaderboardLinks[0], true);
                             openLinkBox.init(leaderboardLinks[0], false);
-                        } else if (7 === settingsArray[sIndex].id) {
+                        } else if (3 === sIndex.id) {
                             openLinkBox.init(leaderboardLinks[1], true);
                             openLinkBox.init(leaderboardLinks[1], false);
-                        } else if (8 === settingsArray[sIndex].id) {
+                        } else if (4 === sIndex.id) {
+                            if (12 <= androidVersion) androidObject.setState(7)
                             openLinkBox.init(privacyPolicyLink, true);
                             openLinkBox.init(privacyPolicyLink, false);
-                        } else if (9 === settingsArray[sIndex].id) {
+                        } else if (5 === sIndex.id) {
                             openLinkBox.init(cookiePolicyLink, true);
                             openLinkBox.init(cookiePolicyLink, false);
+                        } else if (6 === sIndex.id) {
+                            categoryIndex = 0;
+                            mainHandler.canvasDirty = true;
                         }
                         return true;
                     }
@@ -10921,7 +11076,7 @@ function MoreSettings() {
         if (7 > gameStateManager.getState()) {
             var buttonDims = calcButtonDims();
             var oldHoveringButtonIndex = hoveringButtonIndex;
-            var settingsCount = menuOpen ? settingsArray.length - 1 : 1;
+            var settingsCount = menuOpen ? settingsArray[categoryIndex].length - (categoryIndex == 0 ? 1 : 0) : 1;
             hoveringButtonIndex = -1;
             for (var bIndex = 0; bIndex < settingsCount; bIndex++) {
                 if (isCursorInButton(xPos, yPos, buttonDims, bIndex)) {
@@ -10937,11 +11092,15 @@ function MoreSettings() {
             var buttonDims = calcButtonDims();
             mainCanvasCtx.textAlign = centerAlign;
             mainCanvasCtx.textBaseline = middleAlign;
-            drawButton(buttonDims.moreButX, buttonDims.yBuffer, buttonDims.buttonMargin, buttonDims.contentPadding, settingsArray[0].red, settingsArray[0].green, settingsArray[0].blue, 0 === hoveringButtonIndex, settingsArray[0].name, .6);
+            drawButton(buttonDims.moreButX, buttonDims.yBuffer, buttonDims.buttonMargin, buttonDims.contentPadding, settingsArray[categoryIndex][0].red, settingsArray[categoryIndex][0].green, settingsArray[categoryIndex][0].blue, 0 === hoveringButtonIndex, settingsArray[categoryIndex][0].name, .6);
             if (menuOpen) {
-                var settingsCount = settingsArray.length;
+                var settingsCount = settingsArray[categoryIndex].length;
                 for (var bIndex = 1; bIndex < settingsCount; bIndex++) {
-                    drawButton(buttonDims.xBoundary, buttonDims.yBuffer + bIndex * buttonDims.contentPadding - 2 * bIndex, buttonDims.textPadding, buttonDims.contentPadding, settingsArray[bIndex].red, settingsArray[bIndex].green, settingsArray[bIndex].blue, hoveringButtonIndex === bIndex, settingsArray[bIndex].name, bIndex === settingsCount - 1 ? .32 : .45)
+                    drawButton(buttonDims.xBoundary, buttonDims.yBuffer + bIndex * buttonDims.contentPadding - 2 * bIndex,
+                        buttonDims.textPadding, buttonDims.contentPadding, settingsArray[categoryIndex][bIndex].red, settingsArray[categoryIndex][bIndex].green,
+                        settingsArray[categoryIndex][bIndex].blue, hoveringButtonIndex === bIndex, settingsArray[categoryIndex][bIndex].name,
+                        22 >= settingsArray[categoryIndex][bIndex].name.length ? .45 : .45 / (1 + (settingsArray[categoryIndex][bIndex].name.length - 22) / 22)
+                    );
                 }
             }
         }
@@ -11290,7 +11449,7 @@ function CanvasManager() {
             } else return false;
         }
         canvasManager.getResolution();
-        moreSettings.hideUsernames ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
+        moreSettings.settingsCategory.hideUsernames ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
         maxClientWidth = limitToMinimum(document.documentElement.clientWidth - getDockWidth(1) - getDockWidth(2));
         maxClientHeight = limitToMinimum(document.documentElement.clientHeight);
         varClientWidth = Math.floor(.5 + pixelRatio * maxClientWidth);
@@ -11333,7 +11492,7 @@ function CanvasManager() {
     this.getResolution = function() {
         var devicePixelRatio = window.devicePixelRatio || 1;
         if (5 <= androidVersion) return 1 / devicePixelRatio;
-        pixelRatio = 3 > moreSettings.highResolution ? .5 + .25 * moreSettings.highResolution : (.5 + .125 * (moreSettings.highResolution - 3)) * devicePixelRatio;
+        pixelRatio = 3 > moreSettings.settingsCategory.resolution ? .5 + .25 * moreSettings.settingsCategory.resolution : (.5 + .125 * (moreSettings.settingsCategory.resolution - 3)) * devicePixelRatio;
         return pixelRatio / devicePixelRatio
     }
     this.dockUpdateCanvas = function() {
