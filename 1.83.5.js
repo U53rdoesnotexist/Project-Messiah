@@ -864,12 +864,12 @@ function drawCanvases() {
     troopBar.drawCanvas();
     attackRatioBar.drawCanvas();
     peace.drawCanvas();
-    infoRenderer.drawCanvas();
+    infoRenderer.drawCanvas(2 === clientStatus);
     teams.updateRenderObject()
 }
 
 function updatedPlayerLabels() {
-    infoRenderer.drawCanvas() && (mainHandler.canvasDirty = true);
+    infoRenderer.drawCanvas(true) && (mainHandler.canvasDirty = true);
     wsManager.update()
 }
 
@@ -1840,7 +1840,7 @@ function Spawn() {
         } else gameResultBox.show(false, false);
         announcements.removeSpawnMessage(18);
         infoRenderer.setPlayerLabels();
-        infoRenderer.drawCanvas();
+        infoRenderer.drawCanvas(true);
         spawn = null;
         mapUpdate.hasChanged = true;
         mapUpdate.updateFullMap();
@@ -1940,7 +1940,7 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
 function activateCameraRenderer() {
     autoCamera.activateCamera();
     0 === isAlive[myID] && gameResultBox.show(false, true);
-    infoRenderer.drawCanvas()
+    infoRenderer.drawCanvas(true)
 }
 
 function leaveGame() {
@@ -8937,7 +8937,13 @@ function InfoRenderer() {
         infoCanvasCtx.textBaseline = middleAlign;
         infoCanvasCtx.imageSmoothingEnabled = true
     }
-    
+
+    function getLabelYScalePreset(id) {
+        if (!moreSettings.settingsCategory.reverseLabels || 1E6 > troops[id]) return 1
+        else if (1E7 > troops[id]) return reverseLabelScalePresets[0]
+        else return reverseLabelScalePresets[Math.min(Math.floor(Math.log10(troops[id])) - 6, 3)]
+    }
+
     function renderEntityLabels() {
         needsDrawImage = false;
         canvasScale = 1;
@@ -8950,15 +8956,15 @@ function InfoRenderer() {
 
         for (aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) {
             idIndex = aliveEntities[aliveIndex];
-            fontSize = Math.floor(fontScalarConst * mainScaleFactor * entityLabelScaleY[idIndex] * labelWidth[idIndex] * (typeof(modHandler) == "object" && modHandler.font >= 1 ? 1.5 : 1));
+            fontSize = Math.floor(fontScalarConst * mainScaleFactor * infoRenderer.getEntityLabelScaleY(idIndex) * labelWidth[idIndex] * (modHandler.font >= 1 ? 1.5 : 1));
             if (fontSize >= minFontSize && fontSize < maxFontSize && labelXPos[idIndex] + labelWidth[idIndex] > camLeft && labelXPos[idIndex] < camRight && labelYPos[idIndex] + labelHeight[idIndex] > camTop && labelYPos[idIndex] < camBottom) {
                 landCenterX = Math.floor(prevClientWidth * (labelXPos[idIndex] + labelWidth[idIndex] / 2 - camLeft) / (camRight - camLeft));
                 landCenterY = Math.floor(prevClientHeight * (labelYPos[idIndex] + labelHeight[idIndex] / 2 - camTop) / (camBottom - camTop) - .1 * fontSize);
                 infoCanvasCtx.font = fontStyles[playerStatus[idIndex]] + fontSize + fontSizeArial;
 
                 var fontColor = fontSize >= imposterFontColorThresholdSize && fontSize < maxFontSize ? teamColors.impostorfontColors[pixel.shading[idIndex]] + getAlphaFromFontSize(fontSize).toFixed(3) + ")" : teamColors.fontColors[pixel.shading[idIndex]],
-                    textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? attackBars.splitNumber(troops[idIndex]): nicknames[idIndex];
-                if (typeof(modHandler) == 'object' && modHandler.font >= 1) {
+                    textLabel = moreSettings.settingsCategory.reverseLabels ? attackBars.splitNumber(troops[idIndex]): nicknames[idIndex];
+                if (modHandler.font >= 1) {
                     if (modHandler.font == 2 && isNotTeamate(myID, idIndex)) {
                         if (idIndex >= playerCount && difficultyEngine.botTiming[idIndex - playerCount] <= 17 && mainHandler.getTicksElapsed() % 100 <= 70 && !bordersNeutral(idIndex)) {
                             fontColor = "rgb(0,0,210)";
@@ -8972,17 +8978,17 @@ function InfoRenderer() {
                 infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY);
                 needsDrawImage = true;
                 
-                fontSize *= (typeof(modHandler) == "object" && modHandler.font >= 1 ? 0.67 : 1)
+                fontSize *= (moreSettings.settingsCategory.reverseLabels ? 0.67 : 1)
                 if (0 < displayIconRemainingTime[idIndex]) {
                     if (0 === landIDOrder[idIndex])
                         if (emojis.isFlag(displayingEmojiID[idIndex])) {
                             var emojiSizeMultiplier = .9 * fontSize / emojis.width,
                                 emojiVerticalPos = Math.floor(landCenterY - .5 * emojiSizeMultiplier * emojis.width - .05 * fontSize);
                             infoCanvasCtx.globalAlpha = getAlphaFromFontSize(fontSize);
-                            var emojiHorizontalPos = Math.floor(landCenterX - .5 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
+                            var emojiHorizontalPos = Math.floor(landCenterX - .5 * fontSize / (entityLabelScaleX[idIndex] * getLabelYScalePreset(idIndex)) - .4 * fontSize - emojiSizeMultiplier * emojis.width)
                             infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
                             infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
-                            emojiHorizontalPos = Math.floor(landCenterX + .7 * fontSize / entityLabelScaleX[idIndex] - .4 * fontSize - emojiSizeMultiplier * emojis.width)
+                            emojiHorizontalPos = Math.floor(landCenterX + .7 * fontSize / (entityLabelScaleX[idIndex] * getLabelYScalePreset(idIndex)) - .4 * fontSize - emojiSizeMultiplier * emojis.width)
                             infoCanvasCtx.setTransform(emojiSizeMultiplier, 0, 0, emojiSizeMultiplier, emojiHorizontalPos, emojiVerticalPos);
                             infoCanvasCtx.drawImage(emojis.emojiCanvasList[displayingEmojiID[idIndex]], 0, 0);
                             infoCanvasCtx.globalAlpha = 1;
@@ -9004,7 +9010,7 @@ function InfoRenderer() {
                 if (isAlivePlayer && (0 < displayIconRemainingTime[idIndex + maxEntities] || 0 < displayIconRemainingTime[idIndex + 2 * maxEntities] || 0 < displayIconRemainingTime[idIndex + 3 * maxEntities] || 0 < displayIconRemainingTime[idIndex + 4 * maxEntities])) {
                     fontColor = landCenterX;
                     var iconLevel = -1;
-                    for (index = 4; 1 <= index; index--) {
+                    for (var index = 4; 1 <= index; index--) {
                         if (0 < displayIconRemainingTime[idIndex + index * maxEntities]) iconLevel++
                     }
                     for (index = 1; 5 > index; index++) {
@@ -9022,8 +9028,8 @@ function InfoRenderer() {
                 var getFontSize = Math.floor(fontScaleFactor * fontSize);
                 if (getFontSize >= minFontSize) {
                     infoCanvasCtx.font = fontWeightBold + getFontSize + fontSizeArial;
-                    textLabel = gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1 ? nicknames[idIndex] + (typeof(modHandler) == 'object' && modHandler.font >= 2 ? ` (${idIndex})` : "") : attackBars.splitNumber(troops[idIndex]);
-                    infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY + Math.floor((typeof(modHandler) == "object" && modHandler.font >= 1 ? 1 : .78) * fontSize))
+                    textLabel = moreSettings.settingsCategory.reverseLabels ? nicknames[idIndex] + (modHandler.font >= 2 ? ` (${idIndex})` : "") : attackBars.splitNumber(troops[idIndex]);
+                    infoCanvasCtx.fillText(textLabel, landCenterX, landCenterY + Math.floor((moreSettings.settingsCategory.reverseLabels ? 1 : .78) * fontSize))
                 }
             }
         }
@@ -9109,23 +9115,9 @@ function InfoRenderer() {
         return pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord)) && pixel.strongIsOwner(id, 4 * (yCoord * currentMapWidth + xCoord + xOffset - 1))
     }
 
-    function setLabelSize() {
-        if (gamemode === 8 || typeof(modHandler) == "object" && modHandler.font >= 1) {
-            var entityIndex;
-            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
-            var entityLabelScale = 100 / Math.floor(infoCanvasCtx.measureText("20 000 000" + (typeof(modHandler) == "object" && modHandler.font >= 2 ? ` (${150.00})` : "")).width);
-            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) entityLabelScaleX[entityIndex] = entityLabelScaleY[entityIndex] = entityLabelScale / 1.5
-        } else {
-            infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
-            entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap) + (typeof(modHandler) == "object" && modHandler.font >= 2) ? ` (${maxEntities - 1})` : "").width);
-            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
-            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
-                entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nicknames[entityIndex]).width);
-                entityLabelScaleY[entityIndex] = getMin(entityLabelScale, entityLabelScaleX[entityIndex]);
-            }
-        }
-    }
-    var entityBatchIndex, updateLabelCounters, labelXPos, labelYPos, labelWidth, labelHeight, entityLabelScaleY, entityLabelScaleX, maxFontSize, imposterFontColorThresholdSize, fontScaleFactor, labelYScalarFactor, minFontSize, fontScalarConst, renderOffsetX, renderOffsetY, canvasScale, needsDrawImage, infoCanvas, infoCanvasCtx, updateInterval, displayingEmojiID, displayIconRemainingTime, crownWidth, crownHeight;
+    var entityBatchIndex, updateLabelCounters, labelXPos, labelYPos, labelWidth, labelHeight, entityLabelScaleY, entityLabelScaleX, maxFontSize, imposterFontColorThresholdSize,
+        fontScaleFactor, labelYScalarFactor, minFontSize, fontScalarConst, renderOffsetX, renderOffsetY, canvasScale, needsDrawImage, infoCanvas, infoCanvasCtx, updateInterval, 
+        displayingEmojiID, displayIconRemainingTime, crownWidth, crownHeight, updateInterval = 0, reverseLabelScalePresets = new Float32Array(4);
     this.init = function() {
         needsDrawImage = false;
         fontScalarConst = .88;
@@ -9133,7 +9125,7 @@ function InfoRenderer() {
         labelYScalarFactor = 1.8;
         maxFontSize = Math.floor(.5 * minDim);
         imposterFontColorThresholdSize = Math.floor(.2 * maxFontSize);
-        minFontSize = gamemode === 8 || moreSettings.settingsCategory.reverseLabels ? moreSettings.settingsCategory.hideUsernames ? 6 : 4 : moreSettings.settingsCategory.hideUsernames ? 10 : 7;
+        minFontSize = 4 > moreSettings.settingsCategory.minFontSize ? 1 + moreSettings.settingsCategory.minFontSize: 2 * (moreSettings.settingsCategory.minFontSize - 1)
         updateLabelCounters = entityBatchIndex = 0;
         labelXPos = new Uint16Array(maxEntities);
         labelYPos = new Uint16Array(maxEntities);
@@ -9147,8 +9139,27 @@ function InfoRenderer() {
         setupInfoCanvas();
         renderOffsetY = renderOffsetX = 0;
         canvasScale = 1;
-        updateInterval = 0;
-        setLabelSize();
+        
+        infoCanvasCtx.font = fontWeightBold + Math.floor(100 * fontScaleFactor) + fontSizeArial;
+        var entityLabelScale = 80 / Math.floor(infoCanvasCtx.measureText(attackBars.splitNumber(absMaxTroopCap) + (modHandler.font >= 2) ? ` (${maxEntities - 1})` : "").width);
+        infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
+        for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
+            entityLabelScaleX[entityIndex] = 100 / Math.floor(infoCanvasCtx.measureText(nicknames[entityIndex]).width);
+            entityLabelScaleY[entityIndex] = getMin(entityLabelScale, entityLabelScaleX[entityIndex]);
+        }
+        if (moreSettings.settingsCategory.reverseLabels) {
+            var entityIndex;
+            infoCanvasCtx.font = fontWeightBold + 100 + fontSizeArial;
+            var entityLabelScale = 100 / Math.floor(infoCanvasCtx.measureText("900 000" + (modHandler.font >= 2 ? ` (${150.00})` : "")).width);
+            for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
+                entityLabelScaleY[entityIndex] = Math.min(entityLabelScale, 2 * entityLabelScaleX[entityIndex]);
+                entityLabelScaleX[entityIndex] = entityLabelScale;
+            }
+            reverseLabelScalePresets[0] = 100 / (entityLabelScale * Math.floor(infoCanvasCtx.measureText("5 000 000").width));
+            reverseLabelScalePresets[1] = 100 / (entityLabelScale * Math.floor(infoCanvasCtx.measureText("50 000 000").width));
+            reverseLabelScalePresets[2] = 100 / (entityLabelScale * Math.floor(infoCanvasCtx.measureText("500 000 000").width));
+            reverseLabelScalePresets[3] = 100 / (entityLabelScale * Math.floor(infoCanvasCtx.measureText("1 000 000 000").width))
+        }
         for (entityIndex = maxEntities - 1; 0 <= entityIndex; entityIndex--) {
             if (12 > land[entityIndex]) {
                 labelXPos[entityIndex] = xMin[entityIndex] + 1;
@@ -9240,18 +9251,17 @@ function InfoRenderer() {
         renderOffsetX = (renderOffsetX + newX) * scaleFactorChangeRatio - newX;
         renderOffsetY = (renderOffsetY + newY) * scaleFactorChangeRatio - newY
     };
-    this.drawCanvas = function() {
-        if (0 >= --updateInterval) {
-            updateInterval = 4 >= frameRate ? 10 : 12 > frameRate ? 5 : 2;
+    this.drawCanvas = function(forceRender) {
+        if (forceRender && 0 === ++updateInterval % moreSettings.sx[moreSettings.settingsCategory.labelRefreshRate] || 0 === mainHandler.getTicksElapsed() % moreSettings.sx[moreSettings.settingsCategory.labelRefreshRate]) {
+            updateInterval = 0;
             renderEntityLabels();
             return true;
-        } else return false
+        } else return false;
     };
     this.getEntityLabelScaleY = function(id) {
-        return entityLabelScaleY[id]
+        return getLabelYScalePreset(id) * entityLabelScaleY[id]
     };
     this.update = function() {
-        setLabelSize();
         if (4 <= ++updateLabelCounters) {
             updateLabelCounters = 0;
             for (var iconRelativeIndex = 4; 1 <= iconRelativeIndex; iconRelativeIndex--) {
@@ -9285,7 +9295,7 @@ function InfoRenderer() {
                     for (var labelWidthOffset = 1 + Math.floor(.02 * labelWidth[idIndex]), offsetMultiplier = 1; 5 > offsetMultiplier; offsetMultiplier++) {
                         var newLabelWidth = labelWidth[idIndex] + offsetMultiplier * labelWidthOffset;
                         if (newLabelWidth > xMax[idIndex] - xMin[idIndex] + 1) break;
-                        var newLabelHeight = 1 + Math.floor(labelYScalarFactor * entityLabelScaleY[idIndex] * newLabelWidth);
+                        var newLabelHeight = 1 + Math.floor(labelYScalarFactor * this.getEntityLabelScaleY(idIndex) * newLabelWidth);
                         if (newLabelHeight > yMax[idIndex] - yMin[idIndex] + 1) break;
                         var randomXPos = xMin[idIndex] + Math.floor(Math.random() * (xMax[idIndex] - xMin[idIndex] + 2 - newLabelWidth));
                         var randomYPos = yMin[idIndex] + Math.floor(Math.random() * (yMax[idIndex] - yMin[idIndex] + 2 - newLabelHeight));
@@ -9308,7 +9318,7 @@ function InfoRenderer() {
                             labelWidth[idIndex] = 0;
                             break
                         }
-                        var labelHeightYIndex = 1 + Math.floor(labelYScalarFactor * entityLabelScaleY[idIndex] * labelWidthXIndex);
+                        var labelHeightYIndex = 1 + Math.floor(labelYScalarFactor * this.getEntityLabelScaleY(idIndex) * labelWidthXIndex);
                         if (isLabelPositionValid(idIndex, labelXPosIndex, labelYPosIndex, labelWidthXIndex, labelHeightYIndex)) {
                             labelXPos[idIndex] = labelXPosIndex;
                             labelYPos[idIndex] = labelYPosIndex;
@@ -9329,7 +9339,7 @@ function InfoRenderer() {
                         leftShift = getMax(1, Math.floor(.02 * xDiff));
                     for (; xDiff >= -6 * leftShift; xDiff -= leftShift) {
                         var newLabelWidth = 0 < xDiff ? xDiff : 1,
-                            newLabelHeight = 1 + Math.floor(labelYScalarFactor * entityLabelScaleY[idIndex] * newLabelWidth),
+                            newLabelHeight = 1 + Math.floor(labelYScalarFactor * this.getEntityLabelScaleY(idIndex) * newLabelWidth),
                             randomXPos = xMin[idIndex] + Math.floor(Math.random() * (xMax[idIndex] - xMin[idIndex] + 2 - newLabelWidth)),
                             randomYPos = yMin[idIndex] + Math.floor(Math.random() * (yMax[idIndex] - yMin[idIndex] + 2 - newLabelHeight));
                         if (isLabelPositionValid(idIndex, randomXPos, randomYPos, newLabelWidth, newLabelHeight)) {
@@ -12641,7 +12651,7 @@ function SingleplayerHandler() {
                                 } else {
                                     this.spawnTick++;
                                     infoRenderer.setPlayerLabels();
-                                    infoRenderer.drawCanvas();
+                                    infoRenderer.drawCanvas(true);
                                     mapUpdate.updateMapCanvas();
                                 }
                             }
@@ -12728,11 +12738,11 @@ function MultiplayerHandler() {
         } else {
             this.packetsReceived++;
             infoRenderer.setPlayerLabels();
-            infoRenderer.drawCanvas();
+            infoRenderer.drawCanvas(true);
             mapUpdate.updateMapCanvas();
-            if (typeof(modHandler) == 'object') modHandler.scriptSpawnTick()
+            modHandler.scriptSpawnTick()
         };
-        if (typeof(extendedActions) == "object") extendedActions.update();
+        extendedActions.update();
     };
     this.update = function() {
         canvasManager.update();
