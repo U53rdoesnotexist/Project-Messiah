@@ -10940,7 +10940,9 @@ function MoreSettings() {
             drawButton(buttonDims.moreButX, buttonDims.yBuffer, buttonDims.buttonMargin, buttonDims.contentPadding, settingsArray[0].red, settingsArray[0].green, settingsArray[0].blue, 0 === hoveringButtonIndex, settingsArray[0].name, .6);
             if (menuOpen) {
                 var settingsCount = settingsArray.length;
-                for (var bIndex = 1; bIndex < settingsCount; bIndex++) drawButton(buttonDims.xBoundary, buttonDims.yBuffer + bIndex * buttonDims.contentPadding - 2 * bIndex, buttonDims.textPadding, buttonDims.contentPadding, settingsArray[bIndex].red, settingsArray[bIndex].green, settingsArray[bIndex].blue, hoveringButtonIndex === bIndex, settingsArray[bIndex].name, bIndex === settingsCount - 1 ? .32 : .45)
+                for (var bIndex = 1; bIndex < settingsCount; bIndex++) {
+                    drawButton(buttonDims.xBoundary, buttonDims.yBuffer + bIndex * buttonDims.contentPadding - 2 * bIndex, buttonDims.textPadding, buttonDims.contentPadding, settingsArray[bIndex].red, settingsArray[bIndex].green, settingsArray[bIndex].blue, hoveringButtonIndex === bIndex, settingsArray[bIndex].name, bIndex === settingsCount - 1 ? .32 : .45)
+                }
             }
         }
     }
@@ -11274,12 +11276,10 @@ function CanvasManager() {
                 mainCanvasHeight = prevClientHeight;
                 minDim = getMin(mainCanvasWidth, mainCanvasHeight);
                 averageDim = divideFloor(mainCanvasHeight + mainCanvasWidth, 2);
-                if (5 <= androidVersion) {
-                    var maxClientWidth = androidObject.loadNumber(23);
-                    var maxClientHeight = androidObject.loadNumber(24);
-                    varClientWidth > maxClientWidth && (maxClientWidth = varClientWidth, androidObject.saveNumber(23, maxClientWidth));
-                    varClientHeight > maxClientHeight && (maxClientHeight = varClientHeight, androidObject.saveNumber(24, maxClientHeight))
-                } else maxClientWidth = varClientWidth, maxClientHeight = varClientHeight;
+                var maxClientWidth = androidObject.loadNumber(23);
+                var maxClientHeight = androidObject.loadNumber(24);
+                varClientWidth > maxClientWidth && (maxClientWidth = varClientWidth, androidObject.saveNumber(23, maxClientWidth));
+                varClientHeight > maxClientHeight && (maxClientHeight = varClientHeight, androidObject.saveNumber(24, maxClientHeight))
                 varClientWidth = mainCanvas.width;
                 varClientHeight = mainCanvas.height;
                 maxClientWidth > varClientWidth && (varClientWidth = maxClientWidth, mainCanvas.width = maxClientWidth);
@@ -11287,9 +11287,9 @@ function CanvasManager() {
                 mainCanvas.style.width = varClientWidth + "px";
                 mainCanvas.style.height = varClientHeight + "px";
                 return true;
-                //IDK anything about mobile shit
             } else return false;
         }
+        canvasManager.getResolution();
         moreSettings.hideUsernames ? (pixelRatio = window.devicePixelRatio) || (pixelRatio = 1) : pixelRatio = 1;
         maxClientWidth = limitToMinimum(document.documentElement.clientWidth - getDockWidth(1) - getDockWidth(2));
         maxClientHeight = limitToMinimum(document.documentElement.clientHeight);
@@ -11329,6 +11329,12 @@ function CanvasManager() {
     this.forceUpdateCanvas = function() {
         forceCanvasUpdate = true;
         500 <= updateFreq && updateCanvas()
+    }
+    this.getResolution = function() {
+        var devicePixelRatio = window.devicePixelRatio || 1;
+        if (5 <= androidVersion) return 1 / devicePixelRatio;
+        pixelRatio = 3 > moreSettings.highResolution ? .5 + .25 * moreSettings.highResolution : (.5 + .125 * (moreSettings.highResolution - 3)) * devicePixelRatio;
+        return pixelRatio / devicePixelRatio
     }
     this.dockUpdateCanvas = function() {
         forceCanvasUpdate = true;
@@ -12532,6 +12538,7 @@ function MultiplayerHandler() {
     this.packetsReceived = this.tick = this.clientTick = 0;
     this.latestPacket = null;
     this.packetInterval = 7;
+    this.ni = 0;
     var packetID;
     this.init = function() {
         this.packetsReceived = 0;
@@ -12579,15 +12586,19 @@ function MultiplayerHandler() {
                 if (2 === clientStatus) clientTick1() 
                 else this.latencyResync()
                 this.clientTick++;
+                if (27 < mainHandler.time - this.lastRefreshTime) this.refreshCanvas();
             }
-        } else {
-            mainHandler.canvasDirty = true;
-            drawCanvases();
-            this.clientTick = 0;
-        }
+        } else this.refreshCanvas();
         clientTick2();
         mainHandler.canvasDirty && (mainHandler.canvasDirty = false, drawCanvasImages())
+        this.lastRefreshTime = mainHandler.time;
     };
+    this.refreshCanvas = function() {
+        mainHandler.canvasDirty = true;
+        drawCanvases();
+        this.clientTick = 0;
+
+    }
     this.latencyResync = function() {
         if (this.tick !== 7 * this.packetsReceived) {
             gameTick();
