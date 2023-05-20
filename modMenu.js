@@ -514,23 +514,6 @@ class ModMenu {
 
         const title = this.createLabel("Players Logger", "h1", `color: ${this.getColor(4)}; text-align: center;`)
 
-        //Redraw the window when a reload button is clicked, since the land may fluctuate.
-        const reloadButton = document.createElement("button");
-        reloadButton.innerHTML = "Reload Panel";
-        reloadButton.style.float = "right";
-        reloadButton.style.backgroundColor = "transparent";
-        reloadButton.style.border = "none";
-        reloadButton.style.color = this.getColor(4);
-        reloadButton.style.fontStyle = fontStyleItalic ; // calculate font size based on menu width
-        reloadButton.style.textAlign = "left";
-        reloadButton.style.paddingTop = "0"
-        reloadButton.style.marginRight = "20px";
-        reloadButton.addEventListener("click", (e) => {
-            this.drawWindow();
-        })
-        this.menu.appendChild(reloadButton);
-        this.menu.appendChild(document.createElement("br"));
-
         if (typeof gamemode == "undefined") {
             const playGameFirstLabel = this.createLabel("There is nothing here. Play a game first!", "h4")
             return;
@@ -667,20 +650,50 @@ class ModMenu {
         const title = this.createLabel("In-game Chat", "h1",
             `color: ${this.getColor(7)}; text-align: center;`);
 
-        if (clientStatus == 0) {
+        if (clientStatus == 0 || singleplayer || customJSON.isCustomJSON && customJSON.data.replay) {
             const playGameFirstLabel = this.createLabel("There is nothing here. Join a game first!", "h4")
             return;
         }
         
         //Select channel: All, Team, Clan, Private (With another list of players to select from)
         const channelInput = this.createLabelledInput("Channel:", "channel", "select", ["All", "Team", "Clan", "Direct Message"], 0, 0, (e) => {
-            //Set chat target to selected channel
-            directInput.disabled = channelInput.value != 3;
-        }, "Select the channel you want to send messages to.");
+            chat.target.type = ["all", "team", "clan", "direct"][channelInput.value];
+            directInput.style.display = parseInt(channelInput.value) != 3 ? "none" : "";
+        }, "Select your chat channel.");
         const directInput = this.createLabelledInput("Direct Message:", "direct", "select", nicknames.filter((e, i) => i < playerCount && i != myID), 0, 0, (e) => {
             //Set chat target to selected player
-        }, "Select the player you want to send messages to.");
-        directInput.disabled = true;
+            chat.target.id = parseInt(directInput.value);
+        }, "Select the player you want to send direct messages to.");
+        directInput.style.display = 'none';
+
+        //Show Chats
+        const chatLabel = this.createLabel("Chat:", "h2");
+        const chatBox = this.createLabel("", "div", "width: 100%; height: 200px; overflow-y: scroll; border: 1px solid black; padding: 5px; margin-bottom: 5px; color: white;");
+        chatBox.id = "chatBox";
+        chatBox.innerHTML = chat.messages.map((message) => {
+            if (["all", "team", "clan", "direct"].includes(message.target.type)) {
+                return `<p>${gameStatistics.getFormattedTime(
+                    mainHandler.getTicksElapsed()
+                )}, ${nicknames[message.author]}: ${message.m}</p>`;
+            } else return "";
+        }).join("");
+
+        //Send Chat, Bar + Send Button (no Enter for now, fucks up with other listeners)
+        const chatInput = this.createLabelledInput("Chat:", "chat", "text", 0, 0, chat.typedMessage, (e) => {
+            chat.typedMessage = chatInput.value = chatInput.value.slice(0, getMin(100, chatInput.value.length));
+        })
+        const sendButton = document.createElement("button");
+        sendButton.innerHTML = "Send";
+        sendButton.style.float = "right"
+        sendButton.onclick = () => {
+            if (chatInput.value.length > chat.maxMsgLength) return
+            else {
+                chat.send(chatInput.value);
+                chatInput.value = chat.typedMessage = "";
+            }
+        };
+        this.menu.appendChild(sendButton);
+            
     }
 
     drawSinglePanel() {

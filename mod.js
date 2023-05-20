@@ -1,4 +1,4 @@
-var modHandler, discordWeb, latencySimulator, replayLogger, spawnHelper, cheat, extendedActions, distance;
+var modHandler, discordWeb, latencySimulator, replayLogger, spawnHelper, cheat, extendedActions, distance, chat;
 function modConstruct(){
     modHandler = new ModHandler;
     discordWeb = new DiscordWeb;
@@ -8,6 +8,7 @@ function modConstruct(){
     extendedActions = new ExtendedActions;
     modHandler.updateCheatModules();
     distance = new Distance;
+    chat = new Chat;
 }
 
 function ModHandler() {
@@ -73,6 +74,8 @@ function ModHandler() {
         if (this.bot) cheat.init();
         replayLogger.init();
         discordWeb.hasExported = false;
+        modHandler.updateModMenus(false);
+        chat.connect();
     };
     this.scriptSpawnTick = function() {
         if (modHandler.spawnMod) spawnHelper.setSpawn(mainHandler.multiplayerHandler.packetsReceived)
@@ -108,6 +111,12 @@ function ModHandler() {
             cheat = new SmartMultiboxing;
             if (gameStateManager.getState() == 7) cheat.onJoin()
         } else if (modHandler.bot >= 3) cheat = new WindowMultiboxing;
+    }
+    this.updateModMenus = function(panel) {
+        for (var modMenu of modMenus) {
+            if (panel === false || modMenu.panelTypes.includes(panel))
+            modMenu.drawWindow();
+        }
     }
 }
 
@@ -1353,6 +1362,7 @@ function MultiWS(proxy, instanceName) {
 
 function Chat() {
     this.maxMsgLength = 100;
+    this.typedMessage = '';
     this.socket;
     this.messages = [];
     this.target = {
@@ -1364,14 +1374,19 @@ function Chat() {
         this.socket = new WebSocket('wss://teritorio-chat.glitch.me');
         this.socket.binaryType = 'arraybuffer';
         this.socket.onmessage = (e) => this.onmessage(e);
-        this.socket.onclose = () => setTimeout(() => this.connect(), 100);
+        //this.socket.onclose = () => setTimeout(() => this.connect(), 100);
+        this.messages = [];
+    }
+
+    this.close = function() {
+        this.socket.close();
     }
  
     this.send = function(message) {
         const innerColors = pixel.getInnerColors(myID);
-        const tokenInt = divideFloor((1+currentMapSeed)*(1+innerColors[0]) + (1+currentSeedSpawn)*(1+innerColors[1]) + (1+setGameOrigin.gameHash)*(1+innerColors[2]), maxEntities) + myID;
+        const tokenInt = maxEntities * divideFloor((1+currentMapSeed)*(1+innerColors[0]) + (1+currentSeedSpawn)*(1+innerColors[1]) + (1+setGameOrigin.gameHash)*(1+innerColors[2]), maxEntities) + myID;
         const packet = {
-            token: atob(tokenInt.toString()),
+            token: btoa(tokenInt.toString()),
             target: this.target.type == 'direct' ? this.target.id : this.target.type,
             m: message,
         };
@@ -1380,41 +1395,45 @@ function Chat() {
     }
 
     this.onmessage = function(e) {
-        const message = JSON.parse(new TextDecoder().decode(e.data));
+        var message, token, senderID;
+        message = JSON.parse(new TextDecoder().decode(e.data));
         //Verify token, check if token, target and m attributes exist
         if (!message.token || !message.target || !message.m) return;
         try {
-            const token = btoa(message.token);
+            token = atob(message.token);
             const tokenInt = parseInt(token);
-            const senderID = tokenInt % maxEntities;
+            senderID = tokenInt % maxEntities;
             if (senderID >= playerCount) return;
             const innerColors = pixel.getInnerColors(senderID);
-            const expectedTokenInt = divideFloor((1+currentMapSeed)*(1+innerColors[0]) + (1+currentSeedSpawn)*(1+innerColors[1]) + (1+setGameOrigin.gameHash)*(1+innerColors[2]), maxEntities) + senderID;
+            const expectedTokenInt = maxEntities * divideFloor((1+currentMapSeed)*(1+innerColors[0]) + (1+currentSeedSpawn)*(1+innerColors[1]) + (1+setGameOrigin.gameHash)*(1+innerColors[2]), maxEntities) + senderID;
             if (tokenInt != expectedTokenInt) return;
 
             //Now check target validity. Cuz if we do direct messages we need to parseInt
             if (["all", "team", "clan"].includes(message.target)) {
                 if (message.target == "team" && (!teamGame || isNotTeamate(myID, senderID))) return;
-                var clanTagInfo = teamColors.getClanTagInfo(),
-                clans = clanTagInfo[0].map((tag, index) => {
-                    return {
-                        tag: tag,
-                        players: clanTagInfo[1][index]
+                if (message.target == "clan") {
+                    var clanTagInfo = teamColors.getClanTagInfo(),
+                    clans = clanTagInfo[0].map((tag, index) => {
+                        return {
+                            tag: tag,
+                            players: clanTagInfo[1][index]
+                        }
+                    });
+                    var isClanMate = (playerID, senderID) => {
+                        var playerClan = clans.find(clan => clan.players.includes(playerID));
+                        var senderClan = clans.find(clan => clan.players.includes(senderID));
+                        return playerClan && senderClan && playerClan.tag == senderClan.tag;
                     }
-                });
-                var isClanMate = (playerID, senderID) => {
-                    var playerClan = clans.find(clan => clan.players.includes(playerID));
-                    var senderClan = clans.find(clan => clan.players.includes(senderID));
-                    return playerClan && senderClan && playerClan.tag == senderClan.tag;
+                    if (!teamGame || !isClanMate(myID, senderID)) return;
                 }
-                if (message.target == "clan" && (!teamGame || !isClanMate(myID, senderID))) return;
+                 
                 message.target = {
                     type: message.target,
                     id: 0
                 }
             } else {
                 var targetID = parseInt(message.target);
-                if (isNaN(targetID) || targetID >= playerCount || myID != targetID) return;
+                if (isNaN(targetID) || targetID >= playerCount || (myID != targetID && myID != senderID)) return;
                 message.target = {
                     type: "direct",
                     id: targetID
@@ -1426,15 +1445,11 @@ function Chat() {
 
         this.messages.push({
             timestamp: mainHandler.getTicksElapsed(),
+            author: senderID,
             ...message,
         });
-        
+
         //Update chat in modMenu panel
-        for (var modMenu of modMenus) {
-            if (modMenus.panelTypes.includes(7)) {
-                modMenu.drawWindow();
-                return;
-            }
-        }
+        modHandler.updateModMenus(7);
     }
 }
