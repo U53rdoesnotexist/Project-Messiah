@@ -16,7 +16,6 @@ function loadUsername() {
     return username;
 }
 
-
 function setClientID() {
     clientID = Math.floor(1 + Math.random() * (Math.pow(2, 30) - 1));
     if (isIOS) clientID = iosObject.id;
@@ -30,7 +29,6 @@ function setClientID() {
         else clientID = oldClientID - 3;
     } else clientID = userSettings.getSettings(1);
 }
-
 
 function loadPassword() {
     var password = 0;
@@ -72,7 +70,6 @@ function setZoom() {
         } else isZoom = 1 === zoom;
     } else isZoom = 0 === userSettings.getSettings(4) || mainCanvasWidth < mainCanvasHeight;
 }
-
 
 function loadEmojis() {
     return isIOS ? iosObject.emojis : 5 <= androidVersion ? androidObject.loadString(1) : userSettings.getSettings(7)
