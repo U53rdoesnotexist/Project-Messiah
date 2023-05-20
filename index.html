@@ -1,108 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>Territorial.io</title>
-        <meta
-            name="description"
-            content="Territorial.io - The Art of Conquest"
-        />
-        <meta
-            name="keywords"
-            content="territorial.io,territory games,territorial io,map games,games with maps,david tschacher,territorial,territory game,io game,io games,territory.io,territory io,territory games io"
-        />
-        <meta name="author" content="David Tschacher" />
+  <head>
+    <meta charset="utf-8" />
+    <title>Territorial.io</title>
+    <meta
+      name="description"
+      content="Teritorio - Master Your Domains. A feature-rich modification."
+    />
+    <meta
+      name="keywords"
+      content="territorial.io,teritorio,territory games,territorial io,map games,games with maps,david tschacher,vkij,oi,territorial,territory game,io game,io games,territory.io,territory io,territory games io"
+    />
+    <meta name="author" content="Teritorio" />
 
-        <link rel="preconnect" href="https://fonts.gstatic.com">
-        <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
 
-        <style>
-            html,
-            body {
-              overflow: hidden;
-              padding: 0;
-              margin: 0;
-              background: rgb(0, 0, 0);
-              touch-action: none;
-              -webkit-touch-callout: none;
-              -webkit-user-select: none;
-              -khtml-user-select: none;
-              -moz-user-select: none;
-              -ms-user-select: none;
-              user-select: none;
-              font-family: 'Ubuntu', sans-serif;
-            }
+    <style>
+      html,
+      body {
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+        background: rgb(0, 0, 0);
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        font-family: 'Ubuntu', sans-serif;
+      }
 
-            #preroll {
-              position: absolute;
-              top: 0px;
-              left: 0px;
-              z-index: 1;
-            }
-            ::-ms-reveal {
-              display: inline-block;
-            }
+      #preroll {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        z-index: 1;
+      }
+      ::-ms-reveal {
+        display: inline-block;
+      }
 
-            .menu-container {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              height: 100%;
-              pointer-events: none
-            }     
-            .tooltip {
-              position: absolute;
-              z-index: 999;
-              background-color: #f2f2f2;
-              border: 1px solid #ccc;
-              border-radius: 5px;
-              padding: 5px;
-              font-size: 12px;
-              visibility: hidden;
-              opacity: 0;
-              transition: visibility 0s, opacity 0.2s linear;
-            }
-            .tooltip.show {
-              visibility: visible;
-              opacity: 1;
-            }
-            .menu-button {
-              width: 25px;
-              height: 25px;
-              border: none;
-              outline: none;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              cursor: pointer;
-              background-color: transparent;
-              position: relative;
-              font-size: 20px;
-            }
-            .custom-menu-category {
-              color: #fff;
-              padding-left: 20px;
-              margin-bottom: 0px;
-              text-indent: 20px;
-            }
-            .custom-menu-label {
-              color: #fff;
-              padding-left: 20px;
-              margin-bottom: 10px;
-              margin-right: 10px;
-              white-space: pre-wrap;
-            }
-        </style>
-    </head>
+      .menu-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none
+      }     
+      .tooltip {
+        position: absolute;
+        z-index: 999;
+        background-color: #f2f2f2;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 12px;
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s, opacity 0.2s linear;
+      }
+      .tooltip.show {
+        visibility: visible;
+        opacity: 1;
+      }
+      .menu-button {
+        width: 25px;
+        height: 25px;
+        border: none;
+        outline: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background-color: transparent;
+        position: relative;
+        font-size: 20px;
+      }
+      .custom-menu-category {
+        color: #fff;
+        padding-left: 20px;
+        margin-bottom: 0px;
+        text-indent: 20px;
+      }
+      .custom-menu-label {
+        color: #fff;
+        padding-left: 20px;
+        margin-bottom: 10px;
+        margin-right: 10px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
 
-    <body onload="aiCommand746(0)">
-        <canvas id="canvasA" width="128" height="128"></canvas>
-        <div id="preroll"></div>
-    </body>
-    
-    <script src="./mod.js"></script>
-    <script src="./1.83.5.js"></script>
-    <script src="./modMenu.js"></script>
+  <body onload="aiCommand746(0)">
+    <canvas id="canvasA" width="128" height="128"></canvas>
+    <div id="preroll"></div>
+  </body>
+  
+  <meta name=”apple-mobile-web-app-capable” content=”yes “>
+
+  <script src="./mod.js"></script>
+  <script src="./1.83.5.js"></script>
+  <script src="./modMenu.js"></script>
 
 </html>
