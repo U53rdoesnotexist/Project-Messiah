@@ -1350,3 +1350,91 @@ function MultiWS(proxy, instanceName) {
         this.lobbyWS.send(message);
     }
 }
+
+function Chat() {
+    this.maxMsgLength = 100;
+    this.socket;
+    this.messages = [];
+    this.target = {
+        type: 'all',
+        id: 0,
+    }
+ 
+    this.connect = function() {
+        this.socket = new WebSocket('wss://teritorio-chat.glitch.me');
+        this.socket.binaryType = 'arraybuffer';
+        this.socket.onmessage = (e) => this.onmessage(e);
+        this.socket.onclose = () => setTimeout(() => this.connect(), 100);
+    }
+ 
+    this.send = function(message) {
+        const innerColors = pixel.getInnerColors(myID);
+        const tokenInt = divideFloor((1+currentMapSeed)*(1+innerColors[0]) + (1+currentSeedSpawn)*(1+innerColors[1]) + (1+setGameOrigin.gameHash)*(1+innerColors[2]), maxEntities) + myID;
+        const packet = {
+            token: atob(tokenInt.toString()),
+            target: this.target.type == 'direct' ? this.target.id : this.target.type,
+            m: message,
+        };
+ 
+        this.socket.send(new TextEncoder().encode(JSON.stringify(packet)));
+    }
+
+    this.onmessage = function(e) {
+        const message = JSON.parse(new TextDecoder().decode(e.data));
+        //Verify token, check if token, target and m attributes exist
+        if (!message.token || !message.target || !message.m) return;
+        try {
+            const token = btoa(message.token);
+            const tokenInt = parseInt(token);
+            const senderID = tokenInt % maxEntities;
+            if (senderID >= playerCount) return;
+            const innerColors = pixel.getInnerColors(senderID);
+            const expectedTokenInt = divideFloor((1+currentMapSeed)*(1+innerColors[0]) + (1+currentSeedSpawn)*(1+innerColors[1]) + (1+setGameOrigin.gameHash)*(1+innerColors[2]), maxEntities) + senderID;
+            if (tokenInt != expectedTokenInt) return;
+
+            //Now check target validity. Cuz if we do direct messages we need to parseInt
+            if (["all", "team", "clan"].includes(message.target)) {
+                if (message.target == "team" && (!teamGame || isNotTeamate(myID, senderID))) return;
+                var clanTagInfo = teamColors.getClanTagInfo(),
+                clans = clanTagInfo[0].map((tag, index) => {
+                    return {
+                        tag: tag,
+                        players: clanTagInfo[1][index]
+                    }
+                });
+                var isClanMate = (playerID, senderID) => {
+                    var playerClan = clans.find(clan => clan.players.includes(playerID));
+                    var senderClan = clans.find(clan => clan.players.includes(senderID));
+                    return playerClan && senderClan && playerClan.tag == senderClan.tag;
+                }
+                if (message.target == "clan" && (!teamGame || !isClanMate(myID, senderID))) return;
+                message.target = {
+                    type: message.target,
+                    id: 0
+                }
+            } else {
+                var targetID = parseInt(message.target);
+                if (isNaN(targetID) || targetID >= playerCount || myID != targetID) return;
+                message.target = {
+                    type: "direct",
+                    id: targetID
+                }
+            }
+        } catch (e) {
+            return;
+        }
+
+        this.messages.push({
+            timestamp: mainHandler.getTicksElapsed(),
+            ...message,
+        });
+        
+        //Update chat in modMenu panel
+        for (var modMenu of modMenus) {
+            if (modMenus.panelTypes.includes(7)) {
+                modMenu.drawWindow();
+                return;
+            }
+        }
+    }
+}

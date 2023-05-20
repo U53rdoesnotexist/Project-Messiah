@@ -1,7 +1,7 @@
 class ModMenu {
     static buttonLabels = [
         "Menu", "Account", "Custom", "Display",
-        "Players", "Logs", "Audio", "Hotkeys",
+        "Players", "Logs", "Audio", "Chat",
         "Single", "Misc", "Presets", "About"
     ];
     constructor(panelTypes, width, height, x, y, z) {
@@ -62,6 +62,7 @@ class ModMenu {
         else if (panelType == 3) this.drawDisplayPanel();
         else if (panelType == 4) this.drawPlayersPanel();
         else if (panelType == 5) this.drawLogsPanel();
+        else if (panelType == 7) this.drawChatPanel();
         else if (panelType == 8) this.drawSinglePanel();
         else if (panelType == 11) this.drawAboutPanel();
     }
@@ -546,12 +547,12 @@ class ModMenu {
         //Select menu for filtering clans, bots, and players maybe?
         //We will add filter for every clan and every team color (if it's a team game)
         var clanTagInfo = teamColors.getClanTagInfo(),
-                clans = clanTagInfo[0].map((tag, index) => {
-                    return {
-                        tag: tag,
-                        players: clanTagInfo[1][index]
-                    }
-                });
+            clans = clanTagInfo[0].map((tag, index) => {
+                return {
+                    tag: tag,
+                    players: clanTagInfo[1][index]
+                }
+            });
 
             //Now sort clans by number of players in the game
             clans.sort((a, b) => {
@@ -661,6 +662,27 @@ class ModMenu {
         //Integrated Replay-Logger. 
     }
     
+    drawChatPanel() {
+        //7. In-game Chat
+        const title = this.createLabel("In-game Chat", "h1",
+            `color: ${this.getColor(7)}; text-align: center;`);
+
+        if (clientStatus == 0) {
+            const playGameFirstLabel = this.createLabel("There is nothing here. Join a game first!", "h4")
+            return;
+        }
+        
+        //Select channel: All, Team, Clan, Private (With another list of players to select from)
+        const channelInput = this.createLabelledInput("Channel:", "channel", "select", ["All", "Team", "Clan", "Direct Message"], 0, 0, (e) => {
+            //Set chat target to selected channel
+            directInput.disabled = channelInput.value != 3;
+        }, "Select the channel you want to send messages to.");
+        const directInput = this.createLabelledInput("Direct Message:", "direct", "select", nicknames.filter((e, i) => i < playerCount && i != myID), 0, 0, (e) => {
+            //Set chat target to selected player
+        }, "Select the player you want to send messages to.");
+        directInput.disabled = true;
+    }
+
     drawSinglePanel() {
         //8. Latency Simulator, Game Speeds for now... Maybe scenarios + cheats as well?
 
@@ -1060,7 +1082,7 @@ class ModMenu {
 
 var modMenus = [];
 function modMenuInit() {
-    new ModMenu([0, 4], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
+    new ModMenu([0, 7, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
 }
 
 function getDockWidth(dockStatus) {
