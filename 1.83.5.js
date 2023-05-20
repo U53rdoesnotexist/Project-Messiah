@@ -5007,7 +5007,7 @@ function GameLeaderboard() {
         if (extendedIDs[id] === id) {
             extendedIDs[id] = maxEntities + shorternedNames.length;
             shorternedNames.push(lbDisplayNickname);
-        } else shorternedNames[extendedIDs[id] % b8] = lbDisplayNickname;
+        } else shorternedNames[extendedIDs[id] % maxEntities] = lbDisplayNickname;
         return lbDisplayNickname
     }
     this.setCanvasVariables = function(S) {
