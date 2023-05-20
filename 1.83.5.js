@@ -863,6 +863,7 @@ function drawCanvases() {
     peace.drawCanvas();
     infoRenderer.drawCanvas(2 === clientStatus);
     teams.updateRenderObject()
+    modHandler.updateModMenus(false);
 }
 
 function updatedPlayerLabels() {
@@ -1940,6 +1941,7 @@ function activateCameraRenderer() {
 
 function leaveGame() {
     wsManager.close(wsManager.remote, 3246);
+    chat.close();
     clientStatus = 0;
     mainHandler.setupMainUpdateHandler();
     nameInput.init();
@@ -9828,22 +9830,22 @@ function onKeydown(e) {
     } else if ("ArrowDown" === e.key) {
         keyboardCamera.checkAndMoveCamera(2);
     } else if ("a" === e.key) {
-        if (modhandler.lateral) attackRatioBar.checkAndAddRatio(-.008);
+        if (modHandler.lateral) attackRatioBar.checkAndAddRatio(-.008);
         else attackRatioBar.checkAndMultiplyRatio(31/32);
     } else if ("d" === e.key) {
-        if (modhandler.lateral) attackRatioBar.checkAndAddRatio(.008);
+        if (modHandler.lateral) attackRatioBar.checkAndAddRatio(.008);
         else attackRatioBar.checkAndMultiplyRatio(32/31);
     } else if ("s" === e.key) {
-        if (modhandler.lateral) attackRatioBar.checkAndAddRatio(-.03);
+        if (modHandler.lateral) attackRatioBar.checkAndAddRatio(-.03);
         else attackRatioBar.checkAndMultiplyRatio(7/8);
     } else if ("w" === e.key) {
-        if (modhandler.lateral) attackRatioBar.checkAndAddRatio(.03);
+        if (modHandler.lateral) attackRatioBar.checkAndAddRatio(.03);
         else attackRatioBar.checkAndMultiplyRatio(8/7);
     } else if ("1" === e.key) {
-        if (modhandler.lateral) attackRatioBar.checkAndAddRatio(-.1);
+        if (modHandler.lateral) attackRatioBar.checkAndAddRatio(-.1);
         else attackRatioBar.checkAndMultiplyRatio(5/6);
     } else if ("2" === e.key) {
-        if (modhandler.lateral) attackRatioBar.checkAndAddRatio(.1);
+        if (modHandler.lateral) attackRatioBar.checkAndAddRatio(.1);
         else attackRatioBar.checkAndMultiplyRatio(6/5);
     } else if (" " === e.key) {
         if (customJSON.isCustomJSON && customJSON.data.replay) replayLogger.underReplay = !replayLogger.underReplay;

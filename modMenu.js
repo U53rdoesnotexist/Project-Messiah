@@ -1,7 +1,7 @@
 class ModMenu {
     static buttonLabels = [
         "Menu", "Account", "Custom", "Display",
-        "Players", "Logs", "Audio", "Hotkeys",
+        "Players", "Logs", "Audio", "Chat",
         "Single", "Misc", "Presets", "About"
     ];
     constructor(panelTypes, width, height, x, y, z) {
@@ -62,6 +62,7 @@ class ModMenu {
         else if (panelType == 3) this.drawDisplayPanel();
         else if (panelType == 4) this.drawPlayersPanel();
         else if (panelType == 5) this.drawLogsPanel();
+        else if (panelType == 7) this.drawChatPanel();
         else if (panelType == 8) this.drawSinglePanel();
         else if (panelType == 11) this.drawAboutPanel();
     }
@@ -513,23 +514,6 @@ class ModMenu {
 
         const title = this.createLabel("Players Logger", "h1", `color: ${this.getColor(4)}; text-align: center;`)
 
-        //Redraw the window when a reload button is clicked, since the land may fluctuate.
-        const reloadButton = document.createElement("button");
-        reloadButton.innerHTML = "Reload Panel";
-        reloadButton.style.float = "right";
-        reloadButton.style.backgroundColor = "transparent";
-        reloadButton.style.border = "none";
-        reloadButton.style.color = this.getColor(4);
-        reloadButton.style.fontStyle = fontStyleItalic ; // calculate font size based on menu width
-        reloadButton.style.textAlign = "left";
-        reloadButton.style.paddingTop = "0"
-        reloadButton.style.marginRight = "20px";
-        reloadButton.addEventListener("click", (e) => {
-            this.drawWindow();
-        })
-        this.menu.appendChild(reloadButton);
-        this.menu.appendChild(document.createElement("br"));
-
         if (typeof gamemode == "undefined") {
             const playGameFirstLabel = this.createLabel("There is nothing here. Play a game first!", "h4")
             return;
@@ -546,12 +530,12 @@ class ModMenu {
         //Select menu for filtering clans, bots, and players maybe?
         //We will add filter for every clan and every team color (if it's a team game)
         var clanTagInfo = teamColors.getClanTagInfo(),
-                clans = clanTagInfo[0].map((tag, index) => {
-                    return {
-                        tag: tag,
-                        players: clanTagInfo[1][index]
-                    }
-                });
+            clans = clanTagInfo[0].map((tag, index) => {
+                return {
+                    tag: tag,
+                    players: clanTagInfo[1][index]
+                }
+            });
 
             //Now sort clans by number of players in the game
             clans.sort((a, b) => {
@@ -661,6 +645,57 @@ class ModMenu {
         //Integrated Replay-Logger. 
     }
     
+    drawChatPanel() {
+        //7. In-game Chat
+        const title = this.createLabel("In-game Chat", "h1",
+            `color: ${this.getColor(7)}; text-align: center;`);
+
+        if (clientStatus == 0 || singleplayer || customJSON.isCustomJSON && customJSON.data.replay) {
+            const playGameFirstLabel = this.createLabel("There is nothing here. Join a game first!", "h4")
+            return;
+        }
+        
+        //Select channel: All, Team, Clan, Private (With another list of players to select from)
+        const channelInput = this.createLabelledInput("Channel:", "channel", "select", ["All", "Team", "Clan", "Direct Message"], 0, 0, (e) => {
+            chat.target.type = ["all", "team", "clan", "direct"][channelInput.value];
+            directInput.style.display = parseInt(channelInput.value) != 3 ? "none" : "";
+        }, "Select your chat channel.");
+        const directInput = this.createLabelledInput("Direct Message:", "direct", "select", nicknames.filter((e, i) => i < playerCount && i != myID), 0, 0, (e) => {
+            //Set chat target to selected player
+            chat.target.id = parseInt(directInput.value);
+        }, "Select the player you want to send direct messages to.");
+        directInput.style.display = 'none';
+
+        //Show Chats
+        const chatLabel = this.createLabel("Chat:", "h2");
+        const chatBox = this.createLabel("", "div", "width: 100%; height: 200px; overflow-y: scroll; border: 1px solid black; padding: 5px; margin-bottom: 5px; color: white;");
+        chatBox.id = "chatBox";
+        chatBox.innerHTML = chat.messages.map((message) => {
+            if (["all", "team", "clan", "direct"].includes(message.target.type)) {
+                return `<p>${gameStatistics.getFormattedTime(
+                    mainHandler.getTicksElapsed()
+                )}, ${nicknames[message.author]}: ${message.m}</p>`;
+            } else return "";
+        }).join("");
+
+        //Send Chat, Bar + Send Button (no Enter for now, fucks up with other listeners)
+        const chatInput = this.createLabelledInput("Chat:", "chat", "text", 0, 0, chat.typedMessage, (e) => {
+            chat.typedMessage = chatInput.value = chatInput.value.slice(0, getMin(100, chatInput.value.length));
+        })
+        const sendButton = document.createElement("button");
+        sendButton.innerHTML = "Send";
+        sendButton.style.float = "right"
+        sendButton.onclick = () => {
+            if (chatInput.value.length > chat.maxMsgLength) return
+            else {
+                chat.send(chatInput.value);
+                chatInput.value = chat.typedMessage = "";
+            }
+        };
+        this.menu.appendChild(sendButton);
+            
+    }
+
     drawSinglePanel() {
         //8. Latency Simulator, Game Speeds for now... Maybe scenarios + cheats as well?
 
@@ -1060,7 +1095,7 @@ class ModMenu {
 
 var modMenus = [];
 function modMenuInit() {
-    new ModMenu([0, 4], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
+    new ModMenu([0, 7, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
 }
 
 function getDockWidth(dockStatus) {
