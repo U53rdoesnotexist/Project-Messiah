@@ -7058,7 +7058,7 @@ function Lobby() {
         lobbyGames = [];
         this.setCanvasVariables();
         var iconIndex;
-        gameIconCanvases = Array(11);
+        gameIconCanvases = Array(13);
         for (iconIndex = gameIconCanvases.length; 0 <= iconIndex; iconIndex--) {
             gameIconCanvases[iconIndex] = document.createElement("canvas");
             gameIconCanvases[iconIndex].width = 48;
@@ -7091,6 +7091,8 @@ function Lobby() {
         drawImageScaled(8, emojis.emojiCanvasList[27]);
         drawImageScaled(9, emojis.emojiCanvasList[46]);
         drawImageScaled(10, emojis.emojiCanvasList[36]);
+        drawImageScaled(11, sprites.getValueByID(23));
+        drawImageScaled(12, sprites.getValueByID(24));
         sounds.play(2);
         mainHandler.canvasDirty = true
     };
@@ -7170,7 +7172,9 @@ function Lobby() {
                 joined: param_lobbyGames[gameIndex].joinCount,
                 timeLeft: param_lobbyGames[gameIndex].timeLeft,
                 maxPlayers: param_lobbyGames[gameIndex].maxPlayers,
-                canvas: previewCanvas
+                canvas: previewCanvas,
+                xH: param_lobbyGames[gameIndex].xH,
+                xI: param_lobbyGames[gameIndex].xI
             })
             if (param_lobbyGames[gameIndex].isContest && param_lobbyGames[gameIndex].timeLeft == 30) sounds.play(4)
         }
@@ -7277,26 +7281,48 @@ function Lobby() {
                         mainCanvasCtx.fillStyle = greenDarkerMoreOpaque
                     } else mainCanvasCtx.fillStyle = blackOpaque;
                     var iconBoxSize = Math.floor(lgBoxLength / 4);
+                    mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored, iconBoxSize, iconBoxSize);
+                    
+                    /*
                     mainCanvasCtx.fillRect(lgBoxXFloored, Math.floor(lgBoxYFloored + .8 * lgBoxLength), lgBoxLengthFloored, Math.floor(lgBoxLength / 5));
                     mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored, iconBoxSize, iconBoxSize);
+                    */
                     mainCanvasCtx.fillStyle = blackRGB;
+                    
+                    /*
                     mainCanvasCtx.fillRect(lgBoxXFloored, Math.floor(lgBoxYFloored + .8 * lgBoxLength), lgBoxLengthFloored, 2);
                     mainCanvasCtx.fillRect(lgBoxXFloored + iconBoxSize - 2, lgBoxYFloored, 2, iconBoxSize);
                     mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored + iconBoxSize - 2, iconBoxSize, 2);
+                    */
+                    mainCanvasCtx.fillRect(lgBoxXFloored, Math.floor(lgBoxYFloored + .8 * lgBoxLength), lgBoxLengthFloored, Math.floor(lgBoxLength / 5));
+                    if (lobbyGames[lgIndex].xH) {
+                        for (var clanIndex = 0, clanInfoWidth = 0; clanIndex < lobbyGames[lgIndex].xH; clanIndex++) {
+                            clanInfoWidth = Math.max(clanInfoWidth, gameMessages.measureText(lobbyGames[lgIndex].xI[clanIndex], lobbyGamesInfoFontStyle));
+                        }
+                        clanInfoWidth += .05 * lgBoxLength;
+                        mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored + .8 * lgBoxLength - .11 * lobbyGames[lgIndex].xH * lgBoxLength, clanInfoWidth, .11 * lobbyGames[lgIndex].xH * lgBoxLength + .05 * lgBoxLength)
+                    }
 
                     mainCanvasCtx.font = lobbyGamesInfoFontStyle;
                     mainCanvasCtx.textBaseline = middleAlign;
                     mainCanvasCtx.textAlign = leftAlign;
                     mainCanvasCtx.fillStyle = blueBrightRGB;
-                    mainCanvasCtx.fillText(lobbyGames[lgIndex].joined.toString(), Math.floor(lgBoxXFloored + .07 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
+                    mainCanvasCtx.fillText(lobbyGames[lgIndex].joined.toString(), Math.floor(lgBoxXFloored + .22 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
 
-                    mainCanvasCtx.textAlign = centerAlign;
-                    mainCanvasCtx.fillStyle = greenBrightRGB;
-                    mainCanvasCtx.fillText(lobbyGames[lgIndex].gameID.toString(), Math.floor(lgBoxXFloored + .5 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
-                    
+                    mainCanvasCtx.fillStyle = whiteRGB;
+                    for (var clanIndex = 0; clanIndex < lobbyGames[lgIndex].xH; clanIndex++) {
+                        mainCanvasCtx.fillText(lobbyGames[lgIndex].xI[lobbyGames[lgIndex].xH - clanIndex - 1], Math.floor(lgBoxXFloored + .03 * lgBoxLength), Math.floor(lgBoxYFloored + .77 * lgBoxLength - .11 * clanIndex * lgBoxLength));
+                    }
+
+                    if (!modHandler.public) {
+                        mainCanvasCtx.textAlign = centerAlign;
+                        mainCanvasCtx.fillStyle = greenBrightRGB;
+                        mainCanvasCtx.fillText(lobbyGames[lgIndex].gameID.toString(), Math.floor(lgBoxXFloored + .5 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
+                    }
+                                        
                     mainCanvasCtx.textAlign = rightAlign;
                     mainCanvasCtx.fillStyle = redLighterRGB;
-                    mainCanvasCtx.fillText(lobbyGames[lgIndex].timeLeft.toString(), Math.floor(lgBoxXFloored + .93 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
+                    mainCanvasCtx.fillText(lobbyGames[lgIndex].timeLeft.toString(), Math.floor(lgBoxXFloored + .81 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
 
                     mainCanvasCtx.strokeStyle = whiteMoreOpaque;
                     mainCanvasCtx.strokeRect(lgBoxXFloored, lgBoxYFloored, lgBoxLengthFloored, lgBoxLengthFloored);
@@ -7304,6 +7330,11 @@ function Lobby() {
                         iconScale = iconBoxScale / 48;
                     mainCanvasCtx.setTransform(iconScale, 0, 0, iconScale, Math.floor(lgBoxXFloored + (iconBoxSize - iconBoxScale) / 2), Math.floor(lgBoxYFloored + (iconBoxSize - iconBoxScale) / 2));
                     gameIconCanvases.length > lobbyGames[lgIndex].gamemode && mainCanvasCtx.drawImage(gameIconCanvases[lobbyGames[lgIndex].gamemode], 0, 0);
+                    mainCanvasCtx.setTransform(iconScale, 0, 0, iconScale, Math.floor(lgBoxXFloored + .15 * iconBoxScale), Math.floor(lgBoxYFloored + lgBoxLength - 1.08 * iconBoxScale));
+                    mainCanvasCtx.drawImage(gameIconCanvases[11], 0, 0);
+                    mainCanvasCtx.setTransform(iconScale, 0, 0, iconScale, Math.floor(lgBoxXFloored + lgBoxLength - 1.05 * iconBoxScale), Math.floor(lgBoxYFloored + lgBoxLength - 1.15 * iconBoxScale));
+                    mainCanvasCtx.drawImage(gameIconCanvases[12], 0, 0);
+
                     mainCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                     if (lobbyGames[lgIndex].isContest) {
                         var crown = sprites.getValueByID(4),
@@ -7792,7 +7823,6 @@ function NameInput() {
         displayUsername();
         if (5 <= androidVersion) showError.displayError(3232)
         else {
-            console.log('hahahaha')
             cookiesPrompt.visible = true;
             cookiesPrompt.clickedButtonIndex = -1
         }
@@ -7993,7 +8023,7 @@ function Sprites() {
     var unloadedSprites, spriteCanvases, spriteNames, nullCanvas;
     this.init = function() {
         if (void 0 === spriteCanvases) {
-            unloadedSprites = 23;
+            unloadedSprites = 25;
             spriteCanvases = Array(unloadedSprites);
             spriteNames = Array(unloadedSprites);
             nullCanvas = document.createElement("canvas");
@@ -8023,6 +8053,8 @@ function Sprites() {
             loadSprite(20, "sound", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAApBAMAAAC4kga8AAAAHlBMVEUAAAAjJSI5OjhTVVJpa2iHiYakp6PAwr/Y2tf///80ejApAAABF0lEQVQoz5XTMXOCQBAF4AUOtLRL7NIFO7oMXTpNmS52JAUTOrWzw4lFrkvU8Xj/NofDcQcu42SH6mPm9nG7EN2uty+WIyjWt7zfgXVf8r4A6wKtP+4dX1p/qRIno/URdk5G4+LVk2cno/FUUYpnm9F4jCzCiij81gXrAkdPnojGsKXo6Z0KVT89L840w8Os6nuKZIRsrBt3XbcUKCNkPfdRevJH6EBdJ3kgeQxQXvlJu/8P58+59P297qtzBlzOoe/SNzNFMq0mFOR5/tn6Yl2/WjYL4Dn3HzT33Iy09XtkoY7ZVGHnWE1iM0c9tdbDD5KK3Z/I2RMS0u6VPeayB8bjfWeft/w+11n5/6UY8HDAab65/c/+AYrN7UlrALeaAAAAAElFTkSuQmCC");
             loadSprite(21, "replay", 6, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAT2SURBVGhDzZpZqFVVGMfPvUWlTWBQRNKThQ0vIYRQZIRhQQYWaYSFL2WglTRwaQKxARpoooiMoIlAK6QMbCBKULgE4kN1kwaI8EGCbNA0Irj9fnuvbefsztrD2fvee37wZ62979lrrW+tb39r2Hfkw6e3dpqwZN1VJ5Cciy5Al6D5aC6ahU5EcgAdRnvRHrQL7UATHz3zwUHSgekxgMacTzKbQr9I78Tht/NIrkaL0QI0Bx2NqvIzmkA24GPq/MqbdckbcCPJvWhVzIhg5C1oGbKn28CR2YI21jVkNKQZs9E56FUauii5E+D6VHQ/2W3oNtRW48WyLHMbdWywruRuBfIGHB9SjXgxM4L0QpJN6GHUZsPzWPaDaFNWdxl5A3zxMjIjNpC+iy715jRhXW9Sty5dSN6A00KaoRH2yFT2egzrfAEj7kTR4JA3oG3+CRoUw/B6dHty1Ye8AaeEdBBs6DfoLfQAugldG2Tee/7N39QxKjEi5k5HwmgYpvfRlcmN6jhJWYgv+Thh0PgehXqMMAvRCrQUZZNdGYbalZS/Pb1M6TbAGdWLqi+rvfgJegztpOBarhI67CI0hi5HVSbBz9GK7k7Ku9BJIa2Co7XcHqnbePEZnyW7HOnnjmQZdu7NaTal2wAnse4wWsbFyNm4ERhxED1Cdg0qdL/ArYyeq4GEJlFIXzbMrQ7u0AiMeIPkblQ2EoZXlzIJ3QboPlVfqAx//zwaC+9QI4IRvlNlLrmM+lxM9hhwHDomzRZi4cqecsj3oWtQ3egV41lkcCjCUXAl3BOF9KvXkotO5w/k+v1X9Av6LehPtB/ZcP9+CP2F/P0h/Zm0MbTFdZANK/III9LSfBj1RZakYTSodnRpA9riO2Vn3pDc6I+d+J8BwwZG6CIuImMBws4daxKFpppx9F2a7YuGLRhaA3BfXWR3ehVl/jCPgLhnLmLusBvwU0hjzBqZnJxMJoQC9rUVHutS4UVOJrLPSnQZGlo04GTkzBbT6WimsG1F66wDGvB7mo9yRkhngjNDGuOwBnyf5qOcF2bGmcAjyyL2asCXaT6KJxMeG04rdJrLdc9bi9ijAV+jojXPWajSIVPLuG+27hi2eZcG7EQuiWPoPtdPpxuFutz0F9XpqniHBvyIytzITbcb8OnCujyxKMJZemI0TFLvJbfiZGczlQ9dB4U6XNZ7UlG2O9xq2x0B+RR54FSEm/i1aXZKuQM54kV4RuSpSLqlxBJD6TvmC9Af19FDpQeugxLKtvfL3rctoc09e+LXkZYV4bB6EtG6EaHMJ1GZ69jGjWm20zlq5RXpru2H8W/3z1t49gjZJcmNOMeixfx2FO3mub/T24Ohz1POPWQfRVXmm8fpfRd4Cd0jIFrmF5gy7CU/dmymAYtQ7RDrMz5LdjPyZK6s58WN/MtpNuV/e2IK9WuMFrqQq8JwHO52QyXXkbyCqhYuzozuYd0GGqPdjGQLRVeVLsyyz7HOsHVGzU5aQ+M9+OoheiqBEatJnkB1jMiTLVFqu1gXNn49jX8qvewl/w4cgQdeIvHlKjurLMKGN248ei656kPpuVBwJ62v+k60hT5/Xz+36SY6AhkU8DaJn4mqRKe2MNr4whY2XkoNEAryq/0qdBcqm+yaYNkPIb/C9ESbGLWPFnEpTzH8ajgU/2pQ24CMYMhw/bPHIGDIDP67TafzL/4glonXQTZtAAAAAElFTkSuQmCC");
             loadSprite(22, "mod", 6, "data:image/jpeg;base64,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");
+            loadSprite(23, "members", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAGFBMVEUAAABSVFGanJkA/wDMz8x4/3ey/7L///+GDHoaAAACZElEQVRIx9WWwYrjMAyGlVCYa6cs5JqGQh5gaObaDYU8QJnOA5SS66RN49dfSZZt2U2WZZeFXc9h2r9fZEmRJcPbLyz4d6GzMdM1/uXcG3PV0KehFVFnlh4Baoxdl8BEEkF7EcwUoN5pJ4HenRBMNV66C4QfxxI2nTKFhsYt5CgZC9FTawDIxbg4UKKUWevAuw1Aq/D7NUq6M9RbQ2zKhkwpKVnK2AWGRrCrc04lEpDfgyg1u8mh3EQqSGLoS5QXY/a4+XSKJIIwkkNQOIlTgFYUcQq59TuQcrwI0PDk+M3Hayh2+RcC1smkl3DDj1ltlMR5old38LutHT04l/BVAVfOSL9lnXelUBKaAltxt2gTv3Ft6w6k4sajdtf6zhLVHUHltzTwkIzvOUGf9PhOJJdVdphWS0YfFnJUCrVgISmdTVWVnVQa19+YV9VWKgohl2+MRUFKjaAXDX0tQCvt0+HPIJWnJajWGV9wPDPutPFhXs9CK+PLr1aJjSF+5aUzpOQY6mwZURWNCRRO9JZq43ikMtnog44v2LlojK1EW6n4zYXz4HqSb/gsty1qaWjAt5o7NAEiL7Jdu2vX7IqHLikEIYdzUJ5CZQQdJJcJ5GSE9i5tC1BNR4oadGub76ChwrZfKn48wTRXsGfrQvHFQr0dmy245o8nMYHGoxsToMZIAoWBA2qOzEMXmVJiK4nO2jn5oXju5yGZpn4Gf/QpNH08D+pn6O3vQqOGulkIX0+1fbXd93VT+dkXQe/SO3F1fkSnUBjgT7cEdVdJodkLTbNkKLr1NH1ApstPrkbnK/39B9e1H85NJPjxrK7zAAAAAElFTkSuQmCC");
+            loadSprite(24, "hourglass", 7, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAGFBMVEUAAABKTEqZm5gA/wDJzMh3/3iz/7L///+iyVF/AAACjklEQVRIx72W3aqyQBSGJwk6dceGTv1C8AJEO60QvACJLkDI02xPrtvf75pJ58cx2iffIqT0aWb9vGuNIrft0hSX8WqZ4Etxg9HM+G4zQVdatOcEdSSrqkr3juFOVdMwQXQUC7YmAyVLUPQZ1PxtJSJ5js7KX7j/+pKkNR5Y0RE9Ij/6JMPFRFfebt0cOmbD7dZOEOwQgn7ssnwOrf8rJAMp8KFSrnwormcQCR8S1HpQgT8qVVXnVCsJS/tQzlV4mMpmJLUCXOi4I2mgmnotOAfqcJPiCUIGNsMMunJdEqMjbP+cQQcOrx+hnZ0BA5XsuTQuPUxwBoLnZj98Oxq/LaiTHNK4G34MAQj7jfGhQqeIfgJQzm7ofELccUZ5CDpQjKBO3LbUr+gZhAo8QhMl8FoCb4IQhkvyUt7JWciBCnhUa5VkJkkexEtxQ3KjPvMlqKD7hk7fdF/bHnlQfoUU4LglgBCElVCP+ztIbQfDdXk7OL5jqH/juE7BA4pBUZr8XTJZMadoKZklKlxriMvSBqGO4m8ejJmuy5AH9aTqq02CbwPQlfeYDH94ziEWilqDW5xniiUWq6VUjs6szFTnat5SHYuXdcnGAcTZrINLrpmZGJnqqXY26WLONJ7rfqm5qfwh1vXckPahAh8HD/Imjzt7xJgACLe3oZ01xYQ1Mo/umWmGprBOjcQ96cyEEtacc89DrDx6PkJQrHSh2kjdgh4ulH0C7YIQuS8P3nYlDa9ecg33OpUF8TqnFyB9UitIVujsALSmqp6g+/5fHKVpxQfQqM6q2ier7X5joFdAMX++YrEyMc6hgP0RkuoVZbvfTqfU6gs/VbZG6M3bmn5fE0pxb6x1Ori4eNbkY3f+AriuYpjQCOoxAAAAAElFTkSuQmCC");
         }
     };
     this.getValueByID = function(spriteID) {
@@ -9704,8 +9736,8 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     socketIndex = 2;
-    versionHash = 4029;
-    versionLabel = "1.84.0 A   20 May 2023";
+    versionHash = 5262;
+    versionLabel = "1.84.1 M   29 May 2023";
     construct();
     botBorderingStuffInit();
     isMainCalled = true;
@@ -12946,16 +12978,27 @@ function DataDecoder() {
                         for (data = 0; 4 > data; data++) lobbyStats[data] = decoder(array, bitsNeeded);
                         var gamesCount = decoder(array, 4),
                             lobbyGames = [];
-                        for (data = 0; data < gamesCount; data++) lobbyGames.push({
-                            id: decoder(array, 5),
-                            gamemode: decoder(array, 4),
-                            isContest: 1 === decoder(array, 1),
-                            mapID: decoder(array, 6),
-                            mapSeed: decoder(array, 14),
-                            joinCount: decoder(array, bitsNeeded),
-                            maxPlayers: decoder(array, 9) + 1,
-                            timeLeft: decoder(array, 10)
-                        });
+                        for (data = 0; data < gamesCount; data++) {
+                            lobbyGames.push({
+                                id: decoder(array, 5),
+                                gamemode: decoder(array, 4),
+                                isContest: 1 === decoder(array, 1),
+                                mapID: decoder(array, 6),
+                                mapSeed: decoder(array, 14),
+                                joinCount: decoder(array, bitsNeeded),
+                                maxPlayers: decoder(array, 9) + 1,
+                                timeLeft: decoder(array, 10)
+                            });
+                            clanCount = decoder(array, 3);
+                            clanNames = Array(clanCount);
+                            for (var clanIndex = 0; clanIndex < clanCount; clanIndex++) {
+                                clanPlayers = decoder(array, 9) + 1;
+                                clanName = decodeNames(decoder(array, 3), array);
+                                clanNames[clanIndex] = ("" === clanName ? "Others: " : "[" + clanName + "]: ") + clanPlayers;
+                            };
+                            lobbyGames[data].xH = clanCount;
+                            lobbyGames[data].xI = clanNames
+                        }
                         lobby.updateObjects(lobbyStats, lobbyGames)
                     }
                 }
