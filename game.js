@@ -1891,12 +1891,12 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
     receiveDonationsArrayInit();
     pixel.init(param_playerInfo);
     gradientEdge.init();
-    teams.init();
     difficultyEngine.init();
     nickNames.generate();
     nickNames.updateNicknames();
     findSpawn.init();
     updateAliveInfo();
+    teams.init();
     playerAura.init();
     statistics.init();
     mapCanvasCtx.putImageData(mapCanvasImgData, 0, 0);
@@ -3067,7 +3067,8 @@ function NextContestBar() {
     };
     this.drawCanvasImage = function() {
         mainCanvasCtx.lineWidth = 1 + Math.floor(barHeight / 15);
-        mainCanvasCtx.translate(prevClientWidth - barHeight, Math.floor(.5 * (prevClientHeight + barWidth)));
+        if (7 === gameStateManager.getState() && lobby.nq() + 2 * bufferLength > .5 * (prevClientHeight - barHeight)) mainCanvasCtx.translate(prevClientWidth - barHeight, Math.floor(lobby.nq() + 2 * bufferLength + barWidth))
+        else mainCanvasCtx.translate(prevClientWidth - barHeight, Math.floor(.5 * (prevClientHeight + barWidth)));
         mainCanvasCtx.rotate(-Math.PI / 2);
         mainCanvasCtx.fillStyle = whiteRGB2;
         mainCanvasCtx.fillRect(0, 0, barWidth, barHeight);
@@ -7106,6 +7107,9 @@ function Lobby() {
         lobbyGames = [];
         gameIconCanvases = []
     };
+    this.nq = function() {
+        return D
+    }
     this.setCanvasVariables = function() {
         lobbyGamesArrangement = [0, 0];
         canvasVariables = [0, 0, 0, 0];
@@ -9736,8 +9740,8 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     socketIndex = 2;
-    versionHash = 5262;
-    versionLabel = "1.84.1 M   29 May 2023";
+    versionHash = 5263;
+    versionLabel = "1.84.2 M   29 May 2023";
     construct();
     botBorderingStuffInit();
     isMainCalled = true;
@@ -11342,9 +11346,10 @@ function Teams() {
         teamLand = null;
     this.init = function() {
         if (teamGame) {
-            updateInterval = 16;
+            updateInterval = 0;
             teamLand = new Uint32Array(teamCount + 1);
             for (var teamIndex = teamCount; 0 < teamIndex; teamIndex--) teamLand[teamIndex] = 1;
+            for (var aliveIndex = aliveCount - 1; 0 <= aliveIndex; aliveIndex--) teamLand[teamColors.teamArray[aliveEntities[aliveIndex]]] += 1;
             this.setCanvasVariables()
         } else teamLand = pieChartCanvasCtx = pieChartCanvas = null
     };
