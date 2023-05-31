@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "fs": "latest",
+    "string-similarity": "latest"
+  }
+}
