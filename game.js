@@ -1038,7 +1038,7 @@ function ProcessAction() {
             } else 7 === actionsType[actionIndex] && this.processCancelBoat(authors[actionIndex], actionsParam[actionIndex]);
         }
         0 < authorsCount && this.init()
-        extendedActions.update()
+        if (!singleplayer) extendedActions.update()
     };
     this.processSendBoat = function(authorID, ratio, toX, yCoord) {
         if (singleplayer && !modHandler.latency) replayLogger.addLogs(1, myID, 0, attackRatioBar.getFlooredRatio(), toX, yCoord)
@@ -1924,7 +1924,7 @@ function gameInit(param_seedSpawn, param_myID, param_playerInfo, param_gamemode,
     diplomacyHandler.init();
     delayedAttack.init();
     8 === gamemode ? (points1v1 = new Points1v1, points1v1.init(param_playerInfo)) : points1v1 = null;
-    singleplayer || customJSON.isCustomJSON ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
+    customJSON.isCustomJSON && customJSON.data.replay ? mainHandler.setupReplayHandler() : singleplayer ? mainHandler.setupSingleplayerHandler() : mainHandler.setupMultiplayerHandler();
     activateCameraRenderer();
     fadeIn.init();
     mainHandler.canvasDirty = true;
@@ -12618,7 +12618,7 @@ function MainHandler() {
         }
     }
     this.canvasDirty = false;
-    this.multiplayerHandler = this.singleplayerHandler = this.updateHandler = null;
+    this.replayHandler = this.multiplayerHandler = this.singleplayerHandler = this.updateHandler = null;
     this.time = 0;
     this.idleInterval = -1;
     this.init = function() {
@@ -12650,6 +12650,10 @@ function MainHandler() {
         this.multiplayerHandler.init();
         this.updateHandler = this.multiplayerUpdateHandler
     };
+    this.setupReplayHandler = function() {
+        this.replayHandler = new ReplayHandler;
+        this.updateHandler = this.replayUpdateHandler;
+    }
     this.mainUpdateHandler = function() {
         nextContestBar.update();
         preLobby.update();
@@ -12668,8 +12672,11 @@ function MainHandler() {
     this.multiplayerUpdateHandler = function() {
         this.multiplayerHandler.update()
     };
+    this.replayUpdateHandler = function() {
+        this.replayHandler.update()
+    };
     this.getTicksElapsed = function() {
-        return singleplayer || customJSON.isCustomJSON && customJSON.data.replay ? this.singleplayerHandler.tick : this.multiplayerHandler.tick
+        return customJSON.isCustomJSON && customJSON.data.replay ? this.replayHandler.tick : singleplayer ? this.singleplayerHandler.tick : this.multiplayerHandler.tick
     };
     this.getTickInterval = function() {
         return 56;
@@ -12678,74 +12685,34 @@ function MainHandler() {
 
 function SingleplayerHandler() {
     this.time = mainHandler.time;
-    this.updateInterval = Math.round(56 / (customJSON.isCustomJSON && customJSON.data.replay ? Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500): 1));
-    this.bigTickInterval = 7;
-    this.tick = this.clientTick = this.spawnTick = 0;
+    this.updateInterval = 56;
+    this.tick = this.clientTick = 0;
     this.a6Z = false; //unused
     this.update = function() {
         canvasManager.update();
-        if (inSpawn) {
-            updatedPlayerLabels();
-            if (customJSON.isCustomJSON && customJSON.data.replay) {
-                if (replayLogger.underReplay && playerCount == 1) spawn.update()
-                gameStatistics.receivedSpawnActions(-1)
-                if (0 === this.clientTick) {
-                    if (mainHandler.time >= this.time) {
-                        this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
-                        if (2 !== clientStatus) {
-                            if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || !replayLogger.underReplay) clientTick1()
-                            else if (0 == --this.bigTickInterval) {
-                                replayLogger.update();
-                                this.bigTickInterval = 7;
-                                gameStatistics.receivedSpawnActions(this.spawnTick);
-                                if (this.spawnTick === spawnTime) {
-                                    spawn.update();
-                                    this.tick = this.clientTick = this.spawnTick = 0;
-                                    this.time = mainHandler.time;
-                                } else {
-                                    this.spawnTick++;
-                                    infoRenderer.setPlayerLabels();
-                                    infoRenderer.drawCanvas(true);
-                                    mapUpdate.updateMapCanvas();
-                                }
-                            }
-                        }
-                        this.clientTick++
-                    }
-                } else {
-                    if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || !replayLogger.underReplay) updatedPlayerLabels()
+        if (inSpawn) updatedPlayerLabels();
+        else if (0 === this.clientTick) {
+            if (mainHandler.time >= this.time) {
+                this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
+                if (2 !== clientStatus) {
+                    if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible) clientTick1()
                     else {
-                        mainHandler.canvasDirty = true;
-                        drawCanvases();
+                        for (var times = 0; times < modHandler.gameSpeed; times++) {
+                            gameTick();
+                            this.tick++;
+                        }
+                        mapUpdate.updateMapCanvas();
                     }
-                    this.clientTick = 0;
                 }
+                this.clientTick++
             }
         } else {
-            if (0 === this.clientTick) {
-                if (mainHandler.time >= this.time) {
-                    this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
-                    if (2 !== clientStatus) {
-                        if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || customJSON.isCustomJSON && customJSON.data.replay && !replayLogger.underReplay) clientTick1()
-                        else {
-                            for (var times = 0; times < modHandler.gameSpeed; times++) {
-                                gameTick();
-                                this.tick++;
-                            }
-                            
-                            mapUpdate.updateMapCanvas();
-                        }
-                    }
-                    this.clientTick++
-                }
-            } else {
-                if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible) updatedPlayerLabels()
-                else {
-                    mainHandler.canvasDirty = true;
-                    drawCanvases();
-                }
-                this.clientTick = 0;
+            if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible) updatedPlayerLabels()
+            else {
+                mainHandler.canvasDirty = true;
+                drawCanvases();
             }
+            this.clientTick = 0;
         }
         clientTick2();
         if (mainHandler.canvasDirty) {

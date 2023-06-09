@@ -277,6 +277,66 @@ function LatencySimulator() {
     }
 }
 
+function ReplayHandler() {
+    this.time = mainHandler.time;
+    this.updateInterval = Math.round(56 / Math.pow(10, (attackRatioBar.getFlooredRatio()-500)/500));
+    this.bigTickInterval = 7;
+    this.tick = this.clientTick = this.spawnTick = 0;
+    this.update = function() {
+        canvasManager.update();
+        if (inSpawn) {
+            updatedPlayerLabels();
+            if (replayLogger.underReplay && playerCount == 1) spawn.update()
+            gameStatistics.receivedSpawnActions(-1)
+        }
+        if (0 === this.clientTick) {
+            if (mainHandler.time >= this.time) {
+                this.time += this.updateInterval * Math.floor(1 + (mainHandler.time - this.time) / this.updateInterval);
+                if (2 !== clientStatus) {
+                    if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible || !replayLogger.underReplay) clientTick1()
+                    else {
+                        if (inSpawn) {
+                            if (0 == --this.bigTickInterval) {
+                                replayLogger.update();
+                                this.bigTickInterval = 7;
+                                gameStatistics.receivedSpawnActions(this.spawnTick);
+                                if (this.spawnTick === spawnTime) {
+                                    spawn.update();
+                                    this.tick = this.clientTick = this.spawnTick = 0;
+                                    this.time = mainHandler.time;
+                                } else {
+                                    this.spawnTick++;
+                                    infoRenderer.setPlayerLabels();
+                                    infoRenderer.drawCanvas(true);
+                                }
+                            }
+                        } else {
+                            for (var times = 0; times < modHandler.gameSpeed; times++) {
+                                gameTick();
+                                this.tick++;
+                            }
+                        }
+                        mapUpdate.updateMapCanvas();
+                    }
+                }
+                this.clientTick++
+            }
+        } else {
+            if (gameButtons.menuVisible || mainSettings.buttons[4].buttonClass.visible) updatedPlayerLabels()
+            else {
+                mainHandler.canvasDirty = true;
+                drawCanvases();
+            }
+            this.clientTick = 0;
+        }
+        clientTick2();
+        if (mainHandler.canvasDirty) {
+            mainHandler.canvasDirty = false;
+            drawCanvasImages();
+        }
+    }
+}
+
 function ReplayLogger() {
     this.spawnLogs = [];
     this.tickLogs = [];
@@ -341,7 +401,7 @@ function ReplayLogger() {
     
     this.update = function() {
         var currentActions;
-        if (inSpawn) currentActions = customJSON.data.spawnLogs.filter(action => action.time == mainHandler.singleplayerHandler.spawnTick); //change to spawnTicks?
+        if (inSpawn) currentActions = customJSON.data.spawnLogs.filter(action => action.time == mainHandler.replayHandler.spawnTick); //change to spawnTicks?
         else currentActions = customJSON.data.tickLogs.filter(action => action.time == mainHandler.getTicksElapsed() + (playerCount == 1 ? 0 : 1));
         for (var action of currentActions) {
             if (action.actionType == 0) processAction.pendingAttack(action.authorID, action.ratio, action.targetID);
