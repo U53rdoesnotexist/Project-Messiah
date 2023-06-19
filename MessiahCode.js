@@ -172,7 +172,7 @@ function Messiah() {
         if (modHandler.tick >= adjustedTiming && modHandler.tick <= adjustedTiming + 14) doAttack(maxEntities, ratio); 
     };
     this.continuousExpansion = function() {
-        const cycleAttackInitTimings = [[26, 33], [24, 31], [22, 29], [13, 20], [11, 18]],
+        const cycleAttackInitTimings = [[26, 33], [24, 31], [15, 22], [13, 20], [11, 18]],
               reinforcementThresholds = [850, 1250, 1000, 1000, 1000],
               reinforcementAmounts = [2500, 2500, 2500, 2000, 2000],
               cycleIndex = modHandler.cycle - 6;
@@ -294,7 +294,7 @@ function Messiah() {
                             if (getBorderRatio(idIndex, myID) >= 1) amount = 2.8 * land[idIndex];
                             else amount = 2.8 * updatesNeeded[1];
                             isDelayedBot = true;
-                            console.log(nicknames[idIndex] + " delayed", land[idIndex]);
+                            //console.log(nicknames[idIndex] + " delayed", land[idIndex]);
                             this.delayedBots.splice(idIndex, 1);
                             break;
                         }
@@ -320,7 +320,7 @@ function Messiah() {
                         targetID = idIndex;
                         if (updatesNeeded[1] == land[idIndex]) amount = 2.7 * land[idIndex];//if attack finishes before cycle end send 2.7
                         else amount = 2.8 * land[idIndex];//else send 2.8
-                        console.log(nicknames[idIndex] + " encircled");
+                        //console.log(nicknames[idIndex] + " encircled");
                     }
                     else continue outerLoop;
                 }
@@ -338,7 +338,7 @@ function Messiah() {
                             targetID = idIndex;
                             if (updatesNeeded[1] == land[idIndex]) amount = 2.7 * land[idIndex];
                             else amount = 2.8 * updatesNeeded[1];
-                            console.log(nicknames[idIndex] + " predicted")
+                            //console.log(nicknames[idIndex] + " predicted")
                         } 
                         //Bot is too big, we might want to just send a bit
                         else continue outerLoop;                       
@@ -365,11 +365,10 @@ function Messiah() {
                         }*/
                         var updatesNeeded = distance.updateArrayToPoint(this.borderPixelsWithEntity[idIndex], this.getAllPixelsCoordinates(idIndex));
                         if (updatesNeeded[0]) {
-                            console.log(land[myID], updatesNeeded[1], Math.round(updatesNeeded[1]/land[myID]*10000)/10000);
                             targetID = idIndex;
                             if (updatesNeeded[1] == land[idIndex]) amount = 2.7 * land[idIndex];
                             else amount = 2.8 * updatesNeeded[1];
-                            console.log(nicknames[idIndex] + " low d");
+                            //console.log(nicknames[idIndex] + " low d");
                             //updatesNeeded[0] - modHandler.updatesLeft < 30 * modHandler.getSpeed(myID)
                             /*if (updatesNeeded[1] == land[idIndex]) {
                                 if (attackingAway && willTakeTonsOfLand) amount = 2.7 * updatesNeeded[1];
@@ -406,10 +405,10 @@ function Messiah() {
                 }
             }
             if (amount && amount < troops[myID] && canAttack()) {
-                /*if (isDelayedBot || (!isDelayedBot && troops[myID] - amount >= this.delayedBotsAmount)) {*/
+                if (isDelayedBot || (!isDelayedBot && troops[myID] - amount >= this.delayedBotsAmount)) {
                     doAttack(targetID, divideFloor(amount * 1E3, troops[myID]));
                     break outerLoop;
-                //}
+                }
             }
         }
     }
