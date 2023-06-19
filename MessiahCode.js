@@ -270,7 +270,7 @@ function Messiah() {
         if (modHandler.tick == 0) this.delayedBots = []; //reset array at the start of every cycle
         outerLoop: for (var idIndex of this.borderingBots[myID]) {
             //attacking encircled bots
-            if (modHandler.tick > latencySimulator.nextInfoSend || latencySimulator.nextInfoSend >= 85) break outerLoop; //fix end of the cycle and tick 0 attacks
+            if (modHandler.tick > latencySimulator.nextInfoSend || latencySimulator.nextInfoSend >= 95) break outerLoop; //fix end of the cycle and tick 0 attacks
             this.delayedBotsAmount = 0;
             for (let i = 0; i < this.delayedBots.length; i++) { 
                 this.delayedBotsAmount += land[this.delayedBots[i].id] * 3;
@@ -280,15 +280,15 @@ function Messiah() {
                         if (updatesNeeded[0] >= modHandler.updatesLeft) this.delayedBots[i].tick == latencySimulator.nextInfoSend;
                     }
                     if (this.delayedBots[i].tick == latencySimulator.nextInfoSend && !alreadyAttacking(idIndex, 0)) { 
-                        if (modHandler.density(idIndex) <= 0.4 && !attacks.check(idIndex, maxEntities)) {
-                            for (let i of this.borderingLandPixels[idIndex]) {
+                        if (modHandler.density(idIndex) <= 0.7 && !attacks.check(idIndex, maxEntities)) {
+                            /*for (let i of this.borderingLandPixels[idIndex]) {
                                 if (land[pixel.getOwner(i)] < stats[0]) {
                                     let remainingTroops = attacks.getRemainingTroopsFromTarget(idIndex, pixel.getOwner(i));
                                     if (attacks.check(idIndex, pixel.getOwner(i))) {
                                         if (remainingTroops >= 2 * land[pixel.getOwner(i)] && remainingTroops >= land[idIndex] * 0.5) continue outerLoop;
                                     } 
                                 }
-                            }
+                            }*/
                             targetID = idIndex;
                             var updatesNeeded = distance.updateArrayToPoint(this.borderPixelsWithEntity[idIndex], this.getAllPixelsCoordinates(idIndex));
                             if (getBorderRatio(idIndex, myID) >= 1) amount = 2.8 * land[idIndex];
