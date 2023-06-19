@@ -72,7 +72,7 @@ function Messiah() {
                 //If the Bot is currently being attacked and _this attack is strong (Define strong? 1-fifth of my troops), it cannot attack.
                 if (attacks.getRemainingTroopsFromTarget(_this.opponent.id, myID) > .2*troops[myID] && modHandler.density(myID) <= 6) return false; 
                 //If the opponent is not in range, the bot can attack; Our distance to density formula will be as follows: Either troops >= .85 Opp. troops or density >= getMax(oppDens, 5) - (minDistance/50)
-                else if (troops[myID] - approxPendingAmount() < .85 * troops[_this.opponent.id] && modHandler.density(myID) < getMax(modHandler.density(_this.opponent.id), 5) - _this.opponent.distance/25) return false;
+                else if (troops[myID] - approxPendingAmount() < .85 * troops[_this.opponent.id] && modHandler.density(myID) < getMin(modHandler.density(_this.opponent.id) - 0.5, 5) - _this.opponent.distance/25) return false;
                 else return true;
             }
             
@@ -118,7 +118,6 @@ function Messiah() {
         }
         else this.opponent = null;
 
-        this.attackMore = true;
         this.pending = [];
         this.delayedBots = [];
         this.delayedBotsAmount;
@@ -327,12 +326,12 @@ function Messiah() {
                 else if (!(getBorderRatio(idIndex, myID) >= 1) && !(attacks.getRemainingTroopsFromTarget(idIndex, myID) > 0) && ((modHandler.cycle == 9 && earlyMicro) || modHandler.cycle >= 10)) {
                     //this.opponent == null this.opponent.distance >= 20
                     if (difficultyEngine.botTiming[idIndex - playerCount] <= latencySimulator.nextInfoSend - modHandler.tick && !this.canAttackFreeLand(idIndex)) {
-                        if (!this.attackMore) {
+                        /*if (!this.attackMore) {
                             for (let i of this.borderingLandPixels[idIndex]) {
                                 if (land[pixel.getOwner(i)] < stats[0]) continue outerLoop;
                                 //if (getBorderRatio(idIndex, pixel.getOwner(i)) < 0.04) continue outerLoop;
                             }
-                        }
+                        }*/
                         var updatesNeeded = distance.updateArrayToPoint(this.borderPixelsWithEntity[idIndex], this.getAllPixelsCoordinates(idIndex));
                         if (updatesNeeded[0]) {
                             targetID = idIndex;
@@ -344,11 +343,11 @@ function Messiah() {
                         else continue outerLoop;                       
                     }
                     else if (modHandler.density(idIndex) <= 0.4 && !attacks.check(idIndex, maxEntities)) {
-                        if (!this.attackMore) {
+                        /*if (!this.attackMore) {
                             for (let i of this.borderingLandPixels[idIndex]) {
                                 if (land[pixel.getOwner(i)] < stats[0]) continue outerLoop;
                             }
-                        }
+                        }*/
                         /*let willTakeTonsOfLand = false;
                         let attackingAway = true;
                         for (let i of this.borderingLandPixels[idIndex]) {
