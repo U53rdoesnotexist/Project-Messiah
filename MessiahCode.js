@@ -178,10 +178,9 @@ function Messiah() {
               cycleIndex = modHandler.cycle - 6;
         if (alreadyAttacking(maxEntities, reinforcementThresholds[this.opponent != null && !this.opponent.distance ? 0 : cycleIndex])) return 0
         var amount = 0;
-        if (cycleIndex <= 1) {
-            if (modHandler.tick == cycleAttackInitTimings[cycleIndex][1] || (this.opponent == null || this.opponent != null && this.opponent.distance >= 10) && modHandler.tick == cycleAttackInitTimings[cycleIndex][0]) amount = 2000
-            else if (modHandler.tick > cycleAttackInitTimings[cycleIndex][1] && modHandler.tick <= 84) amount = 1;
-        } else amount = 1;
+        if (cycleIndex <= 1 && modHandler.tick == cycleAttackInitTimings[cycleIndex][1] || (this.opponent == null || this.opponent != null && this.opponent.distance >= 10) && modHandler.tick == cycleAttackInitTimings[cycleIndex][0]) amount = 2000
+        else if (getBorderRatio(myID, maxEntities) < 1 && cycleIndex == 0 && modHandler.tick == cycleAttackInitTimings[cycleIndex][0] - 14) amount = 1;
+        else if (modHandler.tick > cycleAttackInitTimings[cycleIndex][1] && modHandler.tick <= 84) amount = 1;
         if (amount == 1) amount = getBorderRatio(myID, maxEntities) <= 0.05 ? 0 : reinforcementAmounts[cycleIndex] *= getMin(1, 0.4 + getBorderRatio(myID, maxEntities))
         if (amount > troops[myID]) amount = troops[myID];
         if (amount && canAttack()) doAttack(maxEntities, divideFloor(amount * 1E3, troops[myID]))
