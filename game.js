@@ -3557,7 +3557,7 @@ function drawWhiteRectBorder(canvas, rectWidth, rectHeight) {
     canvas.fillRect(0, 0, 1, rectHeight);
     canvas.fillRect(rectWidth - 1, 0, 1, rectHeight)
 }
-
+var myAttacks;
 function AttackBars() {
     function drawAttacksBar(aIndex) {
         var varBarCanvasWidth = myAttacks[aIndex].canvas.width;
@@ -3628,7 +3628,7 @@ function AttackBars() {
     function getAttackBarYPos(aIndex) {
         return Math.floor(2 * canvasPadding + (troopBar.placeBarOnTopRight() ? gameStatistics.height + canvasPadding : 0) + troopBar.height + 1.3 * aIndex * barCanvasHeight)
     }
-    var myAttacks, baseBarCanvasWidth, fontStyle, barCanvasHeight, zoomYOffset;
+    var baseBarCanvasWidth, fontStyle, barCanvasHeight, zoomYOffset;
     this.init = function() {
         myAttacks = [];
         this.setCanvasVariables()
