@@ -1095,7 +1095,7 @@ class ModMenu {
 
 var modMenus = [];
 function modMenuInit() {
-    new ModMenu([0, 7, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
+    //new ModMenu([0, 7, 11], 350, 500, .7*window.innerWidth, .5*window.innerHeight - 500/2, 100);
 }
 
 function getDockWidth(dockStatus) {
