@@ -2216,10 +2216,7 @@ function PlayerActions() {
             yCoord = Math.floor((yPos + viewportY) / mainScaleFactor);
         if (1 > xCoord || 1 > yCoord || xCoord >= currentMapWidth - 1 || yCoord >= currentMapHeight - 1) return false;
         targetPixelIndex = pixel.toIndex(xCoord, yCoord);
-        if (isTouch) {
-            announcements.genericAnnouncement(targetPixelIndex, 55)
-            return false;
-        }
+        if (isTouch) announcements.genericAnnouncement(targetPixelIndex, 55)
         if (!pixel.canOwn(targetPixelIndex)) return false;
         if (2 === clientStatus) {
             if (1 <= emojis.selectedEmojiCount && (targetID = pixel.getOwner(targetPixelIndex), this.isHuman(targetID))) {
