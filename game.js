@@ -2208,15 +2208,15 @@ function PlayerActions() {
         this.end();
         return 2
     };
-    this.click = function(xPos, yPos, isRightClick) {
-        if (!isRightClick && (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn || customJSON.isCustomJSON && customJSON.data.replay)) return false;
+    this.click = function(xPos, yPos) {
+        if (this.visible() || 2 === playerStatus[myID] || 0 === isAlive[myID] && !inSpawn || customJSON.isCustomJSON && customJSON.data.replay) return false;
         var pixelTolerance = (isZoom ? .0288 : .0144) * averageDim;
         if (Math.abs(xPos - lastClickX) > pixelTolerance || Math.abs(yPos - lastClickY) > pixelTolerance || (new Date).getTime() > lastClickTime + 425) return false;
         var xCoord = Math.floor((xPos + viewportX) / mainScaleFactor),
             yCoord = Math.floor((yPos + viewportY) / mainScaleFactor);
         if (1 > xCoord || 1 > yCoord || xCoord >= currentMapWidth - 1 || yCoord >= currentMapHeight - 1) return false;
         targetPixelIndex = pixel.toIndex(xCoord, yCoord);
-        if (isRightClick) {
+        if (isTouch) {
             announcements.genericAnnouncement(targetPixelIndex, 55)
             return false;
         }
@@ -2287,6 +2287,10 @@ function PlayerActions() {
         return this.visible()
     };
     this.onPointermove = function(xPos, yPos) {
+        var xCoord = Math.floor((xPos + viewportX) / mainScaleFactor),
+            yCoord = Math.floor((yPos + viewportY) / mainScaleFactor),
+            targetPixelIndex = pixel.toIndex(xCoord, yCoord);
+        if (!isTouch && 1 <= xCoord && 1 <= yCoord && xCoord < currentMapWidth - 1 && yCoord < currentMapHeight - 1) announcements.genericAnnouncement(targetPixelIndex, 55);
         if (!this.visible()) return false;
         if (emojisShown) {
             if (emojis.insideEmojiSelectionArea(xPos, yPos)) return false;
@@ -3474,7 +3478,7 @@ function onTouchmove(e) {
 function onPointermove(xPos, yPos) {
     if (0 === clientStatus) gameStateManager.onPointermove(xPos, yPos)
     else if (!statistics.onPointermove(xPos, yPos)) {
-        if (!(playerActions.visible() ? playerActions.onPointermove(xPos, yPos) : gameButtons.onPointermove(xPos, yPos))) {
+        if (!gameButtons.onPointermove(xPos, yPos) && !playerActions.onPointermove(xPos, yPos)) {
             if (attackRatioBar.isDragging) {
                 if (attackRatioBar.onPointermove(xPos, yPos)) mainHandler.canvasDirty = true
             } else {
@@ -3500,7 +3504,7 @@ function onMouseleave(e) {
 
 function onMouseup(e) {
     e.preventDefault();
-    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getDockWidth(1)), Math.floor(pixelRatio * e.clientY), 2 === e.button)
+    if (!isTouch) onPointerUp(Math.floor(pixelRatio * e.clientX - getDockWidth(1)), Math.floor(pixelRatio * e.clientY))
 }
 
 function onClick(g) {
@@ -3509,12 +3513,12 @@ function onClick(g) {
 
 function onTouchend(g) {
     g.preventDefault();
-    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? mouseCamera.isPanning = false : onPointerUp(clientXPos, clientYPos, false)
+    g && g.touches && 0 < g.touches.length && 0 !== clientStatus ? mouseCamera.isPanning = false : onPointerUp(clientXPos, clientYPos)
 }
 
 function onTouchcancel(g) {
     g.preventDefault();
-    onPointerUp(clientXPos, clientYPos, false)
+    onPointerUp(clientXPos, clientYPos)
 }
 
 function onDragover(g) {
@@ -3525,14 +3529,14 @@ function onDrop(g) {
     loadCustomMap.handleDrop(g)
 }
 
-function onPointerUp(xPos, yPos, isRightClick) {
+function onPointerUp(xPos, yPos) {
     if (0 === clientStatus) gameStateManager.click(xPos, yPos)
     else {
         gameLeaderboard.onDragEnd(xPos, yPos);
         statistics.onDragEnd();
         attackRatioBar.stopDragging();
         mouseCamera.isPanning = false;
-        if (playerActions.click(xPos, yPos, isRightClick)) mainHandler.canvasDirty = true
+        if (playerActions.click(xPos, yPos)) mainHandler.canvasDirty = true
     }
 }
 
