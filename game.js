@@ -2590,6 +2590,14 @@ function Announcements() {
                 nextHoverTo: nextHoverToTarget,
                 canHoverTo: canHoverToTarget
             })
+            
+            // If in the announcements array we find one with message ID 55, then we have to move it to the front of the array
+            for (var i = 0; i < pendingAnnouncements.length; i++) {
+                if (pendingAnnouncements[i].id === 55) {
+                    pendingAnnouncements.unshift(pendingAnnouncements.splice(i, 1)[0]);
+                    break;
+                }
+            }
         }
     }
 
