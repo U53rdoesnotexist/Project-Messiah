@@ -12073,12 +12073,14 @@ function StatisticNumbers() {
 function Statistics() {
     this.clickedButtonIndex = this.horizontalCanvasPadding = this.verticalCanvasPadding = this.fontPadding = this.availableHeight = this.buttonHeight = 
         this.contentPadding = this.availableWidth = this.textWidth = this.textPadding = this.buttonMargin = this.height = this.width = 0;
-    this.buttonLabels = ["Land", "Troops", "Interest", "Numbers", "Micro"];
+    this.buttonLabels;
     this.visible = false;
     this.activeSliderValue = -1;
     this.isDraggingSlider = false;
     this.pointerPosition = [0, 0];
     this.init = function() {
+        this.buttonLabels = ["Land", "Troops", "Interest", "Numbers"];
+        if (playerCount <= 8 || singleplayer) this.buttonLabels.push("Micro")
         this.visible = false;
         this.activeSliderValue = -1;
         this.isDraggingSlider = false;
