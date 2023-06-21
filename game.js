@@ -2470,10 +2470,7 @@ function GameButtons() {
                 }
                 return 2;
             } else if (statistics.visible || singleplayer && !inSpawn) return 1
-            else {
-                this.toggleMenu();
-                return 2;
-            }
+            else return 0
         } else if (0 === bIndex) {
             this.toggleMenu();
             return 2;
@@ -10024,7 +10021,6 @@ function onKeydown(e) {
         statistics.printCoords();
     }
 }
-
 
 function onVisibilitychange() {
     if ("hidden" === document.visibilityState) mainHandler.onVisibilityHidden()
