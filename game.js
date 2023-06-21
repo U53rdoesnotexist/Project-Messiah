@@ -3765,7 +3765,7 @@ function AttackBars() {
 
 function GameMessages() {
     function drawMessage() {
-        mainCanvasCtx.drawImage(messageCanvas, canvasPadding + (teamGame ? canvasPadding + teams.getPieChartWidth() : 0), gameBoardHeight + 2 * canvasPadding)
+        mainCanvasCtx.drawImage(messageCanvas, canvasPadding + (teamGame ? canvasPadding + teams.getPieChartWidth() : 0), gameBoardHeight + navigHeight + 3 * canvasPadding)
     }
 
     function createMessage() {
@@ -4341,7 +4341,7 @@ function MouseCamera() {
         viewportY = mainScaleFactor * yPos - prevViewportCenterY
     };
     this.mouseDown = function(xPos, yPos) {
-        if ((Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + canvasSize / 2), 2) < canvasSize * canvasSize / 4 || Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + 2 * canvasSize), 2) < canvasSize * canvasSize / 4) && moreSettings.settingsCategory.hideGameZoomButtons) {
+        if ((Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + canvasSize / 2), 2) < canvasSize * canvasSize / 4 || Math.pow(xPos - (canvasXPos + canvasSize / 2), 2) + Math.pow(yPos - (canvasYPos + 2 * canvasSize), 2) < canvasSize * canvasSize / 4) && !moreSettings.settingsCategory.hideGameZoomButtons) {
             if (yPos < canvasYPos + 1.25 * canvasSize) return this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), -200)
             else return this.onWheel(Math.floor(prevClientWidth / 2), Math.floor(prevClientHeight / 2), 200);
         }
@@ -4866,78 +4866,78 @@ function TroopBar() {
         if (0 !== isAlive[myID] && !inSpawn && 2 !== playerStatus[myID]) mainCanvasCtx.drawImage(troopBarCanvas, this.startingX, canvasPadding)
     }
 }
-var gameBoardWidth, gameBoardHeight, gameBoardLabelFont, gameBoardFont, gameBoardLabelHeight, landOrder, landIDOrder;
+var gameBoardWidth, gameBoardHeight, gameBoardLabelFont, gameBoardFont, gameBoardLabelHeight, navigHeight, landOrder, landIDOrder;
 
 function GameLeaderboard() {
     function drawGameLeaderboard() {
         var bIndex;
-        leaderboard.clearRect(0, 0, gameBoardWidth, gameBoardHeight);
-        leaderboard.fillStyle = blueDarkMoreOpaque;
-        leaderboard.fillRect(0, 0, gameBoardWidth, topBarHeight);
-        leaderboard.fillStyle = blackMore2Opaque;
-        leaderboard.fillRect(0, topBarHeight, gameBoardWidth, gameBoardHeight - topBarHeight);
+        leaderboardCanvasCtx.clearRect(0, 0, gameBoardWidth, gameBoardHeight);
+        leaderboardCanvasCtx.fillStyle = blueDarkMoreOpaque;
+        leaderboardCanvasCtx.fillRect(0, 0, gameBoardWidth, topBarHeight);
+        leaderboardCanvasCtx.fillStyle = blackMore2Opaque;
+        leaderboardCanvasCtx.fillRect(0, topBarHeight, gameBoardWidth, gameBoardHeight - topBarHeight);
         if (landIDOrder[myID] >= boardTopIndex) highlightRow(landIDOrder[myID] - boardTopIndex, greenBrightMoreTransparent)
         if (0 !== landIDOrder[myID] && 0 === boardTopIndex) highlightRow(0, yellowMoreTransparent)
         if (- 1 !== highlightedLandIndex) highlightRow(highlightedLandIndex, whiteMore2Transparent)
-        leaderboard.fillStyle = whiteRGB;
-        leaderboard.fillRect(0, topBarHeight, gameBoardWidth, 1);
-        leaderboard.fillRect(0, 0, gameBoardWidth, gameLeaderboardMargin);
-        leaderboard.fillRect(0, 0, gameLeaderboardMargin, gameBoardHeight);
-        leaderboard.fillRect(gameBoardWidth - gameLeaderboardMargin, 0, gameLeaderboardMargin, gameBoardHeight);
-        leaderboard.fillRect(0, gameBoardHeight - gameLeaderboardMargin, gameBoardWidth, gameLeaderboardMargin);
-        leaderboard.font = gameBoardLabelFont;
-        leaderboard.textBaseline = middleAlign;
-        leaderboard.textAlign = centerAlign;
-        leaderboard.fillText(leaderboardLabel, Math.floor(gameBoardWidth / 2), Math.floor(smallPadding + gameBoardLabelHeight / 2));
+        leaderboardCanvasCtx.fillStyle = whiteRGB;
+        leaderboardCanvasCtx.fillRect(0, topBarHeight, gameBoardWidth, 1);
+        leaderboardCanvasCtx.fillRect(0, 0, gameBoardWidth, gameLeaderboardMargin);
+        leaderboardCanvasCtx.fillRect(0, 0, gameLeaderboardMargin, gameBoardHeight);
+        leaderboardCanvasCtx.fillRect(gameBoardWidth - gameLeaderboardMargin, 0, gameLeaderboardMargin, gameBoardHeight);
+        leaderboardCanvasCtx.fillRect(0, gameBoardHeight - gameLeaderboardMargin, gameBoardWidth, gameLeaderboardMargin);
+        leaderboardCanvasCtx.font = gameBoardLabelFont;
+        leaderboardCanvasCtx.textBaseline = middleAlign;
+        leaderboardCanvasCtx.textAlign = centerAlign;
+        leaderboardCanvasCtx.fillText(leaderboardLabel, Math.floor(gameBoardWidth / 2), Math.floor(smallPadding + gameBoardLabelHeight / 2));
         var checkAtBottom = landIDOrder[myID] < boardTopIndex + visibleLandCount - 1 ? 1 : 2;
-        leaderboard.font = gameBoardFont;
-        leaderboard.textAlign = leftAlign;
+        leaderboardCanvasCtx.font = gameBoardFont;
+        leaderboardCanvasCtx.textAlign = leftAlign;
         for (bIndex = visibleLandCount - checkAtBottom; 0 <= bIndex; bIndex--) {
             setLeaderboardFillColor(landOrder[bIndex + boardTopIndex]);
             fillPlayerLabels(bIndex, bIndex + boardTopIndex, landOrder[bIndex + boardTopIndex]);
         }
-        leaderboard.textAlign = rightAlign;
+        leaderboardCanvasCtx.textAlign = rightAlign;
         for (bIndex = visibleLandCount - checkAtBottom; 0 <= bIndex; bIndex--) {
             setLeaderboardFillColor(landOrder[bIndex + boardTopIndex]);
             fillPlayerLand(bIndex, landOrder[bIndex + boardTopIndex]);
         }
         if (2 === checkAtBottom) {
             setLeaderboardFillColor(myID);
-            leaderboard.textAlign = leftAlign;
+            leaderboardCanvasCtx.textAlign = leftAlign;
             fillPlayerLabels(visibleLandCount - 1, landIDOrder[myID], myID);
-            leaderboard.textAlign = rightAlign;
+            leaderboardCanvasCtx.textAlign = rightAlign;
             fillPlayerLand(visibleLandCount - 1, myID);
         }
         if (0 === boardTopIndex) {
             bIndex = .7 * heightOfRow / sprites.getValueByID(4).height;
-            leaderboard.setTransform(bIndex, 0, 0, bIndex, Math.floor(rankXPos + .58 * heightOfRow + .5 * bIndex * sprites.getValueByID(4).width), Math.floor(smallPadding + gameBoardLabelHeight + .4 * heightOfRow));
-            leaderboard.imageSmoothingEnabled = true;
-            leaderboard.drawImage(sprites.getValueByID(4), -Math.floor(sprites.getValueByID(4).width / 2), -Math.floor(sprites.getValueByID(4).height / 2));
-            leaderboard.setTransform(1, 0, 0, 1, 0, 0);
+            leaderboardCanvasCtx.setTransform(bIndex, 0, 0, bIndex, Math.floor(rankXPos + .58 * heightOfRow + .5 * bIndex * sprites.getValueByID(4).width), Math.floor(smallPadding + gameBoardLabelHeight + .4 * heightOfRow));
+            leaderboardCanvasCtx.imageSmoothingEnabled = true;
+            leaderboardCanvasCtx.drawImage(sprites.getValueByID(4), -Math.floor(sprites.getValueByID(4).width / 2), -Math.floor(sprites.getValueByID(4).height / 2));
+            leaderboardCanvasCtx.setTransform(1, 0, 0, 1, 0, 0);
         }
     }
 
     function setLeaderboardFillColor(id) {
-        teamGame && (leaderboard.fillStyle = teamColors.leaderboardColors[teamColors.teamIDs[teamColors.teamArray[id]]])
+        teamGame && (leaderboardCanvasCtx.fillStyle = teamColors.leaderboardColors[teamColors.teamIDs[teamColors.teamArray[id]]])
     }
 
     function highlightRow(localRowIndex, highlightColor) {
-        leaderboard.fillStyle = highlightColor;
+        leaderboardCanvasCtx.fillStyle = highlightColor;
         localRowIndex = localRowIndex > visibleLandCount - 1 ? visibleLandCount - 1 : localRowIndex;
-        var T = Math.floor((localRowIndex === visibleLandCount - 1 ? 2 : 0 === localRowIndex ? 1.15 : 1) * heightOfRow);
+        var T = Math.floor((localRowIndex === visibleLandCount - 1 ? 1.2 : 0 === localRowIndex ? 1.15 : 1) * heightOfRow);
         T = localRowIndex === visibleLandCount - 2 ? Math.floor(topBarHeight + 9.15 * heightOfRow) - Math.floor(topBarHeight + 8.15 * heightOfRow) : T;
-        leaderboard.fillRect(0, Math.floor(topBarHeight + (localRowIndex + (0 === localRowIndex ? 0 : .15)) * heightOfRow), gameBoardWidth, T)
+        leaderboardCanvasCtx.fillRect(0, Math.floor(topBarHeight + (localRowIndex + (0 === localRowIndex ? 0 : .15)) * heightOfRow), gameBoardWidth, T)
     }
 
     function fillPlayerLabels(yPos, order, id) {
-        leaderboard.fillText(orderLabels[order], rankXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow));
-        if (1 === playerStatus[id]) leaderboard.font = fontStyleItalic + gameBoardFont
-        leaderboard.fillText(extendedIDs[id] === id ? nicknames[id] : shorternedNames[extendedIDs[id] % maxEntities], nameXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow));
-        if (0 !== playerStatus[id]) leaderboard.font = gameBoardFont
+        leaderboardCanvasCtx.fillText(orderLabels[order], rankXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow));
+        if (1 === playerStatus[id]) leaderboardCanvasCtx.font = fontStyleItalic + gameBoardFont
+        leaderboardCanvasCtx.fillText(extendedIDs[id] === id ? nicknames[id] : shorternedNames[extendedIDs[id] % maxEntities], nameXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow));
+        if (0 !== playerStatus[id]) leaderboardCanvasCtx.font = gameBoardFont
     }
 
     function fillPlayerLand(yPos, id) {
-        leaderboard.fillText(land[id], landXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow))
+        leaderboardCanvasCtx.fillText(land[id], landXPos, Math.floor(smallPadding + gameBoardLabelHeight + (yPos + .5) * heightOfRow))
     }
 
     function getRowIndex(yPos) {
@@ -4952,7 +4952,48 @@ function GameLeaderboard() {
     function isInBoardCanvas(xPos, yPos) {
         return xPos >= canvasPadding && xPos < canvasPadding + gameBoardWidth && yPos >= canvasPadding && yPos < canvasPadding + gameBoardHeight
     }
-    var visibleLandCount, leaderboardCanvas, leaderboard, maxWidthBeforeShorterned, const_maxEntities, smallPadding, verticalPadding, topBarHeight, heightOfRow, rankXPos, nameXPos, landXPos, shorternedNames, extendedIDs, nicknameWidths, leaderboardLabel, orderLabels, currentLandOwners, currentLand, shouldUpdate, highlightedLandIndex, boardTopIndex, mouseDownTime, isPointerDown, currentRowIndex, lastRowIndex;
+
+    function drawNavigationButtons() {
+        // First draw the margins
+        var yOffset = gameBoardHeight + canvasPadding;
+        leaderboardCanvasCtx.fillStyle = whiteRGB;
+        
+        // Draw +10, +100, -10, -100 buttons
+        var buttonWidth = Math.floor((gameBoardWidth - 3 * gameLeaderboardMargin) / 4);
+        var buttonHeight = navigHeight - gameLeaderboardMargin;
+        var buttonXPos = gameLeaderboardMargin;
+        var buttonYPos = yOffset + gameLeaderboardMargin;
+        leaderboardCanvasCtx.fillStyle = blackMore2Opaque;
+        leaderboardCanvasCtx.fillRect(buttonXPos, buttonYPos, buttonWidth, buttonHeight);
+        leaderboardCanvasCtx.fillRect(buttonXPos + buttonWidth + gameLeaderboardMargin, buttonYPos, buttonWidth, buttonHeight);
+        leaderboardCanvasCtx.fillRect(buttonXPos + 2 * buttonWidth + 2 * gameLeaderboardMargin, buttonYPos, buttonWidth, buttonHeight);
+        leaderboardCanvasCtx.fillRect(buttonXPos + 3 * buttonWidth + 3 * gameLeaderboardMargin, buttonYPos, buttonWidth, buttonHeight);
+
+        // Draw the text
+        leaderboardCanvasCtx.fillStyle = whiteRGB;
+        leaderboardCanvasCtx.font = gameBoardFont;
+        leaderboardCanvasCtx.textAlign = centerAlign;
+        leaderboardCanvasCtx.textBaseline = middleAlign;
+        leaderboardCanvasCtx.fillText("+100", buttonXPos + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2));
+        leaderboardCanvasCtx.fillText("+10", buttonXPos + buttonWidth + gameLeaderboardMargin + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2));
+        leaderboardCanvasCtx.fillText("-10", buttonXPos + 2 * buttonWidth + 2 * gameLeaderboardMargin + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2));
+        leaderboardCanvasCtx.fillText("-100", buttonXPos + 3 * buttonWidth + 3 * gameLeaderboardMargin + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2)); 
+        
+        // Draw the margins
+        leaderboardCanvasCtx.fillStyle = whiteRGB;
+        leaderboardCanvasCtx.fillRect(0, yOffset, gameBoardWidth, gameLeaderboardMargin);
+        leaderboardCanvasCtx.fillRect(0, yOffset, gameLeaderboardMargin, yOffset + navigHeight);
+        leaderboardCanvasCtx.fillRect(gameBoardWidth - gameLeaderboardMargin, yOffset, gameLeaderboardMargin, yOffset + navigHeight);
+        leaderboardCanvasCtx.fillRect(0, yOffset + navigHeight - gameLeaderboardMargin, gameBoardWidth, yOffset + gameLeaderboardMargin);
+        leaderboardCanvasCtx.fillRect(buttonXPos + buttonWidth, buttonYPos, gameLeaderboardMargin, buttonHeight);
+        leaderboardCanvasCtx.fillRect(buttonXPos + 2 * buttonWidth + gameLeaderboardMargin, buttonYPos, gameLeaderboardMargin, buttonHeight);
+        leaderboardCanvasCtx.fillRect(buttonXPos + 3 * buttonWidth + 2 * gameLeaderboardMargin, buttonYPos, gameLeaderboardMargin, buttonHeight);
+    }
+
+    function isInNavigationButton(xPos, yPos) {
+        return xPos >= canvasPadding && xPos < canvasPadding + gameBoardWidth && yPos >= gameBoardHeight + 2 * canvasPadding && yPos < gameBoardHeight + navigHeight + 2 * canvasPadding
+    }
+    var visibleLandCount, leaderboardCanvas, leaderboardCanvasCtx, maxWidthBeforeShorterned, const_maxEntities, smallPadding, verticalPadding, topBarHeight, heightOfRow, rankXPos, nameXPos, landXPos, shorternedNames, extendedIDs, nicknameWidths, leaderboardLabel, orderLabels, currentLandOwners, currentLand, shouldUpdate, highlightedLandIndex, boardTopIndex, mouseDownTime, isPointerDown, currentRowIndex, lastRowIndex;
     this.init = function() {
         var idIndex, O;
         mouseDownTime = 0;
@@ -4976,32 +5017,33 @@ function GameLeaderboard() {
         var T = Math.floor(gameBoardWidth - nameXPos - rankXPos - maxWidthBeforeShorterned),
             extendedNameCount = 0;
         orderLabels = Array(maxEntities);
-        leaderboard.font = gameBoardFont;
+        leaderboardCanvasCtx.font = gameBoardFont;
         for (idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
             orderLabels[idIndex] = idIndex + 1 + ".";
             extendedIDs[idIndex] = idIndex;
-            nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(nicknames[idIndex]).width); 
+            nicknameWidths[idIndex] = Math.floor(leaderboardCanvasCtx.measureText(nicknames[idIndex]).width); 
             if (nicknameWidths[idIndex] > T) {
                 var extendedNickname = nicknames[idIndex];
-                for (O = nicknames[idIndex].length - 1; 1 <= O && !(extendedNickname = extendedNickname.substring(0, O), nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(extendedNickname + "...").width), nicknameWidths[idIndex] <= T); O--);
+                for (O = nicknames[idIndex].length - 1; 1 <= O && !(extendedNickname = extendedNickname.substring(0, O), nicknameWidths[idIndex] = Math.floor(leaderboardCanvasCtx.measureText(extendedNickname + "...").width), nicknameWidths[idIndex] <= T); O--);
                 extendedNickname += "...";
                 shorternedNames.push(extendedNickname);
                 extendedIDs[idIndex] = maxEntities + extendedNameCount++
             }
             drawGameLeaderboard()
         }
+        drawNavigationButtons();
  
     };
     this.updateHumanBotName = function(id) {
         var charIndex, maxLBTextWidth = Math.floor(gameBoardWidth - nameXPos - rankXPos - maxWidthBeforeShorterned);
         nicknames[id] = "Bot [" + nicknames[id] + "]";
-        leaderboard.font = gameBoardFont;
-        nicknameWidths[id] = Math.floor(leaderboard.measureText(nicknames[id]).width);
+        leaderboardCanvasCtx.font = gameBoardFont;
+        nicknameWidths[id] = Math.floor(leaderboardCanvasCtx.measureText(nicknames[id]).width);
         if (nicknameWidths[id] <= maxLBTextWidth) return nicknames[id];
         var lbDisplayNickname = nicknames[id];
         for (charIndex = nicknames[id].length - 2; 1 <= charIndex; charIndex--) {
             lbDisplayNickname = lbDisplayNickname.substring(0, charIndex);
-            nicknameWidths[id] = Math.floor(leaderboard.measureText(lbDisplayNickname + "...]").width);
+            nicknameWidths[id] = Math.floor(leaderboardCanvasCtx.measureText(lbDisplayNickname + "...]").width);
             if (nicknameWidths[id] <= maxLBTextWidth) {
                 break;
             }
@@ -5014,12 +5056,19 @@ function GameLeaderboard() {
         return lbDisplayNickname
     }
     this.setCanvasVariables = function(S) {
-        isZoom ? (gameBoardWidth = Math.floor(.335 * averageDim), gameBoardHeight = Math.floor(visibleLandCount * gameBoardWidth / 8)) : (gameBoardWidth = Math.floor(.27 * averageDim), gameBoardHeight = Math.floor(visibleLandCount * gameBoardWidth / 10));
+        if (isZoom) {
+            gameBoardWidth = Math.floor(.335 * averageDim);
+            gameBoardHeight = Math.floor(visibleLandCount * gameBoardWidth / 8);
+        } else {
+            gameBoardWidth = Math.floor(.27 * averageDim);
+            gameBoardHeight = Math.floor(visibleLandCount * gameBoardWidth / 10);
+        }
         gameBoardWidth = Math.floor(.97 * gameBoardWidth);
+        navigHeight = Math.floor(.18 * gameBoardWidth);
         leaderboardCanvas = document.createElement("canvas");
         leaderboardCanvas.width = gameBoardWidth;
-        leaderboardCanvas.height = gameBoardHeight;
-        leaderboard = leaderboardCanvas.getContext("2d", {
+        leaderboardCanvas.height = gameBoardHeight + navigHeight + canvasPadding;
+        leaderboardCanvasCtx = leaderboardCanvas.getContext("2d", {
             alpha: true
         });
         smallPadding = .025 * gameBoardWidth;
@@ -5029,18 +5078,19 @@ function GameLeaderboard() {
         heightOfRow = (gameBoardHeight - gameBoardLabelHeight - 2 * smallPadding - verticalPadding) / visibleLandCount;
         gameBoardLabelFont = fontWeightBold + Math.floor(.55 * gameBoardLabelHeight) + fontSizeArial;
         gameBoardFont = Math.floor(.6 * heightOfRow) + fontSizeArial;
-        leaderboard.font = gameBoardFont;
-        rankXPos = Math.floor(leaderboard.measureText("555").width);
-        nameXPos = Math.floor(leaderboard.measureText("555600.00").width);
-        maxWidthBeforeShorterned = Math.floor(leaderboard.measureText("00920600").width);
-        leaderboard.font = gameBoardLabelFont;
+        leaderboardCanvasCtx.font = gameBoardFont;
+        rankXPos = Math.floor(leaderboardCanvasCtx.measureText("555").width);
+        nameXPos = Math.floor(leaderboardCanvasCtx.measureText("555600.00").width);
+        maxWidthBeforeShorterned = Math.floor(leaderboardCanvasCtx.measureText("00920600").width);
+        leaderboardCanvasCtx.font = gameBoardLabelFont;
         landXPos = gameBoardWidth - rankXPos;
         if (!S) {
-            leaderboard.font = gameBoardFont;
+            leaderboardCanvasCtx.font = gameBoardFont;
             for (var idIndex = maxEntities - 1; 0 <= idIndex; idIndex--) {
-                nicknameWidths[idIndex] = Math.floor(leaderboard.measureText(extendedIDs[idIndex] === idIndex ? nicknames[idIndex] : shorternedNames[extendedIDs[idIndex] % maxEntities]).width);
+                nicknameWidths[idIndex] = Math.floor(leaderboardCanvasCtx.measureText(extendedIDs[idIndex] === idIndex ? nicknames[idIndex] : shorternedNames[extendedIDs[idIndex] % maxEntities]).width);
             }
             drawGameLeaderboard()
+            drawNavigationButtons();
         }
     };
     this.getGameBoardWidth = function() {
@@ -5050,6 +5100,7 @@ function GameLeaderboard() {
         if (shouldUpdate && (forceUpdate || 0 === mainHandler.getTicksElapsed() % moreSettings.settingPresets[moreSettings.settingsCategory.leaderboardRefreshRate])) {
             shouldUpdate = false;
             drawGameLeaderboard();
+            drawNavigationButtons();
         }
     };
     this.update = function() {
@@ -5104,7 +5155,23 @@ function GameLeaderboard() {
                 }
             }
             return true
-        }
+        } else if (isInNavigationButton(xPos, yPos)) {
+            // Get which button was pressed
+            var buttonIndex = Math.floor((xPos - canvasPadding) / gameBoardWidth * 4);
+            // If it is possible to shift the board (boardTopIndex + change >= 0 and < maxEntities), then shift the board
+            var change = 0 === buttonIndex ? 100 : 1 === buttonIndex ? 10 : 2 === buttonIndex ? -10 : -100;
+            var newBoardTopIndex = boardTopIndex + change;
+        
+            if (newBoardTopIndex < 0) newBoardTopIndex = 0;
+            else if (newBoardTopIndex >= maxEntities - visibleLandCount) newBoardTopIndex = maxEntities - visibleLandCount;
+            if (newBoardTopIndex !== boardTopIndex) {
+                boardTopIndex = newBoardTopIndex;
+                highlightedLandIndex = -1;
+                drawGameLeaderboard();
+                mainHandler.canvasDirty = true;
+            }
+            return true;
+        }        
         return false
     };
     this.onPointermove = function(xPos, yPos) {
@@ -11399,7 +11466,7 @@ function Teams() {
         teamGame && canvasDirty && drawPiechart()
     };
     this.drawCanvasImage = function() {
-        teamGame && mainCanvasCtx.drawImage(pieChartCanvas, canvasPadding, gameBoardHeight + 2 * canvasPadding)
+        teamGame && mainCanvasCtx.drawImage(pieChartCanvas, canvasPadding, gameBoardHeight + navigHeight + 3 * canvasPadding)
     }
     this.getTeamLand = function(teamIndex) {
         return teamLand[teamIndex]
