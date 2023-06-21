@@ -2541,8 +2541,9 @@ function Announcements() {
 
     function getBaseAnnouncementY() {
         if (attackRatioBar.overlapsWithAnnouncements(announcements.getAnnouncementWidth())) {
-            if (peace.visible) return attackRatioBar.startingY - attackRatioBar.height - 2 * canvasPadding
-            else return attackRatioBar.startingY - canvasPadding
+            var increment = isTouch ? 1 : 0;
+            if (peace.visible) return attackRatioBar.startingY - canvasPadding - (attackRatioBar.height + canvasPadding) * (increment + 1)
+            else return attackRatioBar.startingY - canvasPadding - (attackRatioBar.height + canvasPadding) * increment
         } else if (peace.visible) return mainCanvasHeight - attackRatioBar.height - (isZoom ? 3 : 2) * canvasPadding
         else return mainCanvasHeight - canvasPadding
     }
@@ -4146,6 +4147,35 @@ function AttackRatioBar() {
         }
     }
 
+    function drawRatioButtons() {
+        ratioButtonsCanvasCtx.clearRect(0, 0, ratioButtonsWidth, attackRatioBar.height);
+        ratioButtonsCanvasCtx.fillStyle = blackMoreOpaque;
+        ratioButtonsCanvasCtx.fillRect(0, 0, ratioButtonsWidth, attackRatioBar.height);
+        fourRectFiller(ratioButtonsCanvasCtx, ratioButtonsWidth, attackRatioBar.height, 1);
+        // Divide the bar into 6 parts containing 6 buttons with labels 1, s, a, d, w, 2
+        var buttonWidth = ratioButtonsWidth / 6;
+        var buttonHeight = attackRatioBar.height;
+        var buttonFontSize = Math.floor(.4 * buttonHeight);
+        var buttonFontStyle = fontWeightBold + buttonFontSize + fontSizeArial;
+        ratioButtonsCanvasCtx.font = buttonFontStyle;
+        ratioButtonsCanvasCtx.textBaseline = middleAlign;
+        ratioButtonsCanvasCtx.textAlign = centerAlign;
+        ratioButtonsCanvasCtx.fillStyle = whiteRGB2;
+        ratioButtonsCanvasCtx.fillText("1", buttonWidth / 2, buttonHeight / 2);
+        ratioButtonsCanvasCtx.fillText("S", buttonWidth / 2 + buttonWidth, buttonHeight / 2);
+        ratioButtonsCanvasCtx.fillText("A", buttonWidth / 2 + 2 * buttonWidth, buttonHeight / 2);
+        ratioButtonsCanvasCtx.fillText("D", buttonWidth / 2 + 3 * buttonWidth, buttonHeight / 2);
+        ratioButtonsCanvasCtx.fillText("W", buttonWidth / 2 + 4 * buttonWidth, buttonHeight / 2);
+        ratioButtonsCanvasCtx.fillText("2", buttonWidth / 2 + 5 * buttonWidth, buttonHeight / 2);
+        // Draw dividing margins between each button
+        ratioButtonsCanvasCtx.fillStyle = whiteRGB2;
+        ratioButtonsCanvasCtx.fillRect(buttonWidth, 0, 1, buttonHeight);
+        ratioButtonsCanvasCtx.fillRect(2 * buttonWidth, 0, 1, buttonHeight);
+        ratioButtonsCanvasCtx.fillRect(3 * buttonWidth, 0, 1, buttonHeight);
+        ratioButtonsCanvasCtx.fillRect(4 * buttonWidth, 0, 1, buttonHeight);
+        ratioButtonsCanvasCtx.fillRect(5 * buttonWidth, 0, 1, buttonHeight);
+    }
+
     function multiplyRatio(multiplier) {
         if (1 < multiplier && 0 === ratio) {
             ratio = .01;
@@ -4177,6 +4207,7 @@ function AttackRatioBar() {
         } else return false;
     }
     var attackRatioBarWidth, startingX, buttonWidth, attackRatioBarCanvas, attackRatioBarCanvasCtx, visibility, ratio, sendAmount, percentage, fontStyle, needsUpdate, buttonMultiplier = 11/12;
+    var ratioButtonsCanvas, ratioButtonsCanvasCtx, ratioButtonsWidth;
     this.init = function() {
         visibility = customJSON.isCustomJSON && customJSON.data.replay || !inSpawn;
         needsUpdate = false;
@@ -4208,6 +4239,17 @@ function AttackRatioBar() {
         attackRatioBarCanvasCtx.textAlign = centerAlign;
         this.setStartingPosition();
         redrawAttackRatioBar()
+
+        ratioButtonsCanvas = document.createElement("canvas");
+        ratioButtonsCanvas.width = ratioButtonsWidth = attackRatioBarWidth - 2 * buttonWidth;
+        ratioButtonsCanvas.height = this.height;
+        ratioButtonsCanvasCtx = ratioButtonsCanvas.getContext("2d", {
+            alpha: true
+        });
+        ratioButtonsCanvasCtx.font = fontStyle;
+        ratioButtonsCanvasCtx.textBaseline = middleAlign;
+        ratioButtonsCanvasCtx.textAlign = centerAlign;
+        drawRatioButtons();
     };
     this.setStartingPosition = function() {
         startingX = isZoom && mainCanvasWidth < .8 * mainCanvasHeight ? this.height + 3 * canvasPadding : Math.floor((prevClientWidth - attackRatioBarWidth) / 2);
@@ -4236,7 +4278,7 @@ function AttackRatioBar() {
         return rangeClamp(1, flooredRatio, 1E3)
     };
     this.getClickedButton = function(xPos, yPos) {
-        return this.visible() && xPos > startingX && xPos < startingX + attackRatioBarWidth && yPos > this.startingY
+        return this.visible() && (xPos > startingX && xPos < startingX + attackRatioBarWidth && yPos > this.startingY || xPos > startingX + buttonWidth && xPos < startingX + attackRatioBarWidth - buttonWidth && yPos < this.startingY - canvasPadding && yPos > this.startingY - canvasPadding - this.height)
     };
     this.clickedButton = function(xPos, yPos) {
         if (!this.visible()) return false;
@@ -4254,6 +4296,21 @@ function AttackRatioBar() {
                 needsUpdate = true;
                 return true;
             } else return modHandler.lateral ? addRatio(.065) : multiplyRatio(1 / buttonMultiplier);
+        }
+        // If the user clicks on the ratio buttons
+        if (xPos > startingX + buttonWidth && xPos < startingX + attackRatioBarWidth - buttonWidth && yPos < this.startingY - canvasPadding && yPos > this.startingY - canvasPadding - this.height) {
+            var ratioButtonWidth = ratioButtonsWidth / 6;
+            var key = null;
+            if (xPos < startingX + 2 * ratioButtonWidth) key = "1";
+            else if (xPos < startingX + 3 * ratioButtonWidth) key = "s";
+            else if (xPos < startingX + 4 * ratioButtonWidth) key = "a";
+            else if (xPos < startingX + 5 * ratioButtonWidth) key = "d";
+            else if (xPos < startingX + 6 * ratioButtonWidth) key = "w";
+            else if (xPos < startingX + 7 * ratioButtonWidth) key = "2";
+            document.dispatchEvent(new KeyboardEvent("keydown", {
+                "key": key
+            }));
+            return true;
         }
         this.isDragging = true;
         return slideRatio(xPos)
@@ -4285,7 +4342,10 @@ function AttackRatioBar() {
         if (this.visible() && (Math.floor(troops[myID] * ratio) !== sendAmount || customJSON.isCustomJSON && customJSON.data.replay)) needsUpdate = true
     };
     this.drawCanvasImage = function() {
-        if (this.visible()) mainCanvasCtx.drawImage(attackRatioBarCanvas, startingX, this.startingY)
+        if (this.visible()) {
+            if (isTouch) mainCanvasCtx.drawImage(ratioButtonsCanvas, startingX + buttonWidth, this.startingY - canvasPadding - this.height)
+            mainCanvasCtx.drawImage(attackRatioBarCanvas, startingX, this.startingY)
+        }
     }
 }
 var mainScaleFactor, viewportX, viewportY;
@@ -4959,15 +5019,12 @@ function GameLeaderboard() {
         leaderboardCanvasCtx.fillStyle = whiteRGB;
         
         // Draw +10, +100, -10, -100 buttons
-        var buttonWidth = Math.floor((gameBoardWidth - 3 * gameLeaderboardMargin) / 4);
+        var buttonWidth = Math.floor((gameBoardWidth - gameLeaderboardMargin) / 4);
         var buttonHeight = navigHeight - gameLeaderboardMargin;
         var buttonXPos = gameLeaderboardMargin;
         var buttonYPos = yOffset + gameLeaderboardMargin;
         leaderboardCanvasCtx.fillStyle = blackMore2Opaque;
-        leaderboardCanvasCtx.fillRect(buttonXPos, buttonYPos, buttonWidth, buttonHeight);
-        leaderboardCanvasCtx.fillRect(buttonXPos + buttonWidth + gameLeaderboardMargin, buttonYPos, buttonWidth, buttonHeight);
-        leaderboardCanvasCtx.fillRect(buttonXPos + 2 * buttonWidth + 2 * gameLeaderboardMargin, buttonYPos, buttonWidth, buttonHeight);
-        leaderboardCanvasCtx.fillRect(buttonXPos + 3 * buttonWidth + 3 * gameLeaderboardMargin, buttonYPos, buttonWidth, buttonHeight);
+        leaderboardCanvasCtx.fillRect(buttonXPos, buttonYPos, gameBoardWidth, buttonHeight);
 
         // Draw the text
         leaderboardCanvasCtx.fillStyle = whiteRGB;
@@ -4975,9 +5032,9 @@ function GameLeaderboard() {
         leaderboardCanvasCtx.textAlign = centerAlign;
         leaderboardCanvasCtx.textBaseline = middleAlign;
         leaderboardCanvasCtx.fillText("+100", buttonXPos + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2));
-        leaderboardCanvasCtx.fillText("+10", buttonXPos + buttonWidth + gameLeaderboardMargin + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2));
-        leaderboardCanvasCtx.fillText("-10", buttonXPos + 2 * buttonWidth + 2 * gameLeaderboardMargin + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2));
-        leaderboardCanvasCtx.fillText("-100", buttonXPos + 3 * buttonWidth + 3 * gameLeaderboardMargin + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2)); 
+        leaderboardCanvasCtx.fillText("+10", buttonXPos + buttonWidth + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2));
+        leaderboardCanvasCtx.fillText("-10", buttonXPos + 2 * buttonWidth + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2));
+        leaderboardCanvasCtx.fillText("-100", buttonXPos + 3 * buttonWidth + Math.floor(buttonWidth / 2), buttonYPos + Math.floor(buttonHeight / 2)); 
         
         // Draw the margins
         leaderboardCanvasCtx.fillStyle = whiteRGB;
@@ -4985,9 +5042,10 @@ function GameLeaderboard() {
         leaderboardCanvasCtx.fillRect(0, yOffset, gameLeaderboardMargin, yOffset + navigHeight);
         leaderboardCanvasCtx.fillRect(gameBoardWidth - gameLeaderboardMargin, yOffset, gameLeaderboardMargin, yOffset + navigHeight);
         leaderboardCanvasCtx.fillRect(0, yOffset + navigHeight - gameLeaderboardMargin, gameBoardWidth, yOffset + gameLeaderboardMargin);
-        leaderboardCanvasCtx.fillRect(buttonXPos + buttonWidth, buttonYPos, gameLeaderboardMargin, buttonHeight);
-        leaderboardCanvasCtx.fillRect(buttonXPos + 2 * buttonWidth + gameLeaderboardMargin, buttonYPos, gameLeaderboardMargin, buttonHeight);
-        leaderboardCanvasCtx.fillRect(buttonXPos + 3 * buttonWidth + 2 * gameLeaderboardMargin, buttonYPos, gameLeaderboardMargin, buttonHeight);
+
+        leaderboardCanvasCtx.fillRect(buttonXPos + buttonWidth, buttonYPos, 1, buttonHeight);
+        leaderboardCanvasCtx.fillRect(buttonXPos + 2 * buttonWidth, buttonYPos, 1, buttonHeight);
+        leaderboardCanvasCtx.fillRect(buttonXPos + 3 * buttonWidth, buttonYPos, 1, buttonHeight);
     }
 
     function isInNavigationButton(xPos, yPos) {
