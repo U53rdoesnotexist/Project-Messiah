@@ -704,9 +704,9 @@ function DifficultyEngine() {
     var sendRatio, randomSendRatio, sendRatioFluctuations, botTimingInterval, randomTimingInterval;
     this.difficultyLabel = "Very Easy;Easy;Normal;Hard;Harder;Very Hard".split(";");
     this.dm = [97, 95, 93, 90, 87, 84]; //Unused
-    this.attackBotsProbi = [98, 95, 90, 40, 20, 0];
-    this.boatSendRatio = [85, 70, 65, 30, 7, 3];
-    this.attackLeastProbi = [0, 0, 0, 0, 50, 90];
+    this.attackBotsProbi = [98, 95, 70, 40, 20, 0];
+    this.boatSendRatio = [85, 70, 50, 30, 7, 3];
+    this.attackLeastProbi = [0, 0, 5, 25, 50, 90];
     this.init = function() {
         var botIndex;
         this.botTiming = new Uint8Array(botCount);
@@ -735,9 +735,13 @@ function DifficultyEngine() {
                 }
             }
         } else {
+            /*
             var defaultBotDifficulty = 8 === gamemode ? 1 : 0;
             for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
                 this.difficulty[botIndex] = modHandler.customDifficulty != -1 ? modHandler.customDifficulty : defaultBotDifficulty;
+            }*/
+            for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
+                this.difficulty[botIndex] = 8 === gamemode ? 3 : 0;
             }
         }        
         for (botIndex = botCount - 1; 0 <= botIndex; botIndex--) {
@@ -752,17 +756,17 @@ function DifficultyEngine() {
                     randomSendRatio[botIndex] = 920;
                     botTimingInterval[botIndex] = randomTimingInterval[botIndex] = 1100
                 } else {
-                    sendRatio[botIndex] = 1E3;
-                    randomSendRatio[botIndex] = 870;
+                    sendRatio[botIndex] = 825;
+                    randomSendRatio[botIndex] = 750;
                 }
             } else if (4 >= this.difficulty[botIndex]) {
                 sendRatioFluctuations[botIndex] = 1 + fakeRandom.calcFractionalValue(20);
-                randomTimingInterval[botIndex] = 250 + fakeRandom.calcFractionalValue(1501);
-                botTimingInterval[botIndex] = 500 + fakeRandom.calcFractionalValue(501);
                 if (3 === this.difficulty[botIndex]) {
-                    sendRatio[botIndex] = 600 + fakeRandom.calcFractionalValue(101);
-                    randomSendRatio[botIndex] = 300 + fakeRandom.calcFractionalValue(401);
+                    sendRatio[botIndex] = randomSendRatio[botIndex] = 500;
+                    randomTimingInterval[botIndex] = botTimingInterval[botIndex] = 1E3
                 } else {
+                    randomTimingInterval[botIndex] = 250 + fakeRandom.calcFractionalValue(1501);
+                    botTimingInterval[botIndex] = 500 + fakeRandom.calcFractionalValue(501);
                     sendRatio[botIndex] = 300 + fakeRandom.calcFractionalValue(201);
                     randomSendRatio[botIndex] = 100 + fakeRandom.calcFractionalValue(201);
                 }
@@ -770,7 +774,7 @@ function DifficultyEngine() {
                 botTimingInterval[botIndex] = 1E3;
                 randomTimingInterval[botIndex] = 1E3;
                 sendRatioFluctuations[botIndex] = 35 + fakeRandom.calcFractionalValue(16);
-                sendRatio[botIndex] = 400 + fakeRandom.calcFractionalValue(101);
+                sendRatio[botIndex] = 300 + fakeRandom.calcFractionalValue(101);
                 randomSendRatio[botIndex] = 50 + fakeRandom.calcFractionalValue(101);
             }
             this.botTiming[botIndex] = 1 + divideFloor(botTimingInterval[botIndex] * fakeRandom.random(), 10 * fakeRandom.value(100))
@@ -2143,7 +2147,6 @@ function PlayerActions() {
         }
         if (3 === buttonType) {
             this.end();
-            if (this.isHuman(targetID) && 7 > gamemode && 1071 > mainHandler.getTicksElapsed()) return announcements.antiBoosting(), 1;
             announcements.lowBalance();
             if (singleplayer) {
                 if (modHandler.latency) latencySimulator.addPendingAction(0, divideFloor(attackRatioBar.getFlooredRatio()), targetID, 0, 0)
@@ -2892,8 +2895,11 @@ function Announcements() {
     this.antiBoosting = function() {
         announce(80, "Boosting is disallowed in the first minute!", 9, 0, whiteRGB2, blackMoreOpaque, -1, false)
     };
-    this.giveDonation = function(amount, targetID) {
-        if (2 !== playerStatus[myID]) announce(200, "You exported " + attackBars.splitNumber(amount) + " resource" + (1 === amount ? "" : "s") + " to " + nicknames[targetID] + ".", 30, targetID, "rgb(190,255,190)", blackMoreOpaque, -1, true)
+    this.giveDonation = function(amount, tax, targetID) {
+        if (2 !== playerStatus[myID]) {
+            announce(200, "You exported " + attackBars.splitNumber(amount) + " resource" + (1 === amount ? "" : "s") + " to " + nicknames[targetID] + ".", 30, targetID, "rgb(190,255,190)", blackMoreOpaque, -1, true);
+            announce(30, "A tax of " + attackBars.splitNumber(tax) + " unit was deducted.", 30, 0, whiteRGB2, blackMoreOpaque, -1, !1)
+        }
     };
     this.receiveDonation = function(amount, targetID) {
         if (2 !== playerStatus[myID]) {
@@ -5732,24 +5738,25 @@ function processSendBoat(id, closestPIndex, targetPIndex, amount) {
 }
 
 function processDonation(authorID, targetID, amount) {
-    if (!(!teamGame || 0 === isAlive[authorID] || 0 === isAlive[targetID] || 0 > amount || amount > troops[authorID] || authorID === targetID || 
-        isNotTeamate(authorID, targetID) || authorID < playerCount && targetID < playerCount && 7 > gamemode && 1071 > mainHandler.getTicksElapsed())) {
+    if (!(!teamGame || 0 === isAlive[authorID] || 0 === isAlive[targetID] || 0 > amount || amount > troops[authorID] || authorID === targetID || isNotTeamate(authorID, targetID))) {
         
-        var tax = divideFloor(modHandler.modTax.support * troops[authorID], 256);
-        amount -= amount >= divideFloor(troops[authorID], 2) ? tax : 0;
+        var baseTax = divideFloor(modHandler.modTax.support * troops[authorID], 256);
+        amount -= amount >= divideFloor(troops[authorID], 2) ? baseTax : 0;
         var maxReceivableAmount = land[targetID] * maxTroopsToLandRatio - troops[targetID];
         if (0 < maxReceivableAmount) {
-            amount = amount > maxReceivableAmount ? maxReceivableAmount : amount;
+            var earlyTax = divideFloor(Math.max(2142 - mainHandler.getTicksElapsed(), 0) * amount, 2142)
+            amount -= earlyTax;
+            amount = getMin(amount, maxReceivableAmount);
             if (authorID === myID) {
-                announcements.giveDonation(amount, targetID);
-                statisticNumbers.numbers[12] += tax;
+                announcements.giveDonation(amount, baseTax + earlyTax, targetID);
+                statisticNumbers.numbers[12] += baseTax + earlyTax;
                 statisticNumbers.numbers[16] += amount;
             }
             if (targetID === myID) {
                 announcements.receiveDonation(amount, authorID);
                 statisticNumbers.numbers[10] += amount;
             }
-            troops[authorID] -= amount + tax;
+            troops[authorID] -= amount + baseTax + earlyTax;
             troops[targetID] += amount;
         }
     }
@@ -7308,8 +7315,8 @@ function Lobby() {
                 timeLeft: param_lobbyGames[gameIndex].timeLeft,
                 maxPlayers: param_lobbyGames[gameIndex].maxPlayers,
                 canvas: previewCanvas,
-                xH: param_lobbyGames[gameIndex].xH,
-                xI: param_lobbyGames[gameIndex].xI
+                clanCount: param_lobbyGames[gameIndex].clanCount,
+                clanData: param_lobbyGames[gameIndex].clanData
             })
             if (param_lobbyGames[gameIndex].isContest && param_lobbyGames[gameIndex].timeLeft == 30) sounds.play(4)
         }
@@ -7407,7 +7414,7 @@ function Lobby() {
                             crossScale = Math.floor(.3 * crossBoxScale);
                         mainCanvasCtx.fillStyle = greenDarkerMoreOpaque;
                         mainCanvasCtx.fillRect(lgBoxXFloored + lgBoxLengthFloored - crossBoxScale, lgBoxYFloored, crossBoxScale, crossBoxScale);
-                        mainCanvasCtx.fillStyle = blackRGB;
+                        mainCanvasCtx.fillstyle = gameSelected === lobbyGames[lgIndex].gameID ? greenDarkMoreOpaque : blackRGB;
                         mainCanvasCtx.fillRect(lgBoxXFloored + lgBoxLengthFloored - crossBoxScale, lgBoxYFloored, 2, crossBoxScale);
                         mainCanvasCtx.fillRect(lgBoxXFloored + lgBoxLengthFloored - crossBoxScale, lgBoxYFloored + crossBoxScale - 2, crossBoxScale, 2);
                         gameButtons.drawMenuSymbol(lgBoxXFloored + lgBoxLengthFloored - crossBoxScale + crossScale, lgBoxYFloored + crossScale, crossBoxScale - 2 * crossScale);
@@ -7422,7 +7429,7 @@ function Lobby() {
                     mainCanvasCtx.fillRect(lgBoxXFloored, Math.floor(lgBoxYFloored + .8 * lgBoxLength), lgBoxLengthFloored, Math.floor(lgBoxLength / 5));
                     mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored, iconBoxSize, iconBoxSize);
                     */
-                    mainCanvasCtx.fillStyle = blackRGB;
+                    mainCanvasCtx.fillstyle = gameSelected === lobbyGames[lgIndex].gameID ? greenDarkMoreOpaque : blackRGB;
                     
                     /*
                     mainCanvasCtx.fillRect(lgBoxXFloored, Math.floor(lgBoxYFloored + .8 * lgBoxLength), lgBoxLengthFloored, 2);
@@ -7430,12 +7437,12 @@ function Lobby() {
                     mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored + iconBoxSize - 2, iconBoxSize, 2);
                     */
                     mainCanvasCtx.fillRect(lgBoxXFloored, Math.floor(lgBoxYFloored + .8 * lgBoxLength), lgBoxLengthFloored, Math.floor(lgBoxLength / 5));
-                    if (lobbyGames[lgIndex].xH) {
-                        for (var clanIndex = 0, clanInfoWidth = 0; clanIndex < lobbyGames[lgIndex].xH; clanIndex++) {
-                            clanInfoWidth = Math.max(clanInfoWidth, gameMessages.measureText(lobbyGames[lgIndex].xI[clanIndex], lobbyGamesInfoFontStyle));
+                    if (lobbyGames[lgIndex].clanCount) {
+                        for (var clanIndex = 0, clanInfoWidth = 0; clanIndex < lobbyGames[lgIndex].clanCount; clanIndex++) {
+                            clanInfoWidth = Math.max(clanInfoWidth, gameMessages.measureText(lobbyGames[lgIndex].clanData[clanIndex], lobbyGamesInfoFontStyle));
                         }
                         clanInfoWidth += .05 * lgBoxLength;
-                        mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored + .8 * lgBoxLength - .11 * lobbyGames[lgIndex].xH * lgBoxLength, clanInfoWidth, .11 * lobbyGames[lgIndex].xH * lgBoxLength + .05 * lgBoxLength)
+                        mainCanvasCtx.fillRect(lgBoxXFloored, lgBoxYFloored + .8 * lgBoxLength - .11 * lobbyGames[lgIndex].clanCount * lgBoxLength, clanInfoWidth, .11 * lobbyGames[lgIndex].clanCount * lgBoxLength + .05 * lgBoxLength)
                     }
 
                     mainCanvasCtx.font = lobbyGamesInfoFontStyle;
@@ -7445,8 +7452,8 @@ function Lobby() {
                     mainCanvasCtx.fillText(lobbyGames[lgIndex].joined.toString(), Math.floor(lgBoxXFloored + .22 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
 
                     mainCanvasCtx.fillStyle = whiteRGB;
-                    for (var clanIndex = 0; clanIndex < lobbyGames[lgIndex].xH; clanIndex++) {
-                        mainCanvasCtx.fillText(lobbyGames[lgIndex].xI[lobbyGames[lgIndex].xH - clanIndex - 1], Math.floor(lgBoxXFloored + .03 * lgBoxLength), Math.floor(lgBoxYFloored + .77 * lgBoxLength - .11 * clanIndex * lgBoxLength));
+                    for (var clanIndex = 0; clanIndex < lobbyGames[lgIndex].clanCount; clanIndex++) {
+                        mainCanvasCtx.fillText(lobbyGames[lgIndex].clanData[lobbyGames[lgIndex].clanCount - clanIndex - 1], Math.floor(lgBoxXFloored + .03 * lgBoxLength), Math.floor(lgBoxYFloored + .77 * lgBoxLength - .11 * clanIndex * lgBoxLength));
                     }
 
                     if (!modHandler.public) {
@@ -7459,7 +7466,7 @@ function Lobby() {
                     mainCanvasCtx.fillStyle = redLighterRGB;
                     mainCanvasCtx.fillText(lobbyGames[lgIndex].timeLeft.toString(), Math.floor(lgBoxXFloored + .81 * lgBoxLength), Math.floor(lgBoxYFloored + .9 * lgBoxLength));
 
-                    mainCanvasCtx.strokeStyle = whiteMoreOpaque;
+                    mainCanvasCtx.strokeStyle = gameSelected === lobbyGames[lgIndex].gameID ? greenDarkMoreOpaque : whiteMoreOpaque;
                     mainCanvasCtx.strokeRect(lgBoxXFloored, lgBoxYFloored, lgBoxLengthFloored, lgBoxLengthFloored);
                     var iconBoxScale = Math.floor(.16 * lgBoxLength),
                         iconScale = iconBoxScale / 48;
@@ -9871,8 +9878,8 @@ var mainCanvas, mainCanvasCtx, versionLabel, versionHash, mainCanvasWidth, mainC
 
 function main() {
     socketIndex = 2;
-    versionHash = 275;
-    versionLabel = "1.84.2 M   29 May 2023";
+    versionHash = 1417;
+    versionLabel = "1.84.7 M   29 May 2023";
     construct();
     botBorderingStuffInit();
     isMainCalled = true;
@@ -11766,7 +11773,7 @@ function BoatPathHandler() {
                                 param_boatID = remaining > param_boatID ? param_boatID : remaining;
                                 remaining -= param_boatID;
                                 if (authorID === myID) {
-                                    announcements.giveDonation(param_boatID, landingTargetID);
+                                    announcements.giveDonation(param_boatID, 0, landingTargetID);
                                     statisticNumbers.numbers[16] += param_boatID;
                                 }
                                 if (landingTargetID === myID) {
@@ -13100,8 +13107,8 @@ function DataDecoder() {
                                 clanName = decodeNames(decoder(array, 3), array);
                                 clanNames[clanIndex] = ("" === clanName ? "Others: " : "[" + clanName + "]: ") + clanPlayers;
                             };
-                            lobbyGames[data].xH = clanCount;
-                            lobbyGames[data].xI = clanNames
+                            lobbyGames[data].clanCount = clanCount;
+                            lobbyGames[data].clanData = clanNames
                         }
                         lobby.updateObjects(lobbyStats, lobbyGames)
                     }
