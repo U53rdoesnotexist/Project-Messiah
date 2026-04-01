@@ -186,7 +186,7 @@ function Messiah() {
     };
     this.update = function() {
         if (!isAlive[myID] || gamemode === 8 && this.opponent != null && !isAlive[this.opponent.id]) return 0;
-        modHandler.gameSpeed = modHandler.cycle < 20 ? 5 : 1;
+        modHandler.gameSpeed = 1;
         latencySimulator.nextInfoSend = latencySimulator.getNextUpdateTick(mainHandler.getTicksElapsed() + 1);
         latencySimulator.nextInfoSend = latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100 >= 100 ? latencySimulator.nextInfoSend - (modHandler.cycle) * 100 : latencySimulator.nextInfoSend - (modHandler.cycle - 1) * 100;
         modHandler.ticksLeft = 99 - latencySimulator.nextInfoSend;
